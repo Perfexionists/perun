@@ -26,11 +26,8 @@ and consists of three main parts:
      in terminal; and moreover graphical interface implemented in Kivy framework.
 
 
-Perun Applications
-==================
-
 Perun Command Line Interface
-----------------------------
+============================
 
   - ``perun config``---gets and sets the configuration for either global or local vcs
   - ``perun help``---show help for the CLI and perun
@@ -67,10 +64,10 @@ all of the profiles.
 The ``.perun`` directory exploits the tree structure of changes in order to 
 achieve the incremental structure of the profiles.
 
-``logic`` Package
+``core/logic`` Package
 -----------------
 
-``logic`` package consists of **Runners** and **Preprocessors**.
+``core/logic`` package consists of **Runners** and **Preprocessors**.
 
 Runner Scheduler
 ~~~~~~~~~~~~~~~~
@@ -83,13 +80,23 @@ and generates profiles.
 Runners have following modes:
 
   - ``on_commit`` (``on_new_version``)---asociated runners are run everytime
-	new Minor Version is commited to VCS (commit in GIT),
+    new Minor Version is commited to VCS (commit in GIT),
   - ``on_push`` (``on_remote_upload``)---asociated runners are run everytime
-	local version control is pushed to remote control system,
+    local version control is pushed to remote control system,
   - ``on_checkout`` (``on_backtrack_version``)---asociated runners are run everytime
     older minor or major version is checked out,
   - ``on_demand``---asociated runners are manually run,
   - ``on_scheduled_time``---asociated runners are run at scheduled time and date
+
+``core/data`` Package
+---------------------
+
+``core/data`` package consists of **Profiles** and wrappers over **Version Control Systems**.
+
+``view`` Package
+----------------
+
+``view`` Package contains the **GUI** and **Visualizers** for the profiles.
 
 Profiles
 ========
@@ -151,6 +158,7 @@ Perun Modes
 ===========
 
 Perun will be able to run in three modes:
+
   1. **Offline Mode**---the default mode, where everything is run on the host system
 
   2. **Online Mode**---optional mode, where everything is run on remote system 
@@ -168,6 +176,7 @@ Offline Mode
 ------------
 
 The default mode of the Perun. This can be further differentiated to following two strategies:
+
   1. **Eager Offline Mode**---as soon as you commit, the runners are dispatched and
      profiles are computed.
 
@@ -191,6 +200,7 @@ the Continuous Integration (travis, jenkins). The ``travis.yml`` is modified
 to achieve the online mode.
 
 Currently there are several possible strategies of Online mode implementation:
+
   1. Using web hooks and communicate with travis by HTTP requests (limited though)
 
   2. Push stuff through github releases
