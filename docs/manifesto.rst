@@ -33,19 +33,44 @@ Perun Command Line Interface
   - ``perun help``---show help for the CLI and perun
   - ``perun init``---inits the empty PCS within the directory as the directory ``.perun``,
     note that if there is existing ``.perun`` directory, the command fails with error
+
+    - ``--init-vcs=TYPE``---besides perun initialize the VCS repository of VCS type;
+      note that if there already exist vcs of *TYPE* ``perun init`` ends with error
+    - ``--init-vcs-params=PARAMS``---supply additional parameters for ``vcs init``
   - ``perun status``---shows some minor info, of what runners are currently pending, current
     major and minor version
-  - ``perun diff``---shows diff between two chosen profiles, represented by SHA-1 hashes
-  - ``perun add``---manually adds either profile, workload or runner
-  - ``perun rm``---remove either profile, workload, or runner
-  - ``perun aggregate``---aggregates profile to one more generic one
+
+    - ``--short``, ``-s``---short status of the perun
+  - ``perun diff PROFILE1 PROFILE2``---shows diff between two chosen profiles, 
+    represented by SHA-1 hashes
+
+    - ``-diff-algorithm=ALG``---use different diff strategy
+  - ``perun add MINOR``---manually adds profile to minor version
+
+    - ``--``---separate multiple files
+  - ``perun rm``---remove either profile
+
+    - ``--``---separate multiple files
+  - ``perun aggregate PROFILE1 PROFILE2``---aggregates profile to one more generic one
+
+    - ``--strategy=STRATEGY``---will use different aggregation strategy
   - ``perun log``---shows current status, how many profiles are there asociated with each
     minor versions, aggregated informations, statistics, etc.
   - ``perun tag``---tags profiles with user given tags
-  - ``perun register``---register new runner for given workloads and major versions
+  - ``perun register``---register new runner for given workloads and major versions or
+    register new workload
+  - ``perun unregister``---unregister existing runners or workloads
+
+    - ``--``---separation of the list of register runners or workloads
   - ``perun show``---shows profile in CLI (note that this is textual representation mostly)
+
+    - ``--one-line``---displays the profile in one line
+    - ``--coloured``---displays the profile with colours
   - ``perun bisect``---similar to git bisect to find quickly which minor version introduced
     the peformance bug
+
+    - ``--auto``---try to infer the bad peformance commits automatically
+  - ``perun query``----query the profiles using the perun query language
 
 
 Perun Core
@@ -65,7 +90,7 @@ The ``.perun`` directory exploits the tree structure of changes in order to
 achieve the incremental structure of the profiles.
 
 ``core/logic`` Package
------------------
+----------------------
 
 ``core/logic`` package consists of **Runners** and **Preprocessors**.
 
@@ -122,6 +147,37 @@ Our current focus is on the following types of profiles:
   2. Space---amount of resources the program spends on given workload,
      moreover, the mapping of objects to addresses.
   3. Complexity---the complexity of the program or given/chosen functions
+
+Perun profile format is currently under development, the current version is::
+
+  Profile = {
+    'type': 'memory',
+    'minor_version': a5cf40ebf33610c97083b209fc12a36adc3a99ff,
+    'file': '/dir/subdir/bin',
+    'workload': 'load.in',
+    'global': {
+        'time': 12.32s,
+        'resources': [
+           {'ammount': 30 MB, 'location': '/dir/subdir/loc' },
+        ]
+     },
+     'snapshots': [
+       {
+         'time': '1.0s',
+         'resources': [
+            {'ammount': 12MB, 'location': '/dir/subdir/loc#13' },
+            {'ammount':  1MB, 'location': '/dir/subdir/loc#47' }
+         ]
+       },
+       {
+         'time': '2.0s',
+         'resources': [
+            {'ammount': 37MB, 'location': '/dir/subdir/loc#13' },
+            {'ammount':  3MB, 'location': '/dir/subdir/loc#47' } 
+         ]
+       }
+     ]
+  }
 
 Collective Profiles
 ~~~~~~~~~~~~~~~~~~~
