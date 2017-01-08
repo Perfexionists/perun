@@ -4,6 +4,76 @@ Perun Manifesto
 
 .. contents::
 
+Perun Design Choices 
+====================
+
+This section explains some of the design choices, that were made. 
+Perun was made with the following goals in mind:
+
+  1. Platform independent---profiling and version controling can be
+     done both on Unix/Windows/MacOS systems.
+  
+  2. Language independent---perun should be independent on the underlying
+     project language (this also complies with the Point 1.).
+
+  3. Lightweight---perun should not be robust, should be easy to install,
+     and easy and natural to use. Morever, one should be able to change the
+     innermost data as well.
+
+  4. Efficient---eficiency is one of the factors of perun---both in terms of
+     space and time consumption.
+
+  5. Fresh and modern---for authors, this serves as great experience for
+     exploring modern and fresh technologies and thus appropriate frameworks
+     are usually chosen.
+
+This section only serves as self-assurance and possible explanation, why perun
+is implemented as it is.
+
+Language of Choice
+------------------
+
+**Python** was chosen as the implementation language, both for having large number
+of frameworks and libraries and being platform independent. Moreover the implementation
+in python is lightweight without need to solve memory allocation and other architecture
+specific details.
+
+CLI Framework of Choice
+-----------------------
+
+**Click** was chosen as the framework for command line interface. ``Docopts`` was ruled out
+for being hard to use, through the docstrings. Click is built over the ``getopts`` and is
+similar to the classical ``argparse``, however, is much easier to use and also
+enables nesting of the commands, that is necessary for the command line work with 
+repository-like structure.
+
+GUI Framework of Choice
+-----------------------
+
+**Kivy** was chose as the framework for graphical user interface. While other frameworks
+were considered as well (like **PyQT**), kivy seems natural for multi-platform applications
+and provides nice look. Moreover, ``Kivy`` has clear separation between presentation and
+logic. 
+
+Visualization of Choice
+-----------------------
+
+Currently under consideration. Current candidates are: **Bokeh** and **Mathplotlib**.
+**Mathplotlib** is easier to integrate in GUI application of ``Kivy``, however, has
+less options and is harder to use. **Bokeh**, on the other hand, is easy to use and
+provides lots of customization.
+
+Structure of Perun
+------------------
+
+The implementation details of perun storage is inspired by **GIT** design. 
+While it was considered to use database (like **MongoDB**, that would solve
+the efficient storage), we felt, that it would be too robust and will add a layer
+of complexity. Instead with the low-level approach to storing the profiles and 
+other informations enables one to have full control over the Performance Control System
+using both low-level and high-level commands. Moreover, the interlacing between VCS and PCS,
+like e.g. for **GIT** is then natural and enables one some pretty neat tricks automatizations.
+
 Perun Overview
 ==============
 
@@ -29,6 +99,10 @@ and consists of three main parts:
 Perun Command Line Interface
 ============================
 
+The command line interface of Perun is realized using the ``Click`` python library,
+that was chosen for its flexibility, easy usage and because it is under active development.
+Moreover, it can handle nested commands required for repository-like behaviour.
+
   - ``perun config``---gets and sets the configuration for either global or local vcs
   - ``perun help``---show help for the CLI and perun
   - ``perun init``---inits the empty PCS within the directory as the directory ``.perun``,
@@ -45,7 +119,7 @@ Perun Command Line Interface
     represented by SHA-1 hashes
 
     - ``-diff-algorithm=ALG``---use different diff strategy
-  - ``perun add MINOR``---manually adds profile to minor version
+  - ``perun add MINOR PROFILE``---manually adds profile to minor version
 
     - ``--``---separate multiple files
   - ``perun rm``---remove either profile
@@ -54,8 +128,12 @@ Perun Command Line Interface
   - ``perun aggregate PROFILE1 PROFILE2``---aggregates profile to one more generic one
 
     - ``--strategy=STRATEGY``---will use different aggregation strategy
-  - ``perun log``---shows current status, how many profiles are there asociated with each
+  - ``perun log MINOR``---shows current status, how many profiles are there asociated with each
     minor versions, aggregated informations, statistics, etc.
+
+    - ``--count-only``---only shows number of profiles associated to minor versions
+    - ``--show-aggregate``---shows aggregated profiles for each minor version
+    - ``--last N``---print only last N minor versions    
   - ``perun tag``---tags profiles with user given tags
   - ``perun register``---register new runner for given workloads and major versions or
     register new workload
@@ -72,11 +150,34 @@ Perun Command Line Interface
     - ``--auto``---try to infer the bad peformance commits automatically
   - ``perun query``----query the profiles using the perun query language
 
+    - ``SELECT``---select profiles that satisfy the query
+    - ``DROP``---remove profiles that satisfy the query
+    - ``ADJUST``---adjust the values of profile according to the given transform function
+
+Perun Least Publishable Unit
+----------------------------
+
+The least publishable unit (i.e. the minimalisitic prototype of the perun) contains the 
+following commands:
+
+  - ``perun help``
+  - ``perun config``
+  - ``perun init``
+  - ``perun add``
+  - ``perun rm``
+  - ``perun log``
+  - ``perun show``
+
 
 Perun Core
 ==========
 
 This section describes the internal structure of the Perun platform.
+
+Perun Config
+------------
+
+  - ``vcs``---information about underlying version control system
 
 Perun Internals
 ---------------
@@ -88,6 +189,105 @@ all of the profiles.
 
 The ``.perun`` directory exploits the tree structure of changes in order to 
 achieve the incremental structure of the profiles.
+
+The ``.perun`` directory contains the following files and special directories:
+  
+  - ``HEAD``---currently "checked" out major version
+  - ``objects\``---directory with objects (minor version indexes, profiles)
+  - ``major-versions\``---directory with all major versions
+
+Each major version corresponds to some minor version (that has some history
+of previous minor versions), this way we get the history of our project in
+order to execute diffs between minor versions. Minor versions points to indexes
+that maps files and workloads to concrete profiles, which are packed using the
+Zlib.
+
+Command Case Study: Init new perun control system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user wants to initialize new perun pcs. 
+
+If the resulting pcs should be manual it is enough to run ``perun init``. 
+The command will first check if there is not existing pcs and otherwise 
+creates a new ``.perun`` directory initialized with bare structure.
+
+If the user wants to wrap the perun over existing vcs, the parameter ``--type=VCS``
+has to be given. The command first checks if there exists the vsc of
+given type, then inits the perun the same way as bare init and 
+moreover install hooks for the given type of VCS. 
+
+Another alternation is to run the ``init`` with ``--init-vcs`` parameter
+that along with perun creates a empty repository with given params.
+
+Command Case Study: Add profile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user wants to manually add ``PROFILE`` corresponding to ``MINOR`` version.
+
+Both ``PROFILE`` and ``MINOR`` is represented either using references (which
+are further translated to SHA-1) or directly by SHA-1. 
+
+The input profile is taken and its SHA-1 is computed, which will be used for having unique
+representation. The contents of the profile are packed using the Zlib library. 
+
+Then we lookup the *index* and *pack* for the given ``MINOR`` SHA-1. First two bytes
+are taken that represents the directory, the rest of the 38 bytes are used to identify
+corresponding minor version.
+
+Inside the object, we update the fanout table at the start, for the given two bytes
+of the ``PROFILE`` SHA-1. The appropriate entry is then added to the index file,
+the offsets are updated according to the lenght of the added profile data.
+
+The pack file is then extended by the contents of the given profile.
+
+Command Case Study: Remove profile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user wants to manually remove ``PROFILE`` corresponding to ``MINOR`` version.
+
+Both ``PROFILE`` and ``MINOR`` is represented the same as in the previous case study.
+
+Similarly to previous study, the index file is looked up out of ``MINOR`` SHA-1 number.
+Inside that we lookup the appropriate entry for the ``PROFILE`` SHA-1. The offset
+is retrieved in order to locate the packed profile inside the pack. 
+
+Insides of the pack are removed, and the index is updated with new offsets.
+
+Command Case Study: Show profile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user wants to show the ``PROFILE`` corresponding to ``MINOR`` version.
+
+Both ``PROFILE`` and ``MINOR`` is represented the same as in the previous case study.
+
+First we look into cache, which stores up to 10 (maybe more?) unpacked profiles for 
+fast access of the profiles, without the need of unpacking.
+
+Similarly to previous study, the index file is looked up out of ``MINOR`` SHA-1 number.
+Inside that we lookup the appropriate entry for the ``PROFILE`` SHA-1. The offset
+is retrieved in order to locate the packed profile inside the pack. 
+
+The contents are retrieved from the pack, since we know the offset and the size of the
+content from the index file. The given data are unpacked using Zlib and added to .cache
+for quicker lookup.
+
+
+Command Case Study: Show all minor versions and profiles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The user wansts to get the list of all ``MINOR`` version corresponding to the
+current ``MAJOR`` version (read from ``HEAD`` file).
+
+First the HEAD reference is obtained, if no SHA-1 is supplied from command line.
+which stores the SHA-1 of the most recent minor version. This serves as a starting point for the ``perun log``. 
+
+Similarly to previous commands, the SHA-1 is used to locate the entry of the minor version.
+Basic informations are printed out, and then the information about profiles. If the ``--count-only``
+is supplied, only fanout table is parsed and we return the number of profiles associated to the
+minor version. Otherwise every profile in the index file is printed to the output.
+
+After the minor version is parsed, we look at the parent of the minor version and 
+proceed same as for the previous commit. If we supplied the ``--last=N`` argument,
+we print only ``N`` minor versions starting from the given SHA-1.
 
 ``core/logic`` Package
 ----------------------
@@ -158,22 +358,22 @@ Perun profile format is currently under development, the current version is::
     'global': {
         'time': 12.32s,
         'resources': [
-           {'ammount': 30 MB, 'location': '/dir/subdir/loc' },
+           {'amount': 30 MB, 'location': '/dir/subdir/loc' },
         ]
      },
      'snapshots': [
        {
          'time': '1.0s',
          'resources': [
-            {'ammount': 12MB, 'location': '/dir/subdir/loc#13' },
-            {'ammount':  1MB, 'location': '/dir/subdir/loc#47' }
+            {'amount': 12MB, 'location': '/dir/subdir/loc#13' },
+            {'amount':  1MB, 'location': '/dir/subdir/loc#47' }
          ]
        },
        {
          'time': '2.0s',
          'resources': [
-            {'ammount': 37MB, 'location': '/dir/subdir/loc#13' },
-            {'ammount':  3MB, 'location': '/dir/subdir/loc#47' } 
+            {'amount': 37MB, 'location': '/dir/subdir/loc#13' },
+            {'amount':  3MB, 'location': '/dir/subdir/loc#47' } 
          ]
        }
      ]
@@ -284,7 +484,7 @@ Whenever the profile is computed, we can issue a checks, whether e.g. pefromance
 degradated, or moved over some given threshold. In case this holds, an notification
 is send to emails set in config.
 
-Peformance Statistics
+Performance Statistics
 ---------------------
 
 Perun provides various global statistics for each tracked Version Control Systems.
