@@ -7,4 +7,7 @@ test:
 run-gui:
 	python perun/view/gui/perun.py
 
+install:
+	python setup.py install
+
 .PHONY: init test
