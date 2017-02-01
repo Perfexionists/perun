@@ -1,41 +1,48 @@
 import click
+import logging
+import perun.utils.log
 
 __author__ = 'Tomas Fiedor'
 
 
 @click.group()
-def cli():
-    print("Hello World! From perun")
+@click.option('--verbose', '-v', count=True,
+              help='sets verbosity of the perun log')
+def cli(verbose):
+    perun.utils.log.msg_to_stdout("Starting perun...", 0, logging.INFO)
+
+    # set the verbosity level of the log
+    perun.utils.log.verbosity = verbose
 
 
 @cli.command()
 def config():
-    print("perun config run")
+    perun.utils.log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
 
 
 @cli.command()
 def init():
-    print("perun init run")
+    perun.utils.log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
 
 
 @cli.command()
 def add():
-    print("perun add run")
+    perun.utils.log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
 
 
 @cli.command()
 def rm():
-    print("perun rm run")
+    perun.utils.log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
 
 
 @cli.command()
 def log():
-    print("perun log run")
+    perun.utils.log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
 
 
 @cli.command()
 def show():
-    print("perun show run")
+    perun.utils.log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
 
 
 if __name__ == "__main__":
