@@ -14,7 +14,8 @@ def cli(verbose):
     perun.utils.log.msg_to_stdout("Starting perun...", 0, logging.INFO)
 
     # set the verbosity level of the log
-    perun.utils.log.verbosity = verbose
+    if perun.utils.log.verbosity < verbose:
+        perun.utils.log.verbosity = verbose
 
 
 @cli.command()
@@ -33,7 +34,7 @@ def config():
               help="additional params feeded to the init-vcs")
 def init(dst, **kwargs):
     perun.utils.log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
-    commands.init(None)
+    commands.init(dst, **kwargs)
 
 
 @cli.command()

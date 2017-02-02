@@ -1,7 +1,7 @@
 import logging
 
 __author__ = 'Tomas Fiedor'
-verbosity = 0
+verbosity = 2
 
 # Enum of verbosity levels
 VERBOSE_DEBUG = 2
@@ -41,3 +41,15 @@ def msg_to_file(msg, msg_verbosity, log_level=logging.INFO):
     if the @p msg_verbosity is smaller or equal to actual verbosity
     """
     _log_msg(logging.log, msg, msg_verbosity, log_level)
+
+
+def error(msg, recoverable=False):
+    """
+    Arguments:
+        msg(str): error message printe to standard output
+    """
+    print("perun error: {}".format(msg))
+
+    # If we cannot recover from this error, we end
+    if not recoverable:
+        exit(1)
