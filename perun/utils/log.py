@@ -8,6 +8,8 @@ VERBOSE_DEBUG = 2
 VERBOSE_INFO = 1
 VERBOSE_RELEASE = 0
 
+SUPPRESS_WARNINGS = False
+
 # set the logging for the perun
 logging.basicConfig(filename='perun.log', level=logging.DEBUG)
 
@@ -53,3 +55,12 @@ def error(msg, recoverable=False):
     # If we cannot recover from this error, we end
     if not recoverable:
         exit(1)
+        
+
+def warn(msg):
+    """
+    Arguments:
+        msg(str): warn message printed to standard output
+    """
+    if not SUPPRESS_WARNINGS:
+        print("perun warning: {}".format(msg))

@@ -1,6 +1,7 @@
 import os
 import perun.utils.log
 import perun.core.logic.store as store
+import perun.core.vcs as vcs
 __author__ = 'Tomas Fiedor'
 
 
@@ -15,26 +16,12 @@ def config(pcs, config):
     perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun config'", 2)
 
 
-def init_vcs(vcs_path, vcs_type, vcs_init_params):
-    """
-    Arguments:
-        vcs_path(path): path where the vcs will be initialized
-        vcs_type(str): string of the given type of the vcs repository
-        vcs_init_params(list): list of additional params for initialization of the vcs
-
-    Returns:
-        bool: true if the vcs was successfully initialized at vcs_path
-    """
-    # 1. Dynamically find the function in vcs modules
-    # 2. Call the function
-    return False
-
-
-def init_perun_at(perun_path, init_custom_vcs):
+def init_perun_at(perun_path, init_custom_vcs, is_reinit):
     """
     Arguments:
         perun_path(path): path where new perun performance control system will be stored
         init_custom_vcs(bool): true if the custom vcs should be initialized as well
+        is_reinit(bool): true if this is existing perun, that will be reinitialized
     """
     perun_full_path = os.path.join(perun_path, '.perun')
     os.mkdir(perun_full_path)
@@ -50,7 +37,30 @@ def init_perun_at(perun_path, init_custom_vcs):
         os.mkdir(os.path.join(custom_vcs_path, 'tags'))
         store.touch_file(os.path.join(custom_vcs_path, 'HEAD'))
 
-    perun.utils.log.msg_to_stdout("Initialized empty Perun repository in {}".format(perun_path), 0)
+    msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
+    perun.utils.log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
+
+
+def find_perun_dir_on_path(path):
+    """
+    Locates the nearest perun directory starting from the @p path. It walks all of the
+    subpaths sorted by their lenght and checks if .perun directory exists there.
+
+    Arguments:
+        path(str): starting point of the perun dir search
+
+    Returns:
+        str: path to perun dir or "" if the path is not underneath some underlying perun control
+    """
+    # convert path to subpaths and reverse the list so deepest subpaths are traversed first
+    lookup_paths = store.path_to_subpath(path)[::-1]
+
+    for tested_path in lookup_paths:
+        assert os.path.isdir(tested_path)
+        if '.perun' in os.listdir(tested_path):
+            return tested_path
+    else:
+        return ""
 
 
 def init(dst, **kwargs):
@@ -66,17 +76,23 @@ def init(dst, **kwargs):
 
     # init the wrapping repository as well
     if kwargs['init_vcs_type'] is not None:
-        if not init_vcs(kwargs['init_vcs_url'], kwargs['init_vcs_type'], kwargs['init_vcs_params']):
+        if not vcs.init(kwargs['init_vcs_url'], kwargs['init_vcs_type'], kwargs['init_vcs_params']):
             perun.utils.log.error("Could not initialize empty {} repository at {}".format(
                 kwargs['init_vcs_type'], kwargs['init_vcs_url']
             ))
 
-    # init perun directory
-    # FIXME: Check if there already exists a perun repository
-    init_perun_at(dst, kwargs['init_vcs_type'] == 'pvcs')
+    # check if there exists perun directory above and initialize the new pcs
+    super_perun_dir = find_perun_dir_on_path(dst)
+    is_reinit = (super_perun_dir == dst)
+
+    if not is_reinit and super_perun_dir != "":
+        perun.utils.log.warn("There exists super perun directory at {}".format(super_perun_dir))
+    init_perun_at(dst, kwargs['init_vcs_type'] == 'pvcs', is_reinit)
 
     # register new performance control system in config
-    # TODO: IMPLEMENT
+    if not is_reinit:
+        # TODO: IMPLEMENT
+        pass
 
 
 def add(pcs, minor_version, profile):

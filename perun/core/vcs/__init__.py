@@ -49,3 +49,16 @@ def get_minor_head(vcs_type):
         str: unique representation of current head (usually SHA-1)
     """
     return dynamic_module_function_call('perun.core.vcs', vcs_type, '_get_minor_head')
+
+
+def init(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs that we are calling the function for
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+    Returns:
+        bool: true if the vcs was successfully initialized at vcs_path
+    """
+    return dynamic_module_function_call('perun.core.vcs', vcs_type, '_init', args, kwargs)
+
