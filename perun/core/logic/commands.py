@@ -24,17 +24,17 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit):
         is_reinit(bool): true if this is existing perun, that will be reinitialized
     """
     perun_full_path = os.path.join(perun_path, '.perun')
-    os.mkdir(perun_full_path)
+    store.touch_dir(perun_full_path)
     store.touch_file(os.path.join(perun_full_path, 'config.ini'))
-    os.mkdir(os.path.join(perun_full_path, 'profiles'))
-    os.mkdir(os.path.join(perun_full_path, 'cache'))
+    store.touch_dir(os.path.join(perun_full_path, 'profiles'))
+    store.touch_dir(os.path.join(perun_full_path, 'cache'))
 
     # Initialization of the custom (manual) version control system
     if init_custom_vcs:
         custom_vcs_path = os.path.join(perun_full_path, 'vcs')
-        os.mkdir(custom_vcs_path)
-        os.mkdir(os.path.join(custom_vcs_path, 'objects'))
-        os.mkdir(os.path.join(custom_vcs_path, 'tags'))
+        store.touch_dir(custom_vcs_path)
+        store.touch_dir(os.path.join(custom_vcs_path, 'objects'))
+        store.touch_dir(os.path.join(custom_vcs_path, 'tags'))
         store.touch_file(os.path.join(custom_vcs_path, 'HEAD'))
 
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"

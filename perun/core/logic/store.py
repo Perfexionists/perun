@@ -17,6 +17,18 @@ def touch_file(touched_filename, times=None):
         os.utime(touched_filename, times)
 
 
+def touch_dir(touched_dir):
+    """
+    Touches directory, i.e. if it exists it does nothing and
+    if the directory does not exist, then it creates it.
+
+    Arguments:
+        touched_dir(str): path that will be touched
+    """
+    if not os.path.exists(touched_dir):
+        os.mkdir(touched_dir)
+
+
 def path_to_subpath(path):
     """
     Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
@@ -32,4 +44,4 @@ def path_to_subpath(path):
     """
     assert os.path.isdir(path)
     components = path.split(os.sep)
-    return [os.sep.join(components[:till]) for till in range(1, len(components) + 1)]
+    return [os.sep + components[0]] + [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
