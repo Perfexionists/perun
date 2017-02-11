@@ -26,9 +26,10 @@ def init_shared_config_at(path):
     """
     store.touch_file(path)
 
-    shared_config = """"""
+    shared_config = yaml.safe_load("""
+    """) or {}
 
-    write_config_file(path, shared_config)
+    write_config_file(shared_config, path)
     return True
 
 
@@ -43,9 +44,10 @@ def init_local_config_at(path):
     store.touch_file(path)
 
     # empty config is created
-    local_config = """"""
+    local_config = yaml.safe_load("""
+    """) or {}
 
-    write_config_file(path, local_config)
+    write_config_file(local_config, path)
     return True
 
 
@@ -71,7 +73,7 @@ def read_config_file(path):
         dict: yaml config
     """
     with open(path, 'r') as yaml_file:
-        return yaml.safe_load(yaml_file)
+        return yaml.safe_load(yaml_file) or {}
 
 
 def write_config_file(config, path):
@@ -80,6 +82,9 @@ def write_config_file(config, path):
         config(yaml): configuration dictionary
         path(str): path, where the configuration will be stored
     """
+    perun_log.msg_to_stdout("Writing config '{}' at {}".format(
+        config, path
+    ), 2)
     with open(path, 'w') as yaml_file:
         yaml.dump(config, yaml_file)
 
@@ -128,6 +133,7 @@ def set_key_at_config(config, key, value):
     """
     *sections, last_section = key.split('.')
     _locate_section_from_query(config.data, sections)[last_section] = value
+    write_config_file(config.data, config.path)
 
 
 @decorators.validate_arguments(['key'], is_valid_key)
@@ -140,7 +146,11 @@ def append_key_at_config(config, key, value):
         value(arbitrary): value we are writing to the key at config
     """
     *sections, last_section = key.split('.')
-    _locate_section_from_query(config.data, sections)[last_section].append(value)
+    section_location = _locate_section_from_query(config.data, sections)
+    if last_section not in section_location.keys():
+        section_location[last_section] = []
+    section_location[last_section].append(value)
+    write_config_file(config.data, config.path)
 
 
 def _ascend_by_section_safely(section_iterator, section_key):
@@ -190,7 +200,7 @@ def load_config(config_dir, config_type):
     Returns:
         config: loaded config
     """
-    config_file = os.sep.join(config_dir, ".".join(config_type, 'yml'))
+    config_file = os.sep.join([config_dir, ".".join([config_type, 'yml'])])
 
     if not os.path.exists(config_file):
         if not init_config_at(config_file, config_type):
@@ -199,7 +209,7 @@ def load_config(config_dir, config_type):
                 config_dir
             ))
 
-    return Config(config_type, config_dir, read_config_file(config_file))
+    return Config(config_type, config_file, read_config_file(config_file))
 
 
 @decorators.singleton
@@ -212,7 +222,7 @@ def shared():
         config: returns global config file
     """
     shared_config_dir = os.path.dirname(os.path.realpath(__file__))
-    return load_config(shared_config_dir, 'local')
+    return load_config(shared_config_dir, 'shared')
 
 
 @decorators.singleton_with_args
