@@ -1,6 +1,7 @@
 import os
 import perun.utils.log
 import perun.core.logic.store as store
+import perun.core.logic.config as perun_config
 import perun.core.vcs as vcs
 __author__ = 'Tomas Fiedor'
 
@@ -91,8 +92,8 @@ def init(dst, **kwargs):
 
     # register new performance control system in config
     if not is_reinit:
-        # TODO: IMPLEMENT
-        pass
+        global_config = perun_config.shared()
+        perun_config.append_key_at_config(global_config, 'pcs', {'dir': dst})
 
 
 def add(pcs, minor_version, profile):
