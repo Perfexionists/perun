@@ -1,4 +1,4 @@
-import perun.utils.log
+import perun.utils.log as perun_log
 import importlib
 __author__ = 'Tomas Fiedor'
 __brief__ = 'Data module consists of Version Control System wrappers and unified API'
@@ -28,13 +28,13 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         function_location_path = ".".join([package_name, module_name])
         module = importlib.import_module(function_location_path)
         module_function = getattr(module, fun_name)
-        return module_function(args, kwargs)
+        return module_function(*args, **kwargs)
     except ImportError:
-        perun.utils.log.error("Unrecognized or unsupported VCS type '{}'".format(
+        perun_log.error("Unrecognized or unsupported VCS type '{}'".format(
             package_name
         ))
     except AttributeError:
-        perun.utils.log.error("Function '{}' is unsupported in module {}".format(
+        perun_log.error("Function '{}' is unsupported in module {}".format(
             fun_name, function_location_path
         ))
         pass
@@ -60,5 +60,8 @@ def init(vcs_type, *args, **kwargs):
     Returns:
         bool: true if the vcs was successfully initialized at vcs_path
     """
+    perun_log.msg_to_stdout("Initializing {} version control with params {} and {}".format(
+        vcs_type, args, kwargs
+    ), 1)
     return dynamic_module_function_call('perun.core.vcs', vcs_type, '_init', args, kwargs)
 

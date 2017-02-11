@@ -77,7 +77,7 @@ def init(dst, **kwargs):
 
     # init the wrapping repository as well
     if kwargs['init_vcs_type'] is not None:
-        if not vcs.init(kwargs['init_vcs_url'], kwargs['init_vcs_type'], kwargs['init_vcs_params']):
+        if not vcs.init(kwargs['init_vcs_type'], kwargs['init_vcs_url'], kwargs['init_vcs_params']):
             perun.utils.log.error("Could not initialize empty {} repository at {}".format(
                 kwargs['init_vcs_type'], kwargs['init_vcs_url']
             ))
