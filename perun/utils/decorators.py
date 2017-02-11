@@ -1,4 +1,5 @@
 import inspect
+import perun.utils.exceptions as exceptions
 
 __author__ = 'Tomas Fiedor'
 
@@ -77,3 +78,37 @@ def singleton_with_args(func):
         return func.cache[key]
 
     return wrapper
+
+
+def validate_arguments(validated_args, validate, *args, **kwargs):
+    """
+    Validates the arguments stated by validated_args with validate function.
+    Note that positional and kwarguments are not supported by this decorator
+
+    Arguments:
+        validated_args(list[str]): list of validated arguments
+        validate(function): function used for validation
+        args(list): list of additional positional arguments to validate function
+        kwargs(dict): dictionary of additional keyword arguments to validate function
+
+    Returns:
+        func: decorated function for which given parameters will be validated
+    """
+    def inner_decorator(func):
+        f_args, _, _, _ = inspect.getargspec(func)
+
+        def wrapper(*wargs, **wkwargs):
+            params = list(zip(f_args[:len(wargs)], wargs)) + list(wkwargs.items())
+
+            for param_name, param_value in params:
+                if param_name not in validated_args:
+                    continue
+                if not validate(param_value, *args, **kwargs):
+                    raise exceptions.InvalidParameterException("Invalid value '{}' for parameter '{}'".format(
+                        param_name, param_value
+                    ))
+
+            return func(*wargs, **wkwargs)
+        return wrapper
+
+    return inner_decorator
