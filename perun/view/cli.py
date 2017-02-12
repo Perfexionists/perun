@@ -19,9 +19,15 @@ def cli(verbose):
 
 
 @cli.command()
-def config():
+@click.argument('key', required=True)
+@click.argument('value', required=False)
+@click.option('--get', '-g', is_flag=True,
+              help="get the value of the key")
+@click.option('--set', '-s', is_flag=True,
+              help="set the value of the key")
+def config(*args, **kwargs):
     perun.utils.log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
-    commands.config(None, None)
+    commands.config(*args, **kwargs)
 
 
 @cli.command()

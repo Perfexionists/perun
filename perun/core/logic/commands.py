@@ -1,20 +1,109 @@
 import os
+import perun.utils.decorators as decorators
 import perun.utils.log
 import perun.core.logic.store as store
 import perun.core.logic.config as perun_config
 import perun.core.vcs as vcs
+
+from perun.core.logic.pcs import PCS
 __author__ = 'Tomas Fiedor'
 
 
-def config(pcs, config):
+def find_perun_dir_on_path(path):
+    """
+    Locates the nearest perun directory starting from the @p path. It walks all of the
+    subpaths sorted by their lenght and checks if .perun directory exists there.
+
+    Arguments:
+        path(str): starting point of the perun dir search
+
+    Returns:
+        str: path to perun dir or "" if the path is not underneath some underlying perun control
+    """
+    # convert path to subpaths and reverse the list so deepest subpaths are traversed first
+    lookup_paths = store.path_to_subpath(path)[::-1]
+
+    for tested_path in lookup_paths:
+        assert os.path.isdir(tested_path)
+        if '.perun' in os.listdir(tested_path):
+            return tested_path
+    else:
+        return ""
+
+
+def pass_pcs(func):
+    """
+    Provided the current working directory, constructs the PCS object,
+    that encapsulates the performance control and passes it as argument.
+
+    Note: Used for CLI interface.
+
+    Arguments:
+        func(function): function we are decorating
+        
+    Returns:
+        func: wrapped function
+    """
+    perun_directory = find_perun_dir_on_path(os.getcwd())
+    pcs = PCS(perun_directory)
+
+    def wrapper(*args, **kwargs):
+        return func(pcs, *args, **kwargs)
+
+    return wrapper
+
+
+def is_valid_config_key(key):
+    """Key is valid if it starts either with local. or global.
+    Arguments:
+        key(str): key representing the string
+
+    Returns:
+        bool: true if the key is valid config key
+    """
+    return key.startswith('local.') or key.startswith('global.')
+
+
+def proper_combination_is_set(kwargs):
+    """Checks that only one command (--get or --set) is given
+    Arguments:
+        kwargs(dict): dictionary of key arguments.
+
+    Returns:
+        bool: true if proper combination of arguments is set for configuration
+    """
+    return kwargs['get'] != kwargs['set'] and any([kwargs['get'], kwargs['set']])
+
+
+@pass_pcs
+@decorators.validate_arguments(['key'], is_valid_config_key)
+@decorators.validate_arguments(['kwargs'], proper_combination_is_set)
+def config(pcs, key, value, **kwargs):
     """
     Updates the configuration file @p config of the @p pcs perun file
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        config(config): Configuration object
+        key(str): key that is looked up or stored in config
+        value(str): value we are setting to config
+        kwargs(dict): dictionary of keyword arguments
     """
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun config'", 2)
+    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun config' with the following arguments {}, {}, {}, {}".format(
+        pcs, key, value, kwargs
+    ), 2)
+
+    # TODO: Refactor this
+    config_type, *sections = key.split('.')
+    key = ".".join(sections)
+
+    config_store = pcs.local_config() if config_type == 'local' else pcs.global_config()
+
+    if kwargs['get']:
+        value = perun_config.get_key_from_config(config_store, key)
+        print("{}: {}".format(key, value))
+    elif kwargs['set']:
+        perun_config.set_key_at_config(config_store, key, value)
+        print("Value '{1}' set for key '{0}'".format(key, value))
 
 
 def init_perun_at(perun_path, init_custom_vcs, is_reinit):
@@ -40,28 +129,6 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit):
 
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
     perun.utils.log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
-
-
-def find_perun_dir_on_path(path):
-    """
-    Locates the nearest perun directory starting from the @p path. It walks all of the
-    subpaths sorted by their lenght and checks if .perun directory exists there.
-
-    Arguments:
-        path(str): starting point of the perun dir search
-
-    Returns:
-        str: path to perun dir or "" if the path is not underneath some underlying perun control
-    """
-    # convert path to subpaths and reverse the list so deepest subpaths are traversed first
-    lookup_paths = store.path_to_subpath(path)[::-1]
-
-    for tested_path in lookup_paths:
-        assert os.path.isdir(tested_path)
-        if '.perun' in os.listdir(tested_path):
-            return tested_path
-    else:
-        return ""
 
 
 def init(dst, **kwargs):
