@@ -10,7 +10,8 @@ __author__ = 'Tomas Fiedor'
 
 
 def find_perun_dir_on_path(path):
-    """
+    """Locates the nearest perun directory
+
     Locates the nearest perun directory starting from the @p path. It walks all of the
     subpaths sorted by their lenght and checks if .perun directory exists there.
 
@@ -32,7 +33,8 @@ def find_perun_dir_on_path(path):
 
 
 def pass_pcs(func):
-    """
+    """Decorator for passing pcs object to function
+
     Provided the current working directory, constructs the PCS object,
     that encapsulates the performance control and passes it as argument.
 
@@ -55,6 +57,7 @@ def pass_pcs(func):
 
 def is_valid_config_key(key):
     """Key is valid if it starts either with local. or global.
+
     Arguments:
         key(str): key representing the string
 
@@ -66,6 +69,7 @@ def is_valid_config_key(key):
 
 def proper_combination_is_set(kwargs):
     """Checks that only one command (--get or --set) is given
+
     Arguments:
         kwargs(dict): dictionary of key arguments.
 
@@ -79,8 +83,7 @@ def proper_combination_is_set(kwargs):
 @decorators.validate_arguments(['key'], is_valid_config_key)
 @decorators.validate_arguments(['kwargs'], proper_combination_is_set)
 def config(pcs, key, value, **kwargs):
-    """
-    Updates the configuration file @p config of the @p pcs perun file
+    """Updates the configuration file @p config of the @p pcs perun file
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
@@ -88,7 +91,7 @@ def config(pcs, key, value, **kwargs):
         value(str): value we are setting to config
         kwargs(dict): dictionary of keyword arguments
     """
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun config' with the following arguments {}, {}, {}, {}".format(
+    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun config' with {}, {}, {}, {}".format(
         pcs, key, value, kwargs
     ), 2)
 
@@ -107,19 +110,24 @@ def config(pcs, key, value, **kwargs):
 
 
 def init_perun_at(perun_path, init_custom_vcs, is_reinit):
-    """
+    """Initialize the .perun directory at given path
+
+    Initializes or reinitializes the .perun directory at the given path.
+    Additionaly, if init_custom_vcs is set to true, the custom version control
+    system is initialized as well.
+
     Arguments:
         perun_path(path): path where new perun performance control system will be stored
         init_custom_vcs(bool): true if the custom vcs should be initialized as well
         is_reinit(bool): true if this is existing perun, that will be reinitialized
     """
+    # Initialize the basic structure of the .perun directory
     perun_full_path = os.path.join(perun_path, '.perun')
     store.touch_dir(perun_full_path)
-    store.touch_file(os.path.join(perun_full_path, 'config.ini'))
     store.touch_dir(os.path.join(perun_full_path, 'profiles'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
 
-    # Initialization of the custom (manual) version control system
+    # Initialize the custom (manual) version control system
     if init_custom_vcs:
         custom_vcs_path = os.path.join(perun_full_path, 'vcs')
         store.touch_dir(custom_vcs_path)
@@ -127,12 +135,14 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit):
         store.touch_dir(os.path.join(custom_vcs_path, 'tags'))
         store.touch_file(os.path.join(custom_vcs_path, 'HEAD'))
 
+    # Perun successfully created
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
     perun.utils.log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
 
 
 def init(dst, **kwargs):
-    """
+    """Initializes the performance and version control systems
+
     Inits the performance control system at a given directory. Optionally inits the
     wrapper of the Version Control System that is used as tracking point.
 
