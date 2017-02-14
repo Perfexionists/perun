@@ -17,7 +17,7 @@ class PCS(object):
             fullpath(str): path to the performance control system
         """
         assert os.path.isdir(fullpath)
-        self.path = fullpath
+        self.path = os.path.join(fullpath, '.perun')
 
     def local_config(self):
         """Get local config
@@ -42,3 +42,11 @@ class PCS(object):
             str: string representation of the performance control system
         """
         return "PCS({})".format(self.path)
+
+    def get_object_directory(self):
+        """
+        Returns:
+            directory: directory, where the objects are stored
+        """
+        object_directory = os.path.join(self.path, "objects")
+        return object_directory

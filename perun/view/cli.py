@@ -44,13 +44,11 @@ def init(dst, **kwargs):
 
 
 @cli.command()
+@click.argument('profile', required=True)
 @click.argument('minor', required=False, default=None)
-@click.argument('profile', required=True, nargs=-1)
-@click.option('--force', '-f', is_flag=True,
-              help="forces adding of the profile")
-def add(minor, profile, force, **kwargs):
+def add(profile, minor, **kwargs):
     perun.utils.log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
-    commands.add(None, minor, profile)
+    commands.add(profile, minor)
 
 
 @cli.command()
@@ -58,7 +56,7 @@ def add(minor, profile, force, **kwargs):
 @click.argument('profile', required=True, nargs=-1)
 def rm(minor, profile, **kwargs):
     perun.utils.log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-    commands.rm(None, minor, profile)
+    commands.rm(profile, minor)
 
 
 @cli.command()
@@ -81,6 +79,12 @@ def log(**kwargs):
 def show(**kwargs):
     perun.utils.log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
     commands.show(None, None, None)
+
+
+@click.command()
+def run(**kwargs):
+    perun.utils.log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
+    commands.run(None)
 
 
 if __name__ == "__main__":

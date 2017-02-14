@@ -46,11 +46,9 @@ def pass_pcs(func):
     Returns:
         func: wrapped function
     """
-    perun_directory = find_perun_dir_on_path(os.getcwd())
-    pcs = PCS(perun_directory)
-
     def wrapper(*args, **kwargs):
-        return func(pcs, *args, **kwargs)
+        perun_directory = find_perun_dir_on_path(os.getcwd())
+        return func(PCS(perun_directory), *args, **kwargs)
 
     return wrapper
 
@@ -124,7 +122,7 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit):
     # Initialize the basic structure of the .perun directory
     perun_full_path = os.path.join(perun_path, '.perun')
     store.touch_dir(perun_full_path)
-    store.touch_dir(os.path.join(perun_full_path, 'profiles'))
+    store.touch_dir(os.path.join(perun_full_path, 'objects'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
 
     # Initialize the custom (manual) version control system
@@ -173,21 +171,50 @@ def init(dst, **kwargs):
         perun_config.append_key_at_config(global_config, 'pcs', {'dir': dst})
 
 
-def add(pcs, minor_version, profile):
-    """
-    Appends @p profile to the @p minor_version inside the @p pcs
+@pass_pcs
+def add(pcs, profile, minor_version):
+    """Appends @p profile to the @p minor_version inside the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        minor_version(str): SHA-1 representation of the minor version
         profile(Profile): profile that will be stored for the minor version
+        minor_version(str): SHA-1 representation of the minor version
     """
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun add'", 2)
+    # TODO: If minor_version is None, it should fetch head
+    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
+        pcs, profile, minor_version
+    ), 2)
+
+    # Load profile content
+    with open(profile, 'r', encoding='utf-8') as profile_handle:
+        profile_content = "".join(profile_handle.readlines())
+
+    # Append header to the content of the file
+    header = "profile {}\0".format(len(profile_content))
+    profile_content = (header + profile_content).encode('utf-8')
+
+    # Transform to internal representation - file represented by sha1 checksum and content packed with zlib
+    profile_sum = store.compute_checksum(profile_content)
+    compressed_content = store.pack_content(profile_content)
+
+    # Add to control
+    store.add_loose_object_to_dir(pcs.get_object_directory(), profile_sum, compressed_content)
+
+    # Register in the minor_version index
+    # TODO: store.register_in_index(pcs.get_object_directory(), minor_version, profile, profile_sum)
 
 
+@pass_pcs
 def rm(pcs, minor_version, profile):
     """
     Removes @p profile from the @p minor_version inside the @p pcs
+
+    TODO: There are actually several possible combinations how this could be called:
+    1) Stating the sha1 precisely (easy)
+      - but fuck you have to remove it from index you dork...
+    2) Stating the minor version and file name
+      - have to lookup the minor version and get the sha1 for the filename
+    3) Removing all?
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
@@ -196,7 +223,10 @@ def rm(pcs, minor_version, profile):
     """
     perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
+    store.remove_loose_object_from_dir(pcs.get_object_directory(), profile)
 
+
+@pass_pcs
 def log(pcs):
     """
     Prints the log of the @p pcs
@@ -207,6 +237,7 @@ def log(pcs):
     perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
 
+@pass_pcs
 def show(pcs, minor_version, profile):
     """
     Arguments:
@@ -216,3 +247,12 @@ def show(pcs, minor_version, profile):
     """
     pass
     perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
+
+
+@pass_pcs
+def run(pcs):
+    """
+    Arguments:
+        pcs(PCS): object with performance control system wrapper
+    """
+    pass
