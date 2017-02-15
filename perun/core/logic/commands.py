@@ -1,6 +1,13 @@
+"""Commands is a core of the perun implementation containing the basic commands.
+
+Commands contains implementation of the basic commands of perun pcs. It is meant
+to be run both from GUI applications and from CLI, where each of the function is
+possible to be run in isolation.
+"""
+
 import os
 import perun.utils.decorators as decorators
-import perun.utils.log
+import perun.utils.log as perun_log
 import perun.core.logic.store as store
 import perun.core.logic.config as perun_config
 import perun.core.vcs as vcs
@@ -28,8 +35,7 @@ def find_perun_dir_on_path(path):
         assert os.path.isdir(tested_path)
         if '.perun' in os.listdir(tested_path):
             return tested_path
-    else:
-        return ""
+    return ""
 
 
 def pass_pcs(func):
@@ -42,11 +48,12 @@ def pass_pcs(func):
 
     Arguments:
         func(function): function we are decorating
-        
+
     Returns:
         func: wrapped function
     """
     def wrapper(*args, **kwargs):
+        """Wrapper function for the decorator"""
         perun_directory = find_perun_dir_on_path(os.getcwd())
         return func(PCS(perun_directory), *args, **kwargs)
 
@@ -89,7 +96,7 @@ def config(pcs, key, value, **kwargs):
         value(str): value we are setting to config
         kwargs(dict): dictionary of keyword arguments
     """
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun config' with {}, {}, {}, {}".format(
+    perun_log.msg_to_stdout("Running inner 'perun config' with {}, {}, {}, {}".format(
         pcs, key, value, kwargs
     ), 2)
 
@@ -135,7 +142,7 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit):
 
     # Perun successfully created
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
-    perun.utils.log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
+    perun_log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
 
 
 def init(dst, **kwargs):
@@ -148,12 +155,12 @@ def init(dst, **kwargs):
         dst(path): path where the pcs will be initialized
         pcs(PCS): object with performance control system wrapper
     """
-    perun.utils.log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
+    perun_log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
 
     # init the wrapping repository as well
     if kwargs['init_vcs_type'] is not None:
         if not vcs.init(kwargs['init_vcs_type'], kwargs['init_vcs_url'], kwargs['init_vcs_params']):
-            perun.utils.log.error("Could not initialize empty {} repository at {}".format(
+            perun_log.error("Could not initialize empty {} repository at {}".format(
                 kwargs['init_vcs_type'], kwargs['init_vcs_url']
             ))
 
@@ -162,7 +169,7 @@ def init(dst, **kwargs):
     is_reinit = (super_perun_dir == dst)
 
     if not is_reinit and super_perun_dir != "":
-        perun.utils.log.warn("There exists super perun directory at {}".format(super_perun_dir))
+        perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
     init_perun_at(dst, kwargs['init_vcs_type'] == 'pvcs', is_reinit)
 
     # register new performance control system in config
@@ -181,7 +188,7 @@ def add(pcs, profile, minor_version):
         minor_version(str): SHA-1 representation of the minor version
     """
     # TODO: If minor_version is None, it should fetch head
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
+    perun_log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
         pcs, profile, minor_version
     ), 2)
 
@@ -193,7 +200,7 @@ def add(pcs, profile, minor_version):
     header = "profile {}\0".format(len(profile_content))
     profile_content = (header + profile_content).encode('utf-8')
 
-    # Transform to internal representation - file represented by sha1 checksum and content packed with zlib
+    # Transform to internal representation - file as sha1 checksum and content packed with zlib
     profile_sum = store.compute_checksum(profile_content)
     compressed_content = store.pack_content(profile_content)
 
@@ -205,7 +212,7 @@ def add(pcs, profile, minor_version):
 
 
 @pass_pcs
-def rm(pcs, minor_version, profile):
+def remove(pcs, minor_version, profile):
     """
     Removes @p profile from the @p minor_version inside the @p pcs
 
@@ -221,7 +228,7 @@ def rm(pcs, minor_version, profile):
         minor_version(str): SHA-1 representation of the minor version
         profile(Profile): profile that will be stored for the minor version
     """
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
+    perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     store.remove_loose_object_from_dir(pcs.get_object_directory(), profile)
 
@@ -234,25 +241,26 @@ def log(pcs):
     Arguments:
         pcs(PCS): object with performance control system wrapper
     """
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
+    perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
 
 @pass_pcs
-def show(pcs, minor_version, profile):
+def show(pcs, profile, minor_version, **kwargs):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        minor_version(str): SHA-1 representation of the minor version
         profile(Profile): profile that will be stored for the minor version
+        minor_version(str): SHA-1 representation of the minor version
+        kwargs(dict): keyword atributes containing additional options
     """
-    pass
-    perun.utils.log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
+    perun_log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
 
 
 @pass_pcs
-def run(pcs):
+def run(pcs, **kwargs):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
+        kwargs(dict): dictionary of keyword arguments
     """
     pass

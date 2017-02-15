@@ -1,7 +1,14 @@
-import perun.utils.log as perun_log
+"""Store module contains set of functions for working with directories and repositories.
+
+Store is a collection of helper functions that can be used to pack content, compute checksums,
+or load and store into the directories or filenames.
+"""
+
 import hashlib
 import os
 import zlib
+
+import perun.utils.log as perun_log
 
 from perun.utils.helpers import IndexEntry
 
@@ -48,7 +55,8 @@ def path_to_subpath(path):
     """
     assert os.path.isdir(path)
     components = path.split(os.sep)
-    return [os.sep + components[0]] + [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
+    return [os.sep + components[0]] + \
+           [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
 
 
 def compute_checksum(content):
@@ -82,14 +90,14 @@ def split_object_name(base_dir, object_name):
     Arguments:
         base_dir(str): base directory for the object_name
         object_name(str): sha-1 string representing the object (possibly with extension)
-        
+
     Returns:
         (str, str): full path for directory and full path for file
     """
     object_dir, object_file = object_name[:2], object_name[2:]
     object_dir_full_path = os.path.join(base_dir, object_dir)
     object_file_full_path = os.path.join(object_dir_full_path, object_file)
-    
+
     return object_dir_full_path, object_file_full_path
 
 
@@ -156,7 +164,6 @@ def walk_index(index_handle):
         Returns:
             IndexEntry: one read index entry
         """
-        pass
         file_time = index_handle.read(4)
         file_sha = index_handle.read(20)
         file_path, byte = "", index_handle.read(1)

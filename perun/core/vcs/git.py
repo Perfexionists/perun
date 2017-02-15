@@ -1,8 +1,11 @@
+"""Git is an wrapper over git repository used within perun control system
+
+Contains concrete implementation of the function needed by perun to extract informations and work
+with version control systems.
+"""
+
 import perun.utils.log as perun_log
 import perun.utils as utils
-"""
-Currently just a dummy layer for Git Version Control system
-"""
 
 __author__ = "Tomas Fiedor"
 

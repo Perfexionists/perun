@@ -1,21 +1,33 @@
-import click
+"""Command Line Interface for the Perun performance control.
+
+Simple Command Line Interface for the Perun functionality using the Click library,
+calls underlying commands from the commands module.
+"""
+
 import logging
 import os
-import perun.utils.log
+
+import click
+
+import perun.utils.log as perun_log
 import perun.core.logic.commands as commands
 
 __author__ = 'Tomas Fiedor'
 
 
 @click.group()
-@click.option('--verbose', '-v', count=True,
+@click.option('--verbose', '-v', count=True, default=0,
               help='sets verbosity of the perun log')
 def cli(verbose):
-    perun.utils.log.msg_to_stdout("Starting perun...", 0, logging.INFO)
+    """
+    Arguments:
+        verbose(int): how verbose the run of the perun is
+    """
+    perun_log.msg_to_stdout("Starting perun...", 0, logging.INFO)
 
     # set the verbosity level of the log
-    if perun.utils.log.verbosity < verbose:
-        perun.utils.log.verbosity = verbose
+    if perun_log.verbosity < verbose:
+        perun_log.verbosity = verbose
 
 
 @cli.command()
@@ -25,9 +37,15 @@ def cli(verbose):
               help="get the value of the key")
 @click.option('--set', '-s', is_flag=True,
               help="set the value of the key")
-def config(*args, **kwargs):
-    perun.utils.log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
-    commands.config(*args, **kwargs)
+def config(key, value, **kwargs):
+    """
+    Arguments:
+        key(str): key in config file, set of sections divided by dot (.)
+        value(various): value that can optionally be set in config
+        kwargs(dict): dictionary of keyword arguments
+    """
+    perun_log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
+    commands.config(key, value, **kwargs)
 
 
 @cli.command()
@@ -39,24 +57,39 @@ def config(*args, **kwargs):
 @click.option('--init-vcs-params',
               help="additional params feeded to the init-vcs")
 def init(dst, **kwargs):
-    perun.utils.log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
+    """
+    Arguments:
+        dst(str): destination, where the perun will be initialized
+        kwargs(dict): dictionary of additional params to init
+    """
+    perun_log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
     commands.init(dst, **kwargs)
 
 
 @cli.command()
 @click.argument('profile', required=True)
 @click.argument('minor', required=False, default=None)
-def add(profile, minor, **kwargs):
-    perun.utils.log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
+def add(profile, minor):
+    """
+    Arguments:
+        profile(str): path to the profile file or sha1
+        minor(str): sha1 representation of the minor version for which the profile is assigned
+    """
+    perun_log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
     commands.add(profile, minor)
 
 
 @cli.command()
+@click.argument('profile', required=True)
 @click.argument('minor', required=False, default=None)
-@click.argument('profile', required=True, nargs=-1)
-def rm(minor, profile, **kwargs):
-    perun.utils.log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-    commands.rm(profile, minor)
+def rm(profile, minor):
+    """
+    Arguments:
+        profile(str): path to the profile file or sha1
+        minor(str): sha1 representation of the minor version for which the profile is removed
+    """
+    perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
+    commands.remove(profile, minor)
 
 
 @cli.command()
@@ -67,24 +100,41 @@ def rm(minor, profile, **kwargs):
 @click.option('--last', default=-1,
               help="show only last N minor versions")
 def log(**kwargs):
-    perun.utils.log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
-    commands.log(None)
+    """
+    Arguments:
+        kwargs(dict): various keyword arguments that changes how the log is displayed
+    """
+    perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
+    commands.log(kwargs)
 
 
 @cli.command()
+@click.argument('profile', required=True)
+@click.argument('minor', required=False)
 @click.option('--coloured', '-c', is_flag=True,
               help="colour the outputed profile")
 @click.option('--one-line', '-o', is_flag=True,
               help="print the agggregated one-line data for the given profile")
-def show(**kwargs):
-    perun.utils.log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
-    commands.show(None, None, None)
+def show(profile, minor, **kwargs):
+    """
+    TODO: Check that if profile is not SHA-1, then minor must be set
+    Arguments:
+        profile(str): either path to profile or sha1 object representation
+        minor(str): sha1 representation of the minor version
+        kwargs(dict): additional arguments to perun show
+    """
+    perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
+    commands.show(profile, minor, kwargs)
 
 
 @click.command()
 def run(**kwargs):
-    perun.utils.log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
-    commands.run(None)
+    """
+    Arguments:
+        kwargs(dict): dictionary of keyword arguments
+    """
+    perun_log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
+    commands.run(**kwargs)
 
 
 if __name__ == "__main__":

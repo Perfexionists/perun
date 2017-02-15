@@ -1,4 +1,12 @@
+"""PCS is a storage for the basic information of one performance control system unit
+
+PCS is structure, that contains the basic information about one unit of performance control system,
+contains a wrapper over configurations and other storages. The main representation of the pcs is
+by its path.
+"""
+
 import os
+
 import perun.core.logic.config as config
 
 __author__ = 'Tomas Fiedor'

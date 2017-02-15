@@ -1,13 +1,23 @@
-import perun.utils.decorators as decorators
-import perun.utils.exceptions as exceptions
-import perun.utils.log as perun_log
-import perun.core.logic.store as store
+"""Config is a wrapper over local and global configuration files.
 
+Config provides collection of methods to work with configuration files, both global and local.
+Configurations are implemented as a YAML forward, for possible checks and in order to stay unified
+with CI, like e.g. travis, which usually uses yaml format.
+
+There are two types of config: local, corresponding to concrete pcs, and global, which contains
+global information and configurations, like e.g. list of registered repositories.
+"""
 import collections
 import os
 import re
 import sys
 import yaml
+
+import perun.utils.decorators as decorators
+import perun.utils.exceptions as exceptions
+import perun.utils.log as perun_log
+import perun.core.logic.store as store
+
 __author__ = 'Tomas Fiedor'
 
 Config = collections.namedtuple('Config', ['type', 'path', 'data'])
@@ -20,7 +30,7 @@ def init_shared_config_at(path):
     """
     Arguments:
         path(str): path where the empty shared config will be initialized
-        
+
     Returns:
         bool: whether the config file was successfully created
     """
@@ -161,7 +171,7 @@ def _ascend_by_section_safely(section_iterator, section_key):
     Arguments:
         section_iterator(dict): dictionary with sections
         section_key(str): section in dictionary
-        
+
     Returns:
         dict: section after ascending by the section key
     """
@@ -182,7 +192,6 @@ def get_key_from_config(config, key):
     Returns:
         value: value of the key at config
     """
-    pass
     sections = key.split('.')
 
     section_iterator = config.data
@@ -196,7 +205,7 @@ def load_config(config_dir, config_type):
     Arguments:
         config_dir(str): directory, where the config is stored
         config_type(str): type of the config (either shared or local)
-        
+
     Returns:
         config: loaded config
     """

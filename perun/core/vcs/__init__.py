@@ -1,7 +1,18 @@
-import perun.utils.log as perun_log
+"""Wrapper over version control systems used for generic lookup of the concrete implementations.
+
+VCS module contains modules with concrete implementations of the wrappers over the concrete version
+control systems. It tries to enforce simplicity and lightweight approach in an implementation of
+the wrapper.
+
+Inside the wrapper are defined function that are used for lookup of the concrete implementations
+depending of the chosen type/module, like e.g. git, svn, etc.
+"""
+
 import importlib
+
+import perun.utils.log as perun_log
+
 __author__ = 'Tomas Fiedor'
-__brief__ = 'Data module consists of Version Control System wrappers and unified API'
 
 
 def dynamic_module_function_call(package_name, module_name, fun_name, *args, **kwargs):
@@ -37,7 +48,6 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         perun_log.error("Function '{}' is unsupported in module {}".format(
             fun_name, function_location_path
         ))
-        pass
 
 
 def get_minor_head(vcs_type):
@@ -64,4 +74,3 @@ def init(vcs_type, *args, **kwargs):
         vcs_type, args, kwargs
     ), 1)
     return dynamic_module_function_call('perun.core.vcs', vcs_type, '_init', args, kwargs)
-

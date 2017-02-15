@@ -1,4 +1,11 @@
+"""Set of helper decorators used within the perun directory.
+
+Contains decorators for enforcing certain conditions, like e.g. singleton-like return value of
+the functions. Or various checker function, that checks given parameters of the functions.
+"""
+
 import inspect
+
 import perun.utils.exceptions as exceptions
 
 __author__ = 'Tomas Fiedor'
@@ -18,6 +25,7 @@ def singleton(func):
     func.instance = None
 
     def wrapper():
+        """Wrapper function of the @p func"""
         if func.instance is None:
             func.instance = func()
         return func.instance
@@ -40,7 +48,7 @@ def arguments_to_key(func, *args, **kwargs):
         tuple: key usable for identification of called parameters
     """
     # positional, *, **, default for positional, keywords after *, keywords defaults
-    f_args, f_varargs, f_varkw, f_defaults, _, f_kwonlydefaults, _ = inspect.getfullargspec(func)
+    f_args, _, _, f_defaults, _, f_kwonlydefaults, _ = inspect.getfullargspec(func)
 
     # get defaults that were updated
     updated_defaults = list(f_defaults)
@@ -65,13 +73,14 @@ def singleton_with_args(func):
     as givn by the first call with given positional and keyword arguments.
     Arguments:
         func(function): function that will be decorated
-        
+
     Returns:
         func: decorated function that will be run only once for give parameters
     """
     func.cache = {}
 
     def wrapper(*args, **kwargs):
+        """Wrapper function of the @p func"""
         key = arguments_to_key(func, *args, **kwargs)
         if key not in func.cache.keys():
             func.cache[key] = func(*args, **kwargs)
@@ -95,18 +104,21 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
         func: decorated function for which given parameters will be validated
     """
     def inner_decorator(func):
-        f_args, _, _, _ = inspect.getargspec(func)
+        """Wrapper function of the @p func"""
+        f_args, *_ = inspect.getfullargspec(func)
 
         def wrapper(*wargs, **wkwargs):
+            """Wrapper function of the wrapper inner decorator"""
             params = list(zip(f_args[:len(wargs)], wargs)) + list(wkwargs.items())
 
             for param_name, param_value in params:
                 if param_name not in validated_args:
                     continue
                 if not validate(param_value, *args, **kwargs):
-                    raise exceptions.InvalidParameterException("Invalid value '{}' for parameter '{}'".format(
+                    error_msg = "Invalid value '{}' for parameter '{}'".format(
                         param_name, param_value
-                    ))
+                    )
+                    raise exceptions.InvalidParameterException(error_msg)
 
             return func(*wargs, **wkwargs)
         return wrapper

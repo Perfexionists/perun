@@ -1,3 +1,5 @@
+"""Collection of helper exception classes"""
+
 __author__ = 'Tomas Fiedor'
 
 

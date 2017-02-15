@@ -1,3 +1,5 @@
+"""Main implementation of the perun gui."""
+
 from kivy.app import App
 
 __author__ = 'Tomas Fiedor'
