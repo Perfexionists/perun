@@ -26,8 +26,8 @@ def cli(verbose):
     perun_log.msg_to_stdout("Starting perun...", 0, logging.INFO)
 
     # set the verbosity level of the log
-    if perun_log.verbosity < verbose:
-        perun_log.verbosity = verbose
+    if perun_log.VERBOSITY < verbose:
+        perun_log.VERBOSITY = verbose
 
 
 @cli.command()

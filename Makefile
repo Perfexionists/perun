@@ -8,6 +8,6 @@ run-gui:
 	python3 perun/view/gui/perun.py
 
 install:
-	python3 setup.py install
+	python3 setup.py install --user
 
 .PHONY: init test
