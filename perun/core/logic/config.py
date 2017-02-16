@@ -96,7 +96,7 @@ def write_config_file(config, path):
         config, path
     ), 2)
     with open(path, 'w') as yaml_file:
-        yaml.dump(config, yaml_file)
+        yaml.dump(config, yaml_file, default_flow_style=False)
 
 
 def is_valid_key(key):
