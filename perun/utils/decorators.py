@@ -51,6 +51,7 @@ def arguments_to_key(func, *args, **kwargs):
     f_args, _, _, f_defaults, _, f_kwonlydefaults, _ = inspect.getfullargspec(func)
 
     # get defaults that were updated
+    f_defaults = f_defaults or []
     updated_defaults = list(f_defaults)
     number_of_updated_keyword_args = len(args) - (len(f_args) - len(f_defaults))
     if number_of_updated_keyword_args != 0:
@@ -81,6 +82,7 @@ def singleton_with_args(func):
 
     def wrapper(*args, **kwargs):
         """Wrapper function of the @p func"""
+        print("Calling: {} with args ({}, {})".format(func, args, kwargs))
         key = arguments_to_key(func, *args, **kwargs)
         if key not in func.cache.keys():
             func.cache[key] = func(*args, **kwargs)
@@ -124,3 +126,24 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
         return wrapper
 
     return inner_decorator
+
+
+def assume_version(version_spec, actual_version):
+    """
+    Arguments:
+        version_spec(int): specification of the version that is checked
+        actual_version(int): actual version that the given version supports/expects
+
+    Returns:
+        func: decorated function for which the version will be checked
+    """
+    def inner_wrapper(func):
+        """Inner wrapper of the function"""
+        def wrapper(*args, **kwargs):
+            """Wrapper function of the @p func"""
+            assert version_spec == actual_version and "function {} expects format version {}".format(
+                func.__name__, version_spec
+            )
+            return func(*args, **kwargs)
+        return wrapper
+    return inner_wrapper

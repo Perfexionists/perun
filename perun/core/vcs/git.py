@@ -35,4 +35,6 @@ def _get_minor_head(git_path):
     Arguments:
         git_path(path): path to git, where we are obtaining head for minor version
     """
-    pass
+    perun_log.msg_to_stdout("Retrieving HEAD from {}".format(git_path), 2)
+    # FIXME: Temporal return value
+    return "2ae3bfa80f009b21b3a1ca2472bcd8d5d8bbbb27"

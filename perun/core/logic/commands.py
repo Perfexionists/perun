@@ -5,7 +5,9 @@ to be run both from GUI applications and from CLI, where each of the function is
 possible to be run in isolation.
 """
 
+import inspect
 import os
+
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.core.logic.store as store
@@ -56,6 +58,37 @@ def pass_pcs(func):
         """Wrapper function for the decorator"""
         perun_directory = find_perun_dir_on_path(os.getcwd())
         return func(PCS(perun_directory), *args, **kwargs)
+
+    return wrapper
+
+
+def lookup_minor_version(func):
+    """If the minor_version is not given by the caller, it looks up the HEAD in the repo.
+
+    If the @p func is called with minor_version parameter set to None,
+    then this decorator performs a lookup of the minor_version corresponding
+    to the head of the repository.
+
+    Arguments:
+        func(function): decorated function for which we will lookup the minor_version
+
+    Returns:
+        function: decorated function, with minor_version translated or obtained
+    """
+    # the position of minor_version is one less, because of  needed pcs parameter
+    f_args, _, _, f_defaults, *_ = inspect.getfullargspec(func)
+    assert 'pcs' in f_args
+    minor_version_position = f_args.index('minor_version') - 1
+
+    def wrapper(pcs, *args, **kwargs):
+        """Inner wrapper of the function"""
+        # if the minor_version is None, then we obtain the minor head for the wrapped type
+        if minor_version_position < len(args) and args[minor_version_position] is None:
+            # note: since tuples are immutable we have to do this workaround
+            arg_list = list(args)
+            arg_list[minor_version_position] = vcs.get_minor_head(pcs.wrapped_vcs_type, pcs.path)
+            args = tuple(arg_list)
+        return func(pcs, *args, **kwargs)
 
     return wrapper
 
@@ -114,7 +147,7 @@ def config(pcs, key, value, **kwargs):
         print("Value '{1}' set for key '{0}'".format(key, value))
 
 
-def init_perun_at(perun_path, init_custom_vcs, is_reinit):
+def init_perun_at(perun_path, init_custom_vcs, is_reinit, vcs_config):
     """Initialize the .perun directory at given path
 
     Initializes or reinitializes the .perun directory at the given path.
@@ -125,12 +158,14 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit):
         perun_path(path): path where new perun performance control system will be stored
         init_custom_vcs(bool): true if the custom vcs should be initialized as well
         is_reinit(bool): true if this is existing perun, that will be reinitialized
+        vcs_config(dict): dictionary of form {'vcs': {'type', 'url'}} for local config init
     """
     # Initialize the basic structure of the .perun directory
     perun_full_path = os.path.join(perun_path, '.perun')
     store.touch_dir(perun_full_path)
     store.touch_dir(os.path.join(perun_full_path, 'objects'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
+    perun_config.init_local_config_at(perun_full_path, vcs_config)
 
     # Initialize the custom (manual) version control system
     if init_custom_vcs:
@@ -164,13 +199,21 @@ def init(dst, **kwargs):
                 kwargs['init_vcs_type'], kwargs['init_vcs_url']
             ))
 
+    # Construct local config
+    vcs_config = {
+        'vcs': {
+            'url': kwargs['init_vcs_url'] or "../",
+            'type': kwargs['init_vcs_type'] or 'pvcs'
+        }
+    }
+
     # check if there exists perun directory above and initialize the new pcs
     super_perun_dir = find_perun_dir_on_path(dst)
     is_reinit = (super_perun_dir == dst)
 
     if not is_reinit and super_perun_dir != "":
         perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
-    init_perun_at(dst, kwargs['init_vcs_type'] == 'pvcs', is_reinit)
+    init_perun_at(dst, kwargs['init_vcs_type'] == 'pvcs', is_reinit, vcs_config)
 
     # register new performance control system in config
     if not is_reinit:
@@ -179,6 +222,7 @@ def init(dst, **kwargs):
 
 
 @pass_pcs
+@lookup_minor_version
 def add(pcs, profile, minor_version):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
@@ -187,7 +231,8 @@ def add(pcs, profile, minor_version):
         profile(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
     """
-    # TODO: If minor_version is None, it should fetch head
+    assert minor_version is not None and "Missing minor version specification"
+
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
         pcs, profile, minor_version
     ), 2)
@@ -208,13 +253,13 @@ def add(pcs, profile, minor_version):
     store.add_loose_object_to_dir(pcs.get_object_directory(), profile_sum, compressed_content)
 
     # Register in the minor_version index
-    # TODO: store.register_in_index(pcs.get_object_directory(), minor_version, profile, profile_sum)
+    store.register_in_index(pcs.get_object_directory(), minor_version, profile, profile_sum)
 
 
 @pass_pcs
-def remove(pcs, minor_version, profile):
-    """
-    Removes @p profile from the @p minor_version inside the @p pcs
+@lookup_minor_version
+def remove(pcs, profile, minor_version):
+    """Removes @p profile from the @p minor_version inside the @p pcs
 
     TODO: There are actually several possible combinations how this could be called:
     1) Stating the sha1 precisely (easy)
@@ -225,12 +270,16 @@ def remove(pcs, minor_version, profile):
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        minor_version(str): SHA-1 representation of the minor version
         profile(Profile): profile that will be stored for the minor version
+        minor_version(str): SHA-1 representation of the minor version
     """
+    assert minor_version is not None and "Missing minor version specification"
+
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     store.remove_loose_object_from_dir(pcs.get_object_directory(), profile)
+
+    store.remove_from_index(minor_version, profile)
 
 
 @pass_pcs

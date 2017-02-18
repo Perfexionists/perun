@@ -34,6 +34,8 @@ def init_shared_config_at(path):
     Returns:
         bool: whether the config file was successfully created
     """
+    if not path.endswith('shared.yml') and not path.endswith('shared.yaml'):
+        path = os.path.join(path, 'shared.yml')
     store.touch_file(path)
 
     shared_config = yaml.safe_load("""
@@ -43,19 +45,23 @@ def init_shared_config_at(path):
     return True
 
 
-def init_local_config_at(path):
+def init_local_config_at(path, wrapped_vcs):
     """
     Arguments:
         path(str): path where the empty shared config will be initialized
+        wrapped_vcs(dict): dictionary with wrapped vcs of type {'vcs': {'type', 'url'}}
 
     Returns:
         bool: whether the config file was successfully created
     """
+    if not path.endswith('local.yml') and not path.endswith('local.yaml'):
+        path = os.path.join(path, 'local.yml')
     store.touch_file(path)
 
     # empty config is created
     local_config = yaml.safe_load("""
     """) or {}
+    local_config.update(wrapped_vcs)
 
     write_config_file(local_config, path)
     return True
@@ -96,7 +102,7 @@ def write_config_file(config, path):
         config, path
     ), 2)
     with open(path, 'w') as yaml_file:
-        yaml.dump(config, yaml_file)
+        yaml.dump(config, yaml_file, default_flow_style=False)
 
 
 def is_valid_key(key):
