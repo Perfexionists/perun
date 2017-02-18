@@ -6,6 +6,7 @@ or load and store into the directories or filenames.
 
 import hashlib
 import os
+import struct
 import zlib
 
 import perun.utils.decorators as decorators
@@ -185,6 +186,33 @@ def walk_index(index_handle):
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
+def touch_index(index_path):
+    """Initializes and creates the index if it does not exists
+
+    The Version 1 index is of following form:
+      -  4B magic prefix 'pidx' (perun index) for quick identification of the file
+      -  4B version number (currently 1)
+      -  4B number of index entries
+
+    Followed by the entries of profiles of form:
+      -  4B time of the file creation
+      - 20B SHA-1 representation of the object
+      -  ?B Variable length path
+      -  ?B zero byte padding
+    Arguments:
+        index_path(str): path to the index
+    """
+    if not os.path.exists(index_path):
+        touch_file(index_path)
+
+        # create the index
+        with open(index_path, 'wb') as index_handle:
+            index_handle.write(INDEX_MAGIC_PREFIX)
+            index_handle.write(struct.pack('i', INDEX_VERSION))
+            index_handle.write(struct.pack('i', 0))
+
+
+@decorators.assume_version(INDEX_VERSION, 1)
 def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum):
     """
     Arguments:
@@ -197,9 +225,10 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
         registered_file, registered_file_checksum, minor_version
     ), 2)
 
+    # Create the directory and index (if it does not exist)
     minor_dir, minor_index_file = split_object_name(base_dir, minor_version)
     touch_dir(minor_dir)
-    touch_file(minor_index_file)
+    touch_index(minor_index_file)
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
