@@ -16,11 +16,9 @@ test++: t.cpp
 	g++ -g -std=c++11 -Wextra -pedantic -Wall t.cpp -o test++
 
 
-malloc_luwind:
+lib: malloc.c backtrace.c
 	gcc -O0 -shared -fPIC malloc.c backtrace.c -o malloc.so -lunwind -ldl
 
-malloc_backtrace:
-	gcc -shared -fPIC mall.c -o malloc.so -ldl
 
 profile:
 	LD_PRELOAD="$$PWD/malloc.so" ./test
@@ -28,8 +26,11 @@ profile:
 profile++:
 	LD_PRELOAD="$$PWD/malloc.so" ./test++
 
+clean-logs:
+	rm MemoryLog.*
+
 clean:
-	rm -f test++ test
+	rm -f test++ test MemoryLog.*
 
 zip:
 	tar -cvf xpodol06.tar $(ZIPFILES)

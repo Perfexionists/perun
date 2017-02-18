@@ -4,9 +4,8 @@
 #include <stdio.h>
 #include <libunwind.h>
 
-void backtrace(void){
+void backtrace(FILE* log){
 
-	char name[256];
 	unw_cursor_t cursor;
 	unw_context_t context;
 	unw_word_t ip, sp, offset;
@@ -34,6 +33,7 @@ void backtrace(void){
 	//Obtain symbol name
 	    unw_get_proc_name(&cursor, symbol, sizeof(symbol), &offset);
 
-		printf("%s: ip = 0x%lx, sp = 0x%lx\n", symbol, ip, sp);
-	}    
+		fprintf(log, "%s: ip = 0x%lx, sp = 0x%lx\n", symbol, ip, sp);
+	}
+	fprintf(log, "\n");
 }

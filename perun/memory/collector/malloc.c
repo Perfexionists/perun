@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -14,10 +15,13 @@ static int   (*real_posix_memalign)(void** memptr, size_t alignment, size_t size
 static void* (*real_valloc)(size_t size);
 static void* (*real_aligned_alloc)(size_t alignment, size_t size);
 
+static FILE* logFile;
 static int profiling = 0;
 static int initialized = 0;
 
 void init_allocators(){
+
+  profiling = 1;
 
   real_malloc = dlsym(RTLD_NEXT, "malloc");
   real_realloc = dlsym(RTLD_NEXT, "realloc");
@@ -29,6 +33,12 @@ void init_allocators(){
   real_posix_memalign = dlsym(RTLD_NEXT, "posix_memalign");
 
   initialized = 1;
+
+  char fileName[256];
+  sprintf(fileName, "MemoryLog.%i", getpid());
+  logFile = fopen(fileName, "w");
+
+  profiling = 0;
 }
 
 void* malloc(size_t size){
@@ -41,10 +51,9 @@ void* malloc(size_t size){
   if(!profiling && ptr != NULL){
     profiling = 1;
 
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    printf("malloc %liB %li\n", size, (long int)ptr);
-    backtrace();
-    printf("\n");
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+    fprintf(logFile, "malloc %liB %li\n", size, (long int)ptr);
+    backtrace(logFile);
    
     profiling = 0;
   }
@@ -60,8 +69,12 @@ void free(void *ptr){
   real_free(ptr);
   
   if(!profiling){
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    printf("free %li\n", (long int)ptr);
+    profiling = 1;
+
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+    fprintf(logFile, "free %li\n\n", (long int)ptr);
+  
+    profiling = 0;
   }
 }
 
@@ -76,10 +89,9 @@ void* realloc(void *ptr, size_t size){
       
     profiling = 1;
     
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);  
-    printf("realloc %liB %li > %li\n", size, (long int)ptr, (long int)nptr);
-    backtrace();
-    printf("\n");
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);  
+    fprintf(logFile, "realloc %liB %li > %li\n", size, (long int)ptr, (long int)nptr);
+    backtrace(logFile);
     
     profiling = 0;
   }
@@ -98,10 +110,9 @@ void* calloc(size_t nmemb, size_t size){
       
     profiling = 1;
     
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    printf("calloc %liB %li\n", size*nmemb, (long int)ptr);
-    backtrace();
-    printf("\n");
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+    fprintf(logFile, "calloc %liB %li\n", size*nmemb, (long int)ptr);
+    backtrace(logFile);
     
     profiling = 0;
   }
@@ -120,10 +131,9 @@ void* memalign(size_t alignment, size_t size){
       
     profiling = 1;
     
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    printf("memalign %liB %li\n", size, (long int)ptr);
-    backtrace();
-    printf("\n");
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+    fprintf(logFile, "memalign %liB %li\n", size, (long int)ptr);
+    backtrace(logFile);
     
     profiling = 0;
   }
@@ -142,10 +152,9 @@ int posix_memalign(void** memptr, size_t alignment, size_t size){
       
     profiling = 1;
     
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    printf("posix_memalign %liB %li\n", size, (long int)*memptr);
-    backtrace();
-    printf("\n");
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+    fprintf(logFile, "posix_memalign %liB %li\n", size, (long int)*memptr);
+    backtrace(logFile);
     
     profiling = 0;
   }
@@ -164,10 +173,9 @@ void* valloc(size_t size){
       
     profiling = 1;
     
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    printf("valloc %liB %li\n", size, (long int)ptr);
-    backtrace();
-    printf("\n");
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+    fprintf(logFile, "valloc %liB %li\n", size, (long int)ptr);
+    backtrace(logFile);
     
     profiling = 0;
   }
@@ -186,10 +194,9 @@ void *aligned_alloc(size_t alignment, size_t size){
       
     profiling = 1;
     
-    printf("time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    printf("aligned_alloc %liB %li\n", size, (long int)ptr);
-    backtrace();
-    printf("\n");
+    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+    fprintf(logFile, "aligned_alloc %liB %li\n", size, (long int)ptr);
+    backtrace(logFile);
     
     profiling = 0;
   }

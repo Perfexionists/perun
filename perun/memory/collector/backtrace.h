@@ -1,2 +1,1 @@
-void backtrace(void);
-void hello(void);
+void backtrace(FILE* log);
