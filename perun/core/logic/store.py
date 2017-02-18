@@ -8,9 +8,10 @@ import hashlib
 import os
 import zlib
 
+import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 
-from perun.utils.helpers import IndexEntry
+from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX
 
 __author__ = 'Tomas Fiedor'
 
@@ -142,6 +143,7 @@ def remove_loose_object_from_dir(base_dir, object_name):
         os.rmdir(object_dir_full_path)
 
 
+@decorators.assume_version(INDEX_VERSION, 1)
 def walk_index(index_handle):
     """
     Arguments:
@@ -182,6 +184,7 @@ def walk_index(index_handle):
         perun_log.error("fatal: malformed index file")
 
 
+@decorators.assume_version(INDEX_VERSION, 1)
 def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum):
     """
     Arguments:
@@ -190,15 +193,24 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
         registered_file(path): filename that is registered
         registered_file_checksum(str): sha-1 representation fo the registered file
     """
+    perun_log.msg_to_stdout("Registering file '{}'({}) into minor version {} index".format(
+        registered_file, registered_file_checksum, minor_version
+    ), 2)
+
     minor_dir, minor_index_file = split_object_name(base_dir, minor_version)
     touch_dir(minor_dir)
+    touch_file(minor_index_file)
 
 
-def remove_from_index(minor_version, removed_file):
+@decorators.assume_version(INDEX_VERSION, 1)
+def remove_from_index(base_dir, minor_version, removed_file):
     """
     Arguments:
+        base_dir(str): base directory of the minor version
         minor_version(str): sha-1 representation of the minor version of vcs (like e..g commit)
         removed_file(path): filename, that is removed from the tracking
     """
+    perun_log.msg_to_stdout("Removing entry {} from the minor version {} index".format(
+        removed_file, minor_version
+    ))
     # TODO: Something something
-    pass

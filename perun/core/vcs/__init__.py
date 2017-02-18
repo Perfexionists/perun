@@ -42,7 +42,7 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         return module_function(*args, **kwargs)
     except ImportError:
         perun_log.error("Unrecognized or unsupported VCS type '{}'".format(
-            package_name
+            module_name
         ))
     except AttributeError:
         perun_log.error("Function '{}' is unsupported in module {}".format(
@@ -50,15 +50,19 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         ))
 
 
-def get_minor_head(vcs_type):
+def get_minor_head(vcs_type, *args, **kwargs):
     """
     Arguments:
         vcs_type(str): type of the vcs that we are calling the function for
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
 
     Returns:
         str: unique representation of current head (usually SHA-1)
     """
-    return dynamic_module_function_call('perun.core.vcs', vcs_type, '_get_minor_head')
+    return dynamic_module_function_call(
+        'perun.core.vcs', vcs_type, '_get_minor_head', *args, **kwargs
+    )
 
 
 def init(vcs_type, *args, **kwargs):
@@ -73,4 +77,6 @@ def init(vcs_type, *args, **kwargs):
     perun_log.msg_to_stdout("Initializing {} version control with params {} and {}".format(
         vcs_type, args, kwargs
     ), 1)
-    return dynamic_module_function_call('perun.core.vcs', vcs_type, '_init', args, kwargs)
+    return dynamic_module_function_call(
+        'perun.core.vcs', vcs_type, '_init', *args, **kwargs
+    )
