@@ -4,6 +4,7 @@ Store is a collection of helper functions that can be used to pack content, comp
 or load and store into the directories or filenames.
 """
 
+import binascii
 import hashlib
 import os
 import struct
@@ -144,22 +145,57 @@ def remove_loose_object_from_dir(base_dir, object_name):
         os.rmdir(object_dir_full_path)
 
 
+def read_int_from_handle(file_handle):
+    """Helper function for reading one integer from handle
+
+    Arguments:
+        file_handle(file): read file
+
+    Returns:
+        int: one integer
+    """
+    return struct.unpack('i', file_handle.read(4))[0]
+
+
+def read_char_from_handle(file_handle):
+    """Helper function for reading one char from handle
+
+    Arguments:
+        file_handle(file): read file
+
+    Returns:
+        char: one read char
+    """
+    return struct.unpack('c', file_handle.read(1))[0].decode('utf-8')
+
+
 @decorators.assume_version(INDEX_VERSION, 1)
 def walk_index(index_handle):
-    """
+    """Iterator through index entries
+
+    Reads the beginning of the file, verifying the version and type of the index. Then it iterates
+    through all of the index entries and returns them as a IndexEntry structure for further
+    processing.
+
     Arguments:
         index_handle(file): handle to file containing index
 
     Returns:
         IndexEntry: Index entry named tuple
     """
+    # Get end of file position
+    index_handle.seek(0, 2)
+    last_position = index_handle.tell()
+
     # Move to the begging of the handle
     index_handle.seek(0)
     magic_bytes = index_handle.read(4)
-    assert magic_bytes == 'dirc'
-    index_version = index_handle.read(4)
-    assert index_version == 1
-    number_of_objects = index_handle.read(4)
+    assert magic_bytes == INDEX_MAGIC_PREFIX
+
+    index_version = read_int_from_handle(index_handle)
+    assert index_version == INDEX_VERSION
+
+    number_of_objects = read_int_from_handle(index_handle)
     loaded_objects = 0
 
     def read_entry():
@@ -167,15 +203,21 @@ def walk_index(index_handle):
         Returns:
             IndexEntry: one read index entry
         """
+        # Rather nasty hack, but nothing better comes to my mind currently
+        if index_handle.tell() + 24 >= last_position:
+            return ''
+
+        file_offset = index_handle.tell()
         file_time = index_handle.read(4)
-        file_sha = index_handle.read(20)
-        file_path, byte = "", index_handle.read(1)
+        file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
+        file_path, byte = "", read_char_from_handle(index_handle)
         while byte != '\0':
             file_path += byte
-            byte = index_handle.read(1)
-        return IndexEntry(file_time, file_sha, file_path, index_handle.tell())
+            byte = read_char_from_handle(index_handle)
+        return IndexEntry(file_time, file_sha, file_path, file_offset)
 
-    for entry in iter(read_entry):
+    for entry in iter(read_entry, ''):
+        print(entry)
         loaded_objects += 1
         if loaded_objects > number_of_objects:
             perun_log.error("fatal: malformed index file")
@@ -183,6 +225,31 @@ def walk_index(index_handle):
 
     if loaded_objects != number_of_objects:
         perun_log.error("fatal: malformed index file")
+
+
+@decorators.assume_version(INDEX_VERSION, 1)
+def print_index(index_file):
+    """Helper function for printing the contents of the index
+
+    Arguments:
+        index_file(str): path to the index file
+    """
+    with open(index_file, 'rb') as index_handle:
+        index_prefix = index_handle.read(4)
+        index_version = read_int_from_handle(index_handle)
+        number_of_entries = read_int_from_handle(index_handle)
+
+        print("{}, index version {} with {} entries\n".format(
+            index_prefix, index_version, number_of_entries
+        ))
+
+        for entry in walk_index(index_handle):
+            print(" @{3} {2} -> {1} ({0})".format(
+                entry.time,
+                entry.checksum,
+                entry.path,
+                entry.offset
+            ))
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
@@ -213,8 +280,55 @@ def touch_index(index_path):
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
-def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum):
+def modify_number_of_entries_in_index(index_handle, modify):
+    """Helper function of inplace modification of number of entries in index
+
+    Arguments:
+        index_handle(file): handle of the opened index
+        modify(function): function that will modify the value of number of entries
     """
+    index_handle.seek(8)
+    number_of_entries = read_int_from_handle(index_handle)
+    index_handle.seek(8)
+    index_handle.write(struct.pack('i', modify(number_of_entries)))
+
+
+@decorators.assume_version(INDEX_VERSION, 1)
+def write_entry_to_index(index_file, file_entry):
+    """Writes the file_entry to its appropriate position within the index.
+
+    Given the file entry, writes the entry within the file, moving everything by the given offset
+    and then incrementing the number of entries within the index.
+
+    Arguments:
+        index_file(str): path to the index file
+        file_entry(IndexEntry): index entry that will be written to the file
+    """
+    with open(index_file, 'rb+') as index_handle:
+        modify_number_of_entries_in_index(index_handle, lambda x: x + 1)
+        index_handle.seek(file_entry.offset)
+
+        # Read previous entries to buffer and return back to the position
+        buffer = index_handle.read()
+        index_handle.seek(file_entry.offset)
+
+        # Write the index_file entry to index
+        index_handle.write(struct.pack('i', file_entry.time))
+        index_handle.write(bytearray.fromhex(file_entry.checksum))
+        index_handle.write(bytes(file_entry.path, 'utf-8'))
+        index_handle.write(struct.pack('B', 0))
+
+        # Write the stuff stored in buffer
+        index_handle.write(buffer)
+
+
+@decorators.assume_version(INDEX_VERSION, 1)
+def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum):
+    """Registers file in the index corresponding to the minor_version
+
+    If the index for the minor_version does not exist, then it is touched and initialized
+    with empty prefix. Then the entry is added to the file.
+
     Arguments:
         base_dir(str): base directory of the minor version
         minor_version(str): sha-1 representation of the minor version of vcs (like e.g. commit)
@@ -229,6 +343,12 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     minor_dir, minor_index_file = split_object_name(base_dir, minor_version)
     touch_dir(minor_dir)
     touch_index(minor_index_file)
+
+    print_index(minor_index_file)
+    entry = IndexEntry(0, registered_file_checksum, registered_file, 12)
+    write_entry_to_index(minor_index_file, entry)
+    print("After writing")
+    print_index(minor_index_file)
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
