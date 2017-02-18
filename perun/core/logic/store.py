@@ -305,12 +305,19 @@ def write_entry_to_index(index_file, file_entry):
         file_entry(IndexEntry): index entry that will be written to the file
     """
     with open(index_file, 'rb+') as index_handle:
+        # Lookup the position of the registered file within the index
+        if file_entry.offset == -1:
+            offset_in_file = lookup_entry_position_within_index(index_handle, file_entry.path)[1]
+        else:
+            offset_in_file = file_entry.offset
+
+        # Modify the number of entries in index and return to position
         modify_number_of_entries_in_index(index_handle, lambda x: x + 1)
-        index_handle.seek(file_entry.offset)
+        index_handle.seek(offset_in_file)
 
         # Read previous entries to buffer and return back to the position
         buffer = index_handle.read()
-        index_handle.seek(file_entry.offset)
+        index_handle.seek(offset_in_file)
 
         # Write the index_file entry to index
         index_handle.write(struct.pack('i', file_entry.time))
@@ -320,6 +327,30 @@ def write_entry_to_index(index_file, file_entry):
 
         # Write the stuff stored in buffer
         index_handle.write(buffer)
+
+
+def lookup_entry_position_within_index(index_handle, looked_up_file):
+    """Looks up the position of the looked up file within the index handle.
+
+    Traverses the index and tries to either find the exact location of the file (if the file
+    is registered in index) or returns the position of the next lexicographically bigger path.
+
+    Arguments:
+        index_handle(file): file handle of index
+        looked_up_file(str): name of the looked up file
+
+    Returns:
+        (bool, int): tuple of boolean, whether the entry was found and offset of either the found
+            file or the position of the next file
+    """
+    last_offset = 12
+    for entry in walk_index(index_handle):
+        last_offset = entry.offset
+        if entry.path == looked_up_file:
+            return True, entry.offset
+        elif entry.path > looked_up_file:
+            break
+    return False, last_offset
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
@@ -345,7 +376,8 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     touch_index(minor_index_file)
 
     print_index(minor_index_file)
-    entry = IndexEntry(0, registered_file_checksum, registered_file, 12)
+    entry = IndexEntry(0, registered_file_checksum, registered_file, -1)
+    print("Writing the file")
     write_entry_to_index(minor_index_file, entry)
     print("After writing")
     print_index(minor_index_file)
