@@ -258,28 +258,21 @@ def add(pcs, profile, minor_version):
 
 @pass_pcs
 @lookup_minor_version
-def remove(pcs, profile, minor_version):
+def remove(pcs, profile, minor_version, **kwargs):
     """Removes @p profile from the @p minor_version inside the @p pcs
-
-    TODO: There are actually several possible combinations how this could be called:
-    1) Stating the sha1 precisely (easy)
-      - but fuck you have to remove it from index you dork...
-    2) Stating the minor version and file name
-      - have to lookup the minor version and get the sha1 for the filename
-    3) Removing all?
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
         profile(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
+        kwargs(dict): dictionary with additional options
     """
     assert minor_version is not None and "Missing minor version specification"
 
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
-    store.remove_loose_object_from_dir(pcs.get_object_directory(), profile)
-
-    store.remove_from_index(minor_version, profile)
+    object_directory = pcs.get_object_directory()
+    store.remove_from_index(object_directory, minor_version, profile, kwargs['remove_all'])
 
 
 @pass_pcs

@@ -7,6 +7,7 @@ or load and store into the directories or filenames.
 import binascii
 import hashlib
 import os
+import string
 import struct
 import zlib
 
@@ -73,6 +74,17 @@ def compute_checksum(content):
         str: 40-character SHA-1 checksum of the content
     """
     return hashlib.sha1(content).hexdigest()
+
+
+def is_sha1(checksum):
+    """
+    Arguments:
+        checksum(str): hexa string
+
+    Returns:
+        bool: true if the checksum is sha1 checksum
+    """
+    return len(checksum) == 40 and all(c in string.hexdigits for c in checksum)
 
 
 def pack_content(content):
@@ -218,7 +230,6 @@ def walk_index(index_handle):
         return IndexEntry(file_time, file_sha, file_path, file_offset)
 
     for entry in iter(read_entry, ''):
-        print(entry)
         loaded_objects += 1
         if loaded_objects > number_of_objects:
             perun_log.error("fatal: malformed index file")
@@ -294,6 +305,22 @@ def modify_number_of_entries_in_index(index_handle, modify):
     index_handle.write(struct.pack('i', modify(number_of_entries)))
 
 
+def write_entry(index_handle, file_entry):
+    """Writes entry at current location in the index_handle
+
+    Arguments:
+        index_handle(file): file handle of the index
+        file_entry(IndexEntry): entry to be written at current position
+    """
+    if isinstance(file_entry.time, int):
+        index_handle.write(struct.pack('i', file_entry.time))
+    else:
+        index_handle.write(file_entry.time)
+    index_handle.write(bytearray.fromhex(file_entry.checksum))
+    index_handle.write(bytes(file_entry.path, 'utf-8'))
+    index_handle.write(struct.pack('B', 0))
+
+
 @decorators.assume_version(INDEX_VERSION, 1)
 def write_entry_to_index(index_file, file_entry):
     """Writes the file_entry to its appropriate position within the index.
@@ -326,13 +353,19 @@ def write_entry_to_index(index_file, file_entry):
         index_handle.seek(offset_in_file)
 
         # Write the index_file entry to index
-        index_handle.write(struct.pack('i', file_entry.time))
-        index_handle.write(bytearray.fromhex(file_entry.checksum))
-        index_handle.write(bytes(file_entry.path, 'utf-8'))
-        index_handle.write(struct.pack('B', 0))
+        write_entry(index_handle, file_entry)
 
         # Write the stuff stored in buffer
         index_handle.write(buffer)
+
+
+def remove_entry_from_index(index_handle, file_entry):
+    """
+    Arguments:
+        index_handle(file): opened file handle of index
+        file_entry(IndexEntry): removed entry
+    """
+    index_handle.seek(file_entry.offset)
 
 
 def lookup_entry_within_index(index_handle, predicate):
@@ -390,24 +423,52 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     touch_dir(minor_dir)
     touch_index(minor_index_file)
 
-    print_index(minor_index_file)
     entry = IndexEntry(0, registered_file_checksum, registered_file, -1)
-    print("Writing the file")
     write_entry_to_index(minor_index_file, entry)
-    print("After writing")
-    print_index(minor_index_file)
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
-def remove_from_index(base_dir, minor_version, removed_file):
+def remove_from_index(base_dir, minor_version, removed_file, remove_all):
     """
     Arguments:
         base_dir(str): base directory of the minor version
         minor_version(str): sha-1 representation of the minor version of vcs (like e..g commit)
         removed_file(path): filename, that is removed from the tracking
+        remove_all(bool): true if all of the entries should be removed
     """
     perun_log.msg_to_stdout("Removing entry {} from the minor version {} index".format(
         removed_file, minor_version
-    ))
+    ), 2)
 
-    entry = IndexEntry(0, removed_file)
+    # Get directory and index
+    _, minor_version_index = split_object_name(base_dir, minor_version)
+
+    # Construct lookup function for the entries within index
+    if is_sha1(removed_file):
+        lookup_function = lambda entry: entry.checksum == removed_file
+    else:
+        lookup_function = lambda entry: entry.path == removed_file
+
+    # Lookup all entries for the given function
+    with open(minor_version_index, 'rb+') as index_handle:
+        if remove_all:
+            removed_entries = lookup_all_entries_within_index(index_handle, lookup_function)
+        else:
+            removed_entries = [lookup_entry_within_index(index_handle, lookup_function)]
+
+        all_entries = [entry for entry in walk_index(index_handle)]
+        all_entries.sort(key=lambda unsorted_entry: unsorted_entry.offset)
+
+        # Update number of entries
+        index_handle.seek(8)
+        index_handle.write(struct.pack('i', len(all_entries) - len(removed_entries)))
+
+        # For each entry remove from the index, starting from the greatest offset
+        for entry in all_entries:
+            if entry in removed_entries:
+                continue
+            write_entry(index_handle, entry)
+
+        index_handle.truncate()
+
+    print_index(minor_version_index)

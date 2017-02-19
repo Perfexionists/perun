@@ -82,20 +82,23 @@ def add(profile, minor):
 @cli.command()
 @click.argument('profile', required=True)
 @click.argument('minor', required=False, default=None)
-def rm(profile, minor):
+@click.option('--remove-all', '-A', is_flag=True, default=False,
+              help="remove all profiles of the given name/sha-1")
+def rm(profile, minor, **kwargs):
     """
     Arguments:
         profile(str): path to the profile file or sha1
         minor(str): sha1 representation of the minor version for which the profile is removed
+        kwargs(dict): dictionary of the keyword arguments
     """
     perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-    commands.remove(profile, minor)
+    commands.remove(profile, minor, **kwargs)
 
 
 @cli.command()
-@click.option('--count-only', is_flag=True,
+@click.option('--count-only', is_flag=True, default=False,
               help="force printing of the profile count only associated to minor versions")
-@click.option('--show-aggregate', is_flag=True,
+@click.option('--show-aggregate', is_flag=True, default=False,
               help="show aggregated profiles (one-liners) per each minor version")
 @click.option('--last', default=-1,
               help="show only last N minor versions")
