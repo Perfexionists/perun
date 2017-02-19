@@ -300,9 +300,9 @@ def modify_number_of_entries_in_index(index_handle, modify):
         index_handle(file): handle of the opened index
         modify(function): function that will modify the value of number of entries
     """
-    index_handle.seek(INDEX_ENTRIES_START_OFFSET)
+    index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
     number_of_entries = read_int_from_handle(index_handle)
-    index_handle.seek(INDEX_ENTRIES_START_OFFSET)
+    index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
     index_handle.write(struct.pack('i', modify(number_of_entries)))
 
 
@@ -427,6 +427,9 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     entry = IndexEntry(0, registered_file_checksum, registered_file, -1)
     write_entry_to_index(minor_index_file, entry)
 
+    if perun_log.VERBOSITY >= perun_log.VERBOSE_DEBUG:
+        print_index(minor_index_file)
+
 
 @decorators.assume_version(INDEX_VERSION, 1)
 def remove_from_index(base_dir, minor_version, removed_file, remove_all):
@@ -472,4 +475,5 @@ def remove_from_index(base_dir, minor_version, removed_file, remove_all):
 
         index_handle.truncate()
 
-    print_index(minor_version_index)
+    if perun_log.VERBOSITY >= perun_log.VERBOSE_DEBUG:
+        print_index(minor_version_index)
