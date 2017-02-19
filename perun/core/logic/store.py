@@ -11,6 +11,7 @@ import string
 import struct
 import zlib
 
+import perun.utils.timestamps as timestamps
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 
@@ -222,7 +223,7 @@ def walk_index(index_handle):
             return ''
 
         file_offset = index_handle.tell()
-        file_time = index_handle.read(4)
+        file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
         file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
         file_path, byte = "", read_char_from_handle(index_handle)
         while byte != '\0':
@@ -313,10 +314,8 @@ def write_entry(index_handle, file_entry):
         index_handle(file): file handle of the index
         file_entry(IndexEntry): entry to be written at current position
     """
-    if isinstance(file_entry.time, int):
-        index_handle.write(struct.pack('i', file_entry.time))
-    else:
-        index_handle.write(file_entry.time)
+    assert isinstance(file_entry.time, str)
+    timestamps.write_timestamp(index_handle, timestamps.str_to_timestamp(file_entry.time))
     index_handle.write(bytearray.fromhex(file_entry.checksum))
     index_handle.write(bytes(file_entry.path, 'utf-8'))
     index_handle.write(struct.pack('B', 0))
@@ -424,7 +423,8 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     touch_dir(minor_dir)
     touch_index(minor_index_file)
 
-    entry = IndexEntry(0, registered_file_checksum, registered_file, -1)
+    modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
+    entry = IndexEntry(modification_stamp, registered_file_checksum, registered_file, -1)
     write_entry_to_index(minor_index_file, entry)
 
     if perun_log.VERBOSITY >= perun_log.VERBOSE_DEBUG:
