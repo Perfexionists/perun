@@ -27,6 +27,11 @@ class PCS(object):
         assert os.path.isdir(fullpath)
         self.path = os.path.join(fullpath, '.perun')
         self.wrapped_vcs_type = config.get_key_from_config(config.local(self.path), 'vcs.type')
+        self.wrapped_vcs_url = os.path.abspath(os.path.join(
+            self.path, os.path.join(
+                config.get_key_from_config(config.local(self.path), 'vcs.url'), ".git"
+            )
+        ))
 
     def local_config(self):
         """Get local config

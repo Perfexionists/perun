@@ -4,6 +4,10 @@ Contains concrete implementation of the function needed by perun to extract info
 with version control systems.
 """
 
+import os
+import subprocess
+
+import perun.core.logic.store as store
 import perun.utils.log as perun_log
 import perun.utils as utils
 
@@ -32,9 +36,16 @@ def _init(vcs_path, vcs_init_params):
 
 def _get_minor_head(git_path):
     """
+    Fixme: This would be better to internally use rev-parse ;)
     Arguments:
         git_path(path): path to git, where we are obtaining head for minor version
     """
     perun_log.msg_to_stdout("Retrieving HEAD from {}".format(git_path), 2)
-    # FIXME: Temporal return value
-    return "2ae3bfa80f009b21b3a1ca2472bcd8d5d8bbbb27"
+
+    # Read contents of head through the subprocess and git rev-parse HEAD
+    proc = subprocess.Popen("git rev-parse HEAD", cwd=git_path, shell=True, stdout=subprocess.PIPE,
+                            universal_newlines=True)
+    git_head = proc.stdout.readlines()[0].strip()
+    proc.wait()
+    assert store.is_sha1(git_head)
+    return git_head

@@ -86,7 +86,8 @@ def lookup_minor_version(func):
         if minor_version_position < len(args) and args[minor_version_position] is None:
             # note: since tuples are immutable we have to do this workaround
             arg_list = list(args)
-            arg_list[minor_version_position] = vcs.get_minor_head(pcs.wrapped_vcs_type, pcs.path)
+            arg_list[minor_version_position] = vcs.get_minor_head(
+                pcs.wrapped_vcs_type, pcs.wrapped_vcs_url)
             args = tuple(arg_list)
         return func(pcs, *args, **kwargs)
 
