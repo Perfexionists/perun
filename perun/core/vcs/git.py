@@ -4,7 +4,6 @@ Contains concrete implementation of the function needed by perun to extract info
 with version control systems.
 """
 
-import os
 import subprocess
 
 import perun.core.logic.store as store
@@ -47,5 +46,6 @@ def _get_minor_head(git_path):
                             universal_newlines=True)
     git_head = proc.stdout.readlines()[0].strip()
     proc.wait()
+
     assert store.is_sha1(git_head)
     return git_head

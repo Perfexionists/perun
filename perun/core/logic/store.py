@@ -14,7 +14,8 @@ import zlib
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 
-from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX
+from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
+    INDEX_ENTRIES_START_OFFSET, INDEX_NUMBER_OF_ENTRIES_OFFSET
 from perun.utils.exceptions import EntryNotFoundException
 
 __author__ = 'Tomas Fiedor'
@@ -299,9 +300,9 @@ def modify_number_of_entries_in_index(index_handle, modify):
         index_handle(file): handle of the opened index
         modify(function): function that will modify the value of number of entries
     """
-    index_handle.seek(8)
+    index_handle.seek(INDEX_ENTRIES_START_OFFSET)
     number_of_entries = read_int_from_handle(index_handle)
-    index_handle.seek(8)
+    index_handle.seek(INDEX_ENTRIES_START_OFFSET)
     index_handle.write(struct.pack('i', modify(number_of_entries)))
 
 
@@ -340,7 +341,7 @@ def write_entry_to_index(index_file, file_entry):
                 looked_up_entry = lookup_entry_within_index(index_handle, predicate)
                 offset_in_file = looked_up_entry.offset
             except EntryNotFoundException:
-                offset_in_file = 12
+                offset_in_file = INDEX_ENTRIES_START_OFFSET
         else:
             offset_in_file = file_entry.offset
 
@@ -460,7 +461,7 @@ def remove_from_index(base_dir, minor_version, removed_file, remove_all):
         all_entries.sort(key=lambda unsorted_entry: unsorted_entry.offset)
 
         # Update number of entries
-        index_handle.seek(8)
+        index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
         index_handle.write(struct.pack('i', len(all_entries) - len(removed_entries)))
 
         # For each entry remove from the index, starting from the greatest offset
