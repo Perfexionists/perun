@@ -14,6 +14,7 @@ import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 
 from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX
+from perun.utils.exceptions import EntryNotFoundException
 
 __author__ = 'Tomas Fiedor'
 
@@ -307,7 +308,12 @@ def write_entry_to_index(index_file, file_entry):
     with open(index_file, 'rb+') as index_handle:
         # Lookup the position of the registered file within the index
         if file_entry.offset == -1:
-            offset_in_file = lookup_entry_position_within_index(index_handle, file_entry.path)[1]
+            try:
+                predicate = (lambda entry: entry.path >= file_entry.path)
+                looked_up_entry = lookup_entry_within_index(index_handle, predicate)
+                offset_in_file = looked_up_entry.offset
+            except EntryNotFoundException:
+                offset_in_file = 12
         else:
             offset_in_file = file_entry.offset
 
@@ -329,28 +335,37 @@ def write_entry_to_index(index_file, file_entry):
         index_handle.write(buffer)
 
 
-def lookup_entry_position_within_index(index_handle, looked_up_file):
-    """Looks up the position of the looked up file within the index handle.
-
-    Traverses the index and tries to either find the exact location of the file (if the file
-    is registered in index) or returns the position of the next lexicographically bigger path.
+def lookup_entry_within_index(index_handle, predicate):
+    """Looks up the first entry within index that satisfies the predicate
 
     Arguments:
-        index_handle(file): file handle of index
-        looked_up_file(str): name of the looked up file
+        index_handle(file): file handle of the index
+        predicate(function): predicate that tests given entry in index
+            IndexEntry -> bool
 
     Returns:
-        (bool, int): tuple of boolean, whether the entry was found and offset of either the found
-            file or the position of the next file
+        IndexEntry: index entry satisfying the given predicate
     """
-    last_offset = 12
     for entry in walk_index(index_handle):
-        last_offset = entry.offset
-        if entry.path == looked_up_file:
-            return True, entry.offset
-        elif entry.path > looked_up_file:
-            break
-    return False, last_offset
+        if predicate(entry):
+            return entry
+
+    raise EntryNotFoundException("Entry satisfying '{}' predicate not found".format(
+        predicate.__name__
+    ))
+
+
+def lookup_all_entries_within_index(index_handle, predicate):
+    """
+    Arguments:
+        index_handle(file): file handle of the index
+        predicate(function): predicate that tests given entry in index
+            IndexEntry -> bool
+
+    Returns:
+        [IndexEntry]: list of index entries satisfying given predicate
+    """
+    return [entry for entry in walk_index(index_handle) if predicate(entry)]
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
@@ -394,4 +409,5 @@ def remove_from_index(base_dir, minor_version, removed_file):
     perun_log.msg_to_stdout("Removing entry {} from the minor version {} index".format(
         removed_file, minor_version
     ))
-    # TODO: Something something
+
+    entry = IndexEntry(0, removed_file)
