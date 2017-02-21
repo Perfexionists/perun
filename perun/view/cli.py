@@ -121,7 +121,8 @@ def status(**kwargs):
     Arguments:
         kwargs(dict): various keyword arguments that changes how the status is displayed
     """
-    pass
+    perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
+    commands.status(**kwargs)
 
 
 @cli.command()

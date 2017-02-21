@@ -87,7 +87,7 @@ def lookup_minor_version(func):
             # note: since tuples are immutable we have to do this workaround
             arg_list = list(args)
             arg_list[minor_version_position] = vcs.get_minor_head(
-                pcs.wrapped_vcs_type, pcs.wrapped_vcs_url)
+                pcs.vcs_type, pcs.vcs_url)
             args = tuple(arg_list)
         return func(pcs, *args, **kwargs)
 
@@ -287,12 +287,33 @@ def log(pcs):
 
 
 @pass_pcs
-def status(pcs):
+def status(pcs, **kwargs):
     """Prints the status of performance control system
     Arguments:
         pcs(PCS): performance control system
+        kwargs(dict): dictionary of keyword arguments
     """
-    pass
+    # Get major head and print the status.
+    major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_url)
+    print("On major version {} ".format(major_head), end='')
+
+    # Print the index of the current head
+    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_url)
+    print("(minor version: {})".format(minor_head))
+
+    # Print in long format, the additional information about head commit
+    if not kwargs['short']:
+        # Retrieve the information about head commit
+        head_minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_url, minor_head)
+        print("")
+        print("Author: {} <{}> {}".format(
+            head_minor_version.author, head_minor_version.email, head_minor_version.date
+        ))
+        for parent in head_minor_version.parents:
+            print("Parent: {}".format(parent))
+        print("")
+        print(head_minor_version.desc)
+        print("")
 
 
 @pass_pcs

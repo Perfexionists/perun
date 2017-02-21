@@ -128,9 +128,27 @@ def get_minor_version_info(vcs_type, *args, **kwargs):
     Returns:
         MinorVersion: minor version named tuple for further process
     """
-    perun_log.msg_to_stdout("Getting minor version info of type {}".format(
-        vcs_type
+    perun_log.msg_to_stdout("Getting minor version info of type {} and args {}, {}".format(
+        vcs_type, args, kwargs
     ), 1)
     return dynamic_module_function_call(
         'perun.core.vcs', vcs_type, '_get_minor_version_info', *args, **kwargs
+    )
+
+
+def get_head_major_version(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs that we are calling the function for
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+
+    Returns:
+        str: identification of the major version
+    """
+    perun_log.msg_to_stdout("Getting head major version of type {}".format(
+        vcs_type
+    ), 1)
+    return dynamic_module_function_call(
+        'perun.core.vcs', vcs_type, '_get_head_major_version', *args, **kwargs
     )

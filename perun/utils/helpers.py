@@ -13,4 +13,4 @@ INDEX_VERSION = 1
 IndexEntry = collections.namedtuple("IndexEntry", "time checksum path offset")
 
 # Minor Version specific things
-MinorVersion = collections.namedtuple("MinorVersion", "date author checksum desc parents")
+MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
