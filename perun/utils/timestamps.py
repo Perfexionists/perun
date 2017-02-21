@@ -17,7 +17,6 @@ def write_timestamp(file_handle, timestamp):
         file_handle(file): opened file handle
         timestamp(float): timestamp we are writing to file
     """
-    print("Writing timestamp {}".format(timestamp))
     binary_timestamp = struct.pack('<I', round(timestamp))
     file_handle.write(binary_timestamp)
 

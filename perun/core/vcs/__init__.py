@@ -80,3 +80,57 @@ def init(vcs_type, *args, **kwargs):
     return dynamic_module_function_call(
         'perun.core.vcs', vcs_type, '_init', *args, **kwargs
     )
+
+
+def walk_minor_versions(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs that we are calling the function for
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+
+    Returns:
+        str: minor version sha-1 representation
+    """
+    perun_log.msg_to_stdout("Walking minor versions of type {}".format(
+        vcs_type
+    ), 1)
+    return dynamic_module_function_call(
+        'perun.core.vcs', vcs_type, '_walk_minor_versions', *args, **kwargs
+    )
+
+
+def walk_major_versions(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs that we are calling the function for
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+
+    Returns:
+        str: major version representation
+    """
+    perun_log.msg_to_stdout("Walking major versions of type {}".format(
+        vcs_type
+    ), 1)
+    return dynamic_module_function_call(
+        'perun.core.vcs', vcs_type, '_walk_major_versions', *args, **kwargs
+    )
+
+
+def get_minor_version_info(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs that we are calling the function for
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+
+    Returns:
+        MinorVersion: minor version named tuple for further process
+    """
+    perun_log.msg_to_stdout("Getting minor version info of type {}".format(
+        vcs_type
+    ), 1)
+    return dynamic_module_function_call(
+        'perun.core.vcs', vcs_type, '_get_minor_version_info', *args, **kwargs
+    )

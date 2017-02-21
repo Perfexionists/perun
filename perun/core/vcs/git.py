@@ -49,3 +49,33 @@ def _get_minor_head(git_path):
 
     assert store.is_sha1(git_head)
     return git_head
+
+
+def _walk_minor_versions(head):
+    """
+    Arguments:
+        head(str): identification of the starting point (head)
+
+    Returns:
+        MinorVersion: yields stream of minor versions
+    """
+    pass
+
+
+def _walk_major_versions():
+    """
+    Returns:
+        MajorVersion: yields stream of major versions
+    """
+    pass
+
+
+def _get_minor_version_info(minor_version):
+    """
+    Arguments:
+        minor_version(str): identification of minor_version
+
+    Returns:
+        MinorVersion: namedtuple representing the minor version
+    """
+    pass

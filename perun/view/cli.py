@@ -102,6 +102,8 @@ def rm(profile, minor, **kwargs):
               help="show aggregated profiles (one-liners) per each minor version")
 @click.option('--last', default=-1,
               help="show only last N minor versions")
+@click.option('--no-merged', is_flag=True, default=False,
+              help="if set the merges of paths will not be displayed")
 def log(**kwargs):
     """
     Arguments:
@@ -109,6 +111,17 @@ def log(**kwargs):
     """
     perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
     commands.log(kwargs)
+
+
+@cli.command()
+@click.option('--short', '-s', required=False, default=False, is_flag=True,
+              help="print the current status in short format instead of long format")
+def status(**kwargs):
+    """
+    Arguments:
+        kwargs(dict): various keyword arguments that changes how the status is displayed
+    """
+    pass
 
 
 @cli.command()

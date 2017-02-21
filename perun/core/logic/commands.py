@@ -278,13 +278,21 @@ def remove(pcs, profile, minor_version, **kwargs):
 
 @pass_pcs
 def log(pcs):
-    """
-    Prints the log of the @p pcs
+    """Prints the log of the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
+
+
+@pass_pcs
+def status(pcs):
+    """Prints the status of performance control system
+    Arguments:
+        pcs(PCS): performance control system
+    """
+    pass
 
 
 @pass_pcs
