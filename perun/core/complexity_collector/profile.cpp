@@ -2,10 +2,11 @@
 #include <vector>
 #include <tuple>
 #include <fstream>
+#include "Configuration.h"
 
 /*Thoughts:
- - overloaded functions filter? test first, only run-time filtering tho
- - sampling on/off and rate specified for each func independently?
+ - overloaded functions filter? test first, only run-time filtering tho -- check
+ - sampling on/off and rate specified for each func independently? -- check
  - force direct file output and sampling off by -D to increase speed?
  -- check if branch reduction really make such difference
  --- maybe also manually "inline" functions to make bigger difference?
@@ -28,15 +29,14 @@ static bool trace_ready = false;
 // destructed after exiting main. Last static initialization and first static destruction due to init_priority for
 // safety reasons.
 struct Trace_context_wrapper {
-    std::string trace_file_name;                    // Trace log file name
-    bool use_direct_file_output;                    // Output instrumentation records directly to the file
+    Configuration config;              // Configuration object
+    bool use_direct_file_output;       // Output instrumentation records directly to the file
 
     // Using vector as we need effective insertion and no additional memory usage for storage, no searching
     // Force timestamp record to be long long type
     std::vector<std::tuple<unsigned char, void *, duration<long long int, std::ratio<1ll, 1000000ll>>>> instr_data;
-    unsigned long instr_data_init_len;              // Initial vector capacity
 
-    std::ofstream trace_log;                        // Trace output stream
+    std::ofstream trace_log;           // Trace output stream
 
     // Wrapper constructor, handles object initialization and configuration file parsing
     // ----------------------------------------------------------------
@@ -44,7 +44,7 @@ struct Trace_context_wrapper {
     //  -- None
     // Returns:
     //  -- void
-    //  -- failure: exit(1)
+    //  -- failure: exit(exit_err_profile_file_open)
     // Throws:
     //  -- None
     Trace_context_wrapper();
@@ -55,7 +55,7 @@ struct Trace_context_wrapper {
     //  -- None
     // Returns:
     //  -- void
-    //  -- failure: exit(2)
+    //  -- failure: exit(exit_err_profile_file_closed)
     // Throws:
     //  -- None
     ~Trace_context_wrapper();
@@ -66,7 +66,7 @@ struct Trace_context_wrapper {
     //  -- None
     // Returns:
     //  -- void
-    //  -- failure: exit(2)
+    //  -- failure: exit(exit_err_profile_file_closed)
     // Throws:
     //  -- None
     void Print_vector_to_file();
@@ -78,7 +78,7 @@ struct Trace_context_wrapper {
     //  -- io:   A character representing function entry ('i' as in) or exit ('o' as out)
     // Returns:
     //  -- void
-    //  -- failure: exit(2)
+    //  -- failure: exit(exit_err_profile_file_closed)
     // Throws:
     //  -- None
     void Print_record_to_file(void *func, char io);
@@ -93,7 +93,7 @@ struct Trace_context_wrapper {
     //  -- io:   A character representing function entry ('i' as in) or exit ('o' as out)
     // Returns:
     //  -- void
-    //  -- failure: exit(2)
+    //  -- failure: exit(exit_err_profile_file_closed)
     // Throws:
     //  -- None
     void Handle_vector_failure(void *func, char io);
@@ -106,28 +106,25 @@ struct Trace_context_wrapper {
     //  -- io:   A character representing function entry ('i' as in) or exit ('o' as out)
     // Returns:
     //  -- void
-    //  -- failure: exit(2)
+    //  -- failure: exit(exit_err_profile_file_closed)
     // Throws:
     //  -- None
     void Create_instrumentation_record(void *func, char io);
 };
 
-Trace_context_wrapper::Trace_context_wrapper() : trace_file_name("trace.log"), use_direct_file_output{false},
-                                                 instr_data_init_len{20000}
+Trace_context_wrapper::Trace_context_wrapper() : config(), use_direct_file_output{true}
 {
-    //TODO: load config file
-    // possible contents:
-    // use only file
-    // sampling on/off (+rate)
-    // filter functions that could not be on exclude list (substring), run-time filtering only
-    // func + address pairing
-    // trace file name
-    // initial vector size? In case of memory problems, more like a debug / optional / advanced feature
+    // Get the configuration information
+    int ret_code = config.Parse();
+    if(ret_code != 0) {
+        exit(ret_code);
+    }
 
+    // Setup the storage if needed
     if(!use_direct_file_output) {
         try {
             instr_data.clear();
-            instr_data.reserve(instr_data_init_len);
+            instr_data.reserve(config.instr_data_init_len);
         } catch (const std::bad_alloc &) {
             // Not enough memory, use file output instead
             use_direct_file_output = true;
@@ -138,11 +135,12 @@ Trace_context_wrapper::Trace_context_wrapper() : trace_file_name("trace.log"), u
     }
 
     // Open the trace log file
-    trace_log.open(trace_file_name, std::ios::out | std::ios::trunc);
+    trace_log.open(config.trace_file_name, std::ios::out | std::ios::trunc);
     if(!trace_log.is_open()) {
         // File opening failed, terminate
         instr_data.clear();
-        exit(1);
+        config.func_config.clear();
+        exit(exit_err_profile_file_open);
     }
 
     // Enables the instrumentation
@@ -159,27 +157,28 @@ Trace_context_wrapper::~Trace_context_wrapper()
         if(!use_direct_file_output) {
             // Save the records into the trace file
             Print_vector_to_file();
-            instr_data.clear();
         }
-        // Close the file eventually
-        trace_log.close();
     } else {
         // File unexpectedly closed, terminate
         instr_data.clear();
-        exit(2);
+        config.func_config.clear();
+        exit(exit_err_profile_file_closed);
     }
 }
 
 void Trace_context_wrapper::Print_vector_to_file()
 {
+    // Print the whole vector contents to a trace log file
     if(trace_log.is_open()) {
         for(unsigned int i = 0; i < instr_data.size(); i++) {
             trace_log << std::get<0>(instr_data[i]) << " " << std::get<1>(instr_data[i]) << " "
                       << std::get<2>(instr_data[i]).count() << std::endl;
         }
     } else {
+        // File unexpectedly closed
         instr_data.clear();
-        exit(2);
+        config.func_config.clear();
+        exit(exit_err_profile_file_closed);
     }
 }
 
@@ -192,7 +191,7 @@ void Trace_context_wrapper::Handle_vector_failure(void *func, char io)
             // Resize the vector to init capacity
             instr_data.clear();
             instr_data.shrink_to_fit();
-            instr_data.reserve(instr_data_init_len);
+            instr_data.reserve(config.instr_data_init_len);
             // Retry the instrumentation
             duration<long long int, std::ratio<1ll, 1000000ll>> timestamp = duration_cast<microseconds>(Time::now().time_since_epoch());
             instr_data.push_back(std::make_tuple(io, func, timestamp));
@@ -210,7 +209,8 @@ void Trace_context_wrapper::Handle_vector_failure(void *func, char io)
     } else {
         // File unexpectedly closed during data collecting, terminate
         instr_data.clear();
-        exit(2);
+        config.func_config.clear();
+        exit(exit_err_profile_file_closed);
     }
 }
 
@@ -221,8 +221,10 @@ void Trace_context_wrapper::Print_record_to_file(void *func, char io)
         duration<long long int, std::ratio<1ll, 1000000ll>> timestamp = duration_cast<microseconds>(Time::now().time_since_epoch());
         trace_log << io << " " << func << " " << timestamp.count() << std::endl;
     } else {
+        // File unexpectedly closed
         instr_data.clear();
-        exit(2);
+        config.func_config.clear();
+        exit(exit_err_profile_file_closed);
     }
 }
 
@@ -250,18 +252,25 @@ void Trace_context_wrapper::Create_instrumentation_record(void *func, char io)
 // Wrapper static instantiation
 static Trace_context_wrapper trace __attribute__ ((init_priority (65535)));
 
-// Functions used by injection. TODO: sampling and run-time filtering
+// Functions used by injection. TODO: sampling
 // ----------------------------------------------------------------
 // Arguments:
 //  -- None
 // Returns:
 //  -- void
-//  -- failure: exit(2)
+//  -- failure: exit(exit_err_profile_file_closed)
 // Throws:
 //  -- None
 void __cyg_profile_func_enter (void *func,  void *caller)
 {
     if(trace_ready) {
+        // runtime filtering
+        auto result = trace.config.func_config.find(func);
+        if(result != trace.config.func_config.end() &&
+                std::get<Configuration::filter>(result->second) == Configuration::filter_on) {
+            return;
+        }
+        // Create the instrumentation record
         trace.Create_instrumentation_record(func, 'i');
     }
 }
@@ -269,6 +278,13 @@ void __cyg_profile_func_enter (void *func,  void *caller)
 void __cyg_profile_func_exit (void *func, void *caller)
 {
     if(trace_ready) {
+        // runtime filtering
+        auto result = trace.config.func_config.find(func);
+        if(result != trace.config.func_config.end() &&
+                std::get<Configuration::filter>(result->second) == Configuration::filter_on) {
+            return;
+        }
+        // Create the instrumentation record
         trace.Create_instrumentation_record(func, 'o');
     }
 }
