@@ -16,7 +16,7 @@ import perun.core.logic.store as store
 import perun.core.logic.config as perun_config
 import perun.core.vcs as vcs
 
-from perun.utils.helpers import MAXIMAL_LINE_WIDTH
+from perun.utils.helpers import MAXIMAL_LINE_WIDTH, TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -300,13 +300,13 @@ def log(pcs, minor_version, **kwargs):
         else:
             print(termcolor.colored("Minor Version {}".format(
                 minor.checksum
-            ), 'white', attrs=['bold']))
+            ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS))
             tracked_profiles = store.get_profile_number_for_minor(
                 pcs.get_object_directory(), minor.checksum)
             if tracked_profiles:
                 print("Tracked profiles: {}".format(tracked_profiles))
             else:
-                print(termcolor.colored('(no tracked profiles)', 'red', attrs=['bold']))
+                print(termcolor.colored('(no tracked profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
             print_minor_version_info(minor)
 
 
@@ -323,16 +323,20 @@ def print_short_minor_version_info(pcs, minor_version):
     short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
     if len(short_description) > MAXIMAL_LINE_WIDTH:
         short_description = short_description[:MAXIMAL_LINE_WIDTH-3] + "..."
-    print(termcolor.colored("{}".format(short_checksum), 'white', attrs=['bold']), end='')
+    print(termcolor.colored("{}".format(
+        short_checksum
+    ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
     print(" {0} ".format(short_description), end='')
     if tracked_profiles:
-        print(termcolor.colored("(", 'grey', attrs=['bold']), end='')
-        print(termcolor.colored("{}".format(tracked_profiles), 'white', attrs=['bold']), end='')
+        print(termcolor.colored("(", 'grey', attrs=TEXT_ATTRS), end='')
+        print(termcolor.colored("{}".format(
+            tracked_profiles
+        ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
         print(termcolor.colored(" profile{})".format(
             's' if tracked_profiles != 1 else ''
-        ), 'grey', attrs=['bold']))
+        ), 'grey', attrs=TEXT_ATTRS))
     else:
-        print(termcolor.colored('(no profiles)', 'red', attrs=['bold']))
+        print(termcolor.colored('(no profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
 
 
 def print_minor_version_info(head_minor_version):
@@ -354,8 +358,8 @@ def print_minor_version_profiles(pcs, minor_version):
         minor_version(str): identification of the commit (preferably sha1)
     """
     profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
-    print("Tracked profiles:\n" if profiles else termcolor.colored("(no tracked profiles)", 'red',
-                                                                   attrs=['bold']))
+    print("Tracked profiles:\n" if profiles else termcolor.colored(
+        "(no tracked profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
     for index_entry in profiles:
         print("\t{0.path} ({0.time})".format(index_entry))
 
@@ -370,13 +374,13 @@ def status(pcs, **kwargs):
     # Get major head and print the status.
     major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_url)
     print("On major version {} ".format(
-        termcolor.colored(major_head, 'white', attrs=['bold'])
+        termcolor.colored(major_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ), end='')
 
     # Print the index of the current head
     minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_url)
     print("(minor version: {})".format(
-        termcolor.colored(minor_head, 'white', attrs=['bold'])
+        termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ))
 
     # Print in long format, the additional information about head commit

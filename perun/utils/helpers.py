@@ -6,6 +6,9 @@ __author__ = 'Tomas Fiedor'
 
 # Other constants
 MAXIMAL_LINE_WIDTH = 60
+TEXT_ATTRS = []
+TEXT_EMPH_COLOUR = 'green'
+TEXT_WARN_COLOUR = 'red'
 
 # List of current versions of format and magic constants
 INDEX_ENTRIES_START_OFFSET = 12
