@@ -1,7 +1,13 @@
 init:
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 
 test:
-	py.test test
+	pytest
+
+run-gui:
+	python3 perun/view/gui/perun.py
+
+install:
+	python3 setup.py install --user
 
 .PHONY: init test
