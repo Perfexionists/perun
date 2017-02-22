@@ -266,6 +266,25 @@ def print_index(index_file):
             ))
 
 
+def get_profile_list_for_minor(base_dir, minor_version):
+    """Read the list of entries corresponding to the minor version from its index.
+
+    Arguments:
+        base_dir(str): base directory of the models
+        minor_version(str): representation of minor version
+
+    Returns:
+        list: list of IndexEntries
+    """
+    _, minor_index_file = split_object_name(base_dir, minor_version)
+
+    if os.path.exists(minor_index_file):
+        with open(minor_index_file, 'rb') as index_handle:
+            return [entry for entry in walk_index(index_handle)]
+    else:
+        return []
+
+
 @decorators.assume_version(INDEX_VERSION, 1)
 def touch_index(index_path):
     """Initializes and creates the index if it does not exists

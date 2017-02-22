@@ -82,7 +82,6 @@ def singleton_with_args(func):
 
     def wrapper(*args, **kwargs):
         """Wrapper function of the @p func"""
-        print("Calling: {} with args ({}, {})".format(func, args, kwargs))
         key = arguments_to_key(func, *args, **kwargs)
         if key not in func.cache.keys():
             func.cache[key] = func(*args, **kwargs)

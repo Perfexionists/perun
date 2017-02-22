@@ -3,7 +3,7 @@
 import logging
 
 __author__ = 'Tomas Fiedor'
-VERBOSITY = 2
+VERBOSITY = 0
 
 # Enum of verbosity levels
 VERBOSE_DEBUG = 2

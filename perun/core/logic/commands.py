@@ -313,7 +313,12 @@ def status(pcs, **kwargs):
             print("Parent: {}".format(parent))
         print("")
         print(head_minor_version.desc)
-        print("")
+
+    # Print profiles
+    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_head)
+    print("Tracked profiles:\n" if profiles else "(no tracked profiles)")
+    for index_entry in profiles:
+        print("\t{0.path} ({0.time})".format(index_entry))
 
 
 @pass_pcs
