@@ -83,7 +83,7 @@ private:
 
     const unsigned long default_instr_data_init_len = 20000;    // Default instrumentation record storage capacity
     const std::string config_file_name = "ccicc.conf";          // Default configuration file name
-    const int sample_default = 0;                               // Default sampling configuration value
+    const int sample_init = 0;                                  // Default sampling configuration value
 
     // Lexical analysis token types, more details in 'ccicc.conf'
     enum class Token_t {

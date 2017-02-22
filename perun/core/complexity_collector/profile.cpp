@@ -252,7 +252,7 @@ void Trace_context_wrapper::Create_instrumentation_record(void *func, char io)
 // Wrapper static instantiation
 static Trace_context_wrapper trace __attribute__ ((init_priority (65535)));
 
-// Functions used by injection. TODO: sampling
+// Functions used by injection. TODO: sampling with recursion
 // ----------------------------------------------------------------
 // Arguments:
 //  -- None
@@ -264,12 +264,23 @@ static Trace_context_wrapper trace __attribute__ ((init_priority (65535)));
 void __cyg_profile_func_enter (void *func,  void *caller)
 {
     if(trace_ready) {
-        // runtime filtering
+        // runtime filtering and sampling
         auto result = trace.config.func_config.find(func);
-        if(result != trace.config.func_config.end() &&
-                std::get<Configuration::filter>(result->second) == Configuration::filter_on) {
-            return;
+        if(result != trace.config.func_config.end()) {
+            if(std::get<Configuration::filter>(result->second) == Configuration::filter_on) {
+                // function is filtered
+                return;
+            } else if(std::get<Configuration::sample>(result->second) == Configuration::sample_on) {
+                // function is sampled
+                std::get<Configuration::sample_curr>(result->second)++;
+                if(std::get<Configuration::sample_curr>(result->second) !=
+                   std::get<Configuration::sample_coeff>(result->second)) {
+                    // don't record this occurrence
+                    return;
+                }
+            }
         }
+
         // Create the instrumentation record
         trace.Create_instrumentation_record(func, 'i');
     }
@@ -280,9 +291,21 @@ void __cyg_profile_func_exit (void *func, void *caller)
     if(trace_ready) {
         // runtime filtering
         auto result = trace.config.func_config.find(func);
-        if(result != trace.config.func_config.end() &&
-                std::get<Configuration::filter>(result->second) == Configuration::filter_on) {
-            return;
+        if(result != trace.config.func_config.end()) {
+            if(std::get<Configuration::filter>(result->second) == Configuration::filter_on) {
+                // function is filtered
+                return;
+            } else if(std::get<Configuration::sample>(result->second) == Configuration::sample_on) {
+                // function is sampled
+                if(std::get<Configuration::sample_curr>(result->second) <
+                   std::get<Configuration::sample_coeff>(result->second)) {
+                    // don't record this occurrence
+                    return;
+                } else {
+                    // record this occurrence and reset the sampling counter
+                    std::get<Configuration::sample_curr>(result->second) = 0;
+                }
+            }
         }
         // Create the instrumentation record
         trace.Create_instrumentation_record(func, 'o');
