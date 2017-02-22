@@ -7,6 +7,7 @@ const bool Configuration::filter_on = true;
 const bool Configuration::filter_off = false;
 const bool Configuration::sample_on = true;
 const bool Configuration::sample_off = false;
+//const bool Configuration::sample_init;
 
 Configuration::Configuration() : instr_data_init_len{default_instr_data_init_len}, trace_file_name("trace.log")
 {
@@ -257,7 +258,7 @@ void Configuration::Parse_filter() {
             std::get<filter>(func_record->second) = true;
         } else {
             // Function does not have a configuration record yet, create one
-            func_config.insert({func_p, std::make_tuple(filter_on, sample_off, sample_default, sample_default)});
+            func_config.insert({func_p, std::make_tuple(filter_on, sample_off, sample_init, sample_init)});
         }
 
         // Test for the collection end
@@ -302,7 +303,7 @@ void Configuration::Parse_sample() {
             std::get<sample>(func_record->second) = true;
         } else {
             // Function does not have a configuration record yet, create one
-            func_config.insert({func_p, std::make_tuple(filter_off, sample_on, sample_default, sample_val)});
+            func_config.insert({func_p, std::make_tuple(filter_off, sample_on, sample_val-1, sample_val)});
         }
         Test_next_token_type(Token_t::Br_curly_end, tok_val);
 
