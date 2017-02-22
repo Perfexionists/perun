@@ -96,6 +96,7 @@ def rm(profile, minor, **kwargs):
 
 
 @cli.command()
+@click.argument('head', required=False, default=None)
 @click.option('--count-only', is_flag=True, default=False,
               help="force printing of the profile count only associated to minor versions")
 @click.option('--show-aggregate', is_flag=True, default=False,
@@ -104,13 +105,16 @@ def rm(profile, minor, **kwargs):
               help="show only last N minor versions")
 @click.option('--no-merged', is_flag=True, default=False,
               help="if set the merges of paths will not be displayed")
-def log(**kwargs):
+@click.option('--short-minors', '-s', is_flag=True, default=False,
+              help="displays the minor version informations in short format")
+def log(head, **kwargs):
     """
     Arguments:
+        head(str): head minor version
         kwargs(dict): various keyword arguments that changes how the log is displayed
     """
     perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
-    commands.log(kwargs)
+    commands.log(head, **kwargs)
 
 
 @cli.command()

@@ -154,7 +154,7 @@ def remove_loose_object_from_dir(base_dir, object_name):
     else:
         perun_log.warn("{} does not exist within .perun".format(object_file_full_path))
 
-    # Remove directory from trakcing
+    # Remove directory from tracking
     if not os.listdir(object_dir_full_path):
         os.rmdir(object_dir_full_path)
 
@@ -282,6 +282,25 @@ def get_profile_list_for_minor(base_dir, minor_version):
             return [entry for entry in walk_index(index_handle)]
     else:
         return []
+
+
+def get_profile_number_for_minor(base_dir, minor_version):
+    """
+    Arguments:
+        base_dir(str): base directory of the profiles
+        minor_version(str): representation of minor version
+
+    Returns:
+        int: number of profiles inside the index of the minor_version
+    """
+    _, minor_index_file = split_object_name(base_dir, minor_version)
+
+    if os.path.exists(minor_index_file):
+        with open(minor_index_file, 'rb') as index_handle:
+            index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
+            return read_int_from_handle(index_handle)
+    else:
+        return 0
 
 
 @decorators.assume_version(INDEX_VERSION, 1)

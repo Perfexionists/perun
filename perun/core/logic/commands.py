@@ -277,23 +277,35 @@ def remove(pcs, profile, minor_version, **kwargs):
 
 
 @pass_pcs
-def log(pcs):
+@lookup_minor_version
+def log(pcs, minor_version, **kwargs):
     """Prints the log of the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
+        minor_version(str): representation of the head version
+        kwargs(dict): dictionary of the additional parameters
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
+    # Walk the minor versions and print them
+    for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_url, minor_version):
+        if kwargs['short_minors']:
+            pass
+        else:
+            print("Minor Version {}".format(minor.checksum))
+            tracked_profiles = store.get_profile_number_for_minor(
+                pcs.get_object_directory(), minor.checksum)
+            print("Tracked profiles: {}".format(tracked_profiles))
+            print_minor_version_info(minor)
 
-def print_minor_version_info(pcs, minor_version):
+
+def print_minor_version_info(head_minor_version):
     """
     Arguments:
         pcs(PCS): performance control system
-        minor_version(str): identification of the commit (preferably sha1)
+        head_minor_version(str): identification of the commit (preferably sha1)
     """
-    head_minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_url, minor_version)
-    print("")
     print("Author: {} <{}> {}".format(
         head_minor_version.author, head_minor_version.email, head_minor_version.date
     ))
@@ -331,8 +343,10 @@ def status(pcs, **kwargs):
     print("(minor version: {})".format(minor_head))
 
     # Print in long format, the additional information about head commit
+    print("")
     if not kwargs['short']:
-        print_minor_version_info(pcs, minor_head)
+        minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_url, minor_head)
+        print_minor_version_info(minor_version)
 
     # Print profiles
     print_minor_version_profiles(pcs, minor_head)

@@ -58,15 +58,34 @@ def _get_minor_head(git_path):
     return git_head
 
 
-def _walk_minor_versions(head):
-    """
+def _walk_minor_versions(git_path, head):
+    """Return the sorted list of minor versions starting from the given head.
+
+    Initializes the worklist with the given head commit and then iteratively retrieve the
+    minor version info, pushing the parents for further processing. At last the list
+    is sorted and returned.
+
     Arguments:
+        git_path(str): path to the git directory
         head(str): identification of the starting point (head)
 
     Returns:
         MinorVersion: yields stream of minor versions
     """
-    pass
+    worklist = [head]
+    minor_versions = []
+
+    # Recursively iterate through the parents
+    while worklist:
+        minor_version = worklist.pop()
+        minor_version_info = _get_minor_version_info(git_path, minor_version)
+        minor_versions.append(minor_version_info)
+        for parent in minor_version_info.parents:
+            worklist.append(parent)
+
+    # Sort by date
+    minor_versions.sort(key=lambda minor: minor.date)
+    return minor_versions
 
 
 def _walk_major_versions():

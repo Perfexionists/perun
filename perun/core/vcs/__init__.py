@@ -9,7 +9,6 @@ depending of the chosen type/module, like e.g. git, svn, etc.
 """
 
 import importlib
-
 import perun.utils.log as perun_log
 
 __author__ = 'Tomas Fiedor'
@@ -40,11 +39,13 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         module = importlib.import_module(function_location_path)
         module_function = getattr(module, fun_name)
         return module_function(*args, **kwargs)
-    except ImportError:
+    except ImportError as e:
+        perun_log.msg_to_stdout(e, 2)
         perun_log.error("Unrecognized or unsupported VCS type '{}'".format(
             module_name
         ))
-    except AttributeError:
+    except AttributeError as e:
+        perun_log.msg_to_stdout(e, 2)
         perun_log.error("Function '{}' is unsupported in module {}".format(
             fun_name, function_location_path
         ))
