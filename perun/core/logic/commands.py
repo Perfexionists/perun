@@ -286,6 +286,35 @@ def log(pcs):
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
 
+def print_minor_version_info(pcs, minor_version):
+    """
+    Arguments:
+        pcs(PCS): performance control system
+        minor_version(str): identification of the commit (preferably sha1)
+    """
+    head_minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_url, minor_version)
+    print("")
+    print("Author: {} <{}> {}".format(
+        head_minor_version.author, head_minor_version.email, head_minor_version.date
+    ))
+    for parent in head_minor_version.parents:
+        print("Parent: {}".format(parent))
+    print("")
+    print(head_minor_version.desc)
+
+
+def print_minor_version_profiles(pcs, minor_version):
+    """
+    Arguments:
+        pcs(PCS): performance control system
+        minor_version(str): identification of the commit (preferably sha1)
+    """
+    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
+    print("Tracked profiles:\n" if profiles else "(no tracked profiles)")
+    for index_entry in profiles:
+        print("\t{0.path} ({0.time})".format(index_entry))
+
+
 @pass_pcs
 def status(pcs, **kwargs):
     """Prints the status of performance control system
@@ -303,22 +332,10 @@ def status(pcs, **kwargs):
 
     # Print in long format, the additional information about head commit
     if not kwargs['short']:
-        # Retrieve the information about head commit
-        head_minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_url, minor_head)
-        print("")
-        print("Author: {} <{}> {}".format(
-            head_minor_version.author, head_minor_version.email, head_minor_version.date
-        ))
-        for parent in head_minor_version.parents:
-            print("Parent: {}".format(parent))
-        print("")
-        print(head_minor_version.desc)
+        print_minor_version_info(pcs, minor_head)
 
     # Print profiles
-    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_head)
-    print("Tracked profiles:\n" if profiles else "(no tracked profiles)")
-    for index_entry in profiles:
-        print("\t{0.path} ({0.time})".format(index_entry))
+    print_minor_version_profiles(pcs, minor_head)
 
 
 @pass_pcs

@@ -133,11 +133,10 @@ def add_loose_object_to_dir(base_dir, object_name, object_content):
     touch_dir(object_dir_full_path)
 
     # Write the content of the object
-    if os.path.exists(object_file_full_path):
-        perun_log.warn("{} is already added for tracking".format(object_file_full_path))
-
-    with open(object_file_full_path, 'wb') as object_handle:
-        object_handle.write(object_content)
+    # Note: That in some universe, there may become some collision, but in reality it should not
+    if not os.path.exists(object_file_full_path):
+        with open(object_file_full_path, 'wb') as object_handle:
+            object_handle.write(object_content)
 
 
 def remove_loose_object_from_dir(base_dir, object_name):
