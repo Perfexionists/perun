@@ -289,9 +289,9 @@ def log(pcs, minor_version, **kwargs):
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
     # Walk the minor versions and print them
-    for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_url, minor_version):
+    for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_url, minor_version)[::-1]:
         if kwargs['short_minors']:
-            pass
+            print_short_minor_version_info(pcs, minor)
         else:
             print("Minor Version {}".format(minor.checksum))
             tracked_profiles = store.get_profile_number_for_minor(
@@ -300,15 +300,26 @@ def log(pcs, minor_version, **kwargs):
             print_minor_version_info(minor)
 
 
+def print_short_minor_version_info(pcs, minor_version):
+    """
+    Arguments:
+        pcs(PCS): object with performance control system wrapper
+        minor_version(MinorVersion): minor version object
+    """
+    tracked_profiles = store.get_profile_number_for_minor(
+        pcs.get_object_directory(), minor_version.checksum
+    )
+    short_checksum = minor_version.checksum[:6]
+    short_description = minor_version.desc.split("\n")[0].strip()
+    print("{0} {1} ({2} profiles)".format(short_checksum, short_description, tracked_profiles))
+
+
 def print_minor_version_info(head_minor_version):
     """
     Arguments:
-        pcs(PCS): performance control system
         head_minor_version(str): identification of the commit (preferably sha1)
     """
-    print("Author: {} <{}> {}".format(
-        head_minor_version.author, head_minor_version.email, head_minor_version.date
-    ))
+    print("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
     for parent in head_minor_version.parents:
         print("Parent: {}".format(parent))
     print("")
