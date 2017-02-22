@@ -4,15 +4,15 @@ Perun Manifesto
 
 .. contents::
 
-Perun Design Choices 
+Perun Design Choices
 ====================
 
-This section explains some of the design choices, that were made. 
+This section explains some of the design choices, that were made.
 Perun was made with the following goals in mind:
 
   1. Platform independent---profiling and version controling can be
      done both on Unix/Windows/MacOS systems.
-  
+
   2. Language independent---perun should be independent on the underlying
      project language (this also complies with the Point 1.).
 
@@ -44,7 +44,7 @@ CLI Framework of Choice
 **Click** was chosen as the framework for command line interface. ``Docopts`` was ruled out
 for being hard to use, through the docstrings. Click is built over the ``getopts`` and is
 similar to the classical ``argparse``, however, is much easier to use and also
-enables nesting of the commands, that is necessary for the command line work with 
+enables nesting of the commands, that is necessary for the command line work with
 repository-like structure.
 
 GUI Framework of Choice
@@ -53,7 +53,7 @@ GUI Framework of Choice
 **Kivy** was chose as the framework for graphical user interface. While other frameworks
 were considered as well (like **PyQT**), kivy seems natural for multi-platform applications
 and provides nice look. Moreover, ``Kivy`` has clear separation between presentation and
-logic. 
+logic.
 
 Visualization of Choice
 -----------------------
@@ -66,10 +66,10 @@ provides lots of customization.
 Structure of Perun
 ------------------
 
-The implementation details of perun storage is inspired by **GIT** design. 
+The implementation details of perun storage is inspired by **GIT** design.
 While it was considered to use database (like **MongoDB**, that would solve
 the efficient storage), we felt, that it would be too robust and will add a layer
-of complexity. Instead with the low-level approach to storing the profiles and 
+of complexity. Instead with the low-level approach to storing the profiles and
 other informations enables one to have full control over the Performance Control System
 using both low-level and high-level commands. Moreover, the interlacing between VCS and PCS,
 like e.g. for **GIT** is then natural and enables one some pretty neat tricks automatizations.
@@ -80,7 +80,7 @@ Perun Overview
 Perun logic is similar to the MVC (Model-View-Controler) architecture
 and consists of three main parts:
 
-  1. **Data** (Model)---wraps VCS and its Major Version with parallel 
+  1. **Data** (Model)---wraps VCS and its Major Version with parallel
      PCS structure and conveys the mapping of profiles to minor version.
      Data has no own logics, and only servers as midlayer between various
      VCS, like. GIT, SVN, etc.
@@ -115,7 +115,7 @@ Moreover, it can handle nested commands required for repository-like behaviour.
     major and minor version
 
     - ``--short``, ``-s``---short status of the perun
-  - ``perun diff PROFILE1 PROFILE2``---shows diff between two chosen profiles, 
+  - ``perun diff PROFILE1 PROFILE2``---shows diff between two chosen profiles,
     represented by SHA-1 hashes
 
     - ``-diff-algorithm=ALG``---use different diff strategy
@@ -133,7 +133,7 @@ Moreover, it can handle nested commands required for repository-like behaviour.
 
     - ``--count-only``---only shows number of profiles associated to minor versions
     - ``--show-aggregate``---shows aggregated profiles for each minor version
-    - ``--last N``---print only last N minor versions    
+    - ``--last N``---print only last N minor versions
   - ``perun tag``---tags profiles with user given tags
   - ``perun register``---register new runner for given workloads and major versions or
     register new workload
@@ -157,7 +157,7 @@ Moreover, it can handle nested commands required for repository-like behaviour.
 Perun Least Publishable Unit
 ----------------------------
 
-The least publishable unit (i.e. the minimalisitic prototype of the perun) contains the 
+The least publishable unit (i.e. the minimalisitic prototype of the perun) contains the
 following commands:
 
   - ``perun help``
@@ -187,11 +187,11 @@ All of the internals corresponding to given Version Control System is stored
 in the ``.perun`` directory. Removing this directory removes the tracking and
 all of the profiles.
 
-The ``.perun`` directory exploits the tree structure of changes in order to 
+The ``.perun`` directory exploits the tree structure of changes in order to
 achieve the incremental structure of the profiles.
 
 The ``.perun`` directory contains the following files and special directories:
-  
+
   - ``HEAD``---currently "checked" out major version
   - ``objects\``---directory with objects (minor version indexes, profiles)
   - ``major-versions\``---directory with all major versions
@@ -205,16 +205,16 @@ Zlib.
 Command Case Study: Init new perun control system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The user wants to initialize new perun pcs. 
+The user wants to initialize new perun pcs.
 
-If the resulting pcs should be manual it is enough to run ``perun init``. 
-The command will first check if there is not existing pcs and otherwise 
+If the resulting pcs should be manual it is enough to run ``perun init``.
+The command will first check if there is not existing pcs and otherwise
 creates a new ``.perun`` directory initialized with bare structure.
 
 If the user wants to wrap the perun over existing vcs, the parameter ``--type=VCS``
 has to be given. The command first checks if there exists the vsc of
-given type, then inits the perun the same way as bare init and 
-moreover install hooks for the given type of VCS. 
+given type, then inits the perun the same way as bare init and
+moreover install hooks for the given type of VCS.
 
 Another alternation is to run the ``init`` with ``--init-vcs`` parameter
 that along with perun creates a empty repository with given params.
@@ -225,10 +225,10 @@ Command Case Study: Add profile
 The user wants to manually add ``PROFILE`` corresponding to ``MINOR`` version.
 
 Both ``PROFILE`` and ``MINOR`` is represented either using references (which
-are further translated to SHA-1) or directly by SHA-1. 
+are further translated to SHA-1) or directly by SHA-1.
 
 The input profile is taken and its SHA-1 is computed, which will be used for having unique
-representation. The contents of the profile are packed using the Zlib library. 
+representation. The contents of the profile are packed using the Zlib library.
 
 Then we lookup the *index* and *pack* for the given ``MINOR`` SHA-1. First two bytes
 are taken that represents the directory, the rest of the 38 bytes are used to identify
@@ -249,7 +249,7 @@ Both ``PROFILE`` and ``MINOR`` is represented the same as in the previous case s
 
 Similarly to previous study, the index file is looked up out of ``MINOR`` SHA-1 number.
 Inside that we lookup the appropriate entry for the ``PROFILE`` SHA-1. The offset
-is retrieved in order to locate the packed profile inside the pack. 
+is retrieved in order to locate the packed profile inside the pack.
 
 Insides of the pack are removed, and the index is updated with new offsets.
 
@@ -260,12 +260,12 @@ The user wants to show the ``PROFILE`` corresponding to ``MINOR`` version.
 
 Both ``PROFILE`` and ``MINOR`` is represented the same as in the previous case study.
 
-First we look into cache, which stores up to 10 (maybe more?) unpacked profiles for 
+First we look into cache, which stores up to 10 (maybe more?) unpacked profiles for
 fast access of the profiles, without the need of unpacking.
 
 Similarly to previous study, the index file is looked up out of ``MINOR`` SHA-1 number.
 Inside that we lookup the appropriate entry for the ``PROFILE`` SHA-1. The offset
-is retrieved in order to locate the packed profile inside the pack. 
+is retrieved in order to locate the packed profile inside the pack.
 
 The contents are retrieved from the pack, since we know the offset and the size of the
 content from the index file. The given data are unpacked using Zlib and added to .cache
@@ -278,14 +278,14 @@ The user wansts to get the list of all ``MINOR`` version corresponding to the
 current ``MAJOR`` version (read from ``HEAD`` file).
 
 First the HEAD reference is obtained, if no SHA-1 is supplied from command line.
-which stores the SHA-1 of the most recent minor version. This serves as a starting point for the ``perun log``. 
+which stores the SHA-1 of the most recent minor version. This serves as a starting point for the ``perun log``.
 
 Similarly to previous commands, the SHA-1 is used to locate the entry of the minor version.
 Basic informations are printed out, and then the information about profiles. If the ``--count-only``
 is supplied, only fanout table is parsed and we return the number of profiles associated to the
 minor version. Otherwise every profile in the index file is printed to the output.
 
-After the minor version is parsed, we look at the parent of the minor version and 
+After the minor version is parsed, we look at the parent of the minor version and
 proceed same as for the previous commit. If we supplied the ``--last=N`` argument,
 we print only ``N`` minor versions starting from the given SHA-1.
 
@@ -326,7 +326,7 @@ Runners have following modes:
 Profiles
 ========
 
-Perun currently supports only three types of profiles (time, space, complexity). 
+Perun currently supports only three types of profiles (time, space, complexity).
 These can be visualized with several strategies.
 
 !Note that if the checked out Major Version has some uncommited changes, then the
@@ -348,37 +348,143 @@ Our current focus is on the following types of profiles:
      moreover, the mapping of objects to addresses.
   3. Complexity---the complexity of the program or given/chosen functions
 
-Perun profile format is currently under development, the current version is::
+Perun profile format is currently under development, the current version is
+described in the following snipped, where the # parts are used as comments for
+the parts of the profile::
 
   Profile = {
+    # General information about profile: its type
     'type': 'memory',
+    # Corresponding minor version (this will be injected by perun)
     'minor_version': a5cf40ebf33610c97083b209fc12a36adc3a99ff,
-    'file': '/dir/subdir/bin',
+    # Command that was run and for which the data was collected
+    'cmd': '/dir/subdir/bin',
+    # Params used to run the command
+    'params': '-g -w -c',
+    # Workload, i.e. some file/input/output supplied
     'workload': 'load.in',
+
+    # Collector informations
+    'collector': {
+      # The name of the run collector
+      'name' : 'collector_name',
+      # Parameters used during running of the collector
+      'params': '-sample 20 --no-recurse',
+    }
+
+    # Global snapshot
     'global': {
+        # Timestamp of the snapshot (when it ended)
         'time': 12.32s,
+        # List of resources corresponding to the snapshot with additional info
         'resources': [
-           {'amount': 30 MB, 'location': '/dir/subdir/loc' },
+           # Amount: how many of the resource it was consumed
+           # Uid: unique identifier of the location or the resource
+           # Type: type of the quantified resource
+           # Trace: trace of the resource (callstacks, previous calls, whatever)
+           {'amount': 30 MB, 'uid': '/dir/subdir/loc', 'type': 'memory', 'trace':''},
         ]
      },
+
+     # List of snapshots containing objects similar to global one
      'snapshots': [
        {
          'time': '1.0s',
          'resources': [
-            {'amount': 12MB, 'location': '/dir/subdir/loc#13' },
-            {'amount':  1MB, 'location': '/dir/subdir/loc#47' }
+            {'amount': 12MB, 'uid': '/dir/subdir/loc#13' },
+            {'amount':  1MB, 'uid': '/dir/subdir/loc#47' }
          ]
        },
        {
          'time': '2.0s',
          'resources': [
-            {'amount': 37MB, 'location': '/dir/subdir/loc#13' },
-            {'amount':  3MB, 'location': '/dir/subdir/loc#47' } 
+            {'amount': 37MB, 'uid': '/dir/subdir/loc#13' },
+            {'amount':  3MB, 'uid': '/dir/subdir/loc#47' }
          ]
        }
      ]
   }
 
+Example of time profile, with data collected by ``time`` utility::
+
+  {
+    'type': 'time',
+    'minor_version': a5cf40ebf33610c97083b209fc12a36adc3a99ff,
+    'cmd': '/dir/subdir/bin',
+    'param': '-g -w -v',
+    'workload': 'load.in',
+
+    'collector': {
+       'name': 'time',
+       'params': ''
+    },
+
+    'global': {
+        'timestamp': 12.32s,
+        'resources': [
+           {'amount': 0.616s, 'uid': 'real'}
+           {'amount': 0.500s, 'uid': 'user'}
+           {'amount': 0.125s, 'uid': 'sys'}
+        ]
+    },
+
+  'snapshots': []
+  }
+Example of mixed profile, with data collected by custom collector::
+
+  {
+    'type': 'mixed',
+    'minor_version': a5cf40ebf33610c97083b209fc12a36adc3a99ff,
+    'cmd': './gaston',
+    'param': '--serialize',
+    'workload': 'ex4.mona',
+
+    'collector': {
+       'name': 'gaston-collect',
+       'params': ''
+    },
+
+    'global': {
+       'timestamp': 0.59s,
+       'resources':[
+          {'amount': 0.10s, 'uid': 'sa-creation', 'type': 'time'},
+          {'amount': 0.45s, 'uid': 'dec-proc', 'type': 'time'},
+          {'amount': 0.01s, 'uid': 'cleaning', 'type': 'time'},
+          {'amount': 4817, 'uid': 'mona-space', 'type': 'term'},
+          {'amount': 31712, 'uid': 'overall-space', 'type': 'term'},
+          {'amount': 977296, 'uid': 'fixpoint-space', 'type': 'term'}
+       ]
+   }
+  }
+Example of memory collected data::
+
+  {
+    'type': 'memory',
+    'minor_version': a5cf40ebf33610c97083b209fc12a36adc3a99ff,
+    'cmd': './gaston',
+    'param': '--serialize',
+    'workload': 'ex4.mona',
+
+    'collector': {
+       'name': 'massif',
+       'params': ''
+    },
+
+    'snapshots': [
+      { 'timestamp': 123393017,
+        'resources': [
+          {'amount': 4134891, 'uid': 'mem_heap_B', 'type': 'memory'},
+          {'amount': 564725, 'uid': 'mem_heap_extra_B', 'type': 'memory'}
+        ]
+      },
+      { 'timestamp': 16162105,
+        'resources': [
+          {'amount': 4134891, 'uid': 'mem_heap_B', 'type': 'memory'},
+          {'amount': 564725, 'uid': 'mem_heap_extra_B', 'type': 'memory'}
+        ]
+      }
+    ]
+  }
 Collective Profiles
 ~~~~~~~~~~~~~~~~~~~
 
@@ -386,12 +492,12 @@ Collective Profiles
 creating the most general profile subsuming both of these profile.
 Aggregated profiles are not supported for some types of profiles.
 
-Profiles can be aggregated within the same Minor Version, either for the same workload 
+Profiles can be aggregated within the same Minor Version, either for the same workload
 or for different workloads.
 This yields so called **Collective Profile**.
 
 Collective Profiles are computed either by relative info, and/or by assigning weight
-to concrete profiles. Collective profiles serves as general information about the 
+to concrete profiles. Collective profiles serves as general information about the
 current state of the performance for the given Minor Version.
 
 Differential Profiles
@@ -417,13 +523,13 @@ Perun will be able to run in three modes:
 
   1. **Offline Mode**---the default mode, where everything is run on the host system
 
-  2. **Online Mode**---optional mode, where everything is run on remote system 
+  2. **Online Mode**---optional mode, where everything is run on remote system
      (supported systems are (i) Travis and possibly (ii) Jenkins)
 
-  3. **Mixed Mode**---mode, where some of the runners will run on host system, 
+  3. **Mixed Mode**---mode, where some of the runners will run on host system,
      and rest will run on remote system
 
-Modes are set for each *Major Version* exclusively, 
+Modes are set for each *Major Version* exclusively,
 as we may need different performance testing for different Major Versions
 (note that Major Versions corresponds to Branches in GIT VCS, where this makes sense).
 By default, in every tracked *Version Control System* runs in **Offline**.
@@ -439,7 +545,7 @@ The default mode of the Perun. This can be further differentiated to following t
   2. **Postponed Offline Mode**---the runner jobs are batched in Scheduler to run
      at specific or postponed times.
 
-On client side this is achieved automatically by exploiting the hooks of the 
+On client side this is achieved automatically by exploiting the hooks of the
 version controls (for GIT this is achievable) or either by manual run.
 For GIT, Perun supports the following hooks:
 
@@ -470,7 +576,7 @@ Mixed Mode
 ----------
 
 Alternates between Offline and Online modes. The user has to state, which workloads
-and runners are run online and which offline. 
+and runners are run online and which offline.
 
 Other Features
 ===============
