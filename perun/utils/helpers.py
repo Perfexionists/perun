@@ -4,6 +4,9 @@ import collections
 
 __author__ = 'Tomas Fiedor'
 
+# Other constants
+MAXIMAL_LINE_WIDTH = 60
+
 # List of current versions of format and magic constants
 INDEX_ENTRIES_START_OFFSET = 12
 INDEX_NUMBER_OF_ENTRIES_OFFSET = 8
