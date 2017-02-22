@@ -27,10 +27,10 @@ profile++:
 	LD_PRELOAD="$$PWD/malloc.so" ./test++
 
 clean-logs:
-	rm MemoryLog.*
+	rm MemoryLog
 
 clean:
-	rm -f test++ test MemoryLog.*
+	rm -f test++ test MemoryLog
 
 zip:
 	tar -cvf xpodol06.tar $(ZIPFILES)

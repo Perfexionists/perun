@@ -1,10 +1,11 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <time.h>
 
 #include "backtrace.h"
+
+#define LOG_FILE_NAME "MemoryLog"
 
 static void* (*real_malloc)(size_t size);
 static void* (*real_calloc)(size_t nmemb, size_t size);
@@ -19,7 +20,24 @@ static FILE* logFile;
 static int profiling = 0;
 static int initialized = 0;
 
-void init_allocators(){
+/*
+GCC destructor attribute provides finalizing function which close log file properly
+after main program's execution finished
+*/
+__attribute__((destructor)) void finalize (void){
+  
+  profiling = 1;
+
+  if(logFile != NULL) {
+    fclose(logFile);
+  }
+}
+
+/*
+Function provides initializing of the allocators 
+and opening log file
+*/
+void init(){
 
   profiling = 1;
 
@@ -35,7 +53,7 @@ void init_allocators(){
   initialized = 1;
 
   char fileName[256];
-  sprintf(fileName, "MemoryLog.%i", getpid());
+  sprintf(fileName, "MemoryLog");
   logFile = fopen(fileName, "w");
 
   profiling = 0;
@@ -43,8 +61,9 @@ void init_allocators(){
 
 void* malloc(size_t size){
 
-  if(!initialized)
-    init_allocators();
+  if(!initialized){
+    init();
+  }
 
   void *ptr = real_malloc(size);
     
@@ -64,7 +83,7 @@ void* malloc(size_t size){
 void free(void *ptr){
 
   if(!initialized)
-    init_allocators();
+    init();
 
   real_free(ptr);
   
@@ -72,7 +91,8 @@ void free(void *ptr){
     profiling = 1;
 
     fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    fprintf(logFile, "free %li\n\n", (long int)ptr);
+    fprintf(logFile, "free %li\n", (long int)ptr);
+    backtrace(logFile);
   
     profiling = 0;
   }
@@ -81,7 +101,7 @@ void free(void *ptr){
 void* realloc(void *ptr, size_t size){
 
   if(!initialized)
-    init_allocators();
+    init();
 
   void *nptr = real_realloc(ptr, size);
 
@@ -102,7 +122,7 @@ void* realloc(void *ptr, size_t size){
 void* calloc(size_t nmemb, size_t size){
 
   if(!initialized)
-    init_allocators();
+    init();
 
   void *ptr = real_calloc(nmemb, size);
     
@@ -123,7 +143,7 @@ void* calloc(size_t nmemb, size_t size){
 void* memalign(size_t alignment, size_t size){
 
   if(!initialized)
-    init_allocators();
+    init();
 
   void *ptr = real_memalign(alignment, size);
 
@@ -144,7 +164,7 @@ void* memalign(size_t alignment, size_t size){
 int posix_memalign(void** memptr, size_t alignment, size_t size){
 
   if(!initialized)
-    init_allocators();
+    init();
 
   int ret = real_posix_memalign(memptr, alignment, size);
 
@@ -165,7 +185,7 @@ int posix_memalign(void** memptr, size_t alignment, size_t size){
 void* valloc(size_t size){
 
   if(!initialized)
-    init_allocators();
+    init();
 
   void *ptr = real_valloc(size);
 
@@ -186,7 +206,7 @@ void* valloc(size_t size){
 void *aligned_alloc(size_t alignment, size_t size){
 
   if(!initialized)
-    init_allocators();
+    init();
 
   void *ptr = real_aligned_alloc(alignment, size);
 
