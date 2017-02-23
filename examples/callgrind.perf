@@ -1,0 +1,27 @@
+{
+  "type": "memory",
+  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
+  "cmd": "./gaston",
+  "param": "--serialize",
+  "workload": "ex4.mona",
+
+  "collector": {
+     "name": "massif",
+     "params": ""
+  },
+
+  "snapshots": [
+    { "timestamp": 123393017,
+      "resources": [
+        {"amount": 4134891, "uid": "mem_heap_B", "type": "memory"},
+        {"amount": 564725, "uid": "mem_heap_extra_B", "type": "memory"}
+      ]
+    },
+    { "timestamp": 16162105,
+      "resources": [
+        {"amount": 4134891, "uid": "mem_heap_B", "type": "memory"},
+        {"amount": 564725, "uid": "mem_heap_extra_B", "type": "memory"}
+      ]
+    }
+  ]
+}

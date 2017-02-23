@@ -132,6 +132,8 @@ def status(**kwargs):
 @cli.command()
 @click.argument('profile', required=True)
 @click.argument('minor', required=False)
+@click.option('--format', '-f', type=click.Choice(['raw']), default='raw',
+              help="how the profile should be shown")
 @click.option('--coloured', '-c', is_flag=True,
               help="colour the outputed profile")
 @click.option('--one-line', '-o', is_flag=True,

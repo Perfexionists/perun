@@ -1,0 +1,23 @@
+{
+  "type": "time",
+  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
+  "cmd": "/dir/subdir/bin",
+  "param": "-g -w -v",
+  "workload": "load.in",
+
+  "collector": {
+    "name": "time",
+    "params": ""
+  },
+
+  "global": {
+    "timestamp": "12.32s",
+    "resources": [
+       {"amount": "0.616s", "uid": "real"},
+       {"amount": "0.500s", "uid": "user"},
+       {"amount": "0.125s", "uid": "sys"}
+    ]
+  },
+
+  "snapshots": []
+}
