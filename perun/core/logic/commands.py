@@ -243,6 +243,10 @@ def add(pcs, profile, minor_version):
         pcs, profile, minor_version
     ), 2)
 
+    # Test if the given profile exists
+    if not os.path.exists(profile):
+        perun_log.error("{} does not exists".format(profile))
+
     # Load profile content
     with open(profile, 'r', encoding='utf-8') as profile_handle:
         profile_content = "".join(profile_handle.readlines())

@@ -16,7 +16,7 @@ import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 
 from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
-    INDEX_ENTRIES_START_OFFSET, INDEX_NUMBER_OF_ENTRIES_OFFSET
+    INDEX_NUMBER_OF_ENTRIES_OFFSET
 from perun.utils.exceptions import EntryNotFoundException
 
 __author__ = 'Tomas Fiedor'
@@ -373,11 +373,24 @@ def write_entry_to_index(index_file, file_entry):
         # Lookup the position of the registered file within the index
         if file_entry.offset == -1:
             try:
-                predicate = (lambda entry: entry.path >= file_entry.path)
+                predicate = (
+                    lambda entry: entry.path > file_entry.path or
+                            (entry.path == file_entry.path and entry.time >= file_entry.time)
+                )
                 looked_up_entry = lookup_entry_within_index(index_handle, predicate)
+
+                # If there is an exact match, we do not add the entry to the index
+                if looked_up_entry.path == file_entry.path and \
+                        looked_up_entry.time == file_entry.time:
+                    perun_log.msg_to_stdout("{0.path} ({0.time}) already registered in {1}".format(
+                        file_entry, index_file
+                    ), 0)
+                    return
                 offset_in_file = looked_up_entry.offset
             except EntryNotFoundException:
-                offset_in_file = INDEX_ENTRIES_START_OFFSET
+                # Move to end of the file and set the offset to the end of the file
+                index_handle.seek(0, 2)
+                offset_in_file = index_handle.tell()
         else:
             offset_in_file = file_entry.offset
 
