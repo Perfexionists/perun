@@ -103,6 +103,24 @@ def pack_content(content):
     return zlib.compress(content)
 
 
+def read_and_deflate_chunk(file_handle, chunk_size=-1):
+    """
+    Arguments:
+        file_handle(file): opened file handle
+        chunk_size(int): size of read chunk or -1 if whole file should be read
+
+    Returns:
+        str: deflated chunk or whole file
+    """
+    if chunk_size == -1:
+        packed_content = file_handle.read()
+    else:
+        packed_content = file_handle.read(chunk_size)
+
+    decompressor = zlib.decompressobj()
+    return decompressor.decompress(packed_content).decode('utf-8')
+
+
 def split_object_name(base_dir, object_name):
     """
     Arguments:

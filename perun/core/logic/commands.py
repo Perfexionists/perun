@@ -12,8 +12,9 @@ from colorama import init
 
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
-import perun.core.logic.store as store
 import perun.core.logic.config as perun_config
+import perun.core.logic.profile as profile
+import perun.core.logic.store as store
 import perun.core.vcs as vcs
 
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR
@@ -229,30 +230,34 @@ def init(dst, **kwargs):
 
 @pass_pcs
 @lookup_minor_version
-def add(pcs, profile, minor_version):
+def add(pcs, profile_name, minor_version):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile(Profile): profile that will be stored for the minor version
+        profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
     """
     assert minor_version is not None and "Missing minor version specification"
 
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
-        pcs, profile, minor_version
+        pcs, profile_name, minor_version
     ), 2)
 
     # Test if the given profile exists
-    if not os.path.exists(profile):
-        perun_log.error("{} does not exists".format(profile))
+    if not os.path.exists(profile_name):
+        perun_log.error("{} does not exists".format(profile_name))
 
     # Load profile content
-    with open(profile, 'r', encoding='utf-8') as profile_handle:
+    with open(profile_name, 'r', encoding='utf-8') as profile_handle:
         profile_content = "".join(profile_handle.readlines())
 
+        # Unpack to JSON representation
+        unpacked_profile = profile.load_profile_from_file(profile_name)
+        assert 'type' in unpacked_profile.keys()
+
     # Append header to the content of the file
-    header = "profile {}\0".format(len(profile_content))
+    header = "profile {} {}\0".format(unpacked_profile['type'], len(profile_content))
     profile_content = (header + profile_content).encode('utf-8')
 
     # Transform to internal representation - file as sha1 checksum and content packed with zlib
@@ -263,7 +268,7 @@ def add(pcs, profile, minor_version):
     store.add_loose_object_to_dir(pcs.get_object_directory(), profile_sum, compressed_content)
 
     # Register in the minor_version index
-    store.register_in_index(pcs.get_object_directory(), minor_version, profile, profile_sum)
+    store.register_in_index(pcs.get_object_directory(), minor_version, profile_name, profile_sum)
 
 
 @pass_pcs
@@ -365,7 +370,11 @@ def print_minor_version_profiles(pcs, minor_version):
     print("Tracked profiles:\n" if profiles else termcolor.colored(
         "(no tracked profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
     for index_entry in profiles:
-        print("\t{0.path} ({0.time})".format(index_entry))
+        _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
+        profile_type = profile.peek_profile_type(profile_name)
+        print("\t{0.path} [{1}] ({0.time})".format(
+            index_entry, profile_type
+        ))
 
 
 @pass_pcs
@@ -398,6 +407,7 @@ def status(pcs, **kwargs):
 
 
 @pass_pcs
+@lookup_minor_version
 def show(pcs, profile, minor_version, **kwargs):
     """
     Arguments:
@@ -407,6 +417,7 @@ def show(pcs, profile, minor_version, **kwargs):
         kwargs(dict): keyword atributes containing additional options
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
+    print("Show {} at {}".format(profile, minor_version))
 
 
 @pass_pcs

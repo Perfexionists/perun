@@ -9,7 +9,10 @@ performance.
 import os
 import json
 
+import perun.core.logic.store as store
 import perun.utils.log as perun_log
+
+from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, PROFILE_MALFORMED
 
 __author__ = 'Tomas Fiedor'
 
@@ -24,10 +27,21 @@ def load_profile_from_file(file_name):
     """
     if os.path.exists(file_name):
         with open(file_name, 'r') as file_handle:
-            return json.load(file_handle)
+            return load_profile_from_handle(file_handle)
     else:
         perun_log.warn("file '{}' not found")
         return {}
+
+
+def load_profile_from_handle(file_handle):
+    """
+    Arguments:
+        file_handle(file): opened file handle
+
+    Returns:
+        dict: JSON representation of the profile
+    """
+    return json.load(file_handle)
 
 
 def peek_profile_type(profile_name):
@@ -42,18 +56,12 @@ def peek_profile_type(profile_name):
         str: type of the profile
     """
     with open(profile_name, 'rb') as profile_handle:
-        profile_prefix = profile_handle.read(7)
+        profile_chunk = store.read_and_deflate_chunk(profile_handle, 64)
+        prefix, profile_type, *_ = profile_chunk.split(" ")
 
-        # Check that it contains the 'profile' prefix
-        assert profile_prefix == 'profile'
+        # Return that the stored profile is malformed
+        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES:
+            return PROFILE_MALFORMED
+        else:
+            return profile_type
 
-        # Skip the space
-        profile_handle.read(1)
-
-        # Read the profile type terminated by the space
-        profile_type = ""
-        byte = profile_handle.read(1)
-        while byte != ' ':
-            profile_type += byte
-            byte = profile_handle.read(1)
-        return profile_type

@@ -20,3 +20,7 @@ IndexEntry = collections.namedtuple("IndexEntry", "time checksum path offset")
 
 # Minor Version specific things
 MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
+
+# Profile specific stuff
+SUPPORTED_PROFILE_TYPES = ['time', 'memory', 'mixed']
+PROFILE_MALFORMED = 'malformed'
