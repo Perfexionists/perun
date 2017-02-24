@@ -7,15 +7,21 @@ possible to be run in isolation.
 
 import inspect
 import os
+import termcolor
+from colorama import init
 
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
-import perun.core.logic.store as store
 import perun.core.logic.config as perun_config
+import perun.core.logic.profile as profile
+import perun.core.logic.store as store
 import perun.core.vcs as vcs
 
+from perun.utils.helpers import MAXIMAL_LINE_WIDTH, TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR
 from perun.core.logic.pcs import PCS
-__author__ = 'Tomas Fiedor'
+
+# Init colorama for multiplatform colours
+init()
 
 
 def find_perun_dir_on_path(path):
@@ -86,7 +92,8 @@ def lookup_minor_version(func):
         if minor_version_position < len(args) and args[minor_version_position] is None:
             # note: since tuples are immutable we have to do this workaround
             arg_list = list(args)
-            arg_list[minor_version_position] = vcs.get_minor_head(pcs.wrapped_vcs_type, pcs.path)
+            arg_list[minor_version_position] = vcs.get_minor_head(
+                pcs.vcs_type, pcs.vcs_url)
             args = tuple(arg_list)
         return func(pcs, *args, **kwargs)
 
@@ -223,26 +230,34 @@ def init(dst, **kwargs):
 
 @pass_pcs
 @lookup_minor_version
-def add(pcs, profile, minor_version):
+def add(pcs, profile_name, minor_version):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile(Profile): profile that will be stored for the minor version
+        profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
     """
     assert minor_version is not None and "Missing minor version specification"
 
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
-        pcs, profile, minor_version
+        pcs, profile_name, minor_version
     ), 2)
 
+    # Test if the given profile exists
+    if not os.path.exists(profile_name):
+        perun_log.error("{} does not exists".format(profile_name))
+
     # Load profile content
-    with open(profile, 'r', encoding='utf-8') as profile_handle:
+    with open(profile_name, 'r', encoding='utf-8') as profile_handle:
         profile_content = "".join(profile_handle.readlines())
 
+        # Unpack to JSON representation
+        unpacked_profile = profile.load_profile_from_file(profile_name)
+        assert 'type' in unpacked_profile.keys()
+
     # Append header to the content of the file
-    header = "profile {}\0".format(len(profile_content))
+    header = "profile {} {}\0".format(unpacked_profile['type'], len(profile_content))
     profile_content = (header + profile_content).encode('utf-8')
 
     # Transform to internal representation - file as sha1 checksum and content packed with zlib
@@ -253,47 +268,146 @@ def add(pcs, profile, minor_version):
     store.add_loose_object_to_dir(pcs.get_object_directory(), profile_sum, compressed_content)
 
     # Register in the minor_version index
-    store.register_in_index(pcs.get_object_directory(), minor_version, profile, profile_sum)
+    store.register_in_index(pcs.get_object_directory(), minor_version, profile_name, profile_sum)
 
 
 @pass_pcs
 @lookup_minor_version
-def remove(pcs, profile, minor_version):
+def remove(pcs, profile, minor_version, **kwargs):
     """Removes @p profile from the @p minor_version inside the @p pcs
-
-    TODO: There are actually several possible combinations how this could be called:
-    1) Stating the sha1 precisely (easy)
-      - but fuck you have to remove it from index you dork...
-    2) Stating the minor version and file name
-      - have to lookup the minor version and get the sha1 for the filename
-    3) Removing all?
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
         profile(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
+        kwargs(dict): dictionary with additional options
     """
     assert minor_version is not None and "Missing minor version specification"
 
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
-    store.remove_loose_object_from_dir(pcs.get_object_directory(), profile)
-
-    store.remove_from_index(minor_version, profile)
+    object_directory = pcs.get_object_directory()
+    store.remove_from_index(object_directory, minor_version, profile, kwargs['remove_all'])
 
 
 @pass_pcs
-def log(pcs):
-    """
-    Prints the log of the @p pcs
+@lookup_minor_version
+def log(pcs, minor_version, **kwargs):
+    """Prints the log of the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
+        minor_version(str): representation of the head version
+        kwargs(dict): dictionary of the additional parameters
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
+    # Walk the minor versions and print them
+    for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_url, minor_version)[::-1]:
+        if kwargs['short_minors']:
+            print_short_minor_version_info(pcs, minor)
+        else:
+            print(termcolor.colored("Minor Version {}".format(
+                minor.checksum
+            ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS))
+            tracked_profiles = store.get_profile_number_for_minor(
+                pcs.get_object_directory(), minor.checksum)
+            if tracked_profiles:
+                print("Tracked profiles: {}".format(tracked_profiles))
+            else:
+                print(termcolor.colored('(no tracked profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
+            print_minor_version_info(minor)
+
+
+def print_short_minor_version_info(pcs, minor_version):
+    """
+    Arguments:
+        pcs(PCS): object with performance control system wrapper
+        minor_version(MinorVersion): minor version object
+    """
+    tracked_profiles = store.get_profile_number_for_minor(
+        pcs.get_object_directory(), minor_version.checksum
+    )
+    short_checksum = minor_version.checksum[:6]
+    short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
+    if len(short_description) > MAXIMAL_LINE_WIDTH:
+        short_description = short_description[:MAXIMAL_LINE_WIDTH-3] + "..."
+    print(termcolor.colored("{}".format(
+        short_checksum
+    ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
+    print(" {0} ".format(short_description), end='')
+    if tracked_profiles:
+        print(termcolor.colored("(", 'grey', attrs=TEXT_ATTRS), end='')
+        print(termcolor.colored("{}".format(
+            tracked_profiles
+        ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
+        print(termcolor.colored(" profile{})".format(
+            's' if tracked_profiles != 1 else ''
+        ), 'grey', attrs=TEXT_ATTRS))
+    else:
+        print(termcolor.colored('(no profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
+
+
+def print_minor_version_info(head_minor_version):
+    """
+    Arguments:
+        head_minor_version(str): identification of the commit (preferably sha1)
+    """
+    print("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
+    for parent in head_minor_version.parents:
+        print("Parent: {}".format(parent))
+    print("")
+    print(head_minor_version.desc)
+
+
+def print_minor_version_profiles(pcs, minor_version):
+    """
+    Arguments:
+        pcs(PCS): performance control system
+        minor_version(str): identification of the commit (preferably sha1)
+    """
+    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
+    print("Tracked profiles:\n" if profiles else termcolor.colored(
+        "(no tracked profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
+    for index_entry in profiles:
+        _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
+        profile_type = profile.peek_profile_type(profile_name)
+        print("\t{0.path} [{1}] ({0.time})".format(
+            index_entry, profile_type
+        ))
+
 
 @pass_pcs
+def status(pcs, **kwargs):
+    """Prints the status of performance control system
+    Arguments:
+        pcs(PCS): performance control system
+        kwargs(dict): dictionary of keyword arguments
+    """
+    # Get major head and print the status.
+    major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_url)
+    print("On major version {} ".format(
+        termcolor.colored(major_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+    ), end='')
+
+    # Print the index of the current head
+    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_url)
+    print("(minor version: {})".format(
+        termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+    ))
+
+    # Print in long format, the additional information about head commit
+    print("")
+    if not kwargs['short']:
+        minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_url, minor_head)
+        print_minor_version_info(minor_version)
+
+    # Print profiles
+    print_minor_version_profiles(pcs, minor_head)
+
+
+@pass_pcs
+@lookup_minor_version
 def show(pcs, profile, minor_version, **kwargs):
     """
     Arguments:
@@ -303,6 +417,7 @@ def show(pcs, profile, minor_version, **kwargs):
         kwargs(dict): keyword atributes containing additional options
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
+    print("Show {} at {}".format(profile, minor_version))
 
 
 @pass_pcs

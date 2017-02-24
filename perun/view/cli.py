@@ -82,35 +82,58 @@ def add(profile, minor):
 @cli.command()
 @click.argument('profile', required=True)
 @click.argument('minor', required=False, default=None)
-def rm(profile, minor):
+@click.option('--remove-all', '-A', is_flag=True, default=False,
+              help="remove all profiles of the given name/sha-1")
+def rm(profile, minor, **kwargs):
     """
     Arguments:
         profile(str): path to the profile file or sha1
         minor(str): sha1 representation of the minor version for which the profile is removed
+        kwargs(dict): dictionary of the keyword arguments
     """
     perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-    commands.remove(profile, minor)
+    commands.remove(profile, minor, **kwargs)
 
 
 @cli.command()
-@click.option('--count-only', is_flag=True,
+@click.argument('head', required=False, default=None)
+@click.option('--count-only', is_flag=True, default=False,
               help="force printing of the profile count only associated to minor versions")
-@click.option('--show-aggregate', is_flag=True,
+@click.option('--show-aggregate', is_flag=True, default=False,
               help="show aggregated profiles (one-liners) per each minor version")
 @click.option('--last', default=-1,
               help="show only last N minor versions")
-def log(**kwargs):
+@click.option('--no-merged', is_flag=True, default=False,
+              help="if set the merges of paths will not be displayed")
+@click.option('--short-minors', '-s', is_flag=True, default=False,
+              help="displays the minor version informations in short format")
+def log(head, **kwargs):
     """
     Arguments:
+        head(str): head minor version
         kwargs(dict): various keyword arguments that changes how the log is displayed
     """
     perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
-    commands.log(kwargs)
+    commands.log(head, **kwargs)
+
+
+@cli.command()
+@click.option('--short', '-s', required=False, default=False, is_flag=True,
+              help="print the current status in short format instead of long format")
+def status(**kwargs):
+    """
+    Arguments:
+        kwargs(dict): various keyword arguments that changes how the status is displayed
+    """
+    perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
+    commands.status(**kwargs)
 
 
 @cli.command()
 @click.argument('profile', required=True)
 @click.argument('minor', required=False)
+@click.option('--format', '-f', type=click.Choice(['raw']), default='raw',
+              help="how the profile should be shown")
 @click.option('--coloured', '-c', is_flag=True,
               help="colour the outputed profile")
 @click.option('--one-line', '-o', is_flag=True,
