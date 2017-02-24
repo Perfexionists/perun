@@ -60,39 +60,83 @@ def address_to_line(ip, filename):
     return output.decode("utf-8").strip().split(':')
 
 
-def parse_log(filename):
+def parse_log(logfile):
     """
     Arguments:
-        filename(string): name of the log file
+        logfile(string): name of the log file
+
+    Returns:
+        structure: parsed metadata
     """
-    with open(filename) as f:
+    with open(logfile) as f:
         file = f.read()
-
+        f.close()
     file = file.split('\n\n')
-    allocs = []
-    for i in file:
-        allocs.append(i.splitlines())
 
-    data = {'type' : 'memory', 'metadata' : []}
+    allocations = []
+    for item in file:
+        allocations.append(item.splitlines())
 
-    for alloc in allocs:
-        item = {}
-        if not alloc:
+    snapshots = []
+    for allocation in allocations:
+        data = {}
+        if not allocation:
             continue
 
-        time = re.findall("\d+\.\d+", alloc[0])[0]
-        item.update({'timestamp' : float(time)})
+        time = re.findall("\d+\.\d+", allocation[0])[0]
+        data.update({'time' : format('%fs' %float(time))})
 
-        allocator = re.findall("^\w+", alloc[1])[0]
-        item.update({'allocator': allocator})
+        allocator = re.findall("^\w+", allocation[1])[0]
+        data.update({'allocator': allocator})
 
-        data['metadata'].append(item)
+        if allocator == 'free':
+            amount = 0
+        else:
+            amount = re.findall("\d+", allocation[1])[0]
+        data.update({'amount': format('%iB' %int(amount))})
+
+        location = 'loc'
+        data.update({'location': location})
+
+        snapshots.append(data)
+
+    return snapshots
 
 
-    print(json.dumps(data, indent=4))
+def calculate_global(data):
+    return {}
+
+def update_profile(logfile, filename):
+    """
+    Arguments:
+        logfile(string): name of log file
+        filename(string): name of file to update profiling information
+
+    Returns:
+        bool: True if log was successfully updated, False if not
+    """
+    try:
+        with open(filename) as f:
+            profile = json.load(f)
+            f.close()
+    except IOError:
+        return False
+
+    profile['snapshots'] = parse_log(logfile)
+    profile['global'] = calculate_global(profile['snapshots'])
+
+    try:
+        with open(filename, mode='w') as f:
+            json.dump(profile, f, indent=2)
+            f.close()
+    except IOError:
+        return False
+
+    return True
 
 
-parse_log('MemoryLog')
+update_profile('MemoryLog', 'memory.perf')
+
 
 """
 print(demangle('_ZNKSt7__cxx1112basic_stringIwSt11char_traitsIwESaIwEE6substrEmm'))
