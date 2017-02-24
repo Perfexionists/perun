@@ -17,7 +17,8 @@ import perun.core.logic.profile as profile
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
 
-from perun.utils.helpers import MAXIMAL_LINE_WIDTH, TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR
+from perun.utils.helpers import MAXIMAL_LINE_WIDTH, TEXT_EMPH_COLOUR, TEXT_ATTRS, \
+    TEXT_WARN_COLOUR, PROFILE_TYPE_COLOURS
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -316,7 +317,7 @@ def log(pcs, minor_version, **kwargs):
                 print("Tracked profiles: {}".format(tracked_profiles))
             else:
                 print(termcolor.colored('(no tracked profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
-            print_minor_version_info(minor)
+            print_minor_version_info(minor, 1)
 
 
 def print_short_minor_version_info(pcs, minor_version):
@@ -348,16 +349,20 @@ def print_short_minor_version_info(pcs, minor_version):
         print(termcolor.colored('(no profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
 
 
-def print_minor_version_info(head_minor_version):
+def print_minor_version_info(head_minor_version, indent=0):
     """
     Arguments:
         head_minor_version(str): identification of the commit (preferably sha1)
+        indent(int): indent of the description part
     """
     print("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
     for parent in head_minor_version.parents:
         print("Parent: {}".format(parent))
     print("")
-    print(head_minor_version.desc)
+    indented_desc = '\n'.join(map(
+        lambda line: ' '*(indent*4) + line, head_minor_version.desc.split('\n')
+    ))
+    print(indented_desc)
 
 
 def print_minor_version_profiles(pcs, minor_version):
@@ -369,11 +374,31 @@ def print_minor_version_profiles(pcs, minor_version):
     profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
     print("Tracked profiles:\n" if profiles else termcolor.colored(
         "(no tracked profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
+
+    # Compute the padding and peek the types between
+    profile_tuples = []
+    maximal_type_len = maximal_profile_name_len = 0
     for index_entry in profiles:
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
         profile_type = profile.peek_profile_type(profile_name)
-        print("\t{0.path} [{1}] ({0.time})".format(
-            index_entry, profile_type
+
+        if len(index_entry.path) > maximal_profile_name_len:
+            maximal_profile_name_len = len(index_entry.path)
+
+        if len(profile_type) > maximal_type_len:
+            maximal_type_len = len(profile_type)
+
+        profile_tuples.append((profile_type, index_entry))
+
+    # Print with padding
+    for profile_type, index_entry in profile_tuples:
+        print("\t{2} {0} ({1})".format(
+            index_entry.path.ljust(maximal_profile_name_len),
+            index_entry.time,
+            termcolor.colored(
+                "[{}]".format(profile_type).ljust(maximal_type_len+2),
+                PROFILE_TYPE_COLOURS[profile_type], attrs=TEXT_ATTRS,
+            )
         ))
 
 

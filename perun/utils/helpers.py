@@ -24,3 +24,9 @@ MinorVersion = collections.namedtuple("MinorVersion", "date author email checksu
 # Profile specific stuff
 SUPPORTED_PROFILE_TYPES = ['time', 'memory', 'mixed']
 PROFILE_MALFORMED = 'malformed'
+PROFILE_TYPE_COLOURS = {
+    'time': 'blue',
+    'mixed': 'cyan',
+    'memory': 'white',
+    PROFILE_MALFORMED: 'red'
+}
