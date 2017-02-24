@@ -147,7 +147,7 @@ def show(profile, minor, **kwargs):
         kwargs(dict): additional arguments to perun show
     """
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
-    commands.show(profile, minor, kwargs)
+    commands.show(profile, minor, **kwargs)
 
 
 @click.command()

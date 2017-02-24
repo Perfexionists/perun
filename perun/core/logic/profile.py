@@ -26,7 +26,7 @@ def load_profile_from_file(file_name):
         dict: JSON dictionary
     """
     if os.path.exists(file_name):
-        with open(file_name, 'r') as file_handle:
+        with open(file_name, 'rb') as file_handle:
             return load_profile_from_handle(file_handle)
     else:
         perun_log.warn("file '{}' not found")
@@ -41,7 +41,17 @@ def load_profile_from_handle(file_handle):
     Returns:
         dict: JSON representation of the profile
     """
-    return json.load(file_handle)
+    # Read deflated contents and split to header and body
+    contents = store.read_and_deflate_chunk(file_handle)
+    header, body = contents.split('\0')
+    prefix, profile_type, profile_size = header.split(' ')
+
+    # Check the header, if the body is not malformed
+    if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
+            len(body) != int(profile_size):
+        perun_log.error("malformed profile")
+
+    return json.loads(body)
 
 
 def peek_profile_type(profile_name):

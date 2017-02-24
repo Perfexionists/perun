@@ -16,9 +16,10 @@ import perun.core.logic.config as perun_config
 import perun.core.logic.profile as profile
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
+import perun.view as view
 
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, TEXT_EMPH_COLOUR, TEXT_ATTRS, \
-    TEXT_WARN_COLOUR, PROFILE_TYPE_COLOURS
+    TEXT_WARN_COLOUR, PROFILE_TYPE_COLOURS, PROFILE_MALFORMED
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -274,12 +275,12 @@ def add(pcs, profile_name, minor_version):
 
 @pass_pcs
 @lookup_minor_version
-def remove(pcs, profile, minor_version, **kwargs):
+def remove(pcs, profile_name, minor_version, **kwargs):
     """Removes @p profile from the @p minor_version inside the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile(Profile): profile that will be stored for the minor version
+        profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
         kwargs(dict): dictionary with additional options
     """
@@ -288,7 +289,7 @@ def remove(pcs, profile, minor_version, **kwargs):
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     object_directory = pcs.get_object_directory()
-    store.remove_from_index(object_directory, minor_version, profile, kwargs['remove_all'])
+    store.remove_from_index(object_directory, minor_version, profile_name, kwargs['remove_all'])
 
 
 @pass_pcs
@@ -433,16 +434,42 @@ def status(pcs, **kwargs):
 
 @pass_pcs
 @lookup_minor_version
-def show(pcs, profile, minor_version, **kwargs):
+def show(pcs, profile_name, minor_version, **kwargs):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile(Profile): profile that will be stored for the minor version
+        profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
         kwargs(dict): keyword atributes containing additional options
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
-    print("Show {} at {}".format(profile, minor_version))
+
+    # If the profile is in raw form
+    if not store.is_sha1(profile_name):
+        _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
+        if not os.path.exists(minor_index_file):
+            perun_log.error("{} index has no profiles registered".format(profile_name, minor_version))
+        with open(minor_index_file, 'rb') as minor_handle:
+            lookup_pred = lambda entry: entry.path == profile_name
+            profiles = store.lookup_all_entries_within_index(minor_handle, lookup_pred)
+    else:
+        profiles = [profile_name]
+
+    # If there are more profiles we should chose
+    if not profiles:
+        perun_log.error("{} is not registered in {} index".format(profile_name, minor_version))
+    chosen_profile = profiles[0]
+
+    # Peek the type if the profile is correct and load the json
+    _, profile_name = store.split_object_name(pcs.get_object_directory(), chosen_profile.checksum)
+    profile_type = profile.peek_profile_type(profile_name)
+    if profile_type == PROFILE_MALFORMED:
+        perun_log.error("malformed profile {}".format(profile_name))
+    loaded_profile = profile.load_profile_from_file(profile_name)
+
+    # Show the profile using the format
+    view.show(kwargs['format'], loaded_profile)
+
 
 
 @pass_pcs
