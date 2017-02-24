@@ -16,5 +16,14 @@ def show(show_type, *args, **kwargs):
         args(list): list of positional arguments
         kwargs(dict): dictionary of keyword arguments
     """
-    pass
     dynamic_module_function_call('perun.view', show_type, 'show', *args, **kwargs)
+
+
+def show_coloured(show_type, *args, **kwargs):
+    """
+    Arguments:
+        show_type(str): type of the show format
+        args(list): list of positional arguments
+        kwargs(dict): dictionary of keyword arguments
+    """
+    dynamic_module_function_call('perun.view', show_type, 'show_coloured', *args, **kwargs)

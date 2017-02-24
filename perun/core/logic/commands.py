@@ -468,7 +468,10 @@ def show(pcs, profile_name, minor_version, **kwargs):
     loaded_profile = profile.load_profile_from_file(profile_name)
 
     # Show the profile using the format
-    view.show(kwargs['format'], loaded_profile)
+    if kwargs['coloured']:
+        view.show_coloured(kwargs['format'], loaded_profile)
+    else:
+        view.show(kwargs['format'], loaded_profile)
 
 
 

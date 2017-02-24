@@ -30,3 +30,8 @@ PROFILE_TYPE_COLOURS = {
     'memory': 'white',
     PROFILE_MALFORMED: 'red'
 }
+
+# Raw output specific thing
+RAW_KEY_COLOUR = 'magenta'
+RAW_ITEM_COLOUR = 'yellow'
+RAW_ATTRS = []

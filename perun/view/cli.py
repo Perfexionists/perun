@@ -134,7 +134,7 @@ def status(**kwargs):
 @click.argument('minor', required=False)
 @click.option('--format', '-f', type=click.Choice(['raw']), default='raw',
               help="how the profile should be shown")
-@click.option('--coloured', '-c', is_flag=True,
+@click.option('--coloured', '-c', is_flag=True, default=False,
               help="colour the outputed profile")
 @click.option('--one-line', '-o', is_flag=True,
               help="print the agggregated one-line data for the given profile")
