@@ -18,8 +18,10 @@ import perun.core.logic.store as store
 import perun.core.vcs as vcs
 import perun.view as view
 
-from perun.utils.helpers import MAXIMAL_LINE_WIDTH, TEXT_EMPH_COLOUR, TEXT_ATTRS, \
-    TEXT_WARN_COLOUR, PROFILE_TYPE_COLOURS, PROFILE_MALFORMED
+from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
+    TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
+    PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
+    HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -292,6 +294,31 @@ def remove(pcs, profile_name, minor_version, **kwargs):
     store.remove_from_index(object_directory, minor_version, profile_name, kwargs['remove_all'])
 
 
+def print_short_minor_info_header():
+    """Prints short header for the --short-minor option"""
+    # Print left column---minor versions
+    print(termcolor.colored(
+        "minor  ", HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS
+    ), end='')
+
+    # Print middle column---minor version one line details
+    print(termcolor.colored(
+        "info".center(MAXIMAL_LINE_WIDTH, ' '), HEADER_INFO_COLOUR, attrs=HEADER_ATTRS
+    ), end='')
+
+    # Print right column---profile number info
+    slash = termcolor.colored('/', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+    end_msg = termcolor.colored(' profiles)', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+    print(termcolor.colored(" ({0}{4}{1}{4}{2}{4}{3}{5}".format(
+        termcolor.colored('a', HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS),
+        termcolor.colored('m', PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS),
+        termcolor.colored('x', PROFILE_TYPE_COLOURS['mixed'], attrs=HEADER_ATTRS),
+        termcolor.colored('t', PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
+        slash,
+        end_msg
+    ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS))
+
+
 @pass_pcs
 @lookup_minor_version
 def log(pcs, minor_version, **kwargs):
@@ -303,6 +330,10 @@ def log(pcs, minor_version, **kwargs):
         kwargs(dict): dictionary of the additional parameters
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
+
+    # Print header for --short-minors
+    if kwargs['short_minors']:
+        print_short_minor_info_header()
 
     # Walk the minor versions and print them
     for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_url, minor_version)[::-1]:
@@ -343,6 +374,14 @@ def print_short_minor_version_info(pcs, minor_version):
         print(termcolor.colored("{}".format(
             tracked_profiles
         ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
+
+        # Print the coloured numbers
+        for profile_type in SUPPORTED_PROFILE_TYPES:
+            print("{}{}".format(
+                termcolor.colored('/', HEADER_SLASH_COLOUR),
+                termcolor.colored("{}".format(0), PROFILE_TYPE_COLOURS[profile_type])
+            ), end='')
+
         print(termcolor.colored(" profile{})".format(
             's' if tracked_profiles != 1 else ''
         ), 'grey', attrs=TEXT_ATTRS))
@@ -472,7 +511,6 @@ def show(pcs, profile_name, minor_version, **kwargs):
         view.show_coloured(kwargs['format'], loaded_profile)
     else:
         view.show(kwargs['format'], loaded_profile)
-
 
 
 @pass_pcs

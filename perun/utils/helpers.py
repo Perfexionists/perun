@@ -22,7 +22,7 @@ IndexEntry = collections.namedtuple("IndexEntry", "time checksum path offset")
 MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
 
 # Profile specific stuff
-SUPPORTED_PROFILE_TYPES = ['time', 'memory', 'mixed']
+SUPPORTED_PROFILE_TYPES = ['memory', 'mixed', 'time']
 PROFILE_MALFORMED = 'malformed'
 PROFILE_TYPE_COLOURS = {
     'time': 'blue',
@@ -30,6 +30,11 @@ PROFILE_TYPE_COLOURS = {
     'memory': 'white',
     PROFILE_MALFORMED: 'red'
 }
+
+HEADER_ATTRS = ['underline']
+HEADER_COMMIT_COLOUR = 'green'
+HEADER_INFO_COLOUR = 'grey'
+HEADER_SLASH_COLOUR = 'grey'
 
 # Raw output specific thing
 RAW_KEY_COLOUR = 'magenta'
