@@ -52,26 +52,3 @@ def load_profile_from_handle(file_handle):
         perun_log.error("malformed profile")
 
     return json.loads(body)
-
-
-def peek_profile_type(profile_name):
-    """Retrieves from the binary file the type of the profile from the header.
-
-    Peeks inside the binary file of the profile_name and returns the type of the
-    profile, without reading it whole.
-    Arguments:
-        profile_name(str): filename of the profile
-
-    Returns:
-        str: type of the profile
-    """
-    with open(profile_name, 'rb') as profile_handle:
-        profile_chunk = store.read_and_deflate_chunk(profile_handle, 64)
-        prefix, profile_type, *_ = profile_chunk.split(" ")
-
-        # Return that the stored profile is malformed
-        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES:
-            return PROFILE_MALFORMED
-        else:
-            return profile_type
-

@@ -369,21 +369,23 @@ def print_short_minor_version_info(pcs, minor_version):
         short_checksum
     ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
     print(" {0} ".format(short_description), end='')
-    if tracked_profiles:
+    if tracked_profiles['all']:
         print(termcolor.colored("(", 'grey', attrs=TEXT_ATTRS), end='')
         print(termcolor.colored("{}".format(
-            tracked_profiles
+            tracked_profiles['all']
         ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
 
         # Print the coloured numbers
         for profile_type in SUPPORTED_PROFILE_TYPES:
             print("{}{}".format(
                 termcolor.colored('/', HEADER_SLASH_COLOUR),
-                termcolor.colored("{}".format(0), PROFILE_TYPE_COLOURS[profile_type])
+                termcolor.colored("{}".format(
+                    tracked_profiles[profile_type]
+                ), PROFILE_TYPE_COLOURS[profile_type])
             ), end='')
 
         print(termcolor.colored(" profile{})".format(
-            's' if tracked_profiles != 1 else ''
+            's' if tracked_profiles['all'] != 1 else ''
         ), 'grey', attrs=TEXT_ATTRS))
     else:
         print(termcolor.colored('(no profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
@@ -420,7 +422,7 @@ def print_minor_version_profiles(pcs, minor_version):
     maximal_type_len = maximal_profile_name_len = 0
     for index_entry in profiles:
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
-        profile_type = profile.peek_profile_type(profile_name)
+        profile_type = store.peek_profile_type(profile_name)
 
         if len(index_entry.path) > maximal_profile_name_len:
             maximal_profile_name_len = len(index_entry.path)
@@ -501,7 +503,7 @@ def show(pcs, profile_name, minor_version, **kwargs):
 
     # Peek the type if the profile is correct and load the json
     _, profile_name = store.split_object_name(pcs.get_object_directory(), chosen_profile.checksum)
-    profile_type = profile.peek_profile_type(profile_name)
+    profile_type = store.peek_profile_type(profile_name)
     if profile_type == PROFILE_MALFORMED:
         perun_log.error("malformed profile {}".format(profile_name))
     loaded_profile = profile.load_profile_from_file(profile_name)
