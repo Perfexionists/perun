@@ -49,7 +49,8 @@ def address_to_line(ip, filename):
         filename(string): name of file to inspect for debug information
 
     Returns:
-        list: list of two objects, 1st is name of the source file, 2nd is line number
+        list: list of two objects, 1st is the name of the source file,
+              2nd is the line number
     """
     syscall = ['addr2line']
     syscall.append(ip)
@@ -60,17 +61,97 @@ def address_to_line(ip, filename):
     return output.decode("utf-8").strip().split(':')
 
 
-def parse_log(logfile):
-    """
+def parse_stack(stack):
+    """ Parse stack information of one allocation
     Arguments:
-        logfile(string): name of the log file
+        stack(list): list of raw stack data
 
     Returns:
-        structure: parsed metadata
+        list: list of formatted structures representing
+              stack trace of one allocation
     """
+    data = []
+    for call in stack:
+        call_data = {}
+
+        # parsing name of function,
+        # it's the first word in the call record
+        func = re.findall("\w+", call)[0]
+        # demangling name of function
+        func = demangle(func)
+        call_data.update({'function': func})
+
+        # parsing instruction pointer,
+        # it's the first hexadecimal number in the call record
+        ip = re.findall("0x[0-9a-fA-F]+", call)[0]
+
+        # getting information of instruction pointer,
+        # the source file and line number in the source file
+        ip_info = address_to_line(ip, binary_file)
+        if ip_info[0] in ["?", "??"]:
+            ip_info[0] = "unreachable"
+        if ip_info[1] in ["?", "??"]:
+            ip_info[1] = 0
+        else:
+            ip_info[1] = int(re.findall("\d+", ip_info[1])[0])
+
+        call_data.update({'source': ip_info[0]})
+        call_data.update({'line': ip_info[1]})
+
+        data.append(call_data)
+
+    return data
+
+
+def parse_resources(allocation):
+    """ Parse resources of one allocation
+    Arguments:
+        allocation(list): list of raw allocation data
+
+    Returns:
+        structure: formatted structure representing
+                   resources of one allocation
+
+    """
+    data = {}
+
+    # parsing amount of allocated memory,
+    # it's the first number on the second line
+    amount = re.findall("\d+", allocation[1])[0]
+    data.update({'amount': int(amount)})
+
+    # parsing allocate function,
+    # it's the first word on the second line
+    allocator = re.findall("^\w+", allocation[1])[0]
+    data.update({'allocator': allocator})
+
+    # parsing address of allocated memory,
+    # it's the second number on the second line
+    address = re.findall("\d+", allocation[1])[1]
+    data.update({'address': int(address)})
+
+    # parsing stack in the moment of allocation
+    # to getting trace of it
+    trace = parse_stack(allocation[2:])
+    data.update({'trace': trace})
+
+    return data
+
+
+def parse_log(logfile, snapshots_interval=1.0):
+    """ Parse raw data in the log file
+    Arguments:
+        logfile(string): name of the log file
+        snapshots_interval(float): interval of snapshots [s]
+
+    Returns:
+        structure: formatted structure representing
+                   section "snapshots" in memory profile
+    """
+    interval = snapshots_interval
     with open(logfile) as f:
         file = f.read()
-        f.close()
+
     file = file.split('\n\n')
 
     allocations = []
@@ -78,26 +159,29 @@ def parse_log(logfile):
         allocations.append(item.splitlines())
 
     snapshots = []
+    data = {}
+    data.update({'time': interval})
+    data.update({'resources': []})
     for allocation in allocations:
-        data = {}
         if not allocation:
             continue
 
-        time = re.findall("\d+\.\d+", allocation[0])[0]
-        data.update({'time' : format('%fs' %float(time))})
+        # parsing timestamp,
+        # it's the only one number on the line
+        time = float(re.findall("\d+\.\d+", allocation[0])[0])
 
-        allocator = re.findall("^\w+", allocation[1])[0]
-        data.update({'allocator': allocator})
+        if time > interval:
+            snapshots.append(data)
+            interval += snapshots_interval
+            data = {}
+            data.update({'resources': []})
+            data.update({'time': interval})
 
-        if allocator == 'free':
-            amount = 0
-        else:
-            amount = re.findall("\d+", allocation[1])[0]
-        data.update({'amount': format('%iB' %int(amount))})
+        # using parse_resources()
+        # parsing resources,
+        data['resources'].append(parse_resources(allocation))
 
-        location = 'loc'
-        data.update({'location': location})
-
+    if data:
         snapshots.append(data)
 
     return snapshots
@@ -106,11 +190,13 @@ def parse_log(logfile):
 def calculate_global(data):
     return {}
 
-def update_profile(logfile, filename):
+
+def update_profile(logfile, filename, snapshots_interval=1.0):
     """
     Arguments:
         logfile(string): name of log file
         filename(string): name of file to update profiling information
+        snapshots_interval(float): interval of snapshots [s]
 
     Returns:
         bool: True if log was successfully updated, False if not
@@ -118,24 +204,31 @@ def update_profile(logfile, filename):
     try:
         with open(filename) as f:
             profile = json.load(f)
-            f.close()
     except IOError:
         return False
 
-    profile['snapshots'] = parse_log(logfile)
+    profile['snapshots'] = parse_log(logfile, snapshots_interval)
     profile['global'] = calculate_global(profile['snapshots'])
 
     try:
         with open(filename, mode='w') as f:
             json.dump(profile, f, indent=2)
-            f.close()
+        print(json.dumps(profile, indent=2))
     except IOError:
         return False
 
     return True
 
 
-update_profile('MemoryLog', 'memory.perf')
+binary_file = 'test'
+update_profile('MemoryLog', 'memory.perf', 0.001)
+
+"""
+TODO:
+Upravit log z C aby se to líp parsovalo
+    -trasu jen čísla
+    -u free položka 0B
+"""
 
 
 """
@@ -146,4 +239,3 @@ localization =  address_to_line('400605', 'test')
 print('soubor: ' + localization[0])
 print('řádek: ', localization[1])
 """
-

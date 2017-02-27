@@ -91,7 +91,7 @@ void free(void *ptr){
     profiling = 1;
 
     fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    fprintf(logFile, "free %li\n", (long int)ptr);
+    fprintf(logFile, "free 0B %li\n", (long int)ptr);
     backtrace(logFile);
   
     profiling = 0;
@@ -110,7 +110,7 @@ void* realloc(void *ptr, size_t size){
     profiling = 1;
     
     fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);  
-    fprintf(logFile, "realloc %liB %li > %li\n", size, (long int)ptr, (long int)nptr);
+    fprintf(logFile, "realloc %liB %li\n", size, (long int)nptr);
     backtrace(logFile);
     
     profiling = 0;

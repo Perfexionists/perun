@@ -5,6 +5,7 @@ version = 'a5cf40ebf33610c97083b209fc12a36adc3a99ff'
 file = './test'
 workload = '-a 5'
 
+
 def run(bin, args):
     """
     Arguments:
@@ -39,7 +40,6 @@ def make_profile(file, workload, version):
     try:
         with open('memory.perf', mode='w') as f:
             json.dump(data, f, indent=2)
-            f.close()
     except IOError:
         return False
 

@@ -26,14 +26,11 @@ void backtrace(FILE* log){
       	
       		break;
     	}
-	//Obtain stack pointer    
-		if(unw_get_reg(&cursor, UNW_REG_SP, &sp) != 0)
-			fprintf(stderr, "error: unw_get_reg (SP)\n");
 
 	//Obtain symbol name
 	    unw_get_proc_name(&cursor, symbol, sizeof(symbol), &offset);
 
-		fprintf(log, "%s: ip = 0x%lx, sp = 0x%lx\n", symbol, ip, sp);
+		fprintf(log, "%s 0x%lx\n", symbol, ip);
 	}
 	fprintf(log, "\n");
 }
