@@ -319,6 +319,33 @@ def print_short_minor_info_header():
     ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS))
 
 
+def print_profile_number_for_minor(base_dir, minor_version, ending='\n'):
+    """Print the number of tracked profiles corresponding to the profile
+
+    Arguments:
+        base_dir(str): base directory for minor version storage
+        minor_version(str): minor version we are printing the info for
+        ending(str): ending of the print (for different output of log and status)
+    """
+    tracked_profiles = store.get_profile_number_for_minor(base_dir, minor_version)
+    if tracked_profiles['all']:
+        print("{0[all]} tracked profiles (".format(tracked_profiles), end='')
+        first_outputed = False
+        for profile_type in SUPPORTED_PROFILE_TYPES:
+            if first_outputed:
+                print(', ', end='')
+            if not tracked_profiles[profile_type]:
+                continue
+            print(termcolor.colored("{0} {1}".format(
+                tracked_profiles[profile_type], profile_type
+            ), PROFILE_TYPE_COLOURS[profile_type]), end='')
+            first_outputed = True
+        print(')', end=ending)
+    else:
+        print(termcolor.colored('(no tracked profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS),
+              end='\n')
+
+
 @pass_pcs
 @lookup_minor_version
 def log(pcs, minor_version, **kwargs):
@@ -343,12 +370,7 @@ def log(pcs, minor_version, **kwargs):
             print(termcolor.colored("Minor Version {}".format(
                 minor.checksum
             ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS))
-            tracked_profiles = store.get_profile_number_for_minor(
-                pcs.get_object_directory(), minor.checksum)
-            if tracked_profiles:
-                print("Tracked profiles: {}".format(tracked_profiles))
-            else:
-                print(termcolor.colored('(no tracked profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
+            print_profile_number_for_minor(pcs.get_object_directory(), minor.checksum)
             print_minor_version_info(minor, 1)
 
 
@@ -414,8 +436,7 @@ def print_minor_version_profiles(pcs, minor_version):
         minor_version(str): identification of the commit (preferably sha1)
     """
     profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
-    print("Tracked profiles:\n" if profiles else termcolor.colored(
-        "(no tracked profiles)", TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
+    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ':\n\n')
 
     # Compute the padding and peek the types between
     profile_tuples = []
