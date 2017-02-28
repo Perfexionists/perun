@@ -91,7 +91,6 @@ private:
         Magic,              // Magic code - CCICC
         Text_value,         // Textual value
         Number_value,       // Decimal number value
-        Address_value,      // Hexadecimal address value
         Op_colon,           // Operator :
         Op_equals,          // Operator =
         Br_curly_begin,     // Brace type {

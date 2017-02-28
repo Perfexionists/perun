@@ -27,19 +27,19 @@ int Configuration::Parse() {
         // Parsing the file contents
         while (1) {
             Test_next_token_type(Token_t::Text_value, tok_val);
-            if (tok_val == "'file-name'") {
+            if (tok_val == "\"file-name\"") {
                 // File name section
                 Already_parsed_check(section_name);
                 Parse_file_name();
-            } else if (tok_val == "'storage-init-size'") {
+            } else if (tok_val == "\"init-storage-size\"") {
                 // Storage size section
                 Already_parsed_check(section_storage);
                 Parse_storage_size();
-            } else if (tok_val == "'runtime-filter'") {
+            } else if (tok_val == "\"runtime-filter\"") {
                 // Filter section
                 Already_parsed_check(section_filter);
                 Parse_filter();
-            } else if (tok_val == "'sampling'") {
+            } else if (tok_val == "\"sampling\"") {
                 // Sampling section
                 Already_parsed_check(section_sampling);
                 Parse_sample();
@@ -124,15 +124,12 @@ bool Configuration::Next_token(Token_t &type, std::string &value)
             }
 
             // Check for longer tokens
-            if(c == '\'') {
+            if(c == '"') {
                 FSM_token = FSM_token_states::Text;
                 type = Token_t::Text_value;
             } else if(c == 'C') {
                 FSM_token = FSM_token_states::Magic;
                 type = Token_t::Magic;
-            } else if(c == '0') {
-                FSM_token = FSM_token_states::Address;
-                type = Token_t::Address_value;
             } else if(isdigit(c)) {
                 FSM_token = FSM_token_states::Number;
                 type = Token_t::Number_value;
@@ -144,15 +141,7 @@ bool Configuration::Next_token(Token_t &type, std::string &value)
         } else if(FSM_token == FSM_token_states::Text) {
             // Text token
             value += c;
-            if(c == '\'') {
-                return true;
-            }
-        } else if(FSM_token == FSM_token_states::Address) {
-            // Address token
-            if((value == "0" && (c == 'x' || c == 'X')) || (value.length() > 1 && isxdigit(c))) {
-                value += c;
-            } else {
-                position--;
+            if(c == '"') {
                 return true;
             }
         } else if(FSM_token == FSM_token_states::Number) {
@@ -247,7 +236,7 @@ void Configuration::Parse_filter() {
 
     // Traverse the collection
     while(1) {
-        Test_next_token_type(Token_t::Address_value, tok_val);
+        Test_next_token_type(Token_t::Number_value, tok_val);
         // Convert to the pointer
         Address_token_to_pointer(tok_val, &func_p);
 
@@ -280,17 +269,17 @@ void Configuration::Parse_sample() {
     Test_next_token_type(Token_t::Br_square_begin, tok_val);
     // Traverse the collection
     while(1) {
-        // { 'func' : address, 'sample': number },
+        // { "func" : address, "sample": number },
         Test_next_token_type(Token_t::Br_curly_begin, tok_val);
         Test_next_token_type(Token_t::Text_value, tok_val);
-        Test_token_val("'func'", tok_val);
+        Test_token_val("\"func\"", tok_val);
         Test_next_token_type(Token_t::Op_colon, tok_val);
-        Test_next_token_type(Token_t::Address_value, tok_val);
+        Test_next_token_type(Token_t::Number_value, tok_val);
         // Convert the address to a pointer
         Address_token_to_pointer(tok_val, &func_p);
         Test_next_token_type(Token_t::Comma, tok_val);
         Test_next_token_type(Token_t::Text_value, tok_val);
-        Test_token_val("'sample'", tok_val);
+        Test_token_val("\"sample\"", tok_val);
         Test_next_token_type(Token_t::Op_colon, tok_val);
         Test_next_token_type(Token_t::Number_value, tok_val);
         // Convert the sample to a integer
@@ -327,7 +316,13 @@ void Configuration::Already_parsed_check(const unsigned int index) {
 }
 
 void Configuration::Address_token_to_pointer(const std::string &address, void **addr) {
-    if(sscanf(address.c_str(), "0x%p", addr) != 1) {
+    // Convert the decimal address string representation to hex address string format
+    unsigned long long address_dec = std::stoull(address);
+    std::stringstream to_addr;
+    to_addr << "0x" << std::hex << address_dec;
+    std::string address_hex(to_addr.str());
+
+    if(sscanf(address_hex.c_str(), "0x%p", addr) != 1) {
         // Conversion to a pointer failed
         throw Conf_file_syntax_exception();
     }

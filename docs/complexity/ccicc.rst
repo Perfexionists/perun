@@ -4,7 +4,7 @@ Complexity Collector Internal Configuration Communication (CCICC) File Draft
 
 Configuration file format used internally by the c/c++ complexity collector.
 
-Version: 1.0
+Version: 1.1
 
 Obligatory file name: ccicc.conf
 
@@ -13,15 +13,21 @@ File Format
 Current CCICC still-under-development format::
 
   CCICC = {
-    'file-name': 'trace.log',
-    'storage-init-size': 20000,
-    'runtime-filter': [
-      0x4017ed,
-      0x4016fc
+    "file-name": "trace.log",
+    "storage-init-size": 20000,
+    "runtime-filter": [
+      4198356,
+      4197960
     ],
-    'sampling': [
-      {'func': 0x4015cd, 'sample': 5},
-      {'func': 0x4013fa, 'sample': 3}
+    "sampling": [
+      {
+        "func": 4198008,
+        "sample": 5
+      },
+      {
+        "func": 4198590,
+        "sample": 3
+      }
     ]
   }
 
@@ -41,9 +47,9 @@ must be always present.
 
 Text element
 ~~~~~~~~~~~~
-The text element is always enclosed in a pair of apostrophes::
+The text element is always enclosed in a pair of double quotes::
 
-  'text-element'
+  "text-element"
 
 Number element
 ~~~~~~~~~~~~~~
@@ -52,16 +58,11 @@ Negative values are not supported (nor needed). Number elements must not have a 
 
   25000
 
-Address element
-~~~~~~~~~~~~~~~
-The address element is interpreted as a hexadecimal value (thus only 0 - 9, a - f symbols are permitted) with 0x leading sequence::
-
-  0x4010fe
-
 File Format Description
 -----------------------
 A brief description of the CCICC file format elements.
- - file-name: specifies the collector output file name
+
+ - file-name: specifies the collector output file name, default value: "trace.log"
  - storage-init-size (optional): specifies the initial storage size if direct file output is not used
  - runtime-filter (optional): specifies functions that must be filtered at runtime
  - sampling (optional): specifies function that will be sampled
@@ -72,8 +73,22 @@ A brief description of the CCICC file format elements.
 Possible Future Extensions
 --------------------------
 A list of features that may be implemented in the future.
+
  - implement non-deterministic sampling (i.e. random instrumentation record capture)
 
    - possible format: 'sample': 25%
    - possible issues: collection performance
+
+
+Changelog
+---------
+Changelog reflecting the development
+
+ - 1.0: 
+
+   - Added
+ - 1.1: 
+
+   - The address element removed, all such elements changed to number elements instead. 
+   - Changed the syntax to be more JSON-like.
 
