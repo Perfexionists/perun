@@ -146,3 +146,19 @@ def assume_version(version_spec, actual_version):
             return func(*args, **kwargs)
         return wrapper
     return inner_wrapper
+
+
+def static_variables(**kwargs):
+    """
+    Arguments:
+        kwargs(dict): keyword with static variables and their values
+
+    Returns:
+        func: decorated function for which static variables are set
+    """
+    def inner_wrapper(func):
+        """Inner wrapper of the function"""
+        for key, value in kwargs.items():
+            setattr(func, key, value)
+        return func
+    return inner_wrapper

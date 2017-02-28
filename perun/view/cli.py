@@ -150,7 +150,7 @@ def show(profile, minor, **kwargs):
     commands.show(profile, minor, **kwargs)
 
 
-@click.command()
+@cli.command()
 def run(**kwargs):
     """
     Arguments:

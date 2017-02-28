@@ -21,7 +21,9 @@ import perun.view as view
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
-    HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR
+    HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
+    Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_ERROR, COLLECT_PHASE_POSTPROCESS, \
+    COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -536,6 +538,72 @@ def show(pcs, profile_name, minor_version, **kwargs):
         view.show(kwargs['format'], loaded_profile)
 
 
+def construct_job_matrix(pcs):
+    """Constructs the job matrix represented as dictionary.
+
+    Reads the local of the current PCS and constructs the matrix of jobs
+    that will be run. Each job consists of command that will be run,
+    collector used to collect the data and list of postprocessors to
+    alter the output profiles. Inside the dictionary jobs are distributed
+    by binaries, then workloads and finally Jobs.
+
+    Returns the job matrix as dictionary of form:
+    {
+      'bin1': {
+        'workload1': [ Job1, Job2 , ...],
+        'workload2': [ Job1, Job2 , ...]
+      },
+      'bin2': {
+        'workload1': [ Job1, Job2 , ...],
+        'workload2': [ Job1, Job2 , ...]
+      }
+    }
+
+    Arguments:
+        pcs(PCS): object with performance control system wrapper
+
+    Returns:
+        dict: dict of jobs in form of {bins: {workloads: {Job}}}
+    """
+    # TODO: For now
+    return {
+        './gaston': {
+            'ex10.mona': [
+                Job("time", ["aggregator", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
+                Job("memory", ["aggregator", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
+            ],
+            'ex4.mona': [
+                Job("time", ["aggregator", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
+                Job("memory", ["aggregator", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
+            ],
+        },
+        'mona': {
+            'ex10.mona': [
+                Job("time", ["aggregator", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
+                Job("memory", ["aggregator", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
+            ],
+            'ex4.mona': [
+                Job("time", ["aggregator", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
+                Job("memory", ["aggregator", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
+            ],
+        }
+    }
+
+
+@decorators.static_variables(current_job=1)
+def print_job_progress(overall_jobs):
+    """Print the tag with the percent of the jobs currently done
+
+    Arguments:
+        overall_jobs(int): overall number of jobs to be done
+    """
+    percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
+    print("[{}%] ".format(
+        str(percentage_done).rjust(3, ' ')
+    ), end='')
+    print_job_progress.current_job += 1
+
+
 @pass_pcs
 def run(pcs, **kwargs):
     """
@@ -543,4 +611,40 @@ def run(pcs, **kwargs):
         pcs(PCS): object with performance control system wrapper
         kwargs(dict): dictionary of keyword arguments
     """
-    pass
+    job_matrix = construct_job_matrix(pcs)
+
+    # Count overall number of the jobs:
+    number_of_jobs = 0
+    for bin_values in job_matrix.values():
+        for workload_values in bin_values.values():
+            for job in workload_values:
+                number_of_jobs += 1 + len(job.postprocessors)
+
+    for job_bin, workload_jobs in job_matrix.items():
+        print(termcolor.colored(
+            "Collecting profiles for {}".format(
+                termcolor.colored(job_bin, attrs=COLLECT_PHASE_ATTRS_HIGH)
+            ), COLLECT_PHASE_BIN, attrs=COLLECT_PHASE_ATTRS
+        ))
+        for job_workload, jobs in workload_jobs.items():
+            print(termcolor.colored(
+                " - processing workload {}".format(
+                    termcolor.colored(job_workload, attrs=COLLECT_PHASE_ATTRS_HIGH)
+                ), COLLECT_PHASE_WORKLOAD, attrs=COLLECT_PHASE_ATTRS
+            ))
+            for job in jobs:
+                print_job_progress(number_of_jobs)
+                print(termcolor.colored(
+                    "Collecting data with {}".format(
+                        termcolor.colored(job.collector, attrs=COLLECT_PHASE_ATTRS_HIGH)
+                    ), COLLECT_PHASE_COLLECT, attrs=COLLECT_PHASE_ATTRS
+                ))
+                # TODO: Run the collector
+                for postprocessor in job.postprocessors:
+                    print_job_progress(number_of_jobs)
+                    print(termcolor.colored(
+                        "Postprocessing profile with {}".format(
+                            termcolor.colored(postprocessor, attrs=COLLECT_PHASE_ATTRS_HIGH)
+                        ), COLLECT_PHASE_POSTPROCESS, attrs=COLLECT_PHASE_ATTRS
+                    ))
+                    # TODO: Run the postprocessor

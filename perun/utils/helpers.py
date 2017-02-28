@@ -40,3 +40,13 @@ HEADER_SLASH_COLOUR = 'grey'
 RAW_KEY_COLOUR = 'magenta'
 RAW_ITEM_COLOUR = 'yellow'
 RAW_ATTRS = []
+
+# Job specific
+Job = collections.namedtuple("Job", "collector postprocessors cmd bin workload params")
+COLLECT_PHASE_BIN = 'blue'
+COLLECT_PHASE_WORKLOAD = 'cyan'
+COLLECT_PHASE_COLLECT = 'magenta'
+COLLECT_PHASE_POSTPROCESS = 'yellow'
+COLLECT_PHASE_ERROR = 'red'
+COLLECT_PHASE_ATTRS = []
+COLLECT_PHASE_ATTRS_HIGH = []
