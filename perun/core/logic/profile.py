@@ -17,38 +17,43 @@ from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, PROFILE_MALFORMED
 __author__ = 'Tomas Fiedor'
 
 
-def load_profile_from_file(file_name):
+def load_profile_from_file(file_name, is_raw_profile):
     """
     Arguments:
         file_name(str): path to the file
+        is_raw_profile(bool): true if the profile is in json format already
 
     Returns:
         dict: JSON dictionary
     """
     if os.path.exists(file_name):
         with open(file_name, 'rb') as file_handle:
-            return load_profile_from_handle(file_handle)
+            return load_profile_from_handle(file_handle, is_raw_profile)
     else:
         perun_log.warn("file '{}' not found")
         return {}
 
 
-def load_profile_from_handle(file_handle):
+def load_profile_from_handle(file_handle, is_raw_profile):
     """
     Arguments:
         file_handle(file): opened file handle
+        is_raw_profile(bool): true if the profile is in json format already
 
     Returns:
         dict: JSON representation of the profile
     """
-    # Read deflated contents and split to header and body
-    contents = store.read_and_deflate_chunk(file_handle)
-    header, body = contents.split('\0')
-    prefix, profile_type, profile_size = header.split(' ')
+    if is_raw_profile:
+        body = file_handle.read().decode('utf-8')
+    else:
+        # Read deflated contents and split to header and body
+        contents = store.read_and_deflate_chunk(file_handle)
+        header, body = contents.split('\0')
+        prefix, profile_type, profile_size = header.split(' ')
 
-    # Check the header, if the body is not malformed
-    if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
-            len(body) != int(profile_size):
-        perun_log.error("malformed profile")
+        # Check the header, if the body is not malformed
+        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
+                len(body) != int(profile_size):
+            perun_log.error("malformed profile")
 
     return json.loads(body)

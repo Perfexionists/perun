@@ -208,17 +208,17 @@ def init(dst, **kwargs):
     perun_log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
 
     # init the wrapping repository as well
-    if kwargs['init_vcs_type'] is not None:
-        if not vcs.init(kwargs['init_vcs_type'], kwargs['init_vcs_url'], kwargs['init_vcs_params']):
+    if kwargs['vcs_type'] is not None:
+        if not vcs.init(kwargs['vcs_type'], kwargs['vcs_url'], kwargs['vcs_params']):
             perun_log.error("Could not initialize empty {} repository at {}".format(
-                kwargs['init_vcs_type'], kwargs['init_vcs_url']
+                kwargs['vcs_type'], kwargs['vcs_url']
             ))
 
     # Construct local config
     vcs_config = {
         'vcs': {
-            'url': kwargs['init_vcs_url'] or "../",
-            'type': kwargs['init_vcs_type'] or 'pvcs'
+            'url': kwargs['vcs_url'] or "../",
+            'type': kwargs['vcs_type'] or 'pvcs'
         }
     }
 
@@ -228,7 +228,7 @@ def init(dst, **kwargs):
 
     if not is_reinit and super_perun_dir != "":
         perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
-    init_perun_at(dst, kwargs['init_vcs_type'] == 'pvcs', is_reinit, vcs_config)
+    init_perun_at(dst, kwargs['vcs_type'] == 'pvcs', is_reinit, vcs_config)
 
     # register new performance control system in config
     if not is_reinit:
@@ -261,7 +261,7 @@ def add(pcs, profile_name, minor_version):
         profile_content = "".join(profile_handle.readlines())
 
         # Unpack to JSON representation
-        unpacked_profile = profile.load_profile_from_file(profile_name)
+        unpacked_profile = profile.load_profile_from_file(profile_name, True)
         assert 'type' in unpacked_profile.keys()
 
     # Append header to the content of the file
@@ -336,10 +336,10 @@ def print_profile_number_for_minor(base_dir, minor_version, ending='\n'):
         print("{0[all]} tracked profiles (".format(tracked_profiles), end='')
         first_outputed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
-            if first_outputed:
-                print(', ', end='')
             if not tracked_profiles[profile_type]:
                 continue
+            if first_outputed:
+                print(', ', end='')
             print(termcolor.colored("{0} {1}".format(
                 tracked_profiles[profile_type], profile_type
             ), PROFILE_TYPE_COLOURS[profile_type]), end='')
@@ -531,7 +531,7 @@ def show(pcs, profile_name, minor_version, **kwargs):
     profile_type = store.peek_profile_type(profile_name)
     if profile_type == PROFILE_MALFORMED:
         perun_log.error("malformed profile {}".format(profile_name))
-    loaded_profile = profile.load_profile_from_file(profile_name)
+    loaded_profile = profile.load_profile_from_file(profile_name, False)
 
     # Show the profile using the format
     if kwargs['coloured']:

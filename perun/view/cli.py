@@ -23,8 +23,6 @@ def cli(verbose):
     Arguments:
         verbose(int): how verbose the run of the perun is
     """
-    perun_log.msg_to_stdout("Starting perun...", 0, logging.INFO)
-
     # set the verbosity level of the log
     if perun_log.VERBOSITY < verbose:
         perun_log.VERBOSITY = verbose
@@ -50,11 +48,11 @@ def config(key, value, **kwargs):
 
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd())
-@click.option('--init-vcs-type',
+@click.option('--vcs-type',
               help="additionally inits the vcs of the given type")
-@click.option('--init-vcs-url',
+@click.option('--vcs-url',
               help="additionally inits the vcs at the given url")
-@click.option('--init-vcs-params',
+@click.option('--vcs-params',
               help="additional params feeded to the init-vcs")
 def init(dst, **kwargs):
     """
