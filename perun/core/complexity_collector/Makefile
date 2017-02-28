@@ -5,14 +5,17 @@ CINSTR=-finstrument-functions
 #-finstrument-functions-exclude-function-list=vector
 #-finstrument-functions-exclude-function-list=__static_initialization_and_destruction_0,_GLOBAL__sub_I__Z11SLList_initP6SLList
 
-profile: main.o profile.o config.o
-	$(CC) -o profile main.o profile.o config.o
+profile: main.o libprofile.so
+	$(CC) -o profile main.o libprofile.so
+
+libprofile.so: profile.o config.o
+	$(CC) $(CFLAGS) -shared -o libprofile.so profile.o config.o
 
 profile.o: config.o profile.cpp
-	$(CC) $(CFLAGS) -c -o profile.o profile.cpp
+	$(CC) $(CFLAGS) -c -fPIC -o profile.o profile.cpp
 
 config.o: Configuration.cpp Configuration.h
-	$(CC) $(CFLAGS) -c -o config.o Configuration.cpp
+	$(CC) $(CFLAGS) -c -fPIC -o config.o Configuration.cpp
 
 main.o: main.cpp SLList.h SLListcls.h
 	$(CC) $(CFLAGS) $(CINSTR) -c -o main.o main.cpp
@@ -21,5 +24,5 @@ clean:
 	rm -f profile.o main.o config.o profile trace.out 
 
 run:
-	./profile
-	gedit trace.log
+	LD_LIBRARY_PATH="." ./profile
+# gedit trace.log
