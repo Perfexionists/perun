@@ -48,7 +48,7 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
     """
     try:
         function_location_path = ".".join([package_name, module_name])
-        module = importlib.import_module(function_location_path)
+        module = get_module(function_location_path)
         module_function = getattr(module, fun_name)
         return module_function(*args, **kwargs)
     except ImportError as e:
@@ -61,3 +61,17 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         error("Function '{}' is unsupported in module {}".format(
             fun_name, function_location_path
         ))
+
+
+def get_module(module_name):
+    """
+    Arguments:
+        module_name(str): dynamically load a module (but first check the cache)
+
+    Returns:
+        module: loaded module
+    """
+    if module_name not in get_module.cache.keys():
+        get_module.cache[module_name] = importlib.import_module(module_name)
+    return get_module.cache[module_name]
+get_module.cache = {}

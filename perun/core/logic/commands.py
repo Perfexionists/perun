@@ -14,6 +14,7 @@ import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.core.logic.config as perun_config
 import perun.core.logic.profile as profile
+import perun.core.logic.runner as runner
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
 import perun.view as view
@@ -23,7 +24,8 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_ERROR, COLLECT_PHASE_POSTPROCESS, \
-    COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
+    COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, \
+    CollectStatus, PostprocessStatus
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -569,22 +571,22 @@ def construct_job_matrix(pcs):
     return {
         './gaston': {
             'ex10.mona': [
-                Job("time", ["aggregator", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
-                Job("memory", ["aggregator", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
+                Job("time", ["filter", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
+                #Job("memory", ["filter", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
             ],
             'ex4.mona': [
-                Job("time", ["aggregator", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
-                Job("memory", ["aggregator", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
+                Job("time", ["filter", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
+                #Job("memory", ["filter", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
             ],
         },
         'mona': {
             'ex10.mona': [
-                Job("time", ["aggregator", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
-                Job("memory", ["aggregator", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
+                Job("time", ["filter", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
+                #Job("memory", ["filter", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
             ],
             'ex4.mona': [
-                Job("time", ["aggregator", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
-                Job("memory", ["aggregator", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
+                Job("time", ["filter", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
+                #Job("memory", ["filter", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
             ],
         }
     }
@@ -639,7 +641,17 @@ def run(pcs, **kwargs):
                         termcolor.colored(job.collector, attrs=COLLECT_PHASE_ATTRS_HIGH)
                     ), COLLECT_PHASE_COLLECT, attrs=COLLECT_PHASE_ATTRS
                 ))
-                # TODO: Run the collector
+
+                # Run the collector and check if the profile was successfully collected
+                collection_status, collection_msg = runner.run_collector(job.collector, job)
+                if collection_status != CollectStatus.OK:
+                    print(termcolor.colored(
+                        'fatal: {}'.format(collection_msg), COLLECT_PHASE_ERROR
+                    ))
+                    exit(1)
+                else:
+                    print("Successfully collected data from {}".format(job_bin))
+
                 for postprocessor in job.postprocessors:
                     print_job_progress(number_of_jobs)
                     print(termcolor.colored(
@@ -647,4 +659,13 @@ def run(pcs, **kwargs):
                             termcolor.colored(postprocessor, attrs=COLLECT_PHASE_ATTRS_HIGH)
                         ), COLLECT_PHASE_POSTPROCESS, attrs=COLLECT_PHASE_ATTRS
                     ))
-                    # TODO: Run the postprocessor
+
+                    # Run the postprocessor and check if the profile was successfully postprocessed
+                    post_status, post_msg = runner.run_postprocessor(postprocessor, job)
+                    if post_status != PostprocessStatus.OK:
+                        print(termcolor.colored(
+                            'fatal: {}'.format(post_msg), COLLECT_PHASE_ERROR
+                        ))
+                        exit(1)
+                    else:
+                        print("Successfully postprocessed data by {}".format(postprocessor))

@@ -1,5 +1,6 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
+from enum import Enum
 import collections
 
 __author__ = 'Tomas Fiedor'
@@ -50,3 +51,13 @@ COLLECT_PHASE_POSTPROCESS = 'yellow'
 COLLECT_PHASE_ERROR = 'red'
 COLLECT_PHASE_ATTRS = []
 COLLECT_PHASE_ATTRS_HIGH = []
+
+
+class CollectStatus(Enum):
+    OK = 1
+    ERROR = 2
+
+
+class PostprocessStatus(Enum):
+    OK = 1
+    ERROR = 2
