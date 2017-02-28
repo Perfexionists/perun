@@ -305,14 +305,9 @@ def print_short_minor_info_header():
         "minor  ", HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS
     ), end='')
 
-    # Print middle column---minor version one line details
-    print(termcolor.colored(
-        "info".center(MAXIMAL_LINE_WIDTH, ' '), HEADER_INFO_COLOUR, attrs=HEADER_ATTRS
-    ), end='')
-
-    # Print right column---profile number info
+    # Print middle column---profile number info
     slash = termcolor.colored('/', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
-    end_msg = termcolor.colored(' profiles)', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+    end_msg = termcolor.colored(' profiles) ', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
     print(termcolor.colored(" ({0}{4}{1}{4}{2}{4}{3}{5}".format(
         termcolor.colored('a', HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS),
         termcolor.colored('m', PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS),
@@ -320,7 +315,12 @@ def print_short_minor_info_header():
         termcolor.colored('t', PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
         slash,
         end_msg
-    ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS))
+    ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS), end='')
+
+    # Print right column---minor version one line details
+    print(termcolor.colored(
+        "info".ljust(MAXIMAL_LINE_WIDTH, ' '), HEADER_INFO_COLOUR, attrs=HEADER_ATTRS
+    ))
 
 
 def print_profile_number_for_minor(base_dir, minor_version, ending='\n'):
@@ -388,15 +388,12 @@ def print_short_minor_version_info(pcs, minor_version):
         pcs.get_object_directory(), minor_version.checksum
     )
     short_checksum = minor_version.checksum[:6]
-    short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
-    if len(short_description) > MAXIMAL_LINE_WIDTH:
-        short_description = short_description[:MAXIMAL_LINE_WIDTH-3] + "..."
-    print(termcolor.colored("{}".format(
+    print(termcolor.colored("{}  ".format(
         short_checksum
     ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
-    print(" {0} ".format(short_description), end='')
+
     if tracked_profiles['all']:
-        print(termcolor.colored("(", 'grey', attrs=TEXT_ATTRS), end='')
+        print(termcolor.colored("(", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
         print(termcolor.colored("{}".format(
             tracked_profiles['all']
         ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
@@ -410,11 +407,14 @@ def print_short_minor_version_info(pcs, minor_version):
                 ), PROFILE_TYPE_COLOURS[profile_type])
             ), end='')
 
-        print(termcolor.colored(" profile{})".format(
-            's' if tracked_profiles['all'] != 1 else ''
-        ), 'grey', attrs=TEXT_ATTRS))
+        print(termcolor.colored(" profiles)", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
     else:
-        print(termcolor.colored('(no profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS))
+        print(termcolor.colored('(   no profiles   )', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+
+    short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
+    if len(short_description) > MAXIMAL_LINE_WIDTH:
+        short_description = short_description[:MAXIMAL_LINE_WIDTH-3] + "..."
+    print(" {0} ".format(short_description))
 
 
 def print_minor_version_info(head_minor_version, indent=0):
