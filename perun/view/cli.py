@@ -103,7 +103,7 @@ def rm(profile, minor, **kwargs):
               help="show only last N minor versions")
 @click.option('--no-merged', is_flag=True, default=False,
               help="if set the merges of paths will not be displayed")
-@click.option('--short-minors', '-s', is_flag=True, default=False,
+@click.option('--short', '-s', is_flag=True, default=False,
               help="displays the minor version informations in short format")
 def log(head, **kwargs):
     """

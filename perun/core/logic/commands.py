@@ -363,12 +363,12 @@ def log(pcs, minor_version, **kwargs):
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
     # Print header for --short-minors
-    if kwargs['short_minors']:
+    if kwargs['short']:
         print_short_minor_info_header()
 
     # Walk the minor versions and print them
     for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_url, minor_version)[::-1]:
-        if kwargs['short_minors']:
+        if kwargs['short']:
             print_short_minor_version_info(pcs, minor)
         else:
             print(termcolor.colored("Minor Version {}".format(
@@ -409,7 +409,7 @@ def print_short_minor_version_info(pcs, minor_version):
 
         print(termcolor.colored(" profiles)", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
     else:
-        print(termcolor.colored('(   no profiles   )', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+        print(termcolor.colored('---no-profiles----', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
 
     short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
     if len(short_description) > MAXIMAL_LINE_WIDTH:
