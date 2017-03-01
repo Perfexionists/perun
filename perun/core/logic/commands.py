@@ -179,6 +179,7 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit, vcs_config):
     perun_full_path = os.path.join(perun_path, '.perun')
     store.touch_dir(perun_full_path)
     store.touch_dir(os.path.join(perun_full_path, 'objects'))
+    store.touch_dir(os.path.join(perun_full_path, 'jobs'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
     perun_config.init_local_config_at(perun_full_path, vcs_config)
 
@@ -655,3 +656,10 @@ def run(pcs, **kwargs):
                         exit(1)
                     else:
                         print("Successfully postprocessed data by {}".format(postprocessor))
+
+                # Store the computed profile inside the job directory
+                full_profile = profile.generate_profile_for_job(prof, job)
+                full_profile_name = profile.generate_profile_name(job)
+                profile_directory = pcs.get_job_directory()
+                full_profile_path = os.path.join(profile_directory, full_profile_name)
+                profile.store_profile_at(full_profile, full_profile_path)

@@ -8,6 +8,7 @@ performance.
 
 import os
 import json
+import time
 
 import perun.core.logic.store as store
 import perun.utils.log as perun_log
@@ -15,6 +16,23 @@ import perun.utils.log as perun_log
 from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, PROFILE_MALFORMED
 
 __author__ = 'Tomas Fiedor'
+
+
+def generate_profile_name(job):
+    """Constructs the profile name with the extension .perf from the job.
+
+    The profile is identified by its binary, collector, workload and the time
+    it was run.
+
+    Arguments:
+        job(Job): generate profile name for file corresponding to the job
+
+    Returns:
+        str: string for the given profile that will be stored
+    """
+    return "{0.bin}-{0.collector}-{0.workload}-{1}.perf".format(
+        job, time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
+    )
 
 
 def load_profile_from_file(file_name, is_raw_profile):
@@ -57,3 +75,80 @@ def load_profile_from_handle(file_handle, is_raw_profile):
             perun_log.error("malformed profile")
 
     return json.loads(body)
+
+
+def generate_header_for_profile(job):
+    """
+    TODO: Add type of the profile
+    TOOD: Add units of the header
+    Arguments:
+        job(Job): job with information about the computed profile
+
+    Returns:
+        dict: dictionary in form of {'header': {}} corresponding to the perun specification
+    """
+    return {
+        'type': None,
+        'cmd': job.cmd,
+        'params': job.params,
+        'workload': job.workload,
+        'units': [
+            None
+        ]
+    }
+
+
+def generate_collector_info(job):
+    """
+    Arguments:
+        job(Job): job with information about the computed profile
+
+    Returns:
+        dict: dictionary in form of {'collector_info': {}} corresponding to the perun specification
+    """
+    return {
+        'name': job.collector,
+        'params': None
+    }
+
+
+def generate_postprocessor_info(job):
+    """
+    Arguments:
+        job(Job): job with information about the computed profile
+
+    Returns:
+        dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
+    """
+    return [
+        {'name': postprocessor} for postprocessor in job.postprocessors
+    ]
+
+
+def generate_profile_for_job(collected_data, job):
+    """
+    Arguments:
+        collected_data(dict): collected profile through some collector
+        job(Job): job with informations about the computed profile
+
+    Returns:
+        dict: valid profile JSON file
+    """
+    assert 'global' in collected_data.keys() or 'snapshots' in collected_data.keys()
+
+    profile = {}
+    profile.update({'header': generate_header_for_profile(job)})
+    profile.update({'collector_info': generate_collector_info(job)})
+    profile.update({'postprocessors': generate_postprocessor_info(job)})
+    profile.update(collected_data)
+    return profile
+
+
+def store_profile_at(profile, file_path):
+    """
+    Arguments:
+        profile(dict): profile in JSON format
+        file_path(str): path to the file of the profile
+    """
+    with open(file_path, 'w') as profile_handle:
+        json.dump(profile, profile_handle, indent=2)

@@ -64,3 +64,10 @@ class PCS(object):
         """
         object_directory = os.path.join(self.path, "objects")
         return object_directory
+
+    def get_job_directory(self):
+        """
+        Returns:
+            directory: directory, where job outputs are stored
+        """
+        return os.path.join(self.path, "jobs")
