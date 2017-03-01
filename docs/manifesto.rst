@@ -294,6 +294,85 @@ we print only ``N`` minor versions starting from the given SHA-1.
 
 ``core/logic`` package consists of **Runners** and **Preprocessors**.
 
+Job Matrix
+~~~~~~~~~~
+
+Perun builds on the ideas of travis, which uses the build matrix for continuous integration.
+In the configuration file corresponding to the wrapped repository, there are specified collectors,
+postprocess phases, and then the commands that will be run consisting of parameters, binaries
+and workloads. Job matrix can e.g. look as follows::
+
+  collectors:
+    - name: time
+    - name: memory
+      sampling: -s 10
+
+  postprocessors:
+    - name: filter
+      params: <20
+    - name: normalizer
+
+  bins:
+    - name: gaston
+      params:
+        -p -q -g
+        -s 10
+    - mona
+      params:
+         - q -s
+
+  workloads:
+     - ex10.mona
+     - ex14.mona
+
+The binaries are paired with their corresponding params and then the cartesian product is
+constructed with workloads, this yield the following commands:
+
+  - ``gaston -p -q -g ex10.mona``
+  - ``gaston -s 10 ex10.mona``
+  - ``gaston -p -q -g ex14.mona``
+  - ``gaston -s 10 ex14.mona``
+  - ``mona -q -s ex10.mona``
+  - ``mona -q -s ex14.mona``
+
+Further the collectors are paired with the list or postprocesses yielding the following phases:
+
+  - ``time | filter <20 | normalizer``
+  - ``memory -s 10 | filter <20 | normalizer``
+
+Finally we do the cartesian product with the previous commands yield overall of 12 jobs.
+
+Template for Runners
+~~~~~~~~~~~~~~~~~~~~
+
+Each runner ``name`` (e.g. postprocessor and collector) has to be defined in the package ``name``
+in the ``name.py`` module, in the corresponding ``perun.{collect,postprocess}`` package. So e.g.
+the ``time`` collector will be defined inside the ``perun.collect.time.time`` module.
+
+Inside the ``name.py`` are three functions with the following signatures:
+
+  - ``before(**kwargs)``---phase that is run before the ``collect()`` or ``postprocess()`` phases,
+    it is mainly for initialization of various data and/or to produce the runnable binary.
+  - ``collect(**kwargs)``/``postprocess(**kwargs)``---the actual phase of the postprocessing or
+    collecting of the data. This phase should run the binary and collect either the whole profile
+    or at least the raw data. This phase is **mandatory**!
+  - ``after(**kwargs)``---phase that is run after the main function. This serves as optional post
+    processing of the raw data or the computed profile.
+
+Each of these functions should expect the data defined in the ``header`` part of the profile,
+i.e. the command (``cmd``), arguments (``params``), workload (``workload``) and additional params
+from the job matrix.
+
+Each of these function should return the triple of ``(status code, status msg, updated kwargs)``,
+where:
+
+  - ``status code``---integer representing the status of the phase (0 for OK, nonzero for error),
+  - ``status msg``---additional message of the status (mainly for error),
+  - ``updated kwargs``---additional params that should be passed to the next phase
+
+Either ``after`` or ``collect``/``postprocess`` function should return the profile in the updated
+kwargs associated to the key ``profile``.
+
 Runner Scheduler
 ~~~~~~~~~~~~~~~~
 
