@@ -8,6 +8,7 @@ performance.
 
 import os
 import json
+import time
 
 import perun.core.logic.store as store
 import perun.utils.log as perun_log
@@ -17,51 +18,137 @@ from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, PROFILE_MALFORMED
 __author__ = 'Tomas Fiedor'
 
 
-def load_profile_from_file(file_name):
+def generate_profile_name(job):
+    """Constructs the profile name with the extension .perf from the job.
+
+    The profile is identified by its binary, collector, workload and the time
+    it was run.
+
+    Arguments:
+        job(Job): generate profile name for file corresponding to the job
+
+    Returns:
+        str: string for the given profile that will be stored
+    """
+    return "{0.bin}-{0.collector}-{0.workload}-{1}.perf".format(
+        job, time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
+    )
+
+
+def load_profile_from_file(file_name, is_raw_profile):
     """
     Arguments:
         file_name(str): path to the file
+        is_raw_profile(bool): true if the profile is in json format already
 
     Returns:
         dict: JSON dictionary
     """
     if os.path.exists(file_name):
-        with open(file_name, 'r') as file_handle:
-            return load_profile_from_handle(file_handle)
+        with open(file_name, 'rb') as file_handle:
+            return load_profile_from_handle(file_handle, is_raw_profile)
     else:
         perun_log.warn("file '{}' not found")
         return {}
 
 
-def load_profile_from_handle(file_handle):
+def load_profile_from_handle(file_handle, is_raw_profile):
     """
     Arguments:
         file_handle(file): opened file handle
+        is_raw_profile(bool): true if the profile is in json format already
 
     Returns:
         dict: JSON representation of the profile
     """
-    return json.load(file_handle)
+    if is_raw_profile:
+        body = file_handle.read().decode('utf-8')
+    else:
+        # Read deflated contents and split to header and body
+        contents = store.read_and_deflate_chunk(file_handle)
+        header, body = contents.split('\0')
+        prefix, profile_type, profile_size = header.split(' ')
+
+        # Check the header, if the body is not malformed
+        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
+                len(body) != int(profile_size):
+            perun_log.error("malformed profile")
+
+    return json.loads(body)
 
 
-def peek_profile_type(profile_name):
-    """Retrieves from the binary file the type of the profile from the header.
-
-    Peeks inside the binary file of the profile_name and returns the type of the
-    profile, without reading it whole.
+def generate_header_for_profile(job):
+    """
+    TODO: Add type of the profile
+    TOOD: Add units of the header
     Arguments:
-        profile_name(str): filename of the profile
+        job(Job): job with information about the computed profile
 
     Returns:
-        str: type of the profile
+        dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
-    with open(profile_name, 'rb') as profile_handle:
-        profile_chunk = store.read_and_deflate_chunk(profile_handle, 64)
-        prefix, profile_type, *_ = profile_chunk.split(" ")
+    return {
+        'type': None,
+        'cmd': job.cmd,
+        'params': job.params,
+        'workload': job.workload,
+        'units': [
+            None
+        ]
+    }
 
-        # Return that the stored profile is malformed
-        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES:
-            return PROFILE_MALFORMED
-        else:
-            return profile_type
 
+def generate_collector_info(job):
+    """
+    Arguments:
+        job(Job): job with information about the computed profile
+
+    Returns:
+        dict: dictionary in form of {'collector_info': {}} corresponding to the perun specification
+    """
+    return {
+        'name': job.collector,
+        'params': None
+    }
+
+
+def generate_postprocessor_info(job):
+    """
+    Arguments:
+        job(Job): job with information about the computed profile
+
+    Returns:
+        dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
+    """
+    return [
+        {'name': postprocessor} for postprocessor in job.postprocessors
+    ]
+
+
+def generate_profile_for_job(collected_data, job):
+    """
+    Arguments:
+        collected_data(dict): collected profile through some collector
+        job(Job): job with informations about the computed profile
+
+    Returns:
+        dict: valid profile JSON file
+    """
+    assert 'global' in collected_data.keys() or 'snapshots' in collected_data.keys()
+
+    profile = {}
+    profile.update({'header': generate_header_for_profile(job)})
+    profile.update({'collector_info': generate_collector_info(job)})
+    profile.update({'postprocessors': generate_postprocessor_info(job)})
+    profile.update(collected_data)
+    return profile
+
+
+def store_profile_at(profile, file_path):
+    """
+    Arguments:
+        profile(dict): profile in JSON format
+        file_path(str): path to the file of the profile
+    """
+    with open(file_path, 'w') as profile_handle:
+        json.dump(profile, profile_handle, indent=2)

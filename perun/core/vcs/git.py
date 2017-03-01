@@ -73,15 +73,24 @@ def _walk_minor_versions(git_path, head):
         MinorVersion: yields stream of minor versions
     """
     worklist = [head]
+    processed = []
     minor_versions = []
 
     # Recursively iterate through the parents
     while worklist:
         minor_version = worklist.pop()
+
+        # We skip already processed identifications
+        if minor_version in processed:
+            continue
+        processed.append(minor_version)
+
         minor_version_info = _get_minor_version_info(git_path, minor_version)
         minor_versions.append(minor_version_info)
         for parent in minor_version_info.parents:
             worklist.append(parent)
+
+    perun_log.msg_to_stdout("Finished fetching minor_versions", 2)
 
     # Sort by date
     minor_versions.sort(key=lambda minor: minor.date)
@@ -110,15 +119,14 @@ def _get_minor_version_info(git_path, minor_version):
     assert store.is_sha1(minor_version)
 
     # Check the type of the minor_version
-    proc = subprocess.Popen("git cat-file -t {}".format(minor_version), cwd=git_path, shell=True,
+    proc = subprocess.Popen("git cat-file -t {}".format(minor_version).split(' '), cwd=git_path,
                             stdout=subprocess.PIPE, universal_newlines=True)
     object_type = proc.stdout.readlines()[0].strip()
-    proc.wait()
     if object_type != 'commit':
         perun_log.error("{} does not represent valid commit object".format(minor_version))
 
     # Get the contents of the commit object
-    proc = subprocess.Popen("git cat-file -p {}".format(minor_version), cwd=git_path, shell=True,
+    proc = subprocess.Popen("git cat-file -p {}".format(minor_version).split(' '), cwd=git_path,
                             stdout=subprocess.PIPE, universal_newlines=True)
     commit_object = "".join(proc.stdout.readlines())
 

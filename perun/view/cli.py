@@ -23,8 +23,6 @@ def cli(verbose):
     Arguments:
         verbose(int): how verbose the run of the perun is
     """
-    perun_log.msg_to_stdout("Starting perun...", 0, logging.INFO)
-
     # set the verbosity level of the log
     if perun_log.VERBOSITY < verbose:
         perun_log.VERBOSITY = verbose
@@ -50,11 +48,11 @@ def config(key, value, **kwargs):
 
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd())
-@click.option('--init-vcs-type',
+@click.option('--vcs-type',
               help="additionally inits the vcs of the given type")
-@click.option('--init-vcs-url',
+@click.option('--vcs-url',
               help="additionally inits the vcs at the given url")
-@click.option('--init-vcs-params',
+@click.option('--vcs-params',
               help="additional params feeded to the init-vcs")
 def init(dst, **kwargs):
     """
@@ -105,7 +103,7 @@ def rm(profile, minor, **kwargs):
               help="show only last N minor versions")
 @click.option('--no-merged', is_flag=True, default=False,
               help="if set the merges of paths will not be displayed")
-@click.option('--short-minors', '-s', is_flag=True, default=False,
+@click.option('--short', '-s', is_flag=True, default=False,
               help="displays the minor version informations in short format")
 def log(head, **kwargs):
     """
@@ -134,7 +132,7 @@ def status(**kwargs):
 @click.argument('minor', required=False)
 @click.option('--format', '-f', type=click.Choice(['raw']), default='raw',
               help="how the profile should be shown")
-@click.option('--coloured', '-c', is_flag=True,
+@click.option('--coloured', '-c', is_flag=True, default=False,
               help="colour the outputed profile")
 @click.option('--one-line', '-o', is_flag=True,
               help="print the agggregated one-line data for the given profile")
@@ -147,10 +145,10 @@ def show(profile, minor, **kwargs):
         kwargs(dict): additional arguments to perun show
     """
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
-    commands.show(profile, minor, kwargs)
+    commands.show(profile, minor, **kwargs)
 
 
-@click.command()
+@cli.command()
 def run(**kwargs):
     """
     Arguments:

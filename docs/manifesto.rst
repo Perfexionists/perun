@@ -294,6 +294,85 @@ we print only ``N`` minor versions starting from the given SHA-1.
 
 ``core/logic`` package consists of **Runners** and **Preprocessors**.
 
+Job Matrix
+~~~~~~~~~~
+
+Perun builds on the ideas of travis, which uses the build matrix for continuous integration.
+In the configuration file corresponding to the wrapped repository, there are specified collectors,
+postprocess phases, and then the commands that will be run consisting of parameters, binaries
+and workloads. Job matrix can e.g. look as follows::
+
+  collectors:
+    - name: time
+    - name: memory
+      sampling: -s 10
+
+  postprocessors:
+    - name: filter
+      params: <20
+    - name: normalizer
+
+  bins:
+    - name: gaston
+      params:
+        -p -q -g
+        -s 10
+    - mona
+      params:
+         - q -s
+
+  workloads:
+     - ex10.mona
+     - ex14.mona
+
+The binaries are paired with their corresponding params and then the cartesian product is
+constructed with workloads, this yield the following commands:
+
+  - ``gaston -p -q -g ex10.mona``
+  - ``gaston -s 10 ex10.mona``
+  - ``gaston -p -q -g ex14.mona``
+  - ``gaston -s 10 ex14.mona``
+  - ``mona -q -s ex10.mona``
+  - ``mona -q -s ex14.mona``
+
+Further the collectors are paired with the list or postprocesses yielding the following phases:
+
+  - ``time | filter <20 | normalizer``
+  - ``memory -s 10 | filter <20 | normalizer``
+
+Finally we do the cartesian product with the previous commands yield overall of 12 jobs.
+
+Template for Runners
+~~~~~~~~~~~~~~~~~~~~
+
+Each runner ``name`` (e.g. postprocessor and collector) has to be defined in the package ``name``
+in the ``name.py`` module, in the corresponding ``perun.{collect,postprocess}`` package. So e.g.
+the ``time`` collector will be defined inside the ``perun.collect.time.time`` module.
+
+Inside the ``name.py`` are three functions with the following signatures:
+
+  - ``before(**kwargs)``---phase that is run before the ``collect()`` or ``postprocess()`` phases,
+    it is mainly for initialization of various data and/or to produce the runnable binary.
+  - ``collect(**kwargs)``/``postprocess(**kwargs)``---the actual phase of the postprocessing or
+    collecting of the data. This phase should run the binary and collect either the whole profile
+    or at least the raw data. This phase is **mandatory**!
+  - ``after(**kwargs)``---phase that is run after the main function. This serves as optional post
+    processing of the raw data or the computed profile.
+
+Each of these functions should expect the data defined in the ``header`` part of the profile,
+i.e. the command (``cmd``), arguments (``params``), workload (``workload``) and additional params
+from the job matrix.
+
+Each of these function should return the triple of ``(status code, status msg, updated kwargs)``,
+where:
+
+  - ``status code``---integer representing the status of the phase (0 for OK, nonzero for error),
+  - ``status msg``---additional message of the status (mainly for error),
+  - ``updated kwargs``---additional params that should be passed to the next phase
+
+Either ``after`` or ``collect``/``postprocess`` function should return the profile in the updated
+kwargs associated to the key ``profile``.
+
 Runner Scheduler
 ~~~~~~~~~~~~~~~~
 
@@ -350,19 +429,27 @@ Our current focus is on the following types of profiles:
 
 Perun profile format is currently under development, the current version is
 described in the following snipped, where the # parts are used as comments for
-the parts of the profile::
+the parts of the profile
+
+Note that the minor_version is removed, as the profile can possibly correspond to more minor
+versions, e.g. when nothing was changed with the commit::
 
   Profile = {
-    # General information about profile: its type
-    'type': 'memory',
-    # Corresponding minor version (this will be injected by perun)
-    'minor_version': a5cf40ebf33610c97083b209fc12a36adc3a99ff,
-    # Command that was run and for which the data was collected
-    'cmd': '/dir/subdir/bin',
-    # Params used to run the command
-    'params': '-g -w -c',
-    # Workload, i.e. some file/input/output supplied
-    'workload': 'load.in',
+    'header': {
+      # General information about profile: its type
+      'type': 'memory',
+      # Command that was run and for which the data was collected
+      'cmd': '/dir/subdir/bin',
+      # Params used to run the command
+      'params': '-g -w -c',
+      # Workload, i.e. some file/input/output supplied
+      'workload': 'load.in',
+      # Units for the given types
+      'units': [
+        'memory': 'MB',
+        'time': 'ns'
+      ]
+    }
 
     # Collector informations
     'collector': {
@@ -370,6 +457,17 @@ the parts of the profile::
       'name' : 'collector_name',
       # Parameters used during running of the collector
       'params': '-sample 20 --no-recurse',
+    },
+
+    # Information about all of the postprocessor phases
+    'postprocessors': [
+      {'name': 'filter', 'params': '<30'}
+    ],
+
+    # Information about result of the computation
+    'result': {
+      'status': 0
+      'status-msg': 'everything was expensive'
     }
 
     # Global snapshot
@@ -382,7 +480,22 @@ the parts of the profile::
            # Uid: unique identifier of the location or the resource
            # Type: type of the quantified resource
            # Trace: trace of the resource (callstacks, previous calls, whatever)
-           {'amount': 30 MB, 'uid': '/dir/subdir/loc', 'type': 'memory', 'trace':''},
+           {
+             # Amount of the consumed resources
+             'amount': 30,
+             # Unique identification of the resource: name of the function, etc.
+             'uid': '/dir/subdir/loc',
+             # Type of the consumed resources
+             'type': 'memory',
+             # Subtype of the resource (e.g. time delta, malloc, calloc allocations, etc.)
+             'subtype': 'malloc',
+             # Trace leading to the UID
+             'trace':'',
+             # Address where the resource was consumed (mainly for memory)
+             'address': '242341243',
+             # Number of units in the structure (for Jirka's BP)
+             'structure-unit-size': 132,
+           },
         ]
      },
 
@@ -430,6 +543,7 @@ Example of time profile, with data collected by ``time`` utility::
 
   'snapshots': []
   }
+
 Example of mixed profile, with data collected by custom collector::
 
   {
@@ -456,6 +570,7 @@ Example of mixed profile, with data collected by custom collector::
        ]
    }
   }
+
 Example of memory collected data::
 
   {
@@ -485,6 +600,7 @@ Example of memory collected data::
       }
     ]
   }
+
 Collective Profiles
 ~~~~~~~~~~~~~~~~~~~
 
@@ -591,7 +707,7 @@ degradated, or moved over some given threshold. In case this holds, an notificat
 is send to emails set in config.
 
 Performance Statistics
----------------------
+----------------------
 
 Perun provides various global statistics for each tracked Version Control Systems.
 It can generate statistics over the time or over minor and major versions.
