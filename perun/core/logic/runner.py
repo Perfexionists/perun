@@ -1,16 +1,23 @@
 """Collection of functions for running collectors and postprocessors"""
 
-import termcolor
+import perun.utils.log as perun_log
 
 from perun.utils import get_module
-from perun.utils.helpers import CollectStatus, PostprocessStatus, \
-    COLLECT_PHASE_ERROR
+from perun.utils.helpers import CollectStatus, PostprocessStatus
 
 __author__ = 'Tomas Fiedor'
 
 
 def run_all_phases_for(runner, runner_type, runner_params):
-    """
+    """Run all of the phases (before, runner_type, after) for given params.
+
+    Runs three of the phases before, runner_type and after for the given runner params
+    with runner (collector or postprocesser). During each phase, either error occurs,
+    with given error message or updated params, that are used in next phase. This
+    way the phases can pass the information.
+
+    Returns the computed profile
+
     Arguments:
         runner(module): module that is going to be runned
         runner_type(str): string type of the runner (either collector or postprocessor)
@@ -23,21 +30,31 @@ def run_all_phases_for(runner, runner_type, runner_params):
     for phase in ['before', runner_verb, 'after']:
         phase_function = getattr(runner, phase, None)
         if phase_function:
-            ret_val, ret_msg = phase_function(**runner_params)
+            ret_val, ret_msg, updated_params = phase_function(**runner_params)
+            runner_params.update(updated_params or {})
             if ret_val != ok_status:
-                print(termcolor.colored("fatal: error while {}{} phase: {}".format(
+                perun_log.error("error while {}{} phase: {}".format(
                     phase, ("_" + runner_verb)*(phase != runner_verb), ret_msg
-                ), COLLECT_PHASE_ERROR))
-                exit(1)
+                ))
         elif phase == runner_verb:
-            print(termcolor.colored("fatal: missing {}() function for {}".format(
+            perun_log.error("missing {}() function for {}".format(
                 runner_verb, runner.__name__
-            ), COLLECT_PHASE_ERROR))
-            exit(1)
+            ))
+
+    # Return the processed profile
+    if 'profile' not in runner_params.keys():
+        perun_log.error("missing generated profile for {} {}".format(
+            runner_type, runner.__name__
+        ))
+    return runner_params['profile']
 
 
 def run_collector(collector_name, job):
-    """
+    """Run the job of colelctor of the given name.
+
+    Tries to look up the module containinig the collector specified by the
+    collector name, and then runs it with the parameters and returns collected profile.
+
     Arguments:
         collector_name(str): name of the called collector
         job(Job): additional information about the running job
@@ -52,13 +69,18 @@ def run_collector(collector_name, job):
 
     # First init the collector by running the before phases (if it has)
     job_params = dict(job._asdict())
-    run_all_phases_for(collector, 'collector', job_params)
+    profile = run_all_phases_for(collector, 'collector', job_params)
 
-    return CollectStatus.OK, "Profile collected"
+    return CollectStatus.OK, "Profile collected", profile
 
 
 def run_postprocessor(postprocessor_name, job):
-    """
+    """Run the job of postprocess of the given name.
+
+    Tries to look up the module containinig the postprocessor specified by the
+    postprocessor name, and then runs it with the parameters and returns processed
+    profile.
+
     Arguments:
         postprocessor_name(str): name of the postprocessor that will be run
         job(Job): additional information about the running job
@@ -75,6 +97,6 @@ def run_postprocessor(postprocessor_name, job):
 
     # First init the collector by running the before phases (if it has)
     job_params = dict(job._asdict())
-    run_all_phases_for(postprocessor, 'postprocessor', job_params)
+    profile = run_all_phases_for(postprocessor, 'postprocessor', job_params)
 
-    return PostprocessStatus.OK, "Profile postprocessed"
+    return PostprocessStatus.OK, "Profile postprocessed", profile

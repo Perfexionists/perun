@@ -119,15 +119,14 @@ def _get_minor_version_info(git_path, minor_version):
     assert store.is_sha1(minor_version)
 
     # Check the type of the minor_version
-    proc = subprocess.Popen("git cat-file -t {}".format(minor_version), cwd=git_path, shell=True,
+    proc = subprocess.Popen("git cat-file -t {}".format(minor_version).split(' '), cwd=git_path,
                             stdout=subprocess.PIPE, universal_newlines=True)
     object_type = proc.stdout.readlines()[0].strip()
-    proc.wait()
     if object_type != 'commit':
         perun_log.error("{} does not represent valid commit object".format(minor_version))
 
     # Get the contents of the commit object
-    proc = subprocess.Popen("git cat-file -p {}".format(minor_version), cwd=git_path, shell=True,
+    proc = subprocess.Popen("git cat-file -p {}".format(minor_version).split(' '), cwd=git_path,
                             stdout=subprocess.PIPE, universal_newlines=True)
     commit_object = "".join(proc.stdout.readlines())
 

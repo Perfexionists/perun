@@ -472,6 +472,7 @@ def print_minor_version_profiles(pcs, minor_version):
 @pass_pcs
 def status(pcs, **kwargs):
     """Prints the status of performance control system
+
     Arguments:
         pcs(PCS): performance control system
         kwargs(dict): dictionary of keyword arguments
@@ -569,25 +570,10 @@ def construct_job_matrix(pcs):
     """
     # TODO: For now
     return {
-        './gaston': {
-            'ex10.mona': [
-                Job("time", ["filter", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
-                #Job("memory", ["filter", "normalizer"], "./gaston -q ex10.mona", "./gaston", "ex10.mona", "-q"),
-            ],
-            'ex4.mona': [
-                Job("time", ["filter", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
-                #Job("memory", ["filter", "normalizer"], "./gaston -q ex4.mona", "./gaston", "ex4.mona", "-q"),
-            ],
-        },
-        'mona': {
-            'ex10.mona': [
-                Job("time", ["filter", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
-                #Job("memory", ["filter", "normalizer"], "mona -q ex10.mona", "mona", "ex10.mona", "-q"),
-            ],
-            'ex4.mona': [
-                Job("time", ["filter", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
-                #Job("memory", ["filter", "normalizer"], "mona -q ex4.mona", "mona", "ex4.mona", "-q"),
-            ],
+        'echo': {
+            'hello': [
+                Job("time", [], "echo hello", "echo", "hello", "")
+            ]
         }
     }
 
@@ -643,7 +629,7 @@ def run(pcs, **kwargs):
                 ))
 
                 # Run the collector and check if the profile was successfully collected
-                collection_status, collection_msg = runner.run_collector(job.collector, job)
+                collection_status, collection_msg, prof = runner.run_collector(job.collector, job)
                 if collection_status != CollectStatus.OK:
                     print(termcolor.colored(
                         'fatal: {}'.format(collection_msg), COLLECT_PHASE_ERROR
@@ -661,7 +647,7 @@ def run(pcs, **kwargs):
                     ))
 
                     # Run the postprocessor and check if the profile was successfully postprocessed
-                    post_status, post_msg = runner.run_postprocessor(postprocessor, job)
+                    post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job)
                     if post_status != PostprocessStatus.OK:
                         print(termcolor.colored(
                             'fatal: {}'.format(post_msg), COLLECT_PHASE_ERROR
