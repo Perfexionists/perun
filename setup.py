@@ -6,7 +6,7 @@ setup(
     py_modules=['perun'],
     packages=find_packages(),
     install_requires=[
-        'Click',
+        'click', 'termcolor', 'colorama', 'kivy', 'PyYAML'
     ],
     entry_points='''
         [console_scripts]
