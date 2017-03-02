@@ -1,7 +1,9 @@
-import sys
+"""This module provides methods for parsing raw memory data"""
+
 import subprocess
 import json
 import re
+from decimal import Decimal
 
 __author__ = "Radim Podola"
 
@@ -14,9 +16,9 @@ def demangle(name):
     Returns:
         string: demangled name
     """
-    syscall = ['c++filt']
-    syscall.append(name)
-    output = subprocess.check_output(syscall)
+    sys_call = ['c++filt']
+    sys_call.append(name)
+    output = subprocess.check_output(sys_call)
 
     return output.decode("utf-8").strip()
 
@@ -29,17 +31,17 @@ def get_extern_funcs(filename):
         Returns:
             list: list of functions from dynamic section
     """
-    syscall = ['nm', '-D', '-C']
-    syscall.append(filename)
-    output = subprocess.check_output(syscall)
+    sys_call = ['nm', '-D', '-C']
+    sys_call.append(filename)
+    output = subprocess.check_output(sys_call)
     output = output.decode("utf-8").splitlines()
-    fs = []
+    functions = []
     for line in output:
         line = line.strip()
-        if(line[0] == 'U'):
-            fs.append(line[2:])
+        if line[0] == 'U':
+            functions.append(line[2:])
 
-    return fs
+    return functions
 
 
 def address_to_line(ip, filename):
@@ -52,19 +54,20 @@ def address_to_line(ip, filename):
         list: list of two objects, 1st is the name of the source file,
               2nd is the line number
     """
-    syscall = ['addr2line']
-    syscall.append(ip)
-    syscall.append('-e')
-    syscall.append(filename)
-    output = subprocess.check_output(syscall)
+    sys_call = ['addr2line']
+    sys_call.append(ip)
+    sys_call.append('-e')
+    sys_call.append(filename)
+    output = subprocess.check_output(sys_call)
 
     return output.decode("utf-8").strip().split(':')
 
 
-def parse_stack(stack):
+def parse_stack(stack, cmd):
     """ Parse stack information of one allocation
     Arguments:
         stack(list): list of raw stack data
+        cmd(string): profiled binary
 
     Returns:
         list: list of formatted structures representing
@@ -76,24 +79,24 @@ def parse_stack(stack):
 
         # parsing name of function,
         # it's the first word in the call record
-        func = re.findall("\w+", call)[0]
+        func = re.findall(r"\w+", call)[0]
         # demangling name of function
         func = demangle(func)
         call_data.update({'function': func})
 
         # parsing instruction pointer,
         # it's the first hexadecimal number in the call record
-        ip = re.findall("0x[0-9a-fA-F]+", call)[0]
+        ip = re.findall(r"0x[0-9a-fA-F]+", call)[0]
 
         # getting information of instruction pointer,
         # the source file and line number in the source file
-        ip_info = address_to_line(ip, binary_file)
+        ip_info = address_to_line(ip, cmd)
         if ip_info[0] in ["?", "??"]:
             ip_info[0] = "unreachable"
         if ip_info[1] in ["?", "??"]:
             ip_info[1] = 0
         else:
-            ip_info[1] = int(re.findall("\d+", ip_info[1])[0])
+            ip_info[1] = int(re.findall(r"\d+", ip_info[1])[0])
 
         call_data.update({'source': ip_info[0]})
         call_data.update({'line': ip_info[1]})
@@ -103,10 +106,11 @@ def parse_stack(stack):
     return data
 
 
-def parse_resources(allocation):
+def parse_resources(allocation, cmd):
     """ Parse resources of one allocation
     Arguments:
         allocation(list): list of raw allocation data
+        cmd(string): profiled binary
 
     Returns:
         structure: formatted structure representing
@@ -117,42 +121,49 @@ def parse_resources(allocation):
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
-    amount = re.findall("\d+", allocation[1])[0]
+    amount = re.findall(r"\d+", allocation[1])[0]
     data.update({'amount': int(amount)})
 
     # parsing allocate function,
     # it's the first word on the second line
-    allocator = re.findall("^\w+", allocation[1])[0]
-    data.update({'allocator': allocator})
+    allocator = re.findall(r"^\w+", allocation[1])[0]
+    data.update({'subtype': allocator})
 
     # parsing address of allocated memory,
     # it's the second number on the second line
-    address = re.findall("\d+", allocation[1])[1]
+    address = re.findall(r"\d+", allocation[1])[1]
     data.update({'address': int(address)})
 
     # parsing stack in the moment of allocation
     # to getting trace of it
-    trace = parse_stack(allocation[2:])
+    trace = parse_stack(allocation[2:], cmd)
     data.update({'trace': trace})
+
+# TODO
+    data.update({'type': 'memory'})
+    data.update({'uid': 'UID'})
 
     return data
 
 
-def parse_log(logfile, snapshots_interval=1.0):
+def parse_log(logfile, cmd, snapshots_interval=Decimal('0.001')):
     """ Parse raw data in the log file
     Arguments:
         logfile(string): name of the log file
-        snapshots_interval(float): interval of snapshots [s]
+        cmd(string): profiled binary
+        snapshots_interval(Decimal): interval of snapshots [s]
 
     Returns:
         structure: formatted structure representing
-                   section "snapshots" in memory profile
+                   section "snapshots" and "global" in memory profile
     """
     interval = snapshots_interval
     with open(logfile) as f:
         file = f.read()
 
     file = file.split('\n\n')
+# TODO
+    glob = file.pop()
 
     allocations = []
     for item in file:
@@ -160,7 +171,7 @@ def parse_log(logfile, snapshots_interval=1.0):
 
     snapshots = []
     data = {}
-    data.update({'time': interval})
+    data.update({'time': '{0:f}'.format(interval)})
     data.update({'resources': []})
     for allocation in allocations:
         if not allocation:
@@ -168,74 +179,24 @@ def parse_log(logfile, snapshots_interval=1.0):
 
         # parsing timestamp,
         # it's the only one number on the line
-        time = float(re.findall("\d+\.\d+", allocation[0])[0])
+        time = Decimal(re.findall(r"\d+\.\d+", allocation[0])[0])
 
-        if time > interval:
+        while time > interval:
             snapshots.append(data)
             interval += snapshots_interval
             data = {}
             data.update({'resources': []})
-            data.update({'time': interval})
+            data.update({'time': '{0:f}'.format(interval)})
 
         # using parse_resources()
         # parsing resources,
-        data['resources'].append(parse_resources(allocation))
+        data['resources'].append(parse_resources(allocation, cmd))
 
     if data:
         snapshots.append(data)
 
-    return snapshots
+    return {'snapshots': snapshots, 'global': glob}
 
 
-def calculate_global(data):
-    return {}
-
-
-def update_profile(logfile, filename, snapshots_interval=1.0):
-    """
-    Arguments:
-        logfile(string): name of log file
-        filename(string): name of file to update profiling information
-        snapshots_interval(float): interval of snapshots [s]
-
-    Returns:
-        bool: True if log was successfully updated, False if not
-    """
-    try:
-        with open(filename) as f:
-            profile = json.load(f)
-    except IOError:
-        return False
-
-    profile['snapshots'] = parse_log(logfile, snapshots_interval)
-    profile['global'] = calculate_global(profile['snapshots'])
-
-    try:
-        with open(filename, mode='w') as f:
-            json.dump(profile, f, indent=2)
-        print(json.dumps(profile, indent=2))
-    except IOError:
-        return False
-
-    return True
-
-
-binary_file = 'test'
-update_profile('MemoryLog', 'memory.perf', 0.001)
-
-"""
-TODO:
-Upravit log z C aby se to líp parsovalo
-    -trasu jen čísla
-    -u free položka 0B
-"""
-
-
-"""
-print(demangle('_ZNKSt7__cxx1112basic_stringIwSt11char_traitsIwESaIwEE6substrEmm'))
-print(get_extern_funcs('test'))
-
-localization =  address_to_line('400605', 'test')
-print('soubor: ' + localization[0])
-print('řádek: ', localization[1])
-"""
+if __name__ == "__main__":
+    pass
