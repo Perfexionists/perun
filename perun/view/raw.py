@@ -38,11 +38,12 @@ def show(profile, coloured=False):
     RAW_INDENT = 4
 
     # Construct the header
-    for header_item in ['type', 'minor_version', 'cmd', 'param', 'workload']:
-        if header_item in profile.keys():
+    header = profile['header']
+    for header_item in ['type', 'cmd', 'params', 'workload']:
+        if header_item in header.keys():
             print("{}: {}".format(
                 process_object(header_item, RAW_KEY_COLOUR, coloured),
-                process_object(profile[header_item], RAW_ITEM_COLOUR, coloured)
+                process_object(header[header_item], RAW_ITEM_COLOUR, coloured)
             ))
 
     print('')

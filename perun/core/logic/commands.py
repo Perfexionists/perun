@@ -263,10 +263,10 @@ def add(pcs, profile_name, minor_version):
 
         # Unpack to JSON representation
         unpacked_profile = profile.load_profile_from_file(profile_name, True)
-        assert 'type' in unpacked_profile.keys()
+        assert 'type' in unpacked_profile['header'].keys()
 
     # Append header to the content of the file
-    header = "profile {} {}\0".format(unpacked_profile['type'], len(profile_content))
+    header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(profile_content))
     profile_content = (header + profile_content).encode('utf-8')
 
     # Transform to internal representation - file as sha1 checksum and content packed with zlib
