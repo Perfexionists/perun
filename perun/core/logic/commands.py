@@ -23,7 +23,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_ERROR, COLLECT_PHASE_POSTPROCESS, \
+    Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, \
     CollectStatus, PostprocessStatus
 from perun.core.logic.pcs import PCS
@@ -567,16 +567,25 @@ def construct_job_matrix(pcs):
         pcs(PCS): object with performance control system wrapper
 
     Returns:
-        dict: dict of jobs in form of {bins: {workloads: {Job}}}
+        dict, int: dict of jobs in form of {bins: {workloads: {Job}}}, number of jobs
     """
     # TODO: For now
-    return {
+    matrix = {
         'echo': {
             'hello': [
                 Job("time", [], "echo hello", "echo", "hello", "")
             ]
         }
     }
+
+    # Count overall number of the jobs:
+    number_of_jobs = 0
+    for bin_values in matrix.values():
+        for workload_values in bin_values.values():
+            for job in workload_values:
+                number_of_jobs += 1 + len(job.postprocessors)
+
+    return matrix, number_of_jobs
 
 
 @decorators.static_variables(current_job=1)
@@ -593,6 +602,21 @@ def print_job_progress(overall_jobs):
     print_job_progress.current_job += 1
 
 
+def print_current_phase(phase_msg, phase_unit, phase_colour):
+    """Print helper coloured message for the current phase
+
+    Arguments:
+        phase_msg(str): message that will be printed to the output
+        phase_unit(str): additional parameter that is passed to the phase_msg
+        phase_colour(str): phase colour defined in helpers.py
+    """
+    print(termcolor.colored(
+        phase_msg.format(
+            termcolor.colored(phase_unit, attrs=COLLECT_PHASE_ATTRS_HIGH)
+        ), phase_colour, attrs=COLLECT_PHASE_ATTRS
+    ))
+
+
 @pass_pcs
 def run(pcs, **kwargs):
     """
@@ -600,62 +624,32 @@ def run(pcs, **kwargs):
         pcs(PCS): object with performance control system wrapper
         kwargs(dict): dictionary of keyword arguments
     """
-    job_matrix = construct_job_matrix(pcs)
+    job_matrix, number_of_jobs = construct_job_matrix(pcs)
 
-    # Count overall number of the jobs:
-    number_of_jobs = 0
-    for bin_values in job_matrix.values():
-        for workload_values in bin_values.values():
-            for job in workload_values:
-                number_of_jobs += 1 + len(job.postprocessors)
-
-    for job_bin, workload_jobs in job_matrix.items():
-        print(termcolor.colored(
-            "Collecting profiles for {}".format(
-                termcolor.colored(job_bin, attrs=COLLECT_PHASE_ATTRS_HIGH)
-            ), COLLECT_PHASE_BIN, attrs=COLLECT_PHASE_ATTRS
-        ))
-        for job_workload, jobs in workload_jobs.items():
-            print(termcolor.colored(
-                " - processing workload {}".format(
-                    termcolor.colored(job_workload, attrs=COLLECT_PHASE_ATTRS_HIGH)
-                ), COLLECT_PHASE_WORKLOAD, attrs=COLLECT_PHASE_ATTRS
-            ))
-            for job in jobs:
+    for job_bin, workloads_per_bin in job_matrix.items():
+        print_current_phase("Collecting profiles for {}", job_bin, COLLECT_PHASE_BIN)
+        for job_workload, jobs_per_workload in workloads_per_bin.items():
+            print_current_phase(" - processing workload {}", job_workload, COLLECT_PHASE_WORKLOAD)
+            for job in jobs_per_workload:
                 print_job_progress(number_of_jobs)
-                print(termcolor.colored(
-                    "Collecting data with {}".format(
-                        termcolor.colored(job.collector, attrs=COLLECT_PHASE_ATTRS_HIGH)
-                    ), COLLECT_PHASE_COLLECT, attrs=COLLECT_PHASE_ATTRS
-                ))
+                print_current_phase("Collecting data by {}", job.collector,  COLLECT_PHASE_COLLECT)
 
                 # Run the collector and check if the profile was successfully collected
                 collection_status, collection_msg, prof = runner.run_collector(job.collector, job)
                 if collection_status != CollectStatus.OK:
-                    print(termcolor.colored(
-                        'fatal: {}'.format(collection_msg), COLLECT_PHASE_ERROR
-                    ))
-                    exit(1)
-                else:
-                    print("Successfully collected data from {}".format(job_bin))
+                    perun_log.error(collection_msg)
+                print("Successfully collected data from {}".format(job_bin))
 
                 for postprocessor in job.postprocessors:
                     print_job_progress(number_of_jobs)
-                    print(termcolor.colored(
-                        "Postprocessing profile with {}".format(
-                            termcolor.colored(postprocessor, attrs=COLLECT_PHASE_ATTRS_HIGH)
-                        ), COLLECT_PHASE_POSTPROCESS, attrs=COLLECT_PHASE_ATTRS
-                    ))
+                    print_current_phase("Postprocessing profile with {}", postprocessor,
+                                        COLLECT_PHASE_POSTPROCESS)
 
                     # Run the postprocessor and check if the profile was successfully postprocessed
                     post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job)
                     if post_status != PostprocessStatus.OK:
-                        print(termcolor.colored(
-                            'fatal: {}'.format(post_msg), COLLECT_PHASE_ERROR
-                        ))
-                        exit(1)
-                    else:
-                        print("Successfully postprocessed data by {}".format(postprocessor))
+                        perun_log.error(post_msg)
+                    print("Successfully postprocessed data by {}".format(postprocessor))
 
                 # Store the computed profile inside the job directory
                 full_profile = profile.generate_profile_for_job(prof, job)

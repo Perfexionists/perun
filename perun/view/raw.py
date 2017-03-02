@@ -31,6 +31,7 @@ def show(profile, coloured=False):
     """
     Arguments:
         profile(dict): dictionary profile
+        coloured(bool): true if the output should be in colours
 
     Returns:
         str: string representation of the profile
