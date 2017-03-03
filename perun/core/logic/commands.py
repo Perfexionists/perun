@@ -542,7 +542,7 @@ def show(pcs, profile_name, minor_version, **kwargs):
         view.show(kwargs['format'], loaded_profile)
 
 
-def construct_job_matrix(pcs):
+def construct_job_matrix(bin, args, workload, collector, postprocessor):
     """Constructs the job matrix represented as dictionary.
 
     Reads the local of the current PCS and constructs the matrix of jobs
@@ -564,18 +564,21 @@ def construct_job_matrix(pcs):
     }
 
     Arguments:
-        pcs(PCS): object with performance control system wrapper
+        bin(str): binary that will be run
+        args(str): lists of additional arguments to the job
+        workload(list): list of workloads
+        collector(list): list of collectors
+        postprocessor(list): list of postprocessors
 
     Returns:
         dict, int: dict of jobs in form of {bins: {workloads: {Job}}}, number of jobs
     """
-    # TODO: For now
     matrix = {
-        'echo': {
-            'hello': [
-                Job("time", [], "echo hello", "echo", "hello", "")
-            ]
-        }
+        b: {
+            w: [
+                Job(c, postprocessor, b, w, a) for c in collector for a in args or ['']
+            ] for w in workload
+        } for b in bin
     }
 
     # Count overall number of the jobs:
@@ -618,14 +621,56 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
 
 
 @pass_pcs
-def run(pcs, **kwargs):
+def run_single_job(pcs, bin, args, workload, collector, postprocessor):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        kwargs(dict): dictionary of keyword arguments
+        bin(str): binary that will be run
+        args(str): lists of additional arguments to the job
+        workload(list): list of workloads
+        collector(list): list of collectors
+        postprocessor(list): list of postprocessors
     """
-    job_matrix, number_of_jobs = construct_job_matrix(pcs)
+    job_matrix, number_of_jobs = construct_job_matrix(bin, args, workload, collector, postprocessor)
+    run_jobs(pcs, job_matrix, number_of_jobs)
 
+
+def load_job_info_from_config(pcs):
+    """
+    Arguments:
+        pcs(PCS): object with performance control system wrapper
+
+    Returns:
+        dict: dictionary with bins, args, workloads, collectors and postprocessors
+    """
+    # TODO: For now
+    info = {
+        'bin': ['echo'],
+        'workload': ['hello'],
+        'postprocessor': [],
+        'collector': ['time'],
+        'args': [""]
+    }
+    return info
+
+
+@pass_pcs
+def run_matrix_job(pcs):
+    """
+    Arguments:
+        pcs(PCS): object with performance control system wrapper
+    """
+    job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config(pcs))
+    run_jobs(pcs, job_matrix, number_of_jobs)
+
+
+def run_jobs(pcs, job_matrix, number_of_jobs):
+    """
+    Arguments:
+        pcs(PCS): object with performance control system wrapper
+        job_matrix(dict): dictionary with jobs that will be run
+        number_of_jobs(int): number of jobs that will be run
+    """
     for job_bin, workloads_per_bin in job_matrix.items():
         print_current_phase("Collecting profiles for {}", job_bin, COLLECT_PHASE_BIN)
         for job_workload, jobs_per_workload in workloads_per_bin.items():

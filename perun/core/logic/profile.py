@@ -80,7 +80,6 @@ def load_profile_from_handle(file_handle, is_raw_profile):
 
 def generate_header_for_profile(job):
     """
-    TODO: Add type of the profile
     TODO: Add units of the header
 
     Arguments:
@@ -96,8 +95,8 @@ def generate_header_for_profile(job):
 
     return {
         'type': collector.COLLECTOR_TYPE,
-        'cmd': job.cmd,
-        'params': job.params,
+        'bin': job.bin,
+        'params': job.args,
         'workload': job.workload,
         'units': [
             None

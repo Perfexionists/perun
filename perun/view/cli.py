@@ -148,14 +148,39 @@ def show(profile, minor, **kwargs):
     commands.show(profile, minor, **kwargs)
 
 
-@cli.command()
-def run(**kwargs):
+@cli.group()
+def run():
+    """Group for running the jobs either from cmd or from stored config"""
+    perun_log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
+
+
+@run.command()
+def matrix(**kwargs):
     """
     Arguments:
         kwargs(dict): dictionary of keyword arguments
     """
-    perun_log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
-    commands.run(**kwargs)
+    commands.run_matrix_job(**kwargs)
+
+
+@run.command()
+@click.option('--bin', '-b', nargs=1, required=True, multiple=True,
+              help='binary that the job will be run for')
+@click.option('--args', '-a', nargs=1, required=False, multiple=True,
+              help='additional arguments for the binary')
+@click.option('--workload', '-w', nargs=1, required=True, multiple=True,
+              help='workload for the job')
+@click.option('--collector', '-c', nargs=1, required=True, multiple=True,
+              help='collector used to collect the data')
+@click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
+              help='additional postprocessing phases')
+def job(**kwargs):
+    """
+    TODO: Add choice to collector/postprocessors from the registered shits
+    Arguments:
+        kwargs(dict): dictionary of keyword arguments
+    """
+    commands.run_single_job(**kwargs)
 
 
 if __name__ == "__main__":
