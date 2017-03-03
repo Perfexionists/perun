@@ -1,9 +1,9 @@
 """This module provides methods for parsing raw memory data"""
 
 import subprocess
-import json
 import re
 from decimal import Decimal
+from perun.collect.memory.syscalls import demangle, address_to_line
 
 __author__ = "Radim Podola"
 
@@ -141,7 +141,8 @@ def parse_resources(allocation, cmd):
 
 # TODO
     data.update({'type': 'memory'})
-    data.update({'uid': 'UID'})
+
+    data.update({'uid': trace[0]})
 
     return data
 
@@ -159,14 +160,18 @@ def parse_log(logfile, cmd, snapshots_interval=Decimal('0.001')):
     """
     interval = snapshots_interval
     with open(logfile) as f:
-        file = f.read()
+        log = f.read()
 
-    file = file.split('\n\n')
-# TODO
-    glob = file.pop()
+    log = log.split('\n\n')
+
+    glob = log.pop().strip()
+    if glob.find('EXIT') > -1:
+        glob = [{'time': re.findall(r"\d+\.\d+", glob)[0]}]
+    else:
+        raise ValueError
 
     allocations = []
-    for item in file:
+    for item in log:
         allocations.append(item.splitlines())
 
     snapshots = []
@@ -194,6 +199,8 @@ def parse_log(logfile, cmd, snapshots_interval=Decimal('0.001')):
 
     if data:
         snapshots.append(data)
+
+    glob[0].update({'resources': snapshots[-1]['resources']})
 
     return {'snapshots': snapshots, 'global': glob}
 
