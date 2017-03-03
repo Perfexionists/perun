@@ -13,7 +13,8 @@ import time
 import perun.core.logic.store as store
 import perun.utils.log as perun_log
 
-from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, PROFILE_MALFORMED
+from perun.utils.helpers import SUPPORTED_PROFILE_TYPES
+from perun.utils import get_module
 
 __author__ = 'Tomas Fiedor'
 
@@ -79,18 +80,23 @@ def load_profile_from_handle(file_handle, is_raw_profile):
 
 def generate_header_for_profile(job):
     """
-    TODO: Add type of the profile
-    TOOD: Add units of the header
+    TODO: Add units of the header
+
     Arguments:
         job(Job): job with information about the computed profile
 
     Returns:
         dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
+    try:
+        collector = get_module('.'.join(['perun.collect', job.collector]))
+    except ImportError:
+        perun_log.error("could not find package for collector {}".format(job.collector))
+
     return {
-        'type': None,
-        'cmd': job.cmd,
-        'params': job.params,
+        'type': collector.COLLECTOR_TYPE,
+        'bin': job.bin,
+        'params': job.args,
         'workload': job.workload,
         'units': [
             None
