@@ -23,6 +23,8 @@ int main () {
       // allocates memory by calling: operator new (sizeof(MyClass))
       // and then constructs an object at the newly allocated space
 
+  int *i = new int;
+  delete(i);
   delete(p1);
 
   return 0;

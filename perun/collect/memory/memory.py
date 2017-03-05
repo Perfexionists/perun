@@ -1,8 +1,10 @@
-"""Time module contains methods needed by Perun logic"""
+"""This module contains methods needed by Perun logic"""
 import json
 import subprocess
 from decimal import Decimal
+import perun.collect.memory.filter as filter
 import perun.collect.memory.parsing as parser
+from perun.utils.helpers import CollectStatus
 
 __author__ = 'Radim Podola'
 
@@ -32,15 +34,15 @@ def collect(cmd, params, workload, **kwargs):
         kwargs(dict): profile's header
 
     Returns:
-        tuple: (return code, message, updated kwargs)
+        tuple: (return code, status message, updated kwargs)
     """
     result = run(cmd, params, workload)
     if result:
         error_msg = 'Execution of binary failed with error code: '
         error_msg += str(result)
-        return 1, error_msg, {}
+        return CollectStatus.ERROR, error_msg, {}
 
-    return 0, '', {}
+    return CollectStatus.OK, '', {}
 
 
 def after(collect_params, cmd, **kwargs):
@@ -54,14 +56,19 @@ def after(collect_params, cmd, **kwargs):
     Returns:
         tuple: (return code, message, updated kwargs)
     """
+    # TODO parsing collect_params
     try:
         profile = parser.parse_log('MemoryLog', cmd, Decimal('0.001'))
     except IndexError:
-        return 1, 'Wrong format of log file', {}
+        return CollectStatus.ERROR, 'Info missing in log file', {}
     except ValueError:
-        return 1, 'Wrong format of log file', {}
+        return CollectStatus.ERROR, 'Wrong format of log file', {}
 
-    return 0, '', {'profile': profile}
+    # filter.remove_allocators(profile)
+    # filter.function_filter(profile, 'main')
+    filter.trace_filter(profile, source='unreachable')
+
+    return CollectStatus.OK, '', {'profile': profile}
 
 
 if __name__ == "__main__":
@@ -74,6 +81,7 @@ header = {'type': 'memory',
           'workload': '',
           'units': {'memory': 'MB'}
          }
+
 print(collect(**header))
 r = after('-s 0.001', **header)
 print(r[0], r[1], json.dumps(r[2], indent=2))

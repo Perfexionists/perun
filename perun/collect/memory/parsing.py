@@ -106,6 +106,25 @@ def parse_stack(stack, cmd):
     return data
 
 
+def parse_allocation_location(trace):
+    """ Parse the location of user's allocation from stack trace
+    Arguments:
+        trace(list): list representing stack call trace
+
+    Returns:
+        dict: first user's call to allocation
+    """
+    if not trace:
+        return {}
+
+    for call in trace:
+        source = call['source']
+        if source != "unreachable":
+            return call
+
+    return {}
+
+
 def parse_resources(allocation, cmd):
     """ Parse resources of one allocation
     Arguments:
@@ -115,7 +134,6 @@ def parse_resources(allocation, cmd):
     Returns:
         structure: formatted structure representing
                    resources of one allocation
-
     """
     data = {}
 
@@ -142,7 +160,9 @@ def parse_resources(allocation, cmd):
 # TODO
     data.update({'type': 'memory'})
 
-    data.update({'uid': trace[0]})
+    # parsing call trace to get first user call
+    # to allocation function
+    data.update({'uid': parse_allocation_location(trace)})
 
     return data
 
@@ -200,7 +220,7 @@ def parse_log(logfile, cmd, snapshots_interval=Decimal('0.001')):
     if data:
         snapshots.append(data)
 
-    glob[0].update({'resources': snapshots[-1]['resources']})
+    glob[0].update({'resources': [snapshots[-1]['resources'][-1]]})
 
     return {'snapshots': snapshots, 'global': glob}
 
