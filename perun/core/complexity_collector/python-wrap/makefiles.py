@@ -19,6 +19,7 @@
 import os
 import subprocess
 
+# Cmake constants that may be changed
 CMAKE_VERSION = '2.8'
 CMAKE_BIN_TARGET = '/bin'
 CMAKE_CONFIG_TARGET = 'WorkloadCfg'
