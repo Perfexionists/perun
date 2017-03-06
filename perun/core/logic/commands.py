@@ -410,7 +410,7 @@ def print_short_minor_version_info(pcs, minor_version):
 
         print(termcolor.colored(" profiles)", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
     else:
-        print(termcolor.colored('---no-profiles----', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+        print(termcolor.colored('---no--profiles---', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
 
     short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
     if len(short_description) > MAXIMAL_LINE_WIDTH:
@@ -643,14 +643,29 @@ def load_job_info_from_config(pcs):
     Returns:
         dict: dictionary with bins, args, workloads, collectors and postprocessors
     """
-    # TODO: For now
+    def join_command(command):
+        """
+        Arguments:
+            command(dict): command we are joining (containing 'name' and 'params')
+
+        Returns:
+            str: joined string
+        """
+        if 'params' in command.keys():
+            return " ".join([command['name'], str(command['params'])])
+        else:
+            return command['name']
+
+    local_config = pcs.local_config().data
+
     info = {
-        'bin': ['echo'],
-        'workload': ['hello'],
-        'postprocessor': [],
-        'collector': ['time'],
-        'args': [""]
+        'bin': local_config['bins'],
+        'workload': local_config['workloads'],
+        'postprocessor': [join_command(post) for post in local_config['postprocessors']],
+        'collector': [join_command(collect) for collect in local_config['collectors']],
+        'args': local_config['args']
     }
+
     return info
 
 

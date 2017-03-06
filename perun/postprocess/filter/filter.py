@@ -9,4 +9,4 @@ __author__ = 'Tomas Fiedor'
 def postprocess(**kwargs):
     """Postprocessing phase of the filter"""
     print("Filtering the values of the profile")
-    return PostprocessStatus.OK, ""
+    return PostprocessStatus.OK, "", {}
