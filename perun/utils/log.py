@@ -48,6 +48,22 @@ def msg_to_file(msg, msg_verbosity, log_level=logging.INFO):
     _log_msg(logging.log, msg, msg_verbosity, log_level)
 
 
+def info(msg):
+    """
+    Arguments:
+        msg(str): info message that will be printed only when there is at least lvl1 verbosity
+    """
+    msg_to_stdout(msg, VERBOSE_INFO)
+
+
+def quiet_info(msg):
+    """
+    Arguments:
+        msg(str): info message to the stream that will be always shown
+    """
+    msg_to_stdout(msg, VERBOSE_RELEASE)
+
+
 def error(msg, recoverable=False):
     """
     Arguments:

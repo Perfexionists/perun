@@ -5,12 +5,6 @@ from perun.utils.helpers import CollectStatus
 __author__ = 'Tomas Fiedor'
 
 
-def before(**kwargs):
-    """Phase for initialization of time module before collecting of the data"""
-    print("Before running the time collector with {}".format(kwargs))
-    return CollectStatus.OK, "", {}
-
-
 def collect(**kwargs):
     """Phase for collection of the profile data"""
     print("Collecting the time with {}".format(kwargs))

@@ -50,7 +50,7 @@ def config(key, value, **kwargs):
 @click.argument('dst', required=False, default=os.getcwd())
 @click.option('--vcs-type',
               help="additionally inits the vcs of the given type")
-@click.option('--vcs-url',
+@click.option('--vcs-path',
               help="additionally inits the vcs at the given url")
 @click.option('--vcs-params',
               help="additional params feeded to the init-vcs")
