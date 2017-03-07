@@ -25,6 +25,18 @@ def run_external_command(cmd_args):
     return process.returncode
 
 
+def get_stdout_from_external_command(command):
+    """
+    Arguments:
+        command(list): list of arguments for command
+
+    Returns:
+        str: string representation of output of command
+    """
+    output = subprocess.check_output([c for c in command if c is not ''], stderr=subprocess.STDOUT)
+    return output.decode('utf-8')
+
+
 def dynamic_module_function_call(package_name, module_name, fun_name, *args, **kwargs):
     """Dynamically calls the function from other package with given arguments
 

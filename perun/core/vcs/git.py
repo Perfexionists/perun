@@ -4,23 +4,15 @@ Contains concrete implementation of the function needed by perun to extract info
 with version control systems.
 """
 
-import re
-import subprocess
 import git
 
 import perun.core.logic.store as store
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
-import perun.utils as utils
 
 from perun.utils.helpers import MinorVersion
 
 __author__ = "Tomas Fiedor"
-
-# Compiled helper regular expressions
-parent_regex = re.compile(r"parent ([a-f0-9]{40})")
-author_regex = re.compile(r"author ([^<]+) <([^>]+)> (\d+)")
-description_regex = re.compile(r".*\n\n([\S\s]+)")
 
 
 def create_repo_from_path(func):
