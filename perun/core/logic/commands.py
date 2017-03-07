@@ -708,7 +708,7 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
                                         COLLECT_PHASE_POSTPROCESS)
 
                     # Run the postprocessor and check if the profile was successfully postprocessed
-                    post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job)
+                    post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job, prof)
                     if post_status != PostprocessStatus.OK:
                         perun_log.error(post_msg)
                     print("Successfully postprocessed data by {}".format(postprocessor))

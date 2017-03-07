@@ -74,7 +74,7 @@ def run_collector(collector_name, job):
     return CollectStatus.OK, "Profile collected", profile
 
 
-def run_postprocessor(postprocessor_name, job):
+def run_postprocessor(postprocessor_name, job, prof):
     """Run the job of postprocess of the given name.
 
     Tries to look up the module containinig the postprocessor specified by the
@@ -84,6 +84,7 @@ def run_postprocessor(postprocessor_name, job):
     Arguments:
         postprocessor_name(str): name of the postprocessor that will be run
         job(Job): additional information about the running job
+        prof(dict): dictionary with profile
 
     Returns:
         (int, str): status of the collection, string message of the status
@@ -97,6 +98,7 @@ def run_postprocessor(postprocessor_name, job):
 
     # First init the collector by running the before phases (if it has)
     job_params = dict(job._asdict())
+    job_params.update({'profile': prof})
     profile = run_all_phases_for(postprocessor, 'postprocessor', job_params)
 
     return PostprocessStatus.OK, "Profile postprocessed", profile

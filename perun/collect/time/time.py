@@ -24,7 +24,7 @@ def collect(**kwargs):
         "global": {
             "timestamp": max(times.values()),
             "resources": [
-                {"amount": timing, "uid": key} for (key, timing) in times.items()
+                {"amount": float(timing), "uid": key} for (key, timing) in times.items()
             ]
         }
     }}
