@@ -16,7 +16,7 @@ import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 
 from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
-    INDEX_ENTRIES_START_OFFSET, INDEX_NUMBER_OF_ENTRIES_OFFSET
+    INDEX_NUMBER_OF_ENTRIES_OFFSET, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES
 from perun.utils.exceptions import EntryNotFoundException
 
 __author__ = 'Tomas Fiedor'
@@ -101,6 +101,46 @@ def pack_content(content):
         str: packed content
     """
     return zlib.compress(content)
+
+
+def peek_profile_type(profile_name):
+    """Retrieves from the binary file the type of the profile from the header.
+
+    Peeks inside the binary file of the profile_name and returns the type of the
+    profile, without reading it whole.
+    Arguments:
+        profile_name(str): filename of the profile
+
+    Returns:
+        str: type of the profile
+    """
+    with open(profile_name, 'rb') as profile_handle:
+        profile_chunk = read_and_deflate_chunk(profile_handle, 64)
+        prefix, profile_type, *_ = profile_chunk.split(" ")
+
+        # Return that the stored profile is malformed
+        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES:
+            return PROFILE_MALFORMED
+        else:
+            return profile_type
+
+
+def read_and_deflate_chunk(file_handle, chunk_size=-1):
+    """
+    Arguments:
+        file_handle(file): opened file handle
+        chunk_size(int): size of read chunk or -1 if whole file should be read
+
+    Returns:
+        str: deflated chunk or whole file
+    """
+    if chunk_size == -1:
+        packed_content = file_handle.read()
+    else:
+        packed_content = file_handle.read(chunk_size)
+
+    decompressor = zlib.decompressobj()
+    return decompressor.decompress(packed_content).decode('utf-8')
 
 
 def split_object_name(base_dir, object_name):
@@ -291,16 +331,29 @@ def get_profile_number_for_minor(base_dir, minor_version):
         minor_version(str): representation of minor version
 
     Returns:
-        int: number of profiles inside the index of the minor_version
+        dict: dictionary of number of profiles inside the index of the minor_version of types
     """
     _, minor_index_file = split_object_name(base_dir, minor_version)
 
     if os.path.exists(minor_index_file):
+        profile_numbers_per_type = {
+            profile_type: 0 for profile_type in SUPPORTED_PROFILE_TYPES
+        }
+
+        # Fixme: Maybe this could be done more efficiently?
         with open(minor_index_file, 'rb') as index_handle:
+            # Read the overall
             index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
-            return read_int_from_handle(index_handle)
+            profile_numbers_per_type['all'] = read_int_from_handle(index_handle)
+
+            # Check the types of the entry
+            for entry in walk_index(index_handle):
+                _, entry_file = split_object_name(base_dir, entry.checksum)
+                entry_profile_type = peek_profile_type(entry_file)
+                profile_numbers_per_type[entry_profile_type] += 1
+            return profile_numbers_per_type
     else:
-        return 0
+        return {'all': 0}
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
@@ -373,11 +426,24 @@ def write_entry_to_index(index_file, file_entry):
         # Lookup the position of the registered file within the index
         if file_entry.offset == -1:
             try:
-                predicate = (lambda entry: entry.path >= file_entry.path)
+                predicate = (
+                    lambda entry: entry.path > file_entry.path or
+                            (entry.path == file_entry.path and entry.time >= file_entry.time)
+                )
                 looked_up_entry = lookup_entry_within_index(index_handle, predicate)
+
+                # If there is an exact match, we do not add the entry to the index
+                if looked_up_entry.path == file_entry.path and \
+                        looked_up_entry.time == file_entry.time:
+                    perun_log.msg_to_stdout("{0.path} ({0.time}) already registered in {1}".format(
+                        file_entry, index_file
+                    ), 0)
+                    return
                 offset_in_file = looked_up_entry.offset
             except EntryNotFoundException:
-                offset_in_file = INDEX_ENTRIES_START_OFFSET
+                # Move to end of the file and set the offset to the end of the file
+                index_handle.seek(0, 2)
+                offset_in_file = index_handle.tell()
         else:
             offset_in_file = file_entry.offset
 

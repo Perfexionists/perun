@@ -4,61 +4,64 @@ Contains concrete implementation of the function needed by perun to extract info
 with version control systems.
 """
 
-import re
-import subprocess
+import git
 
 import perun.core.logic.store as store
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
-import perun.utils as utils
 
 from perun.utils.helpers import MinorVersion
 
 __author__ = "Tomas Fiedor"
 
-# Compiled helper regular expressions
-parent_regex = re.compile(r"parent ([a-f0-9]{40})")
-author_regex = re.compile(r"author ([^<]+) <([^>]+)> (\d+)")
-description_regex = re.compile(r".*\n\n([\S\s]+)")
+
+def create_repo_from_path(func):
+    """Transforms the first argument---the git path---to git repo object
+
+    Arguments:
+        func(function): wrapped function for which we will do the lookup
+    """
+    def wrapper(repo_path, *args, **kwargs):
+        """Wrapper function for the decorator"""
+        return func(git.Repo(repo_path), *args, **kwargs)
+    return wrapper
 
 
 def _init(vcs_path, vcs_init_params):
     """
     Arguments:
         vcs_path(path): path where the vcs will be initialized
-        vcs_init_params(list): list of additional params for initialization of the vcs
+        vcs_init_params(dict): list of additional params for initialization of the vcs
 
     Returns:
         bool: true if the vcs was successfully initialized at vcs_path
     """
-    commands = ["git", "init"]
-    if vcs_init_params is not None:
-        commands.extend(vcs_init_params)
-
-    if utils.run_external_command(commands):
+    if not git.Repo.init(vcs_path, **(vcs_init_params or {})):
         perun_log.warn("Error while initializing git directory")
         return False
 
+    perun_log.quiet_info("Initialized empty Git repository in {}".format(vcs_path))
     return True
 
 
-def _get_minor_head(git_path):
+@create_repo_from_path
+def _get_minor_head(git_repo):
     """
     Fixme: This would be better to internally use rev-parse ;)
     Arguments:
-        git_path(path): path to git, where we are obtaining head for minor version
+        git_repo(git.Repo): repository object of the wrapped git by perun
     """
     # Read contents of head through the subprocess and git rev-parse HEAD
-    proc = subprocess.Popen("git rev-parse HEAD", cwd=git_path, shell=True, stdout=subprocess.PIPE,
-                            universal_newlines=True)
-    git_head = proc.stdout.readlines()[0].strip()
-    proc.wait()
+    try:
+        git_head = str(git_repo.head.commit)
+        assert store.is_sha1(git_head)
+        return git_head
+    except ValueError:
+        return ""
 
-    assert store.is_sha1(git_head)
-    return git_head
 
-
-def _walk_minor_versions(git_path, head):
+@create_repo_from_path
+def _walk_minor_versions(git_repo, head):
     """Return the sorted list of minor versions starting from the given head.
 
     Initializes the worklist with the given head commit and then iteratively retrieve the
@@ -66,42 +69,62 @@ def _walk_minor_versions(git_path, head):
     is sorted and returned.
 
     Arguments:
-        git_path(str): path to the git directory
+        git_repo(git.Repo): repository object for the wrapped git vcs
         head(str): identification of the starting point (head)
 
     Returns:
         MinorVersion: yields stream of minor versions
     """
-    worklist = [head]
-    minor_versions = []
-
-    # Recursively iterate through the parents
-    while worklist:
-        minor_version = worklist.pop()
-        minor_version_info = _get_minor_version_info(git_path, minor_version)
-        minor_versions.append(minor_version_info)
-        for parent in minor_version_info.parents:
-            worklist.append(parent)
-
-    # Sort by date
-    minor_versions.sort(key=lambda minor: minor.date)
-    return minor_versions
+    head_commit = git_repo.commit(head)
+    for commit in git_repo.iter_commits(head_commit):
+        yield _parse_commit(commit)
 
 
-def _walk_major_versions():
+@create_repo_from_path
+def _walk_major_versions(git_repo):
     """
+    Arguments:
+        git_repo(git.Repo): wrapped git repository object
     Returns:
         MajorVersion: yields stream of major versions
     """
-    pass
+    for branch in git_repo.branches():
+        yield str(branch)
 
 
-def _get_minor_version_info(git_path, minor_version):
+def _parse_commit(commit):
+    """
+    Arguments:
+        commit(git.Commit): commit object
+
+    Returns:
+        MinorVersion: namedtuple representing the minor version (date author email checksum desc parents)
+    """
+    checksum = str(commit)
+    commit_parents = [str(parent) for parent in commit.parents]
+
+    commit_author_info = commit.author
+    if not commit_author_info:
+        perun_log.error("fatal: malform commit {}".format(checksum))
+
+    author, email = commit_author_info.name, commit_author_info.email
+    timestamp = commit.committed_date
+    date = timestamps.timestamp_to_str(int(timestamp))
+
+    commit_description = str(commit.message)
+    if not commit_description:
+        perun_log.error("fatal: malform commit {}".format(checksum))
+
+    return MinorVersion(date, author, email, checksum, commit_description, commit_parents)
+
+
+@create_repo_from_path
+def _get_minor_version_info(git_repo, minor_version):
     """
     Fixme: Work with packs
 
     Arguments:
-        git_path(str): path to the git
+        git_repo(git.Repo): wrapped repository of the perun
         minor_version(str): identification of minor_version
 
     Returns:
@@ -109,49 +132,23 @@ def _get_minor_version_info(git_path, minor_version):
     """
     assert store.is_sha1(minor_version)
 
-    # Check the type of the minor_version
-    proc = subprocess.Popen("git cat-file -t {}".format(minor_version), cwd=git_path, shell=True,
-                            stdout=subprocess.PIPE, universal_newlines=True)
-    object_type = proc.stdout.readlines()[0].strip()
-    proc.wait()
-    if object_type != 'commit':
+    minor_version_commit = git_repo.commit(minor_version)
+    if not minor_version_commit:
         perun_log.error("{} does not represent valid commit object".format(minor_version))
-
-    # Get the contents of the commit object
-    proc = subprocess.Popen("git cat-file -p {}".format(minor_version), cwd=git_path, shell=True,
-                            stdout=subprocess.PIPE, universal_newlines=True)
-    commit_object = "".join(proc.stdout.readlines())
-
-    # Transform to MinorVersion named tuple
-    commit_parents = parent_regex.findall(commit_object)
-    commit_author_info = author_regex.search(commit_object)
-    if not commit_author_info:
-        perun_log.error("fatal: malform commit {}".format(minor_version))
-    author, email, timestamp = commit_author_info.groups()
-    date = timestamps.timestamp_to_str(int(timestamp))
-
-    commit_description = description_regex.search(commit_object).groups()[0]
-    if not commit_description:
-        perun_log.error("fatal: malform commit {}".format(minor_version))
-
-    return MinorVersion(date, author, email, minor_version, commit_description, commit_parents)
+    return _parse_commit(minor_version_commit)
 
 
-def _get_head_major_version(git_path):
+@create_repo_from_path
+def _get_head_major_version(git_repo):
     """Returns the head major branch (i.e. checked out branch).
 
     Runs the git branch and parses the output in order to infer the currently
     checked out branch (either local or detached head).
 
     Arguments:
-        git_path(str): path to the git repository
+        git_repo(git.Repo): wrapped repository object
 
     Returns:
         str: representation of the major version
     """
-    proc = subprocess.Popen("git branch | sed -n '/\* /s///p'", cwd=git_path, shell=True,
-                            stdout=subprocess.PIPE, universal_newlines=True)
-    major_head = proc.stdout.readlines()[0].strip()
-    proc.wait()
-
-    return major_head
+    return str(git_repo.active_branch)
