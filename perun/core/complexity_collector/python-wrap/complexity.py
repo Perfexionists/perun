@@ -6,11 +6,15 @@
 
 import os
 import subprocess
-
+import collections
 
 import makefiles
 import symbols
 import configurator
+import complexity_exceptions
+
+
+profile_record = collections.namedtuple('record', ['action', 'func', 'timestamp'])
 
 
 # Test configuration dictionary
@@ -28,7 +32,7 @@ config = {
         'SLList_search',
         'SLList_destroy'
     ],
-    'file-name': 'trace.log',
+    'file-name': '../trace.log',
     'init-storage-size': 20000,
     'sampling': [
         {'func': 'SLList_insert', 'sample': 2},
@@ -43,6 +47,9 @@ def before(**kwargs):
 
     Arguments:
         kwargs(dict): dictionary containing the configuration settings for the complexity collector
+
+    Returns:
+        dict: modified kwargs with bin value representing the executable
     """
     # Create the configuration cmake and build the configuration executable
     cmake_path = makefiles.create_config_cmake(kwargs['target_dir'], kwargs['files'])
@@ -57,7 +64,7 @@ def before(**kwargs):
     configurator.create_ccicc(exec_path, runtime_filter, include_list, kwargs)
 
     kwargs['bin'] = exec_path
-    return
+    return dict(kwargs)
 
 
 def collect(**kwargs):
@@ -71,6 +78,43 @@ def collect(**kwargs):
     """
     collector_dir, collector_exec = _get_collector_executable_and_dir(kwargs['bin'])
     return subprocess.call(('./' + collector_exec), cwd=collector_dir)
+
+
+def after(**kwargs):
+    """ Handles the complexity collector post processing
+
+    Arguments:
+        kwargs(dict): dictionary containing the configuration settings for the complexity collector
+
+    Returns:
+        dict: kwargs with resources value
+    """
+    # Get the trace log path
+    pos = kwargs['bin'].rfind('/')
+    path = kwargs['bin'][:pos + 1] + kwargs['file-name']
+    address_map = symbols.extract_symbol_address_map(kwargs['bin'])
+
+    resources = []
+    call_stack = []
+    with open(path, 'r') as profile:
+        for line in profile:
+            # Split the line into action, function name and timestamp
+            record = profile_record(*line.split())
+            if record.action == 'i':
+                call_stack.append(record)
+            elif call_stack[-1].action == 'i' and call_stack[-1].func == record.func:
+                # Function exit, match with the function enter to create resources record
+                matching_record = call_stack.pop()
+                resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
+                                  'uid': address_map[record.func],
+                                  'type': 'complexity',
+                                  'subtype': 'todo',
+                                  'structure-unit-size': 'todo'})
+            else:
+                raise complexity_exceptions.TraceLogCallStackError('Current:' + record.func + ', call stack top: ' +
+                                                                   call_stack[-1].func)
+    kwargs['resources'] = resources
+    return kwargs
 
 
 def _get_collector_executable_and_dir(collector_exec_path):
@@ -92,3 +136,4 @@ def _get_collector_executable_and_dir(collector_exec_path):
         collector_dir = ''
         collector_exec = collector_exec_path
     return collector_dir, collector_exec
+
