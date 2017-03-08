@@ -9,6 +9,7 @@
 
 """
 
+
 import sys
 import subprocess
 import complexity_exceptions as exceptions
@@ -62,6 +63,31 @@ def extract_symbol_map(executable_path):
     symbol_map = {symbols[i+1]: ('0x' + symbols[i].lstrip('0')) for i in range(0, len(symbols), 2)}
 
     return symbol_map
+
+
+def extract_symbol_address_map(executable_path):
+    """ Extracts defined function symbol addresses and demangled names
+
+    Arguments:
+        executable_path(str): path to the executable
+
+    Returns:
+        dict: function symbols map in form 'hex address: demangled name'
+
+    Raises:
+        OSError: in case of invalid system util command
+        ValueError: in case of invalid arguments to the system calls
+        UnicodeError: in case of bytes decode failure
+    """
+    # Get the mangled function names and addresses
+    symbols = _get_symbols(executable_path, [_SYMTABLE_ADDR_COLUMN, _SYMTABLE_NAME_COLUMN])
+    # Create address map as hex address: mangled name
+    address_map = {('0x' + symbols[i].lstrip('0')): symbols[i + 1] for i in range(0, len(symbols), 2)}
+    # Translate the mangled names
+    name_map = translate_mangled_symbols(list(address_map.values()))
+    for record in address_map:
+        address_map[record] = name_map[address_map[record]]
+    return address_map
 
 
 def translate_mangled_symbols(mangled_names):

@@ -69,7 +69,7 @@ def _ccicc_symbols_to_addresses(executable_path, runtime_filter, sample_map):
         tuple: list of function addresses to be filtered at runtime
                dict of function addresses and sampling values
     """
-    # Get the symbol:address and symbol:name maps
+    # Get the symbol:address
     symbol_map = symbols.extract_symbol_map(executable_path)
     # Translate the filter identifiers
     final_filter = []
