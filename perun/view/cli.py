@@ -173,21 +173,37 @@ def configure_local_perun(perun_path):
 
 
 @cli.command()
-@click.argument('dst', required=False, default=os.getcwd())
-@click.option('--vcs-type',
-              help="additionally inits the vcs of the given type")
-@click.option('--vcs-path',
-              help="additionally inits the vcs at the given url")
-@click.option('--vcs-params',
-              help="additional params feeded to the init-vcs")
+@click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
+# TODO: Add choice
+@click.option('--vcs-type', metavar='<type>',
+              help="Apart of perun structure, a supported version control system can be wrapped"
+                   " and initialized as well.")
+@click.option('--vcs-path', metavar='<path>',
+              help="Initializes the supported version control system at different path.")
+@click.option('--vcs-params', metavar='<params>',
+              help="Passes additional param to a supported version control system initialization.")
 @click.option('--configure', '-c', is_flag=True, default=False,
               help='Runs the interactive initialization of the local configuration for the perun')
 def init(dst, configure, **kwargs):
-    """
-    Arguments:
-        dst(str): destination, where the perun will be initialized
-        configure(bool): true if the perun repository local config should be initialized
-        kwargs(dict): dictionary of additional params to init
+    """Initialize the new perun performance control system or reinitializes existing one.
+
+    The command initializes the perun control system directory with basic directory and file
+    structure inside the .perun directory. By default are created the following directories:
+
+        \b
+        /jobs---stores computed profiles, that are yet to be assigned to concrete minor versions
+        /objects---stores packed contents and minor version informations
+        /cache---stores number of unpacked profiles for quick access
+        local.yml---local configuration file with job matrix, information about wrapped vcs, etc.
+
+    Perun is initialized at <path>. If no <path> is given, then it is initialized within the
+    current working directory. If there already exists a performance control system, file and
+    directory structure is only reinitialized.
+
+    By default, a custom version control system is initialized. This can be changed by stating
+    the type of the wrapped control system using the --vcs-type parameter. Currently only git
+    is supported. Additional parameters can be passed to the wrapped control system initialization
+    using the --vcs-params.
     """
     perun_log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
     commands.init(dst, **kwargs)
@@ -202,51 +218,89 @@ def init(dst, configure, **kwargs):
 
 
 @cli.command()
-@click.argument('profile', required=True)
-@click.argument('minor', required=False, default=None)
+@click.argument('profile', required=True, metavar='<profile>')
+@click.argument('minor', required=False, default=None, metavar='<hash>')
 def add(profile, minor):
-    """
-    Arguments:
-        profile(str): path to the profile file or sha1
-        minor(str): sha1 representation of the minor version for which the profile is assigned
+    """Assigns given profile to the concrete minor version storing its content in the perun dir.
+
+    Takes the given <profile>, packs its content using the zlib compression module and stores it
+    inside the perun objects directory. The packed profile is then registered within the minor
+    version index represented by the <hash>.
+
+    If no <hash> is given, then the HEAD of the wrapped control system is used instead.
+
+    Example of adding profiles:
+
+        \b
+        perun add mybin-mcollect-input.txt-2017-03-01-16-11-04.perf
+          Adds the profile collected by mcollect profile on mybin with input.txt workload computed
+          on 1st March at 16:11 to the head.
     """
     perun_log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
     commands.add(profile, minor)
 
 
 @cli.command()
-@click.argument('profile', required=True)
-@click.argument('minor', required=False, default=None)
+@click.argument('profile', required=True, metavar='<profile>')
+@click.argument('minor', required=False, default=None, metavar='<hash>')
 @click.option('--remove-all', '-A', is_flag=True, default=False,
-              help="remove all profiles of the given name/sha-1")
+              help="Remove all occurrences of <profile> from the <hash> index.")
 def rm(profile, minor, **kwargs):
-    """
-    Arguments:
-        profile(str): path to the profile file or sha1
-        minor(str): sha1 representation of the minor version for which the profile is removed
-        kwargs(dict): dictionary of the keyword arguments
+    """Removes the given profile from the concrete minor version removing it from the index.
+
+    Takes the given <profile>, looks it up at the <hash> minor version and removes it from the
+    index. The contents of the profile are kept packed inside the objects directory.
+
+    If no <hash> is given, then the HEAD of the wrapped control system is used instead.
+
+    Examples of removing profiles:
+
+
+        \b
+        perun rm mybin-mcollect-input.txt-2017-03-01-16-11-04.perf
+          Removes the profile collected by mcollect on mybin with input.txt from the workload
+          computed on 1st March at 16:11 from the HEAD index
     """
     perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
     commands.remove(profile, minor, **kwargs)
 
 
 @cli.command()
-@click.argument('head', required=False, default=None)
+@click.argument('head', required=False, default=None, metavar='<hash>')
 @click.option('--count-only', is_flag=True, default=False,
-              help="force printing of the profile count only associated to minor versions")
+              help="Instead of showing list of all profiles, log will only show aggregated count of"
+                   "profiles.")
 @click.option('--show-aggregate', is_flag=True, default=False,
-              help="show aggregated profiles (one-liners) per each minor version")
-@click.option('--last', default=-1,
-              help="show only last N minor versions")
+              help="Log will display the aggregated profile value for each minor version.")
+@click.option('--last', default=1, metavar='<int>',
+              help="Log will display only last <int> entries.")
 @click.option('--no-merged', is_flag=True, default=False,
-              help="if set the merges of paths will not be displayed")
+              help="Log will not display merges of minor versions.")
 @click.option('--short', '-s', is_flag=True, default=False,
-              help="displays the minor version informations in short format")
+              help="Log will display a short version of the history.")
 def log(head, **kwargs):
-    """
-    Arguments:
-        head(str): head minor version
-        kwargs(dict): various keyword arguments that changes how the log is displayed
+    """Prints the history of the the perun control system and its wrapped version control system.
+
+    Prints the history of the wrapped version control system and all of the associated profiles
+    starting from the <hash> point, printing the information about number of profiles, about
+    concrete minor versions and its parents sorted by the date.
+
+    In no <hash> is given, then HEAD of the version control system is used as a starting point.
+
+    By default the long format is printed of the following form:
+
+    \b
+    Minor version <hash>
+    <int> tracked profiles (<profile_type_numbers>)
+    Author: <name> <email> <author_date>
+    Parent: <hash>
+    <desc>
+
+    If --short | -s option is given, then the log is printed in the following short format,
+    one entry per line:
+
+    \b
+    <hash> (<profile_numbers>) <short_info>
     """
     perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
     commands.log(head, **kwargs)
@@ -254,69 +308,136 @@ def log(head, **kwargs):
 
 @cli.command()
 @click.option('--short', '-s', required=False, default=False, is_flag=True,
-              help="print the current status in short format instead of long format")
+              help="Prints the status of the control systems using the short format.")
 def status(**kwargs):
-    """
-    Arguments:
-        kwargs(dict): various keyword arguments that changes how the status is displayed
+    """Shows the status of the perun control system and wrapped version control system.
+
+    Shows the status of the both perun control system and wrapped version control system. Prints
+    the current minor version head, current major version and description of the minor version.
+    Moreover prints the list of tracked profiles lexicographically sorted along with their
+    types and creation times.
     """
     perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
     commands.status(**kwargs)
 
 
 @cli.command()
-@click.argument('profile', required=True)
-@click.argument('minor', required=False)
+@click.argument('profile', required=True, metavar='<profile>')
+@click.argument('minor', required=False, metavar='<hash>')
 @click.option('--format', '-f', type=click.Choice(['raw']), default='raw',
-              help="how the profile should be shown")
+              help="Change the display format of the show method.")
 @click.option('--coloured', '-c', is_flag=True, default=False,
-              help="colour the outputed profile")
+              help="Colours the showed profile (if supported by the format).")
 @click.option('--one-line', '-o', is_flag=True,
-              help="print the agggregated one-line data for the given profile")
+              help="Shows the aggregated one-liner profile.")
 def show(profile, minor, **kwargs):
+    """Shows the profile stored and registered within the perun control system.
+
+    Looks up the index of the given <hash> and finds the <profile> and prints it
+    to the command line. Either the profile is given as a .perf name, which is
+    looked up within the index of the file or the hash is given, which represents
+    the concrete object profile stored within perun.
+
+    Currently only raw data can be shown in the command line.
     """
-    TODO: Check that if profile is not SHA-1, then minor must be set
-    Arguments:
-        profile(str): either path to profile or sha1 object representation
-        minor(str): sha1 representation of the minor version
-        kwargs(dict): additional arguments to perun show
-    """
+    # TODO: Check that if profile is not SHA-1, then minor must be set
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
     commands.show(profile, minor, **kwargs)
 
 
 @cli.group()
 def run():
-    """Group for running the jobs either from cmd or from stored config"""
+    """Run the jobs either using the job matrix or single command line command.
+
+    Either runs the job matrix stored in local.yml configuration or lets the user
+    construct the job run using the set of parameters.
+    """
     perun_log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
 
 
 @run.command()
 def matrix(**kwargs):
-    """
-    Arguments:
-        kwargs(dict): dictionary of keyword arguments
+    """Runs the jobs matrix specified in the local.yml configuration.
+
+    The job matrix is defined using the yaml configuration format and consists of specification
+    of binaries with corresponding arguments, workloads, supported collectors of profiling data
+    and postprocessors that alter the collected profiles.
+
+    From the config file, a job matrix is constructed as a cartesian product of binaries with
+    workloads and collectors. After each job the set of postprocessors are run.
+
+    Example contents of the local.yml configuration file:
+
+        \b
+        bins:
+          - ./mybin
+          - ./otherbin
+
+        \b
+        workloads:
+          - input.in
+          - other_input.in
+
+        \b
+        collectors:
+          - name: time
+
+        \b
+        postprocessors:
+          - name: filter
+          - name: normalizer
+
+    This will run four jobs './mybin input.in', './mybin other_input.in', './otherbin input.in' and
+    './otherbin other_input.in' with the time collector. Each collection will be afterwards post
+    processed using the filter and normalizer postprocessors.
+
+    For full documentation of the local.yml syntax consult the documentation.
     """
     commands.run_matrix_job(**kwargs)
 
 
 @run.command()
 @click.option('--bin', '-b', nargs=1, required=True, multiple=True,
-              help='binary that the job will be run for')
+              help='Binary unit that we are collecting data for.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
-              help='additional arguments for the binary')
+              help='Additional arguments for the binary unit.')
 @click.option('--workload', '-w', nargs=1, required=True, multiple=True,
-              help='workload for the job')
+              help='Inputs for the binary, i.e. so called workloads, that are run on binary.')
 @click.option('--collector', '-c', nargs=1, required=True, multiple=True,
-              help='collector used to collect the data')
+              help='Collector unit used to collect the profiling data for the binary.')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
-              help='additional postprocessing phases')
+              help='Additional postprocessing phases on profiles, after collection of the data.')
 def job(**kwargs):
+    """Run specified batch of perun jobs to generate profiles.
+
+    Computed profiles are stored inside the .perun/jobs/ directory as a files in form of:
+
+        bin-collector-workload-timestamp.perf
+
+    Profiles can be further stored in the perun control system using the command:
+
+        perun run add profile.perf
+
+    Example runs:
+
+        perun run job -c time -b ./mybin -w file.in -w file2.in -p normalizer
+
+            Runs two jobs './mybin file.in' and './mybin file2.in' and collects the raw profile
+            using the time collector. The profiles are afterwards normalized with the normalizer.
+
+        perun run job -c comp-collect -b ./mybin -w sll.cpp -cp targetdir=./src
+
+            Runs one job './mybin sll.cpp' using the comp-collect collector (note that comp-collect
+            compiles custom binary from targetdir source)
+
+        perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p filter
+
+            Runs two jobs './mybin input.txt' and './otherbin input.txt' and collects the memory
+            profile using the mcollect collector. The profiles are afterwards postprocessed,
+            first using the normalizer and them with filter.
     """
-    TODO: Add choice to collector/postprocessors from the registered shits
-    Arguments:
-        kwargs(dict): dictionary of keyword arguments
-    """
+    # TODO: Add choice to collector/postprocessors from the registered shits
+    # TODO: solve -cp, -pp
     commands.run_single_job(**kwargs)
 
 
