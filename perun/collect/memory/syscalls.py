@@ -1,5 +1,8 @@
 """This module provides simple wrappers over some linux command line tools"""
+import os
 import subprocess
+
+__author__ = "Radim Podola"
 
 
 def demangle(name):
@@ -55,3 +58,27 @@ def address_to_line(ip, filename):
     output = subprocess.check_output(sys_call)
 
     return output.decode("utf-8").strip().split(':')
+
+
+def run(cmd, params, workload):
+    """
+    Arguments:
+        cmd(string): binary file to profile
+        params(string): executing arguments
+        workload(string): file that has to be provided to binary
+
+    Returns:
+        int: return code of executed binary
+    """
+    pwd = os.path.dirname(os.path.abspath(__file__))
+    sys_call = ('LD_PRELOAD="' + pwd + '/malloc.so" ' + cmd +
+                ' ' + params + ' ' + workload)
+
+    with open('ErrorCollectLog', 'w') as error_log:
+        ret = subprocess.call(sys_call, shell=True, stderr=error_log)
+
+    return ret
+
+
+if __name__ == "__main__":
+    pass

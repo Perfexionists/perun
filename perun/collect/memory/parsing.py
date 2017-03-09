@@ -1,66 +1,14 @@
 """This module provides methods for parsing raw memory data"""
-
-import subprocess
 import re
 from decimal import Decimal
 from perun.collect.memory.syscalls import demangle, address_to_line
 
 __author__ = "Radim Podola"
 
-
-def demangle(name):
-    """
-    Arguments:
-        name(string): name to demangle
-
-    Returns:
-        string: demangled name
-    """
-    sys_call = ['c++filt']
-    sys_call.append(name)
-    output = subprocess.check_output(sys_call)
-
-    return output.decode("utf-8").strip()
-
-
-def get_extern_funcs(filename):
-    """
-        Arguments:
-            filename(string): name of file to inspect for functions
-
-        Returns:
-            list: list of functions from dynamic section
-    """
-    sys_call = ['nm', '-D', '-C']
-    sys_call.append(filename)
-    output = subprocess.check_output(sys_call)
-    output = output.decode("utf-8").splitlines()
-    functions = []
-    for line in output:
-        line = line.strip()
-        if line[0] == 'U':
-            functions.append(line[2:])
-
-    return functions
-
-
-def address_to_line(ip, filename):
-    """
-    Arguments:
-        ip(string): instruction pointer value
-        filename(string): name of file to inspect for debug information
-
-    Returns:
-        list: list of two objects, 1st is the name of the source file,
-              2nd is the line number
-    """
-    sys_call = ['addr2line']
-    sys_call.append(ip)
-    sys_call.append('-e')
-    sys_call.append(filename)
-    output = subprocess.check_output(sys_call)
-
-    return output.decode("utf-8").strip().split(':')
+PATTERN_WORD = re.compile(r"\w+")
+PATTERN_TIME = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
+PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
+PATTERN_INT = re.compile(r"\d+")
 
 
 def parse_stack(stack, cmd):
@@ -79,14 +27,14 @@ def parse_stack(stack, cmd):
 
         # parsing name of function,
         # it's the first word in the call record
-        func = re.findall(r"\w+", call)[0]
+        func = PATTERN_WORD.search(call).group()
         # demangling name of function
         func = demangle(func)
         call_data.update({'function': func})
 
         # parsing instruction pointer,
         # it's the first hexadecimal number in the call record
-        ip = re.findall(r"0x[0-9a-fA-F]+", call)[0]
+        ip = PATTERN_HEXADECIMAL.search(call).group()
 
         # getting information of instruction pointer,
         # the source file and line number in the source file
@@ -96,10 +44,10 @@ def parse_stack(stack, cmd):
         if ip_info[1] in ["?", "??"]:
             ip_info[1] = 0
         else:
-            ip_info[1] = int(re.findall(r"\d+", ip_info[1])[0])
+            ip_info[1] = PATTERN_INT.search(ip_info[1]).group()
 
         call_data.update({'source': ip_info[0]})
-        call_data.update({'line': ip_info[1]})
+        call_data.update({'line': int(ip_info[1])})
 
         data.append(call_data)
 
@@ -139,17 +87,17 @@ def parse_resources(allocation, cmd):
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
-    amount = re.findall(r"\d+", allocation[1])[0]
+    amount = PATTERN_INT.search(allocation[1]).group()
     data.update({'amount': int(amount)})
 
     # parsing allocate function,
     # it's the first word on the second line
-    allocator = re.findall(r"^\w+", allocation[1])[0]
+    allocator = PATTERN_WORD.search(allocation[1]).group()
     data.update({'subtype': allocator})
 
     # parsing address of allocated memory,
     # it's the second number on the second line
-    address = re.findall(r"\d+", allocation[1])[1]
+    address = PATTERN_INT.findall(allocation[1])[1]
     data.update({'address': int(address)})
 
     # parsing stack in the moment of allocation
@@ -157,7 +105,7 @@ def parse_resources(allocation, cmd):
     trace = parse_stack(allocation[2:], cmd)
     data.update({'trace': trace})
 
-# TODO
+    # parsed data is memory type
     data.update({'type': 'memory'})
 
     # parsing call trace to get first user call
@@ -167,10 +115,10 @@ def parse_resources(allocation, cmd):
     return data
 
 
-def parse_log(logfile, cmd, snapshots_interval=Decimal('0.001')):
+def parse_log(filename, cmd, snapshots_interval):
     """ Parse raw data in the log file
     Arguments:
-        logfile(string): name of the log file
+        filename(string): name of the log file
         cmd(string): profiled binary
         snapshots_interval(Decimal): interval of snapshots [s]
 
@@ -179,14 +127,18 @@ def parse_log(logfile, cmd, snapshots_interval=Decimal('0.001')):
                    section "snapshots" and "global" in memory profile
     """
     interval = snapshots_interval
-    with open(logfile) as f:
-        log = f.read()
-
+    with open(filename) as logfile:
+        log = logfile.read()
+    # allocations are splitted by empty line
     log = log.split('\n\n')
 
     glob = log.pop().strip()
     if glob.find('EXIT') > -1:
-        glob = [{'time': re.findall(r"\d+\.\d+", glob)[0]}]
+        # in some cases there is '.' instead of ',' in timestamp
+        index = glob.find(',')
+        if index > 0:
+            glob = glob.replace(',', '.')
+        glob = [{'time': PATTERN_TIME.search(glob).group()}]
     else:
         raise ValueError
 
@@ -203,8 +155,14 @@ def parse_log(logfile, cmd, snapshots_interval=Decimal('0.001')):
             continue
 
         # parsing timestamp,
-        # it's the only one number on the line
-        time = Decimal(re.findall(r"\d+\.\d+", allocation[0])[0])
+        # it's the only one number on the 1st line
+        time_string = allocation[0]
+        # in some cases there is '.' instead of ',' in timestamp
+        index = time_string.find(',')
+        if index > 0:
+            time_string = time_string.replace(',', '.')
+
+        time = Decimal(PATTERN_TIME.search(time_string).group())
 
         while time > interval:
             snapshots.append(data)
