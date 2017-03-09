@@ -149,4 +149,7 @@ def _get_head_major_version(git_repo):
     Returns:
         str: representation of the major version
     """
-    return str(git_repo.active_branch)
+    if git_repo.head.is_detached:
+        return str(git_repo.head)
+    else:
+        return str(git_repo.active_branch)
