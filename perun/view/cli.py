@@ -24,8 +24,6 @@ __author__ = 'Tomas Fiedor'
               help='sets verbosity of the perun log')
 def cli(verbose):
     """
-    Arguments:
-        verbose(int): how verbose the run of the perun is
     """
     # set the verbosity level of the log
     if perun_log.VERBOSITY < verbose:
