@@ -18,7 +18,7 @@ test++: test.cpp
 
 
 lib: malloc.c backtrace.c
-	gcc -shared -fPIC malloc.c backtrace.c -o malloc.so -lunwind
+	gcc -shared -fPIC malloc.c backtrace.c -o malloc.so -lunwind -ldl
 
 
 profile:

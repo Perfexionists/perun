@@ -5,9 +5,11 @@ setup(
     version='0.1',
     py_modules=['perun'],
     packages=find_packages(),
+    package_data = {'perun': ['collect/memory/malloc.so']},
     install_requires=[
-        'Click',
+        'click', 'termcolor', 'colorama', 'kivy', 'PyYAML'
     ],
+
     entry_points='''
         [console_scripts]
         perun=perun.view.cli:cli
