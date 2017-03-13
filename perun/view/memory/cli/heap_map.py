@@ -5,7 +5,7 @@ import os
 __author__ = 'Radim Podola'
 
 
-def print_heap_map():
+def print_heap_map(profile):
     try:
         rows, columns = os.popen('stty size', 'r').read().split()
         rows = int(rows)
