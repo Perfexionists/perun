@@ -1,10 +1,10 @@
 """ Module for internal collector configuration file generator.
 
     The complexity collector library needs some specific configuration settings in order to work
-    properly and efficiently. The library uses the ccicc.conf file to pass the configuration data
-    at collector's runtime. The file format is specified in the ccicc.rst documentation
+    properly and efficiently. The library uses the circ.conf file to pass the configuration data
+    at collector's runtime. The file format is specified in the circ.rst documentation
 
-    This module handles all the necessary operations to create correct ccicc.conf file.
+    This module handles all the necessary operations to create correct circ.conf file.
 
 """
 
@@ -14,8 +14,8 @@ import json
 import symbols
 
 
-def create_ccicc(executable_path, runtime_filter, include_list, configuration):
-    """ Creates the ccicc.conf configuration
+def create_runtime_config(executable_path, runtime_filter, include_list, configuration):
+    """ Creates the config.conf configuration
 
     Arguments:
         executable_path(str): path to the executable which will use the configuration
@@ -24,39 +24,32 @@ def create_ccicc(executable_path, runtime_filter, include_list, configuration):
         configuration(dict): dictionary with configuration data
 
     Raises:
-        OSError: if the ccicc file creation or opening failed
-        ValueError: if the ccicc file is unexpectedly closed
+        OSError: if the config file creation or opening failed
+        ValueError: if the config file is unexpectedly closed
     """
     # Open the file
-    ccicc = _ccicc_create_file(executable_path)
-    # Write the configuration settings
-    _ccicc_write_config(ccicc, executable_path, runtime_filter, include_list, configuration)
-    ccicc.close()
+    config_path = _config_construct_file_path(executable_path)
+    with open(config_path, 'w') as config_handle:
+        # Write the configuration settings
+        _config_write_config(config_handle, executable_path, runtime_filter, include_list, configuration)
 
 
-def _ccicc_create_file(executable_path):
-    """ Creates and/or opens the ccicc.conf file
+def _config_construct_file_path(executable_path):
+    """ Constructs the file path for the config.conf file
 
     Arguments:
         executable_path(str): path to the executable which will use the configuration
 
     Returns:
-        file: handle to the opened ccicc file
-
-    Raises:
-        OSError: if the ccicc file creation or opening failed
+        str: the configuration file constructed path
     """
-    # Extract the executable directory for ccicc target
+    # Extract the executable directory for config target
     path = os.path.realpath(executable_path)
     pos = path.rfind('/')
-    path = path[:pos + 1]
-    path += 'ccicc.conf'
-    # Attempt to open the file
-    file = open(path, 'w')
-    return file
+    return path[:pos + 1] + 'circ.conf'
 
 
-def _ccicc_symbols_to_addresses(executable_path, runtime_filter, sample_map):
+def _config_symbols_to_addresses(executable_path, runtime_filter, sample_map):
     """ Translates the identifiers in filter and sample configuration to their
         symbol table addresses
 
@@ -84,25 +77,25 @@ def _ccicc_symbols_to_addresses(executable_path, runtime_filter, sample_map):
     return final_filter, final_sample
 
 
-def _ccicc_write_config(ccicc_file, executable_path, runtime_filter, include_list, config):
+def _config_write_config(config_handle, executable_path, runtime_filter, include_list, config):
     """ Writes the configuration stored in the config dictionary into the file
 
     Arguments:
-        ccicc_file(file): file handle to the opened ccicc file
+        config_handle(file): file handle to the opened config file
         executable_path(str): path to the executable which will use the configuration
         runtime_filter(list): addresses of functions to filter at runtime
         include_list(list): list of function symbols(rule_key tuple) to be profiled
         config(dict): dictionary with configuration data
 
     Raises:
-        ValueError: if the ccicc file is unexpectedly closed
+        ValueError: if the config file is unexpectedly closed
         TypeError: if the json serializing fails
     """
     sample_map = dict()
     # Create the translation table for identifiers
     if 'sampling' in config:
-        sample_map = _ccicc_create_sample(include_list, config['sampling'])
-    filter_list, sample_dict = _ccicc_symbols_to_addresses(executable_path, runtime_filter, sample_map)
+        sample_map = _config_create_sample(include_list, config['sampling'])
+    filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter, sample_map)
 
     # Append the file name configuration
     conf = {'file-name': config['file-name']}
@@ -118,11 +111,11 @@ def _ccicc_write_config(ccicc_file, executable_path, runtime_filter, include_lis
         for sample_rule in sample_dict:
             conf['sampling'].append({'func': sample_rule, 'sample': sample_dict[sample_rule]})
 
-    # Serializes the configuration dictionary to the proper ccicc format
-    ccicc_file.write('CCICC = {0}'.format(json.dumps(conf, sort_keys=True, indent=2)))
+    # Serializes the configuration dictionary to the proper circ format
+    config_handle.write('CIRC = {0}'.format(json.dumps(conf, sort_keys=True, indent=2)))
 
 
-def _ccicc_create_sample(include_list, sample_list):
+def _config_create_sample(include_list, sample_list):
     """ Creates the sample map as 'sample func mangled name: sample ratio' from the
         include list and sample list
 

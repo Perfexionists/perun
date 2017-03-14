@@ -1,18 +1,18 @@
 ============================================================================
-Complexity Collector Internal Configuration Communication (CCICC) File Draft
+ComplexityCollector Internal Runtime Configuration (CIRC) File Draft
 ============================================================================
 
 Configuration file format used internally by the c/c++ complexity collector.
 
 Version: 1.1
 
-Obligatory file name: ccicc.conf
+Obligatory file name: circ.conf
 
 File Format
 ===========
-Current CCICC still-under-development format::
+Current CIRC still-under-development format::
 
-  CCICC = {
+  CIRC = {
     "file-name": "trace.log",
     "storage-init-size": 20000,
     "runtime-filter": [
@@ -33,13 +33,13 @@ Current CCICC still-under-development format::
 
 File Format Types Specification
 -------------------------------
-Description of the various types used in the CCICC file.
+Description of the various types used in the CIRC file.
 
 Magic code
 ~~~~~~~~~~
-The CCICC magic code::
+The CIRC magic code::
 
-  CCICC = {
+  CIRC = {
     ...
   }
 
@@ -60,7 +60,7 @@ Negative values are not supported (nor needed). Number elements must not have a 
 
 File Format Description
 -----------------------
-A brief description of the CCICC file format elements.
+A brief description of the CIRC file format elements.
 
  - file-name: specifies the collector output file name, default value: "trace.log"
  - storage-init-size (optional): specifies the initial storage size if direct file output is not used
@@ -91,4 +91,7 @@ Changelog reflecting the development
 
    - The address element removed, all such elements changed to number elements instead. 
    - Changed the syntax to be more JSON-like.
+ - 1.2:
+
+   - Renamed to the ComplexityCollector Internal Runtime Configuration (CIRC)
 

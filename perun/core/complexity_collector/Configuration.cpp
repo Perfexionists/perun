@@ -2,12 +2,6 @@
 #include <sstream>
 #include "Configuration.h"
 
-// static class-scoped constants declaration
-const bool Configuration::filter_on = true;
-const bool Configuration::filter_off = false;
-const bool Configuration::sample_on = true;
-const bool Configuration::sample_off = false;
-//const bool Configuration::sample_init;
 
 Configuration::Configuration() : instr_data_init_len{default_instr_data_init_len}, trace_file_name("trace.log")
 {
@@ -25,6 +19,9 @@ int Configuration::Parse() {
         // Parsing the initial sequence
         Parse_init();
         // Parsing the file contents
+        // Each cycle parses one section, there are four sections in total and none can be repeated
+        // In case of section repetition, invalid section or invalid token, an exception is thrown
+        // Basically if anything goes wrong then exception is thrown and loop breaks
         while (1) {
             Test_next_token_type(Token_t::Text_value, tok_val);
             if (tok_val == "\"file-name\"") {
@@ -60,14 +57,11 @@ int Configuration::Parse() {
     } catch(Conf_file_missing_exception &) {
         // Config file missing
         func_config.clear();
-        return exit_err_config_file_open;
-    } catch(std::bad_alloc &) {
-        // Out of memory
-        return exit_err_config_alloc_failed;
-    } catch(std::exception &) {
+        return EXIT_ERR_CONFIG_FILE_OPEN;
+    } catch(Conf_file_syntax_exception &) {
         // Other failures
         func_config.clear();
-        return exit_err_config_file_syntax;
+        return EXIT_ERR_CONFIG_FILE_SYNTAX;
     }
 }
 
@@ -154,9 +148,9 @@ bool Configuration::Next_token(Token_t &type, std::string &value)
             }
         } else {
             // Magic code token
-            if(c == 'C' || c == 'I') {
+            if(c == 'C' || c == 'I' || c == 'R') {
                 value += c;
-            } else if(value == "CCICC") {
+            } else if(value == "CIRC") {
                 position--;
                 return true;
             } else {
@@ -235,20 +229,16 @@ void Configuration::Parse_filter() {
     Test_next_token_type(Token_t::Br_square_begin, tok_val);
 
     // Traverse the collection
+    // Comma token means the collection traversal continues, ending curly brace means end to the collection
+    // Exception is thrown if unexpected token is received
     while(1) {
+        // address, address, ...
         Test_next_token_type(Token_t::Number_value, tok_val);
         // Convert to the pointer
         Address_token_to_pointer(tok_val, &func_p);
 
-        // Try to find the function configuration record
-        auto func_record = func_config.find(func_p);
-        if(func_record != func_config.end()) {
-            // Function already has a configuration record, update
-            std::get<filter>(func_record->second) = true;
-        } else {
-            // Function does not have a configuration record yet, create one
-            func_config.insert({func_p, std::make_tuple(filter_on, sample_off, sample_init, sample_init)});
-        }
+        // The function is to be filtered, overwrite previous configuration if any
+        func_config[func_p] = Config_details(true);
 
         // Test for the collection end
         Next_token(tok_type, tok_val);
@@ -268,6 +258,8 @@ void Configuration::Parse_sample() {
     Test_next_token_type(Token_t::Op_colon, tok_val);
     Test_next_token_type(Token_t::Br_square_begin, tok_val);
     // Traverse the collection
+    // Comma token means the collection traversal continues, ending curly brace means end to the collection
+    // Exception is thrown if unexpected token is received
     while(1) {
         // { "func" : address, "sample": number },
         Test_next_token_type(Token_t::Br_curly_begin, tok_val);
@@ -287,13 +279,13 @@ void Configuration::Parse_sample() {
 
         // Search for the function configuration record
         auto func_record = func_config.find(func_p);
-        if(func_record != func_config.end()) {
-            // Function already has a configuration record, update
-            std::get<sample>(func_record->second) = true;
-        } else {
+        if(func_record == func_config.end()) {
             // Function does not have a configuration record yet, create one
-            func_config.insert({func_p, std::make_tuple(filter_off, sample_on, sample_val-1, sample_val)});
+            func_config.insert({func_p, Config_details(false, true, sample_val - 1, sample_val)});
         }
+        // There is no need to update the record if it already exists
+        // Either the function is supposed to be filtered or multiple definition for sampling - we take the first one
+
         Test_next_token_type(Token_t::Br_curly_end, tok_val);
 
         // Test for the collection end

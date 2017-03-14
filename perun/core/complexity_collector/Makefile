@@ -5,13 +5,19 @@ CINSTR=-finstrument-functions
 #-finstrument-functions-exclude-function-list=vector
 #-finstrument-functions-exclude-function-list=__static_initialization_and_destruction_0,_GLOBAL__sub_I__Z11SLList_initP6SLList
 
-profile: main.o libprofile.so
-	$(CC) -o profile main.o libprofile.so
+profile: main.o libprofile.so libprofapi.so
+	$(CC) -o profile main.o libprofile.so libprofapi.so
 
 libprofile.so: profile.o config.o
 	$(CC) $(CFLAGS) -shared -o libprofile.so profile.o config.o
 
-profile.o: config.o profile.cpp
+libprofapi.so: profapi.o
+	$(CC) $(CFLAGS) -shared -o libprofapi.so profapi.o
+
+profapi.o: profile_api.cpp profile_api.h
+	$(CC) $(CFLAGS) -c -fPIC -o profapi.o profile_api.cpp
+
+profile.o: profile.cpp profile.h
 	$(CC) $(CFLAGS) -c -fPIC -o profile.o profile.cpp
 
 config.o: Configuration.cpp Configuration.h
@@ -21,7 +27,7 @@ main.o: main.cpp SLList.h SLListcls.h
 	$(CC) $(CFLAGS) $(CINSTR) -c -o main.o main.cpp
 
 clean:
-	rm -f profile.o main.o config.o profile trace.out 
+	rm -f *.o profile trace.out 
 
 run:
 	LD_LIBRARY_PATH="." ./profile

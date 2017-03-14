@@ -1,6 +1,8 @@
 #ifndef CPP_BASIC_SLLIST_H
 #define CPP_BASIC_SLLIST_H
 
+#include "profile_api.h"
+
 struct SLLelem {
     int key;
     SLLelem *next;
@@ -9,11 +11,13 @@ struct SLLelem {
 struct SLList {
     SLLelem *head;
     SLLelem *tail;
+    size_t size;
 };
 
 void SLList_init(SLList *list) {
     list->head = nullptr;
     list->tail = nullptr;
+    list->size = 0;
 }
 
 void SLList_insert(SLList *list, int num) {
@@ -26,6 +30,7 @@ void SLList_insert(SLList *list, int num) {
         list->tail->next = elem;
     }
     list->tail = elem;
+    list->size++;
 }
 
 void SLList_remove(SLList *list, int key) {
@@ -42,6 +47,7 @@ void SLList_remove(SLList *list, int key) {
                 prev->next = tmp->next;
             }
             delete tmp;
+            list->size--;
             return;
         } else {
             prev = tmp;
@@ -69,6 +75,7 @@ void SLList_destroy(SLList *list) {
         delete tmp;
         tmp = list->head;
     }
+    list->size = 0;
 }
 
 #endif //CPP_BASIC_SLLIST_H

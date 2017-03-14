@@ -24,8 +24,10 @@ CMAKE_VERSION = '2.8'
 CMAKE_BIN_TARGET = '/bin'
 CMAKE_CONFIG_TARGET = 'WorkloadCfg'
 CMAKE_COLLECT_TARGET = 'Workload'
-CMAKE_LIB_NAME = 'profile'
-CMAKE_LIB_PATH = '${PROJECT_SOURCE_DIR}/bin'
+CMAKE_PROF_LIB_NAME = 'profile'
+CMAKE_PROF_LIB_PATH = '${CMAKE_SOURCE_DIR}/bin'
+CMAKE_API_LIB_NAME = 'profapi'
+CMAKE_API_LIB_PATH = '${CMAKE_SOURCE_DIR}/bin'
 
 
 def create_config_cmake(target_path, file_paths):
@@ -43,16 +45,21 @@ def create_config_cmake(target_path, file_paths):
         ValueError: if the cmake file is unexpectedly closed
     """
     # Open the cmake file and get the path
-    cmake = _cmake_create(target_path)
-    cmake_path = os.path.realpath(cmake.name)
+    cmake_path = _cmake_construct_file_path(target_path)
+    with open(cmake_path, 'w') as cmake_handle:
+        # Write the basic cmake configuration
+        _cmake_init(cmake_handle)
 
-    # Write the basic cmake configuration
-    _cmake_init(cmake)
+        # Write the build configuration
+        _cmake_build_data(cmake_handle, CMAKE_CONFIG_TARGET, file_paths)
 
-    # Write the build configuration
-    _cmake_build_data(cmake, CMAKE_CONFIG_TARGET, file_paths)
+        # Add the api library
+        library_vars = []
+        library_vars = _cmake_find_library(cmake_handle, CMAKE_API_LIB_NAME, CMAKE_API_LIB_PATH, library_vars)
 
-    cmake.close()
+        # Link with the api library
+        _cmake_link_libraries(cmake_handle, library_vars, CMAKE_CONFIG_TARGET)
+
     return cmake_path
 
 
@@ -72,20 +79,24 @@ def create_collector_cmake(target_path, file_paths, exclude_list):
         ValueError: if the cmake file is unexpectedly closed
     """
     # Open the cmake file and get the path
-    cmake = _cmake_create(target_path)
-    cmake_path = os.path.realpath(cmake.name)
+    cmake_path = _cmake_construct_file_path(target_path)
+    with open(cmake_path, 'w') as cmake_handle:
+        # Write the basic cmake configuration
+        _cmake_init(cmake_handle)
+        # Extend the configuration for profiling
+        _cmake_add_profile_instructions(cmake_handle, exclude_list)
 
-    # Write the basic cmake configuration
-    _cmake_init(cmake)
-    # Extend the configuration for profiling
-    _cmake_add_profile_instructions(cmake, exclude_list)
+        # Write the build configuration
+        _cmake_build_data(cmake_handle, CMAKE_COLLECT_TARGET, file_paths)
 
-    # Write the build configuration
-    _cmake_build_data(cmake, CMAKE_COLLECT_TARGET, file_paths)
-    # Link with the profiling library
-    _cmake_link_library(cmake, CMAKE_COLLECT_TARGET)
+        # Add the profiling and api library
+        library_vars = []
+        library_vars = _cmake_find_library(cmake_handle, CMAKE_API_LIB_NAME, CMAKE_API_LIB_PATH, library_vars)
+        library_vars = _cmake_find_library(cmake_handle, CMAKE_PROF_LIB_NAME, CMAKE_PROF_LIB_PATH, library_vars)
 
-    cmake.close()
+        # Link with the profiling and api library
+        _cmake_link_libraries(cmake_handle, library_vars, CMAKE_COLLECT_TARGET)
+
     return cmake_path
 
 
@@ -116,25 +127,20 @@ def build_executable(cmake_path, target_name):
     return os.path.realpath(exec_path)
 
 
-def _cmake_create(target_path):
-    """ Creates and/or opens the empty cmake file in write mode
+def _cmake_construct_file_path(target_path):
+    """ Constructs the cmake file absolute path
 
     Arguments:
         target_path(str): cmake target directory path
 
     Returns:
-        file: handle to the opened cmake file
-
-    Raises:
-        OSError: if file creation or opening failed
+        str: the constructed cmake file path
     """
     # Extend the path accordingly
     if not target_path.endswith('/'):
         target_path += '/'
     target_path += 'CMakeLists.txt'
-    # Attempt to open the file
-    cmake = open(target_path, 'w')
-    return cmake
+    return os.path.realpath(target_path)
 
 
 def _cmake_init(cmake_file):
@@ -205,18 +211,45 @@ def _cmake_build_data(cmake_file, target_name, source_files):
                      .format(target_name))
 
 
-def _cmake_link_library(cmake_file, target_name):
+def _cmake_link_libraries(cmake_file, library_vars, target_name):
     """ Links the profiling library with the collection executable
 
     Arguments:
         cmake_file(file): file handle to the opened cmake file
+        library_vars(list): list of libraries to be linked
         target_name(str): build target to be linked with
 
     Raises:
         ValueError: if the cmake file is unexpectedly closed
     """
+    # Create the string list of all libraries
+    libraries = ' '.join('${{{0}}}'.format(lib) for lib in library_vars)
+    # Create the target
+    cmake_file.write('\n# Link the libraries to the target\n'
+                     'target_link_libraries({0} {1})\n'
+                     .format(target_name, libraries))
+
+
+def _cmake_find_library(cmake_file, lib_name, lib_path, library_vars):
+    """ Links the profiling library with the collection executable
+
+    Arguments:
+        cmake_file(file): file handle to the opened cmake file
+        lib_name(str): the name of the library to search for
+        lib_path(str): the path to the library to search for
+        library_vars(list): list of already found libraries
+
+    Returns:
+        list: the updated library vars list
+
+    Raises:
+        ValueError: if the cmake file is unexpectedly closed
+    """
+    # Create the library variable name
+    library_var = 'PROFILE_LIB' + str(len(library_vars))
+    # Create instruction to find the library
     cmake_file.write('\n# Find the library\n'
-                     'find_library(PROFILE_LIB {0} PATHS "{1}")\n'
-                     '# Link the library to the target\n'
-                     'target_link_libraries({2} ${{PROFILE_LIB}})\n'
-                     .format(CMAKE_LIB_NAME, CMAKE_LIB_PATH, target_name))
+                     'find_library({0} {1} PATHS "{2}")\n'
+                     .format(library_var, lib_name, lib_path))
+    library_vars.append(library_var)
+    return library_vars

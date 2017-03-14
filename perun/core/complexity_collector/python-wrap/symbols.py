@@ -20,10 +20,10 @@ _SYMTABLE_NAME_COLUMN = 8
 _SYMTABLE_ADDR_COLUMN = 2
 
 # The named tuple collection for storage of decomposed function prototypes
-prototype_parts = collections.namedtuple('prototype_parts', ['identifier', 'args', 'scoped_body', 'scoped_args',
-                                                             'full_body', 'full_args'])
+PrototypeParts = collections.namedtuple('prototype_parts', ['identifier', 'args', 'scoped_body', 'scoped_args',
+                                                            'full_body', 'full_args'])
 # The named tuple collection serving as a key for include list
-rule_key = collections.namedtuple('rule_key', ['mangled_name', 'rule'])
+RuleKey = collections.namedtuple('rule_key', ['mangled_name', 'rule'])
 
 
 def extract_symbols(executable_path):
@@ -176,30 +176,17 @@ def _get_symbols(executable_path, columns):
     # Convert the columns list to string parameter
     columns_str = ','.join(str(column) for column in columns)
 
-    # readelf -sW exec | awk '$4 == "FUNC" && $7 != "UND"' | awk '{$2=$2};1' | cut -d' ' -f columns
-    sym_table_full = subprocess.Popen(('readelf', '-sW', executable_path),
-                                      stdout=subprocess.PIPE)
-    sym_table_func = subprocess.Popen(('awk', '$4 == "FUNC" && $7 != "UND"'),
-                                      stdin=sym_table_full.stdout, stdout=subprocess.PIPE)
-    sym_table_whsp = subprocess.Popen(('awk', '{$2=$2};1'),
-                                      stdin=sym_table_func.stdout, stdout=subprocess.PIPE)
-    sym_table_filt = subprocess.Popen(('cut', '-d', ' ', '-f', columns_str),
-                                      stdin=sym_table_whsp.stdout, stdout=subprocess.PIPE)
-    # Close the pipes output
-    sym_table_full.stdout.close()
-    sym_table_func.stdout.close()
-    sym_table_whsp.stdout.close()
-    # Save the filtered table
-    symbols = sym_table_filt.communicate()[0]
-    sym_table_filt.stdout.close()
+    # # readelf -sW exec | awk '$4 == "FUNC" && $7 != "UND"' | awk '{$2=$2};1' | cut -d' ' -f columns
+    cmd = "readelf -sW " + executable_path + \
+          " | awk '$4 == \"FUNC\" && $7 != \"UND\"' | awk '{$2=$2};1' | cut -d' ' -f " + columns_str
+    ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    symbols = ps.communicate()[0]
 
     # Decode the bytes and create list
     symbols = symbols.decode(sys.stdout.encoding).replace(' ', '\n').split('\n')
     # Remove the redundant element
-    try:
+    if '' in symbols:
         symbols.remove('')
-    except ValueError:
-        pass
 
     return symbols
 
@@ -272,7 +259,7 @@ def _process_symbol(function_prototype):
     arguments = _remove_argument_scopes(scoped_args)
 
     # Build the tuple from prototype parts
-    return prototype_parts(identifier, arguments, scoped_body, scoped_args, prototype_body, prototype_args)
+    return PrototypeParts(identifier, arguments, scoped_body, scoped_args, prototype_body, prototype_args)
 
 
 def _unify_function_format(function_prototype):
@@ -381,7 +368,7 @@ def _remove_templates(function_part):
     new_prototype = ''
     inner_level = 0
     last_end = len(function_part)
-    for i in reversed(braces):
+    for i in braces[::-1]:
         if function_part[i] == '>':
             if inner_level == 0:
                 # New block start recognized, slice the trailing chars
@@ -560,7 +547,7 @@ def _apply_profile_rules(profile_rules, symbol_map):
             symbol = _build_symbol_from_rules(symbol_parts[symbol_key], rules_details[rule])
             if symbol == rule:
                 # The rule matches with the symbol
-                include_list[rule_key(symbol_key, rule)] = symbol_parts[symbol_key]
+                include_list[RuleKey(symbol_key, rule)] = symbol_parts[symbol_key]
                 remove_list.append(symbol_key)
         # Remove already matched symbols from the iterated symbol parts
         for symbol in remove_list:
