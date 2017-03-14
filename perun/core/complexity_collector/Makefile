@@ -20,8 +20,8 @@ profapi.o: profile_api.cpp profile_api.h
 profile.o: profile.cpp profile.h
 	$(CC) $(CFLAGS) -c -fPIC -o profile.o profile.cpp
 
-config.o: Configuration.cpp Configuration.h
-	$(CC) $(CFLAGS) -c -fPIC -o config.o Configuration.cpp
+config.o: configuration.cpp configuration.h
+	$(CC) $(CFLAGS) -c -fPIC -o config.o configuration.cpp
 
 main.o: main.cpp SLList.h SLListcls.h
 	$(CC) $(CFLAGS) $(CINSTR) -c -o main.o main.cpp

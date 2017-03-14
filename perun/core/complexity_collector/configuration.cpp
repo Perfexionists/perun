@@ -1,6 +1,6 @@
 #include <cctype>
 #include <sstream>
-#include "Configuration.h"
+#include "configuration.h"
 
 
 Configuration::Configuration() : instr_data_init_len{default_instr_data_init_len}, trace_file_name("trace.log")

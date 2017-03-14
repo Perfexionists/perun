@@ -2,7 +2,7 @@
 #include <vector>
 #include <tuple>
 #include <fstream>
-#include "Configuration.h"
+#include "configuration.h"
 #include "profile.h"
 #include "profile_api.h"
 
