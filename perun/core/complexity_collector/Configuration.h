@@ -7,38 +7,39 @@
 #include <exception>
 
 // List of possible error exit codes
-enum exit_error_codes {
-    exit_err_profile_file_open        = 1,  // profile output file cannot be opened
-    exit_err_profile_file_closed      = 2,  // profile output file closed unexpectedly
-    exit_err_config_file_open         = 11, // configuration file does not exist
-    exit_err_config_file_syntax       = 12, // configuration file incorrect syntax
-    exit_err_config_alloc_failed      = 13, // unable to allocate needed memory for configuration data
+enum Exit_error_codes {
+    EXIT_ERR_PROFILE_FILE_OPEN        = 1,  // profile output file cannot be opened
+    EXIT_ERR_PROFILE_FILE_CLOSED      = 2,  // profile output file closed unexpectedly
+    EXIT_ERR_CONFIG_FILE_OPEN         = 11, // configuration file does not exist
+    EXIT_ERR_CONFIG_FILE_SYNTAX       = 12, // configuration file incorrect syntax
 };
 
 
 // A class for parsing and storage of complexity collector's runtime configuration information.
-// The configuration format is specified in the 'ccicc.rst' file.
+// The configuration format is specified in the 'circ.rst' file.
 // Notably output file name, runtime filtering and sampling can be configured.
 class Configuration {
 public:
+    static const int sample_init = 0;       // Default sampling configuration value
+
     // Function configuration storage format
-    // filter on/off ; sample on/off ; current sample ; sampling coefficient
-    typedef std::tuple<bool, bool, int, int> config_details;
+    struct Config_details {
+        // Config details constructor with default init list
+        Config_details(bool filter = false, bool sample = false,
+                       int current_sample = sample_init, int  sample_ratio = sample_init) :
+                is_filtered{filter}, is_sampled{sample}, sample_current{current_sample}, sample_ratio{sample_ratio} {}
+
+        bool is_filtered;                   // function filter on/off
+        bool is_sampled;                    // function sample on/off
+        int sample_current;                 // sampling counter
+        int sample_ratio;                   // the sampling ratio (i.e. the sampling counter max value)
+    };
 
     // Unordered map for function configuration storage, function pointer used as a key.
-    std::unordered_map<void *, config_details> func_config;
-    unsigned long instr_data_init_len;      // Initial storage capacity for instrumentation records
-    std::string trace_file_name;            // Trace log file name
-
-    // Set of named constants for convenient config_details access
-    static const int filter         = 0;    // filtering info index
-    static const int sample         = 1;    // sampling info index
-    static const int sample_curr    = 2;    // current function sample
-    static const int sample_coeff   = 3;    // sampling coefficient
-    static const bool filter_on;            // function is filtered
-    static const bool filter_off;           // function is not filtered
-    static const bool sample_on;            // function is sampled
-    static const bool sample_off;           // function is not sampled
+    std::unordered_map<void *, Config_details> func_config;
+    const unsigned long default_instr_data_init_len = 20000;    // Default instrumentation record storage capacity
+    unsigned long instr_data_init_len;                          // Initial storage capacity for instrumentation records
+    std::string trace_file_name;                                // Trace log file name
 
     // Custom exception class for reporting a missing configuration file
     class Conf_file_missing_exception : public std::exception {};
@@ -73,22 +74,20 @@ private:
     // file-name ; storage-init-size ; runtime-filter ; sampling
     typedef std::array<bool, 4> parsed_info;
     // Convenience sections access constants
-    const unsigned int section_name      = 0;    // file-name
-    const unsigned int section_storage   = 1;    // storage-init-size
-    const unsigned int section_filter    = 2;    // runtime-filter
-    const unsigned int section_sampling  = 3;    // sampling
+    const unsigned int section_name      = 0;                   // file-name
+    const unsigned int section_storage   = 1;                   // storage-init-size
+    const unsigned int section_filter    = 2;                   // runtime-filter
+    const unsigned int section_sampling  = 3;                   // sampling
 
-    std::string file_contents;          // Buffered configuration file content
-    parsed_info configuration_parsed;   // Parsing status
+    std::string file_contents;                                  // Buffered configuration file content
+    parsed_info configuration_parsed;                           // Parsing status
 
-    const unsigned long default_instr_data_init_len = 20000;    // Default instrumentation record storage capacity
-    const std::string config_file_name = "ccicc.conf";          // Default configuration file name
-    const int sample_init = 0;                                  // Default sampling configuration value
+    const std::string config_file_name = "circ.conf";          // Default configuration file name
 
-    // Lexical analysis token types, more details in 'ccicc.conf'
+    // Lexical analysis token types, more details in 'circ.conf'
     enum class Token_t {
         Default,            // Initial token type
-        Magic,              // Magic code - CCICC
+        Magic,              // Magic code - CIRC
         Text_value,         // Textual value
         Number_value,       // Decimal number value
         Op_colon,           // Operator :
@@ -105,7 +104,6 @@ private:
     enum class FSM_token_states {
         Init,               // Initial automaton state
         Text,               // Textual value state
-        Address,            // Address value state
         Number,             // Number value state
         Magic               // Magic code state
     };
@@ -169,7 +167,7 @@ private:
     void Test_token_val(const std::string &expected_tok_val, const std::string &tok_val);
 
     // Method parses the initial configuration sequence consisting of
-    // CCICC = { tokens.
+    // CIRC = { tokens.
     // ----------------------------------------------------------------
     // Arguments:
     //  -- None

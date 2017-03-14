@@ -1,6 +1,8 @@
 #ifndef CPP_BASIC_SLLISTCLS_H
 #define CPP_BASIC_SLLISTCLS_H
 
+#include "profile_api.h"
+
 class SLListcls {
     class SLLelemcls;
 
@@ -19,9 +21,12 @@ class SLListcls {
     };
 
 public:
+    size_t size;
     SLListcls() {
         head = nullptr;
         tail = nullptr;
+        size = 0;
+        Register_size_address(this, true, &size);
     }
 
     ~SLListcls() {
@@ -34,6 +39,7 @@ public:
     }
 
     void Insert(int num) {
+        Using_size_address(this);
         SLLelemcls *elem = new SLLelemcls(num);
         if(head == nullptr) {
             head = elem;
@@ -41,9 +47,11 @@ public:
             tail->next = elem;
         }
         tail = elem;
+        size++;
     };
 
     void Remove(int key) {
+        Using_size_address(this);
         SLLelemcls *tmp = head;
         SLLelemcls *prev = nullptr;
         while(tmp != nullptr) {
@@ -57,6 +65,7 @@ public:
                     prev->next = tmp->next;
                 }
                 delete tmp;
+                size--;
                 return;
             } else {
                 prev = tmp;
@@ -66,6 +75,7 @@ public:
     }
 
     SLLelemcls *Search(int key) {
+        Using_size_address(this);
         SLLelemcls *tmp = head;
         while(tmp != nullptr) {
             if(key == tmp->key) {

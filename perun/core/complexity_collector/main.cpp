@@ -1,23 +1,28 @@
 #include "SLList.h"
 #include "SLListcls.h"
+#include "profile_api.h"
 
 int main() {
+
     SLList mylist;
+    Register_size_address(&mylist, false, &mylist.size);
     SLList_init(&mylist);
-    SLList_insert(&mylist, 1);
-    for(int i = 0; i < 1000; i++) {
+    for(int i = 0; i < 10; i++) {
+        Using_size_address(&mylist);
         SLList_insert(&mylist, i + 1);
     }
+    Using_size_address(&mylist);
     SLList_search(&mylist, 3);
-    SLList_search(&mylist, 997);
+    Using_size_address(&mylist);
     SLList_destroy(&mylist);
 
     SLListcls clslist;
-    for(int i = 0; i < 1000; i++) {
+    for(int i = 0; i < 10; i++) {
         clslist.Insert(i + 1);
     }
     clslist.Search(3);
-    clslist.Search(997);
+
+
 
     return 0;
 }

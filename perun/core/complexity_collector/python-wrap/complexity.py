@@ -14,9 +14,6 @@ import configurator
 import complexity_exceptions
 
 
-profile_record = collections.namedtuple('record', ['action', 'func', 'timestamp'])
-
-
 # Test configuration dictionary
 config = {
     'target_dir': './target',
@@ -30,15 +27,38 @@ config = {
         'SLList_init',
         'SLList_insert',
         'SLList_search',
-        'SLList_destroy'
+        'SLList_destroy',
+        'SLListcls',
+        '~Sllistcls',
+        'Insert',
+        'Remove',
+        'Search'
     ],
-    'file-name': '../trace.log',
+    'file-name': 'trace.log',
     'init-storage-size': 20000,
     'sampling': [
-        {'func': 'SLList_insert', 'sample': 2},
+        {'func': 'SLList_insert', 'sample': 1},
         {'func': 'func1', 'sample': 1},
     ],
     'recursion': 'no'
+}
+
+
+# The profiling record template
+_ProfileRecord = collections.namedtuple('record', ['action', 'func', 'timestamp', 'size'])
+
+# The collect phase status messages
+_collector_status_msg = {
+    0:  'OK',
+    1:  'Err: profile output file cannot be opened.',
+    2:  'Err: profile output file closed unexpectedly.',
+    11: 'Err: runtime configuration file does not exists.',
+    12: 'Err: runtime configuration file syntax error.'
+}
+
+# The collector subtypes
+_collector_subtypes = {
+    'delta': 'time delta'
 }
 
 
@@ -49,22 +69,29 @@ def before(**kwargs):
         kwargs(dict): dictionary containing the configuration settings for the complexity collector
 
     Returns:
-        dict: modified kwargs with bin value representing the executable
+        tuple: int as a status code, nonzero values for errors
+               string as a status message, mainly for error states
+               dict of modified kwargs with bin value representing the executable
     """
-    # Create the configuration cmake and build the configuration executable
-    cmake_path = makefiles.create_config_cmake(kwargs['target_dir'], kwargs['files'])
-    exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
-    # Extract some configuration data using the configuration executable
-    function_sym = symbols.extract_symbols(exec_path)
-    include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, kwargs['rules'])
-    # Create the collector cmake and build the collector executable
-    cmake_path = makefiles.create_collector_cmake(kwargs['target_dir'], kwargs['files'], exclude_list)
-    exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
-    # Create the internal configuration file
-    configurator.create_ccicc(exec_path, runtime_filter, include_list, kwargs)
+    try:
+        # Create the configuration cmake and build the configuration executable
+        cmake_path = makefiles.create_config_cmake(kwargs['target_dir'], kwargs['files'])
+        exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
+        # Extract some configuration data using the configuration executable
+        function_sym = symbols.extract_symbols(exec_path)
+        include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, kwargs['rules'])
+        # Create the collector cmake and build the collector executable
+        cmake_path = makefiles.create_collector_cmake(kwargs['target_dir'], kwargs['files'], exclude_list)
+        exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
+        # Create the internal configuration file
+        configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
 
-    kwargs['bin'] = exec_path
-    return dict(kwargs)
+        kwargs['bin'] = exec_path
+        return 0, _collector_status_msg[0], dict(kwargs)
+    # The "expected" exception types
+    except (OSError, ValueError, subprocess.CalledProcessError,
+            UnicodeError, complexity_exceptions.UnexpectedPrototypeSyntaxError) as e:
+        return 1, repr(e), kwargs
 
 
 def collect(**kwargs):
@@ -74,10 +101,13 @@ def collect(**kwargs):
         kwargs(dict): dictionary containing the configuration settings for the complexity collector
 
     Returns:
-        int: return code of the collector executable
+        tuple: int as a status code, nonzero values for errors
+               string as a status message, mainly for error states
+               dict of modified kwargs with bin value representing the executable
     """
     collector_dir, collector_exec = _get_collector_executable_and_dir(kwargs['bin'])
-    return subprocess.call(('./' + collector_exec), cwd=collector_dir)
+    return_code = subprocess.call(('./' + collector_exec), cwd=collector_dir)
+    return return_code, _collector_status_msg[return_code], dict(kwargs)
 
 
 def after(**kwargs):
@@ -87,7 +117,9 @@ def after(**kwargs):
         kwargs(dict): dictionary containing the configuration settings for the complexity collector
 
     Returns:
-        dict: kwargs with resources value
+        tuple: int as a status code, nonzero values for errors
+               string as a status message, mainly for error states
+               dict of modified kwargs with bin value representing the executable
     """
     # Get the trace log path
     pos = kwargs['bin'].rfind('/')
@@ -98,8 +130,8 @@ def after(**kwargs):
     call_stack = []
     with open(path, 'r') as profile:
         for line in profile:
-            # Split the line into action, function name and timestamp
-            record = profile_record(*line.split())
+            # Split the line into action, function name, timestamp and size
+            record = _ProfileRecord(*line.split())
             if record.action == 'i':
                 call_stack.append(record)
             elif call_stack[-1].action == 'i' and call_stack[-1].func == record.func:
@@ -107,14 +139,15 @@ def after(**kwargs):
                 matching_record = call_stack.pop()
                 resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
                                   'uid': address_map[record.func],
-                                  'type': 'complexity',
-                                  'subtype': 'todo',
-                                  'structure-unit-size': 'todo'})
+                                  'type': 'mixed',
+                                  'subtype': _collector_subtypes['delta'],
+                                  'structure-unit-size': int(record.size)})
             else:
-                raise complexity_exceptions.TraceLogCallStackError('Current:' + record.func + ', call stack top: ' +
-                                                                   call_stack[-1].func)
-    kwargs['resources'] = resources
-    return kwargs
+                # Call stack function frames not matching
+                err_msg = 'Call stack error: ' + record.func + ', call stack top: ' + call_stack[-1].func
+                return 1, err_msg, kwargs
+    kwargs['profile'] = resources
+    return 0, _collector_status_msg[0], kwargs
 
 
 def _get_collector_executable_and_dir(collector_exec_path):
@@ -137,3 +170,11 @@ def _get_collector_executable_and_dir(collector_exec_path):
         collector_exec = collector_exec_path
     return collector_dir, collector_exec
 
+
+# Test run
+# code, msg, config = before(**config)
+# print('code: {0}, msg: {1}\n'.format(code, msg))
+# code, msg, config = collect(**config)
+# print('code: {0}, msg: {1}\n'.format(code, msg))
+# code, msg, config = after(**config)
+# print('code: {0}, msg: {1}\n'.format(code, msg))
