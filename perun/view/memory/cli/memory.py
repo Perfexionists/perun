@@ -10,7 +10,7 @@ from perun.view.memory.cli.func import get_func
 import perun.view.memory.cli.heap_map
 
 __author__ = 'Radim Podola'
-__supported_modes = ("flow", "top", "most", "sum", "func", "heap")
+__supported_short_opts = 'm:hf:t:a'
 __supported_long_opts = ["mode=",
                          "help",
                          "from=",
@@ -18,45 +18,50 @@ __supported_long_opts = ["mode=",
                          'top=',
                          'all',
                          "function="]
+SUPPORTED_MODES = ("flow", "top", "most", "sum", "func", "heap")
 
 
-def usage():
+def usage(full=False):
+    """ Print basic information about tool and usage to standard output.
+    Arguments:
+        full(bool): specify if also basic info about tool is printed
     """
-    FLOW Seznam alokací (včetně trasy) v~časové ose.
-        Parametrem -s lze kontrolovat časový rozestup.
-    TOP seznam největších alokací (včetně trasy).
-        Parametrem -t(--top=) lze udávat počet zobrazených záznamů.
-    MOST Seznam funkcí, kde byly alokace nejčetněji.
-        Parametrem -t(--top) lze udávat počet zobrazených záznamů.
-    SUM Seznam funkcí s~největší celkovou hodnotou alokované paměti.
-        Parametrem -t(--topé) lze udávat počet zobrazených záznamů.
-    FUNC Alokace vybrané funkce (včetně trasy).
-        Parametr --all zobrazi i~alokace, kterých se funkce pouze účastnila v~trase.
-    HEAP Heap mapa paměti v čase (snapshots)
-    """
-    print("The simple interpretation tool for the memory profile")
-    print("\nSimple description ... ")
-    print("\nUsage: > options profile.perf")
-    print("Options: -h | --help")
-    print("Options: -m flow | --mode=flow [-f time | --from=time] "
-          "[-t time | --to=time]")
-    print("Options: -m top | --mode=top [-t value | --top=value]")
-    print("Options: -m most | --mode=most [-t value | --top=value]")
-    print("Options: -m sum | --mode=sum [-t value | --top=value]")
-    print("Options: -m func | --mode=func --function=name [-a | --all]")
-    print("Options: -m heap | --mode=heap")
-    print("Mode parameter defines the operation with the profile")
-    print("Value defines number of the records to print, default value is 10")
-    print("Time defines timestamp in the timeline of printed records,"
-          " as default is printed the whole timeline")
-    print("If --all parameter is specified, "
-          "all the allocations are printed out "
-          "(even with partial participation in the call trace)")
-    print("Function parameter defines name of the function to focus")
+    if full:
+        print('Memory_print - The simple interpretation tool '
+              'for the memory profile\n\n'
+              'This tool is composed from several interpretation functions.\n'
+              'Each of the provides a different point of view '
+              'on the memory profile.\n'
+              'For now, following functions are available:',
+              *SUPPORTED_MODES, '\n')
+
+    print('Usage: options profile.perf\n'
+          'Options:\n'
+          '[1]  -h | --help\n'
+          '[2]  -m top | --mode=top [-t value | --top=value]\n'
+          '[3]  -m most | --mode=most [-t value | --top=value]\n'
+          '[4]  -m sum | --mode=sum [-t value | --top=value]\n'
+          '[5]  -m flow | --mode=flow [-f time | --from=time]\n'
+          '[6]  -m func | --mode=func --function=name [-a | --all]\n'
+          '[7]  -m heap | --mode=heap\n'
+          '\n'
+          '[2-7] "mode" parameter defines the operation with the profile\n'
+          '[2-4] "value" defines number of the records to print, default value'
+          ' is 10\n'
+          '[5] "time" defines timestamp in the timeline of printed records\n'
+          '[6] "--all" defines that all the allocations including function are'
+          ' printed out (even with partial participation in the call trace)\n'
+          '[6] "function" parameter defines name of the function to search for'
+          '\n')
 
 
 def err_exit(msg, print_help=False):
-    print(msg)
+    """ Print error message to standard error output and exit program
+    Arguments:
+        msg(string): error message to print
+        print_help(bool): specify if also print usage information
+    """
+    print('Error: ', msg, file=sys.stderr)
     if print_help:
         usage()
     sys.exit(2)
@@ -72,10 +77,10 @@ def parse_args(argv):
     """
     try:
         opts, args = getopt.getopt(argv,
-                                   "m:hf:t:a",
+                                   __supported_short_opts,
                                    __supported_long_opts)
     except getopt.GetoptError as err:
-        err_exit(str(err), True)
+        err_exit(str(err))
 
     mode = None
     from_time = None
@@ -86,7 +91,7 @@ def parse_args(argv):
     function = None
     for o, a in opts:
         if o in ("-h", "--help"):
-            usage()
+            usage(True)
             sys.exit()
         elif o in ("-m", "--mode"):
             mode = a
@@ -106,15 +111,15 @@ def parse_args(argv):
             assert False
 
     if not args:
-        err_exit("Error: The profile not provided", True)
+        err_exit("The profile not provided")
     if len(args) > 1:
-        err_exit("Error: Bad args", True)
+        err_exit("Bad args")
     if not mode:
-        err_exit("Error: Mode not defined", True)
-    if mode not in __supported_modes:
-        err_exit("Error: Mode not supported", True)
+        err_exit("Mode not defined")
+    if mode not in SUPPORTED_MODES:
+        err_exit("Mode not supported")
     if mode == "func" and not function:
-        err_exit("Error: Function not defined", True)
+        err_exit("Function not defined")
 
     if mode and t_param:
         if mode == "flow":
@@ -157,6 +162,7 @@ def show():
 
     if output:
         print(output)
+
 
 if __name__ == "__main__":
     show()

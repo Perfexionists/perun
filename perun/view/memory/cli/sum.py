@@ -1,7 +1,25 @@
 """This module implement the sum interpretation of the profile"""
-import json
-
 __author__ = 'Radim Podola'
+
+
+def get_pretty_allocations(summary, unit):
+    """ Modify the allocations for pretty print
+    Arguments:
+        summary(list): allocations records
+        unit(string): unit of memory
+
+    Returns:
+        string: modified output
+    """
+    output = ''
+    for i, item in enumerate(summary):
+
+        output += '#' + str(i + 1) + ' ' + item['uid']['function'] + ': '
+        output += str(item['sum']) + unit
+        output += ' in ' + item['uid']['source']
+        output += '\n\n'
+
+    return output
 
 
 def get_sum(profile, top):
@@ -27,34 +45,42 @@ def get_sum(profile, top):
     for snapshot in snapshots:
         allocations.extend(snapshot['resources'])
 
-    def is_in(sum, uid):
-        for i, s in enumerate(sum):
-            if (s['uid']['source'] == uid['source'] and
-                        s['uid']['function'] == uid['function']):
+    def is_in(summary, uid):
+        """ Evaluate if UID is included in SUMMARY
+        Returns:
+            int: index if it's included, None if not
+        """
+        for i, item in enumerate(summary):
+            if (item['uid']['source'] == uid['source'] and
+                    item['uid']['function'] == uid['function']):
                 return i
 
         return None
 
+    # Summary allocated memory in corresponding records
     summary = []
     for allocation in allocations:
+        # free is not taken as allocation function
+        if allocation['subtype'] == 'free':
+            continue
+
         ind = is_in(summary, allocation['uid'])
-        if ind == None:
+        if ind is None:
             summary.append({'uid': allocation['uid'],
                             'sum': allocation['amount']})
         else:
             summary[ind]['sum'] += allocation['amount']
 
-    output = ''
-    for i, item in enumerate(summary):
-        if i + 1 > top:
-            break
+    # sorting allocations records by amount of summarized allocated memory
+    summary.sort(key=lambda x: x['sum'], reverse=True)
 
-        output += '#' + str(i + 1) + ' ' + item['uid']['function'] + ': '
-        output += str(item['sum']) + memory_unit
-        output += ' in ' + item['uid']['source']
-        output += '\n\n'
+    # cutting list length
+    if len(summary) > top:
+        output = get_pretty_allocations(summary[:top], memory_unit)
+    else:
+        output = get_pretty_allocations(summary, memory_unit)
 
-    return output
+    return output.strip()
 
 
 if __name__ == "__main__":

@@ -3,12 +3,20 @@ __author__ = 'Radim Podola'
 
 
 def get_pretty_call_trace(trace, indent=2, margin=0):
+    """ Modify the call trace for pretty print
+    Arguments:
+        trace(list): call trace records
+        indent(int): indentation
+        margin(int): left margin
 
+    Returns:
+        string: modified output
+    """
     output = ''
 
-    for c, call in enumerate(trace):
+    for i, call in enumerate(trace):
         output += ' ' * margin
-        output += ' ' * indent * c
+        output += ' ' * indent * i
         output += call['function'] + '()'
         output += '  in  ' + call['source']
         output += ':' + str(call['line'])
@@ -18,7 +26,15 @@ def get_pretty_call_trace(trace, indent=2, margin=0):
 
 
 def get_pretty_resources(allocations, unit, indent=2):
+    """ Modify the allocations for pretty print
+    Arguments:
+        allocations(list): allocations records
+        unit(string): unit of memory
+        indent(int): indentation
 
+    Returns:
+        string: modified output
+    """
     output = ''
 
     for i, item in enumerate(allocations):
@@ -60,6 +76,9 @@ def get_top(profile, top):
     for snapshot in snapshots:
         allocations.extend(snapshot['resources'])
 
+    # free is not taken as allocation function
+    allocations = [a for a in allocations if a['subtype'] != 'free']
+
     # sorting allocations records by amount of allocated memory
     allocations.sort(key=lambda x: x['amount'], reverse=True)
 
@@ -69,7 +88,7 @@ def get_top(profile, top):
     else:
         output = get_pretty_resources(allocations, memory_unit, 3)
 
-    return output
+    return output.strip()
 
 
 if __name__ == "__main__":
