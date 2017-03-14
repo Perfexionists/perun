@@ -37,13 +37,14 @@ def usage(full=False):
 
     print('Usage: options profile.perf\n'
           'Options:\n'
-          '[1]  -h | --help\n'
-          '[2]  -m top | --mode=top [-t value | --top=value]\n'
-          '[3]  -m most | --mode=most [-t value | --top=value]\n'
-          '[4]  -m sum | --mode=sum [-t value | --top=value]\n'
-          '[5]  -m flow | --mode=flow [-f time | --from=time]\n'
-          '[6]  -m func | --mode=func --function=name [-a | --all]\n'
-          '[7]  -m heap | --mode=heap\n'
+          '[1]  -h|--help\n'
+          '[2]  -m top|--mode=top [-t value|--top=value]\n'
+          '[3]  -m most|--mode=most [-t value|--top=value]\n'
+          '[4]  -m sum|--mode=sum [-t value|--top=value]\n'
+          '[5]  -m flow|--mode=flow [-f time|--from=time]'
+          '[-t time|--to=time]\n'
+          '[6]  -m func|--mode=func --function=name [-a|--all]\n'
+          '[7]  -m heap|--mode=heap\n'
           '\n'
           '[2-7] "mode" parameter defines the operation with the profile\n'
           '[2-4] "value" defines number of the records to print, default value'
@@ -136,7 +137,10 @@ def parse_args(argv):
 
 
 def show():
-
+    """ Main function which handle selected options of Memory_print
+    Returns:
+        string: output of the selected interpretation
+    """
     output = None
 
     args = parse_args(sys.argv[1:])
