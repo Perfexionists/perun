@@ -121,8 +121,6 @@ def _parse_commit(commit):
 @create_repo_from_path
 def _get_minor_version_info(git_repo, minor_version):
     """
-    Fixme: Work with packs
-
     Arguments:
         git_repo(git.Repo): wrapped repository of the perun
         minor_version(str): identification of minor_version
@@ -151,4 +149,7 @@ def _get_head_major_version(git_repo):
     Returns:
         str: representation of the major version
     """
-    return str(git_repo.active_branch)
+    if git_repo.head.is_detached:
+        return str(git_repo.head)
+    else:
+        return str(git_repo.active_branch)

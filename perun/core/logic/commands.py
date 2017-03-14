@@ -665,7 +665,7 @@ def load_job_info_from_config(pcs):
         'workload': local_config['workloads'],
         'postprocessor': [join_command(post) for post in local_config['postprocessors']],
         'collector': [join_command(collect) for collect in local_config['collectors']],
-        'args': local_config['args']
+        'args': local_config['args'] if 'args' in local_config.keys() else []
     }
 
     return info

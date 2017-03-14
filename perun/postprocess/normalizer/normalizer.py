@@ -6,7 +6,11 @@ __author__ = 'Tomas Fiedor'
 
 
 def get_resource_type(resource):
-    """
+    """Checks if the resource has defined type and returns empty type otherwise.
+
+    Checks if there is 'type' defined inside the resource, and if so then returns
+    the type. Otherwise it returns empty string as a type.
+
     Arguments:
         resource(dict): dictionary representing the resource
 
@@ -17,7 +21,11 @@ def get_resource_type(resource):
 
 
 def normalize_resources(resources):
-    """
+    """Normalize the global and snapshot resources according to the maximal values.
+
+    Computes the maximal values per each type inside the snapshot of the resource,
+    and then normalizes the values to the interval <0,1>.
+
     Arguments:
         resources(list): list of resources
     """
