@@ -18,9 +18,9 @@ import complexity_exceptions
 config = {
     'target_dir': './target',
     'files': [
-        '../../main.cpp',
-        '../../SLList.h',
-        '../../SLListcls.h'
+        '../cpp_sources/test_workload/main.cpp',
+        '../cpp_sources/test_workload/SLList.h',
+        '../cpp_sources/test_workload/SLListcls.h'
     ],
     'rules': [
         'func1',
@@ -172,9 +172,9 @@ def _get_collector_executable_and_dir(collector_exec_path):
 
 
 # Test run
-# code, msg, config = before(**config)
-# print('code: {0}, msg: {1}\n'.format(code, msg))
-# code, msg, config = collect(**config)
-# print('code: {0}, msg: {1}\n'.format(code, msg))
-# code, msg, config = after(**config)
-# print('code: {0}, msg: {1}\n'.format(code, msg))
+code, msg, config = before(**config)
+print('code: {0}, msg: {1}\n'.format(code, msg))
+code, msg, config = collect(**config)
+print('code: {0}, msg: {1}\n'.format(code, msg))
+code, msg, config = after(**config)
+print('code: {0}, msg: {1}\n'.format(code, msg))

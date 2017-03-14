@@ -25,9 +25,9 @@ CMAKE_BIN_TARGET = '/bin'
 CMAKE_CONFIG_TARGET = 'WorkloadCfg'
 CMAKE_COLLECT_TARGET = 'Workload'
 CMAKE_PROF_LIB_NAME = 'profile'
-CMAKE_PROF_LIB_PATH = '${CMAKE_SOURCE_DIR}/bin'
+CMAKE_PROF_LIB_PATH = '${CMAKE_SOURCE_DIR}'
 CMAKE_API_LIB_NAME = 'profapi'
-CMAKE_API_LIB_PATH = '${CMAKE_SOURCE_DIR}/bin'
+CMAKE_API_LIB_PATH = '${CMAKE_SOURCE_DIR}'
 
 
 def create_config_cmake(target_path, file_paths):
