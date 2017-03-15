@@ -51,6 +51,7 @@ def arguments_to_key(func, *args, **kwargs):
     f_args, _, _, f_defaults, _, f_kwonlydefaults, _ = inspect.getfullargspec(func)
 
     # get defaults that were updated
+    f_defaults = f_defaults or []
     updated_defaults = list(f_defaults)
     number_of_updated_keyword_args = len(args) - (len(f_args) - len(f_defaults))
     if number_of_updated_keyword_args != 0:
@@ -124,3 +125,40 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
         return wrapper
 
     return inner_decorator
+
+
+def assume_version(version_spec, actual_version):
+    """
+    Arguments:
+        version_spec(int): specification of the version that is checked
+        actual_version(int): actual version that the given version supports/expects
+
+    Returns:
+        func: decorated function for which the version will be checked
+    """
+    def inner_wrapper(func):
+        """Inner wrapper of the function"""
+        def wrapper(*args, **kwargs):
+            """Wrapper function of the @p func"""
+            assert version_spec == actual_version and "function {} expects format version {}".format(
+                func.__name__, version_spec
+            )
+            return func(*args, **kwargs)
+        return wrapper
+    return inner_wrapper
+
+
+def static_variables(**kwargs):
+    """
+    Arguments:
+        kwargs(dict): keyword with static variables and their values
+
+    Returns:
+        func: decorated function for which static variables are set
+    """
+    def inner_wrapper(func):
+        """Inner wrapper of the function"""
+        for key, value in kwargs.items():
+            setattr(func, key, value)
+        return func
+    return inner_wrapper

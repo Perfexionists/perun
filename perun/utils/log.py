@@ -1,9 +1,10 @@
 """Set of helper function for logging and printing warnings or errors"""
 
 import logging
+import termcolor
 
 __author__ = 'Tomas Fiedor'
-VERBOSITY = 2
+VERBOSITY = 0
 
 # Enum of verbosity levels
 VERBOSE_DEBUG = 2
@@ -47,13 +48,31 @@ def msg_to_file(msg, msg_verbosity, log_level=logging.INFO):
     _log_msg(logging.log, msg, msg_verbosity, log_level)
 
 
+def info(msg):
+    """
+    Arguments:
+        msg(str): info message that will be printed only when there is at least lvl1 verbosity
+    """
+    msg_to_stdout(msg, VERBOSE_INFO)
+
+
+def quiet_info(msg):
+    """
+    Arguments:
+        msg(str): info message to the stream that will be always shown
+    """
+    msg_to_stdout(msg, VERBOSE_RELEASE)
+
+
 def error(msg, recoverable=False):
     """
     Arguments:
         msg(str): error message printe to standard output
         recoverable(bool): whether we can recover from the error
     """
-    print("perun error: {}".format(msg))
+    print(termcolor.colored(
+        "fatal: {}".format(msg)
+    , 'red'))
 
     # If we cannot recover from this error, we end
     if not recoverable:

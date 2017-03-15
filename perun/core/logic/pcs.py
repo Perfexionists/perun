@@ -26,6 +26,12 @@ class PCS(object):
         """
         assert os.path.isdir(fullpath)
         self.path = os.path.join(fullpath, '.perun')
+        self.vcs_type = config.get_key_from_config(config.local(self.path), 'vcs.type')
+        self.vcs_path = os.path.abspath(os.path.join(
+            self.path, os.path.join(
+                config.get_key_from_config(config.local(self.path), 'vcs.url'), ".git"
+            )
+        ))
 
     def local_config(self):
         """Get local config
@@ -58,3 +64,10 @@ class PCS(object):
         """
         object_directory = os.path.join(self.path, "objects")
         return object_directory
+
+    def get_job_directory(self):
+        """
+        Returns:
+            directory: directory, where job outputs are stored
+        """
+        return os.path.join(self.path, "jobs")

@@ -11,3 +11,8 @@ class InvalidParameterException(Exception):
 class MissingConfigSectionException(Exception):
     """Raised when the section in config is missing"""
     pass
+
+
+class EntryNotFoundException(Exception):
+    """Raised when the looked up entry is not within the index"""
+    pass
