@@ -12,7 +12,7 @@
 
 import sys
 import subprocess
-import complexity_exceptions as exceptions
+import perun.utils.exceptions as exceptions
 import collections
 
 # Symbol table columns constants
@@ -112,10 +112,8 @@ def translate_mangled_symbols(mangled_names):
     demangled_names = demangle.communicate(input=mangled_str.encode(sys.stdout.encoding))[0]
     demangle.stdout.close()
     demangled_names = demangled_names.decode(sys.stdout.encoding).split('\n')
-    try:
+    if '' in demangled_names:
         demangled_names.remove('')
-    except ValueError:
-        pass
 
     # Map the names
     return dict(zip(mangled_names, demangled_names))

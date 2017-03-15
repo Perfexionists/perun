@@ -11,7 +11,7 @@ import collections
 import makefiles
 import symbols
 import configurator
-import complexity_exceptions
+import perun.utils.exceptions as exceptions
 
 
 # Test configuration dictionary
@@ -90,7 +90,7 @@ def before(**kwargs):
         return 0, _collector_status_msg[0], dict(kwargs)
     # The "expected" exception types
     except (OSError, ValueError, subprocess.CalledProcessError,
-            UnicodeError, complexity_exceptions.UnexpectedPrototypeSyntaxError) as e:
+            UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as e:
         return 1, repr(e), kwargs
 
 
