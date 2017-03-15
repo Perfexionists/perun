@@ -172,9 +172,9 @@ def _get_collector_executable_and_dir(collector_exec_path):
 
 
 # Test run
-code, msg, config = before(**config)
-print('code: {0}, msg: {1}\n'.format(code, msg))
-code, msg, config = collect(**config)
-print('code: {0}, msg: {1}\n'.format(code, msg))
-code, msg, config = after(**config)
-print('code: {0}, msg: {1}\n'.format(code, msg))
+# code, msg, config = before(**config)
+# print('code: {0}, msg: {1}\n'.format(code, msg))
+# code, msg, config = collect(**config)
+# print('code: {0}, msg: {1}\n'.format(code, msg))
+# code, msg, config = after(**config)
+# print('code: {0}, msg: {1}\n'.format(code, msg))
