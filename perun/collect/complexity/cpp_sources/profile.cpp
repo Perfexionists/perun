@@ -193,7 +193,7 @@ void __cyg_profile_func_exit (void *func, void *caller)
         }
 
         // Create the instrumentation record
-        size_t struct_size = Get_size_record(__builtin_frame_address(1));
+        size_t struct_size = _profapi_get_size_record(__builtin_frame_address(1));
         trace.Create_instrumentation_record(func, 'o', now, struct_size);
     }
 }

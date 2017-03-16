@@ -5,15 +5,15 @@
 int main() {
 
     SLList mylist;
-    Register_size_address(&mylist, false, &mylist.size);
+    _profapi_register_size_address(&mylist, false, &mylist.size);
     SLList_init(&mylist);
     for(int i = 0; i < 10; i++) {
-        Using_size_address(&mylist);
+        _profapi_using_size_address(&mylist);
         SLList_insert(&mylist, i + 1);
     }
-    Using_size_address(&mylist);
+    _profapi_using_size_address(&mylist);
     SLList_search(&mylist, 3);
-    Using_size_address(&mylist);
+    _profapi_using_size_address(&mylist);
     SLList_destroy(&mylist);
 
     SLListcls clslist;
