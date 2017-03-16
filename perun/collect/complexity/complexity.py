@@ -5,43 +5,14 @@
 
 
 import os
+import sys
 import subprocess
 import collections
 
-import makefiles
-import symbols
-import configurator
+import perun.collect.complexity.makefiles as makefiles
+import perun.collect.complexity.symbols as symbols
+import perun.collect.complexity.configurator as configurator
 import perun.utils.exceptions as exceptions
-
-
-# Test configuration dictionary
-config = {
-    'target_dir': './target',
-    'files': [
-        '../cpp_sources/test_workload/main.cpp',
-        '../cpp_sources/test_workload/SLList.h',
-        '../cpp_sources/test_workload/SLListcls.h'
-    ],
-    'rules': [
-        'func1',
-        'SLList_init',
-        'SLList_insert',
-        'SLList_search',
-        'SLList_destroy',
-        'SLListcls',
-        '~Sllistcls',
-        'Insert',
-        'Remove',
-        'Search'
-    ],
-    'file-name': 'trace.log',
-    'init-storage-size': 20000,
-    'sampling': [
-        {'func': 'SLList_insert', 'sample': 1},
-        {'func': 'func1', 'sample': 1},
-    ],
-    'recursion': 'no'
-}
 
 
 # The profiling record template
@@ -75,14 +46,19 @@ def before(**kwargs):
     """
     try:
         # Create the configuration cmake and build the configuration executable
+        print('Building the configuration executable...')
         cmake_path = makefiles.create_config_cmake(kwargs['target_dir'], kwargs['files'])
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
+        print('Build complete.')
         # Extract some configuration data using the configuration executable
+        print('Extracting the configuration...')
         function_sym = symbols.extract_symbols(exec_path)
         include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, kwargs['rules'])
         # Create the collector cmake and build the collector executable
+        print('Building the collector executable...')
         cmake_path = makefiles.create_collector_cmake(kwargs['target_dir'], kwargs['files'], exclude_list)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
+        print('Build complete.\n')
         # Create the internal configuration file
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
 
@@ -105,8 +81,10 @@ def collect(**kwargs):
                string as a status message, mainly for error states
                dict of modified kwargs with bin value representing the executable
     """
+    print('Running the collector...')
     collector_dir, collector_exec = _get_collector_executable_and_dir(kwargs['bin'])
     return_code = subprocess.call(('./' + collector_exec), cwd=collector_dir)
+    print('Done.\n')
     return return_code, _collector_status_msg[return_code], dict(kwargs)
 
 
@@ -122,6 +100,7 @@ def after(**kwargs):
                dict of modified kwargs with bin value representing the executable
     """
     # Get the trace log path
+    print('Starting the post-processing phase...')
     pos = kwargs['bin'].rfind('/')
     path = kwargs['bin'][:pos + 1] + kwargs['file-name']
     address_map = symbols.extract_symbol_address_map(kwargs['bin'])
@@ -147,6 +126,7 @@ def after(**kwargs):
                 err_msg = 'Call stack error: ' + record.func + ', call stack top: ' + call_stack[-1].func
                 return 1, err_msg, kwargs
     kwargs['profile'] = resources
+    print('Done.\n')
     return 0, _collector_status_msg[0], kwargs
 
 
@@ -171,10 +151,49 @@ def _get_collector_executable_and_dir(collector_exec_path):
     return collector_dir, collector_exec
 
 
-# Test run
-# code, msg, config = before(**config)
-# print('code: {0}, msg: {1}\n'.format(code, msg))
-# code, msg, config = collect(**config)
-# print('code: {0}, msg: {1}\n'.format(code, msg))
-# code, msg, config = after(**config)
-# print('code: {0}, msg: {1}\n'.format(code, msg))
+# Prepare the paths for test run to work correctly for everyone
+# Suppose there is no perun directory above the project one
+# Test config
+
+# _dir_name = os.path.dirname(__file__)
+# _base_pos = _dir_name.find('/perun')
+# if _base_pos == -1:
+#     print("Module not located in perun directory, cannot do the test run!", file=sys.stderr)
+# else:
+#     _complexity_dir = _dir_name[:_base_pos] + '/perun/perun/collect/complexity/'
+# 
+#     # Test configuration dictionary
+#     _config = {
+#         'target_dir': _complexity_dir + 'target',
+#         'files': [
+#             _complexity_dir + 'cpp_sources/test_workload/main.cpp',
+#             _complexity_dir + 'cpp_sources/test_workload/SLList.h',
+#             _complexity_dir + 'cpp_sources/test_workload/SLListcls.h'
+#         ],
+#         'rules': [
+#             'func1',
+#             'SLList_init',
+#             'SLList_insert',
+#             'SLList_search',
+#             'SLList_destroy',
+#             'SLListcls',
+#             '~Sllistcls',
+#             'Insert',
+#             'Remove',
+#             'Search'
+#         ],
+#         'file-name': 'trace.log',
+#         'init-storage-size': 20000,
+#         'sampling': [
+#             {'func': 'SLList_insert', 'sample': 1},
+#             {'func': 'func1', 'sample': 1},
+#         ],
+#     }
+# 
+#     # Test run
+#     code, msg, _config = before(**_config)
+#     print('code: {0}, msg: {1}\n'.format(code, msg))
+#     code, msg, _config = collect(**_config)
+#     print('code: {0}, msg: {1}\n'.format(code, msg))
+#     code, msg, _config = after(**_config)
+#     print('code: {0}, msg: {1}\n'.format(code, msg))
