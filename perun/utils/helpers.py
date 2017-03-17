@@ -5,6 +5,14 @@ import collections
 
 __author__ = 'Tomas Fiedor'
 
+# Config specific constants and helpers
+CONFIG_UNIT_ATTRIBUTES = {
+    'collectors': ['name', 'pargs', 'kwargs'],
+    'postprocessors': ['name', 'pargs', 'kwargs'],
+    'bins': None,
+    'workloads': None
+}
+
 # Other constants
 MAXIMAL_LINE_WIDTH = 60
 TEXT_ATTRS = []

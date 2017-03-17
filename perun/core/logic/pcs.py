@@ -27,7 +27,7 @@ class PCS(object):
         assert os.path.isdir(fullpath)
         self.path = os.path.join(fullpath, '.perun')
         self.vcs_type = config.get_key_from_config(config.local(self.path), 'vcs.type')
-        self.vcs_url = os.path.abspath(os.path.join(
+        self.vcs_path = os.path.abspath(os.path.join(
             self.path, os.path.join(
                 config.get_key_from_config(config.local(self.path), 'vcs.url'), ".git"
             )

@@ -101,7 +101,7 @@ def lookup_minor_version(func):
             # note: since tuples are immutable we have to do this workaround
             arg_list = list(args)
             arg_list[minor_version_position] = vcs.get_minor_head(
-                pcs.vcs_type, pcs.vcs_url)
+                pcs.vcs_type, pcs.vcs_path)
             args = tuple(arg_list)
         return func(pcs, *args, **kwargs)
 
@@ -208,17 +208,10 @@ def init(dst, **kwargs):
     """
     perun_log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
 
-    # init the wrapping repository as well
-    if kwargs['vcs_type'] is not None:
-        if not vcs.init(kwargs['vcs_type'], kwargs['vcs_url'], kwargs['vcs_params']):
-            perun_log.error("Could not initialize empty {} repository at {}".format(
-                kwargs['vcs_type'], kwargs['vcs_url']
-            ))
-
     # Construct local config
     vcs_config = {
         'vcs': {
-            'url': kwargs['vcs_url'] or "../",
+            'url': kwargs['vcs_path'] or "../",
             'type': kwargs['vcs_type'] or 'pvcs'
         }
     }
@@ -235,6 +228,15 @@ def init(dst, **kwargs):
     if not is_reinit:
         global_config = perun_config.shared()
         perun_config.append_key_at_config(global_config, 'pcs', {'dir': dst})
+
+    # Init the wrapping repository as well
+    if kwargs['vcs_type'] is not None:
+        if not kwargs['vcs_path']:
+            kwargs['vcs_path'] = PCS(dst).vcs_path
+        if not vcs.init(kwargs['vcs_type'], kwargs['vcs_path'], kwargs['vcs_params']):
+            perun_log.error("Could not initialize empty {} repository at {}".format(
+                kwargs['vcs_type'], kwargs['vcs_path']
+            ))
 
 
 @pass_pcs
@@ -368,7 +370,7 @@ def log(pcs, minor_version, **kwargs):
         print_short_minor_info_header()
 
     # Walk the minor versions and print them
-    for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_url, minor_version)[::-1]:
+    for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, minor_version):
         if kwargs['short']:
             print_short_minor_version_info(pcs, minor)
         else:
@@ -410,7 +412,7 @@ def print_short_minor_version_info(pcs, minor_version):
 
         print(termcolor.colored(" profiles)", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
     else:
-        print(termcolor.colored('---no-profiles----', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+        print(termcolor.colored('---no--profiles---', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
 
     short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
     if len(short_description) > MAXIMAL_LINE_WIDTH:
@@ -479,13 +481,13 @@ def status(pcs, **kwargs):
         kwargs(dict): dictionary of keyword arguments
     """
     # Get major head and print the status.
-    major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_url)
+    major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_path)
     print("On major version {} ".format(
         termcolor.colored(major_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ), end='')
 
     # Print the index of the current head
-    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_url)
+    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path)
     print("(minor version: {})".format(
         termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ))
@@ -493,7 +495,7 @@ def status(pcs, **kwargs):
     # Print in long format, the additional information about head commit
     print("")
     if not kwargs['short']:
-        minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_url, minor_head)
+        minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_head)
         print_minor_version_info(minor_version)
 
     # Print profiles
@@ -643,14 +645,29 @@ def load_job_info_from_config(pcs):
     Returns:
         dict: dictionary with bins, args, workloads, collectors and postprocessors
     """
-    # TODO: For now
+    def join_command(command):
+        """
+        Arguments:
+            command(dict): command we are joining (containing 'name' and 'params')
+
+        Returns:
+            str: joined string
+        """
+        if 'params' in command.keys():
+            return " ".join([command['name'], str(command['params'])])
+        else:
+            return command['name']
+
+    local_config = pcs.local_config().data
+
     info = {
-        'bin': ['echo'],
-        'workload': ['hello'],
-        'postprocessor': [],
-        'collector': ['time'],
-        'args': [""]
+        'bin': local_config['bins'],
+        'workload': local_config['workloads'],
+        'postprocessor': [join_command(post) for post in local_config['postprocessors']],
+        'collector': [join_command(collect) for collect in local_config['collectors']],
+        'args': local_config['args'] if 'args' in local_config.keys() else []
     }
+
     return info
 
 
@@ -691,7 +708,7 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
                                         COLLECT_PHASE_POSTPROCESS)
 
                     # Run the postprocessor and check if the profile was successfully postprocessed
-                    post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job)
+                    post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job, prof)
                     if post_status != PostprocessStatus.OK:
                         perun_log.error(post_msg)
                     print("Successfully postprocessed data by {}".format(postprocessor))
