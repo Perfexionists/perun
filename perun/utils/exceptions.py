@@ -16,3 +16,9 @@ class MissingConfigSectionException(Exception):
 class EntryNotFoundException(Exception):
     """Raised when the looked up entry is not within the index"""
     pass
+
+
+class UnexpectedPrototypeSyntaxError(Exception):
+    """ Raised when the function prototype syntax is somehow different than expected """
+    pass
+
