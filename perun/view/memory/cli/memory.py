@@ -2,22 +2,17 @@
 import sys
 import getopt
 import json
-from perun.view.memory.cli.flow import get_flow
-from perun.view.memory.cli.top import get_top
-from perun.view.memory.cli.most import get_most
-from perun.view.memory.cli.sum import get_sum
-from perun.view.memory.cli.func import get_func
-import perun.view.memory.cli.heap_map
+import perun.view.memory.cli.interpretations as interpretations
 
 __author__ = 'Radim Podola'
 __supported_short_opts = 'm:hf:t:a'
-__supported_long_opts = ["mode=",
+__supported_long_opts = ("mode=",
                          "help",
                          "from=",
                          'to=',
                          'top=',
                          'all',
-                         "function="]
+                         "function=")
 SUPPORTED_MODES = ("flow", "top", "most", "sum", "func", "heap")
 
 
@@ -132,8 +127,8 @@ def parse_args(argv):
 
     profile = args[0]
 
-    return {"mode": mode, "from": from_time, "to": to_time, "top": top,
-            "all": get_all, "function": function, "profile": profile}
+    return {"mode": mode, "from_time": from_time, "to_time": to_time,
+            "top": int(top), "all": get_all, "function": function}, profile
 
 
 def show():
@@ -141,26 +136,14 @@ def show():
     Returns:
         string: output of the selected interpretation
     """
-    output = None
-
-    args = parse_args(sys.argv[1:])
+    args, profile_name = parse_args(sys.argv[1:])
     mode = args["mode"]
-    top = int(args["top"])
-    with open(args["profile"]) as prof_file:
-        profile = json.load(prof_file)
+    with open(profile_name) as prof_json:
+        profile = json.load(prof_json)
 
-    if mode == "flow":
-        output = get_flow(profile, args["from"], args["to"])
-    elif mode == "top":
-        output = get_top(profile, top)
-    elif mode == "most":
-        output = get_most(profile, top)
-    elif mode == "sum":
-        output = get_sum(profile, top)
-    elif mode == "func":
-        output = get_func(profile, args["function"], args["all"])
-    elif mode == "heap":
-        perun.view.memory.cli.heap_map.print_heap_map(profile)
+    inter_func = getattr(interpretations, "get_%s" % mode)
+    if inter_func:
+        output = inter_func(profile, **args)
     else:
         assert False
 

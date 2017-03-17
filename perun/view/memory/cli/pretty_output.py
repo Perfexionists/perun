@@ -1,6 +1,4 @@
-"""This module implement the flow interpretation of the profile"""
-from decimal import Decimal
-
+""" This module implements the modifying output functions """
 __author__ = 'Radim Podola'
 
 
@@ -35,7 +33,7 @@ def get_pretty_resources(allocations, unit, indent=2):
         indent(int): indentation
 
     Returns:
-        string: modified output
+        string: modified output, stripped of following empty lines
     """
     output = ''
 
@@ -52,43 +50,25 @@ def get_pretty_resources(allocations, unit, indent=2):
 
         output += '\n'
 
-    return output
+    return output.strip()
 
 
-def get_flow(profile, from_time, to_time):
-    """ Get allocations flow
-
-        Parse the profile records, cut the specified timeline,
-        and also modify the output to be pretty
-        to write into console. Only number of top
-        records are processed.
+def get_pretty_allocations(summary, unit):
+    """ Modify the allocations for pretty print
     Arguments:
-        profile(dict): memory profile with records
-        from_time(int): starting of timeline
-        to_time(int): ending of timeline
+        summary(list): allocations records
+        unit(string): unit of summary factor
 
     Returns:
         string: modified output
     """
-    # parsing unit used for amount of memory
-    memory_unit = profile['header']['units']['memory']
-    snapshots = profile['snapshots']
-    allocations = []
+    output = ''
+    for i, item in enumerate(summary):
 
-    # collecting allocations records from profile fulfilling time requirements
-    for snapshot in snapshots:
-        if from_time:
-            if Decimal(from_time) > Decimal(snapshot['time']):
-                continue
-        if to_time:
-            if Decimal(to_time) < Decimal(snapshot['time']):
-                continue
-        allocations.extend(snapshot['resources'])
-
-    # free is not taken as allocation function
-    allocations = [a for a in allocations if a['subtype'] != 'free']
-
-    output = get_pretty_resources(allocations, memory_unit, 3)
+        output += '#' + str(i + 1) + ' ' + item['uid']['function'] + ': '
+        output += str(item['sum']) + unit
+        output += ' in ' + item['uid']['source']
+        output += '\n\n'
 
     return output.strip()
 
