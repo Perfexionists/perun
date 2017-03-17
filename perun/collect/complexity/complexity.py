@@ -32,6 +32,9 @@ _collector_subtypes = {
     'delta': 'time delta'
 }
 
+# The time conversion constant
+_MICRO_TO_SECONDS = 1000000.0
+
 
 def before(**kwargs):
     """ Builds, links and configures the complexity collector executable
@@ -105,29 +108,41 @@ def after(**kwargs):
     path = kwargs['bin'][:pos + 1] + kwargs['file-name']
     address_map = symbols.extract_symbol_address_map(kwargs['bin'])
 
-    resources = []
-    call_stack = []
+    resources, call_stack = [], []
+    profile_start, profile_end = 0, 0
+
     with open(path, 'r') as profile:
+
+        is_first_line = True
         for line in profile:
             # Split the line into action, function name, timestamp and size
             record = _ProfileRecord(*line.split())
-            if record.action == 'i':
-                call_stack.append(record)
-            elif call_stack[-1].action == 'i' and call_stack[-1].func == record.func:
-                # Function exit, match with the function enter to create resources record
-                matching_record = call_stack.pop()
-                resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
-                                  'uid': address_map[record.func],
-                                  'type': 'mixed',
-                                  'subtype': _collector_subtypes['delta'],
-                                  'structure-unit-size': int(record.size)})
-            else:
-                # Call stack function frames not matching
-                err_msg = 'Call stack error: ' + record.func + ', call stack top: ' + call_stack[-1].func
+
+            # Process the record
+            if _process_file_record(record, call_stack, resources, address_map) != 0:
+                # Stack error
+                err_msg = 'Call stack error, record: ' + record.func + ', ' + record.action
+                if not call_stack:
+                    err_msg += ', stack top: empty'
+                else:
+                    err_msg += ', stack top: ' + call_stack[-1].func + ', ' + call_stack[-1].action
                 return 1, err_msg, kwargs
-    kwargs['profile'] = resources
+
+            # Get the first and last record timestamps to determine the profiling time
+            profile_end = record.timestamp
+            if is_first_line:
+                is_first_line = False
+                profile_start = record.timestamp
+
+    # Update the profile dictionary
+    kwargs['profile'] = {
+        'global': {
+            'time': str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + 's',
+            'resources': resources
+        }
+    }
     print('Done.\n')
-    return 0, _collector_status_msg[0], kwargs
+    return 0, _collector_status_msg[0], dict(kwargs)
 
 
 def _get_collector_executable_and_dir(collector_exec_path):
@@ -151,6 +166,35 @@ def _get_collector_executable_and_dir(collector_exec_path):
     return collector_dir, collector_exec
 
 
+def _process_file_record(record, call_stack, resources, address_map):
+    """ Processes the next profile record and tries to pair it with stack record if possible
+
+    Arguments:
+        record(namedtuple): the _ProfileRecord tuple containing the record data
+        call_stack(list): the call stack with file records
+        resources(list): the list of resource dictionaries
+        address_map(dict): the function address: demangled name map
+
+    Returns:
+        int: the status code, nonzero values for errors
+    """
+    if record.action == 'i':
+        call_stack.append(record)
+        return 0
+    elif call_stack and call_stack[-1].action == 'i' and call_stack[-1].func == record.func:
+        # Function exit, match with the function enter to create resources record
+        matching_record = call_stack.pop()
+        resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
+                          'uid': address_map[record.func],
+                          'type': 'mixed',
+                          'subtype': _collector_subtypes['delta'],
+                          'structure-unit-size': int(record.size)})
+        return 0
+    else:
+        # Call stack function frames not matching
+        return 1
+
+
 # Prepare the paths for test run to work correctly for everyone
 # Suppose there is no perun directory above the project one
 # Test config
@@ -161,7 +205,7 @@ def _get_collector_executable_and_dir(collector_exec_path):
 #     print("Module not located in perun directory, cannot do the test run!", file=sys.stderr)
 # else:
 #     _complexity_dir = _dir_name[:_base_pos] + '/perun/perun/collect/complexity/'
-# 
+#
 #     # Test configuration dictionary
 #     _config = {
 #         'target_dir': _complexity_dir + 'target',
@@ -189,7 +233,7 @@ def _get_collector_executable_and_dir(collector_exec_path):
 #             {'func': 'func1', 'sample': 1},
 #         ],
 #     }
-# 
+#
 #     # Test run
 #     code, msg, _config = before(**_config)
 #     print('code: {0}, msg: {1}\n'.format(code, msg))
