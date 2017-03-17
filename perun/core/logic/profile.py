@@ -31,8 +31,11 @@ def generate_profile_name(job):
     Returns:
         str: string for the given profile that will be stored
     """
-    return "{0.bin}-{0.collector}-{0.workload}-{1}.perf".format(
-        job, time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
+    return "{0}-{1}-{2}-{3}.perf".format(
+        os.path.split(job.bin)[-1],
+        job.collector,
+        os.path.split(job.workload)[-1],
+        time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
     )
 
 
