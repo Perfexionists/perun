@@ -1,6 +1,6 @@
 """This module provides methods for filtering the profile"""
 import perun.collect.memory.parsing as parsing
-
+import json
 __author__ = "Radim Podola"
 
 
@@ -46,13 +46,13 @@ def remove_allocators(profile):
 
 
 @validate_profile
-def trace_filter(profile, source=(), function=()):
+def trace_filter(profile, function, source):
     """ Remove records in trace section matching source or function
     Arguments:
         profile(dict): dictionary including "snapshots" and
                        "global" sections in the profile
+        function(list): list of "function" records to omit
         source(list): list of "source" records to omit
-        function(list):
 
     Returns:
         dict: updated profile
@@ -77,19 +77,21 @@ def trace_filter(profile, source=(), function=()):
 
 
 @validate_profile
-def function_filter(profile, function):
-    """ Remove record of specified function out of the profile
+def allocation_filter(profile, function, source):
+    """ Remove record of specified function or source code out of the profile
     Arguments:
         profile(dict): dictionary including "snapshots" and
                        "global" sections in the profile
-        function(string): function's name to remove record of
+        function(list): function's name to remove record of
+        source(list): source's name to remove record of
 
     Returns:
         dict: updated profile
     """
     def determinate(uid):
         """ Determinate expression """
-        return not uid or uid['function'] != function
+        return not uid or ((uid['function'] not in function) and
+               (uid['source'] not in source))
 
     snapshots = profile['snapshots']
     for snapshot in snapshots:
