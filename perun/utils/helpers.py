@@ -5,6 +5,9 @@ import collections
 
 __author__ = 'Tomas Fiedor'
 
+# File system specific
+READ_CHUNK_SIZE = 1024
+
 # Config specific constants and helpers
 CONFIG_UNIT_ATTRIBUTES = {
     'collectors': ['name', 'pargs', 'kwargs'],
@@ -62,10 +65,10 @@ COLLECT_PHASE_ATTRS_HIGH = []
 
 
 class CollectStatus(Enum):
-    OK = 1
-    ERROR = 2
+    OK = 0
+    ERROR = 1
 
 
 class PostprocessStatus(Enum):
-    OK = 1
-    ERROR = 2
+    OK = 0
+    ERROR = 1
