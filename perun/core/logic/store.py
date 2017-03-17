@@ -16,7 +16,8 @@ import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 
 from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
-    INDEX_NUMBER_OF_ENTRIES_OFFSET, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES
+    INDEX_NUMBER_OF_ENTRIES_OFFSET, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
+    READ_CHUNK_SIZE
 from perun.utils.exceptions import EntryNotFoundException
 
 __author__ = 'Tomas Fiedor'
@@ -115,7 +116,7 @@ def peek_profile_type(profile_name):
         str: type of the profile
     """
     with open(profile_name, 'rb') as profile_handle:
-        profile_chunk = read_and_deflate_chunk(profile_handle, 64)
+        profile_chunk = read_and_deflate_chunk(profile_handle, READ_CHUNK_SIZE)
         prefix, profile_type, *_ = profile_chunk.split(" ")
 
         # Return that the stored profile is malformed
