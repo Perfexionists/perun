@@ -86,3 +86,18 @@ def get_module(module_name):
         get_module.cache[module_name] = importlib.import_module(module_name)
     return get_module.cache[module_name]
 get_module.cache = {}
+
+
+def merge_dictionaries(lhs, rhs):
+    """
+    Arguments:
+        lhs(dict): left operand of the dictionary merge
+        rhs(dict): right operand of the dictionary merge
+
+    Returns:
+        dict: merged dictionary of the lhs and rhs
+    """
+    print(lhs, rhs)
+    res = lhs.copy()
+    res.update(rhs)
+    return res
