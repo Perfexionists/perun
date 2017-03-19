@@ -136,6 +136,7 @@ def show():
     Returns:
         string: output of the selected interpretation
     """
+    output = ''
     args, profile_name = parse_args(sys.argv[1:])
     mode = args["mode"]
     with open(profile_name) as prof_json:
@@ -143,7 +144,10 @@ def show():
 
     inter_func = getattr(interpretations, "get_%s" % mode)
     if inter_func:
-        output = inter_func(profile, **args)
+        try:
+            output = inter_func(profile, **args)
+        except Exception as e:
+            err_exit(str(e))
     else:
         assert False
 
