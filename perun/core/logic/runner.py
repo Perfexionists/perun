@@ -1,5 +1,6 @@
 """Collection of functions for running collectors and postprocessors"""
 
+import perun.utils as utils
 import perun.utils.log as perun_log
 
 from perun.utils import get_module
@@ -32,7 +33,7 @@ def run_all_phases_for(runner, runner_type, runner_params):
         if phase_function:
             ret_val, ret_msg, updated_params = phase_function(**runner_params)
             runner_params.update(updated_params or {})
-            if ret_val != ok_status:
+            if ret_val != ok_status.value:
                 perun_log.error("error while {}{} phase: {}".format(
                     phase, ("_" + runner_verb)*(phase != runner_verb), ret_msg
                 ))
@@ -49,32 +50,32 @@ def run_all_phases_for(runner, runner_type, runner_params):
     return runner_params['profile']
 
 
-def run_collector(collector_name, job):
+def run_collector(collector, job):
     """Run the job of colelctor of the given name.
 
     Tries to look up the module containinig the collector specified by the
     collector name, and then runs it with the parameters and returns collected profile.
 
     Arguments:
-        collector_name(str): name of the called collector
+        collector(Unit): object representing the collector
         job(Job): additional information about the running job
 
     Returns:
         (int, str): status of the collection, string message of the status
     """
     try:
-        collector = get_module('.'.join(['perun.collect', collector_name, collector_name]))
+        collector_module = get_module('perun.collect.{0}.{0}'.format(collector.name))
     except ImportError:
-        return CollectStatus.ERROR, "{} does not exist".format(collector_name)
+        return CollectStatus.ERROR, "{} does not exist".format(collector.name)
 
     # First init the collector by running the before phases (if it has)
-    job_params = dict(job._asdict())
-    profile = run_all_phases_for(collector, 'collector', job_params)
+    job_params = utils.merge_dictionaries(job._asdict(), collector.params)
+    profile = run_all_phases_for(collector_module, 'collector', job_params)
 
     return CollectStatus.OK, "Profile collected", profile
 
 
-def run_postprocessor(postprocessor_name, job, prof):
+def run_postprocessor(postprocessor, job, prof):
     """Run the job of postprocess of the given name.
 
     Tries to look up the module containinig the postprocessor specified by the
@@ -82,7 +83,7 @@ def run_postprocessor(postprocessor_name, job, prof):
     profile.
 
     Arguments:
-        postprocessor_name(str): name of the postprocessor that will be run
+        postprocessor(Unit): dictionary representing the postprocessor
         job(Job): additional information about the running job
         prof(dict): dictionary with profile
 
@@ -90,15 +91,12 @@ def run_postprocessor(postprocessor_name, job, prof):
         (int, str): status of the collection, string message of the status
     """
     try:
-        postprocessor = get_module('.'.join([
-            'perun.postprocess', postprocessor_name, postprocessor_name
-        ]))
+        postprocessor = get_module('perun.postprocess.{0}.{0}'.format(postprocessor.name))
     except ImportError:
-        return PostprocessStatus.ERROR, "{} does not exist".format(postprocessor_name)
+        return PostprocessStatus.ERROR, "{} does not exist".format(postprocessor.name)
 
     # First init the collector by running the before phases (if it has)
-    job_params = dict(job._asdict())
-    job_params.update({'profile': prof})
+    job_params = utils.merge_dict_range(job._asdict(), {'profile': prof}, postprocessor.params)
     profile = run_all_phases_for(postprocessor, 'postprocessor', job_params)
 
     return PostprocessStatus.OK, "Profile postprocessed", profile

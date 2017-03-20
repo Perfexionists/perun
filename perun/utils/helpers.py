@@ -55,6 +55,7 @@ RAW_ATTRS = []
 
 # Job specific
 Job = collections.namedtuple("Job", "collector postprocessors bin workload args")
+Unit = collections.namedtuple("Unit", "name params")
 COLLECT_PHASE_BIN = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'

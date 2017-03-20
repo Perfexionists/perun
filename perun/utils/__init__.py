@@ -89,7 +89,8 @@ get_module.cache = {}
 
 
 def merge_dictionaries(lhs, rhs):
-    """
+    """Helper function for merging two dictionaries to one to be used as oneliner.
+
     Arguments:
         lhs(dict): left operand of the dictionary merge
         rhs(dict): right operand of the dictionary merge
@@ -97,7 +98,22 @@ def merge_dictionaries(lhs, rhs):
     Returns:
         dict: merged dictionary of the lhs and rhs
     """
-    print(lhs, rhs)
     res = lhs.copy()
     res.update(rhs)
     return res
+
+
+def merge_dict_range(*args):
+    """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
+
+    Arguments:
+        args(dict): list of dictionaries
+
+    Returns:
+        dict: one merged dictionary
+    """
+    res = {}
+    for dictionary in args:
+        assert type(dictionary).__name__ == 'dict'
+        res.update(dictionary)
+    return dictionary
