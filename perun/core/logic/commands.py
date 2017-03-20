@@ -10,6 +10,7 @@ import os
 import termcolor
 from colorama import init
 
+import perun.utils as utils
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.core.logic.config as perun_config
@@ -25,7 +26,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, \
-    CollectStatus, PostprocessStatus
+    CollectStatus, PostprocessStatus, Unit
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -544,7 +545,7 @@ def show(pcs, profile_name, minor_version, **kwargs):
         view.show(kwargs['format'], loaded_profile)
 
 
-def construct_job_matrix(bin, args, workload, collector, postprocessor):
+def construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs):
     """Constructs the job matrix represented as dictionary.
 
     Reads the local of the current PCS and constructs the matrix of jobs
@@ -571,14 +572,38 @@ def construct_job_matrix(bin, args, workload, collector, postprocessor):
         workload(list): list of workloads
         collector(list): list of collectors
         postprocessor(list): list of postprocessors
+        kwargs(dict): additional parameters issued from the command line
 
     Returns:
         dict, int: dict of jobs in form of {bins: {workloads: {Job}}}, number of jobs
     """
+    def construct_unit(unit, unit_type, ukwargs):
+        """Helper function for constructing the {'name', 'params'} objects for collectors and posts.
+
+        Arguments:
+            unit(str): name of the unit (collector/postprocessor)
+            unit_type(str): name of the unit type (collector or postprocessor)
+            ukwargs(dict): dictionary of additional parameters
+
+        Returns:
+            dict: dictionary of the form {'name', 'params'}
+        """
+        # Get the dictionaries for from string and from file params obtained from commandline
+        from_string_dict = ukwargs[unit_type + "_params_from_string"].get(unit, {})
+        from_file_dict = ukwargs[unit_type + "_params_from_file"].get(unit, {})
+
+        # Construct the object with name and parameters
+        return Unit(unit, utils.merge_dictionaries(from_file_dict, from_string_dict))
+
+    # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
+    collector_pairs = map(lambda c: construct_unit(c, 'collector', kwargs), collector)
+    postprocessors = list(map(lambda p: construct_unit(p, 'postprocessor', kwargs), postprocessor))
+
+    # Construct the actual job matrix
     matrix = {
         b: {
             w: [
-                Job(c, postprocessor, b, w, a) for c in collector for a in args or ['']
+                Job(c, postprocessors, b, w, a) for c in collector_pairs for a in args or ['']
             ] for w in workload
         } for b in bin
     }
@@ -623,7 +648,7 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
 
 
 @pass_pcs
-def run_single_job(pcs, bin, args, workload, collector, postprocessor):
+def run_single_job(pcs, bin, args, workload, collector, postprocessor, **kwargs):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
@@ -632,8 +657,10 @@ def run_single_job(pcs, bin, args, workload, collector, postprocessor):
         workload(list): list of workloads
         collector(list): list of collectors
         postprocessor(list): list of postprocessors
+        kwargs(dict): dictionary of additional params for postprocessor and collector
     """
-    job_matrix, number_of_jobs = construct_job_matrix(bin, args, workload, collector, postprocessor)
+    job_matrix, number_of_jobs = \
+        construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs)
     run_jobs(pcs, job_matrix, number_of_jobs)
 
 
@@ -653,10 +680,7 @@ def load_job_info_from_config(pcs):
         Returns:
             str: joined string
         """
-        if 'params' in command.keys():
-            return " ".join([command['name'], str(command['params'])])
-        else:
-            return command['name']
+        return Unit(command['name'], command['params'] if 'params' in command.keys() else {})
 
     local_config = pcs.local_config().data
 
@@ -694,7 +718,9 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
             print_current_phase(" - processing workload {}", job_workload, COLLECT_PHASE_WORKLOAD)
             for job in jobs_per_workload:
                 print_job_progress(number_of_jobs)
-                print_current_phase("Collecting data by {}", job.collector,  COLLECT_PHASE_COLLECT)
+                print_current_phase(
+                    "Collecting data by {}", job.collector.name, COLLECT_PHASE_COLLECT
+                )
 
                 # Run the collector and check if the profile was successfully collected
                 collection_status, collection_msg, prof = runner.run_collector(job.collector, job)
@@ -704,14 +730,15 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
 
                 for postprocessor in job.postprocessors:
                     print_job_progress(number_of_jobs)
-                    print_current_phase("Postprocessing profile with {}", postprocessor,
-                                        COLLECT_PHASE_POSTPROCESS)
+                    print_current_phase(
+                        "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
+                    )
 
                     # Run the postprocessor and check if the profile was successfully postprocessed
                     post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job, prof)
                     if post_status != PostprocessStatus.OK:
                         perun_log.error(post_msg)
-                    print("Successfully postprocessed data by {}".format(postprocessor))
+                    print("Successfully postprocessed data by {}".format(postprocessor.name))
 
                 # Store the computed profile inside the job directory
                 full_profile = profile.generate_profile_for_job(prof, job)
