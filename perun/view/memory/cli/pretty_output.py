@@ -35,6 +35,7 @@ def get_pretty_resources(allocations, unit, indent=2):
     Returns:
         string: modified output, stripped of following empty lines
     """
+    margin = 3
     output = ''
 
     for i, item in enumerate(allocations):
@@ -44,7 +45,7 @@ def get_pretty_resources(allocations, unit, indent=2):
 
         if item['trace']:
             output += '\n' + 'by' + '\n'
-            output += get_pretty_call_trace(item['trace'], indent, 3)
+            output += get_pretty_call_trace(item['trace'], indent, margin)
         else:
             output += '\n'
 
