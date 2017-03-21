@@ -1,72 +1,120 @@
 """This module implement the heap map visualization of the profile"""
+import sys
 import json
 import time
 import curses
 import curses.textpad
 
 __author__ = 'Radim Podola'
+MIN_WIDTH = 80
 
 
-INTRO = "HEAP MAP!"
-MENU = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE  [S] SAVE'
-RESIZE_REQ = "Resize screen up, please"
-
-
-def fill_screen_matrix(matrix, snap):
-    """ Fill matrix with corresponding representation of snapshot
+def fill_screen_matrix(matrix, heap, curr):
+    """ Fill the matrix with corresponding representation of snapshot
     Arguments:
         matrix(list): matrix to update
-        snap(dict): snapshot to represent
+        heap(dict): heap map representation
+        curr(int): number of the current snapshot
 
     Returns:
         list: updated matrix
     """
-    pass
+    for row, _ in enumerate(matrix):
+        for col, _ in enumerate(matrix[row]):
+            if row == 20 and col == 15:
+                matrix[row][col] = {'char': '5', 'color': 2}
+            else:
+                matrix[row][col] = {'char': '+', 'color': 1}
 
 
-def matrix_to_string(matrix):
-    """ Transfer matrix to the string representation
+def resize_req_print(window):
+    """ Print resize request to the window
     Arguments:
-        matrix(list): matrix to transfer
-
-    Returns:
-        string: transferred matrix
+        window(any): console window
     """
-    str_matrix = ''
+    resize_req = "Resize screen up, please"
 
-    for x, _ in enumerate(matrix):
-        for y, _ in enumerate(matrix[x]):
-            str_matrix += matrix[x][y]
-        str_matrix += '\n'
-
-    return str_matrix
+    window.addstr(int(curses.LINES / 2),
+                  int((curses.COLS - len(resize_req)) / 2),
+                  resize_req)
 
 
-def create_screen_matrix(rows, cols, symbol='+', border='#'):
-    """ Create a matrix for rows and columns placed in a border
+def intro_print(window):
+    """ Print INTRO screen to the window
+    Arguments:
+        window(any): console window
+    """
+    intro = "HEAP MAP!"
+
+    window.addstr(int(curses.LINES / 2), int((curses.COLS - len(intro))/2),
+                  intro, curses.A_BOLD)
+
+
+def menu_print(window):
+    """ Print menu information to the window
+    Arguments:
+        window(any): console window
+    """
+    menu = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE  [S] SAVE'
+
+    window.addstr(curses.LINES - 1, int((curses.COLS - len(menu)) / 2),
+                  menu, curses.A_BOLD)
+
+
+def info_print(window, max, curr):
+    """ Print the heap information to the window
+    Arguments:
+        window(any): console window
+        max(int): total number of the snapshots
+        curr(int): number of the current snapshot
+    """
+    info_text = 'SNAPSHOT: ' + str(curr) + '/' + str(max)
+    rows, cols = window.getmaxyx()
+    window.addstr(' '*int((cols - len(info_text))/2))
+    window.addstr(info_text, curses.color_pair(11))
+    window.addch('\n')
+
+
+def matrix_print(window, matrix, border='#'):
+    """ Prints the matrix to the window
+    Arguments:
+        window(any): console window
+        matrix(list): matrix to print
+        border(char): border symbol
+    """
+    assert len(border) < 2
+    border_size = len(border)
+
+    if border_size > 0:
+        x_border_size, y_border_size = len(matrix) + 2, len(matrix[0]) + 2
+
+        for row in range(x_border_size):
+            for col in range(y_border_size):
+                if (row in (0, x_border_size-border_size) or
+                            col in (0, y_border_size-border_size)):
+                    window.addch(row, col, border, curses.color_pair(10))
+                else:
+                    field = matrix[row - border_size][col - border_size]
+                    window.addch(row, col, field['char'],
+                                 curses.color_pair(field['color']))
+
+    else:
+        for row, _ in enumerate(matrix):
+            for col, _ in enumerate(matrix[row]):
+                window.addch(row, col, matrix[row][col])
+
+
+def create_screen_matrix(rows, cols):
+    """ Create a matrix for rows and columns
     Arguments:
         rows(int): number of the rows in a matrix
         cols(int): number of the columns in a matrix
-        symbol(char): symbol which is the screen filled with
-        border(char): border symbol
 
     Returns:
-        list: created 2D matrix for rows and cols placed in a border
+        list: created 2D matrix for rows and cols
     """
-    assert len(symbol) == 1
-    assert len(border) == 1
-    border_size = 1
-    x_size, y_size = rows + 2*border_size, cols + 2*border_size
-
     # creating screen matrix x_size X y_size
-    screen_matrix = [[symbol for y in range(y_size)] for x in range(x_size)]
-
-    if border_size > 0:
-        for x in range(x_size):
-            for y in range(y_size):
-                if x in (0, x_size - border_size) or \
-                                y in (0, y_size - border_size):
-                    screen_matrix[x][y] = border
+    screen_matrix = [[None for y in range(cols)] for x in range(rows)]
 
     return screen_matrix
 
@@ -74,49 +122,50 @@ def create_screen_matrix(rows, cols, symbol='+', border='#'):
 def heap_map_prompt(window, heap):
     """ Visualization prompt
     Arguments:
-        window(any): initialized curses screen
+        window(any): initialized console window
         heap(dict): heap map representation
     """
+    curses.start_color()
     curses.use_default_colors()
+    for i in range(0, curses.COLORS):
+        curses.init_pair(i + 1, i, -1)
+    curses.init_pair(10, curses.COLOR_RED, curses.COLOR_RED)
+    curses.init_pair(11, curses.COLOR_YELLOW, -1)
+    curses.init_pair(1, -1, curses.COLOR_GREEN)
+    curses.init_pair(2, -1, curses.COLOR_MAGENTA)
     # set cursor invisible
-    curses.curs_set(0)
+    curses.curs_set(1)
     # INTRO screen
-    window.addstr(int(curses.LINES / 2),
-                  int((curses.COLS - len(INTRO))/2),
-                  INTRO, curses.A_BOLD)
+    intro_print(window)
     window.refresh()
     # just for effect :)
     time.sleep(1)
 
+    curses.update_lines_cols()
     # temporary default values
-    rows, cols = 40, 100
+    rows, cols = 40, curses.COLS-2
     current_snapshot = 1
 
     while True:
         curses.update_lines_cols()
+        if curses.COLS > MIN_WIDTH:
+            cols = curses.COLS - 2
         window.clear()
         try:
+            # creating matrix
             screen_matrix = create_screen_matrix(rows, cols)
-            fill_screen_matrix(screen_matrix,
-                               heap['snapshots'][current_snapshot - 1])
-            window.addstr(curses.LINES - rows - 2 - 1, 0,
-                          matrix_to_string(screen_matrix))
-            map_text = ' SNAPSHOT: ' + str(current_snapshot) + '/' + str(heap['max']) + ' '
-            window.addstr(curses.LINES - rows - 2 - 1,
-                          int((cols + 2 - len(map_text))/2),
-                          map_text)
-            window.addstr(curses.LINES - 1,
-                          int((curses.COLS - len(MENU))/2),
-                          MENU, curses.A_BOLD)
+            # filling matrix with s heap information
+            fill_screen_matrix(screen_matrix, heap, current_snapshot)
+            # printing matrix to the console window
+            matrix_print(window, screen_matrix)
+            # printing heap info to the console window
+            info_print(window, heap['max'], current_snapshot)
+            # printing menu to the console window
+            menu_print(window)
         except curses.error:
             window.clear()
-            window.addstr(int(curses.LINES / 2),
-                          int((curses.COLS - len(RESIZE_REQ))/2),
-                          RESIZE_REQ)
-            window.addstr('\n')
-            window.addstr(curses.LINES - 1,
-                          int((curses.COLS - len(MENU))/2),
-                          MENU, curses.A_BOLD)
+            resize_req_print(window)
+            menu_print(window)
 
         window.refresh()
         key = window.getch()
