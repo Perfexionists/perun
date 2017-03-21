@@ -587,8 +587,8 @@ def construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs
             dict: dictionary of the form {'name', 'params'}
         """
         # Get the dictionaries for from string and from file params obtained from commandline
-        from_string_dict = ukwargs[unit_type + "_params_from_string"].get(unit, {})
-        from_file_dict = ukwargs[unit_type + "_params_from_file"].get(unit, {})
+        from_string_dict = ukwargs.get(unit_type + "_params_from_string", {}).get(unit, {})
+        from_file_dict = ukwargs.get(unit_type + "_params_from_file", {}).get(unit, {})
 
         # Construct the object with name and parameters
         return Unit(unit, utils.merge_dictionaries(from_file_dict, from_string_dict))
@@ -670,24 +670,25 @@ def load_job_info_from_config(pcs):
     Returns:
         dict: dictionary with bins, args, workloads, collectors and postprocessors
     """
-    def join_command(command):
-        """
-        Arguments:
-            command(dict): command we are joining (containing 'name' and 'params')
-
-        Returns:
-            str: joined string
-        """
-        return Unit(command['name'], command['params'] if 'params' in command.keys() else {})
-
     local_config = pcs.local_config().data
+
+    if 'collectors' not in local_config.keys():
+        perun_log.error("missing 'collector' in the local.yml")
+    collectors = local_config['collectors']
+    postprocessors = local_config.get('postprocessors', [])
 
     info = {
         'bin': local_config['bins'],
         'workload': local_config['workloads'],
-        'postprocessor': [join_command(post) for post in local_config['postprocessors']],
-        'collector': [join_command(collect) for collect in local_config['collectors']],
-        'args': local_config['args'] if 'args' in local_config.keys() else []
+        'postprocessor': [post.get('name', '') for post in postprocessors],
+        'collector': [collect.get('name', '') for collect in collectors],
+        'args': local_config['args'] if 'args' in local_config.keys() else [],
+        'collector_params_from_file': {
+            collect.get('name', ''): collect.get('params', {}) for collect in collectors
+        },
+        'postprocesor_params_from_file': {
+            post.get('name', ''): post.get('params', {}) for post in postprocessors
+        }
     }
 
     return info
