@@ -1,7 +1,9 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
-from enum import Enum
 import collections
+import click
+
+from enum import Enum
 
 __author__ = 'Tomas Fiedor'
 
@@ -63,6 +65,9 @@ COLLECT_PHASE_POSTPROCESS = 'yellow'
 COLLECT_PHASE_ERROR = 'red'
 COLLECT_PHASE_ATTRS = []
 COLLECT_PHASE_ATTRS_HIGH = []
+
+# Show specific
+pass_profile = click.make_pass_decorator(dict)
 
 
 class CollectStatus(Enum):
