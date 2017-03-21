@@ -9,6 +9,23 @@ from perun.utils.helpers import CollectStatus, PostprocessStatus
 __author__ = 'Tomas Fiedor'
 
 
+def is_status_ok(returned_status, expected_status):
+    """Helper function for checking the status of the runners.
+
+    Since authors of the collectors and processors may not behave well, we need
+    this function to check either for the expected value of the enum (if they return int
+    instead of enum) or enum if they return politely enum.
+
+    Arguments:
+        returned_status(int or Enum): status returned from the collector
+        expected_status(Enum): expected status
+
+    Returns:
+        bool: true if the status was 0, CollectStatus.OK or PostprocessStatus.OK
+    """
+    return returned_status == expected_status or returned_status == expected_status.value
+
+
 def run_all_phases_for(runner, runner_type, runner_params):
     """Run all of the phases (before, runner_type, after) for given params.
 
@@ -33,7 +50,7 @@ def run_all_phases_for(runner, runner_type, runner_params):
         if phase_function:
             ret_val, ret_msg, updated_params = phase_function(**runner_params)
             runner_params.update(updated_params or {})
-            if ret_val != ok_status.value:
+            if not is_status_ok(ret_val, ok_status):
                 perun_log.error("error while {}{} phase: {}".format(
                     phase, ("_" + runner_verb)*(phase != runner_verb), ret_msg
                 ))
