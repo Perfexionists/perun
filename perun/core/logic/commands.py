@@ -505,13 +505,15 @@ def status(pcs, **kwargs):
 
 @pass_pcs
 @lookup_minor_version
-def show(pcs, profile_name, minor_version, **kwargs):
+def load_profile_from_args(pcs, profile_name, minor_version):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
         profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
-        kwargs(dict): keyword atributes containing additional options
+
+    Returns:
+        dict: loaded profile represented as dictionary
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
 
@@ -538,11 +540,7 @@ def show(pcs, profile_name, minor_version, **kwargs):
         perun_log.error("malformed profile {}".format(profile_name))
     loaded_profile = profile.load_profile_from_file(profile_name, False)
 
-    # Show the profile using the format
-    if kwargs['coloured']:
-        view.show_coloured(kwargs['format'], loaded_profile)
-    else:
-        view.show(kwargs['format'], loaded_profile)
+    return loaded_profile
 
 
 def construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs):

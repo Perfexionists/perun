@@ -326,11 +326,8 @@ def status(**kwargs):
 @click.argument('profile', required=True, metavar='<profile>')
 @click.option('--minor', '-m', nargs=1, default=None,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
-@click.option('--coloured', '-c', is_flag=True, default=False,
-              help="Colours the showed profile (if supported by the format).")
-@click.option('--one-line', '-o', is_flag=True,
-              help="Shows the aggregated one-liner profile.")
-def show(profile, minor, **kwargs):
+@click.pass_context
+def show(ctx, profile, minor, **kwargs):
     """Shows the profile stored and registered within the perun control system.
 
     Looks up the index of the given minor version and finds the <profile> and prints it
@@ -351,10 +348,11 @@ def show(profile, minor, **kwargs):
             map (if the profile is of memory type).
     """
     # TODO: Check that if profile is not SHA-1, then minor must be set
+    ctx.obj = commands.load_profile_from_args(profile, minor)
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
-    commands.show(profile, minor, **kwargs)
 
 
+# TODO: REFACTOR THIS: MOVE SOMEWHERE ELSE
 # Add all of the show modules to the show group
 for module in pkgutil.walk_packages(perun.view.__path__, perun.view.__name__ + '.'):
     # Skip modules, only packages can be used for show
@@ -371,7 +369,6 @@ for module in pkgutil.walk_packages(perun.view.__path__, perun.view.__name__ + '
     cli_function_name = module[1].split('.')[-1]
     if not hasattr(view_module, cli_function_name):
         continue
-    print("Adding: ", view_module.__name__, cli_function_name)
     show.add_command(getattr(view_module, cli_function_name))
 
 

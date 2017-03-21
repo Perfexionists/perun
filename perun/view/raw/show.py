@@ -7,7 +7,7 @@ formatting and visualization techniques at all.
 import click
 import termcolor
 
-from perun.utils.helpers import RAW_ATTRS, RAW_ITEM_COLOUR, RAW_KEY_COLOUR
+from perun.utils.helpers import RAW_ATTRS, RAW_ITEM_COLOUR, RAW_KEY_COLOUR, pass_profile
 
 __author__ = 'Tomas Fiedor'
 
@@ -28,11 +28,12 @@ def process_object(item, colour, coloured):
         return item
 
 
-def show(profile, coloured=False):
+def show(profile, coloured=False, **kwargs):
     """
     Arguments:
         profile(dict): dictionary profile
         coloured(bool): true if the output should be in colours
+        kwargs(dict): additional keyword for the non coloured show
 
     Returns:
         str: string representation of the profile
@@ -64,10 +65,11 @@ def show(profile, coloured=False):
                 ))
 
 
-def show_coloured(profile):
+def show_coloured(profile, **kwargs):
     """
     Arguments:
         profile(dict): dictionary profile
+        kwargs(dict): additional parameters for the coloured show
 
     Returns:
         str: string representation of the profile with colours
@@ -76,6 +78,14 @@ def show_coloured(profile):
 
 
 @click.command()
-def raw(profile, coloured, **kwargs):
+@click.option('--coloured', '-c', is_flag=True, default=False,
+              help="Colours the showed raw profile.")
+@click.option('--one-line', '-o', is_flag=True,
+              help="Shows the aggregated one-liner raw profile.")
+@pass_profile
+def raw(profile, **kwargs):
     """Raw display of the profile, without formating, as JSON object."""
-    show(profile, coloured)
+    if kwargs.get('coloured', False):
+        show_coloured(profile, **kwargs)
+    else:
+        show(profile, **kwargs)
