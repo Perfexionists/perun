@@ -114,6 +114,5 @@ def merge_dict_range(*args):
     """
     res = {}
     for dictionary in args:
-        assert type(dictionary).__name__ == 'dict'
         res.update(dictionary)
-    return dictionary
+    return res

@@ -108,12 +108,12 @@ def run_postprocessor(postprocessor, job, prof):
         (int, str): status of the collection, string message of the status
     """
     try:
-        postprocessor = get_module('perun.postprocess.{0}.{0}'.format(postprocessor.name))
+        postprocessor_module = get_module('perun.postprocess.{0}.{0}'.format(postprocessor.name))
     except ImportError:
         return PostprocessStatus.ERROR, "{} does not exist".format(postprocessor.name)
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dict_range(job._asdict(), {'profile': prof}, postprocessor.params)
-    profile = run_all_phases_for(postprocessor, 'postprocessor', job_params)
+    profile = run_all_phases_for(postprocessor_module, 'postprocessor', job_params)
 
     return PostprocessStatus.OK, "Profile postprocessed", profile
