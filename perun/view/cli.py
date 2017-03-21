@@ -26,7 +26,9 @@ __author__ = 'Tomas Fiedor'
 @click.option('--verbose', '-v', count=True, default=0,
               help='sets verbosity of the perun log')
 def cli(verbose):
-    """
+    """Perun is a performance control system used to store profiles efficiently.
+
+    Run 'perun init' to initialize your very first perun repository in the current directory.
     """
     # set the verbosity level of the log
     if perun_log.VERBOSITY < verbose:
@@ -41,11 +43,26 @@ def cli(verbose):
 @click.option('--set', '-s', is_flag=True,
               help="set the value of the key")
 def config(key, value, **kwargs):
-    """
-    Arguments:
-        key(str): key in config file, set of sections divided by dot (.)
-        value(various): value that can optionally be set in config
-        kwargs(dict): dictionary of keyword arguments
+    """Get and set the options of local and global configurations.
+
+    For each perun repository, there are two types of config:
+
+        local.yml - this is local repository found in .perun directory, contains the
+        local configuration with informations about wrapped repositories and job matrix
+        used for quick generation of profiles (see 'perun run matrix --help' for more
+        information about the syntax of local configuration for construction of job matrix).
+
+        shared.yml - this is global repository for the system, which contains the information
+        about perun repositories located throughout the system.
+
+    The syntax of the key contains out of section separated by dots, where the first section
+    represents the type of the config (either local or shared).
+
+    Example usage:
+
+        perun config --get local.vsc.type
+
+            Retrieves the type of the wrapped repository of the local perun.
     """
     perun_log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
     commands.config(key, value, **kwargs)

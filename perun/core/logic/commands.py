@@ -18,7 +18,6 @@ import perun.core.logic.profile as profile
 import perun.core.logic.runner as runner
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
-import perun.view as view
 
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
