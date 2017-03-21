@@ -13,9 +13,9 @@
   "global": {
      "timestamp": "0.59s",
      "resources":[
-        {"amount": "0.10s", "uid": "sa-creation", "type": "time"},
-        {"amount": "0.45s", "uid": "dec-proc", "type": "time"},
-        {"amount": "0.01s", "uid": "cleaning", "type": "time"},
+        {"amount": "0.10", "uid": "sa-creation", "type": "time"},
+        {"amount": "0.45", "uid": "dec-proc", "type": "time"},
+        {"amount": "0.01", "uid": "cleaning", "type": "time"},
         {"amount": "4817", "uid": "mona-space", "type": "term"},
         {"amount": "31712", "uid": "overall-space", "type": "term"},
         {"amount": "977296", "uid": "fixpoint-space", "type": "term"}

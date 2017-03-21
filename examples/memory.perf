@@ -1,0 +1,139 @@
+{
+  "header": {
+    "type": "memory",
+    "cmd": "./prog",
+    "params": "-g -w -c",
+    "workload": "load.in",
+    "units": {
+      "memory": "B",
+      "time": "s"
+    }
+  },
+
+  "collector": {
+    "name": "memory",
+    "params": "-s 0.001"
+  },
+
+  "result": {
+    "status": 0,
+    "status-msg": ""
+  },
+
+  "snapshots": [
+    {
+      "resources": [
+        {
+          "subtype": "malloc",
+          "trace": [
+            {
+              "line": 0,
+              "source": "unreachable",
+              "function": "malloc"
+            },
+            {
+              "line": 45,
+              "source": "/home/user/dev/test.c",
+              "function": "main"
+            }
+          ],
+          "uid": {
+            "line": 45,
+            "source": "/home/user/dev/test.c",
+            "function": "main"
+          },
+          "amount": 4,
+          "type": "memory",
+          "address": 13374016
+        }
+      ],
+      "time": "0.001"
+    },
+    {
+      "resources": [],
+      "time": "0.002"
+    },
+    {
+      "resources": [
+        {
+          "subtype": "valloc",
+          "trace": [
+            {
+              "line": 0,
+              "source": "unreachable",
+              "function": "valloc"
+            },
+            {
+              "line": 75,
+              "source": "/home/user/dev/test.c",
+              "function": "main"
+            },
+            {
+              "line": 0,
+              "source": "unreachable",
+              "function": "__libc_start_main"
+            },
+            {
+              "line": 0,
+              "source": "unreachable",
+              "function": "_start"
+            }
+          ],
+          "uid": {
+            "line": 75,
+            "source": "/home/user/dev/test.c",
+            "function": "main"
+          },
+          "amount": 8,
+          "type": "memory",
+          "address": 13381632
+        },
+        {
+          "subtype": "calloc",
+          "trace": [
+            {
+              "line": 79,
+              "source": "/home/user/dev/test02.c",
+              "function": "main"
+            }
+          ],
+          "uid": {
+            "line": 79,
+            "source": "/home/user/dev/test02.c",
+            "function": "main"
+          },
+          "amount": 156,
+          "type": "memory",
+          "address": 13381638
+        }
+      ],
+      "time": "0.003"
+    }
+  ],
+
+  "global": [
+    {
+      "resources": [
+        {
+          "subtype": "calloc",
+          "trace": [
+            {
+              "line": 79,
+              "source": "/home/user/dev/test02.c",
+              "function": "main"
+            }
+          ],
+          "uid": {
+            "line": 79,
+            "source": "/home/user/dev/test02.c",
+            "function": "main"
+          },
+          "amount": 156,
+          "type": "memory",
+          "address": 13381638
+        }
+      ],
+      "time": "0.0038759"
+    }
+  ]
+}
