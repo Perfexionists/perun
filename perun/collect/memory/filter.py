@@ -1,6 +1,5 @@
 """This module provides methods for filtering the profile"""
 import perun.collect.memory.parsing as parsing
-import json
 __author__ = "Radim Podola"
 
 
@@ -40,7 +39,7 @@ def remove_allocators(profile):
     """
     allocators = ['malloc', 'calloc', 'realloc', 'free', 'memalign',
                   'posix_memalign', 'valloc', 'aligned_alloc']
-    trace_filter(profile, function=allocators)
+    trace_filter(profile, function=allocators, source=[])
 
     return profile
 
@@ -91,7 +90,7 @@ def allocation_filter(profile, function, source):
     def determinate(uid):
         """ Determinate expression """
         return not uid or ((uid['function'] not in function) and
-               (uid['source'] not in source))
+                           (uid['source'] not in source))
 
     snapshots = profile['snapshots']
     for snapshot in snapshots:

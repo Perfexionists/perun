@@ -55,11 +55,20 @@ def after(bin, **kwargs):
         excluding allocations in "f1" function,
         excluding allocators and unreachable records in call trace
     """
-    # TODO parsing collect_params
-    sampling = Decimal('0.001')
-    include_all = False
-    exclude_funcs = []
-    exclude_sources = []
+    if 'sampling' in kwargs.keys():
+        sampling = Decimal(str(kwargs['sampling']))
+    else:
+        sampling = Decimal('0.001')
+
+    include_all = 'all' in kwargs.keys()
+
+    exclude_funcs = kwargs.get('no-func', [])
+    if exclude_funcs is None:
+        exclude_funcs = []
+
+    exclude_sources = kwargs.get('no-source', [])
+    if exclude_sources is None:
+        exclude_sources = []
 
     try:
         profile = parser.parse_log('MemoryLog', bin, sampling)
@@ -68,9 +77,9 @@ def after(bin, **kwargs):
     except ValueError:
         return CollectStatus.ERROR, 'Wrong format of log file', {}
 
-    if include_all:
+    if not include_all:
         filters.remove_allocators(profile)
-        filters.trace_filter(profile, source=['unreachable'], function=['?'])
+        filters.trace_filter(profile, function=['?'], source=['unreachable'])
 
     if exclude_funcs or exclude_sources:
         filters.allocation_filter(profile, function=exclude_funcs,
