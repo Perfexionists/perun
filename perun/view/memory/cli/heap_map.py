@@ -1,30 +1,28 @@
 """This module implement the heap map visualization of the profile"""
-import sys
 import json
 import time
 import curses
 import curses.textpad
+from random import randint
 
 __author__ = 'Radim Podola'
-MIN_WIDTH = 80
+MIN_ROWS = 40
+MIN_COLS = 80
+COLOR_BORDER = 1
+COLOR_SNAP_INFO = 2
 
 
-def fill_screen_matrix(matrix, heap, curr):
-    """ Fill the matrix with corresponding representation of snapshot
-    Arguments:
-        matrix(list): matrix to update
-        heap(dict): heap map representation
-        curr(int): number of the current snapshot
+def init_curses_colors():
+    curses.start_color()
+    curses.use_default_colors()
 
-    Returns:
-        list: updated matrix
-    """
-    for row, _ in enumerate(matrix):
-        for col, _ in enumerate(matrix[row]):
-            if row == 20 and col == 15:
-                matrix[row][col] = {'char': '5', 'color': 2}
-            else:
-                matrix[row][col] = {'char': '+', 'color': 1}
+    # border color
+    curses.init_pair(COLOR_BORDER, curses.COLOR_BLACK, curses.COLOR_BLACK)
+    # snapshots info color
+    curses.init_pair(COLOR_SNAP_INFO, curses.COLOR_YELLOW, -1)
+
+    for i in range(4, curses.COLORS):
+        curses.init_pair(i+1, i, i)
 
 
 def resize_req_print(window):
@@ -71,8 +69,23 @@ def info_print(window, max, curr):
     info_text = 'SNAPSHOT: ' + str(curr) + '/' + str(max)
     rows, cols = window.getmaxyx()
     window.addstr(' '*int((cols - len(info_text))/2))
-    window.addstr(info_text, curses.color_pair(11))
+    window.addstr(info_text, curses.color_pair(COLOR_SNAP_INFO))
     window.addch('\n')
+
+
+def fill_screen_matrix(matrix, heap, curr):
+    """ Fill the matrix with corresponding representation of snapshot
+    Arguments:
+        matrix(list): matrix to update
+        heap(dict): heap map representation
+        curr(int): number of the current snapshot
+
+    Returns:
+        list: updated matrix
+    """
+    for row, _ in enumerate(matrix):
+        for col, _ in enumerate(matrix[row]):
+            matrix[row][col] = {'color': randint(1, curses.COLORS)}
 
 
 def matrix_print(window, matrix, border='#'):
@@ -92,10 +105,11 @@ def matrix_print(window, matrix, border='#'):
             for col in range(y_border_size):
                 if (row in (0, x_border_size-border_size) or
                             col in (0, y_border_size-border_size)):
-                    window.addch(row, col, border, curses.color_pair(10))
+                    window.addch(row, col, border,
+                                 curses.color_pair(COLOR_BORDER))
                 else:
                     field = matrix[row - border_size][col - border_size]
-                    window.addch(row, col, field['char'],
+                    window.addch(row, col, ' ',
                                  curses.color_pair(field['color']))
 
     else:
@@ -119,20 +133,44 @@ def create_screen_matrix(rows, cols):
     return screen_matrix
 
 
+def redraw_heap_map(window, heap, snapshot):
+    curses.update_lines_cols()
+    # temporary default values
+    rows, cols = MIN_ROWS, curses.COLS-2
+
+    if curses.COLS > MIN_COLS:
+        cols = curses.COLS - 2
+    window.clear()
+
+    try:
+        # creating matrix
+        screen_matrix = create_screen_matrix(rows, cols)
+        # filling matrix with s heap information
+        fill_screen_matrix(screen_matrix, heap, snapshot)
+        # printing matrix to the console window
+        matrix_print(window, screen_matrix)
+        # printing heap info to the console window
+        info_print(window, heap['max'], snapshot)
+        # printing menu to the console window
+        menu_print(window)
+
+    except curses.error:
+        window.clear()
+        resize_req_print(window)
+        menu_print(window)
+
+    window.refresh()
+
+
 def heap_map_prompt(window, heap):
     """ Visualization prompt
     Arguments:
         window(any): initialized console window
         heap(dict): heap map representation
     """
-    curses.start_color()
-    curses.use_default_colors()
-    for i in range(0, curses.COLORS):
-        curses.init_pair(i + 1, i, -1)
-    curses.init_pair(10, curses.COLOR_RED, curses.COLOR_RED)
-    curses.init_pair(11, curses.COLOR_YELLOW, -1)
-    curses.init_pair(1, -1, curses.COLOR_GREEN)
-    curses.init_pair(2, -1, curses.COLOR_MAGENTA)
+    current_snapshot = 1
+
+    init_curses_colors()
     # set cursor invisible
     curses.curs_set(1)
     # INTRO screen
@@ -140,47 +178,27 @@ def heap_map_prompt(window, heap):
     window.refresh()
     # just for effect :)
     time.sleep(1)
-
-    curses.update_lines_cols()
-    # temporary default values
-    rows, cols = 40, curses.COLS-2
-    current_snapshot = 1
+    redraw_heap_map(window, heap, current_snapshot)
 
     while True:
-        curses.update_lines_cols()
-        if curses.COLS > MIN_WIDTH:
-            cols = curses.COLS - 2
-        window.clear()
-        try:
-            # creating matrix
-            screen_matrix = create_screen_matrix(rows, cols)
-            # filling matrix with s heap information
-            fill_screen_matrix(screen_matrix, heap, current_snapshot)
-            # printing matrix to the console window
-            matrix_print(window, screen_matrix)
-            # printing heap info to the console window
-            info_print(window, heap['max'], current_snapshot)
-            # printing menu to the console window
-            menu_print(window)
-        except curses.error:
-            window.clear()
-            resize_req_print(window)
-            menu_print(window)
-
-        window.refresh()
         key = window.getch()
+
         if key == ord('q') or key == ord('Q'):
             break
         elif key == curses.KEY_LEFT:
             if current_snapshot > 1:
                 current_snapshot -= 1
+                redraw_heap_map(window, heap, current_snapshot)
         elif key == curses.KEY_RIGHT:
             if current_snapshot < heap['max']:
                 current_snapshot += 1
+                redraw_heap_map(window, heap, current_snapshot)
         elif key == ord('s') or key == ord('S'):
             pass
         elif key == ord('a') or key == ord('A'):
             pass
+        elif key == curses.KEY_RESIZE:
+            redraw_heap_map(window, heap, current_snapshot)
 
 
 def heap_map(profile):
