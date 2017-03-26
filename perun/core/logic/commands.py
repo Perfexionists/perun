@@ -25,7 +25,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, \
-    CollectStatus, PostprocessStatus, Unit
+    CollectStatus, PostprocessStatus, Unit, ProfileInfo
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
@@ -335,22 +335,33 @@ def print_profile_number_for_minor(base_dir, minor_version, ending='\n'):
         ending(str): ending of the print (for different output of log and status)
     """
     tracked_profiles = store.get_profile_number_for_minor(base_dir, minor_version)
-    if tracked_profiles['all']:
-        print("{0[all]} tracked profiles (".format(tracked_profiles), end='')
+    print_profile_numbers(tracked_profiles, 'tracked', ending)
+
+
+def print_profile_numbers(profile_numbers, profile_type, line_ending='\n'):
+    """Helper function for printing the numbers of profile to output.
+
+    Arguments:
+        profile_numbers(dict): dictionary of nomber of profiles grouped by type
+        profile_type(str): type of the profiles (tracked, untracked, etc.)
+        line_ending(str): ending of the print (for different outputs of log and status)
+    """
+    if profile_numbers['all']:
+        print("{0[all]} {} profiles (".format(profile_numbers, profile_type), end='')
         first_outputed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
-            if not tracked_profiles[profile_type]:
+            if not profile_numbers[profile_type]:
                 continue
             if first_outputed:
                 print(', ', end='')
             print(termcolor.colored("{0} {1}".format(
-                tracked_profiles[profile_type], profile_type
+                profile_numbers[profile_type], profile_type
             ), PROFILE_TYPE_COLOURS[profile_type]), end='')
             first_outputed = True
-        print(')', end=ending)
+        print(')', end=line_ending)
     else:
-        print(termcolor.colored('(no tracked profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS),
-              end='\n')
+        print(termcolor.colored('(no {} profiles)'.format(profile_type),
+                                TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='\n')
 
 
 @pass_pcs
@@ -436,40 +447,44 @@ def print_minor_version_info(head_minor_version, indent=0):
     print(indented_desc)
 
 
+def print_profile_info_list(profile_list):
+    """
+    Arguments:
+        profile_list(list): list of profiles of ProfileInfo objects
+    """
+    # Measure the maxima for the lenghts of the profile names and profile types
+    maximal_profile_name_len = max(len(profile_info.path) for profile_info in profile_list)
+    maximal_type_len = max(len(profile_info.type) for profile_info in profile_list)
+
+    # Print the list of the profiles
+    for profile_info in profile_list:
+        print("\t{2} {0} ({1})".format(
+            profile_info.path.ljust(maximal_profile_name_len),
+            profile_info.time,
+            termcolor.colored(
+                "[{}]".format(profile_info.type).ljust(maximal_type_len+2),
+                PROFILE_TYPE_COLOURS[profile_info.type], attrs=TEXT_ATTRS,
+            )
+        ))
+
+
 def print_minor_version_profiles(pcs, minor_version):
     """
     Arguments:
         pcs(PCS): performance control system
         minor_version(str): identification of the commit (preferably sha1)
     """
+    # Compute the
     profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
-    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ':\n\n')
-
-    # Compute the padding and peek the types between
-    profile_tuples = []
-    maximal_type_len = maximal_profile_name_len = 0
+    profile_info_list = []
     for index_entry in profiles:
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
         profile_type = store.peek_profile_type(profile_name)
-
-        if len(index_entry.path) > maximal_profile_name_len:
-            maximal_profile_name_len = len(index_entry.path)
-
-        if len(profile_type) > maximal_type_len:
-            maximal_type_len = len(profile_type)
-
-        profile_tuples.append((profile_type, index_entry))
+        profile_info_list.append(ProfileInfo(index_entry.path, profile_type, index_entry.time))
 
     # Print with padding
-    for profile_type, index_entry in profile_tuples:
-        print("\t{2} {0} ({1})".format(
-            index_entry.path.ljust(maximal_profile_name_len),
-            index_entry.time,
-            termcolor.colored(
-                "[{}]".format(profile_type).ljust(maximal_type_len+2),
-                PROFILE_TYPE_COLOURS[profile_type], attrs=TEXT_ATTRS,
-            )
-        ))
+    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ':\n\n')
+    print_profile_info_list(profile_info_list)
 
 
 @pass_pcs
