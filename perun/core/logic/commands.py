@@ -5,8 +5,10 @@ to be run both from GUI applications and from CLI, where each of the function is
 possible to be run in isolation.
 """
 
+import collections
 import inspect
 import os
+import re
 import termcolor
 from colorama import init
 
@@ -30,6 +32,8 @@ from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
 init()
+untracked_regex = \
+    re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 
 
 def find_perun_dir_on_path(path):
@@ -347,7 +351,7 @@ def print_profile_numbers(profile_numbers, profile_type, line_ending='\n'):
         line_ending(str): ending of the print (for different outputs of log and status)
     """
     if profile_numbers['all']:
-        print("{0[all]} {} profiles (".format(profile_numbers, profile_type), end='')
+        print("{0[all]} {1} profiles (".format(profile_numbers, profile_type), end='')
         first_outputed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
             if not profile_numbers[profile_type]:
@@ -447,29 +451,35 @@ def print_minor_version_info(head_minor_version, indent=0):
     print(indented_desc)
 
 
-def print_profile_info_list(profile_list):
+def print_profile_info_list(profile_list, profile_output_colour='white'):
     """
     Arguments:
         profile_list(list): list of profiles of ProfileInfo objects
+        profile_output_colour(str): colour of the output profiles (red for untracked)
     """
+    # Skip empty profile list
+    if len(profile_list) == 0:
+        return
+
     # Measure the maxima for the lenghts of the profile names and profile types
     maximal_profile_name_len = max(len(profile_info.path) for profile_info in profile_list)
     maximal_type_len = max(len(profile_info.type) for profile_info in profile_list)
 
     # Print the list of the profiles
     for profile_info in profile_list:
-        print("\t{2} {0} ({1})".format(
+        print(termcolor.colored(
+            "\t[{}]".format(profile_info.type).ljust(maximal_type_len+4),
+            PROFILE_TYPE_COLOURS[profile_info.type], attrs=TEXT_ATTRS,
+        ), end="")
+        print(termcolor.colored("{0} ({1})".format(
             profile_info.path.ljust(maximal_profile_name_len),
             profile_info.time,
-            termcolor.colored(
-                "[{}]".format(profile_info.type).ljust(maximal_type_len+2),
-                PROFILE_TYPE_COLOURS[profile_info.type], attrs=TEXT_ATTRS,
-            )
-        ))
+        ), profile_output_colour))
 
 
 def print_minor_version_profiles(pcs, minor_version):
-    """
+    """Prints profiles assigned to the given minor version.
+
     Arguments:
         pcs(PCS): performance control system
         minor_version(str): identification of the commit (preferably sha1)
@@ -485,6 +495,33 @@ def print_minor_version_profiles(pcs, minor_version):
     # Print with padding
     print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ':\n\n')
     print_profile_info_list(profile_info_list)
+
+
+def print_untracked_profiles(pcs):
+    """Prints untracked profiles, currently residing in the .perun/jobs directory.
+
+    Arguments:
+        pcs(PCS): performance control system
+    """
+    profile_numbers = collections.defaultdict(int)
+    profile_list = []
+    untracked = [path for path in os.listdir(pcs.get_job_directory()) if path.endswith('perf')]
+
+    # Transform each profile of the path to the ProfileInfo object
+    for untracked_path in untracked:
+        real_path = os.path.join(pcs.get_job_directory(), untracked_path)
+        loaded_profile = profile.load_profile_from_file(real_path, True)
+        profile_type = loaded_profile['header']['type']
+        path, time = untracked_regex.search(untracked_path).groups()
+
+        # Update the list of profiles and counters of types
+        profile_list.append(ProfileInfo(path, profile_type, time))
+        profile_numbers[profile_type] += 1
+        profile_numbers['all'] += 1
+
+    # Output the the console
+    print_profile_numbers(profile_numbers, 'untracked', ':\n\n')
+    print_profile_info_list(profile_list, 'red')
 
 
 @pass_pcs
@@ -515,6 +552,8 @@ def status(pcs, **kwargs):
 
     # Print profiles
     print_minor_version_profiles(pcs, minor_head)
+    print("")
+    print_untracked_profiles(pcs)
 
 
 @pass_pcs
