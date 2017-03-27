@@ -6,10 +6,11 @@ import curses.textpad
 from random import randint
 
 __author__ = 'Radim Podola'
-MIN_ROWS = 40
-MIN_COLS = 80
+MIN_ROWS = 30
+MIN_COLS = 70
 COLOR_BORDER = 1
-COLOR_SNAP_INFO = 2
+COLOR_FREE_FIELD = 2
+COLOR_SNAPSHOT_INFO = 3
 
 
 def init_curses_colors():
@@ -17,12 +18,12 @@ def init_curses_colors():
     curses.use_default_colors()
 
     # border color
-    curses.init_pair(COLOR_BORDER, curses.COLOR_BLACK, curses.COLOR_BLACK)
-    # snapshots info color
-    curses.init_pair(COLOR_SNAP_INFO, curses.COLOR_YELLOW, -1)
+    curses.init_pair(COLOR_BORDER, 16, -1)
+    curses.init_pair(COLOR_FREE_FIELD, curses.COLOR_BLACK, -1)
+    curses.init_pair(COLOR_SNAPSHOT_INFO, curses.COLOR_WHITE, 16)
 
     for i in range(4, curses.COLORS):
-        curses.init_pair(i+1, i, i)
+        curses.init_pair(i, i, -1)
 
 
 def resize_req_print(window):
@@ -59,7 +60,7 @@ def menu_print(window):
                   menu, curses.A_BOLD)
 
 
-def info_print(window, max, curr):
+def info_print(window, max, curr, indent):
     """ Print the heap information to the window
     Arguments:
         window(any): console window
@@ -67,55 +68,8 @@ def info_print(window, max, curr):
         curr(int): number of the current snapshot
     """
     info_text = 'SNAPSHOT: ' + str(curr) + '/' + str(max)
-    rows, cols = window.getmaxyx()
-    window.addstr(' '*int((cols - len(info_text))/2))
-    window.addstr(info_text, curses.color_pair(COLOR_SNAP_INFO))
-    window.addch('\n')
-
-
-def fill_screen_matrix(matrix, heap, curr):
-    """ Fill the matrix with corresponding representation of snapshot
-    Arguments:
-        matrix(list): matrix to update
-        heap(dict): heap map representation
-        curr(int): number of the current snapshot
-
-    Returns:
-        list: updated matrix
-    """
-    for row, _ in enumerate(matrix):
-        for col, _ in enumerate(matrix[row]):
-            matrix[row][col] = {'color': randint(1, curses.COLORS)}
-
-
-def matrix_print(window, matrix, border='#'):
-    """ Prints the matrix to the window
-    Arguments:
-        window(any): console window
-        matrix(list): matrix to print
-        border(char): border symbol
-    """
-    assert len(border) < 2
-    border_size = len(border)
-
-    if border_size > 0:
-        x_border_size, y_border_size = len(matrix) + 2, len(matrix[0]) + 2
-
-        for row in range(x_border_size):
-            for col in range(y_border_size):
-                if (row in (0, x_border_size-border_size) or
-                            col in (0, y_border_size-border_size)):
-                    window.addch(row, col, border,
-                                 curses.color_pair(COLOR_BORDER))
-                else:
-                    field = matrix[row - border_size][col - border_size]
-                    window.addch(row, col, ' ',
-                                 curses.color_pair(field['color']))
-
-    else:
-        for row, _ in enumerate(matrix):
-            for col, _ in enumerate(matrix[row]):
-                window.addch(row, col, matrix[row][col])
+    window.addstr(0, int((curses.COLS - len(info_text)) / 2) + indent,
+                  info_text, curses.color_pair(COLOR_SNAPSHOT_INFO))
 
 
 def create_screen_matrix(rows, cols):
@@ -133,33 +87,109 @@ def create_screen_matrix(rows, cols):
     return screen_matrix
 
 
+def create_screen_decomposition(heap, curr, rows, cols):
+    """ Fill the matrix with corresponding representation of snapshot
+    Arguments:
+        matrix(list): matrix to update
+        heap(dict): heap map representation
+        curr(int): number of the current snapshot
+
+    Returns:
+        list: updated matrix
+    """
+    snap = heap['snapshots'][curr - 1]
+
+
+    data = [[{"uid": None, "address": x+y} for y in range(cols)] for x in range(rows)]
+    data[0][cols-1] = {"uid": {"function": 'f1', "source": 's1'}, "address": 80}
+    data[27][2] = {"uid": {"function": 'f1', "source": 's1'}, "address": 800}
+    data[25][2] = {"uid": {"function": 'f2', "source": 's1'}, "address": 800}
+    data[25][3] = {"uid": {"function": 'f2', "source": 's1'}, "address": 800}
+    return {'map':data}
+
+
+def matrix_print(window, data, rows, cols, add_length):
+    """ Prints the matrix to the window
+    Arguments:
+        window(any): console window
+        data(list): data to print
+    """
+    field_sym = u"\u2588"
+    # structure for saving corresponding allocation
+    # with their specific color representation
+    color_records = []
+
+
+    def get_field_color(field, color_records):
+        if field['uid'] is None:
+            return COLOR_FREE_FIELD
+
+        uid = field['uid']
+        for item in color_records:
+            if (uid['function'] == item['uid']['function'] and
+                uid['source'] == item['uid']['source']):
+                return item['color']
+
+        color_records.append({'uid': uid,
+                            'color': randint(2, curses.COLORS)})
+        return color_records[-1]['color']
+
+
+    for row in range(rows):
+        # address info printing
+        if row not in (0, rows-1):
+            window.addstr(row, 0, str(data['map'][row - 1][0]['address']))
+
+        for col in range(add_length, cols):
+            # border printing
+            if row in (0, rows-1):
+                window.addch(row, col, field_sym, curses.color_pair(COLOR_BORDER))
+            elif col in (add_length, cols-1):
+                window.addch(row, col, field_sym, curses.color_pair(COLOR_BORDER))
+            # filed printing
+            else:
+                field = data['map'][row - 1][col - add_length - 1]
+                color = get_field_color(field, color_records)
+                window.addch(row, col, field_sym, curses.color_pair(color))
+
+
 def redraw_heap_map(window, heap, snapshot):
     curses.update_lines_cols()
-    # temporary default values
-    rows, cols = MIN_ROWS, curses.COLS-2
-
-    if curses.COLS > MIN_COLS:
-        cols = curses.COLS - 2
     window.clear()
 
+    if curses.LINES < MIN_ROWS or curses.COLS < MIN_COLS:
+        window.clear()
+        resize_req_print(window)
+        menu_print(window)
+        window.refresh()
+        return 0, 0
+
     try:
-        # creating matrix
-        screen_matrix = create_screen_matrix(rows, cols)
-        # filling matrix with s heap information
-        fill_screen_matrix(screen_matrix, heap, snapshot)
-        # printing matrix to the console window
-        matrix_print(window, screen_matrix)
+        # max_add_len = len(str(heap['snapshots'][snapshot - 1]['max_address']))
+        max_add_len = 4
+        add_info_len = max_add_len + 2
+        # number of matrix rows == minimum of rows - 2*border field
+        map_rows = MIN_ROWS - 2
+        # number of matrix cols == terminal current cols - size of address info - 2*border field
+        map_cols = curses.COLS - add_info_len - 2
+        # getting heap map decomposition
+        decomposition = create_screen_decomposition(heap, snapshot,
+                                                    map_rows, map_cols)
+        # printing heap map decomposition to the console window
+        matrix_print(window, decomposition, MIN_ROWS, curses.COLS, add_info_len)
         # printing heap info to the console window
-        info_print(window, heap['max'], snapshot)
+        info_print(window, heap['max'], snapshot, add_info_len)
         # printing menu to the console window
         menu_print(window)
+
+        window.move(1, max_add_len+3)
+        return map_rows, map_cols
 
     except curses.error:
         window.clear()
         resize_req_print(window)
         menu_print(window)
-
-    window.refresh()
+        return 0, 0
 
 
 def heap_map_prompt(window, heap):
@@ -172,14 +202,15 @@ def heap_map_prompt(window, heap):
 
     init_curses_colors()
     # set cursor invisible
-    curses.curs_set(1)
+    curses.curs_set(2)
     # INTRO screen
     intro_print(window)
     window.refresh()
     # just for effect :)
     time.sleep(1)
-    redraw_heap_map(window, heap, current_snapshot)
 
+    rows, cols = redraw_heap_map(window, heap, current_snapshot)
+    start_xy = window.getyx()
     while True:
         key = window.getch()
 
@@ -188,17 +219,36 @@ def heap_map_prompt(window, heap):
         elif key == curses.KEY_LEFT:
             if current_snapshot > 1:
                 current_snapshot -= 1
-                redraw_heap_map(window, heap, current_snapshot)
+                rows, cols = redraw_heap_map(window, heap, current_snapshot)
+                start_xy = window.getyx()
         elif key == curses.KEY_RIGHT:
             if current_snapshot < heap['max']:
                 current_snapshot += 1
-                redraw_heap_map(window, heap, current_snapshot)
+                rows, cols = redraw_heap_map(window, heap, current_snapshot)
+                start_xy = window.getyx()
         elif key == ord('s') or key == ord('S'):
             pass
         elif key == ord('a') or key == ord('A'):
             pass
+        elif key == ord('4'):
+            curr_xy = window.getyx()
+            if (curr_xy[1] - start_xy[1]) > 0:
+                window.move(curr_xy[0], curr_xy[1] - 1)
+        elif key == ord('6'):
+            curr_xy = window.getyx()
+            if (curr_xy[1] - start_xy[1]) < cols-1:
+                window.move(curr_xy[0], curr_xy[1] + 1)
+        elif key == ord('8'):
+            curr_xy = window.getyx()
+            if (curr_xy[0] - start_xy[0]) > 0:
+                window.move(curr_xy[0] - 1, curr_xy[1])
+        elif key == ord('5'):
+            curr_xy = window.getyx()
+            if (curr_xy[0] - start_xy[0]) < rows-1:
+                window.move(curr_xy[0] + 1, curr_xy[1])
         elif key == curses.KEY_RESIZE:
-            redraw_heap_map(window, heap, current_snapshot)
+            rows, cols = redraw_heap_map(window, heap, current_snapshot)
+            start_xy = window.getyx()
 
 
 def heap_map(profile):
@@ -339,6 +389,7 @@ def add_stats(snapshots):
 
         Maximum amount of the allocated memory,
         minimum amount of the allocated memory,
+        summary of the amount of the allocated memory,
         maximal address of the allocated memory,
         minimal address of the allocated memory.
 
@@ -348,17 +399,15 @@ def add_stats(snapshots):
         snapshots(list): list of snapshots
     """
     for snap in snapshots:
-        max_address_item = max(snap['map'], key=lambda x: x['address'])
-        snap['max_address'] = max_address_item['address']
+        snap['max_address'] = max(item.get('address', 0) for item in snap['map'])
 
-        min_address_item = min(snap['map'], key=lambda x: x['address'])
-        snap['min_address'] = min_address_item['address']
+        snap['min_address'] = min(item.get('address', 0) for item in snap['map'])
 
-        max_amount_item = max(snap['map'], key=lambda x: x['amount'])
-        snap['max_amount'] = max_amount_item['amount']
+        snap['sum_amount'] = sum(item.get('amount', 0) for item in snap['map'])
 
-        min_amount_item = min(snap['map'], key=lambda x: x['amount'])
-        snap['min_amount'] = min_amount_item['amount']
+        snap['max_amount'] = max(item.get('amount', 0) for item in snap['map'])
+
+        snap['min_amount'] = min(item.get('amount', 0) for item in snap['map'])
 
 
 if __name__ == "__main__":
