@@ -1,12 +1,16 @@
 """This module implement the heap map visualization of the profile"""
-import json
+import sys
 import math
 import time
 import curses
 import curses.textpad
 from random import randint
 
+import json
+
 __author__ = 'Radim Podola'
+NEXT_SNAPSHOT = 1
+PREV_SNAPSHOT = -1
 MIN_ROWS = 30
 MIN_COLS = 70
 COLOR_BORDER = 1
@@ -23,6 +27,7 @@ def init_curses_colors():
     curses.init_pair(COLOR_FREE_FIELD, curses.COLOR_BLACK, -1)
     curses.init_pair(COLOR_SNAPSHOT_INFO, curses.COLOR_WHITE, 16)
 
+    # TODO exclude bad visible colors e.g. similar to COLOR_FREE_FIELD
     for i in range(4, curses.COLORS):
         curses.init_pair(i, i, -1)
 
@@ -55,7 +60,18 @@ def menu_print(window):
     Arguments:
         window(any): console window
     """
-    menu = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE  [S] SAVE'
+    menu = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE  [4|8|6|5] CURSOR L|U|R|D'
+
+    window.addstr(curses.LINES - 1, (curses.COLS - len(menu)) // 2,
+                  menu, curses.A_BOLD)
+
+
+def animation_menu_print(window):
+    """ Print animation menu information to the window
+    Arguments:
+        window(any): console window
+    """
+    menu = '[Q] QUIT  [S] STOP  [C] CONTINUE  [R] RESTART'
 
     window.addstr(curses.LINES - 1, (curses.COLS - len(menu)) // 2,
                   menu, curses.A_BOLD)
@@ -101,7 +117,6 @@ def create_screen_decomposition(heap, curr, rows, cols):
     iterator = iter(allocations)
 
 
-    # když to bude přes vice poli tak info bude ve všech stejne
     record = next(iterator, None)
     # set starting address to first approx field
     last_field = 0 if record is None else record['address']
@@ -147,6 +162,8 @@ def matrix_print(window, data, rows, cols, add_length):
         data(list): data to print
     """
     field_sym = u"\u2588"
+    address = data['map'][0][0]['address']
+    line_address_size = len(data['map'][0]) * data['size']
     # structure for saving corresponding allocation
     # with their specific color representation
     color_records = []
@@ -168,10 +185,12 @@ def matrix_print(window, data, rows, cols, add_length):
 
 
     for row in range(rows):
-        # address info printing
-        # todo calculate from 1st and field size not from data (approx)
+        # address info printing calculated from 1st and field size (approx)
         if row not in (0, rows-1):
-            window.addstr(row, 0, str(data['map'][row - 1][0]['address']))
+            window.addstr(row, 0, str(address))
+            address += line_address_size
+        elif row == 0:
+            window.addstr(row, 0, 'ADDRESS:', curses.A_BOLD)
 
         for col in range(add_length, cols):
             # border printing
@@ -196,9 +215,7 @@ def redraw_heap_map(window, heap, snapshot):
     if curses.LINES < MIN_ROWS or (curses.COLS - add_info_len) < MIN_COLS:
         window.clear()
         resize_req_print(window)
-        menu_print(window)
-        window.refresh()
-        return 0, 0
+        return {'x': 0, 'y': 0, 'rows': 0, 'cols': 0}
 
     # number of matrix rows == minimum of rows - 2*border field
     map_rows = MIN_ROWS - 2
@@ -214,17 +231,74 @@ def redraw_heap_map(window, heap, snapshot):
         matrix_print(window, decomposition, MIN_ROWS, curses.COLS, add_info_len)
         # printing heap info to the console window
         info_print(window, heap['max'], snapshot, add_info_len)
-        # printing menu to the console window
-        menu_print(window)
 
-        window.move(1, max_add_len+3)
-        return map_rows, map_cols
+        return {'x': 1, 'y': add_info_len + 1, 'rows': map_rows, 'cols': map_cols}
 
     except curses.error:
         window.clear()
         resize_req_print(window)
-        menu_print(window)
-        return 0, 0
+        return {'x': 0, 'y': 0, 'rows': 0, 'cols': 0}
+
+
+def animation_prompt(window, heap, snap, cords):
+    curr_snap = snap
+    # kdyz dat nekdo reset, curr_snap = 1
+    # když da nekdo stop, ceka se,
+    # Q konec,
+    window.nodelay(1)
+
+    while True:
+        window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
+        animation_menu_print(window)
+        window.refresh()
+
+        time.sleep(1)
+        # todo muze volat primo toto ne? cords.update(redraw_heap_map(window, heap, current_snap))
+        curr_snap = another_snapshot(curr_snap, NEXT_SNAPSHOT,
+                                     window, heap, cords)
+
+        if curr_snap == heap['max']:
+            # printing menu to the console window
+            window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
+            menu_print(window)
+            window.move(cords['x'], cords['y'])
+            window.refresh()
+            break
+
+        key = window.getch()
+        if key == ord('q') or key == ord('Q'):
+            break
+
+    while window.getch() != -1:
+        pass
+
+    window.nodelay(0)
+
+    return curr_snap
+
+
+def another_snapshot(current_snap, next_snap, window, heap, cords):
+
+    if next_snap == NEXT_SNAPSHOT:
+        if current_snap < heap['max']:
+            current_snap += next_snap
+        else:
+            return current_snap
+
+    elif next_snap == PREV_SNAPSHOT:
+        if current_snap > 1:
+            current_snap += next_snap
+        else:
+            return current_snap
+
+    cords.update(redraw_heap_map(window, heap, current_snap))
+
+    # printing menu to the console window
+    menu_print(window)
+
+    window.move(cords['x'], cords['y'])
+
+    return current_snap
 
 
 def heap_map_prompt(window, heap):
@@ -233,7 +307,8 @@ def heap_map_prompt(window, heap):
         window(any): initialized console window
         heap(dict): heap map representation
     """
-    current_snapshot = 1
+    current_snapshot = 0
+    screen_cords = {'x': 0, 'y': 0, 'rows': 0, 'cols': 0}
 
     init_curses_colors()
     # set cursor invisible
@@ -244,46 +319,45 @@ def heap_map_prompt(window, heap):
     # just for effect :)
     time.sleep(1)
 
-    rows, cols = redraw_heap_map(window, heap, current_snapshot)
-    start_xy = window.getyx()
+    current_snapshot = another_snapshot(current_snapshot, NEXT_SNAPSHOT,
+                                        window, heap, screen_cords)
+
     while True:
         key = window.getch()
 
         if key == ord('q') or key == ord('Q'):
             break
         elif key == curses.KEY_LEFT:
-            if current_snapshot > 1:
-                current_snapshot -= 1
-                rows, cols = redraw_heap_map(window, heap, current_snapshot)
-                start_xy = window.getyx()
+            current_snapshot = another_snapshot(current_snapshot,
+                                                PREV_SNAPSHOT,
+                                                window, heap, screen_cords)
         elif key == curses.KEY_RIGHT:
-            if current_snapshot < heap['max']:
-                current_snapshot += 1
-                rows, cols = redraw_heap_map(window, heap, current_snapshot)
-                start_xy = window.getyx()
-        elif key == ord('s') or key == ord('S'):
-            pass
+            current_snapshot = another_snapshot(current_snapshot,
+                                                NEXT_SNAPSHOT,
+                                                window, heap, screen_cords)
         elif key == ord('a') or key == ord('A'):
-            pass
+            current_snapshot = animation_prompt(window, heap,
+                                                current_snapshot, screen_cords)
         elif key == ord('4'):
             curr_xy = window.getyx()
-            if (curr_xy[1] - start_xy[1]) > 0:
+            if (curr_xy[1] - screen_cords['y']) > 0:
                 window.move(curr_xy[0], curr_xy[1] - 1)
         elif key == ord('6'):
             curr_xy = window.getyx()
-            if (curr_xy[1] - start_xy[1]) < cols-1:
+            if (curr_xy[1] - screen_cords['y']) < screen_cords['cols'] - 1:
                 window.move(curr_xy[0], curr_xy[1] + 1)
         elif key == ord('8'):
             curr_xy = window.getyx()
-            if (curr_xy[0] - start_xy[0]) > 0:
+            if (curr_xy[0] - screen_cords['x']) > 0:
                 window.move(curr_xy[0] - 1, curr_xy[1])
         elif key == ord('5'):
             curr_xy = window.getyx()
-            if (curr_xy[0] - start_xy[0]) < rows-1:
+            if (curr_xy[0] - screen_cords['x']) < screen_cords['rows'] - 1:
                 window.move(curr_xy[0] + 1, curr_xy[1])
         elif key == curses.KEY_RESIZE:
-            rows, cols = redraw_heap_map(window, heap, current_snapshot)
-            start_xy = window.getyx()
+            current_snapshot = another_snapshot(current_snapshot,
+                                                0,
+                                                window, heap, screen_cords)
 
 
 def heap_map(profile):
@@ -309,7 +383,8 @@ def heap_map(profile):
         # call heap map visualization prompt in curses wrapper
         curses.wrapper(heap_map_prompt, heap)
     except curses.error as error:
-        print(str(error))
+        print('Screen too small!', file=sys.stderr)
+        print(str(error), file=sys.stderr)
 
 
 def create_heap_map_representation(profile):
@@ -421,7 +496,7 @@ def calculate_heap_map(snapshots):
         snap['map'].extend(existing_allocations)
         existing_allocations = new_allocations.copy()
 
-
+# todo move stats to global
 def add_stats(snapshots):
     """ Add statistic about each snapshot
 
@@ -437,6 +512,14 @@ def add_stats(snapshots):
         snapshots(list): list of snapshots
     """
     for snap in snapshots:
+        if not len(snap['map']):
+            snap['max_address'] = 0
+            snap['min_address'] = 0
+            snap['sum_amount'] = 0
+            snap['max_amount'] = 0
+            snap['min_amount'] = 0
+            continue
+
         snap['max_address'] = max(item.get('address', 0) + item.get('amount', 0)
                                   for item in snap['map'])
 
