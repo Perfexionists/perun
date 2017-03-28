@@ -1,5 +1,6 @@
 """This module implement the heap map visualization of the profile"""
 import json
+import math
 import time
 import curses
 import curses.textpad
@@ -45,7 +46,7 @@ def intro_print(window):
     """
     intro = "HEAP MAP!"
 
-    window.addstr(int(curses.LINES / 2), int((curses.COLS - len(intro))/2),
+    window.addstr(curses.LINES // 2, (curses.COLS - len(intro))//2,
                   intro, curses.A_BOLD)
 
 
@@ -56,7 +57,7 @@ def menu_print(window):
     """
     menu = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE  [S] SAVE'
 
-    window.addstr(curses.LINES - 1, int((curses.COLS - len(menu)) / 2),
+    window.addstr(curses.LINES - 1, (curses.COLS - len(menu)) // 2,
                   menu, curses.A_BOLD)
 
 
@@ -68,23 +69,8 @@ def info_print(window, max, curr, indent):
         curr(int): number of the current snapshot
     """
     info_text = 'SNAPSHOT: ' + str(curr) + '/' + str(max)
-    window.addstr(0, int((curses.COLS - len(info_text)) / 2) + indent,
+    window.addstr(0, (curses.COLS - len(info_text)) // 2 + indent,
                   info_text, curses.color_pair(COLOR_SNAPSHOT_INFO))
-
-
-def create_screen_matrix(rows, cols):
-    """ Create a matrix for rows and columns
-    Arguments:
-        rows(int): number of the rows in a matrix
-        cols(int): number of the columns in a matrix
-
-    Returns:
-        list: created 2D matrix for rows and cols
-    """
-    # creating screen matrix x_size X y_size
-    screen_matrix = [[None for y in range(cols)] for x in range(rows)]
-
-    return screen_matrix
 
 
 def create_screen_decomposition(heap, curr, rows, cols):
@@ -99,13 +85,59 @@ def create_screen_decomposition(heap, curr, rows, cols):
     """
     snap = heap['snapshots'][curr - 1]
 
+    # calculating approximated field size
+    add_range = snap['max_address'] - snap['min_address']
+    field_size = math.ceil(add_range / (cols * rows))
 
-    data = [[{"uid": None, "address": x+y} for y in range(cols)] for x in range(rows)]
-    data[0][cols-1] = {"uid": {"function": 'f1', "source": 's1'}, "address": 80}
-    data[27][2] = {"uid": {"function": 'f1', "source": 's1'}, "address": 800}
-    data[25][2] = {"uid": {"function": 'f2', "source": 's1'}, "address": 800}
-    data[25][3] = {"uid": {"function": 'f2', "source": 's1'}, "address": 800}
-    return {'map':data}
+    if field_size < 1:
+        field_size = 1
+    assert field_size >= 1
+
+    matrix = [[None for y in range(cols)] for x in range(rows)]
+
+    allocations = snap['map']
+    # sorting allocations records by frequency of allocations
+    allocations.sort(key=lambda x: x['address'])
+    iterator = iter(allocations)
+
+
+    # když to bude přes vice poli tak info bude ve všech stejne
+    record = next(iterator, None)
+    # set starting address to first approx field
+    last_field = 0 if record is None else record['address']
+    remain_amount = 0 if record is None else record['amount']
+    for row in range(rows):
+        for col in range(cols):
+
+            if record is not None:
+                # if is record address not in the next field,
+                # let's put there empty field
+                if record['address'] > last_field + field_size:
+                    matrix[row][col] = {"uid": None,
+                                        "address": last_field,
+                                        "amount": 0}
+                    last_field += field_size
+                    continue
+
+                matrix[row][col] = {"uid": record['uid'],
+                                    "address": record['address'],
+                                    "amount": record['amount']}
+
+                if remain_amount <= field_size:
+                    record = next(iterator, None)
+                    remain_amount = 0 if record is None else record['amount']
+                else:
+                    remain_amount -= field_size
+
+                last_field += field_size
+            else:
+                matrix[row][col] = {"uid": None,
+                                    "address": last_field,
+                                    "amount": 0}
+                last_field +=field_size
+
+
+    return {'map': matrix, 'size': field_size}
 
 
 def matrix_print(window, data, rows, cols, add_length):
@@ -137,6 +169,7 @@ def matrix_print(window, data, rows, cols, add_length):
 
     for row in range(rows):
         # address info printing
+        # todo calculate from 1st and field size not from data (approx)
         if row not in (0, rows-1):
             window.addstr(row, 0, str(data['map'][row - 1][0]['address']))
 
@@ -157,24 +190,26 @@ def redraw_heap_map(window, heap, snapshot):
     curses.update_lines_cols()
     window.clear()
 
-    if curses.LINES < MIN_ROWS or curses.COLS < MIN_COLS:
+    max_add_len = len(str(heap['snapshots'][snapshot - 1]['max_address']))
+    add_info_len = max_add_len + 2
+
+    if curses.LINES < MIN_ROWS or (curses.COLS - add_info_len) < MIN_COLS:
         window.clear()
         resize_req_print(window)
         menu_print(window)
         window.refresh()
         return 0, 0
 
+    # number of matrix rows == minimum of rows - 2*border field
+    map_rows = MIN_ROWS - 2
+    # number of matrix cols == terminal current cols - size of address info - 2*border field
+    map_cols = curses.COLS - add_info_len - 2
+    # getting heap map decomposition
+    decomposition = create_screen_decomposition(heap, snapshot,
+                                                map_rows, map_cols)
+    assert decomposition
+
     try:
-        # max_add_len = len(str(heap['snapshots'][snapshot - 1]['max_address']))
-        max_add_len = 4
-        add_info_len = max_add_len + 2
-        # number of matrix rows == minimum of rows - 2*border field
-        map_rows = MIN_ROWS - 2
-        # number of matrix cols == terminal current cols - size of address info - 2*border field
-        map_cols = curses.COLS - add_info_len - 2
-        # getting heap map decomposition
-        decomposition = create_screen_decomposition(heap, snapshot,
-                                                    map_rows, map_cols)
         # printing heap map decomposition to the console window
         matrix_print(window, decomposition, MIN_ROWS, curses.COLS, add_info_len)
         # printing heap info to the console window
@@ -338,6 +373,9 @@ def get_map(resources):
     Returns:
         list: list of the simple allocations records
     """
+    # TODO maybe needed approximation inc ase of really different sizes
+    # of the amount, when smaller sizes could be set to zero and other sizes's
+    # units change to bigger ones (B > MB)
     simple_map = []
 
     for res in resources:
@@ -399,7 +437,8 @@ def add_stats(snapshots):
         snapshots(list): list of snapshots
     """
     for snap in snapshots:
-        snap['max_address'] = max(item.get('address', 0) for item in snap['map'])
+        snap['max_address'] = max(item.get('address', 0) + item.get('amount', 0)
+                                  for item in snap['map'])
 
         snap['min_address'] = min(item.get('address', 0) for item in snap['map'])
 
