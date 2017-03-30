@@ -281,7 +281,10 @@ void Configuration::Parse_sample() {
         auto func_record = func_config.find(func_p);
         if(func_record == func_config.end()) {
             // Function does not have a configuration record yet, create one
-            func_config.insert({func_p, Config_details(false, true, sample_val - 1, sample_val)});
+            // If the sampling is lower than/or one, do not create sampling record as it would only slow down instrumentation
+            if(sample_val > 1) {
+                func_config.insert({func_p, Config_details(false, true, sample_val - 1, sample_val)});
+            }
         }
         // There is no need to update the record if it already exists
         // Either the function is supposed to be filtered or multiple definition for sampling - we take the first one
