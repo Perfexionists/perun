@@ -16,20 +16,39 @@ MIN_COLS = 70
 COLOR_BORDER = 1
 COLOR_FREE_FIELD = 2
 COLOR_SNAPSHOT_INFO = 3
+GOOD_COLORS = 0
 
 
 def init_curses_colors():
+    global GOOD_COLORS, COLOR_BORDER, COLOR_FREE_FIELD, COLOR_SNAPSHOT_INFO
+
     curses.start_color()
     curses.use_default_colors()
 
-    # border color
-    curses.init_pair(COLOR_BORDER, 16, 16)
-    curses.init_pair(COLOR_FREE_FIELD, -1, curses.COLOR_BLACK)
-    curses.init_pair(COLOR_SNAPSHOT_INFO, -1, 16)
+    good_colors = (
+        1, 2, 3, 4, 5, 6, 7, 11, 14, 17, 21, 19, 22, 23, 27, 33, 30, 34, 45,
+        41,46, 49, 51, 52, 54, 56, 58, 59, 62, 65, 71, 76, 89, 91, 94, 95, 124,
+        125, 126, 127, 129, 130, 131, 154, 156, 159, 161, 166, 167, 178, 195,
+        197, 199, 203, 208, 210, 211, 214, 220, 226, 229, 255)
 
-    # TODO exclude bad visible colors e.g. similar to COLOR_FREE_FIELD
-    for i in range(4, curses.COLORS):
-        curses.init_pair(i, -1, i)
+    start_pair_number = 1
+    for i in good_colors:
+        curses.init_pair(start_pair_number, -1, i)
+        start_pair_number += 1
+
+    GOOD_COLORS = start_pair_number - 1
+    # border color
+    curses.init_pair(start_pair_number, 16, 16)
+    COLOR_BORDER = start_pair_number
+    start_pair_number += 1
+
+    curses.init_pair(start_pair_number, -1, 242)
+    COLOR_FREE_FIELD = start_pair_number
+    start_pair_number += 1
+
+    curses.init_pair(start_pair_number, -1, 16)
+    COLOR_SNAPSHOT_INFO = start_pair_number
+
 
 
 def resize_req_print(window):
@@ -182,7 +201,7 @@ def matrix_print(window, data, rows, cols, add_length):
                 return item['color']
 
         color_records.append({'uid': uid,
-                            'color': randint(2, curses.COLORS)})
+                            'color': randint(1, GOOD_COLORS)})
         return color_records[-1]['color']
 
 
@@ -207,7 +226,7 @@ def matrix_print(window, data, rows, cols, add_length):
                 if row == rows-2:
                     window.addch(row, col, ' ', curses.color_pair(color))
                 else:
-                    window.addch(row, col, field_sym, curses.color_pair(color))
+                    window.addstr(row, col, field_sym, curses.color_pair(color))
 
 
 def redraw_heap_map(window, heap, snapshot):
@@ -321,6 +340,7 @@ def heap_map_prompt(window, heap):
     screen_cords = {'x': 0, 'y': 0, 'rows': 0, 'cols': 0}
 
     init_curses_colors()
+
     # set cursor invisible
     curses.curs_set(2)
     # INTRO screen
