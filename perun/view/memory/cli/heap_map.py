@@ -23,13 +23,13 @@ def init_curses_colors():
     curses.use_default_colors()
 
     # border color
-    curses.init_pair(COLOR_BORDER, 16, -1)
-    curses.init_pair(COLOR_FREE_FIELD, curses.COLOR_BLACK, -1)
-    curses.init_pair(COLOR_SNAPSHOT_INFO, curses.COLOR_WHITE, 16)
+    curses.init_pair(COLOR_BORDER, 16, 16)
+    curses.init_pair(COLOR_FREE_FIELD, -1, curses.COLOR_BLACK)
+    curses.init_pair(COLOR_SNAPSHOT_INFO, -1, 16)
 
     # TODO exclude bad visible colors e.g. similar to COLOR_FREE_FIELD
     for i in range(4, curses.COLORS):
-        curses.init_pair(i, i, -1)
+        curses.init_pair(i, -1, i)
 
 
 def resize_req_print(window):
@@ -161,7 +161,9 @@ def matrix_print(window, data, rows, cols, add_length):
         window(any): console window
         data(list): data to print
     """
-    field_sym = u"\u2588"
+    #field_sym = u"\u2588"
+    border_sym = u"\u2588"
+    field_sym = '_'
     address = data['map'][0][0]['address']
     line_address_size = len(data['map'][0]) * data['size']
     # structure for saving corresponding allocation
@@ -195,14 +197,17 @@ def matrix_print(window, data, rows, cols, add_length):
         for col in range(add_length, cols):
             # border printing
             if row in (0, rows-1):
-                window.addch(row, col, field_sym, curses.color_pair(COLOR_BORDER))
+                window.addch(row, col, border_sym, curses.color_pair(COLOR_BORDER))
             elif col in (add_length, cols-1):
-                window.addch(row, col, field_sym, curses.color_pair(COLOR_BORDER))
+                window.addch(row, col, border_sym, curses.color_pair(COLOR_BORDER))
             # filed printing
             else:
                 field = data['map'][row - 1][col - add_length - 1]
                 color = get_field_color(field, color_records)
-                window.addch(row, col, field_sym, curses.color_pair(color))
+                if row == rows-2:
+                    window.addch(row, col, ' ', curses.color_pair(color))
+                else:
+                    window.addch(row, col, field_sym, curses.color_pair(color))
 
 
 def redraw_heap_map(window, heap, snapshot):
@@ -242,9 +247,8 @@ def redraw_heap_map(window, heap, snapshot):
 
 def animation_prompt(window, heap, snap, cords):
     curr_snap = snap
-    # kdyz dat nekdo reset, curr_snap = 1
-    # když da nekdo stop, ceka se,
-    # Q konec,
+
+    # set non_blocking window.getch()
     window.nodelay(1)
 
     while True:
@@ -253,21 +257,27 @@ def animation_prompt(window, heap, snap, cords):
         window.refresh()
 
         time.sleep(1)
-        # todo muze volat primo toto ne? cords.update(redraw_heap_map(window, heap, current_snap))
-        curr_snap = another_snapshot(curr_snap, NEXT_SNAPSHOT,
-                                     window, heap, cords)
 
-        if curr_snap == heap['max']:
+        if curr_snap < heap['max']:
+            curr_snap += 1
+            cords.update(redraw_heap_map(window, heap, curr_snap))
+
+        key = window.getch()
+        if key in (ord('q'), ord('Q')):
             # printing menu to the console window
             window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
             menu_print(window)
-            window.move(cords['x'], cords['y'])
             window.refresh()
+            window.move(cords['x'], cords['y'])
             break
-
-        key = window.getch()
-        if key == ord('q') or key == ord('Q'):
-            break
+        elif key in (ord('r'), ord('R')):
+            curr_snap = 0
+        elif key in (ord('s'), ord('S')):
+            while window.getch() not in (ord('c'), ord('C')):
+                menu = '[C] CONTINUE'
+                window.addstr(curses.LINES - 1, (curses.COLS - len(menu)) // 2,
+                              menu, curses.A_BOLD)
+                window.refresh()
 
     while window.getch() != -1:
         pass
