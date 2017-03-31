@@ -19,19 +19,20 @@ GOOD_COLORS = 0
 
 
 def init_curses_colors():
+    """ Initialize colors used later in heap map """
     global GOOD_COLORS, COLOR_BORDER, COLOR_FREE_FIELD, COLOR_SNAPSHOT_INFO
 
     curses.start_color()
     curses.use_default_colors()
 
-    good_colors = (
+    __good_colors = (
         1, 2, 3, 4, 5, 6, 7, 11, 14, 17, 21, 19, 22, 23, 27, 33, 30, 34, 45,
-        41,46, 49, 51, 52, 54, 56, 58, 59, 62, 65, 71, 76, 89, 91, 94, 95, 124,
-        125, 126, 127, 129, 130, 131, 154, 156, 159, 161, 166, 167, 178, 195,
-        197, 199, 203, 208, 210, 211, 214, 220, 226, 229, 255)
+        41, 46, 49, 51, 52, 54, 56, 58, 59, 62, 65, 71, 76, 89, 91, 94, 95,
+        124, 125, 126, 127, 129, 130, 131, 154, 156, 159, 161, 166, 167, 178,
+        195, 197, 199, 203, 208, 210, 211, 214, 220, 226, 229, 255)
 
     start_pair_number = 1
-    for i in good_colors:
+    for i in __good_colors:
         curses.init_pair(start_pair_number, -1, i)
         start_pair_number += 1
 
@@ -40,43 +41,44 @@ def init_curses_colors():
     curses.init_pair(start_pair_number, 16, 16)
     COLOR_BORDER = start_pair_number
     start_pair_number += 1
-
+    # free field color
     curses.init_pair(start_pair_number, -1, 242)
     COLOR_FREE_FIELD = start_pair_number
     start_pair_number += 1
-
+    # snapshot info color
     curses.init_pair(start_pair_number, -1, 16)
     COLOR_SNAPSHOT_INFO = start_pair_number
 
+
+def show_intro(window):
+    """ Print INTRO screen about HEAP MAP visualization
+    Arguments:
+        window(any): initialized console window
+    """
+    text = "HEAP MAP!"
+
+    window.addstr(curses.LINES // 2, (curses.COLS - len(text))//2,
+                  text, curses.A_BOLD)
+    window.refresh()
+    # just for effect :)
+    curses.napms(700)
 
 
 def resize_req_print(window):
     """ Print resize request to the window
     Arguments:
-        window(any): console window
+        window(any): initialized console window
     """
-    resize_req = "Resize screen up, please"
+    resize_req = "Increase the size of your screen, please"
 
-    window.addstr(int(curses.LINES / 2),
-                  int((curses.COLS - len(resize_req)) / 2),
+    window.addstr(curses.LINES // 2, (curses.COLS - len(resize_req)) // 2,
                   resize_req)
-
-
-def intro_print(window):
-    """ Print INTRO screen to the window
-    Arguments:
-        window(any): console window
-    """
-    intro = "HEAP MAP!"
-
-    window.addstr(curses.LINES // 2, (curses.COLS - len(intro))//2,
-                  intro, curses.A_BOLD)
 
 
 def menu_print(window):
     """ Print menu information to the window
     Arguments:
-        window(any): console window
+        window(any): initialized console window
     """
     menu = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE  [4|8|6|5] CURSOR L|U|R|D'
 
@@ -87,7 +89,7 @@ def menu_print(window):
 def animation_menu_print(window):
     """ Print animation menu information to the window
     Arguments:
-        window(any): console window
+        window(any): initialized console window
     """
     menu = '[Q] QUIT  [S] STOP  [C] CONTINUE  [R] RESTART'
 
@@ -95,37 +97,37 @@ def animation_menu_print(window):
                   menu, curses.A_BOLD)
 
 
-def info_print(window, max, curr, indent):
+def info_print(window, max_snap, curr, indent):
     """ Print the heap information to the window
     Arguments:
-        window(any): console window
-        max(int): total number of the snapshots
+        window(any): initialized console window
+        max_snap(int): total number of the snapshots
         curr(int): number of the current snapshot
     """
-    info_text = 'SNAPSHOT: ' + str(curr) + '/' + str(max)
-    window.addstr(0, (curses.COLS - len(info_text)) // 2 + indent,
+    info_text = 'SNAPSHOT: ' + str(curr) + '/' + str(max_snap)
+    window.addstr(0, (curses.COLS - len(info_text) - indent) // 2 + indent,
                   info_text, curses.color_pair(COLOR_SNAPSHOT_INFO))
 
 
 def create_screen_decomposition(heap, curr, rows, cols):
-    """ Fill the matrix with corresponding representation of snapshot
+    """ Create a matrix with corresponding representation of the snapshot
     Arguments:
-        matrix(list): matrix to update
         heap(dict): heap map representation
         curr(int): number of the current snapshot
+        rows(int): total number of the screen's rows
+        cols(int): total number of the screen's columns
 
     Returns:
-        list: updated matrix
+        dict: matrix representing screen's decomposition and size of the field
     """
     snap = heap['snapshots'][curr - 1]
 
     # calculating approximated field size
-    add_range = snap['max_address'] - snap['min_address']
+    add_range = heap['stats']['max_address'] - heap['stats']['min_address']
     field_size = math.ceil(add_range / (cols * rows))
 
     if field_size < 1:
         field_size = 1
-    assert field_size >= 1
 
     matrix = [[None for y in range(cols)] for x in range(rows)]
 
@@ -134,10 +136,9 @@ def create_screen_decomposition(heap, curr, rows, cols):
     allocations.sort(key=lambda x: x['address'])
     iterator = iter(allocations)
 
-
     record = next(iterator, None)
     # set starting address to first approx field
-    last_field = 0 if record is None else record['address']
+    last_field = heap['stats']['min_address']
     remain_amount = 0 if record is None else record['amount']
     for row in range(rows):
         for col in range(cols):
@@ -167,19 +168,21 @@ def create_screen_decomposition(heap, curr, rows, cols):
                 matrix[row][col] = {"uid": None,
                                     "address": last_field,
                                     "amount": 0}
-                last_field +=field_size
+                last_field += field_size
 
 
     return {'map': matrix, 'size': field_size}
 
 
 def matrix_print(window, data, rows, cols, add_length):
-    """ Prints the matrix to the window
+    """ Prints the screen representation matrix to the window
     Arguments:
-        window(any): console window
-        data(list): data to print
+        window(any): initialized console window
+        data(dict): representation information
+        rows(int): total number of the screen's rows
+        cols(int): total number of the screen's columns
+        add_length(int): length of the maximal address
     """
-    #field_sym = u"\u2588"
     border_sym = u"\u2588"
     field_sym = '_'
     address = data['map'][0][0]['address']
@@ -196,13 +199,12 @@ def matrix_print(window, data, rows, cols, add_length):
         uid = field['uid']
         for item in color_records:
             if (uid['function'] == item['uid']['function'] and
-                uid['source'] == item['uid']['source']):
+                        uid['source'] == item['uid']['source']):
                 return item['color']
 
         color_records.append({'uid': uid,
-                            'color': randint(1, GOOD_COLORS)})
+                              'color': randint(1, GOOD_COLORS)})
         return color_records[-1]['color']
-
 
     for row in range(rows):
         # address info printing calculated from 1st and field size (approx)
@@ -228,68 +230,95 @@ def matrix_print(window, data, rows, cols, add_length):
                     window.addstr(row, col, field_sym, curses.color_pair(color))
 
 
-def redraw_heap_map(window, heap, snapshot):
+def redraw_heap_map(window, heap, snap):
+    """ Redraw the heap map screen to represent the specified snapshot
+    Arguments:
+        window(any): initialized console window
+        heap(dict): heap map representation
+        snap(int): number of the snapshot to represent
+
+    Returns:
+        dict: cursor's screen coordinates
+    """
     curses.update_lines_cols()
     window.clear()
 
-    max_add_len = len(str(heap['snapshots'][snapshot - 1]['max_address']))
+    max_add_len = len(str(heap['snapshots'][snap - 1]['max_address']))
     add_info_len = max_add_len + 2
 
+    # check for the minimal screen size
     if curses.LINES < MIN_ROWS or (curses.COLS - add_info_len) < MIN_COLS:
         window.clear()
         resize_req_print(window)
-        return {'x': 0, 'y': 0, 'rows': 0, 'cols': 0}
+        return {'row': 0, 'col': 0, 'rows': 0, 'cols': 0}
 
-    # number of matrix rows == minimum of rows - 2*border field
+    # number of the screen's rows == (minimum of rows) - (2*border field)
     map_rows = MIN_ROWS - 2
-    # number of matrix cols == terminal current cols - size of address info - 2*border field
+    # number of the screen's columns == (terminal's current number of
+    # the columns) - (size of address info - 2*border field)
     map_cols = curses.COLS - add_info_len - 2
-    # getting heap map decomposition
-    decomposition = create_screen_decomposition(heap, snapshot,
-                                                map_rows, map_cols)
+    # creating the heap map screen decomposition
+    decomposition = create_screen_decomposition(heap, snap, map_rows, map_cols)
     assert decomposition
 
     try:
         # printing heap map decomposition to the console window
-        matrix_print(window, decomposition, MIN_ROWS, curses.COLS, add_info_len)
+        matrix_print(window, decomposition,
+                     MIN_ROWS, curses.COLS, add_info_len)
         # printing heap info to the console window
-        info_print(window, heap['max'], snapshot, add_info_len)
+        info_print(window, heap['max'], snap, add_info_len)
 
-        return {'x': 1, 'y': add_info_len + 1, 'rows': map_rows, 'cols': map_cols}
+        return {'row': 1, 'col': add_info_len + 1,
+                'rows': map_rows, 'cols': map_cols}
 
     except curses.error:
         window.clear()
         resize_req_print(window)
-        return {'x': 0, 'y': 0, 'rows': 0, 'cols': 0}
+        return {'row': 0, 'col': 0, 'rows': 0, 'cols': 0}
 
 
 def animation_prompt(window, heap, snap, cords):
+    """ Handle animation feature of the HEAP MAP visualization
+    Arguments:
+        window(any): initialized console window
+        heap(dict): heap map representation
+        snap(int): number of the current snapshot
+        cords(dict): cursor's screen coordinates
+
+    Returns:
+        int: number of the current snapshot
+    """
     curr_snap = snap
 
     # set non_blocking window.getch()
     window.nodelay(1)
 
     while True:
+        # redraw standard MENU text with ANIMATION MENU text
         window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
         animation_menu_print(window)
         window.refresh()
 
+        # delay between individually heap map screens
         curses.napms(1000)
+        key = window.getch()
 
         if curr_snap < heap['max']:
             curr_snap += 1
             cords.update(redraw_heap_map(window, heap, curr_snap))
 
-        key = window.getch()
         if key in (ord('q'), ord('Q')):
-            # printing menu to the console window
+            # redraw ANIMATION MENU text with standard MENU text
             window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
             menu_print(window)
             window.refresh()
-            window.move(cords['x'], cords['y'])
+            # set cursor's position to the upper left corner of the heap map
+            window.move(cords['row'], cords['col'])
             break
+        # restart animation from the 1st snapshot
         elif key in (ord('r'), ord('R')):
             curr_snap = 0
+        # stop animation until 'C' key is pressed
         elif key in (ord('s'), ord('S')):
             while window.getch() not in (ord('c'), ord('C')):
                 menu = '[C] CONTINUE'
@@ -297,6 +326,7 @@ def animation_prompt(window, heap, snap, cords):
                               menu, curses.A_BOLD)
                 window.refresh()
 
+    # empty buffer window.getch()
     while window.getch() != -1:
         pass
 
@@ -305,88 +335,129 @@ def animation_prompt(window, heap, snap, cords):
     return curr_snap
 
 
-def another_snapshot(current_snap, next_snap, window, heap, cords):
+def following_snapshot(current_snap, following_snap, window, heap, cords):
+    """ Set following snapshot to print
+    Arguments:
+        current_snap(int): number of the current snapshot
+        following_snap(int): number of the following snapshot
+        window(any): initialized console window
+        heap(dict): heap map representation
+        cords(dict): cursor's screen coordinates
 
-    if next_snap == NEXT_SNAPSHOT:
+    Returns:
+        int: number of the current snapshot
+    """
+    if following_snap == NEXT_SNAPSHOT:
         if current_snap < heap['max']:
-            current_snap += next_snap
+            current_snap += following_snap
         else:
             return current_snap
 
-    elif next_snap == PREV_SNAPSHOT:
+    elif following_snap == PREV_SNAPSHOT:
         if current_snap > 1:
-            current_snap += next_snap
+            current_snap += following_snap
         else:
             return current_snap
 
+    # draw heap map
     cords.update(redraw_heap_map(window, heap, current_snap))
 
     # printing menu to the console window
     menu_print(window)
 
-    window.move(cords['x'], cords['y'])
+    # set cursor's position to the upper left corner of the heap map
+    window.move(cords['row'], cords['col'])
 
     return current_snap
 
 
+def cursor_move(window, direction, cords):
+    """ Move the cursor to the new position defined by direction
+    Arguments:
+        window(any): initialized console window
+        direction(any): character returned by curses.getch()
+        cords(dict): cursor's screen coordinates
+    """
+    # current cursor's position
+    row_col = window.getyx()
+
+    if direction == ord('4'):
+        if row_col[1] - cords['col'] > 0:
+            window.move(row_col[0], row_col[1] - 1)
+    elif direction == ord('6'):
+        if row_col[1] - cords['col'] < cords['cols'] - 1:
+            window.move(row_col[0], row_col[1] + 1)
+    elif direction == ord('8'):
+        if row_col[0] - cords['row'] > 0:
+            window.move(row_col[0] - 1, row_col[1])
+    elif direction == ord('5'):
+        if row_col[0] - cords['row'] < cords['rows'] - 1:
+            window.move(row_col[0] + 1, row_col[1])
+
+
 def heap_map_prompt(window, heap):
     """ Visualization prompt
+
+        Heap map's screen position is represented by dictionary as follow:
+        {'col': X coordinate of upper left corner of the screen (int),
+         'row': Y coordinate of upper left corner of the screen (int),
+         'rows': number of screen's rows (int),
+         'cols': number of screen's columns (int)
+         }
+
+        Coordinate space is 0---->X
+                            |
+                            |
+                            |
+                            Y
+
     Arguments:
         window(any): initialized console window
         heap(dict): heap map representation
     """
     current_snapshot = 0
-    screen_cords = {'x': 0, 'y': 0, 'rows': 0, 'cols': 0}
-
+    # initialize the screen's coordinates
+    screen_cords = {'row': 0, 'col': 0, 'rows': 0, 'cols': 0}
+    # initialize colors which will be used
     init_curses_colors()
-
-    # set cursor invisible
+    # set cursor visible
     curses.curs_set(2)
-    # INTRO screen
-    intro_print(window)
-    window.refresh()
-    # just for effect :)
-    curses.napms(700)
 
-    current_snapshot = another_snapshot(current_snapshot, NEXT_SNAPSHOT,
-                                        window, heap, screen_cords)
+    show_intro(window)
+    # print 1st snapshot's heap map
+    current_snapshot = following_snapshot(current_snapshot, NEXT_SNAPSHOT,
+                                          window, heap, screen_cords)
 
     while True:
         key = window.getch()
 
-        if key == ord('q') or key == ord('Q'):
+        if key in (ord('q'), ord('Q')):
             break
+
         elif key == curses.KEY_LEFT:
-            current_snapshot = another_snapshot(current_snapshot,
-                                                PREV_SNAPSHOT,
-                                                window, heap, screen_cords)
+            current_snapshot = following_snapshot(current_snapshot,
+                                                  PREV_SNAPSHOT,
+                                                  window, heap,
+                                                  screen_cords)
+
         elif key == curses.KEY_RIGHT:
-            current_snapshot = another_snapshot(current_snapshot,
-                                                NEXT_SNAPSHOT,
-                                                window, heap, screen_cords)
-        elif key == ord('a') or key == ord('A'):
+            current_snapshot = following_snapshot(current_snapshot,
+                                                  NEXT_SNAPSHOT,
+                                                  window, heap,
+                                                  screen_cords)
+        # animation option
+        elif key in (ord('a'), key == ord('A')):
             current_snapshot = animation_prompt(window, heap,
-                                                current_snapshot, screen_cords)
-        elif key == ord('4'):
-            curr_xy = window.getyx()
-            if (curr_xy[1] - screen_cords['y']) > 0:
-                window.move(curr_xy[0], curr_xy[1] - 1)
-        elif key == ord('6'):
-            curr_xy = window.getyx()
-            if (curr_xy[1] - screen_cords['y']) < screen_cords['cols'] - 1:
-                window.move(curr_xy[0], curr_xy[1] + 1)
-        elif key == ord('8'):
-            curr_xy = window.getyx()
-            if (curr_xy[0] - screen_cords['x']) > 0:
-                window.move(curr_xy[0] - 1, curr_xy[1])
-        elif key == ord('5'):
-            curr_xy = window.getyx()
-            if (curr_xy[0] - screen_cords['x']) < screen_cords['rows'] - 1:
-                window.move(curr_xy[0] + 1, curr_xy[1])
+                                                current_snapshot,
+                                                screen_cords)
+        # cursor moved
+        elif key in (ord('4'), ord('6'), ord('8'), ord('5')):
+            cursor_move(window, key, screen_cords)
+        # change of the screen size occurred
         elif key == curses.KEY_RESIZE:
-            current_snapshot = another_snapshot(current_snapshot,
-                                                0,
-                                                window, heap, screen_cords)
+            current_snapshot = following_snapshot(current_snapshot,
+                                                  0,
+                                                  window, heap, screen_cords)
 
 
 def heap_map(profile):
@@ -516,17 +587,17 @@ def calculate_heap_map(snapshots):
     existing_allocations = []
     for snap in snapshots:
 
-        for m in snap['map']:
-            if m['type'] == 'free':
+        for allocation in snap['map']:
+            if allocation['type'] == 'free':
                 alloc = next((x for x in new_allocations
-                              if x['address'] == m['address']), None)
+                              if x['address'] == allocation['address']), None)
                 if alloc:
                     new_allocations.remove(alloc)
 
                 # removing free record
-                snap['map'].remove(m)
+                snap['map'].remove(allocation)
             else:
-                new_allocations.append(m)
+                new_allocations.append(allocation)
 
         # extending existing allocations from previous to the current snapshot
         snap['map'].extend(existing_allocations)
@@ -552,7 +623,6 @@ def add_stats(snapshots):
     """
     glob_max_address = []
     glob_min_address = []
-    glob_sum_amount = []
     glob_max_amount = []
     glob_min_amount = []
 
@@ -564,12 +634,17 @@ def add_stats(snapshots):
             snap['max_amount'] = 0
             snap['min_amount'] = 0
         else:
-            snap['max_address'] = max(item.get('address', 0) + item.get('amount', 0)
-                                  for item in snap['map'])
-            snap['min_address'] = min(item.get('address', 0) for item in snap['map'])
-            snap['sum_amount'] = sum(item.get('amount', 0) for item in snap['map'])
-            snap['max_amount'] = max(item.get('amount', 0) for item in snap['map'])
-            snap['min_amount'] = min(item.get('amount', 0) for item in snap['map'])
+            snap['max_address'] = max(item.get('address', 0) +
+                                      item.get('amount', 0)
+                                      for item in snap['map'])
+            snap['min_address'] = min(item.get('address', 0)
+                                      for item in snap['map'])
+            snap['sum_amount'] = sum(item.get('amount', 0)
+                                     for item in snap['map'])
+            snap['max_amount'] = max(item.get('amount', 0)
+                                     for item in snap['map'])
+            snap['min_amount'] = min(item.get('amount', 0)
+                                     for item in snap['map'])
 
         glob_max_address.append(snap['max_address'])
         glob_min_address.append(snap['min_address'])
@@ -580,7 +655,7 @@ def add_stats(snapshots):
             'min_address': min(glob_min_address),
             'max_amount': max(glob_max_amount),
             'min_amount': min(glob_min_amount)
-            }
+           }
 
 
 if __name__ == "__main__":
