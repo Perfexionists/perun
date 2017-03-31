@@ -1,7 +1,6 @@
 """This module implement the heap map visualization of the profile"""
 import sys
 import math
-import time
 import curses
 import curses.textpad
 from random import randint
@@ -275,7 +274,7 @@ def animation_prompt(window, heap, snap, cords):
         animation_menu_print(window)
         window.refresh()
 
-        time.sleep(1)
+        curses.napms(1000)
 
         if curr_snap < heap['max']:
             curr_snap += 1
@@ -347,7 +346,7 @@ def heap_map_prompt(window, heap):
     intro_print(window)
     window.refresh()
     # just for effect :)
-    time.sleep(1)
+    curses.napms(700)
 
     current_snapshot = another_snapshot(current_snapshot, NEXT_SNAPSHOT,
                                         window, heap, screen_cords)
@@ -428,12 +427,18 @@ def create_heap_map_representation(profile):
     Format of the heap map representation is following:
         {"max": number of snapshots taken (int),
          "unit": used memory unit (string),
+         "stats": { # same stats like for each snapshots but calculated
+                    # over all the snapshots
+                    # (except sum_amount -> doesn't make sense)
+                    }
          "snapshots": [
             {"time": time of the snapshot (string),
              "max_amount": maximum amount of the allocated memory
                            in snapshot (int),
              "min_amount": minimum amount of the allocated memory
                            in snapshot (int),
+             "sum_amount": summary of the amount of the allocated memory
+                           in snapshots (int)
              "max_address": maximal address of the allocated memory
                             in snapshot(int),
              "min_address": minimal address of the allocated memory
@@ -463,10 +468,11 @@ def create_heap_map_representation(profile):
     # calculating existing allocations for each snapshot
     calculate_heap_map(snapshots)
     # adding statistics about each snapshot
-    add_stats(snapshots)
+    glob_stats = add_stats(snapshots)
 
     return {'snapshots': snapshots,
             'max': len(snapshots),
+            'stats': glob_stats,
             'unit': profile['header']['units']['memory']}
 
 
@@ -526,21 +532,30 @@ def calculate_heap_map(snapshots):
         snap['map'].extend(existing_allocations)
         existing_allocations = new_allocations.copy()
 
-# todo move stats to global
+
 def add_stats(snapshots):
-    """ Add statistic about each snapshot
+    """ Add statistic about each snapshot and global view
 
         Maximum amount of the allocated memory,
         minimum amount of the allocated memory,
         summary of the amount of the allocated memory,
-        maximal address of the allocated memory,
+        maximal address of the allocated memory
+        (counted as start address + amount),
         minimal address of the allocated memory.
 
         Result is in the form of modified input argument.
 
     Arguments:
         snapshots(list): list of snapshots
+    Return:
+        dict: calculated global statistics over all the snapshots
     """
+    glob_max_address = []
+    glob_min_address = []
+    glob_sum_amount = []
+    glob_max_amount = []
+    glob_min_amount = []
+
     for snap in snapshots:
         if not len(snap['map']):
             snap['max_address'] = 0
@@ -548,18 +563,24 @@ def add_stats(snapshots):
             snap['sum_amount'] = 0
             snap['max_amount'] = 0
             snap['min_amount'] = 0
-            continue
-
-        snap['max_address'] = max(item.get('address', 0) + item.get('amount', 0)
+        else:
+            snap['max_address'] = max(item.get('address', 0) + item.get('amount', 0)
                                   for item in snap['map'])
+            snap['min_address'] = min(item.get('address', 0) for item in snap['map'])
+            snap['sum_amount'] = sum(item.get('amount', 0) for item in snap['map'])
+            snap['max_amount'] = max(item.get('amount', 0) for item in snap['map'])
+            snap['min_amount'] = min(item.get('amount', 0) for item in snap['map'])
 
-        snap['min_address'] = min(item.get('address', 0) for item in snap['map'])
+        glob_max_address.append(snap['max_address'])
+        glob_min_address.append(snap['min_address'])
+        glob_max_amount.append(snap['max_amount'])
+        glob_min_amount.append(snap['min_amount'])
 
-        snap['sum_amount'] = sum(item.get('amount', 0) for item in snap['map'])
-
-        snap['max_amount'] = max(item.get('amount', 0) for item in snap['map'])
-
-        snap['min_amount'] = min(item.get('amount', 0) for item in snap['map'])
+    return {'max_address': max(glob_max_address),
+            'min_address': min(glob_min_address),
+            'max_amount': max(glob_max_amount),
+            'min_amount': min(glob_min_amount)
+            }
 
 
 if __name__ == "__main__":
