@@ -10,44 +10,67 @@ import json
 __author__ = 'Radim Podola'
 NEXT_SNAPSHOT = 1
 PREV_SNAPSHOT = -1
+CURR_SNAPSHOT = 0
 MIN_ROWS = 30
 MIN_COLS = 70
-COLOR_BORDER = 1
-COLOR_FREE_FIELD = 2
-COLOR_SNAPSHOT_INFO = 3
-GOOD_COLORS = 0
 
 
-def init_curses_colors():
-    """ Initialize colors used later in heap map """
-    global GOOD_COLORS, COLOR_BORDER, COLOR_FREE_FIELD, COLOR_SNAPSHOT_INFO
-
-    curses.start_color()
-    curses.use_default_colors()
-
+class HeapMapColors(object):
     __good_colors = (
         1, 2, 3, 4, 5, 6, 7, 11, 14, 17, 21, 19, 22, 23, 27, 33, 30, 34, 45,
         41, 46, 49, 51, 52, 54, 56, 58, 59, 62, 65, 71, 76, 89, 91, 94, 95,
         124, 125, 126, 127, 129, 130, 131, 154, 156, 159, 161, 166, 167, 178,
         195, 197, 199, 203, 208, 210, 211, 214, 220, 226, 229, 255)
+    # structure for saving corresponding allocation
+    # with their specific color representation
+    __color_records = []
+    __good_colors_number = 0
 
-    start_pair_number = 1
-    for i in __good_colors:
-        curses.init_pair(start_pair_number, -1, i)
+    border_color = 1
+    free_field_color = 2
+    snapshot_info_color = 3
+
+    @classmethod
+    def init_curses_colors(cls):
+        """ Initialize colors used later in heap map """
+
+        curses.start_color()
+        curses.use_default_colors()
+
+        start_pair_number = 1
+        for i in cls.__good_colors:
+            curses.init_pair(start_pair_number, -1, i)
+            start_pair_number += 1
+
+        cls.__good_colors_number = start_pair_number - 1
+        # border color
+        curses.init_pair(start_pair_number, 16, 16)
+        cls.border_color = start_pair_number
         start_pair_number += 1
+        # free field color
+        curses.init_pair(start_pair_number, -1, 239)
+        cls.free_field_color = start_pair_number
+        start_pair_number += 1
+        # snapshot info color
+        curses.init_pair(start_pair_number, -1, 16)
+        cls.snapshot_info_color = start_pair_number
 
-    GOOD_COLORS = start_pair_number - 1
-    # border color
-    curses.init_pair(start_pair_number, 16, 16)
-    COLOR_BORDER = start_pair_number
-    start_pair_number += 1
-    # free field color
-    curses.init_pair(start_pair_number, -1, 242)
-    COLOR_FREE_FIELD = start_pair_number
-    start_pair_number += 1
-    # snapshot info color
-    curses.init_pair(start_pair_number, -1, 16)
-    COLOR_SNAPSHOT_INFO = start_pair_number
+
+    @classmethod
+    def get_field_color(cls, field):
+        if field['uid'] is None:
+            return cls.free_field_color
+
+        uid = field['uid']
+        for item in cls.__color_records:
+            if (uid['function'] == item['uid']['function'] and
+                        uid['source'] == item['uid']['source']):
+                return item['color']
+
+        color = randint(1, cls.__good_colors_number)
+        cls.__color_records.append({'uid': uid, 'color': color})
+
+        return color
 
 
 def show_intro(window):
@@ -91,7 +114,7 @@ def animation_menu_print(window):
     Arguments:
         window(any): initialized console window
     """
-    menu = '[Q] QUIT  [S] STOP  [C] CONTINUE  [R] RESTART'
+    menu = '[S] STOP  [P] PAUSE  [R] RESTART'
 
     window.addstr(curses.LINES - 1, (curses.COLS - len(menu)) // 2,
                   menu, curses.A_BOLD)
@@ -106,7 +129,8 @@ def info_print(window, max_snap, curr, indent):
     """
     info_text = 'SNAPSHOT: ' + str(curr) + '/' + str(max_snap)
     window.addstr(0, (curses.COLS - len(info_text) - indent) // 2 + indent,
-                  info_text, curses.color_pair(COLOR_SNAPSHOT_INFO))
+                  info_text,
+                  curses.color_pair(HeapMapColors.snapshot_info_color))
 
 
 def create_screen_decomposition(heap, curr, rows, cols):
@@ -170,8 +194,7 @@ def create_screen_decomposition(heap, curr, rows, cols):
                                     "amount": 0}
                 last_field += field_size
 
-
-    return {'map': matrix, 'size': field_size}
+    return {'map': matrix, 'size': field_size, 'rows': rows, 'cols': cols}
 
 
 def matrix_print(window, data, rows, cols, add_length):
@@ -184,27 +207,11 @@ def matrix_print(window, data, rows, cols, add_length):
         add_length(int): length of the maximal address
     """
     border_sym = u"\u2588"
-    field_sym = '_'
+    field_sym = '_  '
+
+    # calculating address range on one line
     address = data['map'][0][0]['address']
-    line_address_size = len(data['map'][0]) * data['size']
-    # structure for saving corresponding allocation
-    # with their specific color representation
-    color_records = []
-
-
-    def get_field_color(field, color_records):
-        if field['uid'] is None:
-            return COLOR_FREE_FIELD
-
-        uid = field['uid']
-        for item in color_records:
-            if (uid['function'] == item['uid']['function'] and
-                        uid['source'] == item['uid']['source']):
-                return item['color']
-
-        color_records.append({'uid': uid,
-                              'color': randint(1, GOOD_COLORS)})
-        return color_records[-1]['color']
+    line_address_size = data['cols'] * data['size']
 
     for row in range(rows):
         # address info printing calculated from 1st and field size (approx)
@@ -217,17 +224,20 @@ def matrix_print(window, data, rows, cols, add_length):
         for col in range(add_length, cols):
             # border printing
             if row in (0, rows-1):
-                window.addch(row, col, border_sym, curses.color_pair(COLOR_BORDER))
+                window.addch(row, col, border_sym,
+                             curses.color_pair(HeapMapColors.border_color))
             elif col in (add_length, cols-1):
-                window.addch(row, col, border_sym, curses.color_pair(COLOR_BORDER))
+                window.addch(row, col, border_sym,
+                             curses.color_pair(HeapMapColors.border_color))
             # filed printing
             else:
                 field = data['map'][row - 1][col - add_length - 1]
-                color = get_field_color(field, color_records)
+                color = HeapMapColors.get_field_color(field)
                 if row == rows-2:
                     window.addch(row, col, ' ', curses.color_pair(color))
                 else:
-                    window.addstr(row, col, field_sym, curses.color_pair(color))
+                    window.addstr(row, col, field_sym,
+                                  curses.color_pair(color))
 
 
 def redraw_heap_map(window, heap, snap):
@@ -243,8 +253,10 @@ def redraw_heap_map(window, heap, snap):
     curses.update_lines_cols()
     window.clear()
 
-    max_add_len = len(str(heap['snapshots'][snap - 1]['max_address']))
+    max_add_len = len(str(heap['stats']['max_address']))
     add_info_len = max_add_len + 2
+    if add_info_len < len('ADDRESS: '):
+        add_info_len = len('ADDRESS: ')
 
     # check for the minimal screen size
     if curses.LINES < MIN_ROWS or (curses.COLS - add_info_len) < MIN_COLS:
@@ -307,7 +319,7 @@ def animation_prompt(window, heap, snap, cords):
             curr_snap += 1
             cords.update(redraw_heap_map(window, heap, curr_snap))
 
-        if key in (ord('q'), ord('Q')):
+        if key in (ord('s'), ord('S')):
             # redraw ANIMATION MENU text with standard MENU text
             window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
             menu_print(window)
@@ -319,12 +331,14 @@ def animation_prompt(window, heap, snap, cords):
         elif key in (ord('r'), ord('R')):
             curr_snap = 0
         # stop animation until 'C' key is pressed
-        elif key in (ord('s'), ord('S')):
+        elif key in (ord('p'), ord('P')):
             while window.getch() not in (ord('c'), ord('C')):
                 menu = '[C] CONTINUE'
                 window.addstr(curses.LINES - 1, (curses.COLS - len(menu)) // 2,
                               menu, curses.A_BOLD)
                 window.refresh()
+        elif key == curses.KEY_RESIZE:
+            cords.update(redraw_heap_map(window, heap, curr_snap))
 
     # empty buffer window.getch()
     while window.getch() != -1:
@@ -419,7 +433,7 @@ def heap_map_prompt(window, heap):
     # initialize the screen's coordinates
     screen_cords = {'row': 0, 'col': 0, 'rows': 0, 'cols': 0}
     # initialize colors which will be used
-    init_curses_colors()
+    HeapMapColors.init_curses_colors()
     # set cursor visible
     curses.curs_set(2)
 
@@ -456,7 +470,7 @@ def heap_map_prompt(window, heap):
         # change of the screen size occurred
         elif key == curses.KEY_RESIZE:
             current_snapshot = following_snapshot(current_snapshot,
-                                                  0,
+                                                  CURR_SNAPSHOT,
                                                   window, heap, screen_cords)
 
 
