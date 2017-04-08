@@ -7,7 +7,7 @@ __author__ = 'Radim Podola'
 
 
 def get_heap(profile, **kwargs):
-    """ Call interactive heap map visualization
+    """ Call interactive __heap map visualization
 
     Arguments:
         profile(dict): memory profile with records
