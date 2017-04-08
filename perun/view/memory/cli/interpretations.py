@@ -2,12 +2,13 @@
 from decimal import Decimal
 import perun.view.memory.cli.pretty_output as pretty
 import perun.view.memory.cli.heap_map
+import perun.view.memory.cli.heap_representation as heap_representation
 
 __author__ = 'Radim Podola'
 
 
 def get_heap(profile, **kwargs):
-    """ Call interactive __heap map visualization
+    """ Call interactive heap map visualization
 
     Arguments:
         profile(dict): memory profile with records
@@ -16,7 +17,8 @@ def get_heap(profile, **kwargs):
     Returns:
         string: empty string
     """
-    perun.view.memory.cli.heap_map.heap_map(profile)
+    heap_map = heap_representation.create(profile)
+    perun.view.memory.cli.heap_map.heap_map(heap_map)
 
     return ''
 
