@@ -8,19 +8,36 @@ from random import randint
 # debug in console
 import heap_representation as heap_representation
 
+__author__ = 'Radim Podola'
 
-class HeapMapCursesColors(object):
-    """ Class providing operations with curses colors used in the heap map.
+class HeapMapColors(object):
+    """ Class providing operations with colors used in the heap map.
+
+        Another colors module can be add
+        by implementing it's initialization method.
+        For now, only curses colors module is implemented.
 
     Attributes:
         border        Color representing border.
         free_field    Color representing free field.
         info_text     Color representing informative text.
+        CURSES_COLORS Constant for initializing curses color module.
     """
-    def __init__(self):
-        """ Initialize colors.
+    CURSES_COLORS = 1
 
-            Initialize the curses color module
+    def __init__(self, colors_type):
+        """ Initialize HEAP MAP COLORS object.
+
+        Arguments:
+            colors_type(int): type of colors
+        """
+        if colors_type == HeapMapColors.CURSES_COLORS:
+            self.__init_curses_colors()
+
+    def __init_curses_colors(self):
+        """ Initialize colors over curses colors module.
+
+            Initialize the curses colors module
             and the colors for later use in the heap map.
 
             16 == black
@@ -100,11 +117,13 @@ class HeapMapVisualization(object):
                             to the current snapshot.
         INTRO_DELAY         Time delay after intro in [ms]
         ANIMATION_DELAY     Time delay between frames in ANIMATION mode in [ms]
+        TIK_FREQ            Tik frequency, visualized in the map. Value defines
+                            a number of the fields in the tik.
     """
     NEXT_SNAPSHOT = 1
     PREV_SNAPSHOT = -1
     CURRENT_SNAPSHOT = 0
-    INTRO_DELAY = 700
+    INTRO_DELAY = 1000
     ANIMATION_DELAY = 1000
     TIK_FREQ = 10
 
@@ -124,15 +143,20 @@ class HeapMapVisualization(object):
     __ANIME_MENU_TEXT = '[S] STOP  [P] PAUSE  [R] RESTART'
     __ANIME_CONTINUE_TEXT = '[C] CONTINUE'
     __RESIZE_REQ_TEXT = "Increase the size of your screen, please"
-    __INTRO_TEXT = "HEAP MAP!"
 
     def show_intro(self):
         """ Print INTRO screen about HEAP MAP visualization """
-        text = self.__INTRO_TEXT
+        text = "INTERACTIVE HEAP MAP VISUALIZATION!"
         row_pos = curses.LINES // 2
         col_pos = (curses.COLS - len(text)) // 2
 
         self.__window.addstr(row_pos, col_pos, text, curses.A_BOLD)
+
+        text = "Author: " + __author__
+        row_pos = curses.LINES // 2 + 1
+        col_pos = (curses.COLS - len(text)) // 2
+        self.__window.addstr(row_pos + 1, col_pos, text)
+
         self.__window.refresh()
         # just for effect :)
         curses.napms(HeapMapVisualization.INTRO_DELAY)
@@ -570,7 +594,7 @@ class HeapMapVisualization(object):
         # map coordinates and metadata
         self.__map_cords = {'row': 0, 'col': 0, 'map': {}}
         # initialize curses colors
-        self.__colors = HeapMapCursesColors()
+        self.__colors = HeapMapColors(HeapMapColors.CURSES_COLORS)
 
         # set cursor visible
         curses.curs_set(2)
@@ -605,7 +629,7 @@ def heap_map_prompt(window, heap):
         elif key == curses.KEY_RIGHT:
             vis_obj.following_snapshot(HeapMapVisualization.NEXT_SNAPSHOT)
         # start of the animation
-        elif key in (ord('a'), key == ord('A')):
+        elif key in (ord('a'), ord('A')):
             vis_obj.animation_prompt()
         # cursor moved
         elif key in (ord('4'), ord('6'), ord('8'), ord('5')):
@@ -617,7 +641,7 @@ def heap_map_prompt(window, heap):
 
 
 def heap_map(heap):
-    """ Initialize heap map and call curses wrapper and start visualization
+    """ Call curses wrapper and start visualization
 
         Wrapper initialize terminal,
         turn off automatic echoing of keys to the screen,
@@ -633,7 +657,7 @@ def heap_map(heap):
     """
     # after integration remove try block
     try:
-        # call __heap map visualization prompt in curses wrapper
+        # call heap map visualization prompt in curses wrapper
         curses.wrapper(heap_map_prompt, heap)
     except curses.error as error:
         print('Screen too small!', file=sys.stderr)
