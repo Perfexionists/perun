@@ -107,18 +107,53 @@ class HeapMapVisualization(object):
     """ Class providing visualization of the heap map.
 
         Visualization is implemented over curses module.
+        Is able to dynamic screen's size change.
+
+        Heap map's metadata and coordinates are represented
+        by dictionary in following form:
+
+        {'col': X coordinate of upper left corner of the map (int),
+         'row': Y coordinate of upper left corner of the map (int),
+         'map':{
+            'rows': number of map's rows (int),
+            'cols': number of map's columns (int),
+            'field_size': field size (int),
+            'data': matrix with map's data
+                {'uid': UID of the allocation (dict),
+                 'address': starting address of the allocation (int),
+                 'amount': amount of allocated space (int)
+                }
+          }
+         }
+            Coordinate space is 0---->X
+                                |
+                                |
+                                |
+                                Y
 
     Attributes:
-        NEXT_SNAPSHOT       Constant representing move's direction
+        NEXT_SNAPSHOT(int): Constant representing move's direction
                             to the next snapshot.
-        PREV_SNAPSHOT       Constant representing move's direction
+        PREV_SNAPSHOT(int): Constant representing move's direction
                             to the previous snapshot.
-        CURRENT_SNAPSHOT    Constant representing move's direction
-                            to the current snapshot.
-        INTRO_DELAY         Time delay after intro in [ms]
-        ANIMATION_DELAY     Time delay between frames in ANIMATION mode in [ms]
-        TIK_FREQ            Tik frequency, visualized in the map. Value defines
-                            a number of the fields in the tik.
+        CURRENT_SNAPSHOT(int):  Constant representing move's direction
+                                to the current snapshot.
+        INTRO_DELAY(int):   Time delay after intro in [ms]
+        ANIMATION_DELAY(int):   Time delay between frames 
+                                in ANIMATION mode in [ms]
+        TIK_FREQ(int):  Tik frequency, visualized in the map. Value defines
+                        a number of the fields in the tik.
+        BORDER_SYM(char): character used as border
+        FIELD_SYM(char): character used as regular field
+        TIK_SYM(char):  character used as tik field
+
+    Instance attributes:
+        __memory_unit(str): used memory unit
+        __window(any):  initialized curses window
+        __heap(dict):   heap representation
+        __current_snap(int): currently active snapshot
+        __map_cords(dict): heap map's metadata and coordinates
+        __colors(object): instance of the color module object
     """
     NEXT_SNAPSHOT = 1
     PREV_SNAPSHOT = -1
@@ -201,8 +236,6 @@ class HeapMapVisualization(object):
 
     def animation_prompt(self):
         """ Animation feature of the HEAP MAP visualization """
-
-        # TODO instead of non-blocing use timeout
         # set non_blocking window.getch()
         self.__window.nodelay(1)
 
@@ -556,28 +589,6 @@ class HeapMapVisualization(object):
 
     def __init__(self, window, heap):
         """ Initialize the HEAP MAP visualization object
-
-        Heap map's metadata and coordinates are represented
-        by dictionary in following form:
-
-        {'col': X coordinate of upper left corner of the map (int),
-         'row': Y coordinate of upper left corner of the map (int),
-         'map':{
-            'rows': number of map's rows (int),
-            'cols': number of map's columns (int),
-            'field_size': field size (int),
-            'data': matrix with map's data
-                {'uid': UID of the allocation (dict),
-                 'address': starting address of the allocation (int),
-                 'amount': amount of allocated space (int)
-                }
-          }
-         }
-            Coordinate space is 0---->X
-                                |
-                                |
-                                |
-                                Y
 
         Arguments:
             window(any): initialized curses window

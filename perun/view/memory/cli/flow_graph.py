@@ -16,22 +16,21 @@ class FlowGraphVisualization(object):
         Visualization is implemented over curses module.
 
     Attributes:
-        NEXT_SNAPSHOT       Constant representing move's direction
+        MOVE_RIGHT       Constant representing move's direction
                             to the next snapshot.
-        PREV_SNAPSHOT       Constant representing move's direction
+        MOVE_LEFT       Constant representing move's direction
                             to the previous snapshot.
-        CURRENT_SNAPSHOT    Constant representing move's direction
+        NO_MOVE    Constant representing move's direction
                             to the current snapshot.
         INTRO_DELAY         Time delay after intro in [ms]
         ANIMATION_DELAY     Time delay between frames in ANIMATION mode in [ms]
         TIK_FREQ            Tik frequency, visualized in the map. Value defines
                             a number of the fields in the tik.
     """
-    NEXT_SNAPSHOT = 1
-    PREV_SNAPSHOT = -1
-    CURRENT_SNAPSHOT = 0
+    MOVE_RIGHT = 1
+    MOVE_LEFT = -1
+    NO_MOVE = 0
     INTRO_DELAY = 1000
-    ANIMATION_DELAY = 1000
     BAR_SPACE = 15
 
     # minimal size of the heap map window
@@ -48,9 +47,7 @@ class FlowGraphVisualization(object):
     __Y_AXIS_TEXT = 'MEMORY [B]'
     __X_AXIS_TEXT = 'SNAPSHOT->'
     __MENU_TEXT = '[Q] QUIT  [I] ENTER INTERACTIVE MODE'
-    __INTERACTIVE_MENU_TEXT = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE'
-    __ANIME_MENU_TEXT = '[S] STOP  [P] PAUSE  [R] RESTART'
-    __ANIME_CONTINUE_TEXT = '[C] CONTINUE'
+    __INTERACTIVE_MENU_TEXT = '[Q] QUIT  [<] PREVIOUS  [>] NEXT'
     __RESIZE_REQ_TEXT = "Increase the size of your screen, please"
 
     def __init__(self, window, heap):
@@ -118,17 +115,19 @@ class FlowGraphVisualization(object):
         col_pos = (curses.COLS - len(text)) // 2
 
         # clearing line
-        self.__window.clrtobot()
+        self.__window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
         self.__window.addstr(row_pos, col_pos, text, curses.A_BOLD)
 
     def __y_axis_info_print(self, rows, cols, margin):
         """ Print the Y-axis information
 
         Arguments:
+            rows(int): total number of the screen's rows
+            cols(int): total number of the screen's columns
+            margin(int): length of the Y-axis info space
         """
         field_size = self.__peak // rows
         info_tik = 5
-        bar_space = self.BAR_SPACE
 
         self.__window.addstr(0, 0, self.__Y_AXIS_TEXT)
 
@@ -145,59 +144,18 @@ class FlowGraphVisualization(object):
 
 
     def __x_axis_info_print(self, rows, cols, margin):
-        """ Print the Y-axis information
-        Arguments:
-           length(int): length of information text
-           tik_amount(int): tik amount
+        """ Print the X-axis information
 
-        Returns:
-            str: built tik information text
+        Arguments:
+            rows(int): total number of the screen's rows
+            cols(int): total number of the screen's columns
+            margin(int): length of the Y-axis info space
         """
         self.__window.addstr(rows - 1, 0, self.__X_AXIS_TEXT)
 
         for i, bar in enumerate(self.__graph_data):
             col = margin + (i + 1) * self.BAR_SPACE
             self.__window.addstr(rows - 1, col, str(bar['snapshot']))
-
-    def animation_prompt(self):
-        """ Animation feature of the HEAP MAP visualization """
-
-        # TODO instead of non-blocing use timeout
-        # set non_blocking window.getch()
-        self.__window.nodelay(1)
-
-        while True:
-            # print ANIMATION MENU text
-            self.menu_print(self.__ANIME_MENU_TEXT)
-
-            # delay between individually heap map screens
-            curses.napms(FlowGraphVisualization.ANIMATION_DELAY)
-
-            key = self.__window.getch()
-
-            self.following_snapshot(FlowGraphVisualization.NEXT_SNAPSHOT)
-
-            if key in (ord('s'), ord('S')):
-                # stop ANIMATION
-                self.following_snapshot(FlowGraphVisualization.CURRENT_SNAPSHOT)
-                break
-            # restart animation from the 1st snapshot
-            elif key in (ord('r'), ord('R')):
-                self.__set_current_snap(1)
-                self.following_snapshot(FlowGraphVisualization.CURRENT_SNAPSHOT)
-            # stop animation until 'C' key is pressed
-            elif key in (ord('p'), ord('P')):
-                while self.__window.getch() not in (ord('c'), ord('C')):
-                    self.menu_print(self.__ANIME_CONTINUE_TEXT)
-            # change of the screen size occurred
-            elif key == curses.KEY_RESIZE:
-                self.following_snapshot(FlowGraphVisualization.CURRENT_SNAPSHOT)
-
-        # empty buffer window.getch()
-        while self.__window.getch() != -1:
-            pass
-        # set blocking window.getch()
-        self.__window.nodelay(0)
 
     def graph_print(self, rows, cols, margin):
         """ Prints the graph data to the screen with borders and axis's info
@@ -242,51 +200,93 @@ class FlowGraphVisualization(object):
         self.__y_axis_info_print(rows, cols, margin)
         self.__x_axis_info_print(rows, cols, margin)
 
-    def __set_current_snap(self, following_snap):
-        """ Sets current snapshot
+    def __set_start_snap(self, following_snap, cols):
+        """ Sets starting snapshot
 
         Arguments:
             following_snap(int): number of the snapshot to set
+
+        Returns:
+            bool: success of the operation
         """
+        """
+        # calculating total number of the bars in screen
+        bars = cols // FlowGraphVisualization.BAR_SPACE
+
+        # check for maximal bars
+        if following_snap > self.__heap['max'] - bars + 1:
+            return False
+
         if following_snap in range(1, self.__heap['max'] + 1):
             self.__current_snap = following_snap
             return True
         else:
             return False
-
-    def show_partial_graph(self, direction):
-        """ 
-        Arguments:
-            direction(int): direction of the following snapshot (PREVIOUS/NEXT)
-
-        Returns:
-            bool: success of the operation
         """
-        if not self.__set_current_snap(self.__current_snap + direction):
+        # calculating total number of the bars in screen
+        bars = cols // FlowGraphVisualization.BAR_SPACE
+
+        if following_snap not in range(1, self.__heap['max'] + 1):
             return
 
-        self.partial_view()
+        # dynamic moving when resize to occurred
+        if self.__current_snap == following_snap:
+            if self.__heap['max'] - self.__current_snap + 1 < bars:
+                self.__current_snap = following_snap - 1
+                return
+
+        # check for maximal bars
+        if following_snap > self.__heap['max'] - bars + 1:
+            return
+
+        self.__current_snap = following_snap
 
     def create_partial_decomposition(self, rows, cols):
-        pass
+        # clearing old data
+        self.__graph_data = []
+        # calculating total number of the bars in screen
+        bars = cols // FlowGraphVisualization.BAR_SPACE
+        # calculating approximation size of the field
+        field_size = self.__peak / rows
 
-    def partial_view(self):
+        bars_cnt = 0
+        for i, snap in enumerate(self.__heap['snapshots']):
+            # heap representation transforming into graph data
+            if self.__current_snap <= i + 1:
+                bars_cnt += 1
+                if bars_cnt <= bars:
+                    data = {}
+                    total_fields = int(math.ceil(snap['sum_amount'] / field_size))
+                    data['fields'] = total_fields
+                    data['time'] = snap['time']
+                    data['snapshot'] = i + 1
+                    if snap['sum_amount'] == self.__peak:
+                        data['peak'] = True
+                    else:
+                        data['peak'] = False
+                    self.__graph_data.append(data)
+
+    def partial_view(self, move):
         """ Redraw the heap map screen to represent the specified snapshot
-            Tady proste vypočitam ktere snapshoty z pole použí
+                Arguments:
+            move(int): move of the following snapshot (PREVIOUS/NEXT)
         """
-        self.__window.clear()
-
         try:
             rows, cols, margin = self.__get_graph_size()
         except RuntimeError:
             self.resize_req_print()
             return
 
+        # sets first snapshot
+        self.__set_start_snap(self.__current_snap + move, cols)
+
         # creating the flow graph screen decomposition
+        self.__window.clear()
+
         self.create_partial_decomposition(rows, cols)
 
         # graph print
-        self.graph_print(FlowGraphVisualization.__MIN_ROWS, curses.COLS, margin)
+        self.graph_print(self.__MIN_ROWS, curses.COLS, margin)
 
         # print interactive menu text
         self.menu_print(self.__INTERACTIVE_MENU_TEXT)
@@ -294,7 +294,7 @@ class FlowGraphVisualization(object):
     def interactive_mode(self):
         """ Interactive FLOW GRAPH visualization prompt """
         # print partial view
-        self.show_partial_graph(FlowGraphVisualization.CURRENT_SNAPSHOT)
+        self.partial_view(self.NO_MOVE)
 
         while True:
             # catching key value
@@ -305,17 +305,13 @@ class FlowGraphVisualization(object):
                 break
             # previous snapshot
             elif key == curses.KEY_LEFT:
-                self.show_partial_graph(FlowGraphVisualization.PREV_SNAPSHOT)
+                self.partial_view(self.MOVE_LEFT)
             # next snapshot
             elif key == curses.KEY_RIGHT:
-                self.show_partial_graph(FlowGraphVisualization.NEXT_SNAPSHOT)
-            # start of the animation
-            elif key in (ord('a'), ord('A')):
-                pass
-                # self.animation_prompt()
+                self.partial_view(self.MOVE_RIGHT)
             # change of the screen size occurred
             elif key == curses.KEY_RESIZE:
-                self.show_partial_graph(FlowGraphVisualization.CURRENT_SNAPSHOT)
+                self.partial_view(self.NO_MOVE)
 
     def __get_graph_size(self):
         """ Calculate true graph's size.
