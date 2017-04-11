@@ -41,10 +41,12 @@ class FlowGraphVisualization(object):
     # map's visualising symbols
     BAR_SYM = '#'
     BAR_PEAK_SYM = 'O'
-    EMPTY_SYM = '-'
+    X_LINES_SYM = '-'
+    BORDER_SYM = 'X'
 
     # text's constants
     __Y_AXIS_TEXT = 'MEMORY [B]'
+    __X_AXIS_TEXT = 'SNAPSHOT->'
     __MENU_TEXT = '[Q] QUIT  [I] ENTER INTERACTIVE MODE'
     __INTERACTIVE_MENU_TEXT = '[Q] QUIT  [<] PREVIOUS  [>] NEXT  [A] ANIMATE'
     __ANIME_MENU_TEXT = '[S] STOP  [P] PAUSE  [R] RESTART'
@@ -54,11 +56,13 @@ class FlowGraphVisualization(object):
     def __init__(self, window, heap):
         """ Initialize the FLOW GRAPH visualization object
 
-            [{'fields': 0, 'peak': False, 'time': 0.0}]
+            [{'fields': 0, 'peak': False, 'time': 0.0, 'snapshot': 0}]
 
         Arguments:
             window(any): initialized curses window
             heap(dict): the heap representation
+
+        :type __peak: int
         """
         # memory allocated peak
         self.__peak = max(item.get('sum_amount', 0)
@@ -68,7 +72,7 @@ class FlowGraphVisualization(object):
         # heap representation
         self.__heap = heap
         # currently printed map's snapshot
-        self.__current_snap = 0
+        self.__current_snap = 1
         # graph data
         self.__graph_data = []
 
@@ -93,7 +97,7 @@ class FlowGraphVisualization(object):
 
         self.__window.refresh()
         # just for effect :)
-        curses.napms(FlowGraphVisualization.INTRO_DELAY)
+        curses.napms(self.INTRO_DELAY)
 
     def resize_req_print(self):
         """ Print resize request to the window """
@@ -114,27 +118,34 @@ class FlowGraphVisualization(object):
         col_pos = (curses.COLS - len(text)) // 2
 
         # clearing line
-        self.__window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
+        self.__window.clrtobot()
         self.__window.addstr(row_pos, col_pos, text, curses.A_BOLD)
 
-    def y_axis_info_print(self, rows, margin):
+    def __y_axis_info_print(self, rows, cols, margin):
         """ Print the Y-axis information
 
         Arguments:
         """
         field_size = self.__peak // rows
         info_tik = 5
+        bar_space = self.BAR_SPACE
 
-        self.__window.addstr(0, 0, FlowGraphVisualization.__Y_AXIS_TEXT)
+        self.__window.addstr(0, 0, self.__Y_AXIS_TEXT)
 
         tik_cnt = 0
-        for row in range(0, rows, info_tik):
-            self.__window.addstr(rows - row - 1, 0, str(field_size * tik_cnt))
+        for i, row in enumerate(range(0, rows, info_tik)):
+            starting_row = rows - row - 2
+            self.__window.addstr(starting_row, 0, str(field_size * tik_cnt))
             tik_cnt += 1
 
-    def __tik_info_text(self, length, tik_amount):
-        """ Build tik information text
+            for col in range(margin + 1, cols):
+                if i == 0:
+                    break
+                self.__window.addch(starting_row, col, self.X_LINES_SYM)
 
+
+    def __x_axis_info_print(self, rows, cols, margin):
+        """ Print the Y-axis information
         Arguments:
            length(int): length of information text
            tik_amount(int): tik amount
@@ -142,7 +153,11 @@ class FlowGraphVisualization(object):
         Returns:
             str: built tik information text
         """
-        pass
+        self.__window.addstr(rows - 1, 0, self.__X_AXIS_TEXT)
+
+        for i, bar in enumerate(self.__graph_data):
+            col = margin + (i + 1) * self.BAR_SPACE
+            self.__window.addstr(rows - 1, col, str(bar['snapshot']))
 
     def animation_prompt(self):
         """ Animation feature of the HEAP MAP visualization """
@@ -185,37 +200,47 @@ class FlowGraphVisualization(object):
         self.__window.nodelay(0)
 
     def graph_print(self, rows, cols, margin):
-        """ Prints the screen representation matrix to the window
+        """ Prints the graph data to the screen with borders and axis's info
 
         Arguments:
-            map_data(dict): representing information about map's snapshot
             rows(int): total number of the screen's rows
             cols(int): total number of the screen's columns
-            add_length(int): length of the address info space
+            margin(int): length of the Y-axis info space
         """
+        # set iterator over graph data list
         iterator = iter(self.__graph_data)
 
         record = next(iterator, None)
 
+        # empty space between graph's bars
         bar_space = FlowGraphVisualization.BAR_SPACE
         for col in range(margin + bar_space, cols, bar_space):
 
             if record is None:
                 break
 
-            for row in range(rows - record['fields'] - 1, rows - 1):
-                if record['peak']:
-                    symbol = FlowGraphVisualization.BAR_PEAK_SYM
-                else:
-                    symbol = FlowGraphVisualization.BAR_SYM
-                self.__window.addch(row, col, symbol)
+            if record['peak']:
+                # print different symbol representing PEAK bar
+                symbol = FlowGraphVisualization.BAR_PEAK_SYM
+            else:
+                symbol = FlowGraphVisualization.BAR_SYM
+
+            # total rows - number of fields - 2x border field
+            start_row = rows - 2 - record['fields']
+            # prints BAR
+            self.__window.vline(start_row, col, symbol, record['fields'])
 
             record = next(iterator, None)
 
-        self.__window.hline(rows - 1, margin, 'X', cols)
-        self.__window.vline(0, margin, 'X', rows)
+        # printing horizontal borders
+        self.__window.hline(0, margin, self.BORDER_SYM, cols)
+        self.__window.hline(rows - 2, margin, self.BORDER_SYM, cols)
+        # printing left vertical border
+        self.__window.vline(0, margin, self.BORDER_SYM, rows)
 
-        self.y_axis_info_print(rows, margin)
+        # printing axises's information
+        self.__y_axis_info_print(rows, cols, margin)
+        self.__x_axis_info_print(rows, cols, margin)
 
     def __set_current_snap(self, following_snap):
         """ Sets current snapshot
@@ -229,7 +254,7 @@ class FlowGraphVisualization(object):
         else:
             return False
 
-    def move_graph(self, direction):
+    def show_partial_graph(self, direction):
         """ 
         Arguments:
             direction(int): direction of the following snapshot (PREVIOUS/NEXT)
@@ -267,8 +292,9 @@ class FlowGraphVisualization(object):
         self.menu_print(self.__INTERACTIVE_MENU_TEXT)
 
     def interactive_mode(self):
+        """ Interactive FLOW GRAPH visualization prompt """
         # print partial view
-        self.move_graph(FlowGraphVisualization.CURRENT_SNAPSHOT)
+        self.show_partial_graph(FlowGraphVisualization.CURRENT_SNAPSHOT)
 
         while True:
             # catching key value
@@ -279,19 +305,23 @@ class FlowGraphVisualization(object):
                 break
             # previous snapshot
             elif key == curses.KEY_LEFT:
-                self.move_graph(FlowGraphVisualization.PREV_SNAPSHOT)
+                self.show_partial_graph(FlowGraphVisualization.PREV_SNAPSHOT)
             # next snapshot
             elif key == curses.KEY_RIGHT:
-                self.move_graph(FlowGraphVisualization.NEXT_SNAPSHOT)
+                self.show_partial_graph(FlowGraphVisualization.NEXT_SNAPSHOT)
             # start of the animation
             elif key in (ord('a'), ord('A')):
                 pass
                 # self.animation_prompt()
             # change of the screen size occurred
             elif key == curses.KEY_RESIZE:
-                self.move_graph(FlowGraphVisualization.CURRENT_SNAPSHOT)
+                self.show_partial_graph(FlowGraphVisualization.CURRENT_SNAPSHOT)
 
     def __get_graph_size(self):
+        """ Calculate true graph's size.
+
+            Also check the screen's size limitations.
+        """
         curses.update_lines_cols()
 
         # calculate space for the Y-axis information
@@ -305,35 +335,49 @@ class FlowGraphVisualization(object):
         if rows_cond or cols_cond:
             raise RuntimeError
 
-        # number of the screen's rows == (minimum of rows) - (2*border lines)
-        graph_rows = self.__MIN_ROWS - 2
-        # number of the screen's columns == (terminal's current number of
-        # the columns) - (size of Y-axis info)
-        graph_cols = curses.COLS - max_y_axis_len
+        # number of the screen's rows == (minimum of rows)
+        # - (2*border lines) - 1 (info line)
+        graph_rows = self.__MIN_ROWS - 3
+        # number of the screen's columns ==
+        # (terminal's current number of the columns)
+        # - (size of Y-axis info) - 1(border)
+        graph_cols = curses.COLS - max_y_axis_len - 1
 
         return graph_rows, graph_cols, max_y_axis_len
 
     def create_global_decomposition(self, rows, cols):
-        self.__graph_data = []
-        bars = cols // FlowGraphVisualization.BAR_SPACE
+        """ Create graph's data decomposition for global view
 
-        # calculating field size
+            Decomposition is saved into instance attribute __graph_data.
+
+        Arguments:
+            rows(int): total number of the graph's rows
+            cols(int): total number of the graph's columns
+        """
+        # clearing old data
+        self.__graph_data = []
+        # calculating total number of the bars in screen
+        bars = cols // FlowGraphVisualization.BAR_SPACE
+        # calculating approximation size of the field
         field_size = self.__peak / rows
 
-        if self.__heap['max'] > bars:
+        if self.__heap['max'] >= bars:
             approx_bars = int(math.ceil(self.__heap['max'] / bars))
             bars_cnt = 0
             was_peak = False
             avg_sum = 0
-            for snap in self.__heap['snapshots']:
+            # heap representation transforming into graph data
+            for i, snap in enumerate(self.__heap['snapshots']):
                 bars_cnt += 1
-                avg_sum += snap['sum_amount'] / field_size
+                avg_sum += snap['sum_amount']
                 if snap['sum_amount'] == self.__peak:
                     was_peak = True
                 if bars_cnt == approx_bars:
                     data = {}
-                    data['fields'] = int(avg_sum / approx_bars)
+                    # number of the fields is average of the approximated bars
+                    data['fields'] = int(avg_sum / field_size / approx_bars)
                     data['time'] = snap['time']
+                    data['snapshot'] = i + 1
                     data['peak'] = True if was_peak else False
                     self.__graph_data.append(data)
                     bars_cnt = 0
@@ -341,19 +385,25 @@ class FlowGraphVisualization(object):
                     was_peak = False
 
         else:
-            for snap in self.__heap['snapshots']:
+            for i, snap in enumerate(self.__heap['snapshots']):
+                # heap representation transforming into graph data
                 data = {}
-                data['fields'] = int(math.ceil(snap['sum_amount'] / field_size))
+                total_fields = int(math.ceil(snap['sum_amount'] / field_size))
+                data['fields'] = total_fields
                 data['time'] = snap['time']
-                data['peak'] = True if snap['sum_amount'] == self.__peak else False
+                data['snapshot'] = i + 1
+                if snap['sum_amount'] == self.__peak:
+                    data['peak'] = True
+                else:
+                    data['peak'] = False
                 self.__graph_data.append(data)
 
     def global_view(self):
-        """ Redraw global or partial view of the allocation's FLOW
-        """
+        """ Redraw global view of the allocation's FLOW """
         self.__window.clear()
 
         try:
+            # getting true graph's size
             rows, cols, margin = self.__get_graph_size()
         except RuntimeError:
             self.resize_req_print()
@@ -363,7 +413,7 @@ class FlowGraphVisualization(object):
         self.create_global_decomposition(rows, cols)
 
         # graph print
-        self.graph_print(FlowGraphVisualization.__MIN_ROWS, curses.COLS, margin)
+        self.graph_print(self.__MIN_ROWS, curses.COLS, margin)
 
         # print menu text
         self.menu_print(self.__MENU_TEXT)
@@ -395,6 +445,8 @@ def flow_graph_prompt(window, heap):
         # enter interactive mode
         elif key in (ord('i'), ord('I')):
             vis_obj.interactive_mode()
+            # print global view
+            vis_obj.global_view()
         # change of the screen size occurred
         elif key == curses.KEY_RESIZE:
             # print global view
