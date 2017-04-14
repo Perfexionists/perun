@@ -15,8 +15,13 @@ def create(profile):
          "unit": used memory unit (string),
          "stats": { # same stats like for each snapshots but calculated
                     # over all the snapshots
-                    # (except sum_amount -> doesn't make sense)
-                    }
+                    # (except sum_amount -> max_sum_amount instead)
+                    },
+         "info": [{uid of the function which made the allocation
+                    "line": (int),
+                    "function": (string),
+                    "source": (string)
+                 }]
          "snapshots": [
             {"time": time of the snapshot (string),
              "max_amount": maximum amount of the allocated memory
@@ -32,11 +37,7 @@ def create(profile):
              "map": [ # mapping of all the allocations in snapshot
                 {"address": starting address of the allocated memory (int),
                  "amount": amount of the allocated memory (int),
-                 "uid": {uid of the function which made the allocation
-                    "line": (int),
-                    "function": (string),
-                    "source": (string)
-                 }
+                 "uid": index to info list with absolutely uid info (int)
                 }
              ]
             }
@@ -51,11 +52,12 @@ def create(profile):
         del snap['resources']
 
     # calculating existing allocations for each snapshot
-    calculate_heap_map(snapshots)
+    chunks = calculate_heap_map(snapshots)
     # adding statistics about each snapshot
     glob_stats = add_stats(snapshots)
 
     return {'snapshots': snapshots,
+            'info': chunks,
             'max': len(snapshots),
             'stats': glob_stats,
             'unit': profile['header']['units']['memory']}
@@ -99,6 +101,7 @@ def calculate_heap_map(snapshots):
     Arguments:
         snapshots(list): list of snapshots
     """
+    alloc_chunks = []
     new_allocations = []
     existing_allocations = []
     for snap in snapshots:
@@ -120,6 +123,22 @@ def calculate_heap_map(snapshots):
         snap['map'].extend(existing_allocations)
         existing_allocations = new_allocations.copy()
 
+        for allocation in snap['map']:
+            allocation['uid'] = set_chunks(alloc_chunks, allocation['uid'])
+
+    return alloc_chunks
+
+
+def set_chunks(chunks, uid):
+    for i, c in enumerate(chunks):
+        if isinstance(uid, int):
+            return uid
+        if c['function'] == uid['function'] and c['line'] == uid['line'] and c['source'] == uid['source']:
+            return i
+
+    chunks.append(uid)
+    return len(chunks) - 1
+
 
 def add_stats(snapshots):
     """ Add statistic about each snapshot and global view
@@ -140,6 +159,7 @@ def add_stats(snapshots):
     """
     glob_max_address = []
     glob_min_address = []
+    glob_max_sum_amount = []
     glob_max_amount = []
     glob_min_amount = []
 
@@ -161,11 +181,13 @@ def add_stats(snapshots):
 
         glob_max_address.append(snap['max_address'])
         glob_min_address.append(snap['min_address'])
+        glob_max_sum_amount.append(snap['sum_amount'])
         glob_max_amount.append(snap['max_amount'])
         glob_min_amount.append(snap['min_amount'])
 
     return {'max_address': max(glob_max_address),
             'min_address': min(glob_min_address),
+            'max_sum_amount': max(glob_max_sum_amount),
             'max_amount': max(glob_max_amount),
             'min_amount': min(glob_min_amount)
            }
