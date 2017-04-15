@@ -1,4 +1,4 @@
-"""This module implement the heap map visualization of the profile"""
+"""This module implement the HEAP MAP visualization of the profile"""
 import curses
 import curses.textpad
 import json
@@ -79,6 +79,9 @@ class HeapMapColors(object):
         curses.init_pair(start_pair_number, -1, 16)
         self.info_text = start_pair_number
 
+        # HEAT colors from min to most
+        self.__heat_colors = (23, 32, 8, 58, 48, 52, 1, 24)
+
     def heap_field_color(self, uid):
         """ Pick a right color for the given field.
 
@@ -86,7 +89,7 @@ class HeapMapColors(object):
             uid(dict): allocation's information
 
         Returns:
-            int: number of the picked curses color.pair()
+            int: number of the picked color
         """
         if uid is None:
             return self.free_field
@@ -102,12 +105,29 @@ class HeapMapColors(object):
         return color
 
     def heat_field_color(self, access):
-        if access == 0:
-            return 1
-        elif access == 1:
-            return 2
+        """ Pick a right shade of HEAT color for the given number of access.
+
+        Arguments:
+            access(int): number of access
+
+        Returns:
+            int: number of the picked color
+        """
+        if access >= len(self.__heat_colors):
+            return self.__heat_colors[:1]
         else:
-            return 3
+            return self.__heat_colors[access]
+
+    def demonstrate_curses_colors(self, window):
+        """ Demonstrate curses good colors by print each of them to the window
+
+        Arguments:
+            window(any): initialized curses window
+        """
+        for i in range(1, len(self.__good_colors)):
+            color_str = str(i) + ' '
+            window.addnstr(color_str, len(color_str), curses.color_pair(i))
+
 
 class HeapMapVisualization(object):
     """ Class providing visualization of the heap map.
@@ -118,17 +138,21 @@ class HeapMapVisualization(object):
         Heap map's metadata and coordinates are represented
         by dictionary in following form:
 
-        {'col': X coordinate of upper left corner of the map (int),
-         'row': Y coordinate of upper left corner of the map (int),
+        {'col': # X coordinate of upper left corner of the map (int),
+         'row': # Y coordinate of upper left corner of the map (int),
          'map':{
-            'rows': number of map's rows (int),
-            'cols': number of map's columns (int),
-            'field_size': field size (float),
-            'data': matrix with map's data
-                {'uid': UID of the allocation (dict),
-                 'address': starting address of the allocation (int),
-                 'amount': amount of allocated space (int)
+            'rows': # number of map's rows (int),
+            'cols': # number of map's columns (int),
+            'field_size': # field size (float),
+            'data': # matrix with HEAP map's data
+                {'uid': # UID of the allocation (dict),
+                 'address': # starting address of the allocation (int),
+                 'amount': # amount of allocated space (int)
                 }
+                # or matrix with HEAT map's data
+               {'access': # number of access to the address (int),
+                'address': # address of the memory space (int)
+               }
           }
          }
             Coordinate space is 0---->X
@@ -145,7 +169,7 @@ class HeapMapVisualization(object):
         CURRENT_SNAPSHOT(int):  Constant representing move's direction
                                 to the current snapshot.
         INTRO_DELAY(int):   Time delay after intro in [ms]
-        ANIMATION_DELAY(int):   Time delay between frames 
+        ANIMATION_DELAY(int):   Time delay between frames
                                 in ANIMATION mode in [ms]
         TIK_FREQ(int):  Tik frequency, visualized in the map. Value defines
                         a number of the fields in the tik.
@@ -171,124 +195,257 @@ class HeapMapVisualization(object):
 
     # text's constants
     __ADDRESS_INFO_TEXT = 'ADDRESS:'
-    __MENU_TEXT = '[Q] QUIT [<] PREV [>] NEXT ' \
-                  '[4|8|6|5] CURSOR MOVE [A] ANIMATE [H] HEAT'
+    __MENU_TEXT = '[Q] QUIT  [<] PREV  [>] NEXT  ' \
+                  '[4|8|6|5] CURSOR MOVE  [A] ANIMATE  [H] HEAT'
     __ANIME_MENU_TEXT = '[S] STOP  [P] PAUSE  [R] RESTART'
     __ANIME_CONTINUE_TEXT = '[C] CONTINUE'
     __HEAT_MENU_TEXT = '[Q] QUIT [4|8|6|5] CURSOR MOVE'
-    __RESIZE_REQ_TEXT = "Increase the size of your screen, please"
 
-    def show_intro(self):
-        """ Print INTRO screen about HEAP MAP visualization """
-        text = "INTERACTIVE HEAP MAP VISUALIZATION!"
+    def print_intro(self):
+        """ Builds ans print INTRO screen about HEAP MAP visualization """
+        main_text = "INTERACTIVE HEAP MAP VISUALIZATION!"
+        author_text = "Author: " + __author__
+
+        # print MAIN text
         row_pos = curses.LINES // 2
-        col_pos = (curses.COLS - len(text)) // 2
-
-        self.__window.addstr(row_pos, col_pos, text, curses.A_BOLD)
-
-        text = "Author: " + __author__
+        col_pos = (curses.COLS - len(main_text)) // 2
+        self.__window.addstr(row_pos, col_pos, main_text, curses.A_BOLD)
+        # print author info
         row_pos = curses.LINES // 2 + 1
-        col_pos = (curses.COLS - len(text)) // 2
-        self.__window.addstr(row_pos + 1, col_pos, text)
+        col_pos = (curses.COLS - len(author_text)) // 2
+        self.__window.addstr(row_pos + 1, col_pos, author_text)
 
         self.__window.refresh()
-        # just for effect :)
+        # delay for effect
         curses.napms(HeapMapVisualization.INTRO_DELAY)
 
-    def resize_req_print(self):
-        """ Print resize request to the window """
-        text = self.__RESIZE_REQ_TEXT
+    def print_resize_req(self):
+        """ Prints resize request to the window """
+        resize_text = "Increase the size of your screen, please"
+
         row_pos = curses.LINES // 2
-        col_pos = (curses.COLS - len(text)) // 2
-
+        col_pos = (curses.COLS - len(resize_text)) // 2
+        # clearing whole window
         self.__window.clear()
-        self.__window.addstr(row_pos, col_pos, text, curses.A_BOLD)
+        self.__window.addstr(row_pos, col_pos, resize_text, curses.A_BOLD)
 
-    def menu_print(self, text):
-        """ Print text as menu information to the window
+    def print_menu(self, menu_text):
+        """ Prints text as menu information to the window
+
+            Menu text is placed in the middle of the window's bottom
 
         Arguments:
             text(string): string to print as a MENU text
         """
-        row_pos = curses.LINES - 1
-        col_pos = (curses.COLS - len(text)) // 2
-
-        # clearing line
+        # clearing line for MENU text
         self.__window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
-        self.__window.addstr(row_pos, col_pos, text, curses.A_BOLD)
+        # print MENU text
+        row_pos = curses.LINES - 1
+        col_pos = (curses.COLS - len(menu_text)) // 2
+        self.__window.addstr(row_pos, col_pos, menu_text, curses.A_BOLD)
 
-    def info_print(self, margin):
-        """ Print the snapshot information to the window
+    def print_map_info(self, margin):
+        """ Prints the map information to the window
+
+            Informative text is placed in the middle of the map's top border
 
         Arguments:
             margin(int): left margin
         """
-        text = 'SNAPSHOT: ' + str(self.__current_snap)
-        text += '/' + str(len(self.__heap['snapshots'])) + '  ('
-        text += str(self.__heap['snapshots'][self.__current_snap - 1]['time'])
-        text += 's)'
+        text = 'SNAPSHOT: {!s}/{!s}  ({!s}s)'.format(
+            self.__current_snap, len(self.__heap['snapshots']),
+            self.__heap['snapshots'][self.__current_snap - 1]['time'])
+
         row_pos = 0
         col_pos = (curses.COLS - len(text) - margin) // 2 + margin
 
         self.__window.addstr(row_pos, col_pos, text,
                              curses.color_pair(self.__colors.info_text))
 
-    def animation_prompt(self):
-        """ Animation feature of the HEAP MAP visualization """
-        # set non_blocking window.getch()
-        self.__window.nodelay(1)
+    def __print_glob_stats(self, address):
+        """ Prints global specific info
 
-        while True:
-            # print ANIMATION MENU text
-            self.menu_print(self.__ANIME_MENU_TEXT)
-
-            # delay between individually heap map screens
-            curses.napms(self.ANIMATION_DELAY)
-
-            key = self.__window.getch()
-
-            self.following_snapshot(self.NEXT_SNAPSHOT)
-
-            if key in (ord('s'), ord('S')):
-                # stop ANIMATION
-                self.following_snapshot(self.CURRENT_SNAPSHOT)
-                break
-            # restart animation from the 1st snapshot
-            elif key in (ord('r'), ord('R')):
-                self.__set_current_snap(1)
-                self.following_snapshot(self.CURRENT_SNAPSHOT)
-            # stop animation until 'C' key is pressed
-            elif key in (ord('p'), ord('P')):
-                while self.__window.getch() not in (ord('c'), ord('C')):
-                    self.menu_print(self.__ANIME_CONTINUE_TEXT)
-            # change of the screen size occurred
-            elif key == curses.KEY_RESIZE:
-                self.following_snapshot(self.CURRENT_SNAPSHOT)
-
-        # empty buffer window.getch()
-        while self.__window.getch() != -1:
-            pass
-        # set blocking window.getch()
-        self.__window.nodelay(0)
-
-    def __calculate_field_size(self, rows, cols):
-        """ Calculate the field size based on the screen's size
+            Informative text is placed right bellow the map
 
         Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's columns
-        
+            address(float): map field's address
+        """
+        snap = self.__heap['snapshots'][self.__current_snap - 1]
+        space_text = "Total allocated space: "
+        address_text = "Address: "
+        field_text = "Field size: "
+        glob_text = 'MAP INFO:'
+        margin = len(space_text)
+
+        row_pos = self.__map_cords['map']['rows'] + 2
+        col_pos = (curses.COLS - len(glob_text)) // 2
+
+        self.__window.hline(row_pos, 0, self.BORDER_SYM, curses.COLS,
+                            curses.color_pair(self.__colors.info_text))
+        self.__window.addstr(row_pos, col_pos, glob_text,
+                             curses.color_pair(self.__colors.info_text))
+
+        # 1st line
+        line1 = space_text + ' '*(margin - len(space_text))
+        line1 += str(snap['sum_amount']) + ' ' + self.__heap['unit']
+        line1 += ' '*(curses.COLS - len(line1))
+        # 2nd line
+        line2 = address_text + ' '*(margin - len(address_text))
+        line2 += str(int(address))
+        line2 += ' '*(curses.COLS - len(line2))
+        # 3rd line
+        line3 = field_text + ' '*(margin - len(field_text))
+        line3 += str(int(self.__map_cords['map']['field_size']))
+        line3 += ' ' + self.__heap['unit']
+        line3 += ' '*(curses.COLS - len(line3))
+
+        # print current field's information
+        self.__window.addstr(row_pos + 1, 0, line1 + line2 + line3,
+                             curses.color_pair(self.__colors.info_text))
+
+    def __print_alloc_stats(self, data):
+        """ Prints field's specific info
+
+            Informative text is placed right bellow the map
+
+        Arguments:
+            data(dict): map field's data
+        """
+        space_text = "Allocated space: "
+        address_text = "Starting address: "
+        allocation_text = "Allocation: "
+        glob_text = 'ALLOCATION INFO:'
+        margin = len(address_text)
+
+        row_pos = self.__map_cords['map']['rows'] + 2
+        col_pos = (curses.COLS - len(glob_text)) // 2
+
+        self.__window.hline(self.BORDER_SYM, curses.COLS,
+                            curses.color_pair(self.__colors.info_text))
+        self.__window.addstr(row_pos, col_pos, glob_text,
+                             curses.color_pair(self.__colors.info_text))
+
+        # 1st line
+        line1 = space_text + ' '*(margin - len(space_text))
+        line1 += str(data['amount']) + ' ' + self.__heap['unit']
+        line1 += ' '*(curses.COLS - len(line1))
+        # 2nd line
+        line2 = address_text + ' '*(margin - len(address_text))
+        line2 += str(data['address'])
+        line2 += ' '*(curses.COLS - len(line2))
+        # 3rd line
+        line3 = allocation_text + ' '*(margin - len(allocation_text))
+        line3 += "F: " + str(data['uid']['function'])
+        line3 += ' '*(curses.COLS - len(line3))
+        # 4th line
+        line4 = ' '*margin
+        line4 += "S: " + str(data['uid']['source'])
+        line4 += ":" + str(data['uid']['line'])
+        line4 += ' '*(curses.COLS - len(line4))
+
+        # print current field's information
+        self.__window.addstr(row_pos + 1, 0, line1 + line2 + line3 + line4,
+                             curses.color_pair(self.__colors.info_text))
+
+    def __print_heat_stats(self, data):
+        """ Prints field's access info
+
+            Informative text is placed right bellow the map
+
+        Arguments:
+            data(dict): map field's data
+        """
+        heat_text = 'HEAT INFO:'
+        access_text = "Number of accesses: "
+        address_text = "Starting address: "
+        margin = len(access_text)
+
+        row_pos = self.__map_cords['map']['rows'] + 2
+        col_pos = (curses.COLS - len(heat_text)) // 2
+
+        self.__window.hline(self.BORDER_SYM, curses.COLS,
+                            curses.color_pair(self.__colors.info_text))
+        self.__window.addstr(row_pos, col_pos, heat_text,
+                             curses.color_pair(self.__colors.info_text))
+
+        # 1st line
+        line1 = access_text + ' '*(margin - len(access_text))
+        line1 += str(data['access']) + 'x'
+        line1 += ' '*(curses.COLS - len(line1))
+        # 2nd line
+        line2 = address_text + ' '*(margin - len(address_text))
+        line2 += str(int(data['address']))
+        line2 += ' '*(curses.COLS - len(line2))
+
+        # print current field's information
+        self.__window.addstr(row_pos + 1, 0, line1 + line2,
+                             curses.color_pair(self.__colors.info_text))
+
+    def __get_tik_info(self, length, tik_amount):
+        """ Builds tik information line
+
+        Arguments:
+           length(int): length of information text
+           tik_amount(int): tik amount
+
+        Returns:
+            str: built tik information text
+        """
+        tik_amount_str = ''
+
+        for i, col in enumerate(range(0, length, self.TIK_FREQ)):
+            if self.TIK_FREQ >= length - col:
+                break
+            tik_string = '{!s}{}'.format((tik_amount * i), self.__heap['unit'])
+            tik_amount_str += tik_string
+            empty_fields = self.TIK_FREQ - len(tik_string)
+            tik_amount_str += self.BORDER_SYM * empty_fields
+
+        return tik_amount_str
+
+    def __print_address(self, row, add_str, space):
+        """ Prints the address info
+
+        Arguments:
+           row(int): window's row where print the address
+           add_str(str): address string
+           space(int): length of the address info space
+        """
+        empty_fields = space - len(add_str)
+        add_str += self.BORDER_SYM * empty_fields
+        self.__window.addnstr(row, 0, add_str, len(add_str),
+                              curses.color_pair(self.__colors.info_text))
+
+    def __get_field_size(self):
+        """ Calculates the field's size based on the screen's size
+
         Returns:
             float: field size
         """
         stats = self.__heap['stats']
-
+        _, rows, cols = self.__get_map_size()
         # calculating approximated field size
         line_address_range = stats['max_address'] - stats['min_address']
+        size = line_address_range / (rows * cols)
 
-        return line_address_range / (rows * cols)
+        return size
 
-    def create_screen_decomposition(self, rows, cols):
+    def __get_map_size(self):
+        """ Calculate the true map's size """
+        # calculate space for the addresses information
+        max_add_len = len(str(self.__heap['stats']['max_address']))
+        if max_add_len < len(self.__ADDRESS_INFO_TEXT):
+            max_add_len = len(self.__ADDRESS_INFO_TEXT)
+
+        # number of the screen's rows == (minimum of rows) - (2*border field)
+        map_rows = self.__MIN_ROWS - 2
+        # number of the screen's columns == (terminal's current number of
+        # the columns) - (size of address info - 2*border field)
+        map_cols = curses.COLS - max_add_len - 2
+
+        return max_add_len, map_rows, map_cols
+
+    def create_map_matrix(self, rows, cols):
         """ Create a matrix with corresponding representation of the snapshot
 
         Arguments:
@@ -296,25 +453,35 @@ class HeapMapVisualization(object):
             cols(int): total number of the screen's columns
 
         Returns:
-            dict: matrix representing map's snapshot decomposition
-                  and size of the field
+            dict: matrix representing map with additional info
+                  following format:
+                  {"data": matrix,
+                   "field_size": (float),
+                   "rows": (int),
+                   "cols": (int)
+                  }
+            matrix format:
+                  [{"uid": # allocation UID (dict),
+                   "address": # field's address or
+                                allocation's starting address (float),
+                   "amount": (int)
+                  }]
         """
         snap = self.__heap['snapshots'][self.__current_snap - 1]
-
-        field_size = self.__calculate_field_size(rows, cols)
-
+        field_size = self.__get_field_size()
         # creating empty matrix
         matrix = [[None for _ in range(cols)] for _ in range(rows)]
 
         allocations = snap['map']
         # sorting allocations records by frequency of allocations
         allocations.sort(key=lambda x: x['address'])
+        #set iterator over list
         iterator = iter(allocations)
-
+        # set starting points
         record = next(iterator, None)
-        # set starting address to first approx field
         last_field = self.__heap['stats']['min_address']
         remain_amount = 0 if record is None else record['amount']
+
         for row in range(rows):
             for col in range(cols):
 
@@ -328,11 +495,13 @@ class HeapMapVisualization(object):
                         last_field += field_size
                         continue
 
+                    # record is in the next field, let's put it's info there
                     uid_info = self.__heap['info'][record['uid']]
                     matrix[row][col] = {"uid": uid_info,
                                         "address": record['address'],
                                         "amount": record['amount']}
 
+                    # spread record over or get next record
                     if remain_amount <= field_size:
                         record = next(iterator, None)
                         if record is None:
@@ -353,15 +522,61 @@ class HeapMapVisualization(object):
         return {"data": matrix, "field_size": field_size,
                 "rows": rows, "cols": cols}
 
-    def matrix_print(self, map_data, rows, cols, add_length):
-        """ Prints the screen representation matrix to the window
+    def create_heat_matrix(self, rows, cols):
+        """ Create a matrix with corresponding HEAT representation
 
         Arguments:
-            map_data(dict): representing information about map's snapshot
+            rows(int): total number of the screen's rows
+            cols(int): total number of the screen's columns
+
+        Returns:
+            dict: matrix representing HEAT map with additional info
+                  following format:
+                  {"data": matrix,
+                   "field_size": (float),
+                   "rows": (int),
+                   "cols": (int)
+                  }
+            matrix format:
+                  [{"address": # field's address (float),
+                    "access": number of the field's access (int)
+                  }]
+        """
+        field_size = self.__get_field_size()
+
+        # creating empty matrix
+        matrix = [[None for _ in range(cols)] for _ in range(rows)]
+
+        accesses = self.__heap['map']
+        # set starting address to first approx field
+        min_address = self.__heap['stats']['min_address']
+        curr_add = min_address
+        for row in range(rows):
+            for col in range(cols):
+
+                access_number = max(accesses[int(curr_add) + i - min_address]
+                                    for i in range(int(field_size)))
+
+                matrix[row][col] = {"access": access_number,
+                                    "address": curr_add
+                                   }
+
+                curr_add += field_size
+
+        return {"data": matrix, "field_size": field_size,
+                "rows": rows, "cols": cols}
+
+    def print_matrix(self, rows, cols, add_length):
+        """ Prints the matrix representation to the window
+
+            Printed matrix is also surrounded by border and address info
+
+        Arguments:
             rows(int): total number of the screen's rows
             cols(int): total number of the screen's columns
             add_length(int): length of the address info space
         """
+        map_data = self.__map_cords['map']
         tik_amount = int(map_data['field_size'] * self.TIK_FREQ)
 
         # calculating address range on one line
@@ -371,12 +586,12 @@ class HeapMapVisualization(object):
         for row in range(rows):
             # address info printing calculated from 1st and field size (approx)
             if row not in (0, rows - 1):
-                self.__address_print(row, str(address), add_length)
+                self.__print_address(row, str(address), add_length)
                 address += line_address_size
             elif row == 0:
-                self.__address_print(row, self.__ADDRESS_INFO_TEXT, add_length)
+                self.__print_address(row, self.__ADDRESS_INFO_TEXT, add_length)
             else:
-                self.__address_print(row, '', add_length)
+                self.__print_address(row, '', add_length)
 
             tik_counter = 0
             for col in range(add_length, cols):
@@ -389,10 +604,10 @@ class HeapMapVisualization(object):
                 # field printing
                 else:
                     field = map_data['data'][row - 1][col - add_length - 1]
-                    if self.__heap['type'] == "heap":
-                        color = self.__colors.heap_field_color(field['uid'])
-                    else:
+                    if self.__heat_mode:
                         color = self.__colors.heat_field_color(field['access'])
+                    else:
+                        color = self.__colors.heap_field_color(field['uid'])
 
                     if tik_counter % self.TIK_FREQ == 0:
                         symbol = self.TIK_SYM
@@ -407,47 +622,12 @@ class HeapMapVisualization(object):
                 tik_counter += 1
 
         # adding tik amount info
-        tik_str = self.__tik_info_text(cols - add_length, tik_amount)
+        tik_str = self.__get_tik_info(cols - add_length, tik_amount)
         self.__window.addstr(rows - 1, add_length + 1, tik_str,
                              curses.color_pair(self.__colors.info_text))
 
-    def __tik_info_text(self, length, tik_amount):
-        """ Build tik information text
-
-        Arguments:
-           length(int): length of information text
-           tik_amount(int): tik amount
-
-        Returns:
-            str: built tik information text
-        """
-        freq = self.TIK_FREQ
-        tik_amount_str = ''
-        for i, col in enumerate(range(0, length, freq)):
-            if freq >= length - col:
-                break
-            tik_string = str(tik_amount * i) + self.__heap['unit']
-            tik_amount_str += tik_string
-            empty_fields = freq - len(tik_string)
-            tik_amount_str += self.BORDER_SYM * empty_fields
-
-        return tik_amount_str
-
-    def __address_print(self, row, add_str, space):
-        """ Print the address information
-
-        Arguments:
-           row(int): window's row where print the address
-           add_str(str): address string
-           space(int): length of the address info space
-        """
-        empty_fields = space - len(add_str)
-        add_str += self.BORDER_SYM * empty_fields
-        self.__window.addnstr(row, 0, add_str, len(add_str),
-                              curses.color_pair(self.__colors.info_text))
-
-    def __redraw_heap_map(self):
-        """ Redraw the heap map screen to represent the specified snapshot
+    def draw_heap_map(self):
+        """ Draw the window to represent the current snapshot
 
         Returns:
             bool: success of the operation
@@ -456,7 +636,7 @@ class HeapMapVisualization(object):
         self.__window.clear()
         self.__map_cords = None
 
-        add_space, true_rows, true_cols = self.__get_true_size()
+        add_space, true_rows, true_cols = self.__get_map_size()
 
         # check for the minimal screen size
         rows_cond = curses.LINES < self.__MIN_ROWS
@@ -465,18 +645,47 @@ class HeapMapVisualization(object):
             return False
 
         # creating the heap map screen decomposition
-        decomposition = self.create_screen_decomposition(true_rows, true_cols)
-        assert decomposition
-
-        # printing heap map decomposition to the console window
-        self.matrix_print(decomposition, self.__MIN_ROWS, curses.COLS,
-                          add_space)
-        # printing heap info to the console window
-        self.info_print(add_space)
+        decomposition = self.create_map_matrix(true_rows, true_cols)
         # update map information and coordinates
         self.__map_cords = {'row': 1, 'col': add_space + 1,
                             'map': decomposition}
+
+        # printing heap map decomposition to the console window
+        self.print_matrix(self.__MIN_ROWS, curses.COLS, add_space)
+
+        # printing heap info to the console window
+        self.print_map_info(add_space)
+
         return True
+
+    def draw_heat_map(self):
+        """ Draw the window to represent HEAT map """
+        curses.update_lines_cols()
+        self.__window.clear()
+        self.__map_cords = None
+
+        add_space, true_rows, true_cols = self.__get_map_size()
+
+        # check for the minimal screen size
+        rows_cond = curses.LINES < self.__MIN_ROWS
+        cols_cond = curses.COLS - add_space < self.__MIN_COLS
+        if rows_cond or cols_cond:
+            self.print_resize_req()
+            return
+
+        # creating the heat map screen decomposition
+        decomposition = self.create_heat_matrix(true_rows, true_cols)
+        # update map information and coordinates
+        self.__map_cords = {'row': 1, 'col': add_space + 1,
+                            'map': decomposition}
+
+        # printing heat map decomposition to the console window
+        self.print_matrix(self.__MIN_ROWS, curses.COLS, add_space)
+
+        self.print_menu(self.__HEAT_MENU_TEXT)
+
+        self.reset_cursor()
+        self.print_field_info()
 
     def __set_current_snap(self, following_snap):
         """ Sets current snapshot
@@ -491,7 +700,7 @@ class HeapMapVisualization(object):
             return False
 
     def following_snapshot(self, direction):
-        """ Set following snapshot to print
+        """ Set following snapshot and print the map
 
         Arguments:
             direction(int): direction of the following snapshot (PREVIOUS/NEXT)
@@ -502,20 +711,23 @@ class HeapMapVisualization(object):
         if not self.__set_current_snap(self.__current_snap + direction):
             return
 
-        if self.__redraw_heap_map():
+        if self.draw_heap_map():
             # printing menu to the console window
-            self.menu_print(self.__MENU_TEXT)
+            self.print_menu(self.__MENU_TEXT)
             # set cursor's position to the upper left corner of the heap map
-            self.cursor_reset()
+            self.reset_cursor()
             self.print_field_info()
         else:
-            self.resize_req_print()
+            self.print_resize_req()
 
-    def cursor_reset(self):
-        """ Sets the cursor to the upper left corner of the heap map """
+    def reset_cursor(self):
+        """ Resets the cursor position
+
+            Default position is in the upper left corner of the heap map
+        """
         self.__window.move(self.__map_cords['row'], self.__map_cords['col'])
 
-    def cursor_move(self, direction):
+    def move_cursor(self, direction):
         """ Move the cursor to the new position defined by direction
 
         Arguments:
@@ -551,13 +763,13 @@ class HeapMapVisualization(object):
                 self.__window.move(self.__map_cords['row'] + map_rows - 1,
                                    row_col[1])
 
-        elif direction == ord('5'):
+        else:
             if row_col[0] - self.__map_cords['row'] < map_rows - 1:
                 self.__window.move(row_col[0] + 1, row_col[1])
             else:
                 self.__window.move(self.__map_cords['row'], row_col[1])
 
-    def print_field_info(self, is_heat=False):
+    def print_field_info(self):
         """ Prints information about memory space pointed by the cursor """
         if not self.__map_cords:
             return
@@ -575,7 +787,7 @@ class HeapMapVisualization(object):
 
         try:
             data = self.__map_cords['map']['data'][matrix_row][matrix_col]
-            if is_heat:
+            if self.__heat_mode:
                 self.__print_heat_stats(data)
             elif data['uid'] is None:
                 self.__print_glob_stats(data['address'])
@@ -584,198 +796,50 @@ class HeapMapVisualization(object):
         except KeyError:
             pass
         # printing menu to the console window, was also cleared
-        if is_heat:
-            self.menu_print(self.__HEAT_MENU_TEXT)
+        if self.__heat_mode:
+            self.print_menu(self.__HEAT_MENU_TEXT)
         else:
-            self.menu_print(self.__MENU_TEXT)
+            self.print_menu(self.__MENU_TEXT)
         # move cursor to the original position
         self.__window.move(*orig_row_col)
 
-    def __print_heat_stats(self, data):
-        heat_text = 'HEAT INFO:'
-        access_text = "Number of accesses: "
-        address_text = "Starting address: "
-        margin = len(access_text)
+    def animation_logic(self):
+        """ Animation feature's logic of the HEAP MAP visualization """
+        # set non_blocking window.getch()
+        self.__window.nodelay(1)
 
-        row_pos = self.__map_cords['map']['rows'] + 2
-        col_pos = (curses.COLS - len(heat_text)) // 2
+        while True:
+            # print ANIMATION MENU text
+            self.print_menu(self.__ANIME_MENU_TEXT)
 
-        self.__window.hline(self.BORDER_SYM, curses.COLS,
-                            curses.color_pair(self.__colors.info_text))
-        self.__window.addstr(row_pos, col_pos, heat_text,
-                             curses.color_pair(self.__colors.info_text))
+            # delay between individually heap map screens
+            curses.napms(self.ANIMATION_DELAY)
 
-        # 1st line
-        text1 = access_text + ' '*(margin - len(access_text))
-        text1 += str(data['access']) + 'x'
-        text1 += ' '*(curses.COLS - len(text1))
-        # 2nd line
-        text2 = address_text + ' '*(margin - len(address_text))
-        text2 += str(int(data['address']))
-        text2 += ' '*(curses.COLS - len(text2))
+            key = self.__window.getch()
 
-        # print current field's information
-        self.__window.addstr(row_pos + 1, 0, text1 + text2,
-                             curses.color_pair(self.__colors.info_text))
+            self.following_snapshot(self.NEXT_SNAPSHOT)
 
-    def __print_alloc_stats(self, data):
-        """ Prints allocation info
+            if key in (ord('s'), ord('S')):
+                # stop ANIMATION
+                self.following_snapshot(self.CURRENT_SNAPSHOT)
+                break
+            # restart animation from the 1st snapshot
+            elif key in (ord('r'), ord('R')):
+                self.__set_current_snap(1)
+                self.following_snapshot(self.CURRENT_SNAPSHOT)
+            # stop animation until 'C' key is pressed
+            elif key in (ord('p'), ord('P')):
+                while self.__window.getch() not in (ord('c'), ord('C')):
+                    self.print_menu(self.__ANIME_CONTINUE_TEXT)
+            # change of the screen size occurred
+            elif key == curses.KEY_RESIZE:
+                self.following_snapshot(self.CURRENT_SNAPSHOT)
 
-        Arguments:
-            data(dict): map field's data
-        """
-        space_text = "Allocated space: "
-        address_text = "Starting address: "
-        allocation_text = "Allocation: "
-        glob_text = 'ALLOCATION INFO:'
-        margin = len(address_text)
-
-        row_pos = self.__map_cords['map']['rows'] + 2
-        col_pos = (curses.COLS - len(glob_text)) // 2
-
-        self.__window.hline(self.BORDER_SYM, curses.COLS,
-                            curses.color_pair(self.__colors.info_text))
-        self.__window.addstr(row_pos, col_pos, glob_text,
-                             curses.color_pair(self.__colors.info_text))
-
-        # 1st line
-        text1 = space_text + ' '*(margin - len(space_text))
-        text1 += str(data['amount']) + ' ' + self.__heap['unit']
-        text1 += ' '*(curses.COLS - len(text1))
-        # 2nd line
-        text2 = address_text + ' '*(margin - len(address_text))
-        text2 += str(data['address'])
-        text2 += ' '*(curses.COLS - len(text2))
-        # 3rd line
-        text31 = allocation_text + ' '*(margin - len(allocation_text))
-        text31 += "F: " + str(data['uid']['function'])
-        text31 += ' '*(curses.COLS - len(text31))
-
-        text32 = ' '*margin
-        text32 += "S: " + str(data['uid']['source'])
-        text32 += ":" + str(data['uid']['line'])
-        text32 += ' '*(curses.COLS - len(text32))
-
-        # print current field's information
-        self.__window.addstr(row_pos + 1, 0, text1 + text2 + text31 + text32,
-                             curses.color_pair(self.__colors.info_text))
-
-    def __print_glob_stats(self, address):
-        """ Prints global map info
-
-        Arguments:
-            address(float): map field's address
-        """
-        snap = self.__heap['snapshots'][self.__current_snap - 1]
-        space_text = "Total allocated space: "
-        address_text = "Address: "
-        field_text = "Field size: "
-        glob_text = 'MAP INFO:'
-        margin = len(space_text)
-
-        row_pos = self.__map_cords['map']['rows'] + 2
-        col_pos = (curses.COLS - len(glob_text)) // 2
-
-        self.__window.hline(row_pos, 0, self.BORDER_SYM, curses.COLS,
-                            curses.color_pair(self.__colors.info_text))
-        self.__window.addstr(row_pos, col_pos, glob_text,
-                             curses.color_pair(self.__colors.info_text))
-
-        # 1st line
-        text1 = space_text + ' '*(margin - len(space_text))
-        text1 += str(snap['sum_amount']) + ' ' + self.__heap['unit']
-        text1 += ' '*(curses.COLS - len(text1))
-        # 2nd line
-        text2 = address_text + ' '*(margin - len(address_text))
-        text2 += str(int(address))
-        text2 += ' '*(curses.COLS - len(text2))
-        # 3rd line
-        text3 = field_text + ' '*(margin - len(field_text))
-        text3 += str(int(self.__map_cords['map']['field_size']))
-        text3 += ' ' + self.__heap['unit']
-        text3 += ' '*(curses.COLS - len(text3))
-
-        # print current field's information
-        self.__window.addstr(row_pos + 1, 0, text1 + text2 + text3,
-                             curses.color_pair(self.__colors.info_text))
-
-    def __get_true_size(self):
-        # calculate space for the addresses information
-        max_add_len = len(str(self.__heap['stats']['max_address']))
-        if max_add_len < len(self.__ADDRESS_INFO_TEXT):
-            max_add_len = len(self.__ADDRESS_INFO_TEXT)
-
-        # number of the screen's rows == (minimum of rows) - (2*border field)
-        map_rows = self.__MIN_ROWS - 2
-        # number of the screen's columns == (terminal's current number of
-        # the columns) - (size of address info - 2*border field)
-        map_cols = curses.COLS - max_add_len - 2
-
-        return max_add_len, map_rows, map_cols
-
-    def create_heat_decomposition(self, rows, cols):
-        """ Create a matrix with corresponding HEAT representation
-
-        Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's columns
-
-        Returns:
-            dict: matrix representing HEAT decomposition
-                  and size of the field
-        """
-        field_size = self.__calculate_field_size(rows, cols)
-
-        # creating empty matrix
-        matrix = [[None for _ in range(cols)] for _ in range(rows)]
-
-        accesses = self.__heap['map']
-        # set starting address to first approx field
-        min_address = self.__heap['stats']['min_address']
-        curr_add = min_address
-        for row in range(rows):
-            for col in range(cols):
-
-                access_number = max(accesses[int(curr_add) + i - min_address]
-                                    for i in range(int(field_size)))
-
-                matrix[row][col] = {"access": access_number,
-                                    "address": curr_add
-                                    }
-
-                curr_add += field_size
-
-        return {"data": matrix, "field_size": field_size,
-                "rows": rows, "cols": cols}
-
-    def heat_map_draw(self):
-        """ Draw the heat map screen """
-        curses.update_lines_cols()
-        self.__window.clear()
-        self.__map_cords = None
-
-        add_space, true_rows, true_cols = self.__get_true_size()
-
-        # check for the minimal screen size
-        rows_cond = curses.LINES < self.__MIN_ROWS
-        cols_cond = curses.COLS - add_space < self.__MIN_COLS
-        if rows_cond or cols_cond:
-            self.resize_req_print()
-            return
-
-        # creating the heat map screen decomposition
-        decomposition = self.create_heat_decomposition(true_rows, true_cols)
-        assert decomposition
-
-        # printing heat map decomposition to the console window
-        self.matrix_print(decomposition, self.__MIN_ROWS, curses.COLS,
-                          add_space)
-
-        self.menu_print(self.__HEAT_MENU_TEXT)
-
-        self.__map_cords = {'row': 1, 'col': add_space + 1,
-                            'map': decomposition}
-        self.cursor_reset()
+        # empty buffer window.getch()
+        while self.__window.getch() != -1:
+            pass
+        # set blocking window.getch()
+        self.__window.nodelay(0)
 
     def __init__(self, window, heap):
         """ Initialize the HEAP MAP visualization object
@@ -788,6 +852,8 @@ class HeapMapVisualization(object):
         self.__window = window
         # heap representation
         self.__heap = heap
+        # mode
+        self.__heat_mode = bool(heap['type'] == 'heat')
         # currently printed map's snapshot
         self.__current_snap = 0
         # heap map's metadata and coordinates
@@ -799,8 +865,8 @@ class HeapMapVisualization(object):
         curses.curs_set(2)
 
 
-def heat_mode(window, heat):
-    """ HEAT visualization prompt
+def heat_map_logic(window, heat):
+    """ HEAT visualization logic prompt
 
     Arguments:
         window(any): initialized curses window
@@ -809,8 +875,8 @@ def heat_mode(window, heat):
     # instantiate of the heat map visualization object
     vis_obj = HeapMapVisualization(window, heat)
 
-    vis_obj.heat_map_draw()
-    vis_obj.print_field_info(True)
+    vis_obj.draw_heat_map()
+
     while True:
         # catching key value
         key = window.getch()
@@ -820,16 +886,15 @@ def heat_mode(window, heat):
             break
         # cursor moved
         elif key in (ord('4'), ord('6'), ord('8'), ord('5')):
-            vis_obj.cursor_move(key)
-            vis_obj.print_field_info(True)
+            vis_obj.move_cursor(key)
+            vis_obj.print_field_info()
         # change of the screen size occurred
         elif key == curses.KEY_RESIZE:
-            vis_obj.heat_map_draw()
-            vis_obj.print_field_info(True)
+            vis_obj.draw_heat_map()
 
 
-def heap_map_prompt(window, heap, heat):
-    """ HEAP visualization prompt
+def heap_map_logic(window, heap, heat):
+    """ HEAP visualization logic prompt
 
     Arguments:
         window(any): initialized curses window
@@ -840,7 +905,7 @@ def heap_map_prompt(window, heap, heat):
     vis_obj = HeapMapVisualization(window, heap)
 
     # print intro
-    vis_obj.show_intro()
+    vis_obj.print_intro()
     # print 1st snapshot's heap map
     vis_obj.following_snapshot(vis_obj.NEXT_SNAPSHOT)
 
@@ -859,14 +924,14 @@ def heap_map_prompt(window, heap, heat):
             vis_obj.following_snapshot(vis_obj.NEXT_SNAPSHOT)
         # start of the animation
         elif key in (ord('a'), ord('A')):
-            vis_obj.animation_prompt()
+            vis_obj.animation_logic()
         # cursor moved
         elif key in (ord('4'), ord('6'), ord('8'), ord('5')):
-            vis_obj.cursor_move(key)
+            vis_obj.move_cursor(key)
             vis_obj.print_field_info()
         # HEAT map
         elif key in (ord('h'), ord('H')):
-            heat_mode(window, heat)
+            heat_map_logic(window, heat)
             vis_obj.following_snapshot(vis_obj.CURRENT_SNAPSHOT)
         # change of the screen size occurred
         elif key == curses.KEY_RESIZE:
@@ -891,7 +956,7 @@ def heap_map(heap, heat):
     # after integration remove try block
     try:
         # call heap map visualization prompt in curses wrapper
-        curses.wrapper(heap_map_prompt, heap, heat)
+        curses.wrapper(heap_map_logic, heap, heat)
     except curses.error as error:
         print('Screen too small!', file=sys.stderr)
         print(str(error), file=sys.stderr)
@@ -899,7 +964,7 @@ def heap_map(heap, heat):
 
 if __name__ == "__main__":
     with open("memory.perf") as f:
-        heap = heap_representation.create_heap_map(json.load(f))
+        heap_file = heap_representation.create_heap_map(json.load(f))
     with open("memory.perf") as f:
-        heat = heap_representation.create_heat_map(json.load(f))
-    heap_map(heap, heat)
+        heat_file = heap_representation.create_heat_map(json.load(f))
+    heap_map(heap_file, heat_file)

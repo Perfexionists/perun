@@ -3,7 +3,8 @@ __author__ = 'Radim Podola'
 
 
 def create_heap_map(profile):
-    """ Create the heap map representation for visualization
+    """ Create the HEAP map representation for visualization
+
     Arguments:
         profile(dict): the memory profile
 
@@ -64,7 +65,8 @@ def create_heap_map(profile):
 
 
 def create_heat_map(profile):
-    """ Create the heat map representation for visualization
+    """ Create the HEAT map representation for visualization
+
     Arguments:
         profile(dict): the memory profile
 
@@ -91,22 +93,23 @@ def create_heat_map(profile):
 
     # adding statistics
     max_address = max(item.get('address', 0) + item.get('amount', 0)
-                                      for item in resources)
+                      for item in resources)
     min_address = min(item.get('address', 0) for item in resources)
 
     # transform the memory profile to heat map representation
-    map = get_heat_map(resources, min_address, max_address)
+    heat_map = get_heat_map(resources, min_address, max_address)
 
     return {"type": 'heat',
             "stats": {'max_address': max_address,
                       'min_address': min_address,
-                      },
-            "map": map,
+                     },
+            "map": heat_map,
             'unit': profile['header']['units']['memory']}
 
 
 def get_heat_map(resources, min_add, max_add):
     """ Parse resources from the memory profile to HEAT map representation
+
     Arguments:
         resources(list): list of the resources from the memory profile
 
@@ -128,6 +131,7 @@ def get_heat_map(resources, min_add, max_add):
 
 def get_heap_map(resources):
     """ Parse resources from the memory profile to simpler representation
+
     Arguments:
         resources(list): list of the resources from the memory profile
 
@@ -160,9 +164,14 @@ def calculate_heap_map(snapshots):
     """ Will calculate existing allocations for each snapshot
 
         Result is in the form of modified input argument.
+        Allocations which are not freed within snapshot are spread to next
+        following snapshots till they are freed
 
     Arguments:
         snapshots(list): list of snapshots
+
+    Returns:
+        list: chunk of the all used UIDs
     """
     alloc_chunks = []
     new_allocations = []
@@ -186,20 +195,41 @@ def calculate_heap_map(snapshots):
         snap['map'].extend(existing_allocations)
         existing_allocations = new_allocations.copy()
 
+        # change absolute UID to chunk reference
         for allocation in snap['map']:
-            allocation['uid'] = set_chunks(alloc_chunks, allocation['uid'])
+            allocation['uid'] = __set_chunks(alloc_chunks, allocation['uid'])
 
     return alloc_chunks
 
 
-def set_chunks(chunks, uid):
-    for i, c in enumerate(chunks):
+def __set_chunks(chunks, uid):
+    """ Sets UID reference to chunk list
+
+        Check if UID is in the chunk list, if so index is returned.
+        If not, UID is added to the chunk list.
+
+    Arguments:
+        chunks(list): chunk list
+        uid(dict): UID structure
+
+    Returns:
+        int: index to chunk list referencing UID
+    """
+    for i, chunk in enumerate(chunks):
+        # UID is already referencing
         if isinstance(uid, int):
             return uid
-        if c['function'] == uid['function'] and c['line'] == uid['line'] and c['source'] == uid['source']:
+
+        func_cond = chunk['function'] == uid['function']
+        line_cond = chunk['line'] == uid['line']
+        source_cond = chunk['source'] == uid['source']
+        # UID found in chunk
+        if func_cond and line_cond and source_cond:
             return i
 
+    # UID add to chunk
     chunks.append(uid)
+
     return len(chunks) - 1
 
 
@@ -217,6 +247,7 @@ def add_stats(snapshots):
 
     Arguments:
         snapshots(list): list of snapshots
+
     Return:
         dict: calculated global statistics over all the snapshots
     """
