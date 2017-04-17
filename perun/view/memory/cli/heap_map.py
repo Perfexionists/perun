@@ -202,7 +202,7 @@ class HeapMapVisualization(object):
     __HEAT_MENU_TEXT = '[Q] QUIT [4|8|6|5] CURSOR MOVE'
 
     def print_intro(self):
-        """ Builds ans print INTRO screen about HEAP MAP visualization """
+        """ Builds and prints INTRO screen about HEAP MAP visualization """
         main_text = "INTERACTIVE HEAP MAP VISUALIZATION!"
         author_text = "Author: " + __author__
 
@@ -217,7 +217,7 @@ class HeapMapVisualization(object):
 
         self.__window.refresh()
         # delay for effect
-        curses.napms(HeapMapVisualization.INTRO_DELAY)
+        curses.napms(self.INTRO_DELAY)
 
     def print_resize_req(self):
         """ Prints resize request to the window """
@@ -235,7 +235,7 @@ class HeapMapVisualization(object):
             Menu text is placed in the middle of the window's bottom
 
         Arguments:
-            text(string): string to print as a MENU text
+            menu_text(string): string to print as a MENU text
         """
         # clearing line for MENU text
         self.__window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
@@ -431,7 +431,11 @@ class HeapMapVisualization(object):
         return size
 
     def __get_map_size(self):
-        """ Calculate the true map's size """
+        """ Calculate the true map's size
+
+        Returns:
+            tuple: address info length, map's rows, map's columns
+        """
         # calculate space for the addresses information
         max_add_len = len(str(self.__heap['stats']['max_address']))
         if max_add_len < len(self.__ADDRESS_INFO_TEXT):
