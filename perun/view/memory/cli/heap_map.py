@@ -114,7 +114,7 @@ class HeapMapColors(object):
             int: number of the picked color
         """
         if access >= len(self.__heat_colors):
-            return self.__heat_colors[:1]
+            return self.__heat_colors[-1]
         else:
             return self.__heat_colors[access]
 
@@ -969,6 +969,6 @@ def heap_map(heap, heat):
 if __name__ == "__main__":
     with open("memory.perf") as f:
         heap_file = heap_representation.create_heap_map(json.load(f))
-    with open("memory.perf") as f:
+    with open("heat.perf") as f:
         heat_file = heap_representation.create_heat_map(json.load(f))
     heap_map(heap_file, heat_file)

@@ -49,6 +49,8 @@ class FlowGraphVisualization(object):
     BORDER_Y_SYM = '\u2551'
     BORDER_LEFT_DOWN_CORNER_SYM = '\u255A'
     BORDER_LEFT_UP_CORNER_SYM = '\u2554'
+    BORDER_RIGHT_UP_CORNER_SYM = '\u2557'
+    BORDER_RIGHT_DOWN_CORNER_SYM = '\u255D'
 
     # text's constants
     __Y_AXIS_TEXT = 'MEMORY [B]'
@@ -143,7 +145,7 @@ class FlowGraphVisualization(object):
             self.__window.addstr(starting_row, 0, str(field_size * tik_cnt))
             tik_cnt += 1
 
-            for col in range(margin + 1, cols):
+            for col in range(margin + 1, cols - 1):
                 if i == 0:
                     break
                 self.__window.addch(starting_row, col, self.X_LINES_SYM)
@@ -174,11 +176,16 @@ class FlowGraphVisualization(object):
             self.__window.addch(0, col, self.BORDER_X_SYM)
             self.__window.addch(rows - 2, col, self.BORDER_X_SYM)
 
-        # printing left vertical border
+        # printing border's corners
         self.__window.addch(0, margin, self.BORDER_LEFT_UP_CORNER_SYM)
         self.__window.addch(rows - 2, margin, self.BORDER_LEFT_DOWN_CORNER_SYM)
+        self.__window.addch(0, cols - 1, self.BORDER_RIGHT_UP_CORNER_SYM)
+        self.__window.addch(rows - 2, cols - 1, self.BORDER_RIGHT_DOWN_CORNER_SYM)
+
+        # printing vertical borders
         for row in range(1, rows - 2):
             self.__window.addch(row, margin, self.BORDER_Y_SYM)
+            self.__window.addch(row, cols - 1, self.BORDER_Y_SYM)
 
     def __set_start_snap(self, following_snap, cols):
         """ Sets starting snapshot
@@ -356,7 +363,8 @@ class FlowGraphVisualization(object):
                 if bars_cnt == approx_bars:
                     data = {}
                     # number of the fields is average of the approximated bars
-                    data['fields'] = int(avg_sum / field_size / approx_bars)
+                    total_fields = avg_sum / field_size / approx_bars
+                    data['fields'] = int(math.ceil(total_fields))
                     data['time'] = snap['time']
                     data['snapshot'] = i + 1
                     data['peak'] = bool(was_peak)
@@ -401,12 +409,12 @@ class FlowGraphVisualization(object):
             raise curses.error
 
         # number of the screen's rows == (minimum of rows)
-        # - (2*border lines) - 1 (info line)
+        # - 2(border lines) - 1 (info line)
         graph_rows = self.__MIN_ROWS - 3
         # number of the screen's columns ==
         # (terminal's current number of the columns)
-        # - (size of Y-axis info) - 1(border)
-        graph_cols = curses.COLS - max_y_axis_len - 1
+        # - (size of Y-axis info) - 2(border columns)
+        graph_cols = curses.COLS - max_y_axis_len - 2
 
         return graph_rows, graph_cols, max_y_axis_len
 
