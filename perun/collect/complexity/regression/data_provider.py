@@ -1,32 +1,43 @@
-""" Module for various means of data acquisition. """
+"""Module for various means of regression data acquisition. """
 
 from operator import itemgetter
+import sys
+import json
 
 
-def profile_dictionary_provider(resources):
-    """ Data provider for collector profiling output
+def complexity_collector_provider(filename):
+    """Data provider for complexity collector profiling output.
 
     Arguments:
-        resources(list): the list of dictionaries with profiling data
+        filename(string): the name of complexity profiling file
 
     Returns:
-        generator: each subsequent call returns pair: function name, data points as a list of (x, y)
+        generator: each subsequent call returns tuple: x points list, y points list, function name
     """
+    # Get the file resources contents
+    with open(filename) as f:
+        data = json.load(f)
+    resources = data['resources']
+
     # Sort the dictionaries by function name for easier traversing
     resources = sorted(resources, key=itemgetter('uid'))
-    points_list = []
+    x_points_list = []
+    y_points_list = []
     function_name = resources[0]['uid']
     # Store all the points until the function name changes
     for resource in resources:
         if resource['uid'] != function_name:
-            if points_list:
+            if x_points_list:
                 # Function name changed, yield the list of data points
-                yield function_name, points_list
-                points_list = [(resource['structure-unit-size'], resource['amount'])]
+                yield x_points_list, y_points_list, function_name
+                x_points_list = [resource['structure-unit-size']]
+                y_points_list = [resource['amount']]
                 function_name = resource['uid']
         else:
-            # Add the data point
-            points_list.append((resource['structure-unit-size'], resource['amount']))
-    # End of list, yield the current list
-    if points_list:
-        yield function_name, points_list
+            # Add the data points
+            x_points_list.append(resource['structure-unit-size'])
+            y_points_list.append(resource['amount'])
+    # End of resources, yield the current lists
+    if x_points_list:
+        yield x_points_list, y_points_list, function_name
+
