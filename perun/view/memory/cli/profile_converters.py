@@ -1,4 +1,4 @@
-"""This module implements translation of the profile to heap representation"""
+"""This module implements translation of the profile to other formats """
 __author__ = 'Radim Podola'
 
 
@@ -285,6 +285,41 @@ def add_stats(snapshots):
             'max_amount': max(glob_max_amount),
             'min_amount': min(glob_min_amount)
            }
+
+
+def create_allocations_table(profile):
+    """ Create the allocations table
+
+    Arguments:
+        profile(dict): the memory profile
+
+    Returns:
+        dict: the allocations table
+
+    Format of the allocations table is following:
+        TODO
+    """
+    table = {}
+    table['snapshots'] = []
+    table['amount'] = []
+    table['uid'] = []
+    table['subtype'] = []
+    table['address'] = []
+
+    for i, snap in enumerate(profile['snapshots']):
+
+        for alloc in snap['resources']:
+            uid = "{}_{}_{}".format(alloc['uid']['function'],
+                                    alloc['uid']['source'],
+                                    alloc['uid']['line'])
+
+            table['snapshots'].append(i + 1)
+            table['amount'].append(alloc['amount'])
+            table['uid'].append(uid)
+            table['subtype'].append(alloc['subtype'])
+            table['address'].append(alloc['address'])
+
+    return table
 
 
 if __name__ == "__main__":
