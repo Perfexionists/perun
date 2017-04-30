@@ -74,5 +74,24 @@ def get_pretty_allocations(summary, unit):
     return output.strip()
 
 
+def get_profile_info(profile):
+    """ Create the profile information output
+
+    Arguments:
+        profile(dict): the memory profile
+
+    Returns:
+        string: modified output
+    """
+    output = 'Information were collected and analyzed '
+    output += 'from the following execution of the binary:' + '\n'
+    output += profile['header']['cmd'] + ' ' + profile['header']['params']
+    output += ' ' + profile['header']['workload'] + '\n'
+    output += 'by ' + profile['collector']['name'] + ' collector run with '
+    output += 'following parameters: ' + profile['collector']['params'] + '\n'
+
+    return output
+
+
 if __name__ == "__main__":
     pass

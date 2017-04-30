@@ -17,8 +17,9 @@ def get_heap(profile, **kwargs):
     Returns:
         string: empty string
     """
-    heap_map = heap_representation.create(profile)
-    perun.view.memory.cli.heap_map.heap_map(heap_map)
+    heap_map = heap_representation.create_heap_map(profile)
+    heat_map = heap_representation.create_heat_map(profile)
+    perun.view.memory.cli.heap_map.heap_map(heap_map, heat_map)
 
     return ''
 

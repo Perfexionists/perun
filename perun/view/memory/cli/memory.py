@@ -3,6 +3,7 @@ import sys
 import getopt
 import json
 import perun.view.memory.cli.interpretations as interpretations
+import perun.view.memory.cli.pretty_output as pretty
 
 __author__ = 'Radim Podola'
 __supported_short_opts = 'm:hf:t:a'
@@ -13,7 +14,7 @@ __supported_long_opts = ("mode=",
                          'top=',
                          'all',
                          "function=")
-SUPPORTED_MODES = ("flow", "top", "most", "sum", "func", "__heap")
+SUPPORTED_MODES = ("flow", "top", "most", "sum", "func", "heap")
 
 
 def usage(full=False):
@@ -65,6 +66,7 @@ def err_exit(msg, print_help=False):
 
 def parse_args(argv):
     """ Parse arguments
+
     Arguments:
         argv(list): arguments to parse
 
@@ -151,6 +153,7 @@ def show():
     else:
         assert False
 
+    print(pretty.get_profile_info(profile))
     if output:
         print(output)
 
