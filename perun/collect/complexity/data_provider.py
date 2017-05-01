@@ -41,3 +41,15 @@ def complexity_collector_provider(filename):
     if x_points_list:
         yield x_points_list, y_points_list, function_name
 
+
+def store_profile_to_file(filename, profile):
+    """Save the profile dictionary into the unified profiling format.
+
+    Arguments:
+        filename(str): the name of the profiling file
+        profile(dict): the profiling dictionary to save
+
+    """
+    with open(filename, 'w') as f:
+        f.write(json.dumps(profile, sort_keys=True, indent=2))
+

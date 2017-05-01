@@ -29,9 +29,9 @@ def full_computation(x, y, computation_models):
     for model in mod.map_to_models(computation_models):
         # Update the properties accordingly
         model['parts'] = 1
-        data = _build_uniform_regression_data_format(x, y)
+        model = _build_uniform_regression_data_format(x, y, model)
         # Compute each model
-        for result in model['computation'](data):
+        for result in model['computation'](model):
             yield _transform_to_output_data(result)
 
 
@@ -64,7 +64,7 @@ def iterative_computation(x, y, parts, computation_models):
     for model in mod.map_to_models(computation_models):
         # Transform the properties
         model['parts'] = parts
-        data = _build_uniform_regression_data_format(x, y)
+        data = _build_uniform_regression_data_format(x, y, model)
         # Do a single computational step for each model
         model_generators.append(model['computation'](data))
         results.append(next(model_generators[-1]))
@@ -73,7 +73,7 @@ def iterative_computation(x, y, parts, computation_models):
         try:
             # Get the best fitting model and do next computation step
             best_fit = _find_best_fitting_model(results)
-            yield _transform_to_output_data(results[best_fit])
+            yield _transform_to_output_data(results[best_fit], ['x', 'y'])
             results[best_fit] = next(model_generators[best_fit])
         except StopIteration:
             # The best fitting model finished the computation, end of computation
@@ -101,7 +101,6 @@ def interval_computation(x, y, parts, computation_models):
                   is actually the full computational result generator - see return value for full
                   computation for more details
 
-
     """
     # Sort the regression data
     x, y = tools.sort_points(x, y)
@@ -111,16 +110,18 @@ def interval_computation(x, y, parts, computation_models):
         yield interval_gen
 
 
-def _transform_to_output_data(data):
+def _transform_to_output_data(data, extra_keys=None):
     """Transforms the data dictionary into their output format - omitting computational details and keys that are
        not important for the result and it's further manipulation.
 
     The function provides dictionary with 'model', 'coeffs', 'r_square', 'plot_x', 'plot_y', 'len', 'x_max',
-    'x_min', 'y_min' and 'y_max' keys taken from the data dictionary. If certain key is missing in the data
-    dictionary, then it's not included in the output dictionary.
+    'x_min', 'y_min' and 'y_max' keys taken from the data dictionary. The function also allows to specify extra
+    keys to be included in the output dictionary. If certain key is missing in the data dictionary, then it's not
+    included in the output dictionary.
 
     Arguments:
         data(dict): the data dictionary with results
+        extra_keys(list of str): the extra keys to include
     Returns:
         dict: the output dictionary
 
@@ -128,6 +129,8 @@ def _transform_to_output_data(data):
     # Specify the keys which should be in the output
     transform_keys = ['model', 'coeffs', 'r_square', 'plot_x', 'plot_y', 'len',
                       'x_min', 'x_max', 'y_min', 'y_max']
+    if extra_keys is not None:
+        transform_keys += extra_keys
     transformed = {key: data[key] for key in transform_keys if key in data}
     return transformed
 
@@ -152,7 +155,7 @@ def _find_best_fitting_model(model_results):
     return best_fit
 
 
-def _build_uniform_regression_data_format(x, y, **kwargs):
+def _build_uniform_regression_data_format(x, y, kwargs):
     """Creates the uniform regression data dictionary from the model properties and regression data points.
 
     The uniform data dictionary is used in the regression computation as it allows to build generic and
@@ -161,7 +164,7 @@ def _build_uniform_regression_data_format(x, y, **kwargs):
     Arguments:
         x(list): the list of x points coordinates
         y(list): the list of y points coordinates
-        kwargs(dict): the regression model roperties
+        kwargs(dict): the regression model properties
     Return:
         dict: the uniform data dictionary
     """

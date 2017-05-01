@@ -187,8 +187,15 @@ def generic_plot_data(data):
     y = []
 
     # Compute the function values for each x point
-    for x_pt in x:
-        y.append(data['fp'](x_pt))
+    remove_list = []
+    for idx, x_pt in enumerate(x):
+        try:
+            y.append(data['fp'](x_pt))
+        except ValueError:
+            # Possible domain error
+            remove_list.append(idx)
+    if remove_list:
+        x = np.delete(x, remove_list)
     y = np.array(data['coeffs'][1] + data['coeffs'][0] * np.array(y))
     data['plot_x'] = x
     data['plot_y'] = y

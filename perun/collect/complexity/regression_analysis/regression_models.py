@@ -62,7 +62,7 @@ def map_to_models(models_list):
 # The record can also contain optional parameters as needed.
 _models = {
     'linear': {
-        'name': 'linear',
+        'model': 'linear',
         'fx': lambda x: x,
         'fy': lambda y: y,
         'fa': lambda a: a,
@@ -80,7 +80,7 @@ _models = {
         ]
     },
     'logarithmic': {
-        'name': 'logarithmic',
+        'model': 'logarithmic',
         'fx': lambda x: math.log10(x),
         'fy': lambda y: y,
         'fa': lambda a: a,
@@ -99,7 +99,7 @@ _models = {
         ]
     },
     'quadratic': {
-        'name': 'quadratic',
+        'model': 'quadratic',
         'fx': lambda x: x ** 2,
         'fy': lambda y: y,
         'fa': lambda a: a,
@@ -118,7 +118,7 @@ _models = {
         ]
     },
     'power': {
-        'name': 'power',
+        'model': 'power',
         'fx': lambda x: math.log10(x),
         'fy': lambda y: math.log10(y),
         'fa': lambda a: 10 ** a,
@@ -136,7 +136,7 @@ _models = {
         ]
     },
     'exponential': {
-        'name': 'exponential',
+        'model': 'exponential',
         'fx': lambda x: x,
         'fy': lambda y: math.log10(y),
         'fa': lambda a: 10 ** a,

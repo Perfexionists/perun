@@ -10,6 +10,9 @@ import regression_analysis.tools as tools
 import numpy as np
 
 
+_approx_zero = 0.000001
+
+
 def quad_regression_error(data):
     """The quadratic specific function for error computation.
 
@@ -62,7 +65,11 @@ def power_regression_error(data):
         y_sum += y_pt
         y_square_sum += y_pt ** 2
         # Compute the y and y_hat difference
-        sse += (y_pt - (data['coeffs'][1] * (x_pt ** data['coeffs'][0]))) ** 2
+        try:
+            sse += (y_pt - (data['coeffs'][1] * (x_pt ** data['coeffs'][0]))) ** 2
+        except ZeroDivisionError:
+            # In case of power failure skip the calculation step
+            continue
     sst = y_square_sum - (y_sum ** 2) / data['len']
     data['r_square'] = 1 - sse / sst
     return data
@@ -146,7 +153,11 @@ def power_plot_data(data):
     tools.check_coeffs(2, data)
 
     # Split the x points into evenly distributed parts
-    x = np.linspace(data['x_min'], data['x_max'], tools.PLOT_DATA_POINTS)
+    if data['x_min'] == 0:
+        # Zero value might cause division by zero, approximate the zero
+        x = np.linspace(_approx_zero, data['x_max'], tools.PLOT_DATA_POINTS)
+    else:
+        x = np.linspace(data['x_min'], data['x_max'], tools.PLOT_DATA_POINTS)
     # Compute the function value for every x value
     y = np.array(data['coeffs'][1] * np.array(x) ** data['coeffs'][0])
     data['plot_x'] = x
