@@ -1,6 +1,6 @@
 """This module implements translation of the profile to other formats """
 __author__ = 'Radim Podola'
-
+#TODO move from cli package
 
 def create_heap_map(profile):
     """ Create the HEAP map representation for visualization
@@ -38,7 +38,8 @@ def create_heap_map(profile):
              "map": [ # mapping of all the allocations in snapshot
                 {"address": starting address of the allocated memory (int),
                  "amount": amount of the allocated memory (int),
-                 "uid": index to info list with absolutely uid info (int)
+                 "uid": index to info list with absolutely uid info (int),
+                 "subtype": allocator (string)
                 }
              ]
             }
@@ -146,6 +147,7 @@ def get_heap_map(resources):
     for res in resources:
         map_item = {}
         map_item['address'] = res['address']
+        map_item['subtype'] = res['subtype']
         map_item['amount'] = res['amount']
         if not res['uid']:
             continue
@@ -309,9 +311,47 @@ def create_allocations_table(profile):
     for i, snap in enumerate(profile['snapshots']):
 
         for alloc in snap['resources']:
-            uid = "{}_{}_{}".format(alloc['uid']['function'],
+            uid = "{}()~{}~{}".format(alloc['uid']['function'],
                                     alloc['uid']['source'],
                                     alloc['uid']['line'])
+
+            table['snapshots'].append(i + 1)
+            table['amount'].append(alloc['amount'])
+            table['uid'].append(uid)
+            table['subtype'].append(alloc['subtype'])
+            table['address'].append(alloc['address'])
+
+    return table
+
+
+def create_flow_table(profile):
+    """ Create the heap map table
+
+    Arguments:
+        profile(dict): the memory profile
+
+    Returns:
+        dict: the heap map table
+
+    Format of the heap map table is following:
+        TODO
+    """
+    map = create_heap_map(profile)
+
+    table = {}
+    table['snapshots'] = []
+    table['amount'] = []
+    table['uid'] = []
+    table['subtype'] = []
+    table['address'] = []
+
+    for i, snap in enumerate(map['snapshots']):
+
+        for alloc in snap['map']:
+            uid_chunk = map['info'][alloc['uid']]
+            uid = "{}()~{}~{}".format(uid_chunk['function'],
+                                      uid_chunk['source'],
+                                      uid_chunk['line'])
 
             table['snapshots'].append(i + 1)
             table['amount'].append(alloc['amount'])

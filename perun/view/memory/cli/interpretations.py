@@ -2,9 +2,25 @@
 from decimal import Decimal
 import perun.view.memory.cli.pretty_output as pretty
 import perun.view.memory.cli.heap_map
-import perun.view.memory.cli.heap_representation as heap_representation
+import perun.view.memory.cli.flow_graph
+import perun.view.memory.cli.profile_converters as heap_representation
 
 __author__ = 'Radim Podola'
+
+def get_flow(profile, **kwargs):
+    """ Call interactive flow graph
+
+    Arguments:
+        profile(dict): memory profile with records
+        kwargs(dick): rest of unneeded arguments
+
+    Returns:
+        string: empty string
+    """
+    heap_map = heap_representation.create_heap_map(profile)
+    perun.view.memory.cli.flow_graph.flow_graph(heap_map)
+
+    return ''
 
 
 def get_heap(profile, **kwargs):
@@ -176,8 +192,8 @@ def get_func(profile, function, get_all, **kwargs):
     return output
 
 
-def get_flow(profile, from_time, to_time, **kwargs):
-    """ Get allocations flow
+def get_list(profile, from_time, to_time, **kwargs):
+    """ Get allocations list
 
         Parse the profile records, cut the specified timeline,
         and also modify the output to be pretty

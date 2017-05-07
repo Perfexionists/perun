@@ -6,7 +6,7 @@ import sys
 import math
 
 # debug in console
-import heap_representation as heap_representation
+import profile_converters as heap_representation
 
 __author__ = 'Radim Podola'
 
@@ -288,7 +288,10 @@ class FlowGraphVisualization(object):
                     data['fields'] = total_fields
                     data['time'] = snap['time']
                     data['snapshot'] = i + 1
-                    data['peak'] = bool(snap['sum_amount'] == self.__peak)
+                    if 'sum_amount' in snap:
+                        data['peak'] = bool(snap['sum_amount'] == self.__peak)
+                    else:
+                        data['peak'] = 0
                     self.__graph_data.append(data)
 
     def print_partial_view(self, move):
@@ -358,7 +361,7 @@ class FlowGraphVisualization(object):
             for i, snap in enumerate(self.__heap['snapshots']):
                 bars_cnt += 1
                 avg_sum += snap['sum_amount']
-                if snap['sum_amount'] == self.__peak:
+                if 'sum_amount' in snap and snap['sum_amount'] == self.__peak:
                     was_peak = True
                 if bars_cnt == approx_bars:
                     data = {}
@@ -381,7 +384,10 @@ class FlowGraphVisualization(object):
                 data['fields'] = total_fields
                 data['time'] = snap['time']
                 data['snapshot'] = i + 1
-                data['peak'] = bool(snap['sum_amount'] == self.__peak)
+                if 'sum_amount' in snap:
+                    data['peak'] = bool(snap['sum_amount'] == self.__peak)
+                else:
+                    data['peak'] = 0
                 self.__graph_data.append(data)
 
     def __get_graph_size(self):

@@ -14,7 +14,7 @@ __supported_long_opts = ("mode=",
                          'top=',
                          'all',
                          "function=")
-SUPPORTED_MODES = ("flow", "top", "most", "sum", "func", "heap")
+SUPPORTED_MODES = ("list", "top", "most", "sum", "func", "heap", "flow")
 
 
 def usage(full=False):
@@ -37,10 +37,11 @@ def usage(full=False):
           '[2]  -m top|--mode=top [-t value|--top=value]\n'
           '[3]  -m most|--mode=most [-t value|--top=value]\n'
           '[4]  -m sum|--mode=sum [-t value|--top=value]\n'
-          '[5]  -m flow|--mode=flow [-f time|--from=time]'
+          '[5]  -m list|--mode=flow [-f time|--from=time]'
           '[-t time|--to=time]\n'
           '[6]  -m func|--mode=func --function=name [-a|--all]\n'
-          '[7]  -m __heap|--mode=__heap\n'
+          '[7]  -m heap|--mode=heap\n'
+          '[8]  -m flow|--mode=flow\n'
           '\n'
           '[2-7] "mode" parameter defines the operation with the profile\n'
           '[2-4] "value" defines number of the records to print, default value'
@@ -135,6 +136,7 @@ def parse_args(argv):
 
 def show():
     """ Main function which handle selected options of Memory_print
+
     Returns:
         string: output of the selected interpretation
     """

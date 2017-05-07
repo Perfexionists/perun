@@ -5,7 +5,7 @@ import json
 import sys
 
 # debug in console
-import heap_representation as heap_representation
+import profile_converters as heap_representation
 import heap_map_colors as hpcolors
 
 #from perun.view.memory.cli.heap_map_colors import HeapMapColors
