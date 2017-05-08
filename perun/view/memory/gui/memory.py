@@ -1,5 +1,6 @@
 """This module contains methods needed by Perun logic"""
 import json
+import subprocess
 import pandas as pd
 import bokeh as bk
 import itertools
@@ -24,18 +25,71 @@ def show(profile):
     global _amount_unit
     _amount_unit = profile['header']['units']['memory']
 
+    #print_flame_graph(profile)
+    return
+
     bar_table = converter.create_allocations_table(profile)
 
     df = pd.DataFrame.from_dict(bar_table)
-    #print_flow_bar_graphs(df)
+    print_flow_bar_graphs(df)
 
-    flow_table = converter.create_flow_table(profile)
-    df = pd.DataFrame.from_dict(flow_table)
-    print_flow_usage(df)
+    #flow_table = converter.create_flow_table(profile)
+    #df = pd.DataFrame.from_dict(flow_table)
+    #print_flow_usage(df)
+
+    heat = converter.create_heat_map(profile)
+    print_heat_map(heat)
+
+
+def print_flame_graph(profile):
+    flame = converter.create_flame_graph_format(profile)
+
+    header = profile['header']
+    profile_type = header['type']
+    title = "{} consumption of {} {} {}".format(profile_type,
+                                                header['cmd'],
+                                                header['params'],
+                                                header['workload'])
+    units = header['units'][profile_type]
+
+    with open('perf.svg', 'w') as out:
+        p = subprocess.Popen(['./flamegraph.pl',
+                              '--title', title,
+                              '--countname', units,
+                              '--reverse',
+                              '--height=20'],
+                             stdin=subprocess.PIPE,
+                             stdout=out)
+        p.communicate(bytes(''.join(flame), encoding='UTF-8'))
+
+
+def print_heat_map(heat):
+    tools = "pan, wheel_zoom, reset, save, hover"
+    data = {'x': [1] * 3 + [2] * 3 + [3] * 3,
+            'uses': [4, 5, 8, 1, 2, 4, 6, 5, 4],
+            'add': [151, 171, 191, 152, 172, 192, 153, 173, 193],
+            'address': [150, 170, 190] * 3}
+
+    hover = bm.HoverTool(
+        tooltips=[
+            ("date", "@add"),
+        ]
+    )
+
+    hm = bch.HeatMap(data, x=bch.bins('x', bins=3), y=bch.bins('address', bins=3), values='uses',
+                     title='Fruits', stat=None, tools=[hover],
+                     palette=bk.palettes.YlOrRd9)
+
+    p = bpl.figure(plot_width=400, plot_height=400)
+    p.quad(top=[2, 3, 4], bottom=[1, 2, 3], left=[1, 2, 3],
+           right=[2, 3, 4], color="#B3DE69")
+
+    bpl.output_file('heatmap.html')
+    bch.show(p)
 
 
 def print_flow_usage(df):
-    TOOLS = "pan, wheel_zoom, reset, save"
+    tools = "pan, wheel_zoom, reset, save"
     y_axis_label = "Summary of the allocated memory [{}]".format(_amount_unit)
     x_axis_label = "Snapshots"
     title_text = "Summary of the allocated memory at all the allocation " \
@@ -60,25 +114,26 @@ def print_flow_usage(df):
 
     # JS callback code
     callback_code = """
-    object.visible = toggle.active
+    l_object.visible = toggle.active
+    p_object.visible = toggle.active
     """
 
     toggles = []
     x = [i+1 for i in range(snap_count)]
 
-    fig = bpl.figure(width=1200, height=500, tools=TOOLS)
+    fig = bpl.figure(width=1200, height=500, tools=tools)
 
     for key, color in zip(data.keys(), colors):
         source = bpl.ColumnDataSource({'x': x,'values': data[key],
                                        'name': [key]*snap_count})
         pat = fig.patch('x', 'values', source=source, color=color,
-                        line_width=3, fill_alpha=0.4)
-        #pat = fig.line('x', 'values', source=source, color=color,
-        #                line_width=3)
+                        fill_alpha=0.3)
+        line = fig.line('x', 'values', source=source, color=color,
+                        line_width=3)
 
         callback = bm.CustomJS.from_coffeescript(code=callback_code, args={})
         toggle = bm.Toggle(label=key, button_type="primary", callback=callback)
-        callback.args = {'toggle': toggle, 'object': pat}
+        callback.args = {'toggle': toggle, 'p_object': pat, 'l_object': line}
         toggles.append(toggle)
 
     hover = bm.HoverTool(plot=fig, tooltips=dict(location="@name",
@@ -90,7 +145,7 @@ def print_flow_usage(df):
     set_axis_visual(fig.xaxis, x_axis_label)
     set_axis_visual(fig.yaxis, y_axis_label)
 
-    bpl.output_file('usage_patch.html')
+    bpl.output_file('usage.html')
     bch.show(layouts.row(fig, layouts.widgetbox(toggles)))
 
 
@@ -128,14 +183,14 @@ def print_flow_bar_graphs(df):
 
 
 def flow_bar_graph_uid_count(data_frame):
-    TOOLS = "pan, wheel_zoom, reset, save"
+    tools = "pan, wheel_zoom, reset, save"
     x_axis_label = "Location"
     y_axis_label = "Number of the memory operations"
     title_text = "Number of the memory operations at all the allocation " \
                  "locations stacked by snapshot"
 
     bar_graph = bch.Bar(data_frame, label='uid', values='amount', legend=None,
-                        tooltips=[('snapshot', '@snapshots')], tools=TOOLS,
+                        tooltips=[('snapshot', '@snapshots')], tools=tools,
                         stack='snapshots', agg='count', bar_width=0.4)
 
     bar_graph.plot_width = _bar_graph_width

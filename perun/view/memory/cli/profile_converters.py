@@ -1,7 +1,7 @@
 """This module implements translation of the profile to other formats """
 __author__ = 'Radim Podola'
 #TODO move from cli package
-
+import json
 def create_heap_map(profile):
     """ Create the HEAP map representation for visualization
 
@@ -311,13 +311,9 @@ def create_allocations_table(profile):
     for i, snap in enumerate(profile['snapshots']):
 
         for alloc in snap['resources']:
-            uid = "{}()~{}~{}".format(alloc['uid']['function'],
-                                    alloc['uid']['source'],
-                                    alloc['uid']['line'])
-
             table['snapshots'].append(i + 1)
             table['amount'].append(alloc['amount'])
-            table['uid'].append(uid)
+            table['uid'].append(_get_line_from_frame(alloc['uid']))
             table['subtype'].append(alloc['subtype'])
             table['address'].append(alloc['address'])
 
@@ -349,17 +345,54 @@ def create_flow_table(profile):
 
         for alloc in snap['map']:
             uid_chunk = map['info'][alloc['uid']]
-            uid = "{}()~{}~{}".format(uid_chunk['function'],
-                                      uid_chunk['source'],
-                                      uid_chunk['line'])
 
             table['snapshots'].append(i + 1)
             table['amount'].append(alloc['amount'])
-            table['uid'].append(uid)
+            table['uid'].append(_get_line_from_frame(uid_chunk))
             table['subtype'].append(alloc['subtype'])
             table['address'].append(alloc['address'])
 
     return table
+
+
+def create_flame_graph_format(profile):
+    """ Create the format suitable for the Flame-graph visualization
+
+    Arguments:
+        profile(dict): the memory profile
+
+    Returns:
+        list: list of lines, each representing one allocation call stack
+    """
+    stacks = []
+    for snap in profile['snapshots']:
+        for alloc in snap['resources']:
+            if alloc['subtype'] != 'free':
+                stack_str = ""
+                for frame in alloc['trace']:
+                    line = _get_line_from_frame(frame)
+                    stack_str += line + ';'
+                if stack_str:
+                    if stack_str.endswith(';'):
+                        final = stack_str[:-1]
+                        final += " " + str(alloc['amount']) + '\n'
+                        stacks.append(final)
+
+    return stacks
+
+
+def _get_line_from_frame(frame):
+    """ Create string representing call stack's frame
+
+    Arguments:
+        frame(dict): call stack's frame
+
+    Returns:
+        str: line representing call stack's frame
+    """
+    return "{}()~{}~{}".format(frame['function'],
+                               frame['source'],
+                               frame['line'])
 
 
 if __name__ == "__main__":
