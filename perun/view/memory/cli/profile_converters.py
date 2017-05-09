@@ -1,7 +1,8 @@
 """This module implements translation of the profile to other formats """
 __author__ = 'Radim Podola'
 #TODO move from cli package
-import json
+
+
 def create_heap_map(profile):
     """ Create the HEAP map representation for visualization
 
@@ -299,7 +300,13 @@ def create_allocations_table(profile):
         dict: the allocations table
 
     Format of the allocations table is following:
-        TODO
+        {"snapshots": [(int)]
+         "amount": [(int)]
+         "uid": [(str)]
+         "subtype": [(str)]
+         "address": [(int)]
+        }
+    uid object is serialized into: function()~source~line
     """
     table = {}
     table['snapshots'] = []
@@ -329,10 +336,16 @@ def create_flow_table(profile):
     Returns:
         dict: the heap map table
 
-    Format of the heap map table is following:
-        TODO
+    Format of the allocations table is following:
+        {"snapshots": [(int)]
+         "amount": [(int)]
+         "uid": [(str)]
+         "subtype": [(str)]
+         "address": [(int)]
+        }
+    uid object is serialized into: function()~source~line
     """
-    map = create_heap_map(profile)
+    heap = create_heap_map(profile)
 
     table = {}
     table['snapshots'] = []
@@ -341,10 +354,10 @@ def create_flow_table(profile):
     table['subtype'] = []
     table['address'] = []
 
-    for i, snap in enumerate(map['snapshots']):
+    for i, snap in enumerate(heap['snapshots']):
 
         for alloc in snap['map']:
-            uid_chunk = map['info'][alloc['uid']]
+            uid_chunk = heap['info'][alloc['uid']]
 
             table['snapshots'].append(i + 1)
             table['amount'].append(alloc['amount'])
