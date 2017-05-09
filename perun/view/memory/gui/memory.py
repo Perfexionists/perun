@@ -18,6 +18,7 @@ def show(profile, choice):
 
     Arguments:
         profile(dict): the memory profile
+        choice(int): choice of the graph to draw
     """
     if choice == 0:
         draw_flow_bar_graphs(profile, "bars.html")
@@ -29,10 +30,13 @@ def show(profile, choice):
         draw_heat_map(profile, "heat.html")
 
 
-    return
-
-
 def draw_heat_map(profile, filename):
+    """ Creates and draw the Heat map graph.
+
+    Arguments:
+        profile(dict): the memory profile
+        filename(str): filename of the output file, expected is HTML format
+    """
     heat_table = converter.create_heat_map(profile)
     graph = heat.heat_map_graph(heat_table)
 
@@ -40,8 +44,18 @@ def draw_heat_map(profile, filename):
     bpl.show(graph)
 
 
-def get_flow_usage_grid(df, amount_unit, graph_width):
-    graph, toggles = flow.flow_usage_graph(df, amount_unit)
+def get_flow_usage_grid(data_frame, unit, graph_width):
+    """ Creates a grid of the Flow usage graph.
+
+    Arguments:
+        data_frame(DataFrame): the Pandas DataFrame
+        unit(str): memory amount unit
+        graph_width(int): width of the bar graph
+
+    Returns:
+        any: Bokeh's grid layout object
+    """
+    graph, toggles = flow.flow_usage_graph(data_frame, unit)
 
     _set_title_visual(graph.title)
     _set_axis_visual(graph.xaxis)
@@ -60,7 +74,7 @@ def draw_flow_usage(profile, filename):
 
     Arguments:
         profile(dict): the memory profile
-        filename(str): filename of the output file, expected is html format
+        filename(str): filename of the output file, expected is HTML format
     """
     graph_width = 1200
 
@@ -71,9 +85,9 @@ def draw_flow_usage(profile, filename):
     # converting memory profile to flow usage table
     flow_table = converter.create_flow_table(profile)
     # converting flow usage table to pandas DataFrame
-    df = pd.DataFrame.from_dict(flow_table)
+    data_frame = pd.DataFrame.from_dict(flow_table)
     # obtaining grid of flow usage graph
-    grid = get_flow_usage_grid(df, amount_unit, graph_width)
+    grid = get_flow_usage_grid(data_frame, amount_unit, graph_width)
 
     bpl.output_file(filename)
     bpl.show(grid)
@@ -84,7 +98,7 @@ def draw_flow_bar_graphs(profile, filename):
 
     Arguments:
         profile(dict): the memory profile
-        filename(str): filename of the output file, expected is html format
+        filename(str): filename of the output file, expected is HTML format
     """
     bar_graph_width = 800
 
@@ -95,35 +109,45 @@ def draw_flow_bar_graphs(profile, filename):
     # converting memory profile to allocations table
     bar_table = converter.create_allocations_table(profile)
     # converting allocations table to pandas DataFrame
-    df = pd.DataFrame.from_dict(bar_table)
+    data_frame = pd.DataFrame.from_dict(bar_table)
     # obtaining grid of Bar's graphs
-    grid = get_flow_bar_graphs_grid(df, amount_unit, bar_graph_width)
+    grid = get_flow_bar_graphs_grid(data_frame, amount_unit, bar_graph_width)
 
     bpl.output_file(filename)
     bpl.show(grid)
 
 
-def get_flow_bar_graphs_grid(df, amount_unit, bar_width):
+def get_flow_bar_graphs_grid(data_frame, unit, graph_width):
+    """ Creates a grid of the Bar's graphs.
+
+    Arguments:
+        data_frame(DataFrame): the Pandas DataFrame
+        unit(str): memory amount unit
+        graph_width(int): width of the bar graph
+
+    Returns:
+        any: Bokeh's grid layout object
+    """
     graphs = []
 
-    r1c1 = bars.flow_bar_graph_snaps_sum_subtype_stacked(df, amount_unit)
+    r1c1 = bars.bar_graph_snaps_sum_subtype_stacked(data_frame, unit)
     graphs.append(r1c1)
-    r1c2 = bars.flow_bar_graph_snaps_sum_uid_stacked(df, amount_unit)
+    r1c2 = bars.bar_graph_snaps_sum_uid_stacked(data_frame, unit)
     graphs.append(r1c2)
-    r2c1 = bars.flow_bar_graph_snaps_count_subtype_grouped(df)
+    r2c1 = bars.bar_graph_snaps_count_subtype_grouped(data_frame)
     graphs.append(r2c1)
-    r2c2 = bars.flow_bar_graph_snaps_count_uid_grouped(df)
+    r2c2 = bars.bar_graph_snaps_count_uid_grouped(data_frame)
     graphs.append(r2c2)
-    r3c1 = bars.flow_bar_graph_uid_count(df)
+    r3c1 = bars.bar_graph_uid_count(data_frame)
     graphs.append(r3c1)
-    r3c2 = bars.flow_bar_graph_uid_sum(df, amount_unit)
+    r3c2 = bars.bar_graph_uid_sum(data_frame, unit)
     graphs.append(r3c2)
 
     for graph in graphs:
         _set_title_visual(graph.title)
         _set_axis_visual(graph.xaxis)
         _set_axis_visual(graph.yaxis)
-        _set_graphs_width(graph, bar_width)
+        _set_graphs_width(graph, graph_width)
 
     # creating layout grid
     row1 = bla.row(r1c1, r1c2)
@@ -135,6 +159,11 @@ def get_flow_bar_graphs_grid(df, amount_unit, bar_width):
 
 
 def _set_title_visual(title):
+    """ Sets the graph's title visual style
+
+    Arguments:
+        title(any): Bokeh plot's title object
+    """
     title.text_font = 'helvetica'
     title.text_font_style = 'bold'
     title.text_font_size = '12pt'
@@ -142,15 +171,26 @@ def _set_title_visual(title):
 
 
 def _set_axis_visual(axis):
+    """ Sets the graph's axis visual style
+
+    Arguments:
+        axis(any): Bokeh plot's axis object
+    """
     axis.axis_label_text_font_style = 'italic'
     axis.axis_label_text_font_size = '12pt'
 
 
 def _set_graphs_width(graph, width):
+    """ Sets the graph width
+
+    Arguments:
+        graph(Plot): Bokeh's plot object
+        width(int): width to set
+    """
     graph.plot_width = width
 
 
 if __name__ == "__main__":
     with open('memory.perf') as prof_json:
-        profile = json.load(prof_json)
-    show(profile, 1)
+        prof = json.load(prof_json)
+    show(prof, 0)

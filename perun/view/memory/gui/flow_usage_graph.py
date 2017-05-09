@@ -73,7 +73,8 @@ def _get_plot(data_frame):
             data[series['uid']][i - 1] += series['amount']
 
     # get colors pallet
-    colors = palletes.viridis(len(data.keys()))
+    colors_count = len(data.keys()) if len(data.keys()) <= 256 else 256
+    colors = palletes.viridis(colors_count)
 
     for key, color in zip(data.keys(), colors):
         # creating DataSource for each UID
