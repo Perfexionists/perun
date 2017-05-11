@@ -2,6 +2,7 @@
 import bokeh.palettes as palletes
 import bokeh.plotting as bpl
 import bokeh.models as bm
+import operator
 
 __author__ = 'Radim Podola'
 
@@ -55,11 +56,12 @@ def _get_plot(data_frame):
                2nd is list of Bokeh's toggles
     """
     toggles = []
+    total_sum = []
     data = {}
     snap_group = data_frame.groupby('snapshots')
 
     # creating figure for plotting
-    fig = bpl.figure(width=1200, height=500)
+    fig = bpl.figure(width=1200, height=800, tools="")
 
     # +1 because of ending process memory should be 0 -- nicer visualization
     snap_count = len(snap_group) + 1
@@ -67,6 +69,7 @@ def _get_plot(data_frame):
     # preparing data structure
     for uid in data_frame['uid']:
         data[uid] = [0]*snap_count
+    total_sum = [0]*snap_count
     # calculating summary of the amount for each location's snapshot
     for i, group in snap_group:
         for _, series in group.iterrows():
@@ -81,10 +84,16 @@ def _get_plot(data_frame):
         source = bpl.ColumnDataSource({'x': range(1, snap_count + 1),
                                        'y': data[key],
                                        'name': [key]*snap_count})
+        total_sum = list(map(operator.add, data[key], total_sum))
         patch = fig.patch('x', 'y', source=source, color=color, fill_alpha=0.3)
         line = fig.line('x', 'y', source=source, color=color, line_width=3)
 
         toggles.append(_add_callback(key, patch, line))
+
+    source = bpl.ColumnDataSource({'x': range(1, snap_count + 1),
+                                   'y': total_sum,
+                                   'name': ['Total'] * snap_count})
+    fig.line('x', 'y', source=source, color='black', line_width=3)
 
     return fig, toggles
 
