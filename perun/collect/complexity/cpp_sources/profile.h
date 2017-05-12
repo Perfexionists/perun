@@ -9,7 +9,7 @@ extern "C" {
 
 // Chrono namespaces
 using namespace std::chrono;
-using Time = high_resolution_clock;
+using Time = steady_clock;
 
 // Force timestamp record to be long long type
 typedef duration<long long int, std::ratio<1ll, 1000000ll>> timestamp;

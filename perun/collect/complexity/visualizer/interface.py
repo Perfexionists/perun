@@ -48,6 +48,11 @@ def plot_model(**kwargs):
     _visualizers[_active_visualizer]['plot_model'](**kwargs)
 
 
+def custom_function(function_name, **kwargs):
+    """Calls custom visualizer function."""
+    _visualizers[_active_visualizer][function_name](**kwargs)
+
+
 # Currently used visualizer module
 _active_visualizer = 'bokeh'
 
@@ -57,6 +62,7 @@ _visualizers = {
         'set_figure': bokeh_vis.set_figure,
         'show_figure': bokeh_vis.show_figure,
         'plot_scatter': bokeh_vis.plot_scatter,
-        'plot_model': bokeh_vis.plot_model
+        'plot_model': bokeh_vis.plot_model,
+        'plot_relative_comparison': bokeh_vis.plot_relative_comparison
     }
 }

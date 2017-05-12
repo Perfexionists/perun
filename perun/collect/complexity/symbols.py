@@ -12,7 +12,7 @@
 
 import sys
 import subprocess
-import perun.utils.exceptions as exceptions
+import exceptions
 import collections
 
 # Symbol table columns constants
@@ -206,7 +206,7 @@ def _finalize_exclude_lists(exclude_list, include_list):
     exclude_list, runtime_filter = _find_exclude_collisions(exclude_list, include_list)
 
     # Transform the exclude dict to the list of identifiers
-    final_exclude_list = []
+    final_exclude_list = ['operator']
     for func_identifier in (getattr(exclude_list[func], 'identifier') for func in exclude_list):
         final_exclude_list.append(func_identifier)
 
@@ -231,7 +231,11 @@ def _dismantle_symbols(symbol_map):
     specification_map = dict()
     for key in symbol_map.keys():
         # Process each symbol from the map
-        specification_map[key] = _process_symbol(symbol_map[key])
+        try:
+            specification_map[key] = _process_symbol(symbol_map[key])
+        except exceptions.UnexpectedPrototypeSyntaxError as e:
+            # print(repr(e), file=sys.stderr)
+            pass
     return specification_map
 
 

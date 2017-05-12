@@ -17,6 +17,7 @@ import data_provider
 import analysis
 from regression_analysis.regression_models import Models
 
+
 # The profiling record template
 _ProfileRecord = collections.namedtuple('record', ['action', 'func', 'timestamp', 'size'])
 
@@ -195,65 +196,3 @@ def _process_file_record(record, call_stack, resources, address_map):
     else:
         # Call stack function frames not matching
         return 1
-
-
-# Prepare the paths for test run to work correctly for everyone
-# Suppose there is no perun directory above the project one
-# Test config
-
-_dir_name = os.path.dirname(os.path.abspath(__file__))
-_base_pos = _dir_name.find('/complexity')
-if _base_pos == -1:
-    print("Module not located in complexity directory, cannot do the test run!", file=sys.stderr)
-else:
-    _complexity_dir = _dir_name[:_base_pos] + '/complexity/'
-
-    # Test configuration dictionary
-    _config = {
-        'target_dir': _complexity_dir + 'target',
-        'files': [
-            _complexity_dir + 'cpp_sources/test_workload/main.cpp',
-            _complexity_dir + 'cpp_sources/test_workload/SLList.h',
-            _complexity_dir + 'cpp_sources/test_workload/SLListcls.h',
-            _complexity_dir + 'cpp_sources/test_workload/skiplist.cpp',
-            _complexity_dir + 'cpp_sources/test_workload/skiplist.h'
-        ],
-        'rules': [
-            # 'Insert',
-            'Search',
-            'insert_sort',
-            'skiplistInsert',
-            'skiplistSearch',
-            'QuickSort',
-            # 'SLList_insert',
-            'SLList_search'
-        ],
-        'file-name': 'trace.log',
-        'init-storage-size': 20000,
-        'sampling': [
-            {'func': 'Search', 'sample': 1},
-            {'func': 'Insert', 'sample': 100},
-            {'func': 'skiplistInsert', 'sample': 1},
-            {'func': 'skiplistSearch', 'sample': 3},
-            {'func': 'SLList_search', 'sample': 3}
-        ],
-    }
-
-    # # Test run
-    # code, msg, _config = before(**_config)
-    # print('code: {0}, msg: {1}\n'.format(code, msg))
-    # for i in range(1):
-    #     code, msg, _config = collect(**_config)
-    #     print('code: {0}, msg: {1}\n'.format(code, msg))
-    #
-    # code, msg, _config = after(**_config)
-    # print('code: {0}, msg: {1}\n'.format(code, msg))
-    # data_provider.store_profile_to_file('testprofile', _config['profile'])
-    #
-    # # The computation models demonstration
-    # analysis.interval_computation(data_provider.complexity_collector_provider('testprofile'), [Models.all],
-    #                               2, 'testprofile')
-    #
-    # analysis.iterative_computation(data_provider.complexity_collector_provider('testprofile'), [Models.all],
-    #                                3, 'testprofile')
-    # analysis.full_computation(data_provider.complexity_collector_provider('testprofile'), [Models.all], 'testprofile')

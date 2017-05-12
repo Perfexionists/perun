@@ -3,6 +3,7 @@
 """
 
 import bokeh.plotting as plot
+from bokeh.models import LinearAxis, Range1d
 import visualizer.tools as tools
 
 # Current plotting figure
@@ -24,10 +25,12 @@ def set_figure(**kwargs):
 
     # Default kwargs values
     default_kwargs = {
-        'x_axis_label': 'structure size (elements in the struct)',
-        'y_axis_label': 'duration (\u00B5s)',
-        'plot_width': 800,
-        'plot_height': 800
+        'x_axis_label': 'time (ms)',
+        'y_axis_label': 'allocated memory (B)',
+        # 'x_axis_label': 'structure size (elements in the struct)',
+        # 'y_axis_label': 'duration (\u00B5s)',
+        'plot_width': 700,
+        'plot_height': 350
     }
     default_kwargs.update(kwargs)
     kwargs = default_kwargs
@@ -111,10 +114,25 @@ def plot_set_range(fig, min_y, max_y):
 
     """
 
-    # Sets 5% blank space on each side
-    delta = (max_y - min_y) * 0.05
-    fig.y_range.start = min_y - delta
-    fig.y_range.end = max_y + delta
+    # The range is already set better, do not change
+    if fig.y_range.start is not None and fig.y_range.start < min_y and fig.y_range.end > max_y:
+        return fig
+
+    # Check each side
+    start_delta, end_delta = False, False
+    if fig.y_range.start is None or fig.y_range.start > min_y:
+        fig.y_range.start = min_y
+        start_delta = True
+    if fig.y_range.end is None or fig.y_range.end < max_y:
+        fig.y_range.end = max_y
+        end_delta = True
+
+    # Sets 5% blank space on each side if needed
+    delta = (fig.y_range.end - fig.y_range.start) * 0.05
+    if start_delta:
+        fig.y_range.start -= delta
+    if end_delta:
+        fig.y_range.end += delta
     return fig
 
 
@@ -176,3 +194,42 @@ def plot_model(**kwargs):
 
     # Plot lines using the points
     _fig.line(x, y, **kwargs)
+
+
+def plot_relative_comparison(**kwargs):
+    """Plot the relative algorithm comparison with guideline.
+
+    Expects 'x' and 'y' coordinates and optional bokeh line arguments
+
+    """
+    global _fig
+
+    # Check the arguments presence
+    tools.check_missing_arg(['x', 'y'], kwargs)
+    x = kwargs.pop('x')
+    y = kwargs.pop('y')
+
+    # Default kwargs values
+    default_kwargs = {
+        'legend': 'algorithms relative time (\u00B5s) comparison',
+        'color': '#ff3c1a',
+        'line_color': 'red',
+        'size': 6,
+        'line_width': 2,
+        'line_alpha': 0.75,
+        'fill_alpha': 0.25
+    }
+    default_kwargs.update(kwargs)
+    kwargs = default_kwargs
+
+    _fig.circle(x, y, **kwargs)
+
+    # Set x and y axis to form a proper square
+    data_start, data_end = min(min(x), min(y)), max(max(x), max(y))
+    delta = (data_end - data_start) * 0.05
+    _fig.x_range.start = data_start - delta
+    _fig.y_range.start = data_start - delta
+    _fig.x_range.end = data_end + delta
+    _fig.y_range.end = data_end + delta
+
+    _fig.line(x=[0, data_end * 2], y=[0, data_end * 2], line_width=2.5, legend='guideline')

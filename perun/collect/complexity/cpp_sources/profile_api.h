@@ -107,4 +107,25 @@ void __attribute__((no_instrument_function)) _profapi_using_size_value(void *str
 //  -- None
 size_t __attribute__((no_instrument_function)) _profapi_get_size_record(void *stack_frame);
 
+// Removes the top size record if it's frame address matches the stack frame in argument.
+// ----------------------------------------------------------------
+// Arguments:
+//  -- stack_frame: the address of the stack frame which is used for size record searching
+// Returns:
+//  -- void
+// Throws:
+//  -- None
+void __attribute__((no_instrument_function)) _profapi_remove_size_record(void *stack_frame);
+
+// Removes sequence of records where the frame address is the same or lower than the one
+// provided as a argument. May be used to clean the records, which were not used.
+// ----------------------------------------------------------------
+// Arguments:
+//  -- stack_frame: the address of the stack frame which is used for size record searching
+// Returns:
+//  -- void
+// Throws:
+//  -- None
+void __attribute__((no_instrument_function)) _profapi_clean_size_records(void *stack_frame);
+
 #endif //PROTOTYPE_PROFILE_API_H

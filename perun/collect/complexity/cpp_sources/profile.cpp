@@ -15,7 +15,7 @@
 */
 
 
-Trace_context_wrapper::Trace_context_wrapper() : use_direct_file_output{true}, config()
+Trace_context_wrapper::Trace_context_wrapper() : use_direct_file_output{false}, config()
 {
     // Get the configuration information
     int ret_code = config.Parse();
@@ -78,8 +78,9 @@ void Trace_context_wrapper::Print_vector_to_file()
     if(trace_log.is_open()) {
         for(unsigned int i = 0; i < instr_data.size(); i++) {
             trace_log << instr_data[i].action << " " << instr_data[i].function_address << " "
-                      << instr_data[i].now.count() << std::endl;
+                      << instr_data[i].now.count() << " " << instr_data[i].struct_size << std::endl;
         }
+        instr_data.clear();
     } else {
         // File unexpectedly closed
         instr_data.clear();
@@ -184,6 +185,8 @@ void __cyg_profile_func_exit (void *func, void *caller)
                 // function is sampled
                 if(result->second.sample_current < result->second.sample_ratio) {
                     // don't record this occurrence
+                    // remove the size record
+                    _profapi_remove_size_record(__builtin_frame_address(1));
                     return;
                 } else {
                     // record this occurrence and reset the sampling counter
