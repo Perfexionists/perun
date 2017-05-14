@@ -6,6 +6,7 @@ takes care of analysis and visualisation and thus connecting the various modules
 """
 
 import regression_analysis.methods as reg
+from regression_analysis.regression_models import Models
 import visualizer.interface as Ivisualization
 import visualizer.utils as vis_utils
 
@@ -338,4 +339,43 @@ def scatter_plot_algorithm(data_gen, profile_filename):
         Ivisualization.plot_scatter(x=chunk[0], y=chunk[1], legend=chunk[2], **_scatter_colors[chunk_count - 1])
 
         # Show the scatter plot
+        Ivisualization.show_figure()
+
+
+def memory_consumption_computation(data_gen, profile_filename):
+    """The memory consumption computation method wrapper, uses iterative method to estimate the complexity.
+
+    Arguments:
+        data_gen(iterable): the generator with collected memory data (data provider generators)
+        profile_filename(str): the base name for output visualisation file (will be further suffixed with specifiers)
+    Returns:
+        None
+
+    """
+
+    chunk_count = 0
+    # Get the memory profiling data for each function
+    for chunk in data_gen:
+        chunk_count += 1
+
+        # Create the filename and plot title
+        plot_filename = "{0}_func{1}_memory_plot.html".format(profile_filename, chunk_count)
+        plot_title = "{0} memory performance".format(chunk[2])
+
+        # Create the figure and scatter plot for profiling data
+        Ivisualization.set_figure(filename=plot_filename, title=plot_title,
+                                  x_axis_label='time (ms)', y_axis_label='allocated memory (B)')
+        Ivisualization.plot_scatter(x=chunk[0], y=chunk[1])
+
+        # Do all the iterations for one function and show only the last one
+        for result in reg.iterative_computation(chunk[0], chunk[1], 4, [Models.all]):
+            pass
+
+        # Create legend and plot the model
+        legend = "{0}: {1}".format(
+            result['model'], vis_utils.create_generic_legend(result['coeffs'], result['r_square']))
+        Ivisualization.plot_model(x=result['plot_x'], y=result['plot_y'],
+                                  legend=legend, color=_model_colors[result['model']])
+
+        # Show the figure
         Ivisualization.show_figure()

@@ -3,7 +3,7 @@
 """
 
 import bokeh.plotting as plot
-from bokeh.models import LinearAxis, Range1d
+from bokeh.models import NumeralTickFormatter
 import visualizer.tools as tools
 
 # Current plotting figure
@@ -25,10 +25,8 @@ def set_figure(**kwargs):
 
     # Default kwargs values
     default_kwargs = {
-        'x_axis_label': 'time (ms)',
-        'y_axis_label': 'allocated memory (B)',
-        # 'x_axis_label': 'structure size (elements in the struct)',
-        # 'y_axis_label': 'duration (\u00B5s)',
+        'x_axis_label': 'structure size (elements in the struct)',
+        'y_axis_label': 'duration (\u00B5s)',
         'plot_width': 700,
         'plot_height': 350
     }
@@ -81,6 +79,9 @@ def set_figure(**kwargs):
     _fig.grid.minor_grid_line_color = '#d3d3d3'
     _fig.grid.minor_grid_line_alpha = 0.6
     _fig.grid.minor_grid_line_dash = 'dotted'
+
+    _fig.xaxis[0].formatter = NumeralTickFormatter(format="0,0")
+    _fig.yaxis[0].formatter = NumeralTickFormatter(format="0,0")
 
 
 def show_figure(**kwargs):

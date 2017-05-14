@@ -81,6 +81,32 @@ def memory_collector_provider(filename):
     chunk_store_to_file((time_list, amount_list, 'SkiplistInsert optimized'), 'skiplist_opt_full')
 
 
+def column_file_provider(files):
+    """Data provider for column profiling file.
+
+    Arguments:
+        files(list): the list of column profiling files
+    Return:
+        iter: the generator object which produces tuple of x, y and function name
+
+    """
+    for filename in files:
+        try:
+            # Tries to open the file
+            with open(filename) as f:
+                # Read the function name
+                func = f.readline().rstrip('\n')
+                # Read the data points
+                x_pts, y_pts = [], []
+                for line in f:
+                    line = line.split(',')
+                    x_pts.append(int(line[0]))
+                    y_pts.append(int(line[1]))
+                yield x_pts, y_pts, func
+        except IOError:
+            print('File {0} does not exist.'.format(filename), file=sys.stderr)
+
+
 def profile_store_to_files(resources):
     """Used for the common profile"""
     chunk_num = 0
@@ -101,22 +127,3 @@ def chunk_store_to_file(chunk, filename):
         f.write(chunk[2] + '\n')
         # Write the points
         f.write('\n'.join('{0},{1}'.format(pt[0], pt[1]) for pt in zip(chunk[0], chunk[1])))
-
-
-def profile_file_provider(files):
-    """Used for the common profile"""
-    for filename in files:
-        try:
-            # Tries to open the file
-            with open(filename) as f:
-                # Read the function name
-                func = f.readline().rstrip('\n')
-                # Read the data points
-                x_pts, y_pts = [], []
-                for line in f:
-                    line = line.split(',')
-                    x_pts.append(int(line[0]))
-                    y_pts.append(int(line[1]))
-                yield x_pts, y_pts, func
-        except IOError:
-            print('File {0} does not exist.'.format(filename), file=sys.stderr)
