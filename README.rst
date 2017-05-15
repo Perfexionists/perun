@@ -4,7 +4,7 @@
 
 .. image:: figs/perun-logo.png
    :width: 600px
-   :scale: 50%
+   :scale: 20%
    :align: center
 
 Have you ever encountered a sudden performance degradation and could not figure out, when and
@@ -51,7 +51,7 @@ heap maps, various scatter plots, etc.
 
 .. image:: figs/lifetime-of-profile.png
    :width: 600px
-   :scale: 50%
+   :scale: 20%
    :align: center
 
 Perun architecture
@@ -67,5 +67,5 @@ techniques and wrappers for graphical and command line interface.
 
 .. image:: figs/perun-architecture-darker.png
    :width: 600px
-   :scale: 90%
+   :scale: 40%
    :align: center
