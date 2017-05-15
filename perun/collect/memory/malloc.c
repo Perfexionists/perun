@@ -117,6 +117,10 @@ void *realloc(void *ptr, size_t size){
    if(!profiling && ptr != NULL){
       
       ad_log("realloc", size, nptr);
+
+      if(ptr != nptr){
+         ad_log("free", 0, ptr);
+      }
    }
 
    return nptr;

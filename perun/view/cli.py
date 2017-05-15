@@ -6,12 +6,15 @@ calls underlying commands from the commands module.
 
 import logging
 import os
+import pkgutil
+import yaml
 
 import click
 
 import perun.utils.log as perun_log
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
+import perun.view
 
 from perun.utils.helpers import CONFIG_UNIT_ATTRIBUTES
 from perun.core.logic.pcs import PCS
@@ -23,7 +26,9 @@ __author__ = 'Tomas Fiedor'
 @click.option('--verbose', '-v', count=True, default=0,
               help='sets verbosity of the perun log')
 def cli(verbose):
-    """
+    """Perun is a performance control system used to store profiles efficiently.
+
+    Run 'perun init' to initialize your very first perun repository in the current directory.
     """
     # set the verbosity level of the log
     if perun_log.VERBOSITY < verbose:
@@ -38,11 +43,26 @@ def cli(verbose):
 @click.option('--set', '-s', is_flag=True,
               help="set the value of the key")
 def config(key, value, **kwargs):
-    """
-    Arguments:
-        key(str): key in config file, set of sections divided by dot (.)
-        value(various): value that can optionally be set in config
-        kwargs(dict): dictionary of keyword arguments
+    """Get and set the options of local and global configurations.
+
+    For each perun repository, there are two types of config:
+
+        local.yml - this is local repository found in .perun directory, contains the
+        local configuration with informations about wrapped repositories and job matrix
+        used for quick generation of profiles (see 'perun run matrix --help' for more
+        information about the syntax of local configuration for construction of job matrix).
+
+        shared.yml - this is global repository for the system, which contains the information
+        about perun repositories located throughout the system.
+
+    The syntax of the key contains out of section separated by dots, where the first section
+    represents the type of the config (either local or shared).
+
+    Example usage:
+
+        perun config --get local.vsc.type
+
+            Retrieves the type of the wrapped repository of the local perun.
     """
     perun_log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
     commands.config(key, value, **kwargs)
@@ -319,28 +339,54 @@ def status(**kwargs):
     commands.status(**kwargs)
 
 
-@cli.command()
+@cli.group()
 @click.argument('profile', required=True, metavar='<profile>')
-@click.argument('minor', required=False, metavar='<hash>')
-@click.option('--format', '-f', type=click.Choice(['raw']), default='raw',
-              help="Change the display format of the show method.")
-@click.option('--coloured', '-c', is_flag=True, default=False,
-              help="Colours the showed profile (if supported by the format).")
-@click.option('--one-line', '-o', is_flag=True,
-              help="Shows the aggregated one-liner profile.")
-def show(profile, minor, **kwargs):
+@click.option('--minor', '-m', nargs=1, default=None,
+              help='Perun will lookup the profile at different minor version (default is HEAD).')
+@click.pass_context
+def show(ctx, profile, minor, **kwargs):
     """Shows the profile stored and registered within the perun control system.
 
-    Looks up the index of the given <hash> and finds the <profile> and prints it
+    Looks up the index of the given minor version and finds the <profile> and prints it
     to the command line. Either the profile is given as a .perf name, which is
     looked up within the index of the file or the hash is given, which represents
     the concrete object profile stored within perun.
 
-    Currently only raw data can be shown in the command line.
+    Example usage:
+
+        perun show -c -o -m ddff3e echo-time-hello-2017-03-01-16-11-04.perf raw
+
+            Shows the profile of the ddff3e minor version in raw format, coloured, summarized in
+            one line.
+
+        perun show echo-time-hello-2017-04-02-13-13-34-12.perf memory heap
+
+            Shows the given profile of the current HEAD of the wrapped repository using as the heap
+            map (if the profile is of memory type).
     """
     # TODO: Check that if profile is not SHA-1, then minor must be set
+    ctx.obj = commands.load_profile_from_args(profile, minor)
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
-    commands.show(profile, minor, **kwargs)
+
+
+# TODO: REFACTOR THIS: MOVE SOMEWHERE ELSE
+# Add all of the show modules to the show group
+for module in pkgutil.walk_packages(perun.view.__path__, perun.view.__name__ + '.'):
+    # Skip modules, only packages can be used for show
+    if not module[2]:
+        continue
+    view_package = perun.utils.get_module(module[1])
+
+    # Skip those packages that are not for viewing of profiles
+    if not hasattr(view_package, 'SUPPORTED_PROFILES'):
+        continue
+
+    # Skip those packages that do not contain the apropriate cli wrapper
+    view_module = perun.utils.get_module(module[1] + '.' + 'show')
+    cli_function_name = module[1].split('.')[-1]
+    if not hasattr(view_module, cli_function_name):
+        continue
+    show.add_command(getattr(view_module, cli_function_name))
 
 
 @cli.group()
@@ -394,6 +440,45 @@ def matrix(**kwargs):
     commands.run_matrix_job(**kwargs)
 
 
+def parse_yaml_file_param(ctx, param, value):
+    """Callback function for parsing the yaml files to dictionary object
+
+    Fixme: Check for incorrect files and stuff
+
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        dict: parsed yaml file
+    """
+    unit_to_params = {}
+    for (unit, yaml_file) in value:
+        with open(yaml_file, 'r') as yaml_handle:
+            unit_to_params[unit] = yaml.safe_load(yaml_handle)
+    return unit_to_params
+
+
+def parse_yaml_string_param(ctx, param, value):
+    """Callback function for parsing the yaml string to dictionary object
+
+    Fixme: Check for incorrect strings
+
+    Arguments:
+        ctx(click.Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        dict: parse yaml dictionary
+    """
+    unit_to_params = {}
+    for (unit, yaml_string) in value:
+        unit_to_params[unit] = yaml.safe_load(yaml_string)
+    return unit_to_params
+
+
 @run.command()
 @click.option('--bin', '-b', nargs=1, required=True, multiple=True,
               help='Binary unit that we are collecting data for.')
@@ -403,8 +488,20 @@ def matrix(**kwargs):
               help='Inputs for the binary, i.e. so called workloads, that are run on binary.')
 @click.option('--collector', '-c', nargs=1, required=True, multiple=True,
               help='Collector unit used to collect the profiling data for the binary.')
+@click.option('--collector-params-from-string', '-cpfs', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_string_param,
+              help='Parameters for the given collector supplied as a string.')
+@click.option('--collector-params-from-file', '-cpff', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_file_param,
+              help='Parameters for the given collector read from the file in YAML format.')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
               help='Additional postprocessing phases on profiles, after collection of the data.')
+@click.option('--postprocessor-params-from-string', '-ppfs', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_string_param,
+              help='Parameters for the given postprocessor supplied as a string.')
+@click.option('--postprocessor-params-from-file', '-ppff', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_file_param,
+              help='Parameters for the given postprocessor read from the file in the YAML format.')
 def job(**kwargs):
     """Run specified batch of perun jobs to generate profiles.
 
@@ -435,7 +532,6 @@ def job(**kwargs):
             first using the normalizer and them with filter.
     """
     # TODO: Add choice to collector/postprocessors from the registered shits
-    # TODO: solve -cp, -pp
     commands.run_single_job(**kwargs)
 
 

@@ -1,7 +1,9 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
-from enum import Enum
 import collections
+import click
+
+from enum import Enum
 
 __author__ = 'Tomas Fiedor'
 
@@ -34,6 +36,7 @@ IndexEntry = collections.namedtuple("IndexEntry", "time checksum path offset")
 MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
 
 # Profile specific stuff
+ProfileInfo = collections.namedtuple("ProfileInfo", "path type time")
 SUPPORTED_PROFILE_TYPES = ['memory', 'mixed', 'time']
 PROFILE_MALFORMED = 'malformed'
 PROFILE_TYPE_COLOURS = {
@@ -55,6 +58,7 @@ RAW_ATTRS = []
 
 # Job specific
 Job = collections.namedtuple("Job", "collector postprocessors bin workload args")
+Unit = collections.namedtuple("Unit", "name params")
 COLLECT_PHASE_BIN = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'
@@ -62,6 +66,9 @@ COLLECT_PHASE_POSTPROCESS = 'yellow'
 COLLECT_PHASE_ERROR = 'red'
 COLLECT_PHASE_ATTRS = []
 COLLECT_PHASE_ATTRS_HIGH = []
+
+# Show specific
+pass_profile = click.make_pass_decorator(dict)
 
 
 class CollectStatus(Enum):

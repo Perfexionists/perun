@@ -5,11 +5,14 @@ to be run both from GUI applications and from CLI, where each of the function is
 possible to be run in isolation.
 """
 
+import collections
 import inspect
 import os
+import re
 import termcolor
 from colorama import init
 
+import perun.utils as utils
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.core.logic.config as perun_config
@@ -17,7 +20,6 @@ import perun.core.logic.profile as profile
 import perun.core.logic.runner as runner
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
-import perun.view as view
 
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
@@ -25,11 +27,13 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, \
-    CollectStatus, PostprocessStatus
+    CollectStatus, PostprocessStatus, Unit, ProfileInfo
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
 init()
+untracked_regex = \
+    re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 
 
 def find_perun_dir_on_path(path):
@@ -335,22 +339,33 @@ def print_profile_number_for_minor(base_dir, minor_version, ending='\n'):
         ending(str): ending of the print (for different output of log and status)
     """
     tracked_profiles = store.get_profile_number_for_minor(base_dir, minor_version)
-    if tracked_profiles['all']:
-        print("{0[all]} tracked profiles (".format(tracked_profiles), end='')
+    print_profile_numbers(tracked_profiles, 'tracked', ending)
+
+
+def print_profile_numbers(profile_numbers, profile_type, line_ending='\n'):
+    """Helper function for printing the numbers of profile to output.
+
+    Arguments:
+        profile_numbers(dict): dictionary of nomber of profiles grouped by type
+        profile_type(str): type of the profiles (tracked, untracked, etc.)
+        line_ending(str): ending of the print (for different outputs of log and status)
+    """
+    if profile_numbers['all']:
+        print("{0[all]} {1} profiles (".format(profile_numbers, profile_type), end='')
         first_outputed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
-            if not tracked_profiles[profile_type]:
+            if not profile_numbers[profile_type]:
                 continue
             if first_outputed:
                 print(', ', end='')
             print(termcolor.colored("{0} {1}".format(
-                tracked_profiles[profile_type], profile_type
+                profile_numbers[profile_type], profile_type
             ), PROFILE_TYPE_COLOURS[profile_type]), end='')
             first_outputed = True
-        print(')', end=ending)
+        print(')', end=line_ending)
     else:
-        print(termcolor.colored('(no tracked profiles)', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS),
-              end='\n')
+        print(termcolor.colored('(no {} profiles)'.format(profile_type),
+                                TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='\n')
 
 
 @pass_pcs
@@ -436,40 +451,77 @@ def print_minor_version_info(head_minor_version, indent=0):
     print(indented_desc)
 
 
-def print_minor_version_profiles(pcs, minor_version):
+def print_profile_info_list(profile_list, profile_output_colour='white'):
     """
+    Arguments:
+        profile_list(list): list of profiles of ProfileInfo objects
+        profile_output_colour(str): colour of the output profiles (red for untracked)
+    """
+    # Skip empty profile list
+    if len(profile_list) == 0:
+        return
+
+    # Measure the maxima for the lenghts of the profile names and profile types
+    maximal_profile_name_len = max(len(profile_info.path) for profile_info in profile_list)
+    maximal_type_len = max(len(profile_info.type) for profile_info in profile_list)
+
+    # Print the list of the profiles
+    for profile_info in profile_list:
+        print(termcolor.colored(
+            "\t[{}]".format(profile_info.type).ljust(maximal_type_len+4),
+            PROFILE_TYPE_COLOURS[profile_info.type], attrs=TEXT_ATTRS,
+        ), end="")
+        print(termcolor.colored("{0} ({1})".format(
+            profile_info.path.ljust(maximal_profile_name_len),
+            profile_info.time,
+        ), profile_output_colour))
+
+
+def print_minor_version_profiles(pcs, minor_version):
+    """Prints profiles assigned to the given minor version.
+
     Arguments:
         pcs(PCS): performance control system
         minor_version(str): identification of the commit (preferably sha1)
     """
+    # Compute the
     profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
-    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ':\n\n')
-
-    # Compute the padding and peek the types between
-    profile_tuples = []
-    maximal_type_len = maximal_profile_name_len = 0
+    profile_info_list = []
     for index_entry in profiles:
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
         profile_type = store.peek_profile_type(profile_name)
-
-        if len(index_entry.path) > maximal_profile_name_len:
-            maximal_profile_name_len = len(index_entry.path)
-
-        if len(profile_type) > maximal_type_len:
-            maximal_type_len = len(profile_type)
-
-        profile_tuples.append((profile_type, index_entry))
+        profile_info_list.append(ProfileInfo(index_entry.path, profile_type, index_entry.time))
 
     # Print with padding
-    for profile_type, index_entry in profile_tuples:
-        print("\t{2} {0} ({1})".format(
-            index_entry.path.ljust(maximal_profile_name_len),
-            index_entry.time,
-            termcolor.colored(
-                "[{}]".format(profile_type).ljust(maximal_type_len+2),
-                PROFILE_TYPE_COLOURS[profile_type], attrs=TEXT_ATTRS,
-            )
-        ))
+    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ':\n\n')
+    print_profile_info_list(profile_info_list)
+
+
+def print_untracked_profiles(pcs):
+    """Prints untracked profiles, currently residing in the .perun/jobs directory.
+
+    Arguments:
+        pcs(PCS): performance control system
+    """
+    profile_numbers = collections.defaultdict(int)
+    profile_list = []
+    untracked = [path for path in os.listdir(pcs.get_job_directory()) if path.endswith('perf')]
+
+    # Transform each profile of the path to the ProfileInfo object
+    for untracked_path in untracked:
+        real_path = os.path.join(pcs.get_job_directory(), untracked_path)
+        loaded_profile = profile.load_profile_from_file(real_path, True)
+        profile_type = loaded_profile['header']['type']
+        path, time = untracked_regex.search(untracked_path).groups()
+
+        # Update the list of profiles and counters of types
+        profile_list.append(ProfileInfo(path, profile_type, time))
+        profile_numbers[profile_type] += 1
+        profile_numbers['all'] += 1
+
+    # Output the the console
+    print_profile_numbers(profile_numbers, 'untracked', ':\n\n')
+    print_profile_info_list(profile_list, 'red')
 
 
 @pass_pcs
@@ -500,17 +552,21 @@ def status(pcs, **kwargs):
 
     # Print profiles
     print_minor_version_profiles(pcs, minor_head)
+    print("")
+    print_untracked_profiles(pcs)
 
 
 @pass_pcs
 @lookup_minor_version
-def show(pcs, profile_name, minor_version, **kwargs):
+def load_profile_from_args(pcs, profile_name, minor_version):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
         profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
-        kwargs(dict): keyword atributes containing additional options
+
+    Returns:
+        dict: loaded profile represented as dictionary
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
 
@@ -537,14 +593,10 @@ def show(pcs, profile_name, minor_version, **kwargs):
         perun_log.error("malformed profile {}".format(profile_name))
     loaded_profile = profile.load_profile_from_file(profile_name, False)
 
-    # Show the profile using the format
-    if kwargs['coloured']:
-        view.show_coloured(kwargs['format'], loaded_profile)
-    else:
-        view.show(kwargs['format'], loaded_profile)
+    return loaded_profile
 
 
-def construct_job_matrix(bin, args, workload, collector, postprocessor):
+def construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs):
     """Constructs the job matrix represented as dictionary.
 
     Reads the local of the current PCS and constructs the matrix of jobs
@@ -571,14 +623,38 @@ def construct_job_matrix(bin, args, workload, collector, postprocessor):
         workload(list): list of workloads
         collector(list): list of collectors
         postprocessor(list): list of postprocessors
+        kwargs(dict): additional parameters issued from the command line
 
     Returns:
         dict, int: dict of jobs in form of {bins: {workloads: {Job}}}, number of jobs
     """
+    def construct_unit(unit, unit_type, ukwargs):
+        """Helper function for constructing the {'name', 'params'} objects for collectors and posts.
+
+        Arguments:
+            unit(str): name of the unit (collector/postprocessor)
+            unit_type(str): name of the unit type (collector or postprocessor)
+            ukwargs(dict): dictionary of additional parameters
+
+        Returns:
+            dict: dictionary of the form {'name', 'params'}
+        """
+        # Get the dictionaries for from string and from file params obtained from commandline
+        from_string_dict = ukwargs.get(unit_type + "_params_from_string", {}).get(unit, {})
+        from_file_dict = ukwargs.get(unit_type + "_params_from_file", {}).get(unit, {})
+
+        # Construct the object with name and parameters
+        return Unit(unit, utils.merge_dictionaries(from_file_dict, from_string_dict))
+
+    # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
+    collector_pairs = map(lambda c: construct_unit(c, 'collector', kwargs), collector)
+    postprocessors = list(map(lambda p: construct_unit(p, 'postprocessor', kwargs), postprocessor))
+
+    # Construct the actual job matrix
     matrix = {
         b: {
             w: [
-                Job(c, postprocessor, b, w, a) for c in collector for a in args or ['']
+                Job(c, postprocessors, b, w, a) for c in collector_pairs for a in args or ['']
             ] for w in workload
         } for b in bin
     }
@@ -623,7 +699,7 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
 
 
 @pass_pcs
-def run_single_job(pcs, bin, args, workload, collector, postprocessor):
+def run_single_job(pcs, bin, args, workload, collector, postprocessor, **kwargs):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
@@ -632,8 +708,10 @@ def run_single_job(pcs, bin, args, workload, collector, postprocessor):
         workload(list): list of workloads
         collector(list): list of collectors
         postprocessor(list): list of postprocessors
+        kwargs(dict): dictionary of additional params for postprocessor and collector
     """
-    job_matrix, number_of_jobs = construct_job_matrix(bin, args, workload, collector, postprocessor)
+    job_matrix, number_of_jobs = \
+        construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs)
     run_jobs(pcs, job_matrix, number_of_jobs)
 
 
@@ -645,27 +723,25 @@ def load_job_info_from_config(pcs):
     Returns:
         dict: dictionary with bins, args, workloads, collectors and postprocessors
     """
-    def join_command(command):
-        """
-        Arguments:
-            command(dict): command we are joining (containing 'name' and 'params')
-
-        Returns:
-            str: joined string
-        """
-        if 'params' in command.keys():
-            return " ".join([command['name'], str(command['params'])])
-        else:
-            return command['name']
-
     local_config = pcs.local_config().data
+
+    if 'collectors' not in local_config.keys():
+        perun_log.error("missing 'collector' in the local.yml")
+    collectors = local_config['collectors']
+    postprocessors = local_config.get('postprocessors', [])
 
     info = {
         'bin': local_config['bins'],
         'workload': local_config['workloads'],
-        'postprocessor': [join_command(post) for post in local_config['postprocessors']],
-        'collector': [join_command(collect) for collect in local_config['collectors']],
-        'args': local_config['args'] if 'args' in local_config.keys() else []
+        'postprocessor': [post.get('name', '') for post in postprocessors],
+        'collector': [collect.get('name', '') for collect in collectors],
+        'args': local_config['args'] if 'args' in local_config.keys() else [],
+        'collector_params_from_file': {
+            collect.get('name', ''): collect.get('params', {}) for collect in collectors
+        },
+        'postprocesor_params_from_file': {
+            post.get('name', ''): post.get('params', {}) for post in postprocessors
+        }
     }
 
     return info
@@ -694,7 +770,9 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
             print_current_phase(" - processing workload {}", job_workload, COLLECT_PHASE_WORKLOAD)
             for job in jobs_per_workload:
                 print_job_progress(number_of_jobs)
-                print_current_phase("Collecting data by {}", job.collector,  COLLECT_PHASE_COLLECT)
+                print_current_phase(
+                    "Collecting data by {}", job.collector.name, COLLECT_PHASE_COLLECT
+                )
 
                 # Run the collector and check if the profile was successfully collected
                 collection_status, collection_msg, prof = runner.run_collector(job.collector, job)
@@ -704,14 +782,15 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
 
                 for postprocessor in job.postprocessors:
                     print_job_progress(number_of_jobs)
-                    print_current_phase("Postprocessing profile with {}", postprocessor,
-                                        COLLECT_PHASE_POSTPROCESS)
+                    print_current_phase(
+                        "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
+                    )
 
                     # Run the postprocessor and check if the profile was successfully postprocessed
                     post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job, prof)
                     if post_status != PostprocessStatus.OK:
                         perun_log.error(post_msg)
-                    print("Successfully postprocessed data by {}".format(postprocessor))
+                    print("Successfully postprocessed data by {}".format(postprocessor.name))
 
                 # Store the computed profile inside the job directory
                 full_profile = profile.generate_profile_for_job(prof, job)

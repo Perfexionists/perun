@@ -33,7 +33,7 @@ def generate_profile_name(job):
     """
     return "{0}-{1}-{2}-{3}.perf".format(
         os.path.split(job.bin)[-1],
-        job.collector,
+        job.collector.name,
         os.path.split(job.workload)[-1],
         time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
     )
@@ -92,9 +92,9 @@ def generate_header_for_profile(job):
         dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     try:
-        collector = get_module('.'.join(['perun.collect', job.collector]))
+        collector = get_module('.'.join(['perun.collect', job.collector.name]))
     except ImportError:
-        perun_log.error("could not find package for collector {}".format(job.collector))
+        perun_log.error("could not find package for collector {}".format(job.collector.name))
 
     return {
         'type': collector.COLLECTOR_TYPE,
@@ -116,8 +116,8 @@ def generate_collector_info(job):
         dict: dictionary in form of {'collector_info': {}} corresponding to the perun specification
     """
     return {
-        'name': job.collector,
-        'params': None
+        'name': job.collector.name,
+        'params': job.collector.params
     }
 
 
@@ -130,7 +130,10 @@ def generate_postprocessor_info(job):
         dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
     """
     return [
-        {'name': postprocessor} for postprocessor in job.postprocessors
+        {
+            'name': postprocessor.name,
+            'params': postprocessor.params
+        } for postprocessor in job.postprocessors
     ]
 
 
