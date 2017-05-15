@@ -3,7 +3,7 @@
 =================================================
 
 .. image:: figs/perun-logo.png
-   :width: 600px
+   :width: 300px
    :scale: 20%
    :align: center
 
@@ -50,7 +50,7 @@ Such profiles then can be visualized by the set of visualization techniques like
 heap maps, various scatter plots, etc.
 
 .. image:: figs/lifetime-of-profile.png
-   :width: 600px
+   :width: 300px
    :scale: 20%
    :align: center
 
@@ -66,6 +66,6 @@ achieve automatization. The view is an independent module, which contains variou
 techniques and wrappers for graphical and command line interface.
 
 .. image:: figs/perun-architecture-darker.png
-   :width: 600px
+   :width: 500px
    :scale: 40%
    :align: center
