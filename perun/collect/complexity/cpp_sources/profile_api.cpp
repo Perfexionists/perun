@@ -81,7 +81,7 @@ void _profapi_using_size_value(void *struct_addr, size_t size_value) {
     }
 }
 
-std::size_t _profapi_get_size_record(void *stack_frame) {
+size_t _profapi_get_size_record(void *stack_frame) {
     // Check if the top stack frame and provided frame match
     if(!size_stack.empty() && stack_frame == size_stack.back().stack_frame) {
         size_t struct_size = size_stack.back().actual_size;
@@ -89,5 +89,19 @@ std::size_t _profapi_get_size_record(void *stack_frame) {
         return struct_size;
     } else {
         return 0;
+    }
+}
+
+void _profapi_remove_size_record(void *stack_frame) {
+    // Check if the stack contains such record
+    if(!size_stack.empty() && stack_frame == size_stack.back().stack_frame) {
+        size_stack.pop_back();
+    }
+}
+
+void _profapi_clean_size_records(void *stack_frame) {
+    // Clean all the records that were not used (i.e. with same or lower stack address)
+    while(!size_stack.empty() && stack_frame >= size_stack.back().stack_frame) {
+        size_stack.pop_back();
     }
 }
