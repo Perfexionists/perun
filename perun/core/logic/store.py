@@ -49,10 +49,10 @@ def touch_dir(touched_dir):
         os.mkdir(touched_dir)
 
 
-def path_to_subpath(path):
+def path_to_subpaths(path):
     """Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
 
-    >>> path_to_subpath('/dir/subdir/subsubdir')
+    >>> path_to_subpaths('/dir/subdir/subsubdir')
     ['/dir', '/dir/subdir', '/dir/subdir/subsubdir']
 
     Arguments:

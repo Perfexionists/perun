@@ -85,4 +85,4 @@ def warn(msg):
         msg(str): warn message printed to standard output
     """
     if not SUPPRESS_WARNINGS:
-        print("perun warning: {}".format(msg))
+        print("warn: {}".format(msg))

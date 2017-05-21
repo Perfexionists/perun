@@ -5,6 +5,8 @@ with version control systems.
 """
 
 import git
+import git.exc
+import os
 
 import perun.core.logic.store as store
 import perun.utils.timestamps as timestamps
@@ -13,6 +15,22 @@ import perun.utils.log as perun_log
 from perun.utils.helpers import MinorVersion
 
 __author__ = "Tomas Fiedor"
+
+
+def contains_git_repo(path):
+    """Checks if there is a git repo at the given @p path.
+
+    Arguments:
+        path(str): path where we wanna check if there is a git repo
+
+    Returns:
+        bool: true if @p path contains a git repo already
+    """
+    try:
+        _ = git.Repo(path).git_dir
+        return True
+    except (git.exc.InvalidGitRepositoryError, git.exc.NoSuchPathError):
+        return False
 
 
 def create_repo_from_path(func):
@@ -36,11 +54,20 @@ def _init(vcs_path, vcs_init_params):
     Returns:
         bool: true if the vcs was successfully initialized at vcs_path
     """
-    if not git.Repo.init(vcs_path, **(vcs_init_params or {})):
-        perun_log.warn("Error while initializing git directory")
-        return False
+    dir_was_newly_created = not os.path.exists(vcs_path)
+    path_contains_git_repo = contains_git_repo(vcs_path)
+    try:
+        git.Repo.init(vcs_path, **(vcs_init_params or {}))
+    except git.exc.GitCommandError as gce:
+        # If by calling the init we created empty directory in vcs_path, we cleanup after ourselves
+        if os.path.exists(vcs_path) and dir_was_newly_created and not os.listdir(vcs_path):
+            os.rmdir(vcs_path)
+        perun_log.error("while git init: {}".format(gce))
 
-    perun_log.quiet_info("Initialized empty Git repository in {}".format(vcs_path))
+    if path_contains_git_repo:
+        perun_log.quiet_info("Reinitialized existing Git repository in {}".format(vcs_path))
+    else:
+        perun_log.quiet_info("Initialized empty Git repository in {}".format(vcs_path))
     return True
 
 
@@ -57,7 +84,7 @@ def _get_minor_head(git_repo):
         assert store.is_sha1(git_head)
         return git_head
     except ValueError:
-        return ""
+        return None
 
 
 @create_repo_from_path
@@ -75,7 +102,10 @@ def _walk_minor_versions(git_repo, head):
     Returns:
         MinorVersion: yields stream of minor versions
     """
-    head_commit = git_repo.commit(head)
+    try:
+        head_commit = git_repo.commit(head)
+    except ValueError:
+        return
     for commit in git_repo.iter_commits(head_commit):
         yield _parse_commit(commit)
 

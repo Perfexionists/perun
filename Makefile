@@ -7,6 +7,9 @@ test:
 run-gui:
 	python3 perun/view/gui/perun.py
 
+dev:
+	python3 setup.py develop
+
 install:
 	python3 setup.py install
 

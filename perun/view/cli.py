@@ -16,6 +16,7 @@ import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
 import perun.view
 
+from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 from perun.utils.helpers import CONFIG_UNIT_ATTRIBUTES
 from perun.core.logic.pcs import PCS
 
@@ -224,7 +225,12 @@ def init(dst, configure, **kwargs):
     using the --vcs-params.
     """
     perun_log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
-    commands.init(dst, **kwargs)
+    try:
+        commands.init(dst, **kwargs)
+    except UnsupportedModuleException as ume:
+        perun_log.error(str(ume))
+    except UnsupportedModuleFunctionException as umfe:
+        perun_log.error(str(umfe))
 
     if configure:
         # Run the interactive configuration of the local perun repository (populating .yml)
