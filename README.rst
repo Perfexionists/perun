@@ -2,10 +2,13 @@
   Perun: Lightweight Performance Control System
 =================================================
 
+.. image:: https://travis-ci.org/tfiedor/perun.svg?branch=develop
+    :target: https://travis-ci.org/tfiedor/perun
+
 .. image:: figs/perun-logo.png
-   :width: 300px
-   :scale: 20%
-   :align: center
+    :width: 300px
+    :scale: 20%
+    :align: center
 
 Have you ever encountered a sudden performance degradation and could not figure out, when and
 where the degradation was introduced?
@@ -50,9 +53,9 @@ Such profiles then can be visualized by the set of visualization techniques like
 heap maps, various scatter plots, etc.
 
 .. image:: figs/lifetime-of-profile.png
-   :width: 300px
-   :scale: 20%
-   :align: center
+    :width: 300px
+    :scale: 20%
+    :align: center
 
 Perun architecture
 ==================
@@ -66,6 +69,6 @@ achieve automatization. The view is an independent module, which contains variou
 techniques and wrappers for graphical and command line interface.
 
 .. image:: figs/perun-architecture-darker.png
-   :width: 500px
-   :scale: 40%
-   :align: center
+    :width: 500px
+    :scale: 40%
+    :align: center
