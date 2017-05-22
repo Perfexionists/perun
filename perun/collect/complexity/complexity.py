@@ -210,9 +210,9 @@ def _process_file_record(record, call_stack, resources, address_map):
 #     _config = {
 #         'target_dir': _complexity_dir + 'target',
 #         'files': [
-#             _complexity_dir + 'cpp_sources/test_workload/main.cpp',
-#             _complexity_dir + 'cpp_sources/test_workload/SLList.h',
-#             _complexity_dir + 'cpp_sources/test_workload/SLListcls.h'
+#             _complexity_dir + 'cpp_sources/workload/main.cpp',
+#             _complexity_dir + 'cpp_sources/workload/SLList.h',
+#             _complexity_dir + 'cpp_sources/workload/SLListcls.h'
 #         ],
 #         'rules': [
 #             'func1',

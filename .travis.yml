@@ -1,0 +1,17 @@
+language: python
+
+python:
+    - "3.4"
+
+cache: pip 
+
+install:
+    - pip install Cython
+    - pip install -r requirements.txt
+    - pip install -U pytest pytest-cov
+    - make install
+
+script:
+    # Just try that it was installed correctly
+    - perun --help
+    - make test
