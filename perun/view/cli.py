@@ -231,6 +231,13 @@ def init(dst, configure, **kwargs):
         perun_log.error(str(ume))
     except UnsupportedModuleFunctionException as umfe:
         perun_log.error(str(umfe))
+    except PermissionError as pe:
+        # If this is problem with writing to shared.yml, say it is error and ask for sudo
+        if 'shared.yml' in str(pe):
+            perun_log.error("writing to shared config 'shared.yml' requires root permissions")
+        # Else reraise as who knows what kind of mistake is this
+        else:
+            raise pe
 
     if configure:
         # Run the interactive configuration of the local perun repository (populating .yml)
