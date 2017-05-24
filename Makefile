@@ -2,7 +2,7 @@ init:
 	pip3 install -r requirements.txt
 
 test:
-	python3 -m pytest
+	python3 -m pytest --cov=./
 
 run-gui:
 	python3 perun/view/gui/perun.py

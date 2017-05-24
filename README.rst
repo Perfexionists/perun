@@ -4,6 +4,8 @@
 
 .. image:: https://travis-ci.org/tfiedor/perun.svg?branch=develop
     :target: https://travis-ci.org/tfiedor/perun
+.. image:: https://codecov.io/gh/tfiedor/perun/branch/develop/graph/badge.svg
+    :target: https://codecov.io/gh/tfiedor/perun
 
 .. image:: figs/perun-logo.png
     :width: 300px
