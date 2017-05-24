@@ -16,7 +16,8 @@ import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
 import perun.view
 
-from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
+from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
+    NotPerunRepositoryException, IncorrectProfileFormatException
 from perun.utils.helpers import CONFIG_UNIT_ATTRIBUTES
 from perun.core.logic.pcs import PCS
 
@@ -194,7 +195,7 @@ def configure_local_perun(perun_path):
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
 # TODO: Add choice
-@click.option('--vcs-type', metavar='<type>',
+@click.option('--vcs-type', metavar='<type>', default='pvcs',
               help="Apart of perun structure, a supported version control system can be wrapped"
                    " and initialized as well.")
 @click.option('--vcs-path', metavar='<path>',
@@ -225,6 +226,7 @@ def init(dst, configure, **kwargs):
     using the --vcs-params.
     """
     perun_log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
+
     try:
         commands.init(dst, **kwargs)
     except UnsupportedModuleException as ume:
@@ -268,7 +270,13 @@ def add(profile, minor):
           on 1st March at 16:11 to the head.
     """
     perun_log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
-    commands.add(profile, minor)
+
+    try:
+        commands.add(profile, minor)
+    except NotPerunRepositoryException as npre:
+        perun_log.error(str(npre))
+    except IncorrectProfileFormatException as ipfe:
+        perun_log.error(str(ipfe))
 
 
 @cli.command()

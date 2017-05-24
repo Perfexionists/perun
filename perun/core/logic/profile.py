@@ -13,6 +13,7 @@ import time
 import perun.core.logic.store as store
 import perun.utils.log as perun_log
 
+from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.utils.helpers import SUPPORTED_PROFILE_TYPES
 from perun.utils import get_module
 
@@ -47,23 +48,32 @@ def load_profile_from_file(file_name, is_raw_profile):
 
     Returns:
         dict: JSON dictionary
+
+    Raises:
+        IncorrectProfileFormatException: when the profile file does not exist
     """
-    if os.path.exists(file_name):
-        with open(file_name, 'rb') as file_handle:
-            return load_profile_from_handle(file_handle, is_raw_profile)
-    else:
-        perun_log.warn("file '{}' not found")
-        return {}
+    if not os.path.exists(file_name):
+        raise IncorrectProfileFormatException(file_name, "file '{}' not found")
+
+    with open(file_name, 'rb') as file_handle:
+        return load_profile_from_handle(file_name, file_handle, is_raw_profile)
 
 
-def load_profile_from_handle(file_handle, is_raw_profile):
+def load_profile_from_handle(file_name, file_handle, is_raw_profile):
     """
+    Fixme: Add check that the loaded profile is in valid format!!!
+
     Arguments:
+        file_name(str): name of the file opened in the handle
         file_handle(file): opened file handle
         is_raw_profile(bool): true if the profile is in json format already
 
     Returns:
         dict: JSON representation of the profile
+
+    Raises:
+        IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
+            or when the profile is not in correct supported format or when the profile is malformed
     """
     if is_raw_profile:
         body = file_handle.read().decode('utf-8')
@@ -76,9 +86,13 @@ def load_profile_from_handle(file_handle, is_raw_profile):
         # Check the header, if the body is not malformed
         if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
                 len(body) != int(profile_size):
-            perun_log.error("malformed profile")
+            raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")
 
-    return json.loads(body)
+    # Try to load the json, if there is issue with the profile
+    try:
+        return json.loads(body)
+    except ValueError:
+        raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
 
 
 def generate_header_for_profile(job):

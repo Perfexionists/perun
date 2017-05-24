@@ -13,6 +13,7 @@ import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
 
 from perun.utils.helpers import MinorVersion
+from perun.utils.exceptions import VersionControlSystemException
 
 __author__ = "Tomas Fiedor"
 
@@ -79,12 +80,9 @@ def _get_minor_head(git_repo):
         git_repo(git.Repo): repository object of the wrapped git by perun
     """
     # Read contents of head through the subprocess and git rev-parse HEAD
-    try:
-        git_head = str(git_repo.head.commit)
-        assert store.is_sha1(git_head)
-        return git_head
-    except ValueError:
-        return None
+    git_head = str(git_repo.head.commit)
+    assert store.is_sha1(git_head)
+    return str(git_head)
 
 
 @create_repo_from_path
@@ -183,3 +181,18 @@ def _get_head_major_version(git_repo):
         return str(git_repo.head)
     else:
         return str(git_repo.active_branch)
+
+
+@create_repo_from_path
+def _check_minor_version_validity(git_repo, minor_version):
+    """
+    Arguments:
+        git_repo(git.Repo): wrapped repository object
+        minor_version(str): string representing a minor version in the git
+    """
+    try:
+        git_repo.rev_parse(str(minor_version))
+    except git.exc.BadName:
+        raise VersionControlSystemException("minor version '{}' could not be found", minor_version)
+    except ValueError:
+        raise VersionControlSystemException("minor version '{}' is missing in the vcs", minor_version)

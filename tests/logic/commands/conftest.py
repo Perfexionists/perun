@@ -1,12 +1,19 @@
-"""Shared fixtures for the testing of functionality of Perun commands."""
+"""Shared fixtures for the testing of functionality of Perun commands.
 
+Helper snippets:
+    for c in repo.iter_commits():
+        print("commit {} \"{}\" {}".format(binascii.hexlify(c.binsha).decode('utf-8'), c.author, c.summary))
+"""
+
+import git
 import pytest
-import tempfile
 import os
 import shutil
+import tempfile
 
 import perun.core.logic.commands as commands
 import perun.core.logic.pcs as pcs
+import perun.core.logic.store as store
 import perun.core.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
@@ -25,13 +32,42 @@ def list_contents_on_path(path):
             print("dirs: ", os.path.join(root, d))
 
 
-@pytest.fixture(scope="module")
+def get_all_profiles():
+    """Helper generator for generating stream of profiles"""
+    pool_path = os.path.join(os.path.split(__file__)[0], "to_add_profiles")
+    profile_filenames = os.listdir(pool_path)
+    profiles = [os.path.join(pool_path, filename) for filename in profile_filenames]
+    profiles.sort()
+    for profile in profiles:
+        yield profile
+
+
+@pytest.fixture(scope="session")
+def valid_profile_pool():
+    """
+    Returns:
+        list: dictionary with profiles that are not assigned and can be distributed
+    """
+    yield list(filter(lambda p: 'err' not in p, get_all_profiles()))
+
+
+@pytest.fixture(scope="session")
+def error_profile_pool():
+    """
+    Returns:
+        list: list with profiles that contains some kind of error
+    """
+    yield list(filter(lambda p: 'err' in p, get_all_profiles()))
+
+
+@pytest.fixture(scope="function")
 def pcs_full():
     """
     Returns:
         PCS: object with performance control system, initialized with some files and stuff
     """
     # Change working dir into the temporary directory
+    prof_dirpath = os.path.join(os.path.split(__file__)[0], "full_profiles")
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, False, {'vcs': {'url': '../', 'type': 'git'}})
@@ -42,7 +78,35 @@ def pcs_full():
     # Initialize git
     vcs.init('git', pcs_path, {})
 
-    # TODO: Populate this with commits and profiles
+    # Populate repo with commits
+    repo = git.Repo(pcs_path)
+
+    # Create first commit
+    file1 = os.path.join(pcs_path, "file1")
+    store.touch_file(file1)
+    repo.index.add([file1])
+    root = repo.index.commit("root")
+
+    # Create second commit
+    file2 = os.path.join(pcs_path, "file2")
+    store.touch_file(file2)
+    repo.index.add([file2])
+    current_head = repo.index.commit("second commit")
+
+    profiles = [os.path.join(prof_dirpath, prof_file) for prof_file in os.listdir(prof_dirpath)]
+    assert len(profiles) == 3
+
+    # Populate PCS with profiles
+    commands.add(profiles[0], str(root))
+    commands.add(profiles[1], str(current_head))
+    commands.add(profiles[2], str(current_head))
+
+    # Assert that we have five blobs: 2 for commits and 3 for profiles
+    pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
+    number_of_perun_objects = sum(
+        len(os.listdir(os.path.join(pcs_object_dir, sub))) for sub in os.listdir(pcs_object_dir)
+    )
+    assert number_of_perun_objects == 5
 
     yield pcs_obj
 
@@ -50,7 +114,7 @@ def pcs_full():
     shutil.rmtree(pcs_path)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def pcs_with_empty_git():
     """
     Returns:
@@ -73,7 +137,7 @@ def pcs_with_empty_git():
     shutil.rmtree(pcs_path)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def pcs_without_vcs():
     """
     Returns:
@@ -93,7 +157,7 @@ def pcs_without_vcs():
     shutil.rmtree(pcs_path)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def pcs_with_git_in_separate_dir():
     """
     Returns:
@@ -101,7 +165,6 @@ def pcs_with_git_in_separate_dir():
     """
     # Fixme: TODO Implement this
     assert False
-
 
 
 @pytest.fixture(scope="function")

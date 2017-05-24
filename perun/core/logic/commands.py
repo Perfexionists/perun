@@ -56,7 +56,7 @@ def locate_perun_dir_on(path):
         assert os.path.isdir(tested_path)
         if '.perun' in os.listdir(tested_path):
             return tested_path
-    raise NotPerunRepositoryException
+    raise NotPerunRepositoryException(path)
 
 
 def pass_pcs(func):
@@ -108,6 +108,7 @@ def lookup_minor_version(func):
             arg_list[minor_version_position] = vcs.get_minor_head(
                 pcs.vcs_type, pcs.vcs_path)
             args = tuple(arg_list)
+        vcs.check_minor_version_validity(pcs.vcs_type, pcs.vcs_path, args[minor_version_position])
         return func(pcs, *args, **kwargs)
 
     return wrapper
@@ -535,14 +536,16 @@ def status(pcs, **kwargs):
         pcs(PCS): performance control system
         kwargs(dict): dictionary of keyword arguments
     """
-    # Get major head and print the status.
+    # Obtain both of the heads
     major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_path)
+    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path)
+
+    # Print the status of major head.
     print("On major version {} ".format(
         termcolor.colored(major_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ), end='')
 
     # Print the index of the current head
-    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path)
     print("(minor version: {})".format(
         termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ))
