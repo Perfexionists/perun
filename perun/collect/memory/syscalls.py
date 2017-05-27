@@ -80,5 +80,20 @@ def run(cmd, params, workload):
     return ret
 
 
+def init():
+    """ Initialize the injected library
+
+    Returns:
+        bool: success of the operation
+    """
+    pwd = os.path.dirname(os.path.abspath(__file__))
+    try:
+        ret = subprocess.call(["make"], cwd=pwd)
+    except subprocess.CalledProcessError:
+        return 1
+
+    return ret
+
+
 if __name__ == "__main__":
     pass
