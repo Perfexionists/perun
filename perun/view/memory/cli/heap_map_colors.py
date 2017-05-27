@@ -91,7 +91,8 @@ class HeapMapColors(object):
 
         for item in self.__color_records:
             if (uid['function'] == item['uid']['function'] and
-                    uid['source'] == item['uid']['source']):
+                    uid['source'] == item['uid']['source'] and
+                    uid['line'] == item['uid']['line']):
                 return item['color']
 
         color = randint(1, len(self.__good_colors))

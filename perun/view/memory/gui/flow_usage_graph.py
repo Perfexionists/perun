@@ -63,8 +63,8 @@ def _get_plot(data_frame):
     # creating figure for plotting
     fig = bpl.figure(width=1200, height=800, tools="")
 
-    # +1 because of ending process memory should be 0 -- nicer visualization
-    snap_count = len(snap_group) + 1
+    # +2 because of ending and starting process memory should be 0 -- nicer visualization
+    snap_count = len(snap_group) + 2
 
     # preparing data structure
     for uid in data_frame['uid']:
@@ -73,7 +73,7 @@ def _get_plot(data_frame):
     # calculating summary of the amount for each location's snapshot
     for i, group in snap_group:
         for _, series in group.iterrows():
-            data[series['uid']][i - 1] += series['amount']
+            data[series['uid']][i] += series['amount']
 
     # get colors pallet
     colors_count = len(data.keys()) if len(data.keys()) <= 256 else 256
@@ -81,7 +81,7 @@ def _get_plot(data_frame):
 
     for key, color in zip(data.keys(), colors):
         # creating DataSource for each UID
-        source = bpl.ColumnDataSource({'x': range(1, snap_count + 1),
+        source = bpl.ColumnDataSource({'x': range(snap_count),
                                        'y': data[key],
                                        'name': [key]*snap_count})
         total_sum = list(map(operator.add, data[key], total_sum))
@@ -90,7 +90,7 @@ def _get_plot(data_frame):
 
         toggles.append(_add_callback(key, patch, line))
 
-    source = bpl.ColumnDataSource({'x': range(1, snap_count + 1),
+    source = bpl.ColumnDataSource({'x': range(snap_count),
                                    'y': total_sum,
                                    'name': ['Total'] * snap_count})
     fig.line('x', 'y', source=source, color='black', line_width=3)

@@ -1,12 +1,8 @@
 """This module implement the flow graph visualization of the profile"""
 import curses
 import curses.textpad
-import json
 import sys
 import math
-
-# debug in console
-import profile_converters as heap_representation
 
 __author__ = 'Radim Podola'
 
@@ -135,14 +131,14 @@ class FlowGraphVisualization(object):
             cols(int): total number of the screen's columns
             margin(int): length of the Y-axis info space
         """
-        field_size = int(self.__get_field_size(rows))
+        field_size = self.__get_field_size(rows)
 
         self.__window.addstr(0, 0, self.__Y_AXIS_TEXT)
 
         tik_cnt = 0
         for i, row in enumerate(range(0, rows, self.LINE_DELIMITER_SPACE)):
             starting_row = rows - row - 2
-            self.__window.addstr(starting_row, 0, str(field_size * tik_cnt))
+            self.__window.addstr(starting_row, 0, str(int(field_size * tik_cnt)))
             tik_cnt += 1
 
             for col in range(margin + 1, cols - 1):
@@ -505,6 +501,4 @@ def flow_graph(heap):
 
 
 if __name__ == "__main__":
-    with open("memory.perf") as prof_json:
-        prof = heap_representation.create_heap_map(json.load(prof_json))
-        flow_graph(prof)
+    pass

@@ -1,5 +1,6 @@
 """This module provides wrapper for the Flame graph visualization"""
 
+import os
 import subprocess
 import perun.view.memory.cli.profile_converters as converter
 
@@ -28,6 +29,7 @@ def draw_flame_graph(profile, output_file):
                                                 header['workload'])
     units = header['units'][profile_type]
 
+    pwd = os.path.dirname(os.path.abspath(__file__))
     with open(output_file, 'w') as out:
         process = subprocess.Popen([_SCRIPT_FILENAME,
                                     '--title', title,
@@ -35,7 +37,8 @@ def draw_flame_graph(profile, output_file):
                                     '--reverse',
                                     '--height=20'],
                                    stdin=subprocess.PIPE,
-                                   stdout=out)
+                                   stdout=out,
+                                   cwd=pwd)
         process.communicate(bytes(''.join(flame), encoding='UTF-8'))
 
 

@@ -22,6 +22,10 @@ def bar_graph_uid_count(data_frame):
     title_text = "Number of the memory operations at all the allocation " \
                  "locations stacked by snapshot"
 
+    for i in data_frame['uid']:
+        if i.find(':') != -1:
+            return None
+
     bar_graph = bch.Bar(data_frame, label='uid', values='amount', legend=None,
                         tooltips=[('snapshot', '@snapshots')], tools=tools,
                         stack='snapshots', agg='count', bar_width=0.4)
@@ -51,6 +55,10 @@ def bar_graph_uid_sum(data_frame, unit):
     y_axis_label = "Summary of the allocated memory [{}]".format(unit)
     title_text = "Summary of the allocated memory at all the allocation " \
                  "locations stacked by snapshot"
+
+    for i in data_frame['uid']:
+        if i.find(':') != -1:
+            return None
 
     bar_graph = bch.Bar(data_frame, label='uid', values='amount', legend=None,
                         tooltips=[('snapshot', '@snapshots')], tools=tools,

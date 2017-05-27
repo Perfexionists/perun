@@ -1,14 +1,8 @@
 """This module implement the HEAP MAP visualization of the profile"""
 import curses
 import curses.textpad
-import json
 import sys
-
-# debug in console
-import profile_converters as heap_representation
-import heap_map_colors as hpcolors
-
-#from perun.view.memory.cli.heap_map_colors import HeapMapColors
+import perun.view.memory.cli.heap_map_colors as hpcolors
 
 __author__ = 'Radim Podola'
 
@@ -383,11 +377,16 @@ class HeapMapVisualization(object):
                         last_field += field_size
                         continue
 
-                    # record is in the next field, let's put it's info there
-                    uid_info = self.__heap['info'][record['uid']]
-                    matrix[row][col] = {"uid": uid_info,
-                                        "address": record['address'],
-                                        "amount": record['amount']}
+                    if remain_amount <= 0:
+                        matrix[row][col] = {"uid": None,
+                                            "address": last_field,
+                                            "amount": 0}
+                    else:                        
+                        # record is in the next field, let's put it's info there
+                        uid_info = self.__heap['info'][record['uid']]
+                        matrix[row][col] = {"uid": uid_info,
+                                            "address": record['address'],
+                                            "amount": record['amount']}
 
                     # spread record over or get next record
                     if remain_amount <= field_size:
@@ -395,7 +394,11 @@ class HeapMapVisualization(object):
                         if record is None:
                             remain_amount = 0
                         else:
-                            remain_amount = record['amount']
+                            if record['address'] <= last_field:
+                                add_diff = last_field - record['address']
+                                remain_amount = record['amount'] - add_diff
+                            else:
+                                remain_amount = record['amount']
 
                     else:
                         remain_amount -= field_size
@@ -442,8 +445,16 @@ class HeapMapVisualization(object):
         for row in range(rows):
             for col in range(cols):
 
-                access_number = max(accesses[int(curr_add) + i - min_address]
-                                    for i in range(int(field_size)))
+                field_range = int(field_size)
+                if field_range == 0:
+                    field_range = 1
+
+                acc_iterator = [accesses[int(curr_add) + i - min_address]
+                                    for i in range(field_range)]
+                if len(acc_iterator) > 0:
+                    access_number = max(acc_iterator)
+                else:
+                    access_number = 0
 
                 matrix[row][col] = {"access": access_number,
                                     "address": curr_add
@@ -852,8 +863,4 @@ def heap_map(heap, heat):
 
 
 if __name__ == "__main__":
-    with open("memory.perf") as f:
-        heap_file = heap_representation.create_heap_map(json.load(f))
-    with open("heat.perf") as f:
-        heat_file = heap_representation.create_heat_map(json.load(f))
-    heap_map(heap_file, heat_file)
+    pass

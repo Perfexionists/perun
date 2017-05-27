@@ -1,5 +1,4 @@
 """This module contains methods needed by Perun logic"""
-import json
 
 import pandas as pd
 import bokeh.plotting as bpl
@@ -13,35 +12,23 @@ import perun.view.memory.gui.heat_map_graph as heat
 __author__ = 'Radim Podola'
 
 
-def show(profile, choice):
+def show(profile, choice, filename):
     """ Main function which handle visualization choices
 
     Arguments:
         profile(dict): the memory profile
         choice(int): choice of the graph to draw
+                     1 - a series of the bars graphs
+                     2 - flow usage graph
+                     3 - FLame graph
+        filename(str): filename of the output file
     """
     if choice == 0:
-        draw_flow_bar_graphs(profile, "bars.html")
+        draw_bar_graphs(profile, filename)
     elif choice == 1:
-        draw_flow_usage(profile, "usage.html")
+        draw_flow_usage(profile, filename)
     elif choice == 2:
-        flame.draw_flame_graph(profile, "flame.svg")
-    elif choice == 3:
-        draw_heat_map(profile, "heat.html")
-
-
-def draw_heat_map(profile, filename):
-    """ Creates and draw the Heat map graph.
-
-    Arguments:
-        profile(dict): the memory profile
-        filename(str): filename of the output file, expected is HTML format
-    """
-    heat_table = converter.create_heat_map(profile)
-    graph = heat.heat_map_graph(heat_table)
-
-    bpl.output_file(filename)
-    bpl.show(graph)
+        flame.draw_flame_graph(profile, filename)
 
 
 def get_flow_usage_grid(data_frame, unit, graph_width):
@@ -93,7 +80,7 @@ def draw_flow_usage(profile, filename):
     bpl.show(grid)
 
 
-def draw_flow_bar_graphs(profile, filename):
+def draw_bar_graphs(profile, filename):
     """ Creates and draw a grid of the Bar's graphs.
 
     Arguments:
@@ -111,13 +98,13 @@ def draw_flow_bar_graphs(profile, filename):
     # converting allocations table to pandas DataFrame
     data_frame = pd.DataFrame.from_dict(bar_table)
     # obtaining grid of Bar's graphs
-    grid = get_flow_bar_graphs_grid(data_frame, amount_unit, bar_graph_width)
+    grid = get_bar_graphs_grid(data_frame, amount_unit, bar_graph_width)
 
     bpl.output_file(filename)
     bpl.show(grid)
 
 
-def get_flow_bar_graphs_grid(data_frame, unit, graph_width):
+def get_bar_graphs_grid(data_frame, unit, graph_width):
     """ Creates a grid of the Bar's graphs.
 
     Arguments:
@@ -144,15 +131,44 @@ def get_flow_bar_graphs_grid(data_frame, unit, graph_width):
     graphs.append(r3c2)
 
     for graph in graphs:
+        if graph is None:
+            continue
         _set_title_visual(graph.title)
         _set_axis_visual(graph.xaxis)
         _set_axis_visual(graph.yaxis)
         _set_graphs_width(graph, graph_width)
 
     # creating layout grid
-    row1 = bla.row(r1c1, r1c2)
-    row2 = bla.row(r2c1, r2c2)
-    row3 = bla.row(r3c1, r3c2)
+    if r1c1 is None or r1c2 is None:
+        if r1c1 is not None:    
+            row1 = bla.row(r1c1)
+        elif r1c2 is not None:
+            row1 = bla.row(r1c2)
+        else:
+            row1 = bla.row()
+    else:
+        row1 = bla.row(r1c1, r1c2)
+
+    if r2c1 is None or r2c2 is None:
+        if r2c1 is not None:    
+            row2 = bla.row(r2c1)
+        elif r2c2 is not None:
+            row2 = bla.row(r2c2)
+        else:
+            row2 = bla.row()
+    else:
+        row2 = bla.row(r2c1, r2c2)
+
+    if r3c1 is None or r3c2 is None:
+        if r3c1 is not None:    
+            row3 = bla.row(r3c1)
+        elif r3c2 is not None:
+            row3 = bla.row(r3c2)
+        else:
+            row3 = bla.row()
+    else:
+        row3 = bla.row(r3c1, r3c2)
+
     grid = bla.column(row1, row2, row3)
 
     return grid
@@ -191,6 +207,4 @@ def _set_graphs_width(graph, width):
 
 
 if __name__ == "__main__":
-    with open('memory.perf') as prof_json:
-        prof = json.load(prof_json)
-    show(prof, 0)
+    pass

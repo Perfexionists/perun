@@ -17,7 +17,7 @@ def get_pretty_call_trace(trace, indent=2, margin=0):
     for i, call in enumerate(trace):
         output += ' ' * margin
         output += ' ' * indent * i
-        output += call['function'] + '()'
+        output += call['function']
         output += '  in  ' + call['source']
         output += ':' + str(call['line'])
         output += '\n'

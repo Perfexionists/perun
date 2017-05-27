@@ -1,5 +1,6 @@
 """This module implements the interpretation functions of the profile"""
 from decimal import Decimal
+from copy import deepcopy
 import perun.view.memory.cli.pretty_output as pretty
 import perun.view.memory.cli.heap_map
 import perun.view.memory.cli.flow_graph
@@ -33,7 +34,7 @@ def get_heap(profile, **kwargs):
     Returns:
         string: empty string
     """
-    heap_map = heap_representation.create_heap_map(profile)
+    heap_map = heap_representation.create_heap_map(deepcopy(profile))
     heat_map = heap_representation.create_heat_map(profile)
     perun.view.memory.cli.heap_map.heap_map(heap_map, heat_map)
 
@@ -79,13 +80,18 @@ def get_most(profile, top, **kwargs):
     # sorting allocations records by frequency of allocations
     summary.sort(key=lambda x: x['sum'], reverse=True)
 
+    # get total summary
+    total_sum =  sum(i['sum'] for i in summary)
+
     # cutting list length
     if len(summary) > top:
         output = pretty.get_pretty_allocations(summary[:top], summary_unit)
     else:
         output = pretty.get_pretty_allocations(summary, summary_unit)
 
-    return output
+    total_msg = "Total memory allocations: {}{} in\n\n".format(total_sum, summary_unit)
+
+    return total_msg + output
 
 
 def get_sum(profile, top, **kwargs):
@@ -127,13 +133,18 @@ def get_sum(profile, top, **kwargs):
     # sorting allocations records by amount of summarized allocated memory
     summary.sort(key=lambda x: x['sum'], reverse=True)
 
+    # get total summary
+    total_sum =  sum(i['sum'] for i in summary)
+
     # cutting list length
     if len(summary) > top:
         output = pretty.get_pretty_allocations(summary[:top], summary_unit)
     else:
         output = pretty.get_pretty_allocations(summary, summary_unit)
 
-    return output
+    total_msg = "Total allocated memory: {}{} in\n\n".format(total_sum, summary_unit)
+
+    return total_msg + output
 
 
 def get_func(profile, function, get_all, **kwargs):

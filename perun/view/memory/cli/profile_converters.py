@@ -1,4 +1,6 @@
 """This module implements translation of the profile to other formats """
+import copy
+
 __author__ = 'Radim Podola'
 #TODO move from cli package
 
@@ -59,6 +61,12 @@ def create_heap_map(profile):
     # adding statistics about each snapshot
     glob_stats = add_stats(snapshots)
 
+    # approximation for extreme cases
+    if glob_stats['max_address'] - glob_stats['min_address'] < 500:
+        glob_stats['max_address'] = glob_stats['min_address'] + 500
+    elif glob_stats['max_address'] - glob_stats['min_address'] > 1000000:
+        glob_stats['max_address'] = glob_stats['min_address'] + 1000000
+
     return {'type': 'heap',
             'snapshots': snapshots,
             'info': chunks,
@@ -95,8 +103,14 @@ def create_heat_map(profile):
 
     # adding statistics
     max_address = max(item.get('address', 0) + item.get('amount', 0)
-                      for item in resources)
-    min_address = min(item.get('address', 0) for item in resources)
+                      for item in resources if item.get('address', 0) > 0)
+    min_address = min(item.get('address', 0) for item in resources 
+        if item.get('address', 0) > 0)
+    # approximation for extreme cases
+    if max_address - min_address < 500:
+        max_address = min_address + 500
+    elif max_address - min_address > 1000000:
+        max_address = min_address + 1000000
 
     # transform the memory profile to heat map representation
     heat_map = get_heat_map(resources, min_address, max_address)
@@ -122,6 +136,9 @@ def get_heat_map(resources, min_add, max_add):
     add_map = [0 for _ in range(address_count)]
 
     for res in resources:
+        if res['address'] > max_add:
+            continue
+
         address = res['address']
         amount = res['amount']
 
@@ -181,7 +198,7 @@ def calculate_heap_map(snapshots):
     existing_allocations = []
     for snap in snapshots:
 
-        for allocation in snap['map']:
+        for allocation in copy.copy(snap['map']):
             if allocation['type'] == 'free':
                 alloc = next((x for x in new_allocations
                               if x['address'] == allocation['address']), None)
@@ -196,7 +213,7 @@ def calculate_heap_map(snapshots):
 
         # extending existing allocations from previous to the current snapshot
         snap['map'].extend(existing_allocations)
-        existing_allocations = new_allocations.copy()
+        existing_allocations = copy.deepcopy(new_allocations)
 
         # change absolute UID to chunk reference
         for allocation in snap['map']:

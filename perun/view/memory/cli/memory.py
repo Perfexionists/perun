@@ -37,7 +37,7 @@ def usage(full=False):
           '[2]  -m top|--mode=top [-t value|--top=value]\n'
           '[3]  -m most|--mode=most [-t value|--top=value]\n'
           '[4]  -m sum|--mode=sum [-t value|--top=value]\n'
-          '[5]  -m list|--mode=flow [-f time|--from=time]'
+          '[5]  -m list|--mode=list [-f time|--from=time]'
           '[-t time|--to=time]\n'
           '[6]  -m func|--mode=func --function=name [-a|--all]\n'
           '[7]  -m heap|--mode=heap\n'
