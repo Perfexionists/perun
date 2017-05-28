@@ -36,6 +36,7 @@ IndexEntry = collections.namedtuple("IndexEntry", "time checksum path offset")
 MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
 
 # Profile specific stuff
+ProfileInfo = collections.namedtuple("ProfileInfo", "path type time")
 SUPPORTED_PROFILE_TYPES = ['memory', 'mixed', 'time']
 PROFILE_MALFORMED = 'malformed'
 PROFILE_TYPE_COLOURS = {

@@ -49,10 +49,10 @@ def touch_dir(touched_dir):
         os.mkdir(touched_dir)
 
 
-def path_to_subpath(path):
+def path_to_subpaths(path):
     """Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
 
-    >>> path_to_subpath('/dir/subdir/subsubdir')
+    >>> path_to_subpaths('/dir/subdir/subsubdir')
     ['/dir', '/dir/subdir', '/dir/subdir/subsubdir']
 
     Arguments:
@@ -224,6 +224,21 @@ def read_char_from_handle(file_handle):
     return struct.unpack('c', file_handle.read(1))[0].decode('utf-8')
 
 
+def read_number_of_entries_from_handle(index_handle):
+    """Helper function for reading number of entries in the handle.
+
+    Arguments:
+        index_handle(file): filehandle with index
+    """
+    current_position = index_handle.tell()
+    index_handle.seek(0)
+    index_handle.read(4)
+    read_int_from_handle(index_handle)
+    number_of_entries = read_int_from_handle(index_handle)
+    index_handle.seek(current_position)
+    return number_of_entries
+
+
 @decorators.assume_version(INDEX_VERSION, 1)
 def walk_index(index_handle):
     """Iterator through index entries
@@ -289,21 +304,30 @@ def print_index(index_file):
         index_file(str): path to the index file
     """
     with open(index_file, 'rb') as index_handle:
-        index_prefix = index_handle.read(4)
-        index_version = read_int_from_handle(index_handle)
-        number_of_entries = read_int_from_handle(index_handle)
+        print_index_from_handle(index_handle)
 
-        print("{}, index version {} with {} entries\n".format(
-            index_prefix, index_version, number_of_entries
+
+@decorators.assume_version(INDEX_VERSION, 1)
+def print_index_from_handle(index_handle):
+    """Helper funciton for printing the contents of index inside the handle.
+    Arguments:
+        index_handle(file): opened file handle
+    """
+    index_prefix = index_handle.read(4)
+    index_version = read_int_from_handle(index_handle)
+    number_of_entries = read_int_from_handle(index_handle)
+
+    print("{}, index version {} with {} entries\n".format(
+        index_prefix, index_version, number_of_entries
+    ))
+
+    for entry in walk_index(index_handle):
+        print(" @{3} {2} -> {1} ({0})".format(
+            entry.time,
+            entry.checksum,
+            entry.path,
+            entry.offset
         ))
-
-        for entry in walk_index(index_handle):
-            print(" @{3} {2} -> {1} ({0})".format(
-                entry.time,
-                entry.checksum,
-                entry.path,
-                entry.offset
-            ))
 
 
 def get_profile_list_for_minor(base_dir, minor_version):

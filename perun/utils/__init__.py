@@ -8,6 +8,7 @@ import importlib
 import subprocess
 
 from .log import msg_to_stdout, error
+from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 __author__ = 'Tomas Fiedor'
 
@@ -62,16 +63,21 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         module = get_module(function_location_path)
         module_function = getattr(module, fun_name)
         return module_function(*args, **kwargs)
-    except ImportError as e:
-        msg_to_stdout(e, 2)
-        error("Unrecognized or unsupported VCS type '{}'".format(
-            module_name
-        ))
-    except AttributeError as e:
-        msg_to_stdout(e, 2)
-        error("Function '{}' is unsupported in module {}".format(
-            fun_name, function_location_path
-        ))
+    # Simply pass these exceptions higher however with different flavours:
+    # 1) When Import Error happens, this means, that some module is not found in Perun hierarchy,
+    #   hence, we are trying to call some collector/visualizer/postprocessor/vcs, which is not
+    #   implemented in Perun.
+    #
+    # 2) When Attribute Error happens, this means, that we have found supported module, but, there
+    #   is some functionality, that is missing in the module.
+    #
+    # Why reraise the exceptions? Because it is up to the higher levels to catch these exceptions
+    # and handle the errors their way. It should be different in CLI and in GUI, and they should
+    # be caught in right places.
+    except ImportError:
+        raise UnsupportedModuleException(module_name)
+    except AttributeError:
+        raise UnsupportedModuleFunctionException(fun_name, function_location_path)
 
 
 def get_module(module_name):

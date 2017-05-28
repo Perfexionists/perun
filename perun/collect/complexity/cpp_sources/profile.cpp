@@ -184,6 +184,8 @@ void __cyg_profile_func_exit (void *func, void *caller)
                 // function is sampled
                 if(result->second.sample_current < result->second.sample_ratio) {
                     // don't record this occurrence
+                    // remove the size record
+                    _profapi_remove_size_record(__builtin_frame_address(1));
                     return;
                 } else {
                     // record this occurrence and reset the sampling counter
