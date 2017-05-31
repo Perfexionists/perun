@@ -1,6 +1,7 @@
 """Set of helper function for logging and printing warnings or errors"""
 
 import logging
+import sys
 import termcolor
 
 __author__ = 'Tomas Fiedor'
@@ -70,9 +71,7 @@ def error(msg, recoverable=False):
         msg(str): error message printe to standard output
         recoverable(bool): whether we can recover from the error
     """
-    print(termcolor.colored(
-        "fatal: {}".format(msg)
-    , 'red'))
+    print(termcolor.colored("fatal: {}".format(msg), 'red'), file=sys.stderr)
 
     # If we cannot recover from this error, we end
     if not recoverable:
@@ -85,4 +84,4 @@ def warn(msg):
         msg(str): warn message printed to standard output
     """
     if not SUPPRESS_WARNINGS:
-        print("perun warning: {}".format(msg))
+        print("warn: {}".format(msg))

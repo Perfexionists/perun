@@ -23,10 +23,16 @@ def get_minor_head(vcs_type, *args, **kwargs):
 
     Returns:
         str: unique representation of current head (usually SHA-1)
+
+    Raises:
+        ValueError: In case there is no reference head
     """
-    return dynamic_module_function_call(
-        'perun.core.vcs', vcs_type, '_get_minor_head', *args, **kwargs
-    )
+    try:
+        return dynamic_module_function_call(
+            'perun.core.vcs', vcs_type, '_get_minor_head', *args, **kwargs
+        )
+    except ValueError as e:
+        perun_log.error("could not obtain head minor version: {}".format(e))
 
 
 def init(vcs_type, *args, **kwargs):
@@ -115,4 +121,16 @@ def get_head_major_version(vcs_type, *args, **kwargs):
     ), 1)
     return dynamic_module_function_call(
         'perun.core.vcs', vcs_type, '_get_head_major_version', *args, **kwargs
+    )
+
+
+def check_minor_version_validity(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs that we are calling the function for
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+    """
+    dynamic_module_function_call(
+        'perun.core.vcs', vcs_type, '_check_minor_version_validity', *args, **kwargs
     )

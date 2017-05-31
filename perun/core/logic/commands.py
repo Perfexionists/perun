@@ -6,11 +6,11 @@ possible to be run in isolation.
 """
 
 import collections
+import colorama
 import inspect
 import os
 import re
 import termcolor
-from colorama import init
 
 import perun.utils as utils
 import perun.utils.decorators as decorators
@@ -28,15 +28,16 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, \
     CollectStatus, PostprocessStatus, Unit, ProfileInfo
+from perun.utils.exceptions import NotPerunRepositoryException
 from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
-init()
+colorama.init()
 untracked_regex = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 
 
-def find_perun_dir_on_path(path):
+def locate_perun_dir_on(path):
     """Locates the nearest perun directory
 
     Locates the nearest perun directory starting from the @p path. It walks all of the
@@ -49,13 +50,13 @@ def find_perun_dir_on_path(path):
         str: path to perun dir or "" if the path is not underneath some underlying perun control
     """
     # convert path to subpaths and reverse the list so deepest subpaths are traversed first
-    lookup_paths = store.path_to_subpath(path)[::-1]
+    lookup_paths = store.path_to_subpaths(path)[::-1]
 
     for tested_path in lookup_paths:
         assert os.path.isdir(tested_path)
         if '.perun' in os.listdir(tested_path):
             return tested_path
-    return ""
+    raise NotPerunRepositoryException(path)
 
 
 def pass_pcs(func):
@@ -74,7 +75,7 @@ def pass_pcs(func):
     """
     def wrapper(*args, **kwargs):
         """Wrapper function for the decorator"""
-        perun_directory = find_perun_dir_on_path(os.getcwd())
+        perun_directory = locate_perun_dir_on(os.getcwd())
         return func(PCS(perun_directory), *args, **kwargs)
 
     return wrapper
@@ -107,6 +108,7 @@ def lookup_minor_version(func):
             arg_list[minor_version_position] = vcs.get_minor_head(
                 pcs.vcs_type, pcs.vcs_path)
             args = tuple(arg_list)
+        vcs.check_minor_version_validity(pcs.vcs_type, pcs.vcs_path, args[minor_version_position])
         return func(pcs, *args, **kwargs)
 
     return wrapper
@@ -212,35 +214,37 @@ def init(dst, **kwargs):
     """
     perun_log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
 
+    # First init the wrapping repository well
+    vcs_type = kwargs['vcs_type']
+    vcs_path = kwargs['vcs_path'] or dst
+    vcs_params = kwargs['vcs_params']
+    if vcs_type and not vcs.init(vcs_type, vcs_path, vcs_params):
+        perun_log.error("Could not initialize empty {} repository at {}".format(
+            vcs_type, vcs_path
+        ))
+
     # Construct local config
     vcs_config = {
         'vcs': {
-            'url': kwargs['vcs_path'] or "../",
-            'type': kwargs['vcs_type'] or 'pvcs'
+            'url': vcs_path,
+            'type': vcs_type
         }
     }
 
-    # check if there exists perun directory above and initialize the new pcs
-    super_perun_dir = find_perun_dir_on_path(dst)
-    is_reinit = (super_perun_dir == dst)
+    # Check if there exists perun directory above and initialize the new pcs
+    try:
+        super_perun_dir = locate_perun_dir_on(dst)
+        is_pcs_reinitialized = (super_perun_dir == dst)
+        if not is_pcs_reinitialized:
+            perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
+    except NotPerunRepositoryException:
+        is_pcs_reinitialized = False
 
-    if not is_reinit and super_perun_dir != "":
-        perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
-    init_perun_at(dst, kwargs['vcs_type'] == 'pvcs', is_reinit, vcs_config)
+    init_perun_at(dst, kwargs['vcs_type'] == 'pvcs', is_pcs_reinitialized, vcs_config)
 
-    # register new performance control system in config
-    if not is_reinit:
-        global_config = perun_config.shared()
-        perun_config.append_key_at_config(global_config, 'pcs', {'dir': dst})
-
-    # Init the wrapping repository as well
-    if kwargs['vcs_type'] is not None:
-        if not kwargs['vcs_path']:
-            kwargs['vcs_path'] = PCS(dst).vcs_path
-        if not vcs.init(kwargs['vcs_type'], kwargs['vcs_path'], kwargs['vcs_params']):
-            perun_log.error("Could not initialize empty {} repository at {}".format(
-                kwargs['vcs_type'], kwargs['vcs_path']
-            ))
+    # Register new performance control system in config
+    global_config = perun_config.shared()
+    perun_config.append_key_at_config(global_config, 'pcs', {'dir': dst})
 
 
 @pass_pcs
@@ -532,14 +536,16 @@ def status(pcs, **kwargs):
         pcs(PCS): performance control system
         kwargs(dict): dictionary of keyword arguments
     """
-    # Get major head and print the status.
+    # Obtain both of the heads
     major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_path)
+    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path)
+
+    # Print the status of major head.
     print("On major version {} ".format(
         termcolor.colored(major_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ), end='')
 
     # Print the index of the current head
-    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path)
     print("(minor version: {})".format(
         termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ))

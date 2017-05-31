@@ -1,11 +1,31 @@
 """This module contains methods needed by Perun logic"""
+import os
 from decimal import Decimal
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
-from perun.collect.memory.syscalls import run
+from perun.collect.memory.syscalls import run, init
 from perun.utils.helpers import CollectStatus
 
 __author__ = 'Radim Podola'
+_lib_name = "malloc.so"
+_tmp_log_filename = "MemoryLog"
+
+
+def before(**kwargs):
+    """ Phase for initialization the collect module
+
+    Returns:
+        tuple: (return code, status message, updated kwargs)
+    """
+    pwd = os.path.dirname(os.path.abspath(__file__))
+    if not os.path.isfile("{}/{}".format(pwd, _lib_name)):
+        result = init()
+        if result:
+            error_msg = 'Build of the library failed with error code: '
+            error_msg += str(result)
+            return CollectStatus.ERROR, error_msg, {}
+
+    return CollectStatus.OK, '', {}
 
 
 def collect(bin, args, workload, **kwargs):
@@ -71,7 +91,7 @@ def after(bin, **kwargs):
         exclude_sources = []
 
     try:
-        profile = parser.parse_log('MemoryLog', bin, sampling)
+        profile = parser.parse_log(_tmp_log_filename, bin, sampling)
     except IndexError:
         return CollectStatus.ERROR, 'Info missing in log file', {}
     except ValueError:
@@ -84,6 +104,8 @@ def after(bin, **kwargs):
     if exclude_funcs or exclude_sources:
         filters.allocation_filter(profile, function=exclude_funcs,
                                   source=exclude_sources)
+
+    filters.clear_profile(profile)
 
     return CollectStatus.OK, '', {'profile': profile}
 
