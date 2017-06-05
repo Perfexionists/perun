@@ -15,6 +15,7 @@ import termcolor
 import perun.utils as utils
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
+import perun.utils.timestamps as timestamp
 import perun.core.logic.config as perun_config
 import perun.core.logic.profile as profile
 import perun.core.logic.runner as runner
@@ -481,12 +482,13 @@ def print_profile_info_list(profile_list, profile_output_colour='white'):
         ), profile_output_colour))
 
 
-def print_minor_version_profiles(pcs, minor_version):
+def print_minor_version_profiles(pcs, minor_version, short):
     """Prints profiles assigned to the given minor version.
 
     Arguments:
         pcs(PCS): performance control system
         minor_version(str): identification of the commit (preferably sha1)
+        short(bool): whether the info about untracked profiles should be short
     """
     # Compute the
     profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
@@ -497,15 +499,18 @@ def print_minor_version_profiles(pcs, minor_version):
         profile_info_list.append(ProfileInfo(index_entry.path, profile_type, index_entry.time))
 
     # Print with padding
-    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ':\n\n')
-    print_profile_info_list(profile_info_list)
+    ending = ':\n\n' if not short else "\n"
+    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ending)
+    if not short:
+        print_profile_info_list(profile_info_list)
 
 
-def print_untracked_profiles(pcs):
+def print_untracked_profiles(pcs, short):
     """Prints untracked profiles, currently residing in the .perun/jobs directory.
 
     Arguments:
         pcs(PCS): performance control system
+        short(bool): whether the info about untracked profiles should be short
     """
     profile_numbers = collections.defaultdict(int)
     profile_list = []
@@ -516,7 +521,8 @@ def print_untracked_profiles(pcs):
         real_path = os.path.join(pcs.get_job_directory(), untracked_path)
         loaded_profile = profile.load_profile_from_file(real_path, True)
         profile_type = loaded_profile['header']['type']
-        path, time = untracked_regex.search(untracked_path).groups()
+        path = untracked_regex.search(untracked_path).groups()[0]
+        time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
 
         # Update the list of profiles and counters of types
         profile_list.append(ProfileInfo(path, profile_type, time))
@@ -524,17 +530,19 @@ def print_untracked_profiles(pcs):
         profile_numbers['all'] += 1
 
     # Output the the console
-    print_profile_numbers(profile_numbers, 'untracked', ':\n\n')
-    print_profile_info_list(profile_list, 'red')
+    ending = ':\n\n' if not short else "\n"
+    print_profile_numbers(profile_numbers, 'untracked', ending)
+    if not short:
+        print_profile_info_list(profile_list, 'red')
 
 
 @pass_pcs
-def status(pcs, **kwargs):
+def status(pcs, short=False):
     """Prints the status of performance control system
 
     Arguments:
         pcs(PCS): performance control system
-        kwargs(dict): dictionary of keyword arguments
+        short(bool): true if the output should be short (i.e. without some information)
     """
     # Obtain both of the heads
     major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_path)
@@ -550,16 +558,17 @@ def status(pcs, **kwargs):
         termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
     ))
 
-    # Print in long format, the additional information about head commit
-    print("")
-    if not kwargs['short']:
+    # Print in long format, the additional information about head commit, by default print
+    if not short:
+        print("")
         minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_head)
         print_minor_version_info(minor_version)
 
     # Print profiles
-    print_minor_version_profiles(pcs, minor_head)
-    print("")
-    print_untracked_profiles(pcs)
+    print_minor_version_profiles(pcs, minor_head, short)
+    if not short:
+        print("")
+    print_untracked_profiles(pcs, short)
 
 
 @pass_pcs

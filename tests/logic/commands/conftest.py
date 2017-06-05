@@ -60,6 +60,18 @@ def error_profile_pool():
     yield list(filter(lambda p: 'err' in p, get_all_profiles()))
 
 
+@pytest.fixture(scope="session")
+def stored_profile_pool():
+    """
+    Returns:
+        list: list of stored profiles in the pcs_full
+    """
+    prof_dirpath = os.path.join(os.path.split(__file__)[0], "full_profiles")
+    profiles = [os.path.join(prof_dirpath, prof_file) for prof_file in os.listdir(prof_dirpath)]
+    assert len(profiles) == 3
+    return profiles
+
+
 @pytest.fixture(scope="function")
 def pcs_full():
     """
@@ -67,7 +79,7 @@ def pcs_full():
         PCS: object with performance control system, initialized with some files and stuff
     """
     # Change working dir into the temporary directory
-    prof_dirpath = os.path.join(os.path.split(__file__)[0], "full_profiles")
+    profiles = stored_profile_pool()
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, False, {'vcs': {'url': '../', 'type': 'git'}})
@@ -92,9 +104,6 @@ def pcs_full():
     store.touch_file(file2)
     repo.index.add([file2])
     current_head = repo.index.commit("second commit")
-
-    profiles = [os.path.join(prof_dirpath, prof_file) for prof_file in os.listdir(prof_dirpath)]
-    assert len(profiles) == 3
 
     # Populate PCS with profiles
     commands.add(profiles[0], str(root))

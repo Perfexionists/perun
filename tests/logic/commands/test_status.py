@@ -1,0 +1,318 @@
+"""Basic tests for 'perun status' command.
+
+Fixme: Add test for detached head
+
+Tests whether the perun correctly displays the status of the repository, with all of the extreme
+cases, etc."""
+
+import collections
+import git
+import json
+import os
+import pytest
+import re
+import shutil
+
+import perun.utils.timestamps as timestamps
+import perun.core.logic.commands as commands
+import perun.core.logic.store as store
+
+from perun.utils.exceptions import NotPerunRepositoryException
+
+__author__ = 'Tomas Fiedor'
+timestamp_re = re.compile(r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf")
+
+
+def analyze_profile_pool(profile_pool):
+    """
+    Arguments:
+        profile_pool(list): list of profiles
+
+    Returns:
+        dict: dictionary mapping types of profiles to number of profiles in that pool
+    """
+    types_to_count = collections.defaultdict(int)
+    for profile in profile_pool:
+        with open(profile, 'r') as profile_handle:
+            profile_contents = json.load(profile_handle)
+            types_to_count[profile_contents['header']['type']] += 1
+    return types_to_count
+
+
+def profile_pool_to_info(profile_pool):
+    """
+    Arguments:
+        profile_pool(list): list of profiles
+
+    Returns:
+        generator: yield profile information as tuple (type, split name, time)
+    """
+    for profile in profile_pool:
+        with open(profile, 'r') as profile_handle:
+            profile_contents = json.load(profile_handle)
+            profile_name = timestamp_re.sub('', os.path.split(profile)[1])
+            profile_time = timestamps.timestamp_to_str(os.stat(profile).st_mtime)
+            yield (profile_contents['header']['type'], profile_name, profile_time)
+
+
+def populate_repo_with_untracked_profiles(pcs_path, untracked_profiles):
+    """
+    Populates the jobs directory in the repo by untracked profiles
+
+    Arguments:
+        pcs_path(str): path to PCS
+        untracked_profiles(list): list of untracked profiles to be added to repo
+    """
+    jobs_dir = os.path.join(pcs_path, 'jobs')
+    for valid_profile in untracked_profiles:
+        shutil.copy2(valid_profile, jobs_dir)
+
+
+def assert_head_info(header_line, git_repo):
+    """Helper assert that checks that the info about head is written as it should
+
+    Arguments:
+        header_line(str): line containing header info
+    """
+    head_rev = str(git_repo.head.commit)
+    head_branch = str(git_repo.active_branch)
+
+    assert head_rev in header_line
+    assert head_branch in header_line
+
+
+def assert_tracked_overview_info(tracked_profiles_info, stored_profiles):
+    """Helper assertion, that checks output according to the expected number of stored profiles
+
+    Arguments:
+        tracked_profiles_info(str): line containing info about number of tracked profiles
+        stored_profiles(list): list of stored profiles in the repository
+    """
+    number_of_profiles = len(stored_profiles)
+    if number_of_profiles:
+        types_to_counts = analyze_profile_pool(stored_profiles)
+        assert "{} tracked profiles".format(number_of_profiles) in tracked_profiles_info
+        for profile_type, type_count in types_to_counts.items():
+            assert "{} {}".format(type_count, profile_type) in tracked_profiles_info
+    else:
+        assert "(no tracked profiles)" in tracked_profiles_info
+
+
+def assert_untracked_overview_info(untracked_profiles_info, untracked_profiles):
+    """Helper assertion, that checks output according to the expected number of profiles
+
+    Arguments:
+        untracked_profiles_info(str): line containing info about number of untracked profiles
+        untracked_profiles(list): list of untracked profiles
+    """
+    number_of_untracked = len(untracked_profiles)
+    if number_of_untracked:
+        assert "{} untracked profiles".format(number_of_untracked) in untracked_profiles_info
+    else:
+        assert "(no untracked profiles)" in untracked_profiles_info
+
+
+def assert_short_info(out, git_repo, stored_profiles, untracked_profiles):
+    """Helper assert for checking short output
+
+    Arguments:
+        out(list): list of split lines of output
+        git_repo(git.Repo): git repository wrapper
+        stored_profiles(list): list of stored profiles in current branch
+        untracked_profiles(list): list of untracked profiles
+    """
+    # Assert there is 1. header, 2. tracked info, 3. untracked info, 4. eof
+    assert len(out) == 4
+
+    # Check first the header, whether it contains the ref and header
+    assert_head_info(out[0], git_repo)
+
+    # Check tracked profiles
+    assert_tracked_overview_info(out[1], stored_profiles)
+
+    # Check untracked profiles
+    assert_untracked_overview_info(out[2], untracked_profiles)
+
+
+def assert_printed_profiles(profile_info, out):
+    """Helper assert for checking how the profiles were outputed
+
+    Arguments:
+        profile_info(set): set with profiles to be checked
+        out(str): line which we are checking
+    """
+    for profile_entry in profile_info:
+        p_type, p_name, p_time = profile_entry
+        if p_name in out:
+            assert p_type in out
+            assert p_time in out
+            profile_info.remove(profile_entry)
+            break
+    else:
+        # Entry not found
+        print(out)
+        assert False
+
+
+def assert_info(out, git_repo, stored_profiles, untracked_profiles):
+    """Helper assert for checking long output
+
+    Arguments:
+        out(list): list of output from standard stream
+        git_repo(git.Repo): git repository wrapper
+        stored_profiles(list): list of stored profiles in current branch
+        untracked_profiles(list): list of untracked profiles
+    """
+    joined_output = "\n".join(out)
+    assert_head_info(out[0], git_repo)
+
+    # Assert the commit message was correctly displayed
+    head_commit = git_repo.head.commit
+    head_msg = str(head_commit.message)
+    assert str(head_commit.author) in joined_output
+    assert head_msg in joined_output
+    assert str(head_commit.parents[0]) in joined_output
+
+    # Assert that the head message is oneliner
+    assert '\n' not in head_msg
+    i = out.index(head_msg) + 1
+
+    assert_tracked_overview_info(out[i], stored_profiles)
+    i += 1
+    if stored_profiles:
+        # Skip empty line
+        i += 1
+        count = 0
+        profile_info = set(profile_pool_to_info(stored_profiles))
+        while out[i] != '':
+            assert_printed_profiles(profile_info, out[i])
+            count += 1
+            i += 1
+        assert count == len(stored_profiles)
+    i += 1
+    assert_untracked_overview_info(out[i], untracked_profiles)
+    if untracked_profiles:
+        # Skip header and empty line
+        i += 2
+        count = 0
+        profile_info = set(profile_pool_to_info(untracked_profiles))
+        while out[i] != '':
+            assert_printed_profiles(profile_info, out[i])
+            count += 1
+            i += 1
+        assert count == len(untracked_profiles)
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_status_outside_vcs():
+    """Test calling 'perun status', without any wrapped repository
+
+    Expecting ending with error, as we are not inside the perun repository
+    """
+    with pytest.raises(NotPerunRepositoryException):
+        commands.status()
+
+
+def test_status_empty_repo(pcs_with_empty_git, capsys):
+    """Test calling 'perun status', with wrapped repository without head"""
+    with pytest.raises(SystemExit):
+        commands.status()
+
+    # Test that nothing is printed on out
+    out, _ = capsys.readouterr()
+    assert out == ''
+
+
+def test_status_no_pending(pcs_full, capsys, stored_profile_pool):
+    """Test calling 'perun status', without pending profiles
+
+    Expecting no error and long display of the current status of the perun, without any pending.
+    """
+    commands.status()
+
+    git_repo = git.Repo(pcs_full.vcs_path)
+    out = capsys.readouterr()[0].split('\n')
+    assert_info(out, git_repo, stored_profile_pool[1:], [])
+
+
+def test_status_short_no_pending(pcs_full, capsys, stored_profile_pool):
+    """Test calling 'perun status --short', without any pendding profiles
+
+    Expecting no errors and short display of profiles.
+    """
+    commands.status(short=True)
+
+    # Assert the repo
+    git_repo = git.Repo(pcs_full.vcs_path)
+    raw_out, _ = capsys.readouterr()
+    out = raw_out.split('\n')
+    assert_short_info(out, git_repo, stored_profile_pool[1:], [])
+
+
+def test_status_no_profiles(pcs_full, capsys):
+    """Test calling 'perun status', without any assigned profiles
+
+    Expecting no error and long display of the current status of the perun, without any pending.
+    """
+    # First we will do a new commit, with no profiles
+    git_repo = git.Repo(pcs_full.vcs_path)
+    file = os.path.join(os.getcwd(), 'file3')
+    store.touch_file(file)
+    git_repo.index.add([file])
+    git_repo.index.commit("new commit")
+
+    commands.status()
+
+    out = capsys.readouterr()[0].split('\n')
+    assert_info(out, git_repo, [], [])
+
+
+def test_status_short_no_profiles(pcs_full, capsys):
+    """Test calling 'perun status --short', without any asigned profiles
+
+    Expecting no errors and short display of status of the profiles
+    """
+    # First we will do a new commit, with no profiles
+    git_repo = git.Repo(pcs_full.vcs_path)
+    file = os.path.join(os.getcwd(), 'file3')
+    store.touch_file(file)
+    git_repo.index.add([file])
+    git_repo.index.commit("new commit")
+
+    commands.status(**{'short': True})
+
+    # Assert the repo
+    out = capsys.readouterr()[0].split('\n')
+    assert_short_info(out, git_repo, [], [])
+
+
+def test_status(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
+    """Test calling 'perun status' with expected behaviour
+
+    Expecting no errors and long display of the current status of the perun, with all profiles.
+    """
+    populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+
+    commands.status()
+
+    git_repo = git.Repo(pcs_full.vcs_path)
+    raw_out, _ = capsys.readouterr()
+    out = raw_out.split('\n')
+
+    assert_info(out, git_repo, stored_profile_pool[1:], valid_profile_pool)
+
+
+def test_status_short(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
+    """Test calling 'perun status --short' with expected behaviour
+
+    Expecting no errors and short display of the current status of the perun.
+    """
+    populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+
+    commands.status(**{'short': True})
+
+    # Assert the repo
+    git_repo = git.Repo(pcs_full.vcs_path)
+    raw_out, _ = capsys.readouterr()
+    out = raw_out.split('\n')
+    assert_short_info(out, git_repo, stored_profile_pool[1:], valid_profile_pool)

@@ -257,7 +257,6 @@ def test_add_wrong_minor(pcs_full, valid_profile_pool):
     """Test calling 'perun add profile hash' with hash not occuring in wrapped VCS
 
     Expecting raising an exception, that the specified minor version is wrong.
-    Fixme: YOU LAZY MOTHERFUCKER THIS DOES NOT WORK FUCK YOU SHITHEAD!!!!!!!!
     """
     git_repo = git.Repo(os.path.split(pcs_full.path)[0])
     commits = [binascii.hexlify(c.binsha).decode('utf-8') for c in git_repo.iter_commits()]
