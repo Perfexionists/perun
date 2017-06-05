@@ -6,6 +6,9 @@
     :target: https://travis-ci.org/tfiedor/perun
 .. image:: https://codecov.io/gh/tfiedor/perun/branch/develop/graph/badge.svg
     :target: https://codecov.io/gh/tfiedor/perun
+.. image:: https://codeclimate.com/github/tfiedor/perun/badges/gpa.svg
+    :target: https://codeclimate.com/github/tfiedor/perun
+    :alt: Code Climate
 
 .. image:: figs/perun-logo.png
     :width: 300px
