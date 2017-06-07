@@ -213,14 +213,15 @@ def test_status_outside_vcs():
         commands.status()
 
 
-def test_status_empty_repo(pcs_with_empty_git, capsys):
+def test_status_on_empty_repo(pcs_with_empty_git, capsys):
     """Test calling 'perun status', with wrapped repository without head"""
     with pytest.raises(SystemExit):
         commands.status()
 
-    # Test that nothing is printed on out
-    out, _ = capsys.readouterr()
+    # Test that nothing is printed on out and something is printed on err
+    out, err = capsys.readouterr()
     assert out == ''
+    assert err != '' and 'fatal' in err
 
 
 def test_status_no_pending(pcs_full, capsys, stored_profile_pool):

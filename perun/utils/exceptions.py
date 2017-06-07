@@ -15,7 +15,15 @@ class MissingConfigSectionException(Exception):
 
 class EntryNotFoundException(Exception):
     """Raised when the looked up entry is not within the index"""
-    pass
+    def __init__(self, entry):
+        """
+        Arguments:
+            entry(str): entry we are looking up in the index
+        """
+        self.entry = entry
+
+    def __str__(self):
+        return "Entry satisfying '{}' predicate not found".format(self.entry)
 
 
 class UnexpectedPrototypeSyntaxError(Exception):

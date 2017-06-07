@@ -54,7 +54,7 @@ def info(msg):
     Arguments:
         msg(str): info message that will be printed only when there is at least lvl1 verbosity
     """
-    msg_to_stdout(msg, VERBOSE_INFO)
+    print("info: {}".format(msg))
 
 
 def quiet_info(msg):

@@ -511,9 +511,7 @@ def lookup_entry_within_index(index_handle, predicate):
         if predicate(entry):
             return entry
 
-    raise EntryNotFoundException("Entry satisfying '{}' predicate not found".format(
-        predicate.__name__
-    ))
+    raise EntryNotFoundException(predicate.__name__)
 
 
 def lookup_all_entries_within_index(index_handle, predicate):
@@ -560,7 +558,7 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
-def remove_from_index(base_dir, minor_version, removed_file, remove_all):
+def remove_from_index(base_dir, minor_version, removed_file, remove_all=False):
     """
     Arguments:
         base_dir(str): base directory of the minor version
@@ -568,6 +566,12 @@ def remove_from_index(base_dir, minor_version, removed_file, remove_all):
         removed_file(path): filename, that is removed from the tracking
         remove_all(bool): true if all of the entries should be removed
     """
+    def lookup_function(entry):
+        if is_sha1(removed_file):
+            return entry.checksum == removed_file
+        else:
+            return entry.path == removed_file
+
     perun_log.msg_to_stdout("Removing entry {} from the minor version {} index".format(
         removed_file, minor_version
     ), 2)
@@ -575,11 +579,8 @@ def remove_from_index(base_dir, minor_version, removed_file, remove_all):
     # Get directory and index
     _, minor_version_index = split_object_name(base_dir, minor_version)
 
-    # Construct lookup function for the entries within index
-    if is_sha1(removed_file):
-        lookup_function = lambda entry: entry.checksum == removed_file
-    else:
-        lookup_function = lambda entry: entry.path == removed_file
+    if not os.path.exists(minor_version_index):
+        raise EntryNotFoundException(removed_file)
 
     # Lookup all entries for the given function
     with open(minor_version_index, 'rb+') as index_handle:

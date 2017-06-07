@@ -185,3 +185,78 @@ def cleandir():
     shutil.rmtree(temp_path)
 
 
+class Helpers(object):
+    """
+    Helper class with various static functions for helping with profiles
+    """
+    @staticmethod
+    def list_contents_on_path(path):
+        """Helper function for listing the contents of the path
+
+        Arguments:
+            path(str): path to the director which we will list
+        """
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                print("file: ", os.path.join(root, file))
+            for d in dirs:
+                print("dirs: ", os.path.join(root, d))
+
+    @staticmethod
+    def count_contents_on_path(path):
+        """Helper function for counting the contents of the path
+
+        Arguments:
+            path(str): path to the director which we will list
+
+        Returns:
+            (int, int): (file number, dir number) on path
+        """
+        file_number = 0
+        dir_number = 0
+        for root, dirs, files in os.walk(path):
+            for _ in files:
+                file_number += 1
+            for _ in dirs:
+                dir_number += 1
+        return file_number, dir_number
+
+    @staticmethod
+    def open_index(pcs_path, minor_version):
+        """Helper function for opening handle of the index
+
+        This encapsulates obtaining the full path to the given index
+
+        Arguments:
+            pcs_path(str): path to the pcs
+            minor_version(str): sha minor version representation
+        """
+        assert store.is_sha1(minor_version)
+        object_dir_path = os.path.join(pcs_path, 'objects')
+
+        _, minor_version_index = store.split_object_name(object_dir_path, minor_version)
+        return open(minor_version_index, 'rb+')
+
+    @staticmethod
+    def exists_profile_in_index_such_that(index_handle, pred):
+        """Helper assert to check, if there exists any profile in index such that pred holds.
+
+        Arguments:
+            index_handle(file): handle for the index
+            pred(lambda): predicate over the index entry
+        """
+        for entry in store.walk_index(index_handle):
+            if pred(entry):
+                return True
+        else:
+            return False
+
+
+@pytest.fixture(scope="session")
+def helpers():
+    """
+    Returns:
+        Helpers: object with helpers functions
+    """
+    return Helpers()
+

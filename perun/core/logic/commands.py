@@ -301,13 +301,16 @@ def remove(pcs, profile_name, minor_version, **kwargs):
         profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
         kwargs(dict): dictionary with additional options
+
+    Raises:
+        EntryNotFoundException: when the given profile_name points to non-tracked profile
     """
     assert minor_version is not None and "Missing minor version specification"
 
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     object_directory = pcs.get_object_directory()
-    store.remove_from_index(object_directory, minor_version, profile_name, kwargs['remove_all'])
+    store.remove_from_index(object_directory, minor_version, profile_name, **kwargs)
 
 
 def print_short_minor_info_header():
@@ -375,23 +378,24 @@ def print_profile_numbers(profile_numbers, profile_type, line_ending='\n'):
 
 @pass_pcs
 @lookup_minor_version
-def log(pcs, minor_version, **kwargs):
+def log(pcs, minor_version, short=False, **kwargs):
     """Prints the log of the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
         minor_version(str): representation of the head version
+        short(bool): true if the log should be in short format
         kwargs(dict): dictionary of the additional parameters
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
     # Print header for --short-minors
-    if kwargs['short']:
+    if short:
         print_short_minor_info_header()
 
     # Walk the minor versions and print them
     for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, minor_version):
-        if kwargs['short']:
+        if short:
             print_short_minor_version_info(pcs, minor)
         else:
             print(termcolor.colored("Minor Version {}".format(

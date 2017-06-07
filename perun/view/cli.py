@@ -17,7 +17,7 @@ import perun.core.logic.commands as commands
 import perun.view
 
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
-    NotPerunRepositoryException, IncorrectProfileFormatException
+    NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException
 from perun.utils.helpers import CONFIG_UNIT_ATTRIBUTES
 from perun.core.logic.pcs import PCS
 
@@ -301,7 +301,15 @@ def rm(profile, minor, **kwargs):
           computed on 1st March at 16:11 from the HEAD index
     """
     perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-    commands.remove(profile, minor, **kwargs)
+
+    try:
+        commands.remove(profile, minor, **kwargs)
+    except NotPerunRepositoryException as npre:
+        perun_log.error(str(npre))
+    except EntryNotFoundException as enfe:
+        perun_log.error(str(enfe))
+    finally:
+        perun_log.info("removed '{}'".format(profile))
 
 
 @cli.command()
@@ -342,7 +350,10 @@ def log(head, **kwargs):
     <hash> (<profile_numbers>) <short_info>
     """
     perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
-    commands.log(head, **kwargs)
+    try:
+        commands.log(head, **kwargs)
+    except NotPerunRepositoryException as npre:
+        perun_log.error(str(npre))
 
 
 @cli.command()
