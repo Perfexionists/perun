@@ -9,8 +9,10 @@ import git
 import pytest
 import os
 import shutil
+import subprocess
 import tempfile
 
+import perun.utils.streams as streams
 import perun.core.logic.commands as commands
 import perun.core.logic.pcs as pcs
 import perun.core.logic.store as store
@@ -19,17 +21,47 @@ import perun.core.vcs as vcs
 __author__ = 'Tomas Fiedor'
 
 
-def list_contents_on_path(path):
-    """Helper function for listing the contents of the path
-
-    Arguments:
-        path(str): path to the director which we will list
+@pytest.fixture(scope="session")
+def memory_collect_job():
     """
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            print("file: ", os.path.join(root, file))
-        for d in dirs:
-            print("dirs: ", os.path.join(root, d))
+    Returns:
+        tuple: ('bin', '', [''], 'memory', [])
+    """
+    # First compile the stuff, so we know it will work
+    script_dir = os.path.split(__file__)[0]
+    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
+
+    # Compile the testing stuff with debugging information set
+    output = subprocess.check_output(['gcc', '--std=c99', '-g', target_src_path, '-o', 'mct'], cwd=target_dir)
+    target_bin_path = os.path.join(target_dir, 'mct')
+    assert 'mct' in list(os.listdir(target_dir))
+
+    return [target_bin_path], '', [''], ['memory'], []
+
+
+@pytest.fixture(scope="session")
+def complexity_collect_job():
+    """
+
+
+    Returns:
+        tuple: 'bin', '', [''], 'memory', [], {}
+    """
+    # Load the configuration from the job file
+    script_dir = os.path.split(__file__)[0]
+    source_dir = os.path.join(script_dir, 'collect_complexity')
+    target_dir = os.path.join(source_dir, 'target')
+    job_config_file = os.path.join(source_dir, 'job.yml')
+    job_config = streams.safely_load_yaml_from_file(job_config_file)
+
+    # Change the target dir to this location
+    assert 'target_dir' in job_config.keys()
+    job_config['target_dir'] = target_dir
+
+    return [target_dir], '', [''], ['complexity'], [], {'collector_params_from_file': {
+        'complexity': job_config
+    }}
 
 
 def get_all_profiles():

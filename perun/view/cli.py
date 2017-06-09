@@ -12,6 +12,7 @@ import yaml
 import click
 
 import perun.utils.log as perun_log
+import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
 import perun.view
@@ -487,8 +488,7 @@ def parse_yaml_file_param(ctx, param, value):
     """
     unit_to_params = {}
     for (unit, yaml_file) in value:
-        with open(yaml_file, 'r') as yaml_handle:
-            unit_to_params[unit] = yaml.safe_load(yaml_handle)
+        unit_to_params[unit] = streams.safely_load_yaml_from_file(yaml_file)
     return unit_to_params
 
 
@@ -507,7 +507,7 @@ def parse_yaml_string_param(ctx, param, value):
     """
     unit_to_params = {}
     for (unit, yaml_string) in value:
-        unit_to_params[unit] = yaml.safe_load(yaml_string)
+        unit_to_params[unit] = streams.safely_load_yaml_from_stream(yaml_string)
     return unit_to_params
 
 

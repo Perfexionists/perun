@@ -59,6 +59,11 @@ def after(bin, **kwargs):
     Returns:
         tuple: (return code, message, updated kwargs)
 
+    Fixme: There should be warning raised, when the debugging information is not present. (*)
+
+    (*) When one compiles some application without -g, the profiled binaries WILL generate empty
+    profiles, which is not really acceptable. Fix this ASAP!
+
     Case studies:
         --sampling=0.1 --no-func=f1 --no-func=f2 --no-source=s --all
         -> run memory collector with 0.1s sampling,

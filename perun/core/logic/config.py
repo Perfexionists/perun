@@ -15,6 +15,7 @@ import yaml
 
 import perun.utils.decorators as decorators
 import perun.utils.exceptions as exceptions
+import perun.utils.streams as streams
 import perun.utils.log as perun_log
 import perun.core.logic.store as store
 
@@ -38,8 +39,7 @@ def init_shared_config_at(path):
         path = os.path.join(path, 'shared.yml')
     store.touch_file(path)
 
-    shared_config = yaml.safe_load("""
-    """) or {}
+    shared_config = streams.safely_load_yaml_from_stream("""""")
 
     write_config_file(shared_config, path)
     return True
@@ -59,8 +59,7 @@ def init_local_config_at(path, wrapped_vcs):
     store.touch_file(path)
 
     # empty config is created
-    local_config = yaml.safe_load("""
-    """) or {}
+    local_config = streams.safely_load_yaml_from_stream("""""")
     local_config.update(wrapped_vcs)
 
     write_config_file(local_config, path)
@@ -88,8 +87,7 @@ def read_config_file(path):
     Returns:
         dict: yaml config
     """
-    with open(path, 'r') as yaml_file:
-        return yaml.safe_load(yaml_file) or {}
+    return streams.safely_load_yaml_from_file(path)
 
 
 def write_config_file(config, path):
