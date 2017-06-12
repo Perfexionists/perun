@@ -4,8 +4,8 @@ import perun.utils as utils
 import perun.utils.log as perun_log
 
 from perun.utils import get_module
-from perun.utils.helpers import CollectStatus, PostprocessStatus
-
+from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
+    CollectStatus, PostprocessStatus
 __author__ = 'Tomas Fiedor'
 
 
@@ -43,6 +43,7 @@ def run_all_phases_for(runner, runner_type, runner_params):
     """
     assert runner_type in ['collector', 'postprocessor']
     ok_status = CollectStatus.OK if runner_type == 'collector' else PostprocessStatus.OK
+    error_status = CollectStatus.ERROR if runner_type == 'collector' else PostprocessStatus.ERROR
     runner_verb = runner_type[:-2]
 
     for phase in ['before', runner_verb, 'after']:
@@ -51,20 +52,20 @@ def run_all_phases_for(runner, runner_type, runner_params):
             ret_val, ret_msg, updated_params = phase_function(**runner_params)
             runner_params.update(updated_params or {})
             if not is_status_ok(ret_val, ok_status):
-                perun_log.error("error while {}{} phase: {}".format(
+                return error_status, "error while {}{} phase: {}".format(
                     phase, ("_" + runner_verb)*(phase != runner_verb), ret_msg
-                ))
+                ), {}
         elif phase == runner_verb:
-            perun_log.error("missing {}() function for {}".format(
+            return error_status, "missing {}() function for {}".format(
                 runner_verb, runner.__name__
-            ))
+            ), {}
 
     # Return the processed profile
     if 'profile' not in runner_params.keys():
-        perun_log.error("missing generated profile for {} {}".format(
+        return error_status, "missing generated profile for {} {}".format(
             runner_type, runner.__name__
-        ))
-    return runner_params['profile']
+        ), {}
+    return ok_status, "", runner_params['profile']
 
 
 def run_collector(collector, job):
@@ -78,8 +79,12 @@ def run_collector(collector, job):
         job(Job): additional information about the running job
 
     Returns:
-        (int, str): status of the collection, string message of the status
+        (int, dict): status of the collection, generated profile
     """
+    perun_log.print_current_phase(
+        "Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT
+    )
+
     try:
         collector_module = get_module('perun.collect.{0}.run'.format(collector.name))
     except ImportError:
@@ -87,9 +92,15 @@ def run_collector(collector, job):
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dictionaries(job._asdict(), collector.params)
-    profile = run_all_phases_for(collector_module, 'collector', job_params)
+    collection_status, collection_msg, profile \
+        = run_all_phases_for(collector_module, 'collector', job_params)
 
-    return CollectStatus.OK, "Profile collected", profile
+    if collection_status != CollectStatus.OK:
+        perun_log.error(collection_msg, recoverable=True)
+    else:
+        print("Successfully collected data from {}".format(job.cmd))
+
+    return collection_status, profile
 
 
 def run_postprocessor(postprocessor, job, prof):
@@ -105,8 +116,12 @@ def run_postprocessor(postprocessor, job, prof):
         prof(dict): dictionary with profile
 
     Returns:
-        (int, str): status of the collection, string message of the status
+        (int, dict): status of the collection, postprocessed profile
     """
+    perun_log.print_current_phase(
+        "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
+    )
+
     try:
         postprocessor_module = get_module('perun.postprocess.{0}.run'.format(postprocessor.name))
     except ImportError:
@@ -114,6 +129,12 @@ def run_postprocessor(postprocessor, job, prof):
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dict_range(job._asdict(), {'profile': prof}, postprocessor.params)
-    profile = run_all_phases_for(postprocessor_module, 'postprocessor', job_params)
+    post_status, post_msg, profile \
+        = run_all_phases_for(postprocessor_module, 'postprocessor', job_params)
 
-    return PostprocessStatus.OK, "Profile postprocessed", profile
+    if post_status != PostprocessStatus.OK:
+        perun_log.error(post_msg)
+    else:
+        print("Successfully postprocessed data by {}".format(postprocessor.name))
+
+    return post_status, profile

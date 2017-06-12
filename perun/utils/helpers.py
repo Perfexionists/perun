@@ -57,9 +57,9 @@ RAW_ITEM_COLOUR = 'yellow'
 RAW_ATTRS = []
 
 # Job specific
-Job = collections.namedtuple("Job", "collector postprocessors bin workload args")
+Job = collections.namedtuple("Job", "collector postprocessors cmd workload args")
 Unit = collections.namedtuple("Unit", "name params")
-COLLECT_PHASE_BIN = 'blue'
+COLLECT_PHASE_CMD = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'
 COLLECT_PHASE_POSTPROCESS = 'yellow'

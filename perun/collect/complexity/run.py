@@ -65,7 +65,7 @@ def before(**kwargs):
         # Create the internal configuration file
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
 
-        kwargs['bin'] = exec_path
+        kwargs['cmd'] = exec_path
         return 0, _collector_status_msg[0], dict(kwargs)
     # The "expected" exception types
     except (OSError, ValueError, subprocess.CalledProcessError,
@@ -85,7 +85,7 @@ def collect(**kwargs):
                dict of modified kwargs with bin value representing the executable
     """
     print('Running the collector...')
-    collector_dir, collector_exec = _get_collector_executable_and_dir(kwargs['bin'])
+    collector_dir, collector_exec = _get_collector_executable_and_dir(kwargs['cmd'])
     return_code = subprocess.call(('./' + collector_exec), cwd=collector_dir)
     print('Done.\n')
     return return_code, _collector_status_msg[return_code], dict(kwargs)
@@ -104,9 +104,9 @@ def after(**kwargs):
     """
     # Get the trace log path
     print('Starting the post-processing phase...')
-    pos = kwargs['bin'].rfind('/')
-    path = kwargs['bin'][:pos + 1] + kwargs['file-name']
-    address_map = symbols.extract_symbol_address_map(kwargs['bin'])
+    pos = kwargs['cmd'].rfind('/')
+    path = kwargs['cmd'][:pos + 1] + kwargs['file-name']
+    address_map = symbols.extract_symbol_address_map(kwargs['cmd'])
 
     resources, call_stack = [], []
     profile_start, profile_end = 0, 0

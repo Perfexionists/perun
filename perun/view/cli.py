@@ -136,7 +136,7 @@ def list_units(pcs, do_confirm=True):
     """
     local_config = pcs.local_config().data
     units = []
-    units.extend(get_unit_list_from_config(local_config, 'bin'))
+    units.extend(get_unit_list_from_config(local_config, 'cmd'))
     units.extend(get_unit_list_from_config(local_config, 'workload'))
     units.extend(get_unit_list_from_config(local_config, 'collector'))
     units.extend(get_unit_list_from_config(local_config, 'postprocessor'))

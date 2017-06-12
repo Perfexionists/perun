@@ -30,10 +30,10 @@ def before(**kwargs):
     return CollectStatus.OK, '', {}
 
 
-def collect(bin, args, workload, **kwargs):
+def collect(cmd, args, workload, **kwargs):
     """ Phase for collection of the profile data
     Arguments:
-        bin(string): binary file to profile
+        cmd(string): binary file to profile
         args(string): executing arguments
         workload(string): file that has to be provided to binary
         kwargs(dict): profile's header
@@ -41,7 +41,7 @@ def collect(bin, args, workload, **kwargs):
     Returns:
         tuple: (return code, status message, updated kwargs)
     """
-    result = run(bin, args, workload)
+    result = run(cmd, args, workload)
     if result:
         error_msg = 'Execution of binary failed with error code: '
         error_msg += str(result)
@@ -50,12 +50,12 @@ def collect(bin, args, workload, **kwargs):
     return CollectStatus.OK, '', {}
 
 
-def after(bin, **kwargs):
+def after(cmd, **kwargs):
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
     Arguments:
         collect_params(string): execution parameters of collector
-        bin(string): binary file to profile
+        cmd(string): binary file to profile
         kwargs(dict): profile's header
 
     Returns:
@@ -98,7 +98,7 @@ def after(bin, **kwargs):
         exclude_sources = []
 
     try:
-        profile = parser.parse_log(_tmp_log_filename, bin, sampling)
+        profile = parser.parse_log(_tmp_log_filename, cmd, sampling)
     except IndexError:
         return CollectStatus.ERROR, 'Info missing in log file', {}
     except ValueError:

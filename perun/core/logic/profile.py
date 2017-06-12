@@ -33,7 +33,7 @@ def generate_profile_name(job):
         str: string for the given profile that will be stored
     """
     return "{0}-{1}-{2}-{3}.perf".format(
-        os.path.split(job.bin)[-1],
+        os.path.split(job.cmd)[-1],
         job.collector.name,
         os.path.split(job.workload)[-1],
         time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
@@ -112,7 +112,7 @@ def generate_header_for_profile(job):
 
     return {
         'type': collector.COLLECTOR_TYPE,
-        'bin': job.bin,
+        'cmd': job.cmd,
         'params': job.args,
         'workload': job.workload,
         'units': [

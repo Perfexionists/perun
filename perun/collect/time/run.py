@@ -11,10 +11,10 @@ __author__ = 'Tomas Fiedor'
 
 def collect(**kwargs):
     """Phase for collection of the profile data"""
-    assert {'bin', 'workload'}.issubset(kwargs.keys())
+    assert {'cmd', 'workload'}.issubset(kwargs.keys())
 
     command = " ".join([
-        'time -p', kwargs['bin'], kwargs.get('args', ''), kwargs['workload']
+        'time -p', kwargs['cmd'], kwargs.get('args', ''), kwargs['workload']
     ]).split(' ')
     collected_data = utils.get_stdout_from_external_command(command).split('\n')
 

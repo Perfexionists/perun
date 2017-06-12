@@ -4,6 +4,10 @@ import logging
 import sys
 import termcolor
 
+from perun.utils.decorators import static_variables
+
+from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
+
 __author__ = 'Tomas Fiedor'
 VERBOSITY = 0
 
@@ -85,3 +89,32 @@ def warn(msg):
     """
     if not SUPPRESS_WARNINGS:
         print("warn: {}".format(msg))
+
+
+def print_current_phase(phase_msg, phase_unit, phase_colour):
+    """Print helper coloured message for the current phase
+
+    Arguments:
+        phase_msg(str): message that will be printed to the output
+        phase_unit(str): additional parameter that is passed to the phase_msg
+        phase_colour(str): phase colour defined in helpers.py
+    """
+    print(termcolor.colored(
+        phase_msg.format(
+            termcolor.colored(phase_unit, attrs=COLLECT_PHASE_ATTRS_HIGH)
+        ), phase_colour, attrs=COLLECT_PHASE_ATTRS
+    ))
+
+
+@static_variables(current_job=1)
+def print_job_progress(overall_jobs):
+    """Print the tag with the percent of the jobs currently done
+
+    Arguments:
+        overall_jobs(int): overall number of jobs to be done
+    """
+    percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
+    print("[{}%] ".format(
+        str(percentage_done).rjust(3, ' ')
+    ), end='')
+    print_job_progress.current_job += 1

@@ -27,8 +27,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    Job, COLLECT_PHASE_BIN, COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
-    COLLECT_PHASE_WORKLOAD, COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, \
+    Job, COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, \
     CollectStatus, PostprocessStatus, Unit, ProfileInfo
 from perun.utils.exceptions import NotPerunRepositoryException
 from perun.core.logic.pcs import PCS
@@ -629,11 +628,11 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
 
     Returns the job matrix as dictionary of form:
     {
-      'bin1': {
+      'cmd1': {
         'workload1': [ Job1, Job2 , ...],
         'workload2': [ Job1, Job2 , ...]
       },
-      'bin2': {
+      'cmd2': {
         'workload1': [ Job1, Job2 , ...],
         'workload2': [ Job1, Job2 , ...]
       }
@@ -648,7 +647,7 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
         kwargs(dict): additional parameters issued from the command line
 
     Returns:
-        dict, int: dict of jobs in form of {bins: {workloads: {Job}}}, number of jobs
+        dict, int: dict of jobs in form of {cmds: {workloads: {Job}}}, number of jobs
     """
     def construct_unit(unit, unit_type, ukwargs):
         """Helper function for constructing the {'name', 'params'} objects for collectors and posts.
@@ -669,7 +668,7 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
         return Unit(unit, utils.merge_dictionaries(from_file_dict, from_string_dict))
 
     # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
-    collector_pairs = map(lambda c: construct_unit(c, 'collector', kwargs), collector)
+    collector_pairs = list(map(lambda c: construct_unit(c, 'collector', kwargs), collector))
     postprocessors = list(map(lambda p: construct_unit(p, 'postprocessor', kwargs), postprocessor))
 
     # Construct the actual job matrix
@@ -683,41 +682,12 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
 
     # Count overall number of the jobs:
     number_of_jobs = 0
-    for bin_values in matrix.values():
-        for workload_values in bin_values.values():
+    for cmd_values in matrix.values():
+        for workload_values in cmd_values.values():
             for job in workload_values:
                 number_of_jobs += 1 + len(job.postprocessors)
 
     return matrix, number_of_jobs
-
-
-@decorators.static_variables(current_job=1)
-def print_job_progress(overall_jobs):
-    """Print the tag with the percent of the jobs currently done
-
-    Arguments:
-        overall_jobs(int): overall number of jobs to be done
-    """
-    percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
-    print("[{}%] ".format(
-        str(percentage_done).rjust(3, ' ')
-    ), end='')
-    print_job_progress.current_job += 1
-
-
-def print_current_phase(phase_msg, phase_unit, phase_colour):
-    """Print helper coloured message for the current phase
-
-    Arguments:
-        phase_msg(str): message that will be printed to the output
-        phase_unit(str): additional parameter that is passed to the phase_msg
-        phase_colour(str): phase colour defined in helpers.py
-    """
-    print(termcolor.colored(
-        phase_msg.format(
-            termcolor.colored(phase_unit, attrs=COLLECT_PHASE_ATTRS_HIGH)
-        ), phase_colour, attrs=COLLECT_PHASE_ATTRS
-    ))
 
 
 @pass_pcs
@@ -725,7 +695,7 @@ def run_single_job(pcs, cmd, args, workload, collector, postprocessor, **kwargs)
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        cmd(str): binary that will be run
+        cmd(str): cmdary that will be run
         args(str): lists of additional arguments to the job
         workload(list): list of workloads
         collector(list): list of collectors
@@ -743,7 +713,7 @@ def load_job_info_from_config(pcs):
         pcs(PCS): object with performance control system wrapper
 
     Returns:
-        dict: dictionary with bins, args, workloads, collectors and postprocessors
+        dict: dictionary with cmds, args, workloads, collectors and postprocessors
     """
     local_config = pcs.local_config().data
 
@@ -753,7 +723,7 @@ def load_job_info_from_config(pcs):
     postprocessors = local_config.get('postprocessors', [])
 
     info = {
-        'bin': local_config['bins'],
+        'cmd': local_config['cmds'],
         'workload': local_config['workloads'],
         'postprocessor': [post.get('name', '') for post in postprocessors],
         'collector': [collect.get('name', '') for collect in collectors],
@@ -801,33 +771,25 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
         job_matrix(dict): dictionary with jobs that will be run
         number_of_jobs(int): number of jobs that will be run
     """
-    for job_bin, workloads_per_bin in job_matrix.items():
-        print_current_phase("Collecting profiles for {}", job_bin, COLLECT_PHASE_BIN)
-        for job_workload, jobs_per_workload in workloads_per_bin.items():
-            print_current_phase(" - processing workload {}", job_workload, COLLECT_PHASE_WORKLOAD)
+    for job_cmd, workloads_per_cmd in job_matrix.items():
+        perun_log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
+        for job_workload, jobs_per_workload in workloads_per_cmd.items():
+            perun_log.print_current_phase(" - processing workload {}", job_workload, COLLECT_PHASE_WORKLOAD)
             for job in jobs_per_workload:
-                print_job_progress(number_of_jobs)
-                print_current_phase(
-                    "Collecting data by {}", job.collector.name, COLLECT_PHASE_COLLECT
-                )
+                perun_log.print_job_progress(number_of_jobs)
 
                 # Run the collector and check if the profile was successfully collected
-                collection_status, collection_msg, prof = runner.run_collector(job.collector, job)
-                if collection_status != CollectStatus.OK:
-                    perun_log.error(collection_msg)
-                print("Successfully collected data from {}".format(job_bin))
+                # In case, the status was not OK, then we skip the postprocessing
+                c_status, prof = runner.run_collector(job.collector, job)
+                if c_status != CollectStatus.OK or not profile:
+                    continue
 
                 for postprocessor in job.postprocessors:
-                    print_job_progress(number_of_jobs)
-                    print_current_phase(
-                        "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
-                    )
-
+                    perun_log.print_job_progress(number_of_jobs)
                     # Run the postprocessor and check if the profile was successfully postprocessed
-                    post_status, post_msg, prof = runner.run_postprocessor(postprocessor, job, prof)
-                    if post_status != PostprocessStatus.OK:
-                        perun_log.error(post_msg)
-                    print("Successfully postprocessed data by {}".format(postprocessor.name))
+                    p_status, prof = runner.run_postprocessor(postprocessor, job, prof)
+                    if p_status != PostprocessStatus.OK or not profile:
+                        continue
 
                 # Store the computed profile inside the job directory
                 store_generated_profile(pcs, prof, job)
