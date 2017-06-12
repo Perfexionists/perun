@@ -1,6 +1,8 @@
 """Normalizer is a simple postprocessor that normalizes the values."""
 
-from perun.utils.helpers import PostprocessStatus
+import click
+
+from perun.utils.helpers import PostprocessStatus, pass_profile
 
 __author__ = 'Tomas Fiedor'
 
@@ -63,3 +65,9 @@ def postprocess(profile, **kwargs):
 
     return PostprocessStatus.OK, "", {'profile': profile}
 
+
+@click.command()
+@pass_profile
+def normalizer(profile, **kwargs):
+    """Normalization of the resources to the interval <0,1>."""
+    print("Called normalizer with the following profile {}".format(profile))

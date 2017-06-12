@@ -68,9 +68,9 @@ def run_all_phases_for(runner, runner_type, runner_params):
 
 
 def run_collector(collector, job):
-    """Run the job of colelctor of the given name.
+    """Run the job of collector of the given name.
 
-    Tries to look up the module containinig the collector specified by the
+    Tries to look up the module containing the collector specified by the
     collector name, and then runs it with the parameters and returns collected profile.
 
     Arguments:
@@ -81,9 +81,9 @@ def run_collector(collector, job):
         (int, str): status of the collection, string message of the status
     """
     try:
-        collector_module = get_module('perun.collect.{0}.{0}'.format(collector.name))
+        collector_module = get_module('perun.collect.{0}.run'.format(collector.name))
     except ImportError:
-        return CollectStatus.ERROR, "{} does not exist".format(collector.name)
+        return CollectStatus.ERROR, "{} does not exist".format(collector.name), {}
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dictionaries(job._asdict(), collector.params)
@@ -95,7 +95,7 @@ def run_collector(collector, job):
 def run_postprocessor(postprocessor, job, prof):
     """Run the job of postprocess of the given name.
 
-    Tries to look up the module containinig the postprocessor specified by the
+    Tries to look up the module containing the postprocessor specified by the
     postprocessor name, and then runs it with the parameters and returns processed
     profile.
 
@@ -108,9 +108,9 @@ def run_postprocessor(postprocessor, job, prof):
         (int, str): status of the collection, string message of the status
     """
     try:
-        postprocessor_module = get_module('perun.postprocess.{0}.{0}'.format(postprocessor.name))
+        postprocessor_module = get_module('perun.postprocess.{0}.run'.format(postprocessor.name))
     except ImportError:
-        return PostprocessStatus.ERROR, "{} does not exist".format(postprocessor.name)
+        return PostprocessStatus.ERROR, "{} does not exist".format(postprocessor.name), {}
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dict_range(job._asdict(), {'profile': prof}, postprocessor.params)

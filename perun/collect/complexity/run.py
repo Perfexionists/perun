@@ -4,8 +4,8 @@
 """
 
 
+import click
 import os
-import sys
 import subprocess
 import collections
 
@@ -195,49 +195,8 @@ def _process_file_record(record, call_stack, resources, address_map):
         return 1
 
 
-# Prepare the paths for test run to work correctly for everyone
-# Suppose there is no perun directory above the project one
-# Test config
+@click.command()
+def complexity():
+    """Runs the complexity collector, collecting running times for profiles depending on size"""
+    pass
 
-# _dir_name = os.path.dirname(__file__)
-# _base_pos = _dir_name.find('/perun')
-# if _base_pos == -1:
-#     print("Module not located in perun directory, cannot do the test run!", file=sys.stderr)
-# else:
-#     _complexity_dir = _dir_name[:_base_pos] + '/perun/perun/collect/complexity/'
-#
-#     # Test configuration dictionary
-#     _config = {
-#         'target_dir': _complexity_dir + 'target',
-#         'files': [
-#             _complexity_dir + 'cpp_sources/workload/main.cpp',
-#             _complexity_dir + 'cpp_sources/workload/SLList.h',
-#             _complexity_dir + 'cpp_sources/workload/SLListcls.h'
-#         ],
-#         'rules': [
-#             'func1',
-#             'SLList_init',
-#             'SLList_insert',
-#             'SLList_search',
-#             'SLList_destroy',
-#             'SLListcls',
-#             '~Sllistcls',
-#             'Insert',
-#             'Remove',
-#             'Search'
-#         ],
-#         'file-name': 'trace.log',
-#         'init-storage-size': 20000,
-#         'sampling': [
-#             {'func': 'SLList_insert', 'sample': 1},
-#             {'func': 'func1', 'sample': 1},
-#         ],
-#     }
-#
-#     # Test run
-#     code, msg, _config = before(**_config)
-#     print('code: {0}, msg: {1}\n'.format(code, msg))
-#     code, msg, _config = collect(**_config)
-#     print('code: {0}, msg: {1}\n'.format(code, msg))
-#     code, msg, _config = after(**_config)
-#     print('code: {0}, msg: {1}\n'.format(code, msg))

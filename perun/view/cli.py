@@ -7,7 +7,6 @@ calls underlying commands from the commands module.
 import logging
 import os
 import pkgutil
-import yaml
 
 import click
 
@@ -15,6 +14,8 @@ import perun.utils.log as perun_log
 import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
+import perun.collect
+import perun.postprocess
 import perun.view
 
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
@@ -377,7 +378,7 @@ def status(**kwargs):
 @click.option('--minor', '-m', nargs=1, default=None,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
-def show(ctx, profile, minor, **kwargs):
+def show(ctx, profile, minor):
     """Shows the profile stored and registered within the perun control system.
 
     Looks up the index of the given minor version and finds the <profile> and prints it
@@ -402,24 +403,58 @@ def show(ctx, profile, minor, **kwargs):
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
 
 
-# TODO: REFACTOR THIS: MOVE SOMEWHERE ELSE
-# Add all of the show modules to the show group
-for module in pkgutil.walk_packages(perun.view.__path__, perun.view.__name__ + '.'):
-    # Skip modules, only packages can be used for show
-    if not module[2]:
-        continue
-    view_package = perun.utils.get_module(module[1])
+@cli.group()
+@click.argument('profile', required=True, metavar='<profile>')
+@click.option('--minor', '-m', nargs=1, default=None,
+              help='Perun will lookup the profile at different minor version (default is HEAD).')
+@click.pass_context
+def postprocessby(ctx, profile, minor):
+    """Postprocesses the profile stored and registered within the perun control system.
 
-    # Skip those packages that are not for viewing of profiles
-    if not hasattr(view_package, 'SUPPORTED_PROFILES'):
-        continue
+    Fixme: Default should not be head, but storage?
 
-    # Skip those packages that do not contain the apropriate cli wrapper
-    view_module = perun.utils.get_module(module[1] + '.' + 'show')
-    cli_function_name = module[1].split('.')[-1]
-    if not hasattr(view_module, cli_function_name):
-        continue
-    show.add_command(getattr(view_module, cli_function_name))
+    Example usage:
+
+        perun postprocessby echo-time-hello-2017-04-02-13-13-34-12.perf normalizer
+
+            Postprocesses the profile echo-time-hello by normalizer, where for each snapshots,
+            values of the resources will be normalized to the interval <0,1>.
+    """
+    ctx.obj = commands.load_profile_from_args(profile, minor)
+    perun_log.msg_to_stdout("Running 'perun postprocessby'", 2, logging.INFO)
+
+
+@cli.group()
+def collect():
+    """Collect the profile from the given binary, arguments and workload"""
+    perun_log.msg_to_stdout("Running 'perun collect'", 2, logging.INFO)
+
+
+def init_unit_commands():
+    """Runs initializations for all of the subcommands (shows, collectors, postprocessors)
+
+    Some of the subunits has to be dynamically initialized according to the registered modules,
+    like e.g. show has different forms (raw, graphs, etc.).
+    """
+    for (unit, cli_cmd) in [(perun.view, show), (perun.postprocess, postprocessby),
+                            (perun.collect, collect)]:
+        for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
+            # Skip modules, only packages can be used for show
+            if not module[2]:
+                continue
+            unit_package = perun.utils.get_module(module[1])
+
+            # Skip packages that are not for viewing, postprocessing, or collection of profiles
+            if not hasattr(unit_package, 'SUPPORTED_PROFILES') and \
+               not hasattr(unit_package, 'COLLECTOR_TYPE'):
+                continue
+
+            # Skip those packages that do not contain the apropriate cli wrapper
+            unit_module = perun.utils.get_module(module[1] + '.' + 'run')
+            cli_function_name = module[1].split('.')[-1]
+            if not hasattr(unit_module, cli_function_name):
+                continue
+            cli_cmd.add_command(getattr(unit_module, cli_function_name))
 
 
 @cli.group()
@@ -543,7 +578,7 @@ def job(**kwargs):
 
     Profiles can be further stored in the perun control system using the command:
 
-        perun run add profile.perf
+        perun add profile.perf
 
     Example runs:
 
@@ -566,6 +601,9 @@ def job(**kwargs):
     # TODO: Add choice to collector/postprocessors from the registered shits
     commands.run_single_job(**kwargs)
 
+
+# Initialization of other stuff
+init_unit_commands()
 
 if __name__ == "__main__":
     cli()

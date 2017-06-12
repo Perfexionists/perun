@@ -1,4 +1,6 @@
 """This module contains methods needed by Perun logic"""
+
+import click
 import os
 from decimal import Decimal
 import perun.collect.memory.filter as filters
@@ -113,6 +115,12 @@ def after(bin, **kwargs):
     filters.clear_profile(profile)
 
     return CollectStatus.OK, '', {'profile': profile}
+
+
+@click.command()
+def memory():
+    """Runs memory collect, collecting allocation through the program execution"""
+    pass
 
 
 if __name__ == "__main__":

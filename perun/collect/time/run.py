@@ -1,5 +1,7 @@
 """Time module is a simple wrapper over command line tool time"""
 
+import click
+
 import perun.utils as utils
 
 from perun.utils.helpers import CollectStatus
@@ -28,6 +30,12 @@ def collect(**kwargs):
             ]
         }
     }}
+
+
+@click.command()
+def time(pcs, collector_info, job_info, **kwargs):
+    """Runs the wrapper over the time command"""
+    pass
 
 
 if __name__ == "__main__":
