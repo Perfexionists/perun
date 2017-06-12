@@ -6,10 +6,11 @@ possible to be run in isolation.
 """
 
 import collections
-import colorama
 import inspect
 import os
 import re
+
+import colorama
 import termcolor
 
 import perun.utils as utils
@@ -34,7 +35,7 @@ from perun.core.logic.pcs import PCS
 
 # Init colorama for multiplatform colours
 colorama.init()
-untracked_regex = \
+UNTRACKED_REGEX = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 
 
@@ -525,7 +526,7 @@ def print_untracked_profiles(pcs, short):
         real_path = os.path.join(pcs.get_job_directory(), untracked_path)
         loaded_profile = profile.load_profile_from_file(real_path, True)
         profile_type = loaded_profile['header']['type']
-        path = untracked_regex.search(untracked_path).groups()[0]
+        path = UNTRACKED_REGEX.search(untracked_path).groups()[0]
         time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
 
         # Update the list of profiles and counters of types
@@ -593,7 +594,9 @@ def load_profile_from_args(pcs, profile_name, minor_version):
     if not store.is_sha1(profile_name):
         _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
         if not os.path.exists(minor_index_file):
-            perun_log.error("{} index has no profiles registered".format(profile_name, minor_version))
+            perun_log.error("{} index has no profiles registered".format(
+                profile_name, minor_version
+            ))
         with open(minor_index_file, 'rb') as minor_handle:
             lookup_pred = lambda entry: entry.path == profile_name
             profiles = store.lookup_all_entries_within_index(minor_handle, lookup_pred)
@@ -615,7 +618,7 @@ def load_profile_from_args(pcs, profile_name, minor_version):
     return loaded_profile
 
 
-def construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs):
+def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs):
     """Constructs the job matrix represented as dictionary.
 
     Reads the local of the current PCS and constructs the matrix of jobs
@@ -637,7 +640,7 @@ def construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs
     }
 
     Arguments:
-        bin(str): binary that will be run
+        cmd(str): binary that will be run
         args(str): lists of additional arguments to the job
         workload(list): list of workloads
         collector(list): list of collectors
@@ -675,7 +678,7 @@ def construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs
             w: [
                 Job(c, postprocessors, b, w, a) for c in collector_pairs for a in args or ['']
             ] for w in workload
-        } for b in bin
+        } for b in cmd
     }
 
     # Count overall number of the jobs:
@@ -718,11 +721,11 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
 
 
 @pass_pcs
-def run_single_job(pcs, bin, args, workload, collector, postprocessor, **kwargs):
+def run_single_job(pcs, cmd, args, workload, collector, postprocessor, **kwargs):
     """
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        bin(str): binary that will be run
+        cmd(str): binary that will be run
         args(str): lists of additional arguments to the job
         workload(list): list of workloads
         collector(list): list of collectors
@@ -730,7 +733,7 @@ def run_single_job(pcs, bin, args, workload, collector, postprocessor, **kwargs)
         kwargs(dict): dictionary of additional params for postprocessor and collector
     """
     job_matrix, number_of_jobs = \
-        construct_job_matrix(bin, args, workload, collector, postprocessor, **kwargs)
+        construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
     run_jobs(pcs, job_matrix, number_of_jobs)
 
 
