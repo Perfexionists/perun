@@ -4,11 +4,13 @@
 """
 
 
-import click
 import os
 import subprocess
 import collections
 
+import click
+
+import perun.core.logic.runner as runner
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.configurator as configurator
@@ -48,18 +50,20 @@ def before(**kwargs):
                dict of modified kwargs with bin value representing the executable
     """
     try:
+        # Extract several keywords to local variables
+        target_dir, files, rules = kwargs['target_dir'], kwargs['files'], kwargs['rules']
         # Create the configuration cmake and build the configuration executable
         print('Building the configuration executable...')
-        cmake_path = makefiles.create_config_cmake(kwargs['target_dir'], kwargs['files'])
+        cmake_path = makefiles.create_config_cmake(target_dir, files)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_CONFIG_TARGET)
         print('Build complete.')
         # Extract some configuration data using the configuration executable
         print('Extracting the configuration...')
         function_sym = symbols.extract_symbols(exec_path)
-        include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, kwargs['rules'])
+        include_list, exclude_list, runtime_filter = symbols.filter_symbols(function_sym, rules)
         # Create the collector cmake and build the collector executable
         print('Building the collector executable...')
-        cmake_path = makefiles.create_collector_cmake(kwargs['target_dir'], kwargs['files'], exclude_list)
+        cmake_path = makefiles.create_collector_cmake(target_dir, files, exclude_list)
         exec_path = makefiles.build_executable(cmake_path, makefiles.CMAKE_COLLECT_TARGET)
         print('Build complete.\n')
         # Create the internal configuration file
@@ -69,8 +73,8 @@ def before(**kwargs):
         return 0, _collector_status_msg[0], dict(kwargs)
     # The "expected" exception types
     except (OSError, ValueError, subprocess.CalledProcessError,
-            UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as e:
-        return 1, repr(e), kwargs
+            UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as exception:
+        return 1, repr(exception), kwargs
 
 
 def collect(**kwargs):
@@ -196,7 +200,7 @@ def _process_file_record(record, call_stack, resources, address_map):
 
 
 @click.command()
-def complexity():
+@click.pass_context
+def complexity(ctx):
     """Runs the complexity collector, collecting running times for profiles depending on size"""
-    pass
-
+    runner.run_collector_from_cli_context(ctx, 'complexity', {})

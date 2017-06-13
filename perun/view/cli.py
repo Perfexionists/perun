@@ -14,6 +14,7 @@ import perun.utils.log as perun_log
 import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
+import perun.core.logic.runner as runner
 import perun.collect
 import perun.postprocess
 import perun.view
@@ -99,11 +100,8 @@ def register_unit(pcs, unit_name):
     click.pause()
 
 
-def unregister_unit(pcs):
-    """
-    Arguments:
-        pcs(PCS): perun repository wrapper
-    """
+def unregister_unit(_):
+    """Unregister the unit"""
     pass
 
 
@@ -231,17 +229,15 @@ def init(dst, configure, **kwargs):
 
     try:
         commands.init(dst, **kwargs)
-    except UnsupportedModuleException as ume:
-        perun_log.error(str(ume))
-    except UnsupportedModuleFunctionException as umfe:
-        perun_log.error(str(umfe))
-    except PermissionError as pe:
+    except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
+        perun_log.error(str(unsup_module_exp))
+    except PermissionError as perm_exp:
         # If this is problem with writing to shared.yml, say it is error and ask for sudo
-        if 'shared.yml' in str(pe):
+        if 'shared.yml' in str(perm_exp):
             perun_log.error("writing to shared config 'shared.yml' requires root permissions")
         # Else reraise as who knows what kind of mistake is this
         else:
-            raise pe
+            raise perm_exp
 
     if configure:
         # Run the interactive configuration of the local perun repository (populating .yml)
@@ -354,8 +350,8 @@ def log(head, **kwargs):
     perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
     try:
         commands.log(head, **kwargs)
-    except NotPerunRepositoryException as npre:
-        perun_log.error(str(npre))
+    except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
+        perun_log.error(str(exception))
 
 
 @cli.command()
@@ -370,7 +366,10 @@ def status(**kwargs):
     types and creation times.
     """
     perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
-    commands.status(**kwargs)
+    try:
+        commands.status(**kwargs)
+    except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
+        perun_log.error(str(exception))
 
 
 @cli.group()
@@ -425,8 +424,16 @@ def postprocessby(ctx, profile, minor):
 
 
 @cli.group()
-def collect():
+@click.option('--cmd', '-b', nargs=1, required=True, multiple=True,
+              help='Command that we will collect data from single collector.')
+@click.option('--args', '-a', nargs=1, required=False, multiple=True,
+              help='Additional arguments for the command.')
+@click.option('--workload', '-w', nargs=1, required=True, multiple=True,
+              help='Inputs for the command, i.e. so called workloads.')
+@click.pass_context
+def collect(ctx, **kwargs):
     """Collect the profile from the given binary, arguments and workload"""
+    ctx.obj = kwargs
     perun_log.msg_to_stdout("Running 'perun collect'", 2, logging.INFO)
 
 
@@ -505,7 +512,7 @@ def matrix(**kwargs):
 
     For full documentation of the local.yml syntax consult the documentation.
     """
-    commands.run_matrix_job(**kwargs)
+    runner.run_matrix_job(**kwargs)
 
 
 def parse_yaml_file_param(ctx, param, value):
@@ -547,7 +554,7 @@ def parse_yaml_string_param(ctx, param, value):
 
 
 @run.command()
-@click.option('--bin', '-b', nargs=1, required=True, multiple=True,
+@click.option('--cmd', '-b', nargs=1, required=True, multiple=True,
               help='Binary unit that we are collecting data for.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
               help='Additional arguments for the binary unit.')
@@ -599,7 +606,7 @@ def job(**kwargs):
             first using the normalizer and them with filter.
     """
     # TODO: Add choice to collector/postprocessors from the registered shits
-    commands.run_single_job(**kwargs)
+    runner.run_single_job(**kwargs)
 
 
 # Initialization of other stuff

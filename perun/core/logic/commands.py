@@ -13,13 +13,11 @@ import re
 import colorama
 import termcolor
 
-import perun.utils as utils
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.core.logic.config as perun_config
 import perun.core.logic.profile as profile
-import perun.core.logic.runner as runner
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
 
@@ -27,59 +25,14 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    Job, COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, \
-    CollectStatus, PostprocessStatus, Unit, ProfileInfo
+    ProfileInfo
 from perun.utils.exceptions import NotPerunRepositoryException
-from perun.core.logic.pcs import PCS
+from perun.core.logic.pcs import pass_pcs
 
 # Init colorama for multiplatform colours
 colorama.init()
 UNTRACKED_REGEX = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
-
-
-def locate_perun_dir_on(path):
-    """Locates the nearest perun directory
-
-    Locates the nearest perun directory starting from the @p path. It walks all of the
-    subpaths sorted by their lenght and checks if .perun directory exists there.
-
-    Arguments:
-        path(str): starting point of the perun dir search
-
-    Returns:
-        str: path to perun dir or "" if the path is not underneath some underlying perun control
-    """
-    # convert path to subpaths and reverse the list so deepest subpaths are traversed first
-    lookup_paths = store.path_to_subpaths(path)[::-1]
-
-    for tested_path in lookup_paths:
-        assert os.path.isdir(tested_path)
-        if '.perun' in os.listdir(tested_path):
-            return tested_path
-    raise NotPerunRepositoryException(path)
-
-
-def pass_pcs(func):
-    """Decorator for passing pcs object to function
-
-    Provided the current working directory, constructs the PCS object,
-    that encapsulates the performance control and passes it as argument.
-
-    Note: Used for CLI interface.
-
-    Arguments:
-        func(function): function we are decorating
-
-    Returns:
-        func: wrapped function
-    """
-    def wrapper(*args, **kwargs):
-        """Wrapper function for the decorator"""
-        perun_directory = locate_perun_dir_on(os.getcwd())
-        return func(PCS(perun_directory), *args, **kwargs)
-
-    return wrapper
 
 
 def lookup_minor_version(func):
@@ -96,7 +49,7 @@ def lookup_minor_version(func):
         function: decorated function, with minor_version translated or obtained
     """
     # the position of minor_version is one less, because of  needed pcs parameter
-    f_args, _, _, f_defaults, *_ = inspect.getfullargspec(func)
+    f_args, _, _, _, *_ = inspect.getfullargspec(func)
     assert 'pcs' in f_args
     minor_version_position = f_args.index('minor_version') - 1
 
@@ -155,7 +108,6 @@ def config(pcs, key, value, **kwargs):
         pcs, key, value, kwargs
     ), 2)
 
-    # TODO: Refactor this
     config_type, *sections = key.split('.')
     key = ".".join(sections)
 
@@ -234,7 +186,7 @@ def init(dst, **kwargs):
 
     # Check if there exists perun directory above and initialize the new pcs
     try:
-        super_perun_dir = locate_perun_dir_on(dst)
+        super_perun_dir = store.locate_perun_dir_on(dst)
         is_pcs_reinitialized = (super_perun_dir == dst)
         if not is_pcs_reinitialized:
             perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
@@ -378,14 +330,13 @@ def print_profile_numbers(profile_numbers, profile_type, line_ending='\n'):
 
 @pass_pcs
 @lookup_minor_version
-def log(pcs, minor_version, short=False, **kwargs):
+def log(pcs, minor_version, short=False, **_):
     """Prints the log of the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
         minor_version(str): representation of the head version
         short(bool): true if the log should be in short format
-        kwargs(dict): dictionary of the additional parameters
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
@@ -593,7 +544,7 @@ def load_profile_from_args(pcs, profile_name, minor_version):
     if not store.is_sha1(profile_name):
         _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
         if not os.path.exists(minor_index_file):
-            perun_log.error("{} index has no profiles registered".format(
+            perun_log.error("index of minor version {1} has no profile '{0}' registered".format(
                 profile_name, minor_version
             ))
         with open(minor_index_file, 'rb') as minor_handle:
@@ -615,181 +566,3 @@ def load_profile_from_args(pcs, profile_name, minor_version):
     loaded_profile = profile.load_profile_from_file(profile_name, False)
 
     return loaded_profile
-
-
-def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs):
-    """Constructs the job matrix represented as dictionary.
-
-    Reads the local of the current PCS and constructs the matrix of jobs
-    that will be run. Each job consists of command that will be run,
-    collector used to collect the data and list of postprocessors to
-    alter the output profiles. Inside the dictionary jobs are distributed
-    by binaries, then workloads and finally Jobs.
-
-    Returns the job matrix as dictionary of form:
-    {
-      'cmd1': {
-        'workload1': [ Job1, Job2 , ...],
-        'workload2': [ Job1, Job2 , ...]
-      },
-      'cmd2': {
-        'workload1': [ Job1, Job2 , ...],
-        'workload2': [ Job1, Job2 , ...]
-      }
-    }
-
-    Arguments:
-        cmd(str): binary that will be run
-        args(str): lists of additional arguments to the job
-        workload(list): list of workloads
-        collector(list): list of collectors
-        postprocessor(list): list of postprocessors
-        kwargs(dict): additional parameters issued from the command line
-
-    Returns:
-        dict, int: dict of jobs in form of {cmds: {workloads: {Job}}}, number of jobs
-    """
-    def construct_unit(unit, unit_type, ukwargs):
-        """Helper function for constructing the {'name', 'params'} objects for collectors and posts.
-
-        Arguments:
-            unit(str): name of the unit (collector/postprocessor)
-            unit_type(str): name of the unit type (collector or postprocessor)
-            ukwargs(dict): dictionary of additional parameters
-
-        Returns:
-            dict: dictionary of the form {'name', 'params'}
-        """
-        # Get the dictionaries for from string and from file params obtained from commandline
-        from_string_dict = ukwargs.get(unit_type + "_params_from_string", {}).get(unit, {})
-        from_file_dict = ukwargs.get(unit_type + "_params_from_file", {}).get(unit, {})
-
-        # Construct the object with name and parameters
-        return Unit(unit, utils.merge_dictionaries(from_file_dict, from_string_dict))
-
-    # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
-    collector_pairs = list(map(lambda c: construct_unit(c, 'collector', kwargs), collector))
-    postprocessors = list(map(lambda p: construct_unit(p, 'postprocessor', kwargs), postprocessor))
-
-    # Construct the actual job matrix
-    matrix = {
-        b: {
-            w: [
-                Job(c, postprocessors, b, w, a) for c in collector_pairs for a in args or ['']
-            ] for w in workload
-        } for b in cmd
-    }
-
-    # Count overall number of the jobs:
-    number_of_jobs = 0
-    for cmd_values in matrix.values():
-        for workload_values in cmd_values.values():
-            for job in workload_values:
-                number_of_jobs += 1 + len(job.postprocessors)
-
-    return matrix, number_of_jobs
-
-
-@pass_pcs
-def run_single_job(pcs, cmd, args, workload, collector, postprocessor, **kwargs):
-    """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        cmd(str): cmdary that will be run
-        args(str): lists of additional arguments to the job
-        workload(list): list of workloads
-        collector(list): list of collectors
-        postprocessor(list): list of postprocessors
-        kwargs(dict): dictionary of additional params for postprocessor and collector
-    """
-    job_matrix, number_of_jobs = \
-        construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
-    run_jobs(pcs, job_matrix, number_of_jobs)
-
-
-def load_job_info_from_config(pcs):
-    """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-
-    Returns:
-        dict: dictionary with cmds, args, workloads, collectors and postprocessors
-    """
-    local_config = pcs.local_config().data
-
-    if 'collectors' not in local_config.keys():
-        perun_log.error("missing 'collector' in the local.yml")
-    collectors = local_config['collectors']
-    postprocessors = local_config.get('postprocessors', [])
-
-    info = {
-        'cmd': local_config['cmds'],
-        'workload': local_config['workloads'],
-        'postprocessor': [post.get('name', '') for post in postprocessors],
-        'collector': [collect.get('name', '') for collect in collectors],
-        'args': local_config['args'] if 'args' in local_config.keys() else [],
-        'collector_params_from_file': {
-            collect.get('name', ''): collect.get('params', {}) for collect in collectors
-        },
-        'postprocesor_params_from_file': {
-            post.get('name', ''): post.get('params', {}) for post in postprocessors
-        }
-    }
-
-    return info
-
-
-@pass_pcs
-def run_matrix_job(pcs):
-    """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-    """
-    job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config(pcs))
-    run_jobs(pcs, job_matrix, number_of_jobs)
-
-
-def store_generated_profile(pcs, prof, job):
-    """Stores the generated profile in the pending jobs directory.
-
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        prof(dict): profile that we are storing in the repository
-        job(Job): job with additional information about generated profiles
-    """
-    full_profile = profile.generate_profile_for_job(prof, job)
-    full_profile_name = profile.generate_profile_name(job)
-    profile_directory = pcs.get_job_directory()
-    full_profile_path = os.path.join(profile_directory, full_profile_name)
-    profile.store_profile_at(full_profile, full_profile_path)
-
-
-def run_jobs(pcs, job_matrix, number_of_jobs):
-    """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        job_matrix(dict): dictionary with jobs that will be run
-        number_of_jobs(int): number of jobs that will be run
-    """
-    for job_cmd, workloads_per_cmd in job_matrix.items():
-        perun_log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
-        for job_workload, jobs_per_workload in workloads_per_cmd.items():
-            perun_log.print_current_phase(" - processing workload {}", job_workload, COLLECT_PHASE_WORKLOAD)
-            for job in jobs_per_workload:
-                perun_log.print_job_progress(number_of_jobs)
-
-                # Run the collector and check if the profile was successfully collected
-                # In case, the status was not OK, then we skip the postprocessing
-                c_status, prof = runner.run_collector(job.collector, job)
-                if c_status != CollectStatus.OK or not profile:
-                    continue
-
-                for postprocessor in job.postprocessors:
-                    perun_log.print_job_progress(number_of_jobs)
-                    # Run the postprocessor and check if the profile was successfully postprocessed
-                    p_status, prof = runner.run_postprocessor(postprocessor, job, prof)
-                    if p_status != PostprocessStatus.OK or not profile:
-                        continue
-
-                # Store the computed profile inside the job directory
-                store_generated_profile(pcs, prof, job)

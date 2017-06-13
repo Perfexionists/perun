@@ -2,7 +2,7 @@
 
 import os
 
-import perun.core.logic.commands as commands
+import perun.core.logic.runner as runner
 
 __author__ = 'Tomas Fiedor'
 
@@ -12,7 +12,7 @@ def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
-    commands.run_single_job(cmd, args, work, collectors, posts, **config)
+    runner.run_single_job(cmd, args, work, collectors, posts, **config)
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -31,7 +31,7 @@ def test_collect_memory(helpers, pcs_full, memory_collect_job):
     # Fixme: Add check that the profile was correctly generated
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
 
-    commands.run_single_job(*memory_collect_job)
+    runner.run_single_job(*memory_collect_job)
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -50,7 +50,7 @@ def test_collect_time(helpers, pcs_full, capsys):
     # Count the state before running the single job
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
 
-    commands.run_single_job(["echo"], "", ["hello"], ["time"], [])
+    runner.run_single_job(["echo"], "", ["hello"], ["time"], [])
 
     # Assert outputs
     out, err = capsys.readouterr()

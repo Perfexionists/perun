@@ -18,7 +18,7 @@ import perun.utils.log as perun_log
 from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
     INDEX_NUMBER_OF_ENTRIES_OFFSET, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     READ_CHUNK_SIZE
-from perun.utils.exceptions import EntryNotFoundException
+from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
 
@@ -65,6 +65,28 @@ def path_to_subpaths(path):
     components = path.split(os.sep)
     return [os.sep + components[0]] + \
            [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
+
+
+def locate_perun_dir_on(path):
+    """Locates the nearest perun directory
+
+    Locates the nearest perun directory starting from the @p path. It walks all of the
+    subpaths sorted by their lenght and checks if .perun directory exists there.
+
+    Arguments:
+        path(str): starting point of the perun dir search
+
+    Returns:
+        str: path to perun dir or "" if the path is not underneath some underlying perun control
+    """
+    # convert path to subpaths and reverse the list so deepest subpaths are traversed first
+    lookup_paths = path_to_subpaths(path)[::-1]
+
+    for tested_path in lookup_paths:
+        assert os.path.isdir(tested_path)
+        if '.perun' in os.listdir(tested_path):
+            return tested_path
+    raise NotPerunRepositoryException(path)
 
 
 def compute_checksum(content):
@@ -452,8 +474,9 @@ def write_entry_to_index(index_file, file_entry):
         if file_entry.offset == -1:
             try:
                 predicate = (
-                    lambda entry: entry.path > file_entry.path or
-                            (entry.path == file_entry.path and entry.time >= file_entry.time)
+                    lambda entry: entry.path > file_entry.path or (
+                        entry.path == file_entry.path and entry.time >= file_entry.time
+                    )
                 )
                 looked_up_entry = lookup_entry_within_index(index_handle, predicate)
 
@@ -567,6 +590,7 @@ def remove_from_index(base_dir, minor_version, removed_file, remove_all=False):
         remove_all(bool): true if all of the entries should be removed
     """
     def lookup_function(entry):
+        """Helper lookup function according to the type of the removed file"""
         if is_sha1(removed_file):
             return entry.checksum == removed_file
         else:

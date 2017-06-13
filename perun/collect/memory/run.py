@@ -1,8 +1,11 @@
 """This module contains methods needed by Perun logic"""
 
-import click
 import os
 from decimal import Decimal
+
+import click
+
+import perun.core.logic.runner as runner
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
 from perun.collect.memory.syscalls import run, init
@@ -13,7 +16,7 @@ _lib_name = "malloc.so"
 _tmp_log_filename = "MemoryLog"
 
 
-def before(**kwargs):
+def before(**_):
     """ Phase for initialization the collect module
 
     Returns:
@@ -30,13 +33,12 @@ def before(**kwargs):
     return CollectStatus.OK, '', {}
 
 
-def collect(cmd, args, workload, **kwargs):
+def collect(cmd, args, workload, **_):
     """ Phase for collection of the profile data
     Arguments:
         cmd(string): binary file to profile
         args(string): executing arguments
         workload(string): file that has to be provided to binary
-        kwargs(dict): profile's header
 
     Returns:
         tuple: (return code, status message, updated kwargs)
@@ -54,7 +56,6 @@ def after(cmd, **kwargs):
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
     Arguments:
-        collect_params(string): execution parameters of collector
         cmd(string): binary file to profile
         kwargs(dict): profile's header
 
@@ -118,10 +119,7 @@ def after(cmd, **kwargs):
 
 
 @click.command()
-def memory():
+@click.pass_context
+def memory(ctx):
     """Runs memory collect, collecting allocation through the program execution"""
-    pass
-
-
-if __name__ == "__main__":
-    pass
+    runner.run_collector_from_cli_context(ctx, 'memory', {})

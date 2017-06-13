@@ -1,9 +1,9 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
 import collections
-import click
-
 from enum import Enum
+
+import click
 
 __author__ = 'Tomas Fiedor'
 
@@ -59,6 +59,7 @@ RAW_ATTRS = []
 # Job specific
 Job = collections.namedtuple("Job", "collector postprocessors cmd workload args")
 Unit = collections.namedtuple("Unit", "name params")
+
 COLLECT_PHASE_CMD = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'
@@ -72,10 +73,12 @@ pass_profile = click.make_pass_decorator(dict)
 
 
 class CollectStatus(Enum):
+    """Simple enumeration for statuses of the collectors"""
     OK = 0
     ERROR = 1
 
 
 class PostprocessStatus(Enum):
+    """Simple enumeration for statuses of the postprocessors"""
     OK = 0
     ERROR = 1

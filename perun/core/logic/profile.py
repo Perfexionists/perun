@@ -14,7 +14,7 @@ import perun.core.logic.store as store
 import perun.utils.log as perun_log
 
 from perun.utils.exceptions import IncorrectProfileFormatException
-from perun.utils.helpers import SUPPORTED_PROFILE_TYPES
+from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
 from perun.utils import get_module
 
 __author__ = 'Tomas Fiedor'
@@ -178,3 +178,30 @@ def store_profile_at(profile, file_path):
     """
     with open(file_path, 'w') as profile_handle:
         json.dump(profile, profile_handle, indent=2)
+
+
+def extract_job_from_profile(profile):
+    """Extracts information from profile about job, that was done to generate the profile.
+
+    Fixme: Add assert that profile is profile
+    Arguments:
+        profile(dict): dictionary with valid profile
+
+    Returns:
+        Job: job according to the profile informations
+    """
+    assert 'collector_info' in profile.keys()
+    collector_record = profile['collector_info']
+    collector = Unit(collector_record['name'], collector_record['params'])
+
+    assert 'postprocessors' in profile.keys()
+    posts = []
+    for postprocessor in profile['postprocessors']:
+        posts.append(Unit(postprocessor['name'], postprocessor['params']))
+
+    assert 'header' in profile.keys()
+    cmd = profile['header']['cmd']
+    params = profile['header']['params']
+    workload = profile['header']['workload']
+
+    return Job(collector, posts, cmd, workload, params)

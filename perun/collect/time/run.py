@@ -2,6 +2,7 @@
 
 import click
 
+import perun.core.logic.runner as runner
 import perun.utils as utils
 
 from perun.utils.helpers import CollectStatus
@@ -33,10 +34,7 @@ def collect(**kwargs):
 
 
 @click.command()
-def time(pcs, collector_info, job_info, **kwargs):
+@click.pass_context
+def time(ctx):
     """Runs the wrapper over the time command"""
-    pass
-
-
-if __name__ == "__main__":
-    pass
+    runner.run_collector_from_cli_context(ctx, 'time', {})
