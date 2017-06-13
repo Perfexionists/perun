@@ -47,7 +47,7 @@
   "header": {
     "type": "memory",
     "workload": "test",
-    "bin": "./test",
+    "cmd": "./test",
     "units": [
       null
     ],

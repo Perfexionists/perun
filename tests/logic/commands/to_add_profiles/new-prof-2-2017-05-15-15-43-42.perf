@@ -1817,7 +1817,7 @@
     "params": "",
     "workload": "test",
     "type": "memory",
-    "bin": "./test",
+    "cmd": "./test",
     "units": [
       null
     ]

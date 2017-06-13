@@ -216,7 +216,7 @@
     "name": "complexity"
   },
   "header": {
-    "bin": "target",
+    "cmd": "target",
     "units": [
       null
     ],
