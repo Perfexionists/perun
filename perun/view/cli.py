@@ -271,10 +271,8 @@ def add(profile, minor):
 
     try:
         commands.add(profile, minor)
-    except NotPerunRepositoryException as npre:
-        perun_log.error(str(npre))
-    except IncorrectProfileFormatException as ipfe:
-        perun_log.error(str(ipfe))
+    except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
+        perun_log.error(str(exception))
 
 
 @cli.command()
@@ -302,10 +300,8 @@ def rm(profile, minor, **kwargs):
 
     try:
         commands.remove(profile, minor, **kwargs)
-    except NotPerunRepositoryException as npre:
-        perun_log.error(str(npre))
-    except EntryNotFoundException as enfe:
-        perun_log.error(str(enfe))
+    except (NotPerunRepositoryException, EntryNotFoundException) as exception:
+        perun_log.error(str(exception))
     finally:
         perun_log.info("removed '{}'".format(profile))
 
@@ -518,8 +514,6 @@ def matrix(**kwargs):
 def parse_yaml_file_param(ctx, param, value):
     """Callback function for parsing the yaml files to dictionary object
 
-    Fixme: Check for incorrect files and stuff
-
     Arguments:
         ctx(Context): context of the called command
         param(click.Option): parameter that is being parsed and read from commandline
@@ -536,8 +530,6 @@ def parse_yaml_file_param(ctx, param, value):
 
 def parse_yaml_string_param(ctx, param, value):
     """Callback function for parsing the yaml string to dictionary object
-
-    Fixme: Check for incorrect strings
 
     Arguments:
         ctx(click.Context): context of the called command
