@@ -39,7 +39,12 @@ def init_shared_config_at(path):
         path = os.path.join(path, 'shared.yml')
     store.touch_file(path)
 
-    shared_config = streams.safely_load_yaml_from_stream("""""")
+    shared_config = streams.safely_load_yaml_from_stream("""
+    global:
+        - perun_status_fmt:
+        - perun_log_fmt:
+        - editor: vim
+    """)
 
     write_config_file(shared_config, path)
     return True
@@ -58,9 +63,42 @@ def init_local_config_at(path, wrapped_vcs):
         path = os.path.join(path, 'local.yml')
     store.touch_file(path)
 
-    # empty config is created
-    local_config = streams.safely_load_yaml_from_stream("""""")
-    local_config.update(wrapped_vcs)
+    # Create a config for user to set up
+    local_config = streams.safely_load_yaml_from_stream("""
+    vcs:
+      type: {0}
+      url: {1}
+
+    ## To collect profiling data from the binary using the set of collectors,
+    ## uncomment and edit the following region:
+    # cmds:
+    #   - echo
+
+    ## To add set of parameters for the profiled command/binary,
+    ## uncomment and edit the following region:
+    # args:
+    #   - -e
+
+    ## To add workloads/inputs for the profiled command/binary,
+    ## uncomment and edit the following region:
+    # workloads:
+    #   - hello
+    #   - world
+
+    ## To register a collector for generating profiling data,
+    ## uncomment and edit the following region:
+    # collectors:
+    #   - name: time
+    ## Try '$ perun collect --help' to obtain list of supported collectors!
+
+    ## To register a postprocessor for generated profiling data,
+    ## uncomment and edit the following region (!order matters!):
+    # postprocessors:
+    #   - name: normalizer
+    #     params: --remove-zero
+    #   - name: filter
+    ## Try '$ perun postprocessby --help' to obtain list of supported collectors!
+    """.format(wrapped_vcs['vcs']['type'], wrapped_vcs['vcs']['url']))
 
     write_config_file(local_config, path)
     return True
@@ -252,3 +290,23 @@ def local(path):
     """
     assert os.path.isdir(path)
     return load_config(path, 'local')
+
+
+def lookup_key_recursively(path, key):
+    """Recursively looks up the key first in the local config and then in the global.
+
+    This is used e.g. for formatting strings or editors, where first we have our local configs,
+    that have higher priority. In case there is nothing set in the config, we will check the
+    global config.
+
+    Arguments:
+        path(str): path to the local config
+        key(str): key we are looking up
+    """
+    try:
+        return get_key_from_config(local(path), key)
+    except exceptions.MissingConfigSectionException:
+        try:
+            return get_key_from_config(shared(), key)
+        except exceptions.MissingConfigSectionException as missing_section_exception:
+            perun_log.error(str(missing_section_exception))

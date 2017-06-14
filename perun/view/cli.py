@@ -10,6 +10,7 @@ import pkgutil
 
 import click
 
+import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
@@ -21,7 +22,6 @@ import perun.view
 
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException
-from perun.utils.helpers import CONFIG_UNIT_ATTRIBUTES
 from perun.core.logic.pcs import PCS
 
 __author__ = 'Tomas Fiedor'
@@ -73,123 +73,19 @@ def config(key, value, **kwargs):
     commands.config(key, value, **kwargs)
 
 
-def register_unit(pcs, unit_name):
-    """
-    Arguments:
-        pcs(PCS): perun repository wrapper
-        unit_name(str): name of the unit
-    """
-    unit_params = CONFIG_UNIT_ATTRIBUTES[unit_name]
-
-    perun_log.quiet_info("\nRegistering new {} unit".format(unit_name))
-    if not unit_params:
-        added_unit_name = click.prompt('name')
-        # Add to config
-        perun_config.append_key_at_config(pcs.local_config(), unit_name, added_unit_name)
-    else:
-        # Obtain each parameter for the given unit_name
-        added_unit = {}
-        for param in unit_params:
-            if param.endswith('args'):
-                param_value = click.prompt(param + "( -- separated list)")
-            else:
-                param_value = click.prompt(param)
-            added_unit[param] = param_value.split(' -- ')
-        # Append to config
-        perun_config.append_key_at_config(pcs.local_config(), unit_name, added_unit)
-    click.pause()
-
-
-def unregister_unit(_):
-    """Unregister the unit"""
-    pass
-
-
-def get_unit_list_from_config(perun_config, unit_type):
-    """
-    Arguments:
-        perun_config(dict): dictionary config
-        unit_type(str): type of the attribute we are getting
-
-    Returns:
-        list: list of units from config
-    """
-    unit_plural = unit_type + 's'
-    is_iterable = unit_plural in ['collectors', 'postprocessors']
-
-    if unit_plural in perun_config.keys():
-        return [(unit_type, u.name if is_iterable else u) for u in perun_config[unit_plural]]
-    else:
-        return []
-
-
-def list_units(pcs, do_confirm=True):
-    """List the registered units inside the configuration of the perun in the following format.
-
-    Unit_no. Unit [Unit_type]
-
-    Arguments:
-        pcs(PCS): perun repository wrapper
-        do_confirm(bool): true if we should Press any key to continue
-    """
-    local_config = pcs.local_config().data
-    units = []
-    units.extend(get_unit_list_from_config(local_config, 'cmd'))
-    units.extend(get_unit_list_from_config(local_config, 'workload'))
-    units.extend(get_unit_list_from_config(local_config, 'collector'))
-    units.extend(get_unit_list_from_config(local_config, 'postprocessor'))
-    unit_list = list(enumerate(units))
-    perun_log.quiet_info("")
-    if not unit_list:
-        perun_log.quiet_info("no units registered yet")
-    else:
-        for unit_no, (unit_type, unit_name) in unit_list:
-            perun_log.quiet_info("{}. {} [{}]".format(unit_no, unit_name, unit_type))
-
-    if do_confirm:
-        click.pause()
-
-    return unit_list
-
-
-__config_functions__ = {
-    'b': lambda pcs: register_unit(pcs, "bins"),
-    'w': lambda pcs: register_unit(pcs, "workloads"),
-    'c': lambda pcs: register_unit(pcs, "collectors"),
-    'p': lambda pcs: register_unit(pcs, "postprocessors"),
-    'l': list_units,
-    'r': unregister_unit,
-    'q': lambda pcs: exit(0)
-}
-
-
 def configure_local_perun(perun_path):
     """Configures the local perun repository with the interactive help of the user
 
     Arguments:
         perun_path(str): destination path of the perun repository
     """
-    invalid_option_happened = False
-    while True:
-        click.clear()
-        if invalid_option_happened:
-            perun_log.warn("invalid option '{}'".format(option))
-            invalid_option_happened = False
-        perun_log.quiet_info("Welcome to the interactive configuration of Perun!")
-        click.echo("[b] Register new binary/application run command")
-        click.echo("[w] Register application workload")
-        click.echo("[c] Register collector")
-        click.echo("[p] Register postprocessor")
-        click.echo("[l] List registered units")
-        click.echo("[r] Remove registered unit")
-        click.echo("[q] Quit")
-
-        click.echo("\nAction:", nl=False)
-        option = click.getchar()
-        if option not in __config_functions__.keys():
-            invalid_option_happened = True
-            continue
-        __config_functions__.get(option)(PCS(perun_path))
+    pcs = PCS(perun_path)
+    editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
+    local_config_file = os.path.join(pcs.path, 'local.yml')
+    try:
+        utils.run_external_command([editor, local_config_file])
+    except ValueError as v_exception:
+        perun_log.error("could not invoke '{}' editor: {}".format(editor, str(v_exception)))
 
 
 @cli.command()
@@ -203,7 +99,7 @@ def configure_local_perun(perun_path):
 @click.option('--vcs-params', metavar='<params>',
               help="Passes additional param to a supported version control system initialization.")
 @click.option('--configure', '-c', is_flag=True, default=False,
-              help='Runs the interactive initialization of the local configuration for the perun')
+              help='Opens the local configuration file for initial configuration edit.')
 def init(dst, configure, **kwargs):
     """Initialize the new perun performance control system or reinitializes existing one.
 
