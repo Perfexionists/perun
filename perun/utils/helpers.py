@@ -45,11 +45,15 @@ PROFILE_TYPE_COLOURS = {
     'memory': 'white',
     PROFILE_MALFORMED: 'red'
 }
+PROFILE_DELIMITER = '|'
 
 HEADER_ATTRS = ['underline']
 HEADER_COMMIT_COLOUR = 'green'
-HEADER_INFO_COLOUR = 'grey'
-HEADER_SLASH_COLOUR = 'grey'
+HEADER_INFO_COLOUR = 'white'
+HEADER_SLASH_COLOUR = 'white'
+
+DESC_COMMIT_COLOUR = 'white'
+DESC_COMMIT_ATTRS = ['bold', 'dark']
 
 # Raw output specific thing
 RAW_KEY_COLOUR = 'magenta'

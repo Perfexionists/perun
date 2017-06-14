@@ -25,7 +25,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    ProfileInfo
+    DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ProfileInfo
 from perun.utils.exceptions import NotPerunRepositoryException
 from perun.core.logic.pcs import pass_pcs
 
@@ -273,7 +273,7 @@ def print_short_minor_info_header():
     ), end='')
 
     # Print middle column---profile number info
-    slash = termcolor.colored('/', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+    slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
     end_msg = termcolor.colored(' profiles) ', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
     print(termcolor.colored(" ({0}{4}{1}{4}{2}{4}{3}{5}".format(
         termcolor.colored('a', HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS),
@@ -379,7 +379,7 @@ def print_short_minor_version_info(pcs, minor_version):
         # Print the coloured numbers
         for profile_type in SUPPORTED_PROFILE_TYPES:
             print("{}{}".format(
-                termcolor.colored('/', HEADER_SLASH_COLOUR),
+                termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
                 termcolor.colored("{}".format(
                     tracked_profiles[profile_type]
                 ), PROFILE_TYPE_COLOURS[profile_type])
@@ -392,7 +392,9 @@ def print_short_minor_version_info(pcs, minor_version):
     short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
     if len(short_description) > MAXIMAL_LINE_WIDTH:
         short_description = short_description[:MAXIMAL_LINE_WIDTH-3] + "..."
-    print(" {0} ".format(short_description))
+    print(termcolor.colored(
+        " {0} ".format(short_description), DESC_COMMIT_COLOUR, attrs=DESC_COMMIT_ATTRS
+    ))
 
 
 def print_minor_version_info(head_minor_version, indent=0):
