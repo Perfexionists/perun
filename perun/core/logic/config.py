@@ -11,7 +11,8 @@ import collections
 import os
 import re
 import sys
-import yaml
+
+from ruamel.yaml import YAML
 
 import perun.utils.decorators as decorators
 import perun.utils.exceptions as exceptions
@@ -65,39 +66,39 @@ def init_local_config_at(path, wrapped_vcs):
 
     # Create a config for user to set up
     local_config = streams.safely_load_yaml_from_stream("""
-    vcs:
-      type: {0}
-      url: {1}
+vcs:
+  type: {0}
+  url: {1}
 
-    ## To collect profiling data from the binary using the set of collectors,
-    ## uncomment and edit the following region:
-    # cmds:
-    #   - echo
+## To collect profiling data from the binary using the set of collectors,
+## uncomment and edit the following region:
+# cmds:
+#   - echo
 
-    ## To add set of parameters for the profiled command/binary,
-    ## uncomment and edit the following region:
-    # args:
-    #   - -e
+## To add set of parameters for the profiled command/binary,
+## uncomment and edit the following region:
+# args:
+#   - -e
 
-    ## To add workloads/inputs for the profiled command/binary,
-    ## uncomment and edit the following region:
-    # workloads:
-    #   - hello
-    #   - world
+## To add workloads/inputs for the profiled command/binary,
+## uncomment and edit the following region:
+# workloads:
+#   - hello
+#   - world
 
-    ## To register a collector for generating profiling data,
-    ## uncomment and edit the following region:
-    # collectors:
-    #   - name: time
-    ## Try '$ perun collect --help' to obtain list of supported collectors!
+## To register a collector for generating profiling data,
+## uncomment and edit the following region:
+# collectors:
+#   - name: time
+## Try '$ perun collect --help' to obtain list of supported collectors!
 
-    ## To register a postprocessor for generated profiling data,
-    ## uncomment and edit the following region (!order matters!):
-    # postprocessors:
-    #   - name: normalizer
-    #     params: --remove-zero
-    #   - name: filter
-    ## Try '$ perun postprocessby --help' to obtain list of supported collectors!
+## To register a postprocessor for generated profiling data,
+## uncomment and edit the following region (!order matters!):
+# postprocessors:
+#   - name: normalizer
+#     params: --remove-zero
+#   - name: filter
+## Try '$ perun postprocessby --help' to obtain list of supported collectors!
     """.format(wrapped_vcs['vcs']['type'], wrapped_vcs['vcs']['url']))
 
     write_config_file(local_config, path)
@@ -138,7 +139,7 @@ def write_config_file(config, path):
         config, path
     ), 2)
     with open(path, 'w') as yaml_file:
-        yaml.dump(config, yaml_file, default_flow_style=False)
+        YAML().dump(config, yaml_file)
 
 
 def is_valid_key(key):

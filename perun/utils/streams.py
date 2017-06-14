@@ -5,7 +5,7 @@ This module encapulates such functions, so they can be used in CLI, in tests, in
 """
 
 import os
-import yaml
+from ruamel.yaml import YAML
 
 import perun.utils.log as log
 
@@ -30,7 +30,7 @@ def safely_load_yaml_from_stream(yaml_stream):
     Arguments:
         yaml_stream(str): stream in the yaml format (or not)
     """
-    loaded_yaml = yaml.safe_load(yaml_stream)
+    loaded_yaml = YAML().load(yaml_stream)
 
     if not loaded_yaml and yaml_stream:
         log.warn('stream is not in yaml format')

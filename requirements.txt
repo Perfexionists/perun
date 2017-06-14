@@ -2,4 +2,4 @@ click==6.7
 termcolor==1.1.0
 colorama==0.3.7
 kivy==1.9.1
-PyYAML==3.12
+ruamel.yaml==0.15.6
