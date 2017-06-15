@@ -41,10 +41,10 @@ def init_shared_config_at(path):
     store.touch_file(path)
 
     shared_config = streams.safely_load_yaml_from_stream("""
-    global:
-        - perun_status_fmt:
-        - perun_log_fmt:
-        - editor: vim
+global:
+    - profile_info_fmt: [type] [cmd]-[workload]-[collector] ([time])
+    - minor_version_info_fmt: [id:6] ([stats]) [desc]
+    - editor: vim
     """)
 
     write_config_file(shared_config, path)
