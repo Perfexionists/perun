@@ -118,3 +118,28 @@ def print_job_progress(overall_jobs):
         str(percentage_done).rjust(3, ' ')
     ), end='')
     print_job_progress.current_job += 1
+
+
+def cprint(string, colour, attrs=None):
+    """Wrapper over coloured print without adding new line
+
+    Arguments:
+        string(str): string that is printed with colours
+        colour(str): colour that will be used to colour the string
+        attrs(list): list of additional attributes for the colouring
+    """
+    attrs = attrs or []
+    print(termcolor.colored(string, colour, attrs=attrs), end='')
+
+
+def cprintln(string, colour, attrs=None, ending='\n'):
+    """Wrapper over coloured print with added new line or other ending
+
+    Arguments:
+        string(str): string that is printed with colours and newline
+        colour(str): colour that will be used to colour the stirng
+        attrs(list): list of additional attributes for the colouring
+        ending(str): ending of the string, be default new line
+    """
+    attrs = attrs or []
+    print(termcolor.colored(string, colour, attrs=attrs), end=ending)

@@ -42,9 +42,9 @@ def init_shared_config_at(path):
 
     shared_config = streams.safely_load_yaml_from_stream("""
 global:
-    - profile_info_fmt: [type] [cmd]-[workload]-[collector] ([time])
-    - minor_version_info_fmt: [id:6] ([stats]) [desc]
-    - editor: vim
+    profile_info_fmt: '[type]  [cmd]  [workload]  [collector]   ([time]) [id]'
+    minor_version_info_fmt: '[id:6] ([stats]) [desc]'
+    editor: vim
     """)
 
     write_config_file(shared_config, path)
@@ -151,7 +151,7 @@ def is_valid_key(key):
     Returns:
         bool: true if the key is in valid format
     """
-    valid_key_pattern = re.compile(r"^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*$")
+    valid_key_pattern = re.compile(r"^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$")
     return valid_key_pattern.match(key) is not None
 
 

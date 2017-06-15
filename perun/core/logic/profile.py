@@ -205,3 +205,37 @@ def extract_job_from_profile(profile):
     workload = profile['header']['workload']
 
     return Job(collector, posts, cmd, workload, params)
+
+
+class ProfileInfo(object):
+    """Structure for storing information about profiles.
+
+    This is mainly used for formated output of the profile list using
+    the command line interface
+    """
+    def __init__(self, path, real_path, mtime, is_raw_profile=False):
+        """
+        Arguments:
+            path(str): contains the name of the file, which identifies it in the index
+            real_path(str): real path to the profile, i.e. how can it really be accessed
+                this is either in jobs, in objects or somewhere else
+            mtime(str): time of the modification of the profile
+            is_raw_profile(bool): true if the stored profile is raw, i.e. in json and not
+                compressed
+        """
+        # Load the data from JSON, which contains additional information about profile
+        loaded_profile = load_profile_from_file(real_path, is_raw_profile)
+
+        self.path = path
+        self.id = os.path.relpath(real_path, os.getcwd())
+        self.type = loaded_profile['header']['type']
+        self.time = mtime
+        self.cmd = loaded_profile['header']['cmd']
+        self.args = loaded_profile['header']['params']
+        self.workload = loaded_profile['header']['workload']
+        self.collector = loaded_profile['collector_info']['name']
+        self.checksum = None
+
+    valid_attributes = [
+        "path", "type", "time", "cmd", "args", "workload", "collector", "checksum", "id"
+    ]

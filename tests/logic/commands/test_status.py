@@ -6,12 +6,13 @@ Tests whether the perun correctly displays the status of the repository, with al
 cases, etc."""
 
 import collections
-import git
 import json
 import os
-import pytest
 import re
 import shutil
+
+import pytest
+import git
 
 import perun.utils.timestamps as timestamps
 import perun.core.logic.commands as commands
@@ -20,7 +21,7 @@ import perun.core.logic.store as store
 from perun.utils.exceptions import NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
-timestamp_re = re.compile(r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf")
+TIMESTAMP_RE = re.compile(r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf")
 
 
 def analyze_profile_pool(profile_pool):
@@ -50,9 +51,10 @@ def profile_pool_to_info(profile_pool):
     for profile in profile_pool:
         with open(profile, 'r') as profile_handle:
             profile_contents = json.load(profile_handle)
-            profile_name = timestamp_re.sub('', os.path.split(profile)[1])
             profile_time = timestamps.timestamp_to_str(os.stat(profile).st_mtime)
-            yield (profile_contents['header']['type'], profile_name, profile_time)
+            yield (profile_contents['header']['type'],
+                   profile_contents['collector_info']['name'],
+                   profile_time)
 
 
 def populate_repo_with_untracked_profiles(pcs_path, untracked_profiles):
@@ -150,7 +152,6 @@ def assert_printed_profiles(profile_info, out):
             break
     else:
         # Entry not found
-        print(out)
         assert False
 
 
@@ -181,7 +182,7 @@ def assert_info(out, git_repo, stored_profiles, untracked_profiles):
     i += 1
     if stored_profiles:
         # Skip empty line
-        i += 1
+        i += 2
         count = 0
         profile_info = set(profile_pool_to_info(stored_profiles))
         while out[i] != '':
@@ -193,7 +194,7 @@ def assert_info(out, git_repo, stored_profiles, untracked_profiles):
     assert_untracked_overview_info(out[i], untracked_profiles)
     if untracked_profiles:
         # Skip header and empty line
-        i += 2
+        i += 3
         count = 0
         profile_info = set(profile_pool_to_info(untracked_profiles))
         while out[i] != '':

@@ -21,11 +21,12 @@ import perun.core.logic.profile as profile
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
 
+from perun.utils.log import cprint, cprintln
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ProfileInfo
+    DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ID_TYPE_COLOUR
 from perun.utils.exceptions import NotPerunRepositoryException
 from perun.core.logic.pcs import pass_pcs
 
@@ -33,6 +34,13 @@ from perun.core.logic.pcs import pass_pcs
 colorama.init()
 UNTRACKED_REGEX = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
+# Regex for parsing the formating tag [<tag>:<size>f<fill_char>]
+FMT_REGEX = re.compile("[[]([a-zA-Z]+)(:[0-9]+)?(f.)?[]]")
+# Scanner for parsing formating strings, i.e. breaking it to parts
+FMT_SCANNER = re.Scanner([
+    (r"[[]([a-zA-Z]+)(:[0-9]+)?(f.)?[]]", lambda scanner, token: ("fmt_string", token)),
+    (r"[^][]*", lambda scanner, token: ("rest", token)),
+])
 
 
 def lookup_minor_version(func):
@@ -290,48 +298,58 @@ def print_short_minor_info_header():
     ))
 
 
-def print_profile_number_for_minor(base_dir, minor_version, ending='\n'):
-    """Print the number of tracked profiles corresponding to the profile
+def calculate_profile_numbers_per_type(profile_list):
+    """Calculates how many profiles of given type are in the profile type.
+
+    Returns dictionary mapping types of profiles (i.e. memory, time, ...) to the
+    number of profiles that are occurring in the profile list. Used for statistics
+    about profiles corresponding to minor versions.
 
     Arguments:
-        base_dir(str): base directory for minor version storage
-        minor_version(str): minor version we are printing the info for
-        ending(str): ending of the print (for different output of log and status)
+        profile_list(list): list of ProfileInfo with information about profiles
+
+    Returns:
+        dict: dictionary mapping profile types to number of profiles of given type in the list
     """
-    tracked_profiles = store.get_profile_number_for_minor(base_dir, minor_version)
-    print_profile_numbers(tracked_profiles, 'tracked', ending)
+    profile_numbers = collections.defaultdict(int)
+    for profile_info in profile_list:
+        profile_numbers[profile_info.type] += 1
+    profile_numbers['all'] = len(profile_list)
+    return profile_numbers
 
 
-def print_profile_numbers(profile_numbers, profile_type, line_ending='\n'):
+def print_profile_numbers(profile_numbers, profile_types, line_ending='\n'):
     """Helper function for printing the numbers of profile to output.
 
     Arguments:
-        profile_numbers(dict): dictionary of nomber of profiles grouped by type
-        profile_type(str): type of the profiles (tracked, untracked, etc.)
+        profile_numbers(dict): dictionary of number of profiles grouped by type
+        profile_types(str): type of the profiles (tracked, untracked, etc.)
         line_ending(str): ending of the print (for different outputs of log and status)
     """
     if profile_numbers['all']:
-        print("{0[all]} {1} profiles (".format(profile_numbers, profile_type), end='')
-        first_outputed = False
+        print("{0[all]} {1} profiles (".format(profile_numbers, profile_types), end='')
+        first_printed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
             if not profile_numbers[profile_type]:
                 continue
-            if first_outputed:
-                print(', ', end='')
-            print(termcolor.colored("{0} {1}".format(
-                profile_numbers[profile_type], profile_type
-            ), PROFILE_TYPE_COLOURS[profile_type]), end='')
-            first_outputed = True
+            print(', ' if first_printed else '', end='')
+            first_printed = True
+            type_colour = PROFILE_TYPE_COLOURS[profile_type]
+            cprint("{0} {1}".format(profile_numbers[profile_type], profile_type), type_colour)
         print(')', end=line_ending)
     else:
-        print(termcolor.colored('(no {} profiles)'.format(profile_type),
-                                TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='\n')
+        cprintln('(no {} profiles)'.format(profile_types), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
 
 
 @pass_pcs
 @lookup_minor_version
 def log(pcs, minor_version, short=False, **_):
-    """Prints the log of the @p pcs
+    """Prints the log of the performance control system
+
+    Either prints the short or longer version. In short version, only header and short
+    list according to the formatting string from stored in the configuration. Prints
+    the number of profiles associated with each of the minor version and some basic
+    information about minor versions, like e.g. description, hash, etc.
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
@@ -349,11 +367,11 @@ def log(pcs, minor_version, short=False, **_):
         if short:
             print_short_minor_version_info(pcs, minor)
         else:
-            print(termcolor.colored("Minor Version {}".format(
-                minor.checksum
-            ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS))
-            print_profile_number_for_minor(pcs.get_object_directory(), minor.checksum)
-            print_minor_version_info(minor, 1)
+            cprintln("Minor Version{}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+            base_dir = pcs.get_object_directory()
+            tracked_profiles = store.get_profile_number_for_minor(base_dir, minor.checksum)
+            print_profile_numbers(tracked_profiles, 'tracked')
+            print_minor_version_info(minor, indent=1)
 
 
 def print_short_minor_version_info(pcs, minor_version):
@@ -413,84 +431,158 @@ def print_minor_version_info(head_minor_version, indent=0):
     print(indented_desc)
 
 
-def print_profile_info_list(profile_list, profile_output_colour='white'):
-    """
+def print_formating_token(fmt_string, info_object, info_attr, size_limit,
+                          default_color='white', value_fill=' '):
+    """Prints the token from the fmt_string, according to the values stored in info_object
+
+    info_attr is one of the tokens from fmt_string, which is extracted from the info_object,
+    that stores the real value. This value is then outputed to stdout with colours, fills,
+    and is trimmed to the given size.
+
     Arguments:
-        profile_list(list): list of profiles of ProfileInfo objects
-        profile_output_colour(str): colour of the output profiles (red for untracked)
+        fmt_string(str): formating string for the given token
+        info_object(object): object with stored information (ProfileInfo or MinorVersion)
+        size_limit(int): will limit the output of the value of the info_object to this size
+        info_attr(str): attribute we are looking up in the info_object
+        default_color(str): default colour of the formatting token that will be printed out
+        value_fill(char): will fill the string with this
     """
+    # Check if encountered incorrect token in the formating string
+    if not hasattr(info_object, info_attr):
+        perun_log.error("invalid formating string '{}'".format(fmt_string))
+
+    # Obtain the value for the printing
+    profile_raw_value = getattr(info_object, info_attr)
+    profile_info_value = profile_raw_value.ljust(size_limit, value_fill)
+
+    # Print the actual token
+    if info_attr == 'type':
+        cprint("[{}]".format(profile_info_value), PROFILE_TYPE_COLOURS[profile_raw_value])
+    elif info_attr == 'id':
+        cprint("{}".format(profile_info_value), ID_TYPE_COLOUR)
+    else:
+        cprint(profile_info_value, default_color)
+
+
+def calculate_maximal_lenghts_for_profile_infos(profile_list):
+    """For given profile list, will calculate the maximal sizes for its values for table view.
+
+    Arguments:
+        profile_list(list): list of ProfileInfo informations
+
+    Returns:
+        dict: dictionary with maximal lengths for profiles
+    """
+    # Measure the maxima for the lenghts of the profile names and profile types
+    max_lengths = collections.defaultdict(int)
+    for profile_info in profile_list:
+        for attr in profile.ProfileInfo.valid_attributes:
+            assert hasattr(profile_info, attr)
+            max_lengths[attr] \
+                = max(len(attr), max_lengths[attr], len(str(getattr(profile_info, attr))))
+    return max_lengths
+
+
+def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tracked'):
+    """Prints list of profiles and counts per type of tracked/untracked profiles.
+
+    Prints the list of profiles, trims the sizes of each information according to the
+    computed maximal lengths If the output is short, the list itself is not printed,
+    just the information about counts. Tracked and untracked differs in colours.
+
+    Arguments:
+        pcs(PCS): wrapped perun repository
+        profile_list(list): list of profiles of ProfileInfo objects
+        max_lengths(dict): dictionary with maximal sizes for the output of profiles
+        short(bool): true if the output should be short
+        list_type(str): type of the profile list (either untracked or tracked)
+    """
+    # Print with padding
+    profile_output_colour = 'white' if list_type == 'tracked' else 'red'
+    ending = ':\n\n' if not short else "\n"
+
+    profile_numbers = calculate_profile_numbers_per_type(profile_list)
+    print_profile_numbers(profile_numbers, list_type, ending)
+
     # Skip empty profile list
-    if len(profile_list) == 0:
+    if len(profile_list) == 0 or short:
         return
 
-    # Measure the maxima for the lenghts of the profile names and profile types
-    maximal_profile_name_len = max(len(profile_info.path) for profile_info in profile_list)
-    maximal_type_len = max(len(profile_info.type) for profile_info in profile_list)
+    # Load formating string for profile
+    profile_info_fmt = perun_config.lookup_key_recursively(pcs.path, 'global.profile_info_fmt')
+    fmt_tokens, _ = FMT_SCANNER.scan(profile_info_fmt)
 
-    # Print the list of the profiles
+    # Print header
+    print("\t", end='')
+    for (token_type, token) in fmt_tokens:
+        if token_type == 'fmt_string':
+            attr_type, limit, _ = FMT_REGEX.match(token).groups()
+            limit = limit or max_lengths[attr_type] + (2 if attr_type == 'type' else 0)
+            cprint(attr_type.center(limit, ' '), profile_output_colour, HEADER_ATTRS)
+        else:
+            # Print the rest (non token stuff)
+            print(" "*len(token), end='')
+    print("")
+
+    # Print profiles
     for profile_info in profile_list:
-        print(termcolor.colored(
-            "\t[{}]".format(profile_info.type).ljust(maximal_type_len+4),
-            PROFILE_TYPE_COLOURS[profile_info.type], attrs=TEXT_ATTRS,
-        ), end="")
-        print(termcolor.colored("{0} ({1})".format(
-            profile_info.path.ljust(maximal_profile_name_len),
-            profile_info.time,
-        ), profile_output_colour))
+        print("\t", end='')
+        for (token_type, token) in fmt_tokens:
+            if token_type == 'fmt_string':
+                attr_type, limit, fill = FMT_REGEX.match(token).groups()
+                limit = limit or max_lengths[attr_type]
+                print_formating_token(profile_info_fmt, profile_info, attr_type, limit,
+                                      default_color=profile_output_colour, value_fill=fill or ' ')
+            else:
+                cprint(token, profile_output_colour)
+        print("")
 
 
-def print_minor_version_profiles(pcs, minor_version, short):
-    """Prints profiles assigned to the given minor version.
+def get_minor_version_profiles(pcs, minor_version):
+    """Returns profiles assigned to the given minor version.
 
     Arguments:
         pcs(PCS): performance control system
         minor_version(str): identification of the commit (preferably sha1)
-        short(bool): whether the info about untracked profiles should be short
+
+    Returns:
+        list: list of ProfileInfo parsed from index of the given minor_version
     """
     # Compute the
     profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
     profile_info_list = []
     for index_entry in profiles:
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
-        profile_type = store.peek_profile_type(profile_name)
-        profile_info_list.append(ProfileInfo(index_entry.path, profile_type, index_entry.time))
+        profile_info \
+            = profile.ProfileInfo(index_entry.path, profile_name, index_entry.time)
+        profile_info_list.append(profile_info)
 
-    # Print with padding
-    ending = ':\n\n' if not short else "\n"
-    print_profile_number_for_minor(pcs.get_object_directory(), minor_version, ending)
-    if not short:
-        print_profile_info_list(profile_info_list)
+    return profile_info_list
 
 
-def print_untracked_profiles(pcs, short):
-    """Prints untracked profiles, currently residing in the .perun/jobs directory.
+def get_untracked_profiles(pcs):
+    """Returns list untracked profiles, currently residing in the .perun/jobs directory.
 
     Arguments:
         pcs(PCS): performance control system
-        short(bool): whether the info about untracked profiles should be short
-    """
-    profile_numbers = collections.defaultdict(int)
-    profile_list = []
-    untracked = [path for path in os.listdir(pcs.get_job_directory()) if path.endswith('perf')]
 
+    Returns:
+        list: list of ProfileInfo parsed from .perun/jobs directory
+    """
+    profile_list = []
     # Transform each profile of the path to the ProfileInfo object
-    for untracked_path in untracked:
+    for untracked_path in os.listdir(pcs.get_job_directory()):
+        if not untracked_path.endswith('perf'):
+            continue
+
         real_path = os.path.join(pcs.get_job_directory(), untracked_path)
-        loaded_profile = profile.load_profile_from_file(real_path, True)
-        profile_type = loaded_profile['header']['type']
-        path = UNTRACKED_REGEX.search(untracked_path).groups()[0]
         time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
 
         # Update the list of profiles and counters of types
-        profile_list.append(ProfileInfo(path, profile_type, time))
-        profile_numbers[profile_type] += 1
-        profile_numbers['all'] += 1
+        profile_info = profile.ProfileInfo(untracked_path, real_path, time, is_raw_profile=True)
+        profile_list.append(profile_info)
 
-    # Output the the console
-    ending = ':\n\n' if not short else "\n"
-    print_profile_numbers(profile_numbers, 'untracked', ending)
-    if not short:
-        print_profile_info_list(profile_list, 'red')
+    return profile_list
 
 
 @pass_pcs
@@ -522,10 +614,13 @@ def status(pcs, short=False):
         print_minor_version_info(minor_version)
 
     # Print profiles
-    print_minor_version_profiles(pcs, minor_head, short)
+    minor_version_profiles = get_minor_version_profiles(pcs, minor_head)
+    untracked_profiles = get_untracked_profiles(pcs)
+    maxs = calculate_maximal_lenghts_for_profile_infos(minor_version_profiles + untracked_profiles)
+    print_profile_info_list(pcs, minor_version_profiles, maxs, short)
     if not short:
         print("")
-    print_untracked_profiles(pcs, short)
+    print_profile_info_list(pcs, untracked_profiles, maxs, short, 'untracked')
 
 
 @pass_pcs
