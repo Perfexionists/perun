@@ -316,7 +316,7 @@ def postprocessby(ctx, profile, minor):
 
 
 @cli.group()
-@click.option('--cmd', '-b', nargs=1, required=True, multiple=True,
+@click.option('--cmd', '-c', nargs=1, required=True, multiple=True,
               help='Command that we will collect data from single collector.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
               help='Additional arguments for the command.')
