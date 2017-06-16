@@ -60,11 +60,10 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
             dict: dictionary of the form {'name', 'params'}
         """
         # Get the dictionaries for from string and from file params obtained from commandline
-        from_string_dict = ukwargs.get(unit_type + "_params_from_string", {}).get(unit, {})
-        from_file_dict = ukwargs.get(unit_type + "_params_from_file", {}).get(unit, {})
+        unit_param_dict = ukwargs.get(unit_type + "_params", {}).get(unit, {})
 
         # Construct the object with name and parameters
-        return Unit(unit, utils.merge_dictionaries(from_file_dict, from_string_dict))
+        return Unit(unit, unit_param_dict)
 
     # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
     collector_pairs = list(map(lambda c: construct_unit(c, 'collector', kwargs), collector))
@@ -110,10 +109,10 @@ def load_job_info_from_config(pcs):
         'postprocessor': [post.get('name', '') for post in postprocessors],
         'collector': [collect.get('name', '') for collect in collectors],
         'args': local_config['args'] if 'args' in local_config.keys() else [],
-        'collector_params_from_file': {
+        'collector_params': {
             collect.get('name', ''): collect.get('params', {}) for collect in collectors
             },
-        'postprocesor_params_from_file': {
+        'postprocesor_params': {
             post.get('name', ''): post.get('params', {}) for post in postprocessors
             }
     }
@@ -228,7 +227,7 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
     try:
         cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
         run_single_job(cmd, args, workload, [collector_name], [], **{
-            'collector_params_from_string': {collector_name: collector_params}
+            'collector_params': {collector_name: collector_params}
         })
     except KeyError as collector_exception:
         log.error("missing parameter: {}".format(collector_exception))

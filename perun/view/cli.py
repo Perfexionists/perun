@@ -16,6 +16,7 @@ import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
 import perun.core.logic.runner as runner
+import perun.core.vcs as vcs
 import perun.collect
 import perun.postprocess
 import perun.view
@@ -90,8 +91,8 @@ def configure_local_perun(perun_path):
 
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
-# TODO: Add choice
 @click.option('--vcs-type', metavar='<type>', default='pvcs',
+              type=click.Choice(utils.get_supported_module_names(vcs, '_init')),
               help="Apart of perun structure, a supported version control system can be wrapped"
                    " and initialized as well.")
 @click.option('--vcs-path', metavar='<path>',
@@ -348,7 +349,7 @@ def init_unit_commands():
                not hasattr(unit_package, 'COLLECTOR_TYPE'):
                 continue
 
-            # Skip those packages that do not contain the apropriate cli wrapper
+            # Skip those packages that do not contain the appropriate cli wrapper
             unit_module = perun.utils.get_module(module[1] + '.' + 'run')
             cli_function_name = module[1].split('.')[-1]
             if not hasattr(unit_module, cli_function_name):
@@ -407,7 +408,7 @@ def matrix(**kwargs):
     runner.run_matrix_job(**kwargs)
 
 
-def parse_yaml_file_param(ctx, param, value):
+def parse_yaml_param(ctx, param, value):
     """Callback function for parsing the yaml files to dictionary object
 
     Arguments:
@@ -420,24 +421,11 @@ def parse_yaml_file_param(ctx, param, value):
     """
     unit_to_params = {}
     for (unit, yaml_file) in value:
-        unit_to_params[unit] = streams.safely_load_yaml_from_file(yaml_file)
-    return unit_to_params
-
-
-def parse_yaml_string_param(ctx, param, value):
-    """Callback function for parsing the yaml string to dictionary object
-
-    Arguments:
-        ctx(click.Context): context of the called command
-        param(click.Option): parameter that is being parsed and read from commandline
-        value(str): value that is being read from the commandline
-
-    Returns:
-        dict: parse yaml dictionary
-    """
-    unit_to_params = {}
-    for (unit, yaml_string) in value:
-        unit_to_params[unit] = streams.safely_load_yaml_from_stream(yaml_string)
+        # First check if this is file
+        if os.path.exists(yaml_file):
+            unit_to_params[unit] = streams.safely_load_yaml_from_file(yaml_file)
+        else:
+            unit_to_params[unit] = streams.safely_load_yaml_from_stream(yaml_file)
     return unit_to_params
 
 
@@ -449,21 +437,23 @@ def parse_yaml_string_param(ctx, param, value):
 @click.option('--workload', '-w', nargs=1, required=True, multiple=True,
               help='Inputs for the binary, i.e. so called workloads, that are run on binary.')
 @click.option('--collector', '-c', nargs=1, required=True, multiple=True,
+              type=click.Choice(
+                  utils.get_supported_module_names(perun.collect, 'COLLECTOR_TYPE')
+              ),
               help='Collector unit used to collect the profiling data for the binary.')
-@click.option('--collector-params-from-string', '-cpfs', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_string_param,
-              help='Parameters for the given collector supplied as a string.')
-@click.option('--collector-params-from-file', '-cpff', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_file_param,
-              help='Parameters for the given collector read from the file in YAML format.')
+@click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_param,
+              help='Parameters for the given collector read from the file in YAML format or'
+                   'as a string..')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
+              type=click.Choice(
+                  utils.get_supported_module_names(perun.postprocess, 'SUPPORTED_PROFILES')
+              ),
               help='Additional postprocessing phases on profiles, after collection of the data.')
-@click.option('--postprocessor-params-from-string', '-ppfs', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_string_param,
-              help='Parameters for the given postprocessor supplied as a string.')
-@click.option('--postprocessor-params-from-file', '-ppff', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_file_param,
-              help='Parameters for the given postprocessor read from the file in the YAML format.')
+@click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_param,
+              help='Parameters for the given postprocessor read from the file in the YAML format or'
+                   'as a string.')
 def job(**kwargs):
     """Run specified batch of perun jobs to generate profiles.
 
@@ -493,7 +483,6 @@ def job(**kwargs):
             profile using the mcollect collector. The profiles are afterwards postprocessed,
             first using the normalizer and them with filter.
     """
-    # TODO: Add choice to collector/postprocessors from the registered shits
     runner.run_single_job(**kwargs)
 
 

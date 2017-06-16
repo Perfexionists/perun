@@ -10,7 +10,7 @@ from perun.utils.helpers import PostprocessStatus, pass_profile
 __author__ = 'Tomas Fiedor'
 
 
-def postprocess():
+def postprocess(**_):
     """Postprocessing phase of the filter
 
     Arguments:

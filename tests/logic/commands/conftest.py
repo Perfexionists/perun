@@ -1,16 +1,12 @@
-"""Shared fixtures for the testing of functionality of Perun commands.
+"""Shared fixtures for the testing of functionality of Perun commands."""
 
-Helper snippets:
-    for c in repo.iter_commits():
-        print("commit {} \"{}\" {}".format(binascii.hexlify(c.binsha).decode('utf-8'), c.author, c.summary))
-"""
-
-import git
-import pytest
 import os
 import shutil
 import subprocess
 import tempfile
+
+import git
+import pytest
 
 import perun.utils.streams as streams
 import perun.core.logic.commands as commands
@@ -33,7 +29,9 @@ def memory_collect_job():
     target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
 
     # Compile the testing stuff with debugging information set
-    output = subprocess.check_output(['gcc', '--std=c99', '-g', target_src_path, '-o', 'mct'], cwd=target_dir)
+    subprocess.check_output(
+        ['gcc', '--std=c99', '-g', target_src_path, '-o', 'mct'], cwd=target_dir
+    )
     target_bin_path = os.path.join(target_dir, 'mct')
     assert 'mct' in list(os.listdir(target_dir))
 
@@ -59,7 +57,7 @@ def complexity_collect_job():
     assert 'target_dir' in job_config.keys()
     job_config['target_dir'] = target_dir
 
-    return [target_dir], '', [''], ['complexity'], [], {'collector_params_from_file': {
+    return [target_dir], '', [''], ['complexity'], [], {'collector_params': {
         'complexity': job_config
     }}
 
@@ -229,10 +227,10 @@ class Helpers(object):
             path(str): path to the director which we will list
         """
         for root, dirs, files in os.walk(path):
-            for file in files:
-                print("file: ", os.path.join(root, file))
-            for d in dirs:
-                print("dirs: ", os.path.join(root, d))
+            for file_on_path in files:
+                print("file: ", os.path.join(root, file_on_path))
+            for dir_on_path in dirs:
+                print("dirs: ", os.path.join(root, dir_on_path))
 
     @staticmethod
     def count_contents_on_path(path):
@@ -246,7 +244,7 @@ class Helpers(object):
         """
         file_number = 0
         dir_number = 0
-        for root, dirs, files in os.walk(path):
+        for _, dirs, files in os.walk(path):
             for _ in files:
                 file_number += 1
             for _ in dirs:
@@ -280,8 +278,7 @@ class Helpers(object):
         for entry in store.walk_index(index_handle):
             if pred(entry):
                 return True
-        else:
-            return False
+        return False
 
 
 @pytest.fixture(scope="session")
@@ -291,4 +288,3 @@ def helpers():
         Helpers: object with helpers functions
     """
     return Helpers()
-

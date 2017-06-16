@@ -5,6 +5,7 @@ are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 """
 
 import importlib
+import pkgutil
 import subprocess
 
 from .log import msg_to_stdout, error
@@ -92,6 +93,23 @@ def get_module(module_name):
         get_module.cache[module_name] = importlib.import_module(module_name)
     return get_module.cache[module_name]
 get_module.cache = {}
+
+
+def get_supported_module_names(package, function_name):
+    """Obtains list of supported modules stored in the package.
+
+    Takes the package, iterates through all of the modules and check, if they contain the
+    function_name, that serves as simple identifier of search modules.
+
+    Returns:
+        list: list of names of supported version control systems
+    """
+    module_list = []
+    for (_, module_name, _) in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
+        module = get_module(module_name)
+        if hasattr(module, function_name):
+            module_list.append(module_name.split('.')[-1])
+    return module_list
 
 
 def merge_dictionaries(lhs, rhs):
