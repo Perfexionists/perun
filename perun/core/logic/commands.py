@@ -250,6 +250,9 @@ def add(pcs, profile_name, minor_version):
     # Register in the minor_version index
     store.register_in_index(pcs.get_object_directory(), minor_version, profile_name, profile_sum)
 
+    # Remove the file
+    os.remove(profile_name)
+
 
 @pass_pcs
 @lookup_minor_version

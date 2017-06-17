@@ -579,6 +579,9 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     if perun_log.VERBOSITY >= perun_log.VERBOSE_DEBUG:
         print_index(minor_index_file)
 
+    reg_rel_path = os.path.relpath(registered_file)
+    perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
+
 
 @decorators.assume_version(INDEX_VERSION, 1)
 def remove_from_index(base_dir, minor_version, removed_file, remove_all=False):
