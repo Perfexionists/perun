@@ -7,6 +7,7 @@ calls underlying commands from the commands module.
 import logging
 import os
 import pkgutil
+import re
 
 import click
 
@@ -16,6 +17,7 @@ import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
 import perun.core.logic.runner as runner
+import perun.core.logic.store as store
 import perun.core.vcs as vcs
 import perun.collect
 import perun.postprocess
@@ -145,8 +147,45 @@ def init(dst, configure, **kwargs):
                              + (" "*4) + ".perun/local.yml\n")
 
 
+def lookup_profile_file(ctx, param, value):
+    """Callback function for looking up the profile, if it does not exist
+
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        dict: parsed yaml file
+    """
+    # 1) if it exists return the value
+    if os.path.exists(value):
+        return value
+
+    perun_log.info("file '{}' not found. Checking pending jobs...".format(value))
+    # 2) if it does not exists check pending
+    job_dir = PCS(store.locate_perun_dir_on(os.getcwd())).get_job_directory()
+    job_path = os.path.join(job_dir, value)
+    if os.path.exists(job_path):
+        return job_path
+
+    perun_log.info("file '{}' not found in pending jobs...".format(value))
+    # 3) if still not found, check recursively all candidates for match and ask for confirmation
+    searched_regex = re.compile(value)
+    for root, _, files in os.walk(os.getcwd()):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if file.endswith('.perf') and searched_regex.search(full_path):
+                rel_path = os.path.relpath(full_path, os.getcwd())
+                if click.confirm("did you perhaps mean '{}'?".format(rel_path)):
+                    return full_path
+
+    return value
+
+
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>')
+@click.argument('profile', required=True, metavar='<profile>',
+                callback=lookup_profile_file)
 @click.argument('minor', required=False, default=None, metavar='<hash>')
 def add(profile, minor):
     """Assigns given profile to the concrete minor version storing its content in the perun dir.

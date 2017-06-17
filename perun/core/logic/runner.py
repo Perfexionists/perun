@@ -119,6 +119,7 @@ def load_job_info_from_config(pcs):
 
     return info
 
+
 def is_status_ok(returned_status, expected_status):
     """Helper function for checking the status of the runners.
 
