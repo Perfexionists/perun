@@ -2,7 +2,8 @@
 import curses
 import curses.textpad
 import sys
-import perun.view.memory.cli.heap_map_colors as hpcolors
+
+import perun.view.heapmap.heap_map_colors as hpcolors
 
 __author__ = 'Radim Podola'
 

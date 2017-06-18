@@ -1,0 +1,28 @@
+"""Heap map visualization of the profiles. """
+
+import click
+from copy import deepcopy
+from perun.utils.helpers import pass_profile
+import perun.utils.profile_converters as heap_representation
+import perun.view.heapmap.heap_map as hm
+
+__author__ = 'Radim Podola'
+
+
+def _call_heap(profile):
+    """ Call interactive heap map visualization
+
+    Arguments:
+        profile(dict): memory profile with records
+    """
+    heap_map = heap_representation.create_heap_map(deepcopy(profile))
+    heat_map = heap_representation.create_heat_map(profile)
+    hm.heap_map(heap_map, heat_map)
+
+
+@click.command()
+
+@pass_profile
+def heapmap(profile, **kwargs):
+    """Heap map visualization of the profile."""
+    _call_heap(profile)

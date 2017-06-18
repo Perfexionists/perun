@@ -2,7 +2,6 @@
 import copy
 
 __author__ = 'Radim Podola'
-#TODO move from cli package
 
 
 def create_heap_map(profile):
