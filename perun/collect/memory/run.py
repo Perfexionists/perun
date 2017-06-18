@@ -8,7 +8,7 @@ import click
 import perun.core.logic.runner as runner
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
-from perun.collect.memory.syscalls import run, init
+from perun.collect.memory.syscalls import run, init, check_debug_symbols
 from perun.utils.helpers import CollectStatus
 
 __author__ = 'Radim Podola'
@@ -16,8 +16,10 @@ _lib_name = "malloc.so"
 _tmp_log_filename = "MemoryLog"
 
 
-def before(**_):
+def before(cmd, **_):
     """ Phase for initialization the collect module
+    Arguments:
+        cmd(string): binary file to profile
 
     Returns:
         tuple: (return code, status message, updated kwargs)
@@ -29,6 +31,11 @@ def before(**_):
             error_msg = 'Build of the library failed with error code: '
             error_msg += str(result)
             return CollectStatus.ERROR, error_msg, {}
+
+    result = check_debug_symbols(cmd)
+    if not result:
+        error_msg = 'Binary needs to be compiled with debug info.'
+        return CollectStatus.ERROR, error_msg, {}
 
     return CollectStatus.OK, '', {}
 
@@ -61,11 +68,6 @@ def after(cmd, **kwargs):
 
     Returns:
         tuple: (return code, message, updated kwargs)
-
-    Fixme: There should be warning raised, when the debugging information is not present. (*)
-
-    (*) When one compiles some application without -g, the profiled binaries WILL generate empty
-    profiles, which is not really acceptable. Fix this ASAP!
 
     Case studies:
         --sampling=0.1 --no-func=f1 --no-func=f2 --no-source=s --all
@@ -119,6 +121,7 @@ def after(cmd, **kwargs):
 
 
 @click.command()
+
 @click.pass_context
 def memory(ctx):
     """Runs memory collect, collecting allocation through the program execution"""

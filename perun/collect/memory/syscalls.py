@@ -98,5 +98,25 @@ def init():
     return ret
 
 
+def check_debug_symbols(cmd):
+    """ Check if binary was compiled with debug symbols
+
+    Arguments:
+        cmd(string): binary file to profile
+
+    Returns:
+        bool: True if binary was compiled with debug symbols
+    """
+    try:
+        output = subprocess.check_output("objdump -h " + cmd + " | grep debug",
+                                         shell=True)
+        if output.decode("utf-8") is None:
+            return False
+    except subprocess.CalledProcessError:
+        return False
+
+    return True
+
+
 if __name__ == "__main__":
     pass
