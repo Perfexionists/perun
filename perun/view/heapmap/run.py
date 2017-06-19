@@ -21,8 +21,7 @@ def _call_heap(profile):
 
 
 @click.command()
-
 @pass_profile
-def heapmap(profile, **kwargs):
+def heapmap(profile, **_):
     """Heap map visualization of the profile."""
     _call_heap(profile)

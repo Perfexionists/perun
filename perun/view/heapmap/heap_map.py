@@ -382,7 +382,7 @@ class HeapMapVisualization(object):
                         matrix[row][col] = {"uid": None,
                                             "address": last_field,
                                             "amount": 0}
-                    else:                        
+                    else:
                         # record is in the next field, let's put it's info there
                         uid_info = self.__heap['info'][record['uid']]
                         matrix[row][col] = {"uid": uid_info,
@@ -532,7 +532,8 @@ class HeapMapVisualization(object):
         Returns:
             bool: success of the operation
         """
-        curses.update_lines_cols()
+        if hasattr(curses, "update_lines_cols"):
+            curses.update_lines_cols()
         self.__window.clear()
         self.__map_cords = None
 
@@ -560,7 +561,8 @@ class HeapMapVisualization(object):
 
     def draw_heat_map(self):
         """ Draw the window to represent HEAT map """
-        curses.update_lines_cols()
+        if hasattr(curses, "update_lines_cols"):
+            curses.update_lines_cols()
         self.__window.clear()
         self.__map_cords = None
 
