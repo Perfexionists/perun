@@ -2,9 +2,7 @@
 
 import os
 from decimal import Decimal
-
 import click
-
 import perun.core.logic.runner as runner
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
@@ -70,9 +68,9 @@ def after(cmd, **kwargs):
         tuple: (return code, message, updated kwargs)
 
     Case studies:
-        --sampling=0.1 --no-func=f1 --no-func=f2 --no-source=s --all
+        --sampling=0.1 --no-func=f2 --no-source=s --all
         -> run memory collector with 0.1s sampling,
-        excluding allocations in "f1", "f2" functions and in "s" source file,
+        excluding allocations in "f2" function and in "s" source file,
         including allocators and unreachable records in call trace
 
         --no-func=f1 --no-source=s --all
@@ -85,20 +83,13 @@ def after(cmd, **kwargs):
         excluding allocations in "f1" function,
         excluding allocators and unreachable records in call trace
     """
-    if 'sampling' in kwargs.keys():
-        sampling = Decimal(str(kwargs['sampling']))
-    else:
-        sampling = Decimal('0.001')
+    sampling = Decimal(str(kwargs['sampling']))
 
-    include_all = 'all' in kwargs.keys()
+    include_all = kwargs.get('all', False)
 
-    exclude_funcs = kwargs.get('no-func', [])
-    if exclude_funcs is None:
-        exclude_funcs = []
+    exclude_funcs = kwargs.get('no_func', None)
 
-    exclude_sources = kwargs.get('no-source', [])
-    if exclude_sources is None:
-        exclude_sources = []
+    exclude_sources = kwargs.get('no_source', None)
 
     try:
         profile = parser.parse_log(_tmp_log_filename, cmd, sampling)
@@ -112,8 +103,8 @@ def after(cmd, **kwargs):
         filters.trace_filter(profile, function=['?'], source=['unreachable'])
 
     if exclude_funcs or exclude_sources:
-        filters.allocation_filter(profile, function=exclude_funcs,
-                                  source=exclude_sources)
+        filters.allocation_filter(profile, function=[exclude_funcs],
+                                  source=[exclude_sources])
 
     filters.clear_profile(profile)
 
@@ -121,8 +112,14 @@ def after(cmd, **kwargs):
 
 
 @click.command()
+@click.option('--sampling', '-s', default=0.001,
+              help="Profile data sampling interval.")
+@click.option('--no-source', help="Exclude source filename.")
+@click.option('--no-func', help="Exclude function name.")
+@click.option('--all', '-a', is_flag=True, default=False,
+              help="Include allocators and unreachable records in call trace.")
 
 @click.pass_context
-def memory(ctx):
+def memory(ctx, **kwargs):
     """Runs memory collect, collecting allocation through the program execution"""
-    runner.run_collector_from_cli_context(ctx, 'memory', {})
+    runner.run_collector_from_cli_context(ctx, 'memory', kwargs)

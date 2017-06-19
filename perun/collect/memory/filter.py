@@ -1,5 +1,6 @@
 """This module provides methods for filtering the profile"""
 import perun.collect.memory.parsing as parsing
+
 __author__ = "Radim Podola"
 
 
@@ -89,8 +90,13 @@ def allocation_filter(profile, function, source):
     """
     def determinate(uid):
         """ Determinate expression """
-        return not uid or ((uid['function'] not in function) and
-                           (uid['source'] not in source))
+        if not uid:
+            return True
+        if uid['function'] in function:
+            return False
+        if uid['source'] in source:
+            return False
+        return True
 
     snapshots = profile['snapshots']
     for snapshot in snapshots:
