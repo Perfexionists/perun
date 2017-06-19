@@ -3,6 +3,7 @@
 Note that the functionality of the commands themselves are not tested,
 this is done in appropriate test files, only the API is tested."""
 
+import os
 import pytest
 
 from click.testing import CliRunner
@@ -39,23 +40,26 @@ def test_init_correct():
     assert result.exit_code == 0
 
 
-def test_add_correct(pcs_full, valid_profile_pool):
+def test_add_correct(helpers, pcs_full, valid_profile_pool):
     """Test running add from cli, without any problems
 
     Expecting no exceptions, no errors, zero status.
     """
     runner = CliRunner()
-    result = runner.invoke(cli.add, ['{}'.format(valid_profile_pool[0])])
+    added_profile = helpers.prepare_profile(pcs_full, valid_profile_pool[0], pcs_full.get_head())
+    result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added_profile)])
     assert result.exit_code == 0
+    assert os.path.exists(added_profile)
 
 
-def test_rm_correct(pcs_full, stored_profile_pool):
+def test_rm_correct(helpers, pcs_full, stored_profile_pool):
     """Test running rm from cli, without any problems
 
     Expecting no exceptions, no errors, zero status
     """
     runner = CliRunner()
-    result = runner.invoke(cli.rm, ['{}'.format(stored_profile_pool[1])])
+    deleted_profile = os.path.split(stored_profile_pool[1])[-1]
+    result = runner.invoke(cli.rm, ['{}'.format(deleted_profile)])
     assert result.exit_code == 0
 
 
