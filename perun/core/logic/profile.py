@@ -95,10 +95,21 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
         raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
 
 
+def generate_units(collector):
+    """Generate information about units used by the collector.
+
+    Note that this is mostly placeholder for future extension, how the units will be handled.
+    Arguments:
+        collector(module): collector module that collected the data
+
+    Returns:
+        dict: dictionary with map of resources to units
+    """
+    return collector.COLLECTOR_DEFAULT_UNITS
+
+
 def generate_header_for_profile(job):
     """
-    TODO: Add units of the header
-
     Arguments:
         job(Job): job with information about the computed profile
 
@@ -115,9 +126,7 @@ def generate_header_for_profile(job):
         'cmd': job.cmd,
         'params': job.args,
         'workload': job.workload,
-        'units': [
-            None
-        ]
+        'units': generate_units(collector)
     }
 
 
