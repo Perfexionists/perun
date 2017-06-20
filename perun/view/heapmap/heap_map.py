@@ -165,7 +165,7 @@ class HeapMapVisualization(object):
         Arguments:
             address(float): map field's address
         """
-        window_lines, window_cols = self.__window.getmaxyx()
+        _, window_cols = self.__window.getmaxyx()
         snap = self.__heap['snapshots'][self.__current_snap - 1]
         space_text = "Total allocated space: "
         address_text = "Address: "
@@ -685,7 +685,7 @@ class HeapMapVisualization(object):
                 self.__window.move(self.__map_cords['row'] + map_rows - 1, cols)
 
         else:
-            if cursor_relpos_cols < map_rows - 1:
+            if cursor_relpos_rows < map_rows - 1:
                 self.__window.move(rows + 1, cols)
             else:
                 self.__window.move(self.__map_cords['row'], cols)

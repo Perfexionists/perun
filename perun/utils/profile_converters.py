@@ -251,6 +251,25 @@ def __set_chunks(chunks, uid):
     return len(chunks) - 1
 
 
+def resource_iterator(snapshot, field, initial_value=None):
+    """
+    Arguments:
+        snapshot(list): list of resources
+        field(str): field we are iterating over in the list of resources
+        initial_value(object): neutral value, that is returned as first
+
+    Returns:
+        :
+    """
+    found_value = False
+    for item in snapshot:
+        if field in item.keys():
+            found_value = True
+            yield item[field]
+    if not found_value:
+        yield initial_value
+
+
 def add_stats(snapshots):
     """ Add statistic about each snapshot and global view
 
@@ -279,17 +298,12 @@ def add_stats(snapshots):
         if not len(snap['map']):
             continue
         else:
-            snap['max_address'] = max(item.get('address', 0) +
-                                      item.get('amount', 0)
-                                      for item in snap['map'])
-            snap['min_address'] = min(item.get('address', 0)
-                                      for item in snap['map'])
-            snap['sum_amount'] = sum(item.get('amount', 0)
-                                     for item in snap['map'])
-            snap['max_amount'] = max(item.get('amount', 0)
-                                     for item in snap['map'])
-            snap['min_amount'] = min(item.get('amount', 0)
-                                     for item in snap['map'])
+            snap['max_address'] \
+                = max(item.get('address', 0) + item.get('amount', 0) for item in snap['map'])
+            snap['min_address'] = min(resource_iterator(snap['map'], 'address', 0))
+            snap['sum_amount'] = sum(resource_iterator(snap['map'], 'amount', 0))
+            snap['max_amount'] = max(resource_iterator(snap['map'], 'amount', 0))
+            snap['min_amount'] = min(resource_iterator(snap['map'], 'amount', 0))
 
         glob_max_address.append(snap['max_address'])
         glob_min_address.append(snap['min_address'])
