@@ -336,15 +336,15 @@ def create_allocations_table(profile):
         }
     uid object is serialized into: function()~source~line
     """
-    table = {}
-    table['snapshots'] = []
-    table['amount'] = []
-    table['uid'] = []
-    table['subtype'] = []
-    table['address'] = []
+    table = {
+        'snapshots': [],
+        'amount': [],
+        'uid': [],
+        'subtype': [],
+        'address': []
+    }
 
     for i, snap in enumerate(profile['snapshots']):
-
         for alloc in snap['resources']:
             table['snapshots'].append(i + 1)
             table['amount'].append(alloc['amount'])
@@ -375,12 +375,13 @@ def create_flow_table(profile):
     """
     heap = create_heap_map(profile)
 
-    table = {}
-    table['snapshots'] = []
-    table['amount'] = []
-    table['uid'] = []
-    table['subtype'] = []
-    table['address'] = []
+    table = {
+        'snapshots': [],
+        'amount': [],
+        'uid': [],
+        'subtype': [],
+        'address': []
+    }
 
     for i, snap in enumerate(heap['snapshots']):
 
