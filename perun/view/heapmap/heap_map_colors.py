@@ -1,6 +1,8 @@
 """This module implement colors module for the HEAP MAP visualization"""
+
 import curses
-from random import randint
+
+import time
 
 __author__ = 'Radim Podola'
 
@@ -95,7 +97,7 @@ class HeapMapColors(object):
                     uid['line'] == item['uid']['line']):
                 return item['color']
 
-        color = randint(1, len(self.__good_colors))
+        color = int(time.time()) % len(self.__good_colors) + 1
         self.__color_records.append({'uid': uid, 'color': color})
 
         return color

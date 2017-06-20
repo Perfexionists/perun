@@ -195,7 +195,6 @@ def calculate_heap_map(snapshots):
     new_allocations = []
     existing_allocations = []
     for snap in snapshots:
-
         for allocation in copy.copy(snap['map']):
             if allocation['type'] == 'free':
                 alloc = next((x for x in new_allocations
@@ -233,11 +232,11 @@ def __set_chunks(chunks, uid):
     Returns:
         int: index to chunk list referencing UID
     """
-    for i, chunk in enumerate(chunks):
-        # UID is already referencing
-        if isinstance(uid, int):
-            return uid
+    # UID is already referencing
+    if isinstance(uid, int):
+        return uid
 
+    for i, chunk in enumerate(chunks):
         func_cond = chunk['function'] == uid['function']
         line_cond = chunk['line'] == uid['line']
         source_cond = chunk['source'] == uid['source']
@@ -415,10 +414,9 @@ def create_flame_graph_format(profile):
                     line = _get_line_from_frame(frame)
                     stack_str += line + ';'
                 if stack_str:
-                    if stack_str.endswith(';'):
-                        final = stack_str[:-1]
-                        final += " " + str(alloc['amount']) + '\n'
-                        stacks.append(final)
+                    final = stack_str[:-1]
+                    final += " " + str(alloc['amount']) + '\n'
+                    stacks.append(final)
 
     return stacks
 

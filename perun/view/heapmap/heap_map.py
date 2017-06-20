@@ -207,7 +207,7 @@ class HeapMapVisualization(object):
         Arguments:
             data(dict): map field's data
         """
-        window_lines, window_cols = self.__window.getmaxyx()
+        _, window_cols = self.__window.getmaxyx()
         space_text = "Allocated space: "
         address_text = "Starting address: "
         allocation_text = "Allocation: "
@@ -252,7 +252,7 @@ class HeapMapVisualization(object):
         Arguments:
             data(dict): map field's data
         """
-        window_lines, window_cols = self.__window.getmaxyx()
+        _, window_cols = self.__window.getmaxyx()
         heat_text = 'HEAT INFO:'
         access_text = "Number of accesses: "
         address_text = "Starting address: "
@@ -334,7 +334,7 @@ class HeapMapVisualization(object):
         Returns:
             tuple: address info length, map's rows, map's columns
         """
-        window_lines, window_cols = self.__window.getmaxyx()
+        _, window_cols = self.__window.getmaxyx()
         # calculate space for the addresses information
         max_add_len = len(str(self.__heap['stats']['max_address']))
         if max_add_len < len(self.__ADDRESS_INFO_TEXT):
