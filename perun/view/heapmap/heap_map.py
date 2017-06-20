@@ -3,6 +3,8 @@ import curses
 import curses.textpad
 import sys
 
+import perun.utils.log as perun_log
+
 import perun.view.heapmap.heap_map_colors as hpcolors
 
 __author__ = 'Radim Podola'
@@ -50,18 +52,18 @@ class HeapMapVisualization(object):
         INTRO_DELAY(int):   Time delay after intro in [ms]
         ANIMATION_DELAY(int):   Time delay between frames
                                 in ANIMATION mode in [ms]
-        TIK_FREQ(int):  Tik frequency, visualized in the map. Value defines
-                        a number of the fields in the tik.
+        TICK_FREQ(int):  Tik frequency, visualized in the map. Value defines
+                        a number of the fields in the tick.
         BORDER_SYM(char): character used as border
         FIELD_SYM(char): character used as regular field
-        TIK_SYM(char):  character used as tik field
+        TICK_SYM(char):  character used as tick field
     """
     NEXT_SNAPSHOT = 1
     PREV_SNAPSHOT = -1
     CURRENT_SNAPSHOT = 0
     INTRO_DELAY = 1000
     ANIMATION_DELAY = 1000
-    TIK_FREQ = 10
+    TICK_FREQ = 10
 
     # minimal size of the heap map window
     __MIN_ROWS = 30
@@ -70,7 +72,7 @@ class HeapMapVisualization(object):
     # map's visualising symbols
     BORDER_SYM = ' '
     FIELD_SYM = '_'
-    TIK_SYM = '|'
+    TICK_SYM = '|'
 
     # text's constants
     __ADDRESS_INFO_TEXT = 'ADDRESS:'
@@ -82,16 +84,17 @@ class HeapMapVisualization(object):
 
     def print_intro(self):
         """ Builds and prints INTRO screen about HEAP MAP visualization """
+        window_lines, window_cols = self.__window.getmaxyx()
         main_text = "INTERACTIVE HEAP MAP VISUALIZATION!"
         author_text = "Author: " + __author__
 
         # print MAIN text
-        row_pos = curses.LINES // 2
-        col_pos = (curses.COLS - len(main_text)) // 2
+        row_pos = window_lines // 2
+        col_pos = (window_cols - len(main_text)) // 2
         self.__window.addstr(row_pos, col_pos, main_text, curses.A_BOLD)
         # print author info
-        row_pos = curses.LINES // 2 + 1
-        col_pos = (curses.COLS - len(author_text)) // 2
+        row_pos = window_lines // 2 + 1
+        col_pos = (window_cols - len(author_text)) // 2
         self.__window.addstr(row_pos + 1, col_pos, author_text)
 
         self.__window.refresh()
@@ -100,10 +103,11 @@ class HeapMapVisualization(object):
 
     def print_resize_req(self):
         """ Prints resize request to the window """
+        window_lines, window_cols = self.__window.getmaxyx()
         resize_text = "Increase the size of your screen, please"
 
-        row_pos = curses.LINES // 2
-        col_pos = (curses.COLS - len(resize_text)) // 2
+        row_pos = window_lines // 2
+        col_pos = (window_cols - len(resize_text)) // 2
         # clearing whole window
         self.__window.clear()
         self.__window.addstr(row_pos, col_pos, resize_text, curses.A_BOLD)
@@ -116,11 +120,12 @@ class HeapMapVisualization(object):
         Arguments:
             menu_text(string): string to print as a MENU text
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         # clearing line for MENU text
-        self.__window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
+        self.__window.hline(window_lines - 1, 0, ' ', window_cols - 1)
         # print MENU text
-        row_pos = curses.LINES - 1
-        col_pos = (curses.COLS - len(menu_text)) // 2
+        row_pos = window_lines - 1
+        col_pos = (window_cols - len(menu_text)) // 2
         self.__window.addstr(row_pos, col_pos, menu_text, curses.A_BOLD)
 
     def print_map_info(self, margin):
@@ -131,12 +136,13 @@ class HeapMapVisualization(object):
         Arguments:
             margin(int): left margin
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         text = 'SNAPSHOT: {!s}/{!s}  ({!s}s)'.format(
             self.__current_snap, len(self.__heap['snapshots']),
             self.__heap['snapshots'][self.__current_snap - 1]['time'])
 
         row_pos = 0
-        col_pos = (curses.COLS - len(text) - margin) // 2 + margin
+        col_pos = (window_cols - len(text) - margin) // 2 + margin
 
         self.__window.addstr(row_pos, col_pos, text,
                              curses.color_pair(self.__colors.info_text))
@@ -149,6 +155,7 @@ class HeapMapVisualization(object):
         Arguments:
             address(float): map field's address
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         snap = self.__heap['snapshots'][self.__current_snap - 1]
         space_text = "Total allocated space: "
         address_text = "Address: "
@@ -157,9 +164,9 @@ class HeapMapVisualization(object):
         margin = len(space_text)
 
         row_pos = self.__map_cords['map']['rows'] + 2
-        col_pos = (curses.COLS - len(glob_text)) // 2
+        col_pos = (window_cols - len(glob_text)) // 2
 
-        self.__window.hline(row_pos, 0, self.BORDER_SYM, curses.COLS,
+        self.__window.hline(row_pos, 0, self.BORDER_SYM, window_cols,
                             curses.color_pair(self.__colors.info_text))
         self.__window.addstr(row_pos, col_pos, glob_text,
                              curses.color_pair(self.__colors.info_text))
@@ -167,16 +174,16 @@ class HeapMapVisualization(object):
         # 1st line
         line1 = space_text + ' '*(margin - len(space_text))
         line1 += str(snap['sum_amount']) + ' ' + self.__heap['unit']
-        line1 += ' '*(curses.COLS - len(line1))
+        line1 += ' '*(window_cols - len(line1))
         # 2nd line
         line2 = address_text + ' '*(margin - len(address_text))
         line2 += str(int(address))
-        line2 += ' '*(curses.COLS - len(line2))
+        line2 += ' '*(window_cols - len(line2))
         # 3rd line
         line3 = field_text + ' '*(margin - len(field_text))
         line3 += str(int(self.__map_cords['map']['field_size']))
         line3 += ' ' + self.__heap['unit']
-        line3 += ' '*(curses.COLS - len(line3))
+        line3 += ' '*(window_cols - len(line3))
 
         # print current field's information
         self.__window.addstr(row_pos + 1, 0, line1 + line2 + line3,
@@ -190,6 +197,7 @@ class HeapMapVisualization(object):
         Arguments:
             data(dict): map field's data
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         space_text = "Allocated space: "
         address_text = "Starting address: "
         allocation_text = "Allocation: "
@@ -197,9 +205,9 @@ class HeapMapVisualization(object):
         margin = len(address_text)
 
         row_pos = self.__map_cords['map']['rows'] + 2
-        col_pos = (curses.COLS - len(glob_text)) // 2
+        col_pos = (window_cols - len(glob_text)) // 2
 
-        self.__window.hline(self.BORDER_SYM, curses.COLS,
+        self.__window.hline(self.BORDER_SYM, window_cols,
                             curses.color_pair(self.__colors.info_text))
         self.__window.addstr(row_pos, col_pos, glob_text,
                              curses.color_pair(self.__colors.info_text))
@@ -207,20 +215,20 @@ class HeapMapVisualization(object):
         # 1st line
         line1 = space_text + ' '*(margin - len(space_text))
         line1 += str(data['amount']) + ' ' + self.__heap['unit']
-        line1 += ' '*(curses.COLS - len(line1))
+        line1 += ' '*(window_cols - len(line1))
         # 2nd line
         line2 = address_text + ' '*(margin - len(address_text))
         line2 += str(data['address'])
-        line2 += ' '*(curses.COLS - len(line2))
+        line2 += ' '*(window_cols - len(line2))
         # 3rd line
         line3 = allocation_text + ' '*(margin - len(allocation_text))
         line3 += "F: " + str(data['uid']['function'])
-        line3 += ' '*(curses.COLS - len(line3))
+        line3 += ' '*(window_cols - len(line3))
         # 4th line
         line4 = ' '*margin
         line4 += "S: " + str(data['uid']['source'])
         line4 += ":" + str(data['uid']['line'])
-        line4 += ' '*(curses.COLS - len(line4))
+        line4 += ' '*(window_cols - len(line4))
 
         # print current field's information
         self.__window.addstr(row_pos + 1, 0, line1 + line2 + line3 + line4,
@@ -234,15 +242,16 @@ class HeapMapVisualization(object):
         Arguments:
             data(dict): map field's data
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         heat_text = 'HEAT INFO:'
         access_text = "Number of accesses: "
         address_text = "Starting address: "
         margin = len(access_text)
 
         row_pos = self.__map_cords['map']['rows'] + 2
-        col_pos = (curses.COLS - len(heat_text)) // 2
+        col_pos = (window_cols - len(heat_text)) // 2
 
-        self.__window.hline(self.BORDER_SYM, curses.COLS,
+        self.__window.hline(self.BORDER_SYM, window_cols,
                             curses.color_pair(self.__colors.info_text))
         self.__window.addstr(row_pos, col_pos, heat_text,
                              curses.color_pair(self.__colors.info_text))
@@ -250,37 +259,37 @@ class HeapMapVisualization(object):
         # 1st line
         line1 = access_text + ' '*(margin - len(access_text))
         line1 += str(data['access']) + 'x'
-        line1 += ' '*(curses.COLS - len(line1))
+        line1 += ' '*(window_cols - len(line1))
         # 2nd line
         line2 = address_text + ' '*(margin - len(address_text))
         line2 += str(int(data['address']))
-        line2 += ' '*(curses.COLS - len(line2))
+        line2 += ' '*(window_cols - len(line2))
 
         # print current field's information
         self.__window.addstr(row_pos + 1, 0, line1 + line2,
                              curses.color_pair(self.__colors.info_text))
 
-    def __get_tik_info(self, length, tik_amount):
-        """ Builds tik information line
+    def __get_tick_info(self, length, tick_amount):
+        """ Builds tick information line
 
         Arguments:
            length(int): length of information text
-           tik_amount(int): tik amount
+           tick_amount(int): tick amount
 
         Returns:
-            str: built tik information text
+            str: built tick information text
         """
-        tik_amount_str = ''
+        tick_amount_str = ''
 
-        for i, col in enumerate(range(0, length, self.TIK_FREQ)):
-            if self.TIK_FREQ >= length - col:
+        for i, col in enumerate(range(0, length, self.TICK_FREQ)):
+            if self.TICK_FREQ >= length - col:
                 break
-            tik_string = '{!s}{}'.format((tik_amount * i), self.__heap['unit'])
-            tik_amount_str += tik_string
-            empty_fields = self.TIK_FREQ - len(tik_string)
-            tik_amount_str += self.BORDER_SYM * empty_fields
+            tick_string = '{!s}{}'.format((tick_amount * i), self.__heap['unit'])
+            tick_amount_str += tick_string
+            empty_fields = self.TICK_FREQ - len(tick_string)
+            tick_amount_str += self.BORDER_SYM * empty_fields
 
-        return tik_amount_str
+        return tick_amount_str
 
     def __print_address(self, row, add_str, space):
         """ Prints the address info
@@ -315,6 +324,7 @@ class HeapMapVisualization(object):
         Returns:
             tuple: address info length, map's rows, map's columns
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         # calculate space for the addresses information
         max_add_len = len(str(self.__heap['stats']['max_address']))
         if max_add_len < len(self.__ADDRESS_INFO_TEXT):
@@ -324,7 +334,7 @@ class HeapMapVisualization(object):
         map_rows = self.__MIN_ROWS - 2
         # number of the screen's columns == (terminal's current number of
         # the columns) - (size of address info - 2*border field)
-        map_cols = curses.COLS - max_add_len - 2
+        map_cols = window_cols - max_add_len - 2
 
         return max_add_len, map_rows, map_cols
 
@@ -358,7 +368,7 @@ class HeapMapVisualization(object):
         allocations = snap['map']
         # sorting allocations records by frequency of allocations
         allocations.sort(key=lambda x: x['address'])
-        #set iterator over list
+        # set iterator over list
         iterator = iter(allocations)
         # set starting points
         record = next(iterator, None)
@@ -457,9 +467,7 @@ class HeapMapVisualization(object):
                 else:
                     access_number = 0
 
-                matrix[row][col] = {"access": access_number,
-                                    "address": curr_add
-                                   }
+                matrix[row][col] = {"access": access_number, "address": curr_add}
 
                 curr_add += field_size
 
@@ -477,7 +485,7 @@ class HeapMapVisualization(object):
             add_length(int): length of the address info space
         """
         map_data = self.__map_cords['map']
-        tik_amount = int(map_data['field_size'] * self.TIK_FREQ)
+        tick_amount = int(map_data['field_size'] * self.TICK_FREQ)
 
         # calculating address range on one line
         address = map_data['data'][0][0]['address']
@@ -493,7 +501,7 @@ class HeapMapVisualization(object):
             else:
                 self.__print_address(row, '', add_length)
 
-            tik_counter = 0
+            tick_counter = 0
             for col in range(add_length, cols):
                 # border printing
                 if col in (add_length, cols-1) or row in (0, rows-1):
@@ -509,8 +517,8 @@ class HeapMapVisualization(object):
                     else:
                         color = self.__colors.heap_field_color(field['uid'])
 
-                    if tik_counter % self.TIK_FREQ == 0:
-                        symbol = self.TIK_SYM
+                    if tick_counter % self.TICK_FREQ == 0:
+                        symbol = self.TICK_SYM
                     elif row == rows-2:
                         symbol = self.BORDER_SYM
                     else:
@@ -519,11 +527,11 @@ class HeapMapVisualization(object):
                     self.__window.addstr(row, col, symbol,
                                          curses.color_pair(color))
 
-                tik_counter += 1
+                tick_counter += 1
 
-        # adding tik amount info
-        tik_str = self.__get_tik_info(cols - add_length, tik_amount)
-        self.__window.addstr(rows - 1, add_length + 1, tik_str,
+        # adding tick amount info
+        tick_str = self.__get_tick_info(cols - add_length, tick_amount)
+        self.__window.addstr(rows - 1, add_length + 1, tick_str,
                              curses.color_pair(self.__colors.info_text))
 
     def draw_heap_map(self):
@@ -532,6 +540,7 @@ class HeapMapVisualization(object):
         Returns:
             bool: success of the operation
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         if hasattr(curses, "update_lines_cols"):
             curses.update_lines_cols()
         self.__window.clear()
@@ -540,8 +549,8 @@ class HeapMapVisualization(object):
         add_space, true_rows, true_cols = self.__get_map_size()
 
         # check for the minimal screen size
-        rows_cond = curses.LINES < self.__MIN_ROWS
-        cols_cond = curses.COLS - add_space < self.__MIN_COLS
+        rows_cond = window_lines < self.__MIN_ROWS
+        cols_cond = window_cols - add_space < self.__MIN_COLS
         if rows_cond or cols_cond:
             return False
 
@@ -552,7 +561,7 @@ class HeapMapVisualization(object):
                             'map': decomposition}
 
         # printing heap map decomposition to the console window
-        self.print_matrix(self.__MIN_ROWS, curses.COLS, add_space)
+        self.print_matrix(self.__MIN_ROWS, window_cols, add_space)
 
         # printing heap info to the console window
         self.print_map_info(add_space)
@@ -561,6 +570,7 @@ class HeapMapVisualization(object):
 
     def draw_heat_map(self):
         """ Draw the window to represent HEAT map """
+        window_lines, window_cols = self.__window.getmaxyx()
         if hasattr(curses, "update_lines_cols"):
             curses.update_lines_cols()
         self.__window.clear()
@@ -569,8 +579,8 @@ class HeapMapVisualization(object):
         add_space, true_rows, true_cols = self.__get_map_size()
 
         # check for the minimal screen size
-        rows_cond = curses.LINES < self.__MIN_ROWS
-        cols_cond = curses.COLS - add_space < self.__MIN_COLS
+        rows_cond = window_lines < self.__MIN_ROWS
+        cols_cond = window_cols - add_space < self.__MIN_COLS
         if rows_cond or cols_cond:
             self.print_resize_req()
             return
@@ -582,7 +592,7 @@ class HeapMapVisualization(object):
                             'map': decomposition}
 
         # printing heat map decomposition to the console window
-        self.print_matrix(self.__MIN_ROWS, curses.COLS, add_space)
+        self.print_matrix(self.__MIN_ROWS, window_cols, add_space)
 
         self.print_menu(self.__HEAT_MENU_TEXT)
 
@@ -851,7 +861,8 @@ def heap_map(heap, heat):
         enable keypad mode for special keys s.a. HOME.
 
     Arguments:
-        heap(dict): the heap representation
+        heap(dict): dictionary representing the heap map informations
+        heat(dict): dictionary representing the heat information of the heap map
 
     Returns:
         string: message informing about operation success
@@ -861,9 +872,4 @@ def heap_map(heap, heat):
         # call heap map visualization prompt in curses wrapper
         curses.wrapper(heap_map_logic, heap, heat)
     except curses.error as error:
-        print('Screen too small!', file=sys.stderr)
-        print(str(error), file=sys.stderr)
-
-
-if __name__ == "__main__":
-    pass
+        perun_log.error("internal curses error: {}".format(str(error)))
