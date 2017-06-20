@@ -84,5 +84,17 @@ def test_collect_correct(pcs_full):
     """
     runner = CliRunner()
     result = runner.invoke(cli.collect, ['-c echo', '-w hello', 'time'])
+    assert result.exit_code == 0
+
+
+def test_show_help(pcs_full):
+    """Test running show to see if there are registered modules for showing
+
+    Expecting no error and help outputed, where the currently supported modules will be shown
+    """
+    runner = CliRunner()
+    result = runner.invoke(cli.show, ['--help'])
     print(result.output)
     assert result.exit_code == 0
+    assert 'heapmap' in result.output
+    assert 'raw' in result.output
