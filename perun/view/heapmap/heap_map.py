@@ -450,8 +450,8 @@ class HeapMapVisualization(object):
                 if field_range == 0:
                     field_range = 1
 
-                acc_iterator = [accesses[int(curr_add) + i - min_address]
-                                    for i in range(field_range)]
+                acc_iterator \
+                    = [accesses[int(curr_add) + i - min_address] for i in range(field_range)]
                 if len(acc_iterator) > 0:
                     access_number = max(acc_iterator)
                 else:

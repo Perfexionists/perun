@@ -103,8 +103,7 @@ def create_heat_map(profile):
     # adding statistics
     max_address = max(item.get('address', 0) + item.get('amount', 0)
                       for item in resources if item.get('address', 0) > 0)
-    min_address = min(item.get('address', 0) for item in resources 
-        if item.get('address', 0) > 0)
+    min_address = min(item.get('address', 0) for item in resources if item.get('address', 0) > 0)
     # approximation for extreme cases
     if max_address - min_address < 500:
         max_address = min_address + 500

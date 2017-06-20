@@ -1,7 +1,9 @@
-"""Heap map visualization of the profiles. """
+"""Heap map visualization of the profiles."""
+
+from copy import deepcopy
 
 import click
-from copy import deepcopy
+
 from perun.utils.helpers import pass_profile
 import perun.utils.profile_converters as heap_representation
 import perun.view.heapmap.heap_map as hm
