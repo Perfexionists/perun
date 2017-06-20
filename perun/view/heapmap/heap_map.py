@@ -1,7 +1,6 @@
 """This module implement the HEAP MAP visualization of the profile"""
 import curses
 import curses.textpad
-import sys
 
 import perun.utils.log as perun_log
 
@@ -136,7 +135,7 @@ class HeapMapVisualization(object):
         Arguments:
             margin(int): left margin
         """
-        window_lines, window_cols = self.__window.getmaxyx()
+        _, window_cols = self.__window.getmaxyx()
         text = 'SNAPSHOT: {!s}/{!s}  ({!s}s)'.format(
             self.__current_snap, len(self.__heap['snapshots']),
             self.__heap['snapshots'][self.__current_snap - 1]['time'])
@@ -146,6 +145,17 @@ class HeapMapVisualization(object):
 
         self.__window.addstr(row_pos, col_pos, text,
                              curses.color_pair(self.__colors.info_text))
+
+    def __append_unit(self, data):
+        """Returns data converted to string together with unit of the data
+
+        Arguments:
+            data(int): integer data that will be appended with unit
+
+        Returns:
+            str: string with unit according to the set default
+        """
+        return str(data) + ' ' + self.__heap['unit']
 
     def __print_glob_stats(self, address):
         """ Prints global specific info
@@ -173,7 +183,7 @@ class HeapMapVisualization(object):
 
         # 1st line
         line1 = space_text + ' '*(margin - len(space_text))
-        line1 += str(snap['sum_amount']) + ' ' + self.__heap['unit']
+        line1 += self.__append_unit(snap['sum_amount'])
         line1 += ' '*(window_cols - len(line1))
         # 2nd line
         line2 = address_text + ' '*(margin - len(address_text))
@@ -214,7 +224,7 @@ class HeapMapVisualization(object):
 
         # 1st line
         line1 = space_text + ' '*(margin - len(space_text))
-        line1 += str(data['amount']) + ' ' + self.__heap['unit']
+        line1 += self.__append_unit(data['amount'])
         line1 += ' '*(window_cols - len(line1))
         # 2nd line
         line2 = address_text + ' '*(margin - len(address_text))
@@ -649,37 +659,36 @@ class HeapMapVisualization(object):
             return
 
         # save current cursor's position
-        row_col = self.__window.getyx()
+        rows, cols = self.__window.getyx()
 
         map_rows = self.__map_cords['map']['rows']
         map_cols = self.__map_cords['map']['cols']
+        cursor_relpos_cols = cols - self.__map_cords['col']
+        cursor_relpos_rows = rows - self.__map_cords['row']
 
         if direction == ord('4'):
-            if row_col[1] - self.__map_cords['col'] > 0:
-                self.__window.move(row_col[0], row_col[1] - 1)
+            if cursor_relpos_cols > 0:
+                self.__window.move(rows, cols - 1)
             else:
-                self.__window.move(row_col[0],
-                                   self.__map_cords['col'] + map_cols - 1)
+                self.__window.move(rows, self.__map_cords['col'] + map_cols - 1)
 
         elif direction == ord('6'):
-            if row_col[1] - self.__map_cords['col'] < map_cols - 1:
-                self.__window.move(row_col[0], row_col[1] + 1)
+            if cursor_relpos_cols < map_cols - 1:
+                self.__window.move(rows, cols + 1)
             else:
-                self.__window.move(row_col[0],
-                                   self.__map_cords['col'])
+                self.__window.move(rows, self.__map_cords['col'])
 
         elif direction == ord('8'):
-            if row_col[0] - self.__map_cords['row'] > 0:
-                self.__window.move(row_col[0] - 1, row_col[1])
+            if cursor_relpos_rows > 0:
+                self.__window.move(rows - 1, cols)
             else:
-                self.__window.move(self.__map_cords['row'] + map_rows - 1,
-                                   row_col[1])
+                self.__window.move(self.__map_cords['row'] + map_rows - 1, cols)
 
         else:
-            if row_col[0] - self.__map_cords['row'] < map_rows - 1:
-                self.__window.move(row_col[0] + 1, row_col[1])
+            if cursor_relpos_cols < map_rows - 1:
+                self.__window.move(rows + 1, cols)
             else:
-                self.__window.move(self.__map_cords['row'], row_col[1])
+                self.__window.move(self.__map_cords['row'], cols)
 
     def print_field_info(self):
         """ Prints information about memory space pointed by the cursor """
