@@ -20,6 +20,7 @@ class HeapMapColors(object):
         info_text     Color representing informative text.
         CURSES_COLORS Constant for initializing curses color module.
     """
+    NO_COLORS = 0
     CURSES_COLORS = 1
 
     def __init__(self, colors_type):
@@ -30,6 +31,16 @@ class HeapMapColors(object):
         """
         if colors_type == HeapMapColors.CURSES_COLORS:
             self.__init_curses_colors()
+        elif colors_type == HeapMapColors.NO_COLORS:
+            # Untested, who knows how it behaves in reality :P
+            self.__good_colors = (1, 1)
+            self.__color_records = []
+            self.border = 1
+            self.free_field = 1
+            self.info_text = 1
+
+            # HEAT colors from min to most
+            self.__heat_colors = (1, 1)
 
     def __init_curses_colors(self):
         """ Initialize colors over curses colors module.

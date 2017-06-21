@@ -198,6 +198,29 @@ def stored_profile_pool():
     return profiles
 
 
+def get_loaded_profiles(profile_type):
+    """
+    Arguments:
+        profile_type(str): type of the profile we are looking for
+
+    Returns:
+        generator: stream of profiles of the given type
+    """
+    for valid_profile in filter(lambda p: 'err' not in p, get_all_profiles()):
+        loaded_profile = perun_profile.load_profile_from_file(valid_profile, is_raw_profile=True)
+        if loaded_profile['header']['type'] == profile_type:
+            yield loaded_profile
+
+
+@pytest.fixture(scope="function")
+def memory_profiles():
+    """
+    Returns:
+        generator: generator of fully loaded memory profiles as dictionaries
+    """
+    yield get_loaded_profiles('memory')
+
+
 @pytest.fixture(scope="function")
 def pcs_full():
     """

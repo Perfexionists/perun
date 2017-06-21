@@ -762,7 +762,7 @@ class HeapMapVisualization(object):
         # set blocking window.getch()
         self.__window.nodelay(0)
 
-    def __init__(self, window, heap):
+    def __init__(self, window, heap, colours=hpcolors.HeapMapColors.CURSES_COLORS):
         """ Initialize the HEAP MAP visualization object
 
         Arguments:
@@ -780,22 +780,22 @@ class HeapMapVisualization(object):
         # heap map's metadata and coordinates
         self.__map_cords = None
         # instance of the color module object
-        self.__colors = hpcolors.HeapMapColors(
-            hpcolors.HeapMapColors.CURSES_COLORS)
+        self.__colors = hpcolors.HeapMapColors(colours)
 
         # set cursor visible
         curses.curs_set(2)
 
 
-def heat_map_logic(window, heat):
+def heat_map_logic(window, heat, colours=hpcolors.HeapMapColors.CURSES_COLORS):
     """ HEAT visualization logic prompt
 
     Arguments:
         window(any): initialized curses window
         heat(dict): the heat map representation
+        colours(int): colour mode of the heat map
     """
     # instantiate of the heat map visualization object
-    vis_obj = HeapMapVisualization(window, heat)
+    vis_obj = HeapMapVisualization(window, heat, colours)
 
     vis_obj.draw_heat_map()
 
@@ -815,16 +815,17 @@ def heat_map_logic(window, heat):
             vis_obj.draw_heat_map()
 
 
-def heap_map_logic(window, heap, heat):
+def heap_map_logic(window, heap, heat, colours=hpcolors.HeapMapColors.CURSES_COLORS):
     """ HEAP visualization logic prompt
 
     Arguments:
         window(any): initialized curses window
         heap(dict): the heap map representation
         heat(dict): the heat map representation
+        colours(int): colour mode of the heat map
     """
     # instantiate of the heap map visualization object
-    vis_obj = HeapMapVisualization(window, heap)
+    vis_obj = HeapMapVisualization(window, heap, colours)
 
     # print intro
     vis_obj.print_intro()
@@ -853,7 +854,7 @@ def heap_map_logic(window, heap, heat):
             vis_obj.print_field_info()
         # HEAT map
         elif key in (ord('h'), ord('H')):
-            heat_map_logic(window, heat)
+            heat_map_logic(window, heat, colours)
             vis_obj.following_snapshot(vis_obj.CURRENT_SNAPSHOT)
         # change of the screen size occurred
         elif key == curses.KEY_RESIZE:
