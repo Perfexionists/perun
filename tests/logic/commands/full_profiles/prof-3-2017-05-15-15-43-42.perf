@@ -48,9 +48,9 @@
     "type": "memory",
     "workload": "test",
     "cmd": "./test",
-    "units": [
-      null
-    ],
+    "units": {
+      "memory": "B"
+    },
     "params": ""
   },
   "snapshots": [

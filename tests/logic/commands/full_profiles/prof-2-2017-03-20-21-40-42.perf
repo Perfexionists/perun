@@ -217,9 +217,9 @@
   },
   "header": {
     "cmd": "target",
-    "units": [
-      null
-    ],
+    "units": {
+      "mixed (time delta)": "us"
+    },
     "params": "",
     "type": "mixed",
     "workload": "/mnt/g/some.txt"
