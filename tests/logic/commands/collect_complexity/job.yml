@@ -1,0 +1,26 @@
+target_dir: './target'
+
+files:
+    - '../cpp_sources/workload/main.cpp'
+    - '../cpp_sources/workload/SLList.h'
+    - '../cpp_sources/workload/SLListcls.h'
+
+rules:
+    - 'func1'
+    - 'SLList_init'
+    - 'SLList_insert'
+    - 'SLList_search'
+    - 'SLList_destroy'
+    - 'SLListcls'
+    - '~Sllistcls'
+    - 'Insert'
+    - 'Remove'
+    - 'Search'
+
+file-name: 'trace.log'
+init-storage-size: 20000
+sampling:
+    - func: 'SLList_insert'
+      sample: 1
+    - func: 'func1'
+      sample: 1

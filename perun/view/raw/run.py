@@ -28,12 +28,12 @@ def process_object(item, colour, coloured):
         return item
 
 
-def show(profile, coloured=False, **kwargs):
+def show(profile, coloured=False, **_):
     """
     Arguments:
         profile(dict): dictionary profile
         coloured(bool): true if the output should be in colours
-        kwargs(dict): additional keyword for the non coloured show
+        _(dict): additional keyword for the non coloured show
 
     Returns:
         str: string representation of the profile

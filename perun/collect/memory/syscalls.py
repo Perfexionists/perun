@@ -77,6 +77,9 @@ def run(cmd, params, workload):
     with open('ErrorCollectLog', 'w') as error_log:
         ret = subprocess.call(sys_call, shell=True, stderr=error_log)
 
+    with open('ErrorCollectLog', 'r') as error_log:
+        print(error_log.read())
+
     return ret
 
 

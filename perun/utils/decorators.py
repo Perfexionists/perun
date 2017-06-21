@@ -6,7 +6,7 @@ the functions. Or various checker function, that checks given parameters of the 
 
 import inspect
 
-import perun.utils.exceptions as exceptions
+from perun.utils.exceptions import InvalidParameterException
 
 __author__ = 'Tomas Fiedor'
 
@@ -119,7 +119,7 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
                     error_msg = "Invalid value '{}' for parameter '{}'".format(
                         param_name, param_value
                     )
-                    raise exceptions.InvalidParameterException(error_msg)
+                    raise InvalidParameterException(error_msg)
 
             return func(*wargs, **wkwargs)
         return wrapper

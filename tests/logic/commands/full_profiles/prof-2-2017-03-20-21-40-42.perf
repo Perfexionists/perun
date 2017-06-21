@@ -216,10 +216,10 @@
     "name": "complexity"
   },
   "header": {
-    "bin": "target",
-    "units": [
-      null
-    ],
+    "cmd": "target",
+    "units": {
+      "mixed (time delta)": "us"
+    },
     "params": "",
     "type": "mixed",
     "workload": "/mnt/g/some.txt"

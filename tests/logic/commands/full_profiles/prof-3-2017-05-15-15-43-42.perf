@@ -47,10 +47,10 @@
   "header": {
     "type": "memory",
     "workload": "test",
-    "bin": "./test",
-    "units": [
-      null
-    ],
+    "cmd": "./test",
+    "units": {
+      "memory": "B"
+    },
     "params": ""
   },
   "snapshots": [

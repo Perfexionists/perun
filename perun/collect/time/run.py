@@ -1,5 +1,8 @@
 """Time module is a simple wrapper over command line tool time"""
 
+import click
+
+import perun.core.logic.runner as runner
 import perun.utils as utils
 
 from perun.utils.helpers import CollectStatus
@@ -9,10 +12,10 @@ __author__ = 'Tomas Fiedor'
 
 def collect(**kwargs):
     """Phase for collection of the profile data"""
-    assert {'bin', 'workload'}.issubset(kwargs.keys())
+    assert {'cmd', 'workload'}.issubset(kwargs.keys())
 
     command = " ".join([
-        'time -p', kwargs['bin'], kwargs.get('args', ''), kwargs['workload']
+        'time -p', kwargs['cmd'], kwargs.get('args', ''), kwargs['workload']
     ]).split(' ')
     collected_data = utils.get_stdout_from_external_command(command).split('\n')
 
@@ -30,5 +33,8 @@ def collect(**kwargs):
     }}
 
 
-if __name__ == "__main__":
-    pass
+@click.command()
+@click.pass_context
+def time(ctx):
+    """Runs the wrapper over the time command"""
+    runner.run_collector_from_cli_context(ctx, 'time', {})

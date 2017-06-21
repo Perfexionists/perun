@@ -1,6 +1,10 @@
 """Normalizer is a simple postprocessor that normalizes the values."""
 
-from perun.utils.helpers import PostprocessStatus
+import click
+
+import perun.core.logic.runner as runner
+
+from perun.utils.helpers import PostprocessStatus, pass_profile
 
 __author__ = 'Tomas Fiedor'
 
@@ -46,11 +50,10 @@ def normalize_resources(resources):
             else 1.0
 
 
-def postprocess(profile, **kwargs):
+def postprocess(profile, **_):
     """
     Arguments:
         profile(dict): json-like profile that will be preprocessed by normalizer
-        kwargs(dict): keyword arguments
     """
     # Normalize global profile
     if 'global' in profile.keys():
@@ -63,3 +66,9 @@ def postprocess(profile, **kwargs):
 
     return PostprocessStatus.OK, "", {'profile': profile}
 
+
+@click.command()
+@pass_profile
+def normalizer(profile):
+    """Normalization of the resources to the interval <0,1>."""
+    runner.run_postprocessor_on_profile(profile, 'normalizer', {})

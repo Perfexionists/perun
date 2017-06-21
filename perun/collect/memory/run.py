@@ -1,6 +1,11 @@
 """This module contains methods needed by Perun logic"""
+
 import os
 from decimal import Decimal
+
+import click
+
+import perun.core.logic.runner as runner
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
 from perun.collect.memory.syscalls import run, init
@@ -11,7 +16,7 @@ _lib_name = "malloc.so"
 _tmp_log_filename = "MemoryLog"
 
 
-def before(**kwargs):
+def before(**_):
     """ Phase for initialization the collect module
 
     Returns:
@@ -28,18 +33,17 @@ def before(**kwargs):
     return CollectStatus.OK, '', {}
 
 
-def collect(bin, args, workload, **kwargs):
+def collect(cmd, args, workload, **_):
     """ Phase for collection of the profile data
     Arguments:
-        bin(string): binary file to profile
+        cmd(string): binary file to profile
         args(string): executing arguments
         workload(string): file that has to be provided to binary
-        kwargs(dict): profile's header
 
     Returns:
         tuple: (return code, status message, updated kwargs)
     """
-    result = run(bin, args, workload)
+    result = run(cmd, args, workload)
     if result:
         error_msg = 'Execution of binary failed with error code: '
         error_msg += str(result)
@@ -48,16 +52,20 @@ def collect(bin, args, workload, **kwargs):
     return CollectStatus.OK, '', {}
 
 
-def after(bin, **kwargs):
+def after(cmd, **kwargs):
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
     Arguments:
-        collect_params(string): execution parameters of collector
-        bin(string): binary file to profile
+        cmd(string): binary file to profile
         kwargs(dict): profile's header
 
     Returns:
         tuple: (return code, message, updated kwargs)
+
+    Fixme: There should be warning raised, when the debugging information is not present. (*)
+
+    (*) When one compiles some application without -g, the profiled binaries WILL generate empty
+    profiles, which is not really acceptable. Fix this ASAP!
 
     Case studies:
         --sampling=0.1 --no-func=f1 --no-func=f2 --no-source=s --all
@@ -91,7 +99,7 @@ def after(bin, **kwargs):
         exclude_sources = []
 
     try:
-        profile = parser.parse_log(_tmp_log_filename, bin, sampling)
+        profile = parser.parse_log(_tmp_log_filename, cmd, sampling)
     except IndexError:
         return CollectStatus.ERROR, 'Info missing in log file', {}
     except ValueError:
@@ -110,5 +118,8 @@ def after(bin, **kwargs):
     return CollectStatus.OK, '', {'profile': profile}
 
 
-if __name__ == "__main__":
-    pass
+@click.command()
+@click.pass_context
+def memory(ctx):
+    """Runs memory collect, collecting allocation through the program execution"""
+    runner.run_collector_from_cli_context(ctx, 'memory', {})

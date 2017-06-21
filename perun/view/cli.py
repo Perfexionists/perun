@@ -7,18 +7,24 @@ calls underlying commands from the commands module.
 import logging
 import os
 import pkgutil
-import yaml
+import re
 
 import click
 
+import perun.utils as utils
 import perun.utils.log as perun_log
+import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
+import perun.core.logic.runner as runner
+import perun.core.logic.store as store
+import perun.core.vcs as vcs
+import perun.collect
+import perun.postprocess
 import perun.view
 
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
-    NotPerunRepositoryException, IncorrectProfileFormatException
-from perun.utils.helpers import CONFIG_UNIT_ATTRIBUTES
+    NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException
 from perun.core.logic.pcs import PCS
 
 __author__ = 'Tomas Fiedor'
@@ -70,132 +76,25 @@ def config(key, value, **kwargs):
     commands.config(key, value, **kwargs)
 
 
-def register_unit(pcs, unit_name):
-    """
-    Arguments:
-        pcs(PCS): perun repository wrapper
-        unit_name(str): name of the unit
-    """
-    unit_params = CONFIG_UNIT_ATTRIBUTES[unit_name]
-
-    perun_log.quiet_info("\nRegistering new {} unit".format(unit_name))
-    if not unit_params:
-        added_unit_name = click.prompt('name')
-        # Add to config
-        perun_config.append_key_at_config(pcs.local_config(), unit_name, added_unit_name)
-    else:
-        # Obtain each parameter for the given unit_name
-        added_unit = {}
-        for param in unit_params:
-            if param.endswith('args'):
-                param_value = click.prompt(param + "( -- separated list)")
-            else:
-                param_value = click.prompt(param)
-            added_unit[param] = param_value.split(' -- ')
-        # Append to config
-        perun_config.append_key_at_config(pcs.local_config(), unit_name, added_unit)
-    click.pause()
-
-
-def unregister_unit(pcs):
-    """
-    Arguments:
-        pcs(PCS): perun repository wrapper
-    """
-    pass
-
-
-def get_unit_list_from_config(perun_config, unit_type):
-    """
-    Arguments:
-        perun_config(dict): dictionary config
-        unit_type(str): type of the attribute we are getting
-
-    Returns:
-        list: list of units from config
-    """
-    unit_plural = unit_type + 's'
-    is_iterable = unit_plural in ['collectors', 'postprocessors']
-
-    if unit_plural in perun_config.keys():
-        return [(unit_type, u.name if is_iterable else u) for u in perun_config[unit_plural]]
-    else:
-        return []
-
-
-def list_units(pcs, do_confirm=True):
-    """List the registered units inside the configuration of the perun in the following format.
-
-    Unit_no. Unit [Unit_type]
-
-    Arguments:
-        pcs(PCS): perun repository wrapper
-        do_confirm(bool): true if we should Press any key to continue
-    """
-    local_config = pcs.local_config().data
-    units = []
-    units.extend(get_unit_list_from_config(local_config, 'bin'))
-    units.extend(get_unit_list_from_config(local_config, 'workload'))
-    units.extend(get_unit_list_from_config(local_config, 'collector'))
-    units.extend(get_unit_list_from_config(local_config, 'postprocessor'))
-    unit_list = list(enumerate(units))
-    perun_log.quiet_info("")
-    if not unit_list:
-        perun_log.quiet_info("no units registered yet")
-    else:
-        for unit_no, (unit_type, unit_name) in unit_list:
-            perun_log.quiet_info("{}. {} [{}]".format(unit_no, unit_name, unit_type))
-
-    if do_confirm:
-        click.pause()
-
-    return unit_list
-
-
-__config_functions__ = {
-    'b': lambda pcs: register_unit(pcs, "bins"),
-    'w': lambda pcs: register_unit(pcs, "workloads"),
-    'c': lambda pcs: register_unit(pcs, "collectors"),
-    'p': lambda pcs: register_unit(pcs, "postprocessors"),
-    'l': list_units,
-    'r': unregister_unit,
-    'q': lambda pcs: exit(0)
-}
-
-
 def configure_local_perun(perun_path):
     """Configures the local perun repository with the interactive help of the user
 
     Arguments:
         perun_path(str): destination path of the perun repository
     """
-    invalid_option_happened = False
-    while True:
-        click.clear()
-        if invalid_option_happened:
-            perun_log.warn("invalid option '{}'".format(option))
-            invalid_option_happened = False
-        perun_log.quiet_info("Welcome to the interactive configuration of Perun!")
-        click.echo("[b] Register new binary/application run command")
-        click.echo("[w] Register application workload")
-        click.echo("[c] Register collector")
-        click.echo("[p] Register postprocessor")
-        click.echo("[l] List registered units")
-        click.echo("[r] Remove registered unit")
-        click.echo("[q] Quit")
-
-        click.echo("\nAction:", nl=False)
-        option = click.getchar()
-        if option not in __config_functions__.keys():
-            invalid_option_happened = True
-            continue
-        __config_functions__.get(option)(PCS(perun_path))
+    pcs = PCS(perun_path)
+    editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
+    local_config_file = os.path.join(pcs.path, 'local.yml')
+    try:
+        utils.run_external_command([editor, local_config_file])
+    except ValueError as v_exception:
+        perun_log.error("could not invoke '{}' editor: {}".format(editor, str(v_exception)))
 
 
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
-# TODO: Add choice
 @click.option('--vcs-type', metavar='<type>', default='pvcs',
+              type=click.Choice(utils.get_supported_module_names(vcs, '_init')),
               help="Apart of perun structure, a supported version control system can be wrapped"
                    " and initialized as well.")
 @click.option('--vcs-path', metavar='<path>',
@@ -203,7 +102,7 @@ def configure_local_perun(perun_path):
 @click.option('--vcs-params', metavar='<params>',
               help="Passes additional param to a supported version control system initialization.")
 @click.option('--configure', '-c', is_flag=True, default=False,
-              help='Runs the interactive initialization of the local configuration for the perun')
+              help='Opens the local configuration file for initial configuration edit.')
 def init(dst, configure, **kwargs):
     """Initialize the new perun performance control system or reinitializes existing one.
 
@@ -229,17 +128,15 @@ def init(dst, configure, **kwargs):
 
     try:
         commands.init(dst, **kwargs)
-    except UnsupportedModuleException as ume:
-        perun_log.error(str(ume))
-    except UnsupportedModuleFunctionException as umfe:
-        perun_log.error(str(umfe))
-    except PermissionError as pe:
+    except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
+        perun_log.error(str(unsup_module_exp))
+    except PermissionError as perm_exp:
         # If this is problem with writing to shared.yml, say it is error and ask for sudo
-        if 'shared.yml' in str(pe):
+        if 'shared.yml' in str(perm_exp):
             perun_log.error("writing to shared config 'shared.yml' requires root permissions")
         # Else reraise as who knows what kind of mistake is this
         else:
-            raise pe
+            raise perm_exp
 
     if configure:
         # Run the interactive configuration of the local perun repository (populating .yml)
@@ -250,10 +147,49 @@ def init(dst, configure, **kwargs):
                              + (" "*4) + ".perun/local.yml\n")
 
 
+def lookup_profile_file(ctx, param, value):
+    """Callback function for looking up the profile, if it does not exist
+
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        dict: parsed yaml file
+    """
+    # 1) if it exists return the value
+    if os.path.exists(value):
+        return value
+
+    perun_log.info("file '{}' not found. Checking pending jobs...".format(value))
+    # 2) if it does not exists check pending
+    job_dir = PCS(store.locate_perun_dir_on(os.getcwd())).get_job_directory()
+    job_path = os.path.join(job_dir, value)
+    if os.path.exists(job_path):
+        return job_path
+
+    perun_log.info("file '{}' not found in pending jobs...".format(value))
+    # 3) if still not found, check recursively all candidates for match and ask for confirmation
+    searched_regex = re.compile(value)
+    for root, _, files in os.walk(os.getcwd()):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if file.endswith('.perf') and searched_regex.search(full_path):
+                rel_path = os.path.relpath(full_path, os.getcwd())
+                if click.confirm("did you perhaps mean '{}'?".format(rel_path)):
+                    return full_path
+
+    return value
+
+
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>')
+@click.argument('profile', required=True, metavar='<profile>',
+                callback=lookup_profile_file)
 @click.argument('minor', required=False, default=None, metavar='<hash>')
-def add(profile, minor):
+@click.option('--keep-profile', is_flag=True, required=False, default=False,
+              help='if set, then the added profile will not be deleted')
+def add(profile, minor, **kwargs):
     """Assigns given profile to the concrete minor version storing its content in the perun dir.
 
     Takes the given <profile>, packs its content using the zlib compression module and stores it
@@ -272,11 +208,9 @@ def add(profile, minor):
     perun_log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
 
     try:
-        commands.add(profile, minor)
-    except NotPerunRepositoryException as npre:
-        perun_log.error(str(npre))
-    except IncorrectProfileFormatException as ipfe:
-        perun_log.error(str(ipfe))
+        commands.add(profile, minor, **kwargs)
+    except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
+        perun_log.error(str(exception))
 
 
 @cli.command()
@@ -301,7 +235,13 @@ def rm(profile, minor, **kwargs):
           computed on 1st March at 16:11 from the HEAD index
     """
     perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-    commands.remove(profile, minor, **kwargs)
+
+    try:
+        commands.remove(profile, minor, **kwargs)
+    except (NotPerunRepositoryException, EntryNotFoundException) as exception:
+        perun_log.error(str(exception))
+    finally:
+        perun_log.info("removed '{}'".format(profile))
 
 
 @cli.command()
@@ -342,7 +282,10 @@ def log(head, **kwargs):
     <hash> (<profile_numbers>) <short_info>
     """
     perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
-    commands.log(head, **kwargs)
+    try:
+        commands.log(head, **kwargs)
+    except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
+        perun_log.error(str(exception))
 
 
 @cli.command()
@@ -357,7 +300,10 @@ def status(**kwargs):
     types and creation times.
     """
     perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
-    commands.status(**kwargs)
+    try:
+        commands.status(**kwargs)
+    except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
+        perun_log.error(str(exception))
 
 
 @cli.group()
@@ -365,7 +311,7 @@ def status(**kwargs):
 @click.option('--minor', '-m', nargs=1, default=None,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
-def show(ctx, profile, minor, **kwargs):
+def show(ctx, profile, minor):
     """Shows the profile stored and registered within the perun control system.
 
     Looks up the index of the given minor version and finds the <profile> and prints it
@@ -390,24 +336,66 @@ def show(ctx, profile, minor, **kwargs):
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
 
 
-# TODO: REFACTOR THIS: MOVE SOMEWHERE ELSE
-# Add all of the show modules to the show group
-for module in pkgutil.walk_packages(perun.view.__path__, perun.view.__name__ + '.'):
-    # Skip modules, only packages can be used for show
-    if not module[2]:
-        continue
-    view_package = perun.utils.get_module(module[1])
+@cli.group()
+@click.argument('profile', required=True, metavar='<profile>')
+@click.option('--minor', '-m', nargs=1, default=None,
+              help='Perun will lookup the profile at different minor version (default is HEAD).')
+@click.pass_context
+def postprocessby(ctx, profile, minor):
+    """Postprocesses the profile stored and registered within the perun control system.
 
-    # Skip those packages that are not for viewing of profiles
-    if not hasattr(view_package, 'SUPPORTED_PROFILES'):
-        continue
+    Fixme: Default should not be head, but storage?
 
-    # Skip those packages that do not contain the apropriate cli wrapper
-    view_module = perun.utils.get_module(module[1] + '.' + 'show')
-    cli_function_name = module[1].split('.')[-1]
-    if not hasattr(view_module, cli_function_name):
-        continue
-    show.add_command(getattr(view_module, cli_function_name))
+    Example usage:
+
+        perun postprocessby echo-time-hello-2017-04-02-13-13-34-12.perf normalizer
+
+            Postprocesses the profile echo-time-hello by normalizer, where for each snapshots,
+            values of the resources will be normalized to the interval <0,1>.
+    """
+    ctx.obj = commands.load_profile_from_args(profile, minor)
+    perun_log.msg_to_stdout("Running 'perun postprocessby'", 2, logging.INFO)
+
+
+@cli.group()
+@click.option('--cmd', '-c', nargs=1, required=True, multiple=True,
+              help='Command that we will collect data from single collector.')
+@click.option('--args', '-a', nargs=1, required=False, multiple=True,
+              help='Additional arguments for the command.')
+@click.option('--workload', '-w', nargs=1, required=True, multiple=True,
+              help='Inputs for the command, i.e. so called workloads.')
+@click.pass_context
+def collect(ctx, **kwargs):
+    """Collect the profile from the given binary, arguments and workload"""
+    ctx.obj = kwargs
+    perun_log.msg_to_stdout("Running 'perun collect'", 2, logging.INFO)
+
+
+def init_unit_commands():
+    """Runs initializations for all of the subcommands (shows, collectors, postprocessors)
+
+    Some of the subunits has to be dynamically initialized according to the registered modules,
+    like e.g. show has different forms (raw, graphs, etc.).
+    """
+    for (unit, cli_cmd) in [(perun.view, show), (perun.postprocess, postprocessby),
+                            (perun.collect, collect)]:
+        for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
+            # Skip modules, only packages can be used for show
+            if not module[2]:
+                continue
+            unit_package = perun.utils.get_module(module[1])
+
+            # Skip packages that are not for viewing, postprocessing, or collection of profiles
+            if not hasattr(unit_package, 'SUPPORTED_PROFILES') and \
+               not hasattr(unit_package, 'COLLECTOR_TYPE'):
+                continue
+
+            # Skip those packages that do not contain the appropriate cli wrapper
+            unit_module = perun.utils.get_module(module[1] + '.' + 'run')
+            cli_function_name = module[1].split('.')[-1]
+            if not hasattr(unit_module, cli_function_name):
+                continue
+            cli_cmd.add_command(getattr(unit_module, cli_function_name))
 
 
 @cli.group()
@@ -458,13 +446,11 @@ def matrix(**kwargs):
 
     For full documentation of the local.yml syntax consult the documentation.
     """
-    commands.run_matrix_job(**kwargs)
+    runner.run_matrix_job(**kwargs)
 
 
-def parse_yaml_file_param(ctx, param, value):
+def parse_yaml_param(ctx, param, value):
     """Callback function for parsing the yaml files to dictionary object
-
-    Fixme: Check for incorrect files and stuff
 
     Arguments:
         ctx(Context): context of the called command
@@ -476,53 +462,39 @@ def parse_yaml_file_param(ctx, param, value):
     """
     unit_to_params = {}
     for (unit, yaml_file) in value:
-        with open(yaml_file, 'r') as yaml_handle:
-            unit_to_params[unit] = yaml.safe_load(yaml_handle)
-    return unit_to_params
-
-
-def parse_yaml_string_param(ctx, param, value):
-    """Callback function for parsing the yaml string to dictionary object
-
-    Fixme: Check for incorrect strings
-
-    Arguments:
-        ctx(click.Context): context of the called command
-        param(click.Option): parameter that is being parsed and read from commandline
-        value(str): value that is being read from the commandline
-
-    Returns:
-        dict: parse yaml dictionary
-    """
-    unit_to_params = {}
-    for (unit, yaml_string) in value:
-        unit_to_params[unit] = yaml.safe_load(yaml_string)
+        # First check if this is file
+        if os.path.exists(yaml_file):
+            unit_to_params[unit] = streams.safely_load_yaml_from_file(yaml_file)
+        else:
+            unit_to_params[unit] = streams.safely_load_yaml_from_stream(yaml_file)
     return unit_to_params
 
 
 @run.command()
-@click.option('--bin', '-b', nargs=1, required=True, multiple=True,
+@click.option('--cmd', '-b', nargs=1, required=True, multiple=True,
               help='Binary unit that we are collecting data for.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
               help='Additional arguments for the binary unit.')
 @click.option('--workload', '-w', nargs=1, required=True, multiple=True,
               help='Inputs for the binary, i.e. so called workloads, that are run on binary.')
 @click.option('--collector', '-c', nargs=1, required=True, multiple=True,
+              type=click.Choice(
+                  utils.get_supported_module_names(perun.collect, 'COLLECTOR_TYPE')
+              ),
               help='Collector unit used to collect the profiling data for the binary.')
-@click.option('--collector-params-from-string', '-cpfs', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_string_param,
-              help='Parameters for the given collector supplied as a string.')
-@click.option('--collector-params-from-file', '-cpff', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_file_param,
-              help='Parameters for the given collector read from the file in YAML format.')
+@click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_param,
+              help='Parameters for the given collector read from the file in YAML format or'
+                   'as a string..')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
+              type=click.Choice(
+                  utils.get_supported_module_names(perun.postprocess, 'SUPPORTED_PROFILES')
+              ),
               help='Additional postprocessing phases on profiles, after collection of the data.')
-@click.option('--postprocessor-params-from-string', '-ppfs', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_string_param,
-              help='Parameters for the given postprocessor supplied as a string.')
-@click.option('--postprocessor-params-from-file', '-ppff', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_file_param,
-              help='Parameters for the given postprocessor read from the file in the YAML format.')
+@click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
+              callback=parse_yaml_param,
+              help='Parameters for the given postprocessor read from the file in the YAML format or'
+                   'as a string.')
 def job(**kwargs):
     """Run specified batch of perun jobs to generate profiles.
 
@@ -532,7 +504,7 @@ def job(**kwargs):
 
     Profiles can be further stored in the perun control system using the command:
 
-        perun run add profile.perf
+        perun add profile.perf
 
     Example runs:
 
@@ -552,9 +524,11 @@ def job(**kwargs):
             profile using the mcollect collector. The profiles are afterwards postprocessed,
             first using the normalizer and them with filter.
     """
-    # TODO: Add choice to collector/postprocessors from the registered shits
-    commands.run_single_job(**kwargs)
+    runner.run_single_job(**kwargs)
 
+
+# Initialization of other stuff
+init_unit_commands()
 
 if __name__ == "__main__":
     cli()

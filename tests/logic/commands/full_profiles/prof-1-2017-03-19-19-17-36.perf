@@ -1,11 +1,11 @@
 {
   "header": {
     "type": "time",
-    "bin": "echo",
+    "cmd": "echo",
     "params": "-e",
-    "units": [
-      null
-    ],
+    "units": {
+      "time": "s"
+    },
     "workload": "world"
   },
   "collector_info": {

@@ -11,10 +11,12 @@ import collections
 import os
 import re
 import sys
-import yaml
+
+from ruamel.yaml import YAML
 
 import perun.utils.decorators as decorators
 import perun.utils.exceptions as exceptions
+import perun.utils.streams as streams
 import perun.utils.log as perun_log
 import perun.core.logic.store as store
 
@@ -38,8 +40,12 @@ def init_shared_config_at(path):
         path = os.path.join(path, 'shared.yml')
     store.touch_file(path)
 
-    shared_config = yaml.safe_load("""
-    """) or {}
+    shared_config = streams.safely_load_yaml_from_stream("""
+global:
+    profile_info_fmt: '[type]  [cmd]  [workload]  [collector]   ([time]) [id]'
+    minor_version_info_fmt: '[id:6] ([stats]) [desc]'
+    editor: vim
+    """)
 
     write_config_file(shared_config, path)
     return True
@@ -58,10 +64,42 @@ def init_local_config_at(path, wrapped_vcs):
         path = os.path.join(path, 'local.yml')
     store.touch_file(path)
 
-    # empty config is created
-    local_config = yaml.safe_load("""
-    """) or {}
-    local_config.update(wrapped_vcs)
+    # Create a config for user to set up
+    local_config = streams.safely_load_yaml_from_stream("""
+vcs:
+  type: {0}
+  url: {1}
+
+## To collect profiling data from the binary using the set of collectors,
+## uncomment and edit the following region:
+# cmds:
+#   - echo
+
+## To add set of parameters for the profiled command/binary,
+## uncomment and edit the following region:
+# args:
+#   - -e
+
+## To add workloads/inputs for the profiled command/binary,
+## uncomment and edit the following region:
+# workloads:
+#   - hello
+#   - world
+
+## To register a collector for generating profiling data,
+## uncomment and edit the following region:
+# collectors:
+#   - name: time
+## Try '$ perun collect --help' to obtain list of supported collectors!
+
+## To register a postprocessor for generated profiling data,
+## uncomment and edit the following region (!order matters!):
+# postprocessors:
+#   - name: normalizer
+#     params: --remove-zero
+#   - name: filter
+## Try '$ perun postprocessby --help' to obtain list of supported collectors!
+    """.format(wrapped_vcs['vcs']['type'], wrapped_vcs['vcs']['url']))
 
     write_config_file(local_config, path)
     return True
@@ -88,8 +126,7 @@ def read_config_file(path):
     Returns:
         dict: yaml config
     """
-    with open(path, 'r') as yaml_file:
-        return yaml.safe_load(yaml_file) or {}
+    return streams.safely_load_yaml_from_file(path)
 
 
 def write_config_file(config, path):
@@ -102,7 +139,7 @@ def write_config_file(config, path):
         config, path
     ), 2)
     with open(path, 'w') as yaml_file:
-        yaml.dump(config, yaml_file, default_flow_style=False)
+        YAML().dump(config, yaml_file)
 
 
 def is_valid_key(key):
@@ -114,7 +151,7 @@ def is_valid_key(key):
     Returns:
         bool: true if the key is in valid format
     """
-    valid_key_pattern = re.compile(r"^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*$")
+    valid_key_pattern = re.compile(r"^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$")
     return valid_key_pattern.match(key) is not None
 
 
@@ -254,3 +291,23 @@ def local(path):
     """
     assert os.path.isdir(path)
     return load_config(path, 'local')
+
+
+def lookup_key_recursively(path, key):
+    """Recursively looks up the key first in the local config and then in the global.
+
+    This is used e.g. for formatting strings or editors, where first we have our local configs,
+    that have higher priority. In case there is nothing set in the config, we will check the
+    global config.
+
+    Arguments:
+        path(str): path to the local config
+        key(str): key we are looking up
+    """
+    try:
+        return get_key_from_config(local(path), key)
+    except exceptions.MissingConfigSectionException:
+        try:
+            return get_key_from_config(shared(), key)
+        except exceptions.MissingConfigSectionException as missing_section_exception:
+            perun_log.error(str(missing_section_exception))

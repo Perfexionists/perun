@@ -1817,10 +1817,10 @@
     "params": "",
     "workload": "test",
     "type": "memory",
-    "bin": "./test",
-    "units": [
-      null
-    ]
+    "cmd": "./test",
+    "units": {
+      "memory": "B"
+    }
   },
   "collector_info": {
     "params": {},

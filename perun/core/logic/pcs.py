@@ -7,6 +7,8 @@ by its path.
 
 import os
 
+import perun.core.vcs as vcs
+import perun.core.logic.store as store
 import perun.core.logic.config as config
 
 __author__ = 'Tomas Fiedor'
@@ -55,6 +57,13 @@ class PCS(object):
         """
         return "PCS({})".format(self.path)
 
+    def get_head(self):
+        """
+        Returns:
+            str: minor head of the wrapped version control system
+        """
+        return vcs.get_minor_head(self.vcs_type, self.vcs_path)
+
     def get_object_directory(self):
         """
         Returns:
@@ -69,3 +78,25 @@ class PCS(object):
             directory: directory, where job outputs are stored
         """
         return os.path.join(self.path, "jobs")
+
+
+def pass_pcs(func):
+    """Decorator for passing pcs object to function
+
+    Provided the current working directory, constructs the PCS object,
+    that encapsulates the performance control and passes it as argument.
+
+    Note: Used for CLI interface.
+
+    Arguments:
+        func(function): function we are decorating
+
+    Returns:
+        func: wrapped function
+    """
+    def wrapper(*args, **kwargs):
+        """Wrapper function for the decorator"""
+        perun_directory = store.locate_perun_dir_on(os.getcwd())
+        return func(PCS(perun_directory), *args, **kwargs)
+
+    return wrapper
