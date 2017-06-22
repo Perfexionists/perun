@@ -143,3 +143,24 @@ def cprintln(string, colour, attrs=None, ending='\n'):
     """
     attrs = attrs or []
     print(termcolor.colored(string, colour, attrs=attrs), end=ending)
+
+
+def done(ending='\n'):
+    """Helper function that will print green done to the terminal
+
+    Arguments:
+        ending(str): end of the string, by default new line
+    """
+    print('[', end='')
+    cprint("DONE", 'green', attrs=['bold'])
+    print(']', end=ending)
+
+
+def failed(ending='\n'):
+    """
+    Arguments:
+        ending(str): end of the string, by default new line
+    """
+    print('[', end='')
+    cprint("FAILED", 'red', attrs=['bold'])
+    print(']', end=ending)

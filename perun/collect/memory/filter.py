@@ -113,8 +113,9 @@ def allocation_filter(profile, function, source):
 
 
 @validate_profile
-def clear_profile(profile):
+def remove_uidless_records_from(profile):
     """ Remove record without UID out of the profile
+
     Arguments:
         profile(dict): dictionary including "snapshots" and
                        "global" sections in the profile
@@ -124,9 +125,7 @@ def clear_profile(profile):
     """
     snapshots = profile['snapshots']
     for snapshot in snapshots:
-
-        snapshot['resources'] = [res for res in snapshot['resources']
-                                 if res['uid']]
+        snapshot['resources'] = [res for res in snapshot['resources'] if res['uid']]
 
     if snapshots[-1]['resources']:
         profile['global'][0]['resources'] = [snapshots[-1]['resources'][-1]]
