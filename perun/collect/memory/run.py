@@ -1,34 +1,53 @@
 """This module contains methods needed by Perun logic"""
 
 import os
-from decimal import Decimal
 
 import click
 
 import perun.core.logic.runner as runner
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
-from perun.collect.memory.syscalls import run, init
+import perun.collect.memory.syscalls as syscalls
+import perun.utils.log as log
+
 from perun.utils.helpers import CollectStatus
 
 __author__ = 'Radim Podola'
 _lib_name = "malloc.so"
 _tmp_log_filename = "MemoryLog"
+DEFAULT_SAMPLING = 0.001
 
 
-def before(**_):
+def before(cmd, **_):
     """ Phase for initialization the collect module
+    Arguments:
+        cmd(string): binary file to profile
 
     Returns:
         tuple: (return code, status message, updated kwargs)
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isfile("{}/{}".format(pwd, _lib_name)):
-        result = init()
+        print("Missing compiled dynamic library 'lib{}'. Compiling from sources: ".format(
+            os.path.splitext(_lib_name)[0]
+        ), end='')
+        result = syscalls.init()
         if result:
+            log.failed()
             error_msg = 'Build of the library failed with error code: '
             error_msg += str(result)
             return CollectStatus.ERROR, error_msg, {}
+        else:
+            log.done()
+
+    print("Checking if binary contains debugging information: ", end='')
+    if not syscalls.check_debug_symbols(cmd):
+        log.failed()
+        error_msg = "Binary does not contain debug info section.\n"
+        error_msg += "Please recompile your project with debug options (gcc -g | g++ -g)"
+        return CollectStatus.ERROR, error_msg, {}
+    log.done()
+    print("Finished preprocessing step!\n")
 
     return CollectStatus.OK, '', {}
 
@@ -43,83 +62,90 @@ def collect(cmd, args, workload, **_):
     Returns:
         tuple: (return code, status message, updated kwargs)
     """
-    result = run(cmd, args, workload)
+    print("Collecting data: ", end='')
+    result, collector_errors = syscalls.run(cmd, args, workload)
     if result:
+        log.failed()
         error_msg = 'Execution of binary failed with error code: '
-        error_msg += str(result)
+        error_msg += str(result) + "\n"
+        error_msg += collector_errors
         return CollectStatus.ERROR, error_msg, {}
-
+    log.done()
+    print("Finished collection of the raw data!\n")
     return CollectStatus.OK, '', {}
 
 
-def after(cmd, **kwargs):
+def after(cmd, sampling=DEFAULT_SAMPLING, **kwargs):
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
     Arguments:
         cmd(string): binary file to profile
+        sampling(int): sampling of the collection of the data
         kwargs(dict): profile's header
 
     Returns:
         tuple: (return code, message, updated kwargs)
 
-    Fixme: There should be warning raised, when the debugging information is not present. (*)
-
-    (*) When one compiles some application without -g, the profiled binaries WILL generate empty
-    profiles, which is not really acceptable. Fix this ASAP!
-
     Case studies:
-        --sampling=0.1 --no-func=f1 --no-func=f2 --no-source=s --all
+        --sampling=0.1 --no-func=f2 --no-source=s --all
         -> run memory collector with 0.1s sampling,
-        excluding allocations in "f1", "f2" functions and in "s" source file,
+        excluding allocations in "f2" function and in "s" source file,
         including allocators and unreachable records in call trace
 
         --no-func=f1 --no-source=s --all
-        -> run memory collector with 0.0001s sampling,
+        -> run memory collector with 0.001s sampling,
         excluding allocations in "f1" function and in "s" source file,
         including allocators and unreachable records in call trace
 
         --no-func=f1 --sampling=1.0
-        -> run memory collector with 1.1s sampling,
+        -> run memory collector with 1.0s sampling,
         excluding allocations in "f1" function,
         excluding allocators and unreachable records in call trace
     """
-    if 'sampling' in kwargs.keys():
-        sampling = Decimal(str(kwargs['sampling']))
-    else:
-        sampling = Decimal('0.001')
+    include_all = kwargs.get('all', False)
+    exclude_funcs = kwargs.get('no_func', None)
+    exclude_sources = kwargs.get('no_source', None)
 
-    include_all = 'all' in kwargs.keys()
-
-    exclude_funcs = kwargs.get('no-func', [])
-    if exclude_funcs is None:
-        exclude_funcs = []
-
-    exclude_sources = kwargs.get('no-source', [])
-    if exclude_sources is None:
-        exclude_sources = []
-
+    print("Generating profile: ", end='')
     try:
         profile = parser.parse_log(_tmp_log_filename, cmd, sampling)
-    except IndexError:
-        return CollectStatus.ERROR, 'Info missing in log file', {}
-    except ValueError:
-        return CollectStatus.ERROR, 'Wrong format of log file', {}
+    except IndexError as i_err:
+        log.failed()
+        return CollectStatus.ERROR, 'Info missing in log file: {}'.format(str(i_err)), {}
+    except ValueError as v_err:
+        log.failed()
+        return CollectStatus.ERROR, 'Wrong format of log file: {}'.format(str(v_err)), {}
+    log.done()
 
     if not include_all:
+        print("Filtering traces: ", end='')
         filters.remove_allocators(profile)
         filters.trace_filter(profile, function=['?'], source=['unreachable'])
+        log.done()
 
     if exclude_funcs or exclude_sources:
-        filters.allocation_filter(profile, function=exclude_funcs,
-                                  source=exclude_sources)
+        print("Excluding functions and sources: ", end='')
+        filters.allocation_filter(profile, function=[exclude_funcs], source=[exclude_sources])
+        log.done()
 
-    filters.clear_profile(profile)
+    print("Clearing records without assigned UID from profile: ", end='')
+    filters.remove_uidless_records_from(profile)
+    log.done()
+    print("")
 
     return CollectStatus.OK, '', {'profile': profile}
 
 
 @click.command()
+@click.option('--sampling', '-s', default=DEFAULT_SAMPLING,
+              help="Profile data sampling interval.")
+@click.option('--no-source',
+              help="Will exclude the source file from profiling.")
+@click.option('--no-func',
+              help="Will exclude the function from profiling.")
+@click.option('--all', '-a', is_flag=True, default=False,
+              help="Will include all allocators and unreachable records in call trace.")
 @click.pass_context
-def memory(ctx):
+def memory(ctx, **kwargs):
     """Runs memory collect, collecting allocation through the program execution"""
-    runner.run_collector_from_cli_context(ctx, 'memory', {})
+    runner.run_collector_from_cli_context(ctx, 'memory', kwargs)
