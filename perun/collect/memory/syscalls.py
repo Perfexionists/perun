@@ -1,5 +1,7 @@
 """This module provides simple wrappers over some linux command line tools"""
+
 import os
+import re
 import subprocess
 
 __author__ = "Radim Podola"
@@ -108,9 +110,9 @@ def check_debug_symbols(cmd):
         bool: True if binary was compiled with debug symbols
     """
     try:
-        output = subprocess.check_output("objdump -h " + cmd + " | grep debug",
-                                         shell=True)
-        if output.decode("utf-8") is None:
+        output = subprocess.check_output(["objdump", "-h", cmd])
+        raw_output = output.decode("utf-8")
+        if re.search("debug", raw_output) is None:
             return False
     except subprocess.CalledProcessError:
         return False

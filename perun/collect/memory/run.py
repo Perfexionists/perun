@@ -110,10 +110,10 @@ def after(cmd, sampling=DEFAULT_SAMPLING, **kwargs):
     try:
         profile = parser.parse_log(_tmp_log_filename, cmd, sampling)
     except IndexError as i_err:
-        log.error()
+        log.failed()
         return CollectStatus.ERROR, 'Info missing in log file: {}'.format(str(i_err)), {}
     except ValueError as v_err:
-        log.error()
+        log.failed()
         return CollectStatus.ERROR, 'Wrong format of log file: {}'.format(str(v_err)), {}
     log.done()
 
