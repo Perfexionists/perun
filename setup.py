@@ -13,7 +13,7 @@ setup(
         'collect/complexity/cpp_sources/workload/*.{h,cpp,conf}'
     ]},
     install_requires=[
-        'click', 'termcolor', 'colorama', 'kivy', 'ruamel.yaml', 'GitPython'
+        'click', 'termcolor', 'colorama', 'kivy', 'ruamel.yaml', 'GitPython', 'bokeh', 'pandas'
     ],
 
     entry_points='''

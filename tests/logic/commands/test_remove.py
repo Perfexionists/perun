@@ -4,8 +4,8 @@ Tests removing of profiles, within and outside of the scope of the wrapped perun
 removing nonexistent profiles, etc.
 """
 
-import git
 import os
+import git
 import pytest
 
 import perun.core.logic.commands as commands
@@ -90,9 +90,12 @@ def test_rm(helpers, pcs_full, stored_profile_pool, capsys):
 
     git_repo = git.Repo(pcs_full.vcs_path)
     head = str(git_repo.head.commit)
-    deleted_profile = stored_profile_pool[1]
+
+    # We need relative path
+    deleted_profile = os.path.split(stored_profile_pool[1])[-1]
 
     def entry_contains_profile(entry):
+        """Helper function for looking up entry to be deleted"""
         return deleted_profile == entry.path
 
     with helpers.open_index(pcs_full.path, head) as index_handle:
@@ -103,7 +106,7 @@ def test_rm(helpers, pcs_full, stored_profile_pool, capsys):
     with helpers.open_index(pcs_full.path, head) as index_handle:
         assert not helpers.exists_profile_in_index_such_that(index_handle, entry_contains_profile)
 
-    out, err = capsys.readouterr()
+    _, err = capsys.readouterr()
     assert len(err) == 0
 
     # Assert that nothing was removed

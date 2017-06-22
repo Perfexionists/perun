@@ -573,11 +573,15 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     touch_index(minor_index_file)
 
     modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
-    entry = IndexEntry(modification_stamp, registered_file_checksum, registered_file, -1)
+    entry_name = os.path.split(registered_file)[-1]
+    entry = IndexEntry(modification_stamp, registered_file_checksum, entry_name, -1)
     write_entry_to_index(minor_index_file, entry)
 
     if perun_log.VERBOSITY >= perun_log.VERBOSE_DEBUG:
         print_index(minor_index_file)
+
+    reg_rel_path = os.path.relpath(registered_file)
+    perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
 
 
 @decorators.assume_version(INDEX_VERSION, 1)

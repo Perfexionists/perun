@@ -12,9 +12,105 @@ import perun.utils.streams as streams
 import perun.core.logic.commands as commands
 import perun.core.logic.pcs as pcs
 import perun.core.logic.store as store
+import perun.core.logic.profile as perun_profile
 import perun.core.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
+
+
+class Helpers(object):
+    """
+    Helper class with various static functions for helping with profiles
+    """
+    @staticmethod
+    def list_contents_on_path(path):
+        """Helper function for listing the contents of the path
+
+        Arguments:
+            path(str): path to the director which we will list
+        """
+        for root, dirs, files in os.walk(path):
+            for file_on_path in files:
+                print("file: ", os.path.join(root, file_on_path))
+            for dir_on_path in dirs:
+                print("dirs: ", os.path.join(root, dir_on_path))
+
+    @staticmethod
+    def count_contents_on_path(path):
+        """Helper function for counting the contents of the path
+
+        Arguments:
+            path(str): path to the director which we will list
+
+        Returns:
+            (int, int): (file number, dir number) on path
+        """
+        file_number = 0
+        dir_number = 0
+        for _, dirs, files in os.walk(path):
+            for _ in files:
+                file_number += 1
+            for _ in dirs:
+                dir_number += 1
+        return file_number, dir_number
+
+    @staticmethod
+    def open_index(pcs_path, minor_version):
+        """Helper function for opening handle of the index
+
+        This encapsulates obtaining the full path to the given index
+
+        Arguments:
+            pcs_path(str): path to the pcs
+            minor_version(str): sha minor version representation
+        """
+        assert store.is_sha1(minor_version)
+        object_dir_path = os.path.join(pcs_path, 'objects')
+
+        _, minor_version_index = store.split_object_name(object_dir_path, minor_version)
+        return open(minor_version_index, 'rb+')
+
+    @staticmethod
+    def exists_profile_in_index_such_that(index_handle, pred):
+        """Helper assert to check, if there exists any profile in index such that pred holds.
+
+        Arguments:
+            index_handle(file): handle for the index
+            pred(lambda): predicate over the index entry
+        """
+        for entry in store.walk_index(index_handle):
+            if pred(entry):
+                return True
+        return False
+
+    @staticmethod
+    def prepare_profile(perun, profile, origin):
+        """
+        Arguments:
+            pcs(PCS): perun control system wrapper
+            profile(str): name of the profile that is going to be stored in pending jobs
+            origin(str): origin minor version for the given profile
+        """
+        # Copy to jobs and prepare origin for the current version
+        dest_dir = perun.get_job_directory()
+        shutil.copy2(profile, dest_dir)
+
+        # Prepare origin for the current version
+        copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
+        copied_profile = perun_profile.load_profile_from_file(copied_filename, is_raw_profile=True)
+        copied_profile['origin'] = origin
+        perun_profile.store_profile_at(copied_profile, copied_filename)
+        shutil.copystat(profile, copied_filename)
+        return copied_filename
+
+
+@pytest.fixture(scope="session")
+def helpers():
+    """
+    Returns:
+        Helpers: object with helpers functions
+    """
+    return Helpers()
 
 
 @pytest.fixture(scope="session")
@@ -34,6 +130,27 @@ def memory_collect_job():
     )
     target_bin_path = os.path.join(target_dir, 'mct')
     assert 'mct' in list(os.listdir(target_dir))
+
+    return [target_bin_path], '', [''], ['memory'], []
+
+
+@pytest.fixture(scope="session")
+def memory_collect_no_debug_job():
+    """
+    Returns:
+        tuple: ('bin', '', [''], 'memory', [])
+    """
+    # First compile the stuff, so we know it will work
+    script_dir = os.path.split(__file__)[0]
+    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
+
+    # Compile the testing stuff with debugging information set
+    subprocess.check_output(
+        ['gcc', '--std=c99', target_src_path, '-o', 'mct-no-dbg'], cwd=target_dir
+    )
+    target_bin_path = os.path.join(target_dir, 'mct-no-dbg')
+    assert 'mct-no-dbg' in list(os.listdir(target_dir))
 
     return [target_bin_path], '', [''], ['memory'], []
 
@@ -102,6 +219,29 @@ def stored_profile_pool():
     return profiles
 
 
+def get_loaded_profiles(profile_type):
+    """
+    Arguments:
+        profile_type(str): type of the profile we are looking for
+
+    Returns:
+        generator: stream of profiles of the given type
+    """
+    for valid_profile in filter(lambda p: 'err' not in p, get_all_profiles()):
+        loaded_profile = perun_profile.load_profile_from_file(valid_profile, is_raw_profile=True)
+        if loaded_profile['header']['type'] == profile_type:
+            yield loaded_profile
+
+
+@pytest.fixture(scope="function")
+def memory_profiles():
+    """
+    Returns:
+        generator: generator of fully loaded memory profiles as dictionaries
+    """
+    yield get_loaded_profiles('memory')
+
+
 @pytest.fixture(scope="function")
 def pcs_full():
     """
@@ -136,9 +276,12 @@ def pcs_full():
     current_head = repo.index.commit("second commit")
 
     # Populate PCS with profiles
-    commands.add(profiles[0], str(root))
-    commands.add(profiles[1], str(current_head))
-    commands.add(profiles[2], str(current_head))
+    root_profile = Helpers.prepare_profile(pcs_obj, profiles[0], str(root))
+    commands.add(root_profile, str(root))
+    chead_profile1 = Helpers.prepare_profile(pcs_obj, profiles[1], str(current_head))
+    chead_profile2 = Helpers.prepare_profile(pcs_obj, profiles[2], str(current_head))
+    commands.add(chead_profile1, str(current_head))
+    commands.add(chead_profile2, str(current_head))
 
     # Assert that we have five blobs: 2 for commits and 3 for profiles
     pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
@@ -213,78 +356,3 @@ def cleandir():
     os.chdir(temp_path)
     yield
     shutil.rmtree(temp_path)
-
-
-class Helpers(object):
-    """
-    Helper class with various static functions for helping with profiles
-    """
-    @staticmethod
-    def list_contents_on_path(path):
-        """Helper function for listing the contents of the path
-
-        Arguments:
-            path(str): path to the director which we will list
-        """
-        for root, dirs, files in os.walk(path):
-            for file_on_path in files:
-                print("file: ", os.path.join(root, file_on_path))
-            for dir_on_path in dirs:
-                print("dirs: ", os.path.join(root, dir_on_path))
-
-    @staticmethod
-    def count_contents_on_path(path):
-        """Helper function for counting the contents of the path
-
-        Arguments:
-            path(str): path to the director which we will list
-
-        Returns:
-            (int, int): (file number, dir number) on path
-        """
-        file_number = 0
-        dir_number = 0
-        for _, dirs, files in os.walk(path):
-            for _ in files:
-                file_number += 1
-            for _ in dirs:
-                dir_number += 1
-        return file_number, dir_number
-
-    @staticmethod
-    def open_index(pcs_path, minor_version):
-        """Helper function for opening handle of the index
-
-        This encapsulates obtaining the full path to the given index
-
-        Arguments:
-            pcs_path(str): path to the pcs
-            minor_version(str): sha minor version representation
-        """
-        assert store.is_sha1(minor_version)
-        object_dir_path = os.path.join(pcs_path, 'objects')
-
-        _, minor_version_index = store.split_object_name(object_dir_path, minor_version)
-        return open(minor_version_index, 'rb+')
-
-    @staticmethod
-    def exists_profile_in_index_such_that(index_handle, pred):
-        """Helper assert to check, if there exists any profile in index such that pred holds.
-
-        Arguments:
-            index_handle(file): handle for the index
-            pred(lambda): predicate over the index entry
-        """
-        for entry in store.walk_index(index_handle):
-            if pred(entry):
-                return True
-        return False
-
-
-@pytest.fixture(scope="session")
-def helpers():
-    """
-    Returns:
-        Helpers: object with helpers functions
-    """
-    return Helpers()
