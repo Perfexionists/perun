@@ -26,7 +26,7 @@ def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
     # Fixme: Add check that the profile was correctly generated
 
 
-def test_collect_memory(helpers, pcs_full, memory_collect_job):
+def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_collect_no_debug_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -42,7 +42,26 @@ def test_collect_memory(helpers, pcs_full, memory_collect_job):
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
 
+    cmd, args, _, colls, posts = memory_collect_job
+    runner.run_single_job(cmd, args, ["hello"], colls, posts, **{'no_func': 'fun', 'sampling': 0.1})
+
+    profiles = os.listdir(os.path.join(pcs_full.path, 'jobs'))
+    print(profiles)
+    new_smaller_profile = [p for p in profiles if p != new_profile][0]
+    assert len(profiles) == 2
+    assert new_smaller_profile.endswith(".perf")
+
+    # Assert that nothing was removed
+    after_second_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+    assert after_object_count + 1 == after_second_object_count
+
     # Fixme: Add check that the profile was correctly generated
+
+    runner.run_single_job(*memory_collect_no_debug_job)
+    last_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+    _, err = capsys.readouterr()
+    assert after_second_object_count == last_object_count
+    assert 'debug info' in err
 
 
 def test_collect_time(helpers, pcs_full, capsys):
