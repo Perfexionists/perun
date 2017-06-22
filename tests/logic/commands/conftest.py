@@ -39,6 +39,27 @@ def memory_collect_job():
 
 
 @pytest.fixture(scope="session")
+def memory_collect_no_debug_job():
+    """
+    Returns:
+        tuple: ('bin', '', [''], 'memory', [])
+    """
+    # First compile the stuff, so we know it will work
+    script_dir = os.path.split(__file__)[0]
+    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
+
+    # Compile the testing stuff with debugging information set
+    subprocess.check_output(
+        ['gcc', '--std=c99', target_src_path, '-o', 'mct-no-dbg'], cwd=target_dir
+    )
+    target_bin_path = os.path.join(target_dir, 'mct-no-dbg')
+    assert 'mct-no-dbg' in list(os.listdir(target_dir))
+
+    return [target_bin_path], '', [''], ['memory'], []
+
+
+@pytest.fixture(scope="session")
 def complexity_collect_job():
     """
 

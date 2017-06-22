@@ -14,6 +14,12 @@ TODO: Test for all allocation functions, use assert?
 #include <assert.h>
 #include <unistd.h>
 
+void fun() {
+    int *n;
+    n = malloc(sizeof(int));
+    free(n);
+}
+
 
 int main(){
 
