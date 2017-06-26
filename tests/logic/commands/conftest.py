@@ -372,14 +372,14 @@ class MockCursesWindow(object):
 
         self.matrix = [[' ']*cols for _ in range(1, lines+1)]
 
-    character_stream = iter([
-        curses.KEY_RIGHT, curses.KEY_LEFT, ord('4'), ord('6'), ord('8'), ord('5'), ord('h'),
-        ord('q'), ord('q')
-    ])
+        self.character_stream = iter([
+            curses.KEY_RIGHT, curses.KEY_LEFT, ord('4'), ord('6'), ord('8'), ord('5'), ord('h'),
+            ord('q'), ord('q')
+        ])
 
     def getch(self):
         """Returns character stream tuned for the testing of the logic"""
-        return MockCursesWindow.character_stream.__next__()
+        return self.character_stream.__next__()
 
     def getyx(self):
         """Returns the current cursor position"""

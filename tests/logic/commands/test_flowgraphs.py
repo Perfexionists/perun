@@ -70,7 +70,9 @@ def test_curses_logic(monkeypatch, mock_curses_window, memory_profiles):
     monkeypatch.setattr(curses, 'napms', donothing)
 
     # Rewrite the sequence of the mock window
-    mock_curses_window.character_stream = iter([ord('i'), ord('q'), ord('q')])
+    mock_curses_window.character_stream = iter([
+        ord('i'), ord('i'), curses.KEY_RIGHT, ord('q'), ord('q')
+    ])
 
     for memory_profile in memory_profiles:
         heap_map = converters.create_heap_map(memory_profile)
