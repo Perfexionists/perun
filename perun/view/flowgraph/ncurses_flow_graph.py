@@ -310,7 +310,7 @@ class FlowGraphVisualization(object):
             self.print_resize_req()
             return
 
-        window_lines, window_cols = self.__window.getmaxyx()
+        _, window_cols = self.__window.getmaxyx()
 
         # sets first snapshot
         self.__set_start_snap(self.__current_snap + move, cols)
@@ -327,7 +327,7 @@ class FlowGraphVisualization(object):
     def print_global_view(self):
         """ Draw global view of the allocation's FLOW """
         self.__window.clear()
-        window_lines, window_cols = self.__window.getmaxyx()
+        _, window_cols = self.__window.getmaxyx()
 
         try:
             # getting true graph's size
@@ -513,7 +513,3 @@ def flow_graph(heap):
     except curses.error as error:
         print('Screen too small!', file=sys.stderr)
         print(str(error), file=sys.stderr)
-
-
-if __name__ == "__main__":
-    pass

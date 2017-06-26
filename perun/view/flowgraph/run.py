@@ -1,8 +1,5 @@
 """Flow graphs visualization of the profiles."""
 
-from copy import deepcopy
-import json
-
 import click
 
 import perun.view.flowgraph.ncurses_flow_graph as curses_graphs

@@ -43,13 +43,35 @@ def test_curses_flow(monkeypatch, mock_curses_window, memory_profiles):
     monkeypatch.setattr(curses, 'color_pair', returnnothing)
     monkeypatch.setattr(curses, 'start_color', donothing)
     monkeypatch.setattr(curses, 'use_default_colors', donothing)
+    monkeypatch.setattr(curses, 'napms', donothing)
 
     for memory_profile in memory_profiles:
         heap_map = converters.create_heap_map(memory_profile)
         vis_obj = curses_graphs.FlowGraphVisualization(mock_curses_window, heap_map)
+        vis_obj.print_intro()
+        vis_obj.print_resize_req()
         vis_obj.print_global_view()
         str_window = str(mock_curses_window)
-        print(str_window)
         assert 'MEMORY' in str_window
         y, x = mock_curses_window.getmaxyx()
         assert ('|' + ' '*x + '|') not in str_window
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_curses_logic(monkeypatch, mock_curses_window, memory_profiles):
+    """Test logic of the flowgraph visualization
+
+    Expecting no errors, eventually the visualization should end.
+    """
+    monkeypatch.setattr(curses, 'curs_set', donothing)
+    monkeypatch.setattr(curses, 'color_pair', returnnothing)
+    monkeypatch.setattr(curses, 'start_color', donothing)
+    monkeypatch.setattr(curses, 'use_default_colors', donothing)
+    monkeypatch.setattr(curses, 'napms', donothing)
+
+    # Rewrite the sequence of the mock window
+    mock_curses_window.character_stream = iter([ord('i'), ord('q'), ord('q')])
+
+    for memory_profile in memory_profiles:
+        heap_map = converters.create_heap_map(memory_profile)
+        curses_graphs.flow_graph_logic(mock_curses_window, heap_map)

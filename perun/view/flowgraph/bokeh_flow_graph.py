@@ -121,7 +121,3 @@ def flow_usage_graph(data_frame, unit):
     fig.yaxis.axis_label = y_axis_label
 
     return fig, toggles
-
-
-if __name__ == "__main__":
-    pass
