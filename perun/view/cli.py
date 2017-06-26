@@ -362,7 +362,7 @@ def postprocessby(ctx, profile, minor):
               help='Command that we will collect data from single collector.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
               help='Additional arguments for the command.')
-@click.option('--workload', '-w', nargs=1, required=True, multiple=True,
+@click.option('--workload', '-w', nargs=1, required=False, multiple=True, default=[''],
               help='Inputs for the command, i.e. so called workloads.')
 @click.pass_context
 def collect(ctx, **kwargs):
@@ -475,7 +475,7 @@ def parse_yaml_param(ctx, param, value):
               help='Binary unit that we are collecting data for.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
               help='Additional arguments for the binary unit.')
-@click.option('--workload', '-w', nargs=1, required=True, multiple=True,
+@click.option('--workload', '-w', nargs=1, required=False, multiple=True, default=[''],
               help='Inputs for the binary, i.e. so called workloads, that are run on binary.')
 @click.option('--collector', '-c', nargs=1, required=True, multiple=True,
               type=click.Choice(
