@@ -16,6 +16,7 @@ import perun.utils.log as perun_log
 import perun.utils.streams as streams
 import perun.core.logic.config as perun_config
 import perun.core.logic.commands as commands
+import perun.core.logic.profile as profiles
 import perun.core.logic.runner as runner
 import perun.core.logic.store as store
 import perun.core.vcs as vcs
@@ -147,7 +148,7 @@ def init(dst, configure, **kwargs):
                              + (" "*4) + ".perun/local.yml\n")
 
 
-def lookup_profile_file(ctx, param, value):
+def filename_lookup_callback(ctx, param, value):
     """Callback function for looking up the profile, if it does not exist
 
     Arguments:
@@ -156,22 +157,34 @@ def lookup_profile_file(ctx, param, value):
         value(str): value that is being read from the commandline
 
     Returns:
-        dict: parsed yaml file
+        str: filename of the profile
+    """
+    return lookup_profile_filename(value)
+
+
+def lookup_profile_filename(profile_name):
+    """Callback function for looking up the profile, if it does not exist
+
+    Arguments:
+        profile_name(str): value that is being read from the commandline
+
+    Returns:
+        str: full path to profile
     """
     # 1) if it exists return the value
-    if os.path.exists(value):
-        return value
+    if os.path.exists(profile_name):
+        return profile_name
 
-    perun_log.info("file '{}' not found. Checking pending jobs...".format(value))
+    perun_log.info("file '{}' does not exist. Checking pending jobs...".format(profile_name))
     # 2) if it does not exists check pending
     job_dir = PCS(store.locate_perun_dir_on(os.getcwd())).get_job_directory()
-    job_path = os.path.join(job_dir, value)
+    job_path = os.path.join(job_dir, profile_name)
     if os.path.exists(job_path):
         return job_path
 
-    perun_log.info("file '{}' not found in pending jobs...".format(value))
+    perun_log.info("file '{}' not found in pending jobs...".format(profile_name))
     # 3) if still not found, check recursively all candidates for match and ask for confirmation
-    searched_regex = re.compile(value)
+    searched_regex = re.compile(profile_name)
     for root, _, files in os.walk(os.getcwd()):
         for file in files:
             full_path = os.path.join(root, file)
@@ -180,12 +193,12 @@ def lookup_profile_file(ctx, param, value):
                 if click.confirm("did you perhaps mean '{}'?".format(rel_path)):
                     return full_path
 
-    return value
+    return profile_name
 
 
 @cli.command()
 @click.argument('profile', required=True, metavar='<profile>',
-                callback=lookup_profile_file)
+                callback=filename_lookup_callback)
 @click.argument('minor', required=False, default=None, metavar='<hash>')
 @click.option('--keep-profile', is_flag=True, required=False, default=False,
               help='if set, then the added profile will not be deleted')
@@ -242,6 +255,27 @@ def rm(profile, minor, **kwargs):
         perun_log.error(str(exception))
     finally:
         perun_log.info("removed '{}'".format(profile))
+
+
+def profile_lookup_callback(ctx, param, value):
+    """
+
+    Arguments:
+        ctx(click.core.Context): context
+        param(click.core.Argument): param
+    """
+    # 1) Check the index, if this is registered
+    profile_from_index = commands.load_profile_from_args(value, ctx.params['minor'])
+    if profile_from_index:
+        return profile_from_index
+
+    perun_log.info("file '{}' not found in index. Checking filesystem...".format(value))
+    # 2) Else lookup filenames and load the profile
+    abs_path = lookup_profile_filename(value)
+    if not os.path.exists(abs_path):
+        perun_log.error("could not find the file '{}'".format(abs_path))
+
+    return profiles.load_profile_from_file(abs_path, is_raw_profile=True)
 
 
 @cli.command()
@@ -307,11 +341,11 @@ def status(**kwargs):
 
 
 @cli.group()
-@click.argument('profile', required=True, metavar='<profile>')
-@click.option('--minor', '-m', nargs=1, default=None,
+@click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
+@click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
-def show(ctx, profile, minor):
+def show(ctx, profile, **_):
     """Shows the profile stored and registered within the perun control system.
 
     Looks up the index of the given minor version and finds the <profile> and prints it
@@ -331,17 +365,17 @@ def show(ctx, profile, minor):
             Shows the given profile of the current HEAD of the wrapped repository using as the heap
             map (if the profile is of memory type).
     """
+    ctx.obj = profile
     # TODO: Check that if profile is not SHA-1, then minor must be set
-    ctx.obj = commands.load_profile_from_args(profile, minor)
     perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
 
 
 @cli.group()
-@click.argument('profile', required=True, metavar='<profile>')
-@click.option('--minor', '-m', nargs=1, default=None,
+@click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
+@click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
-def postprocessby(ctx, profile, minor):
+def postprocessby(ctx, profile, **_):
     """Postprocesses the profile stored and registered within the perun control system.
 
     Fixme: Default should not be head, but storage?
@@ -353,7 +387,7 @@ def postprocessby(ctx, profile, minor):
             Postprocesses the profile echo-time-hello by normalizer, where for each snapshots,
             values of the resources will be normalized to the interval <0,1>.
     """
-    ctx.obj = commands.load_profile_from_args(profile, minor)
+    ctx.obj = profile
     perun_log.msg_to_stdout("Running 'perun postprocessby'", 2, logging.INFO)
 
 

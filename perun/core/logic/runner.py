@@ -284,6 +284,7 @@ def store_generated_profile(pcs, prof, job):
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     profile.store_profile_at(full_profile, full_profile_path)
+    log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
 
 
 def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params):
