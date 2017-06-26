@@ -1,4 +1,5 @@
 """This module implement the flow graph visualization of the profile"""
+
 import curses
 import curses.textpad
 import sys
@@ -42,7 +43,7 @@ class FlowGraphVisualization(object):
 
     # map's visualising symbols
     BAR_SYM = '\u275A'
-    BAR_PEAK_SYM = '\u2AFC'
+    BAR_PEAK_SYM = '\u2588'
     X_LINES_SYM = '\u2504'
     BORDER_X_SYM = '\u2550'
     BORDER_Y_SYM = '\u2551'
@@ -286,7 +287,7 @@ class FlowGraphVisualization(object):
                 bars_cnt += 1
                 if bars_cnt <= bars:
                     data = {}
-                    total_fields = int(math.ceil(snap['sum_amount'] / field_size))
+                    total_fields = int(math.ceil(snap.get('sum_amount', 0) / field_size))
                     data['fields'] = total_fields
                     data['time'] = snap['time']
                     data['snapshot'] = i + 1
@@ -367,7 +368,7 @@ class FlowGraphVisualization(object):
             # heap representation transforming into graph data
             for i, snap in enumerate(self.__heap['snapshots']):
                 bars_cnt += 1
-                avg_sum += snap['sum_amount']
+                avg_sum += snap.get('sum_amount', 0)
                 if 'sum_amount' in snap and snap['sum_amount'] == self.__peak:
                     was_peak = True
                 if bars_cnt == approx_bars:
@@ -387,7 +388,7 @@ class FlowGraphVisualization(object):
             for i, snap in enumerate(self.__heap['snapshots']):
                 # heap representation transforming into graph data
                 data = {}
-                total_fields = int(math.ceil(snap['sum_amount'] / field_size))
+                total_fields = int(math.ceil(snap.get('sum_amount') / field_size))
                 data['fields'] = total_fields
                 data['time'] = snap['time']
                 data['snapshot'] = i + 1
