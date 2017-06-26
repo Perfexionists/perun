@@ -113,12 +113,10 @@ def _set_graphs_width(graph, width):
 
 @click.command()
 @click.option('--filename', '-f', default="bars.html",
-              help="Output filename.")
-@click.option('--width', '-w', default=800,
-              help="Graph's width.")
+              help="Outputs the graph to the file specified by filename.")
+@click.option('--graph-width', '-w', default=800,
+              help="Changes the width of the generated Graph.")
 @pass_profile
-def bargraph(profile, **kwargs):
+def bargraph(profile, filename, graph_width, **kwargs):
     """Bar's graphs interpretation of the profile."""
-    file = kwargs.get('filename', "bars.html")
-    width = kwargs.get('width', 800)
-    _create_bar_graphs(profile, file, width)
+    _create_bar_graphs(profile, filename, graph_width)
