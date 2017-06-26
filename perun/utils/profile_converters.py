@@ -414,7 +414,7 @@ def create_flame_graph_format(profile):
                 for frame in alloc['trace']:
                     line = _get_line_from_frame(frame)
                     stack_str += line + ';'
-                if stack_str:
+                if stack_str and stack_str.endswith(';'):
                     final = stack_str[:-1]
                     final += " " + str(alloc['amount']) + '\n'
                     stacks.append(final)
