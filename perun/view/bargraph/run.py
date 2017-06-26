@@ -1,11 +1,12 @@
 """Bar's graphs interpretation of the profiles."""
 
 import click
-import pandas as pd
-import bokeh.plotting as bpl
-import bokeh.layouts as bla
+import pandas
+import bokeh.plotting as plotting
+import bokeh.layouts as layouts
 import perun.utils.profile_converters as converter
 import perun.view.bargraph.bar_graphs as bar_creator
+import perun.view.flowgraph.run as helpers
 from perun.utils.helpers import pass_profile
 
 __author__ = 'Radim Podola'
@@ -26,12 +27,12 @@ def _create_bar_graphs(profile, filename, width):
     # converting memory profile to allocations table
     bar_table = converter.create_allocations_table(profile)
     # converting allocations table to pandas DataFrame
-    data_frame = pd.DataFrame.from_dict(bar_table)
+    data_frame = pandas.DataFrame.from_dict(bar_table)
     # obtaining grid of Bar's graphs
     grid = _get_bar_graphs_grid(data_frame, amount_unit, width)
 
-    bpl.output_file(filename)
-    bpl.show(grid)
+    plotting.output_file(filename)
+    plotting.show(grid)
 
 
 def _get_bar_graphs_grid(data_frame, unit, graph_width):
@@ -63,7 +64,7 @@ def _get_bar_graphs_grid(data_frame, unit, graph_width):
     for graph in graphs:
         if graph is None:
             continue
-        _set_title_visual(graph.title)
+        helpers._set_title_visual(graph.title)
         _set_axis_visual(graph.xaxis)
         _set_axis_visual(graph.yaxis)
         _set_graphs_width(graph, graph_width)
@@ -73,7 +74,7 @@ def _get_bar_graphs_grid(data_frame, unit, graph_width):
     row2 = _create_grid_row([r2c1, r2c2])
     row3 = _create_grid_row([r3c1, r3c2])
 
-    grid = bla.column(row1, row2, row3)
+    grid = layouts.column(row1, row2, row3)
 
     return grid
 
@@ -85,21 +86,9 @@ def _create_grid_row(bars):
         bars(list): list of Bokeh plot's objects
     """
     row_items = [b for b in bars if b is not None]
-    row = bla.row() if row_items == [] else bla.row(row_items)
+    row = layouts.row() if row_items == [] else layouts.row(row_items)
 
     return row
-
-
-def _set_title_visual(title):
-    """ Sets the graph's title visual style
-
-    Arguments:
-        title(any): Bokeh plot's title object
-    """
-    title.text_font = 'helvetica'
-    title.text_font_style = 'bold'
-    title.text_font_size = '12pt'
-    title.align = 'center'
 
 
 def _set_axis_visual(axis):
@@ -127,7 +116,6 @@ def _set_graphs_width(graph, width):
               help="Output filename.")
 @click.option('--width', '-w', default=800,
               help="Graph's width.")
-
 @pass_profile
 def bargraph(profile, **kwargs):
     """Bar's graphs interpretation of the profile."""
