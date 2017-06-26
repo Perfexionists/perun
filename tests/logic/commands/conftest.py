@@ -1,5 +1,6 @@
 """Shared fixtures for the testing of functionality of Perun commands."""
 
+import curses
 import os
 import shutil
 import subprocess
@@ -356,3 +357,137 @@ def cleandir():
     os.chdir(temp_path)
     yield
     shutil.rmtree(temp_path)
+
+
+class MockCursesWindow(object):
+    """Mock object for testing window in the heap"""
+    def __init__(self, lines, cols):
+        """Initializes the mock object with line height and cols width"""
+        self.lines = lines
+        self.cols = cols
+
+        # Top left corner
+        self.cursor_x = 0
+        self.cursor_y = 0
+
+        self.matrix = [[' ']*cols for _ in range(1, lines+1)]
+
+        self.character_stream = iter([
+            curses.KEY_RIGHT, curses.KEY_LEFT, ord('4'), ord('6'), ord('8'), ord('5'), ord('h'),
+            ord('q'), ord('q')
+        ])
+
+    def getch(self):
+        """Returns character stream tuned for the testing of the logic"""
+        return self.character_stream.__next__()
+
+    def getyx(self):
+        """Returns the current cursor position"""
+        return self.cursor_y, self.cursor_x
+
+    def getmaxyx(self):
+        """Returns the size of the mocked window"""
+        return self.lines, self.cols
+
+    def addch(self, y_coord, x_coord, symbol, *_):
+        """Displays character at (y, x) coord
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            symbol(char): symbol displayed at (y, x)
+        """
+        if 0 <= x_coord < self.cols and 0 <= y_coord < self.lines:
+            self.matrix[y_coord][x_coord] = symbol
+
+    def addstr(self, y_coord, x_coord, dstr, *_):
+        """Displays string at (y, x) coord
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            dstr(str): string displayed at (y, x)
+        """
+        x_coord = x_coord or self.cursor_x
+        y_coord = y_coord or self.cursor_y
+        str_limit = self.cols - x_coord
+        self.addnstr(y_coord, x_coord, dstr, str_limit)
+
+    def addnstr(self, y_coord, x_coord, dstr, str_limit, *_):
+        """Displays string at (y, x) coord limited to str_limit
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            dstr(str): string displayed at (y, x)
+            str_limit(int): limit length for dstr to be displayed in matrix
+        """
+        chars = list(dstr)[:str_limit]
+        self.matrix[y_coord][x_coord:(x_coord+len(chars))] = chars
+
+    def hline(self, y_coord, x_coord, symbol, line_len=None, *_):
+        """Wrapper for printing the line and massaging the parameters
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            symbol(char): symbol that is the body of the horizontal line
+            line_len(int): length of the line
+        """
+        if not line_len:
+            self._hline(self.cursor_y, self.cursor_x, y_coord, x_coord)
+        else:
+            self._hline(y_coord, x_coord, symbol, line_len)
+
+    def _hline(self, y_coord, x_coord, symbol, line_len):
+        """Core function for printing horizontal line at (y, x) out of symbols
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            symbol(char): symbol that is the body of the horizontal line
+            line_len(int): length of the line
+        """
+        chstr = symbol*line_len
+        self.addnstr(y_coord, x_coord, chstr, line_len)
+
+    def move(self, y_coord, x_coord):
+        """Move the cursor to (y, x)
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+        """
+        self.cursor_x = x_coord
+        self.cursor_y = y_coord
+
+    def clear(self):
+        """Clears the matrix"""
+        self.matrix = [[' ']*self.cols for _ in range(1, self.lines+1)]
+
+    def clrtobot(self):
+        """Clears window from cursor to the bottom right corner"""
+        self.matrix[self.cursor_y][self.cursor_x:self.cols] = [' ']*(self.cols-self.cursor_x)
+        for line in range(self.cursor_y+1, self.lines):
+            self.matrix[line] = [' ']*self.cols
+
+    def refresh(self):
+        """Refreshes the window, not needed"""
+        pass
+
+    def __str__(self):
+        """Returns string representation of the map"""
+        top_bar = "="*(self.cols + 2) + "\n"
+        return top_bar + "".join(
+            "|" + "".join(line) + "|\n" for line in self.matrix
+        ) + top_bar
+
+
+@pytest.fixture(scope="function")
+def mock_curses_window():
+    """
+    Returns:
+        MockCursesWindow: mock window of 40 lines and 80 cols
+    """
+    lines, cols = 40, 80
+    return MockCursesWindow(lines, cols)
