@@ -1,25 +1,24 @@
 """This module contains the Flow usage graph creating functions"""
 import bokeh.palettes as palletes
-import bokeh.plotting as bpl
-import bokeh.models as bm
+import bokeh.plotting as plotting
+import bokeh.models as models
 import operator
 
 __author__ = 'Radim Podola'
 
 
+# Fixme: Adept for extraction
 def _add_tools(figure):
     """ Adds tools to Bokeh's plot.
 
     Arguments:
         figure(Plot): the Bokeh's plot
     """
-    hover = bm.HoverTool(tooltips=dict(location="@name",
-                                       amount='@y',
-                                       snapshot='@x'))
-    figure.add_tools(bm.PanTool())
-    figure.add_tools(bm.WheelZoomTool())
-    figure.add_tools(bm.ResetTool())
-    figure.add_tools(bm.SaveTool())
+    hover = models.HoverTool(tooltips=dict(location="@name", amount='@y', snapshot='@x'))
+    figure.add_tools(models.PanTool())
+    figure.add_tools(models.WheelZoomTool())
+    figure.add_tools(models.ResetTool())
+    figure.add_tools(models.SaveTool())
     figure.add_tools(hover)
 
 
@@ -38,8 +37,8 @@ def _add_callback(key, patch, line):
     p_object.visible = toggle.active
     """
 
-    callback = bm.CustomJS.from_coffeescript(code=callback_code, args={})
-    toggle = bm.Toggle(label=key, button_type="primary", callback=callback)
+    callback = models.CustomJS.from_coffeescript(code=callback_code, args={})
+    toggle = models.Toggle(label=key, button_type="primary", callback=callback)
     callback.args = {'toggle': toggle, 'p_object': patch, 'l_object': line}
 
     return toggle
@@ -56,13 +55,13 @@ def _get_plot(data_frame):
                2nd is list of Bokeh's toggles
     """
     toggles = []
-    total_sum = []
     data = {}
     snap_group = data_frame.groupby('snapshots')
 
     # creating figure for plotting
-    fig = bpl.figure(width=1200, height=800, tools="")
+    fig = plotting.figure(width=1200, height=800, tools="")
 
+    # TsF: -1, it starts with zero, but should end with last snapshot
     # +2 because of ending and starting process memory should be 0 -- nicer visualization
     snap_count = len(snap_group) + 2
 
@@ -81,7 +80,7 @@ def _get_plot(data_frame):
 
     for key, color in zip(data.keys(), colors):
         # creating DataSource for each UID
-        source = bpl.ColumnDataSource({'x': range(snap_count),
+        source = plotting.ColumnDataSource({'x': range(snap_count),
                                        'y': data[key],
                                        'name': [key]*snap_count})
         total_sum = list(map(operator.add, data[key], total_sum))
@@ -90,7 +89,7 @@ def _get_plot(data_frame):
 
         toggles.append(_add_callback(key, patch, line))
 
-    source = bpl.ColumnDataSource({'x': range(snap_count),
+    source = plotting.ColumnDataSource({'x': range(snap_count),
                                    'y': total_sum,
                                    'name': ['Total'] * snap_count})
     fig.line('x', 'y', source=source, color='black', line_width=3)

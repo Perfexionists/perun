@@ -4,7 +4,10 @@ import curses.textpad
 import sys
 import math
 
+import perun.core.logic.profile as profiles
+
 __author__ = 'Radim Podola'
+
 
 class FlowGraphVisualization(object):
     """ Class providing visualization of the allocation flow.
@@ -82,16 +85,17 @@ class FlowGraphVisualization(object):
 
     def print_intro(self):
         """ Builds and prints INTRO screen about FLOW GRAPH visualization """
+        window_lines, window_cols = self.__window.getmaxyx()
         main_text = "INTERACTIVE FLOW GRAPH VISUALIZATION!"
         author_text = "Author: " + __author__
 
         # print MAIN text
-        row_pos = curses.LINES // 2
-        col_pos = (curses.COLS - len(main_text)) // 2
+        row_pos = window_lines // 2
+        col_pos = (window_cols - len(main_text)) // 2
         self.__window.addstr(row_pos, col_pos, main_text, curses.A_BOLD)
         # print author info
-        row_pos = curses.LINES // 2 + 1
-        col_pos = (curses.COLS - len(author_text)) // 2
+        row_pos = window_lines // 2 + 1
+        col_pos = (window_cols - len(author_text)) // 2
         self.__window.addstr(row_pos + 1, col_pos, author_text)
 
         self.__window.refresh()
@@ -100,10 +104,11 @@ class FlowGraphVisualization(object):
 
     def print_resize_req(self):
         """ Prints resize request to the window """
+        window_lines, window_cols = self.__window.getmaxyx()
         resize_text = "Increase the size of your screen, please"
 
-        row_pos = curses.LINES // 2
-        col_pos = (curses.COLS - len(resize_text)) // 2
+        row_pos = window_lines // 2
+        col_pos = (window_cols - len(resize_text)) // 2
         # clearing whole window
         self.__window.clear()
         self.__window.addstr(row_pos, col_pos, resize_text, curses.A_BOLD)
@@ -116,11 +121,12 @@ class FlowGraphVisualization(object):
         Arguments:
             menu_text(string): string to print as a MENU text
         """
+        window_lines, window_cols = self.__window.getmaxyx()
         # clearing line for MENU text
-        self.__window.hline(curses.LINES - 1, 0, ' ', curses.COLS - 1)
+        self.__window.hline(window_lines - 1, 0, ' ', window_cols - 1)
         # print MENU text
-        row_pos = curses.LINES - 1
-        col_pos = (curses.COLS - len(menu_text)) // 2
+        row_pos = window_lines - 1
+        col_pos = (window_cols - len(menu_text)) // 2
         self.__window.addstr(row_pos, col_pos, menu_text, curses.A_BOLD)
 
     def __print_y_axis_info(self, rows, cols, margin):
@@ -290,6 +296,8 @@ class FlowGraphVisualization(object):
                         data['peak'] = 0
                     self.__graph_data.append(data)
 
+        profiles.store_profile_at(self.__graph_data, 'partial.graf')
+
     def print_partial_view(self, move):
         """ Draws the heap map screen to represent the specified snapshot
 
@@ -302,6 +310,8 @@ class FlowGraphVisualization(object):
             self.print_resize_req()
             return
 
+        window_lines, window_cols = self.__window.getmaxyx()
+
         # sets first snapshot
         self.__set_start_snap(self.__current_snap + move, cols)
         # creating the flow graph screen decomposition
@@ -309,7 +319,7 @@ class FlowGraphVisualization(object):
         self.create_partial_graph(rows, cols)
 
         # graph print
-        self.print_graph(self.__MIN_ROWS, curses.COLS, margin)
+        self.print_graph(self.__MIN_ROWS, window_cols, margin)
 
         # print interactive menu text
         self.print_menu(self.__INTERACTIVE_MENU_TEXT)
@@ -317,6 +327,7 @@ class FlowGraphVisualization(object):
     def print_global_view(self):
         """ Draw global view of the allocation's FLOW """
         self.__window.clear()
+        window_lines, window_cols = self.__window.getmaxyx()
 
         try:
             # getting true graph's size
@@ -328,7 +339,7 @@ class FlowGraphVisualization(object):
         # creating the flow graph screen decomposition
         self.create_global_graph(rows, cols)
         # graph print
-        self.print_graph(self.__MIN_ROWS, curses.COLS, margin)
+        self.print_graph(self.__MIN_ROWS, window_cols, margin)
         # print menu text
         self.print_menu(self.__MENU_TEXT)
 
@@ -385,6 +396,7 @@ class FlowGraphVisualization(object):
                 else:
                     data['peak'] = 0
                 self.__graph_data.append(data)
+        profiles.store_profile_at(self.__graph_data, 'complete.graf')
 
     def __get_graph_size(self):
         """ Calculates the true graph's size.
@@ -397,7 +409,10 @@ class FlowGraphVisualization(object):
         Raises:
             curses.error: when minimal screen's size is not respected
         """
-        curses.update_lines_cols()
+        window_lines, window_cols = self.__window.getmaxyx()
+
+        if hasattr(curses, 'update_lines_cols'):
+            curses.update_lines_cols()
 
         # calculate space for the Y-axis information
         max_y_axis_len = len(str(self.__heap['stats']['max_amount']))
@@ -405,8 +420,8 @@ class FlowGraphVisualization(object):
             max_y_axis_len = len(self.__Y_AXIS_TEXT)
 
         # check for the minimal screen size
-        rows_cond = curses.LINES < self.__MIN_ROWS
-        cols_cond = curses.COLS - max_y_axis_len < self.__MIN_COLS
+        rows_cond = window_lines < self.__MIN_ROWS
+        cols_cond = window_cols - max_y_axis_len < self.__MIN_COLS
         if rows_cond or cols_cond:
             raise curses.error
 
@@ -416,7 +431,7 @@ class FlowGraphVisualization(object):
         # number of the screen's columns ==
         # (terminal's current number of the columns)
         # - (size of Y-axis info) - 2(border columns)
-        graph_cols = curses.COLS - max_y_axis_len - 2
+        graph_cols = window_cols - max_y_axis_len - 2
 
         return graph_rows, graph_cols, max_y_axis_len
 
