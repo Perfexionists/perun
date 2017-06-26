@@ -1818,9 +1818,9 @@
     "workload": "test",
     "type": "memory",
     "cmd": "./test",
-    "units": [
-      null
-    ]
+    "units": {
+      "memory": "B"
+    }
   },
   "collector_info": {
     "params": {},

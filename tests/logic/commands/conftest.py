@@ -1,5 +1,6 @@
 """Shared fixtures for the testing of functionality of Perun commands."""
 
+import curses
 import os
 import shutil
 import subprocess
@@ -12,9 +13,105 @@ import perun.utils.streams as streams
 import perun.core.logic.commands as commands
 import perun.core.logic.pcs as pcs
 import perun.core.logic.store as store
+import perun.core.logic.profile as perun_profile
 import perun.core.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
+
+
+class Helpers(object):
+    """
+    Helper class with various static functions for helping with profiles
+    """
+    @staticmethod
+    def list_contents_on_path(path):
+        """Helper function for listing the contents of the path
+
+        Arguments:
+            path(str): path to the director which we will list
+        """
+        for root, dirs, files in os.walk(path):
+            for file_on_path in files:
+                print("file: ", os.path.join(root, file_on_path))
+            for dir_on_path in dirs:
+                print("dirs: ", os.path.join(root, dir_on_path))
+
+    @staticmethod
+    def count_contents_on_path(path):
+        """Helper function for counting the contents of the path
+
+        Arguments:
+            path(str): path to the director which we will list
+
+        Returns:
+            (int, int): (file number, dir number) on path
+        """
+        file_number = 0
+        dir_number = 0
+        for _, dirs, files in os.walk(path):
+            for _ in files:
+                file_number += 1
+            for _ in dirs:
+                dir_number += 1
+        return file_number, dir_number
+
+    @staticmethod
+    def open_index(pcs_path, minor_version):
+        """Helper function for opening handle of the index
+
+        This encapsulates obtaining the full path to the given index
+
+        Arguments:
+            pcs_path(str): path to the pcs
+            minor_version(str): sha minor version representation
+        """
+        assert store.is_sha1(minor_version)
+        object_dir_path = os.path.join(pcs_path, 'objects')
+
+        _, minor_version_index = store.split_object_name(object_dir_path, minor_version)
+        return open(minor_version_index, 'rb+')
+
+    @staticmethod
+    def exists_profile_in_index_such_that(index_handle, pred):
+        """Helper assert to check, if there exists any profile in index such that pred holds.
+
+        Arguments:
+            index_handle(file): handle for the index
+            pred(lambda): predicate over the index entry
+        """
+        for entry in store.walk_index(index_handle):
+            if pred(entry):
+                return True
+        return False
+
+    @staticmethod
+    def prepare_profile(perun, profile, origin):
+        """
+        Arguments:
+            pcs(PCS): perun control system wrapper
+            profile(str): name of the profile that is going to be stored in pending jobs
+            origin(str): origin minor version for the given profile
+        """
+        # Copy to jobs and prepare origin for the current version
+        dest_dir = perun.get_job_directory()
+        shutil.copy2(profile, dest_dir)
+
+        # Prepare origin for the current version
+        copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
+        copied_profile = perun_profile.load_profile_from_file(copied_filename, is_raw_profile=True)
+        copied_profile['origin'] = origin
+        perun_profile.store_profile_at(copied_profile, copied_filename)
+        shutil.copystat(profile, copied_filename)
+        return copied_filename
+
+
+@pytest.fixture(scope="session")
+def helpers():
+    """
+    Returns:
+        Helpers: object with helpers functions
+    """
+    return Helpers()
 
 
 @pytest.fixture(scope="session")
@@ -34,6 +131,27 @@ def memory_collect_job():
     )
     target_bin_path = os.path.join(target_dir, 'mct')
     assert 'mct' in list(os.listdir(target_dir))
+
+    return [target_bin_path], '', [''], ['memory'], []
+
+
+@pytest.fixture(scope="session")
+def memory_collect_no_debug_job():
+    """
+    Returns:
+        tuple: ('bin', '', [''], 'memory', [])
+    """
+    # First compile the stuff, so we know it will work
+    script_dir = os.path.split(__file__)[0]
+    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
+
+    # Compile the testing stuff with debugging information set
+    subprocess.check_output(
+        ['gcc', '--std=c99', target_src_path, '-o', 'mct-no-dbg'], cwd=target_dir
+    )
+    target_bin_path = os.path.join(target_dir, 'mct-no-dbg')
+    assert 'mct-no-dbg' in list(os.listdir(target_dir))
 
     return [target_bin_path], '', [''], ['memory'], []
 
@@ -102,6 +220,29 @@ def stored_profile_pool():
     return profiles
 
 
+def get_loaded_profiles(profile_type):
+    """
+    Arguments:
+        profile_type(str): type of the profile we are looking for
+
+    Returns:
+        generator: stream of profiles of the given type
+    """
+    for valid_profile in filter(lambda p: 'err' not in p, get_all_profiles()):
+        loaded_profile = perun_profile.load_profile_from_file(valid_profile, is_raw_profile=True)
+        if loaded_profile['header']['type'] == profile_type:
+            yield loaded_profile
+
+
+@pytest.fixture(scope="function")
+def memory_profiles():
+    """
+    Returns:
+        generator: generator of fully loaded memory profiles as dictionaries
+    """
+    yield get_loaded_profiles('memory')
+
+
 @pytest.fixture(scope="function")
 def pcs_full():
     """
@@ -136,9 +277,12 @@ def pcs_full():
     current_head = repo.index.commit("second commit")
 
     # Populate PCS with profiles
-    commands.add(profiles[0], str(root))
-    commands.add(profiles[1], str(current_head))
-    commands.add(profiles[2], str(current_head))
+    root_profile = Helpers.prepare_profile(pcs_obj, profiles[0], str(root))
+    commands.add(root_profile, str(root))
+    chead_profile1 = Helpers.prepare_profile(pcs_obj, profiles[1], str(current_head))
+    chead_profile2 = Helpers.prepare_profile(pcs_obj, profiles[2], str(current_head))
+    commands.add(chead_profile1, str(current_head))
+    commands.add(chead_profile2, str(current_head))
 
     # Assert that we have five blobs: 2 for commits and 3 for profiles
     pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
@@ -215,76 +359,135 @@ def cleandir():
     shutil.rmtree(temp_path)
 
 
-class Helpers(object):
-    """
-    Helper class with various static functions for helping with profiles
-    """
-    @staticmethod
-    def list_contents_on_path(path):
-        """Helper function for listing the contents of the path
+class MockCursesWindow(object):
+    """Mock object for testing window in the heap"""
+    def __init__(self, lines, cols):
+        """Initializes the mock object with line height and cols width"""
+        self.lines = lines
+        self.cols = cols
+
+        # Top left corner
+        self.cursor_x = 0
+        self.cursor_y = 0
+
+        self.matrix = [[' ']*cols for _ in range(1, lines+1)]
+
+        self.character_stream = iter([
+            curses.KEY_RIGHT, curses.KEY_LEFT, ord('4'), ord('6'), ord('8'), ord('5'), ord('h'),
+            ord('q'), ord('q')
+        ])
+
+    def getch(self):
+        """Returns character stream tuned for the testing of the logic"""
+        return self.character_stream.__next__()
+
+    def getyx(self):
+        """Returns the current cursor position"""
+        return self.cursor_y, self.cursor_x
+
+    def getmaxyx(self):
+        """Returns the size of the mocked window"""
+        return self.lines, self.cols
+
+    def addch(self, y_coord, x_coord, symbol, *_):
+        """Displays character at (y, x) coord
 
         Arguments:
-            path(str): path to the director which we will list
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            symbol(char): symbol displayed at (y, x)
         """
-        for root, dirs, files in os.walk(path):
-            for file_on_path in files:
-                print("file: ", os.path.join(root, file_on_path))
-            for dir_on_path in dirs:
-                print("dirs: ", os.path.join(root, dir_on_path))
+        if 0 <= x_coord < self.cols and 0 <= y_coord < self.lines:
+            self.matrix[y_coord][x_coord] = symbol
 
-    @staticmethod
-    def count_contents_on_path(path):
-        """Helper function for counting the contents of the path
+    def addstr(self, y_coord, x_coord, dstr, *_):
+        """Displays string at (y, x) coord
 
         Arguments:
-            path(str): path to the director which we will list
-
-        Returns:
-            (int, int): (file number, dir number) on path
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            dstr(str): string displayed at (y, x)
         """
-        file_number = 0
-        dir_number = 0
-        for _, dirs, files in os.walk(path):
-            for _ in files:
-                file_number += 1
-            for _ in dirs:
-                dir_number += 1
-        return file_number, dir_number
+        x_coord = x_coord or self.cursor_x
+        y_coord = y_coord or self.cursor_y
+        str_limit = self.cols - x_coord
+        self.addnstr(y_coord, x_coord, dstr, str_limit)
 
-    @staticmethod
-    def open_index(pcs_path, minor_version):
-        """Helper function for opening handle of the index
-
-        This encapsulates obtaining the full path to the given index
+    def addnstr(self, y_coord, x_coord, dstr, str_limit, *_):
+        """Displays string at (y, x) coord limited to str_limit
 
         Arguments:
-            pcs_path(str): path to the pcs
-            minor_version(str): sha minor version representation
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            dstr(str): string displayed at (y, x)
+            str_limit(int): limit length for dstr to be displayed in matrix
         """
-        assert store.is_sha1(minor_version)
-        object_dir_path = os.path.join(pcs_path, 'objects')
+        chars = list(dstr)[:str_limit]
+        self.matrix[y_coord][x_coord:(x_coord+len(chars))] = chars
 
-        _, minor_version_index = store.split_object_name(object_dir_path, minor_version)
-        return open(minor_version_index, 'rb+')
-
-    @staticmethod
-    def exists_profile_in_index_such_that(index_handle, pred):
-        """Helper assert to check, if there exists any profile in index such that pred holds.
+    def hline(self, y_coord, x_coord, symbol, line_len=None, *_):
+        """Wrapper for printing the line and massaging the parameters
 
         Arguments:
-            index_handle(file): handle for the index
-            pred(lambda): predicate over the index entry
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            symbol(char): symbol that is the body of the horizontal line
+            line_len(int): length of the line
         """
-        for entry in store.walk_index(index_handle):
-            if pred(entry):
-                return True
-        return False
+        if not line_len:
+            self._hline(self.cursor_y, self.cursor_x, y_coord, x_coord)
+        else:
+            self._hline(y_coord, x_coord, symbol, line_len)
+
+    def _hline(self, y_coord, x_coord, symbol, line_len):
+        """Core function for printing horizontal line at (y, x) out of symbols
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+            symbol(char): symbol that is the body of the horizontal line
+            line_len(int): length of the line
+        """
+        chstr = symbol*line_len
+        self.addnstr(y_coord, x_coord, chstr, line_len)
+
+    def move(self, y_coord, x_coord):
+        """Move the cursor to (y, x)
+
+        Arguments:
+            y_coord(int): y coordinate
+            x_coord(int): x coordinate
+        """
+        self.cursor_x = x_coord
+        self.cursor_y = y_coord
+
+    def clear(self):
+        """Clears the matrix"""
+        self.matrix = [[' ']*self.cols for _ in range(1, self.lines+1)]
+
+    def clrtobot(self):
+        """Clears window from cursor to the bottom right corner"""
+        self.matrix[self.cursor_y][self.cursor_x:self.cols] = [' ']*(self.cols-self.cursor_x)
+        for line in range(self.cursor_y+1, self.lines):
+            self.matrix[line] = [' ']*self.cols
+
+    def refresh(self):
+        """Refreshes the window, not needed"""
+        pass
+
+    def __str__(self):
+        """Returns string representation of the map"""
+        top_bar = "="*(self.cols + 2) + "\n"
+        return top_bar + "".join(
+            "|" + "".join(line) + "|\n" for line in self.matrix
+        ) + top_bar
 
 
-@pytest.fixture(scope="session")
-def helpers():
+@pytest.fixture(scope="function")
+def mock_curses_window():
     """
     Returns:
-        Helpers: object with helpers functions
+        MockCursesWindow: mock window of 40 lines and 80 cols
     """
-    return Helpers()
+    lines, cols = 40, 80
+    return MockCursesWindow(lines, cols)

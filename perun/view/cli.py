@@ -187,7 +187,9 @@ def lookup_profile_file(ctx, param, value):
 @click.argument('profile', required=True, metavar='<profile>',
                 callback=lookup_profile_file)
 @click.argument('minor', required=False, default=None, metavar='<hash>')
-def add(profile, minor):
+@click.option('--keep-profile', is_flag=True, required=False, default=False,
+              help='if set, then the added profile will not be deleted')
+def add(profile, minor, **kwargs):
     """Assigns given profile to the concrete minor version storing its content in the perun dir.
 
     Takes the given <profile>, packs its content using the zlib compression module and stores it
@@ -206,7 +208,7 @@ def add(profile, minor):
     perun_log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
 
     try:
-        commands.add(profile, minor)
+        commands.add(profile, minor, **kwargs)
     except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
         perun_log.error(str(exception))
 

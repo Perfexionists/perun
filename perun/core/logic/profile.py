@@ -95,10 +95,21 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
         raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
 
 
+def generate_units(collector):
+    """Generate information about units used by the collector.
+
+    Note that this is mostly placeholder for future extension, how the units will be handled.
+    Arguments:
+        collector(module): collector module that collected the data
+
+    Returns:
+        dict: dictionary with map of resources to units
+    """
+    return collector.COLLECTOR_DEFAULT_UNITS
+
+
 def generate_header_for_profile(job):
     """
-    TODO: Add units of the header
-
     Arguments:
         job(Job): job with information about the computed profile
 
@@ -115,9 +126,7 @@ def generate_header_for_profile(job):
         'cmd': job.cmd,
         'params': job.args,
         'workload': job.workload,
-        'units': [
-            None
-        ]
+        'units': generate_units(collector)
     }
 
 
@@ -151,9 +160,10 @@ def generate_postprocessor_info(job):
     ]
 
 
-def generate_profile_for_job(collected_data, job):
+def finalize_profile_for_job(pcs, collected_data, job):
     """
     Arguments:
+        pcs(PCS): wrapped perun control system
         collected_data(dict): collected profile through some collector
         job(Job): job with informations about the computed profile
 
@@ -162,7 +172,7 @@ def generate_profile_for_job(collected_data, job):
     """
     assert 'global' in collected_data.keys() or 'snapshots' in collected_data.keys()
 
-    profile = {}
+    profile = {'origin': pcs.get_head()}
     profile.update({'header': generate_header_for_profile(job)})
     profile.update({'collector_info': generate_collector_info(job)})
     profile.update({'postprocessors': generate_postprocessor_info(job)})
@@ -178,6 +188,18 @@ def store_profile_at(profile, file_path):
     """
     with open(file_path, 'w') as profile_handle:
         json.dump(profile, profile_handle, indent=2)
+
+
+def to_string(profile):
+    """Converts profile from dictionary to string
+
+    Arguments:
+        profile(dict): profile we are converting to string
+
+    Returns:
+        str: string representation of profile
+    """
+    return json.dumps(profile)
 
 
 def extract_job_from_profile(profile):

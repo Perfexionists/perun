@@ -7,6 +7,7 @@ by its path.
 
 import os
 
+import perun.core.vcs as vcs
 import perun.core.logic.store as store
 import perun.core.logic.config as config
 
@@ -55,6 +56,13 @@ class PCS(object):
             str: string representation of the performance control system
         """
         return "PCS({})".format(self.path)
+
+    def get_head(self):
+        """
+        Returns:
+            str: minor head of the wrapped version control system
+        """
+        return vcs.get_minor_head(self.vcs_type, self.vcs_path)
 
     def get_object_directory(self):
         """

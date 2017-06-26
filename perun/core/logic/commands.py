@@ -210,13 +210,15 @@ def init(dst, **kwargs):
 
 @pass_pcs
 @lookup_minor_version
-def add(pcs, profile_name, minor_version):
+def add(pcs, profile_name, minor_version, keep_profile=False):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
         profile_name(Profile): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
+        keep_profile(bool): if true, then the profile that is about to be added will be not
+            deleted, and will be kept as it is. By default false, i.e. profile is deleted.
     """
     assert minor_version is not None and "Missing minor version specification"
 
@@ -229,12 +231,18 @@ def add(pcs, profile_name, minor_version):
         perun_log.error("{} does not exists".format(profile_name))
 
     # Load profile content
-    with open(profile_name, 'r', encoding='utf-8') as profile_handle:
-        profile_content = "".join(profile_handle.readlines())
+    # Unpack to JSON representation
+    unpacked_profile = profile.load_profile_from_file(profile_name, True)
+    assert 'type' in unpacked_profile['header'].keys()
 
-        # Unpack to JSON representation
-        unpacked_profile = profile.load_profile_from_file(profile_name, True)
-        assert 'type' in unpacked_profile['header'].keys()
+    if unpacked_profile['origin'] != minor_version:
+        perun_log.error("cannot add profile '{}' to minor index of '{}':"
+                        "profile originates from minor version '{]'"
+                        "".format(profile_name, minor_version, unpacked_profile['origin']))
+
+    # Remove origin from file
+    unpacked_profile.pop('origin')
+    profile_content = profile.to_string(unpacked_profile)
 
     # Append header to the content of the file
     header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(profile_content))
@@ -249,6 +257,10 @@ def add(pcs, profile_name, minor_version):
 
     # Register in the minor_version index
     store.register_in_index(pcs.get_object_directory(), minor_version, profile_name, profile_sum)
+
+    # Remove the file
+    if not keep_profile:
+        os.remove(profile_name)
 
 
 @pass_pcs
@@ -367,7 +379,7 @@ def log(pcs, minor_version, short=False, **_):
         if short:
             print_short_minor_version_info(pcs, minor)
         else:
-            cprintln("Minor Version{}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+            cprintln("Minor Version {}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
             base_dir = pcs.get_object_directory()
             tracked_profiles = store.get_profile_number_for_minor(base_dir, minor.checksum)
             print_profile_numbers(tracked_profiles, 'tracked')
