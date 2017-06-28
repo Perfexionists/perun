@@ -1,193 +1,108 @@
 """This module contains the BAR graphs creating functions"""
-import bokeh.charts as charts
+
+import bkcharts as charts
+import pandas
+
+import perun.utils.profile_converters as converters
+import perun.view.flowgraph.run as helpers
 
 __author__ = 'Radim Podola'
+__coauthored__ = 'Tomas Fiedor'
 
 
-def create_graph_by_uid_dependency(data_frame, y_axis_label, aggregation_function):
-    """
+def set_axis(axis, axis_title):
+    """ Sets the graph's axis visual style
+
     Arguments:
-        data_frame(pandas.DataFrame): dataframe with measured data
-        y_axis_label(str): label for y axis
-        aggregation_function(str): name of the aggregation function (sum, count, etc.)
+        axis(any): Bokeh plot's axis object
+        axis_title(str): title of the axis
     """
-    tools = "pan, wheel_zoom, reset, save"
-    x_axis_label = "Location"
-    title_text = "Number of the memory operations at all the allocation " \
-                 "locations stacked by snapshot"
+    axis.axis_label_text_font_style = 'italic'
+    axis.axis_label_text_font_size = '12pt'
+    axis.axis_label = axis_title
 
-    for i in data_frame['uid']:
-        if i.find(':') != -1:
-            return None
 
-    bar_graph = charts.Bar(data_frame, label='uid', values='amount', legend=None,
-                        tooltips=[('snapshot', '@snapshots')], tools=tools,
-                        stack='snapshots', agg=aggregation_function, bar_width=0.4)
+def create_from_params(profile, graph_width, func, of_key, per_key, by_key, cummulation_type,
+                       x_axis_label, y_axis_label, graph_title):
+    """Creates Bar graph according to the given parameters.
 
-    bar_graph.title.text = title_text
-    bar_graph.xaxis.axis_label = x_axis_label
-    bar_graph.yaxis.axis_label = y_axis_label
+    Takes the input profile, convert it to pandas.DataFrame. Then the data according to 'of_key'
+    parameter are used as values and are output by aggregation function of 'func' depending on
+    values of 'per_key'. Values are further stacked by 'by_key' key and cummulated according to the
+    type.
+
+    Arguments:
+        profile(dict): dictionary with measured data
+        graph_width(int): width of the created bokeh graph
+        func(str): function that will be used for aggregation of the data
+        of_key(str): key that specifies which fields of the resource entry will be used as data
+        per_key(str): key that specifies fields of the resource that will be on the x axis
+        by_key(str): key that specifies grouping or stacking of the resources
+        cummulation_type(str): type of the cummulation of the data (either stacked or grouped)
+        x_axis_label(str): label on the x axis
+        y_axis_label(str): label on the y axis
+        graph_title(str): name of the graph
+
+    Returns:
+        charts.Bar: bar graph according to the params
+    """
+    # Convert profile to pandas data grid
+    # TODO: Change to something more generic
+    data_frame = pandas.DataFrame(converters.create_allocations_table(profile))
+
+    # Create basic graph:
+    if cummulation_type == 'stacked':
+        bar_graph = create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key)
+    elif cummulation_type == 'grouped':
+        bar_graph = create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key)
+    else:
+        assert False
+
+    # Stylize the graph
+    bar_graph.width = graph_width
+    set_axis(bar_graph.xaxis, x_axis_label)
+    set_axis(bar_graph.yaxis, y_axis_label)
+    bar_graph.title.text = graph_title
+    helpers._set_title_visual(bar_graph.title)
 
     return bar_graph
 
 
-def create_snapshot_uid_graph(data_frame, title_text, y_axis_label, aggregation_function):
-    """
+def create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key):
+    """Creates a bar graph with stacked values.
+
     Arguments:
-        data_frame(pandas.DataFrame): measured data
-        title_text(str): title text for the graph
-        y_axis_label(str): legend for the y axis
-        aggregation_function(str): aggregation function for the graph
+        data_frame(pandas.DataFrame): data frame with values of resources
+        func(str): aggregation function for the values
+        of_key(str): key specifying the values of the graph
+        per_key(str): key specifying the x labels
+        by_key(str): key specifying the stacking field
 
     Returns:
-        Bar: created bar
+        charts.Bar: stacked bar
     """
-    tools = "pan, wheel_zoom, reset, save"
-    x_axis_label = "Snapshots"
-
-    bar_graph = charts.Bar(data_frame, label='snapshots', values='amount',
-                        agg=aggregation_function, stack='uid', bar_width=0.4, legend=None,
-                        tooltips=[('location', '@uid')], tools=tools)
-
-    bar_graph.legend.background_fill_alpha = 0.2
-
-    bar_graph.title.text = title_text
-    bar_graph.xaxis.axis_label = x_axis_label
-    bar_graph.yaxis.axis_label = y_axis_label
-
+    bar_graph = charts.Bar(
+        data_frame, label=per_key, values=of_key, agg=func, stack=by_key, bar_width=1.0,
+        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save"
+    )
     return bar_graph
 
 
-def create_snapshot_subtype_graph(data_frame, title_text, y_axis_label, aggregation_function):
-    """
+def create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key):
+    """Creates a bar graph with grouped values.
+
     Arguments:
-        data_frame(pandas.DataFrame): data frame with measured data
-        title_text(str): title text for the graph
-        y_axis_label(str): legend for the y axis
-        aggregation_function(str): aggregation function for the graph
+        data_frame(pandas.DataFrame): data frame with values of resources
+        func(str): aggregation function for the values
+        of_key(str): key specifying the values of the graph
+        per_key(str): key specifying the x labels
+        by_key(str): key specifying the stacking field
 
     Returns:
-        Bar: bokeh plot graph
+        charts.Bar: stacked bar
     """
-    tools = "pan, wheel_zoom, reset, save"
-    x_axis_label = "Snapshots"
-
-    bar_graph = charts.Bar(data_frame, label='snapshots', values='amount',
-                        agg=aggregation_function, group='subtype', bar_width=0.4,
-                        legend=None, tooltips=[('allocator', '@subtype')],
-                        tools=tools)
-
-    bar_graph.legend.background_fill_alpha = 0.2
-
-    bar_graph.title.text = title_text
-    bar_graph.xaxis.axis_label = x_axis_label
-    bar_graph.yaxis.axis_label = y_axis_label
-
+    bar_graph = charts.Bar(
+        data_frame, label=per_key, values=of_key, agg=func, group=by_key, bar_width=1.0,
+        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save"
+    )
     return bar_graph
-
-
-def bar_graph_uid_count(data_frame):
-    """ Creates the Bar graph.
-
-        This graph represents number of the memory operations
-        at all the allocation locations stacked by snapshot.
-
-    Arguments:
-        data_frame(DataFrame): the Pandas DataFrame object
-
-    Returns:
-        Plot: Bokeh's plot object
-    """
-    y_axis_label = "Number of the memory operations"
-    return create_graph_by_uid_dependency(data_frame, y_axis_label, 'count')
-
-
-def bar_graph_uid_sum(data_frame, unit):
-    """ Creates the Bar graph.
-
-        This graph represents summary of the allocated memory
-        at all the allocation locations stacked by snapshot.
-
-    Arguments:
-        data_frame(DataFrame): the Pandas DataFrame object
-        unit(str): memory amount unit
-
-    Returns:
-        Plot: Bokeh's plot object
-    """
-    y_axis_label = "Summary of the allocated memory [{}]".format(unit)
-    return create_graph_by_uid_dependency(data_frame, y_axis_label, 'sum')
-
-
-def bar_graph_snaps_sum_subtype_stacked(data_frame, unit):
-    """ Creates the Bar graph.
-
-        This graph represents summary of the allocated memory
-        over all the snapshots stacked by allocator.
-
-    Arguments:
-        data_frame(DataFrame): the Pandas DataFrame object
-        unit(str): memory amount unit
-
-    Returns:
-        Plot: Bokeh's plot object
-    """
-    y_axis_label = "Summary of the allocated memory [{}]".format(unit)
-    title_text = "Summary of the allocated memory over all the snapshots " \
-                 "stacked by allocator"
-    return create_snapshot_subtype_graph(data_frame, title_text, y_axis_label, 'sum')
-
-
-def bar_graph_snaps_sum_uid_stacked(data_frame, unit):
-    """ Creates the Bar graph.
-
-        This graph represents summary of the allocated memory
-        over all the snapshots stacked by location.
-
-    Arguments:
-        data_frame(DataFrame): the Pandas DataFrame object
-        unit(str): memory amount unit
-
-    Returns:
-        Plot: Bokeh's plot object
-    """
-    y_axis_label = "Summary of the allocated memory [{}]".format(unit)
-    title_text = "Summary of the allocated memory over all the snapshots " \
-                 "stacked by location"
-    return create_snapshot_uid_graph(data_frame, title_text, y_axis_label, 'sum')
-
-
-def bar_graph_snaps_count_subtype_grouped(data_frame):
-    """ Creates the Bar graph.
-
-        This graph represents number of the memory operations
-        over all the snapshots grouped by allocator.
-
-    Arguments:
-        data_frame(DataFrame): the Pandas DataFrame object
-
-    Returns:
-        Plot: Bokeh's plot object
-    """
-    y_axis_label = "Number of the memory operations"
-    title_text = "Number of the memory operations over all the " \
-                 "snapshots grouped by allocator"
-    return create_snapshot_subtype_graph(data_frame, title_text, y_axis_label, 'count')
-
-
-def bar_graph_snaps_count_uid_grouped(data_frame):
-    """ Creates the Bar graph.
-
-        This graph represents number of the memory operations
-        over all the snapshots grouped by location.
-
-    Arguments:
-        data_frame(DataFrame): the Pandas DataFrame object
-
-    Returns:
-        Plot: Bokeh's plot object
-    """
-    y_axis_label = "Number of the memory operations"
-    title_text = "Number of the memory operations over all the snapshots " \
-                 "grouped by location"
-    return create_snapshot_uid_graph(data_frame, title_text, y_axis_label, 'count')
