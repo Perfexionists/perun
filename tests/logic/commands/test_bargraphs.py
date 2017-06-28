@@ -20,7 +20,7 @@ def test_bokeh_bars(memory_profiles):
     Expecting no error.
     """
     for memory_profile in memory_profiles:
-        bargraph = bargraphs.create_from_params(memory_profile, 800, 'sum', 'amount', 'snapshots',
+        bargraph = bargraphs.create_from_params(memory_profile, 'sum', 'amount', 'snapshots',
                                                 'uid', 'stacked', 'snapshot', 'amount [B]', 'test')
         plotting.output_file('bars.html')
         plotting.save(bargraph, 'bars.html')

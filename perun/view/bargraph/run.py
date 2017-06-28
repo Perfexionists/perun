@@ -2,6 +2,7 @@
 
 import click
 import bokeh.plotting as plotting
+import bokeh.layouts as layouts
 
 import perun.view.bargraph.factory as bar_graphs
 
@@ -30,8 +31,6 @@ __coauthored__ = 'Tomas Fiedor'
 # Bokeh graph specific
 @click.option('--filename', '-f', default="bars.html", metavar="<html>",
               help="Outputs the graph to the file specified by filename.")
-@click.option('--graph-width', '-w', default=1200,
-              help="Changes the width of the generated Graph.")
 @click.option('--x-axis-label', '-xl', metavar="<text>", default='TODO:',
               help="Label on the X axis of the bar graph.")
 @click.option('--y-axis-label', '-yl', metavar="<text>", default='TODO:',
@@ -72,9 +71,10 @@ def bargraph(profile, filename, view_in_browser, **kwargs):
     the template according to the template file.
     """
     bar_graph = bar_graphs.create_from_params(profile, **kwargs)
+    output = layouts.column([bar_graph], sizing_mode="stretch_both")
     plotting.output_file(filename)
 
     if view_in_browser:
-        plotting.show(bar_graph)
+        plotting.show(output)
     else:
-        plotting.save(bar_graph, filename)
+        plotting.save(output, filename)

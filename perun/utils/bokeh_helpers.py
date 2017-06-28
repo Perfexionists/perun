@@ -6,6 +6,9 @@ import perun.utils.log as log
 
 __author__ = 'Tomas Fiedor'
 
+GRAPH_LR_PADDING = 50
+GRAPH_TB_PADDING = 100
+
 
 def get_unique_colours_for_(data_source, key):
     """
