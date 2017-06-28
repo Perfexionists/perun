@@ -3,7 +3,7 @@
 import click
 import bokeh.plotting as plotting
 
-import perun.view.bargraph.bar_graphs as bar_graphs
+import perun.view.bargraph.factory as bar_graphs
 
 from perun.utils.helpers import pass_profile
 

@@ -3,6 +3,8 @@
 import bkcharts as charts
 import pandas
 
+import perun.utils.log as log
+import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.profile_converters as converters
 import perun.view.flowgraph.run as helpers
 
@@ -56,7 +58,7 @@ def create_from_params(profile, graph_width, func, of_key, per_key, by_key, cumm
     elif cummulation_type == 'grouped':
         bar_graph = create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key)
     else:
-        assert False
+        log.error("unknown cummulation type '{}'".format(cummulation_type))
 
     # Stylize the graph
     bar_graph.width = graph_width
@@ -83,7 +85,8 @@ def create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key):
     """
     bar_graph = charts.Bar(
         data_frame, label=per_key, values=of_key, agg=func, stack=by_key, bar_width=1.0,
-        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save"
+        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save",
+        color=bokeh_helpers.get_unique_colours_for_(data_frame, by_key)
     )
     return bar_graph
 
@@ -103,6 +106,7 @@ def create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key):
     """
     bar_graph = charts.Bar(
         data_frame, label=per_key, values=of_key, agg=func, group=by_key, bar_width=1.0,
-        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save"
+        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save",
+        color=bokeh_helpers.get_unique_colours_for_(data_frame, by_key)
     )
     return bar_graph
