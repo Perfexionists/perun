@@ -4,6 +4,7 @@ import click
 import bokeh.plotting as plotting
 import bokeh.layouts as layouts
 
+import perun.utils.log as log
 import perun.view.bargraph.factory as bar_graphs
 
 from perun.utils.helpers import pass_profile
@@ -12,30 +13,86 @@ __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
 
 
+def process_title(ctx, _, value):
+    """Processes default value for the title.
+
+    If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
+    create some optimal name for the graph ourselves. We do this according to already processed
+    parameters as follows:
+
+      Func of 'of-key' per 'per-key' 'cummulated' by 'by-key'
+
+    Arguments:
+        ctx(click.Context): called context of the process
+        value(object): value that is being processed ad add to parameter
+
+    Returns:
+        object: either value (if it is non-None) or default title of the graph
+    """
+    if not value:
+        # Construct default title of the graph
+        return "{} of '{}' per '{}' {} by {}".format(
+            ctx.params['func'].capitalize(), ctx.params['of_key'], ctx.params['per_key'],
+            ctx.params['cummulation_type'], ctx.params['by_key']
+        )
+    else:
+        return value
+
+
+def process_axis_title(ctx, param, value):
+    """Processes default value for axes.
+
+    If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
+    create some optimal axis name. We do this according to the already processed parameters and
+    we either use 'per_key' or 'of_key'.
+
+    Arguments:
+        ctx(click.Context): called context of the process
+        param(click.Option): called option (either x or y axis)
+        value(object): given value for the the option param
+
+    Returns:
+        object: either value (if it is non-None) or default legend for given axis
+    """
+    if value:
+        return value
+    elif param.human_readable_name.startswith('x'):
+        return ctx.params['per_key']
+    elif param.human_readable_name.startswith('y'):
+        return ctx.params['of_key']
+    else:
+        log.error("internal perun error")
+
+
 @click.command()
 # TODO: Add choice of pandas/bokeh functions
 @click.argument('func', required=False, default='sum', metavar="<aggregation_function>")
 # TODO: Add choice of keys of the profile
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
+              is_eager=True,
               help="Source of the data for the bars, i.e. what will be displayed on Y axis.")
 @click.option('--per', '-p', 'per_key', default='snapshots', nargs=1, metavar="<per_resource_key>",
+              is_eager=True,
               help="Keys that will be displayed on X axis of the bar graph.")
 @click.option('--by', '-b', 'by_key', default=None, nargs=1, metavar="<by_resource_key>",
+              is_eager=True,
               help="Will stack the bars according to the given key.")
 @click.option('--stacked', '-s', 'cummulation_type', flag_value='stacked', default=True,
+              is_eager=True,
               help="If set to true, then values will be stacked up by <resource_key> specified by"
                    " option --by.")
 @click.option('--grouped', '-g', 'cummulation_type', flag_value='grouped',
+              is_eager=True,
               help="If set to true, then values will be grouped up by <resource_key> specified by"
                    " option --by.")
 # Bokeh graph specific
 @click.option('--filename', '-f', default="bars.html", metavar="<html>",
               help="Outputs the graph to the file specified by filename.")
-@click.option('--x-axis-label', '-xl', metavar="<text>", default='TODO:',
+@click.option('--x-axis-label', '-xl', metavar="<text>", default=None, callback=process_axis_title,
               help="Label on the X axis of the bar graph.")
-@click.option('--y-axis-label', '-yl', metavar="<text>", default='TODO:',
+@click.option('--y-axis-label', '-yl', metavar="<text>", default=None, callback=process_axis_title,
               help="Label on the Y axis of the bar graph.")
-@click.option('--graph-title', '-gt', metavar="<text>", default='TODO:',
+@click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
               help="Title of the graph.")
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
               help="Will show the graph in browser.")
