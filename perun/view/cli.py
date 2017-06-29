@@ -257,9 +257,8 @@ def rm(profile, minor, **kwargs):
         perun_log.info("removed '{}'".format(profile))
 
 
-def profile_lookup_callback(ctx, param, value):
+def profile_lookup_callback(ctx, _, value):
     """
-
     Arguments:
         ctx(click.core.Context): context
         param(click.core.Argument): param

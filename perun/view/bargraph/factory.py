@@ -74,7 +74,7 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
     helpers._set_title_visual(bar_graph.title)
 
     # If of key is ammount, add unit
-    if func in ('sum', 'mean', 'min', 'max') and not y_axis_label.endswith("]"):
+    if func not in ('count', 'nunique') and not y_axis_label.endswith("]"):
         profile_type = profile['header']['type']
         type_unit = profile['header']['units'][profile_type]
         bar_graph.yaxis.axis_label = y_axis_label + " [{}]".format(type_unit)

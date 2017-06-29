@@ -1,9 +1,11 @@
 """Bar's graphs interpretation of the profiles."""
 
 import click
+import bokeh.core.enums as enums
 import bokeh.plotting as plotting
 import bokeh.layouts as layouts
 
+import perun.core.logic.query as query
 import perun.utils.log as log
 import perun.view.bargraph.factory as bar_graphs
 
@@ -64,18 +66,46 @@ def process_axis_title(ctx, param, value):
         log.error("internal perun error")
 
 
+def process_key_param(ctx, param, value):
+    """
+
+    Arguments:
+        ctx(click.Context): called context of the process
+        param(click.Option): called option that takes a valid key from profile as a parameter
+        value(object): given value for the option param
+
+    Returns:
+        object: value or raises bad parameter
+
+    Raises:
+        click.BadParameter: if the value is invalid for the profile
+    """
+    if param.human_readable_name == 'per_key' and value == 'snapshots':
+        return value
+
+    # Validate the keys, if it is one of the set
+    valid_keys = set(query.all_resource_fields_of(ctx.parent.params['profile']))
+    if value not in valid_keys:
+        error_msg_ending = ", snaphots" if param.human_readable_name == 'per_key' else ""
+        raise click.BadParameter("invalid choice: {}. (choose from {})".format(
+            value, ", ".join(str(vk) for vk in valid_keys) + error_msg_ending
+        ))
+    return value
+
+
 @click.command()
 # TODO: Add choice of pandas/bokeh functions
-@click.argument('func', required=False, default='sum', metavar="<aggregation_function>")
+@click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
+                type=click.Choice(map(str, enums.Aggregation)))
 # TODO: Add choice of keys of the profile
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
-              is_eager=True,
+              is_eager=True, callback=process_key_param,
               help="Source of the data for the bars, i.e. what will be displayed on Y axis.")
 @click.option('--per', '-p', 'per_key', default='snapshots', nargs=1, metavar="<per_resource_key>",
-              is_eager=True,
+              is_eager=True, callback=process_key_param,
               help="Keys that will be displayed on X axis of the bar graph.")
 @click.option('--by', '-b', 'by_key', default=None, nargs=1, metavar="<by_resource_key>",
-              is_eager=True,
+              is_eager=True, callback=process_key_param,
               help="Will stack the bars according to the given key.")
 @click.option('--stacked', '-s', 'cummulation_type', flag_value='stacked', default=True,
               is_eager=True,
