@@ -1826,49 +1826,47 @@
     "params": {},
     "name": "memory"
   },
-  "global": [
-    {
-      "resources": [
-        {
-          "amount": 0,
-          "subtype": "free",
-          "address": 23016176,
-          "type": "memory",
-          "trace": [
-            {
-              "line": 25,
-              "source": "/mnt/f/phdwork/perun/git/playground/test.c",
-              "function": "factorial"
-            },
-            {
-              "line": 25,
-              "source": "/mnt/f/phdwork/perun/git/playground/test.c",
-              "function": "factorial"
-            },
-            {
-              "line": 25,
-              "source": "/mnt/f/phdwork/perun/git/playground/test.c",
-              "function": "factorial"
-            },
-            {
-              "line": 25,
-              "source": "/mnt/f/phdwork/perun/git/playground/test.c",
-              "function": "factorial"
-            },
-            {
-              "line": 77,
-              "source": "/mnt/f/phdwork/perun/git/playground/test.c",
-              "function": "main"
-            }
-          ],
-          "uid": {
+  "global": {
+    "resources": [
+      {
+        "amount": 0,
+        "subtype": "free",
+        "address": 23016176,
+        "type": "memory",
+        "trace": [
+          {
             "line": 25,
             "source": "/mnt/f/phdwork/perun/git/playground/test.c",
             "function": "factorial"
+          },
+          {
+            "line": 25,
+            "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+            "function": "factorial"
+          },
+          {
+            "line": 25,
+            "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+            "function": "factorial"
+          },
+          {
+            "line": 25,
+            "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+            "function": "factorial"
+          },
+          {
+            "line": 77,
+            "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+            "function": "main"
           }
+        ],
+        "uid": {
+          "line": 25,
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "function": "factorial"
         }
-      ],
-      "time": "0.265625"
-    }
-  ]
+      }
+    ],
+    "time": "0.265625"
+  }
 }
