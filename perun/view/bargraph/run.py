@@ -82,7 +82,6 @@ def process_key_param(ctx, param, value):
     """
     if param.human_readable_name == 'per_key' and value == 'snapshots':
         return value
-
     # Validate the keys, if it is one of the set
     valid_keys = set(query.all_resource_fields_of(ctx.parent.params['profile']))
     if value not in valid_keys:
@@ -94,10 +93,8 @@ def process_key_param(ctx, param, value):
 
 
 @click.command()
-# TODO: Add choice of pandas/bokeh functions
 @click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
                 type=click.Choice(map(str, enums.Aggregation)))
-# TODO: Add choice of keys of the profile
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=process_key_param,
               help="Source of the data for the bars, i.e. what will be displayed on Y axis.")

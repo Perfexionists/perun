@@ -51,8 +51,7 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
         charts.Bar: bar graph according to the params
     """
     # Convert profile to pandas data grid
-    # TODO: Change to something more generic
-    data_frame = pandas.DataFrame(converters.create_allocations_table(profile))
+    data_frame = converters.resources_to_pandas_dataframe(profile)
 
     # Create basic graph:
     if cummulation_type == 'stacked':
@@ -71,6 +70,7 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
     set_axis(bar_graph.xaxis, x_axis_label)
     set_axis(bar_graph.yaxis, y_axis_label)
     bar_graph.title.text = graph_title
+    # Fixme: Refactor this!
     helpers._set_title_visual(bar_graph.title)
 
     # If of key is ammount, add unit

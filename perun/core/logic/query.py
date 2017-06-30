@@ -11,35 +11,63 @@ def all_resources_of(profile):
         profile(dict): valid profile with resources
 
     Returns:
-        dict: yields resources per each snapshot and global section
+        (int, dict): yields resources per each snapshot and global section
     """
-    for snapshot in profile['snapshots']:
+    for snap_no, snapshot in enumerate(profile['snapshots']):
         for resource in snapshot['resources']:
-            yield resource
+            yield snap_no, resource
 
-    for resource in profile['global']:
-        yield resource
+    # Fix this asap!
+    for resource in profile['global'][0]['resources']:
+        yield len(profile['snapshots']), resource
 
 
-def nested_keys(key, value):
-    """Generator of names for the nested keys in order to flatten the profile
+def flattened_values(root_key, root_value):
+    """Converts the (root_key, root_value) pair to something that can be added to table.
 
-    All of the nested dictionaries are flattend so all of the keys are of form:
-      'key'(:'key')*
+    Flattens all of the dictionaries to single level and <key>(:<key>)? values, lists are processed
+    to comma separated representation and rest is left as it is.
 
     Arguments:
-        key(str): name of the base key
-        value(object): dict[key] = value, i.e. the value for the given key in some dict
+        root_key(str): name of the processed key, that is going to be flattened
+        root_value(object): value that is flattened
 
     Returns:
-        str: stream of keys with processed nested attributes
+        (key, object): either decimal, string, or something else
     """
-    yield key
+    # Dictionary is processed recursively according to the all items that are nested
+    if isinstance(root_value, dict):
+        nested_values = []
+        for key, value in all_items_of(root_value):
+            # Add one level of hierarchy with ':'
+            nested_values.append(value)
+            yield root_key + ":" + key, value
+        # Additionally return the overall key asi joined values of its nested stuff
+        yield root_key, ":".join(map(str, nested_values))
+    # Lists are merged as comma separated keys
+    elif isinstance(root_value, list):
+        yield root_key, ', '.join(
+            ":".join(str(nested_value[1]) for nested_value in flattened_values(str(i), lv))
+            for (i, lv) in enumerate(root_value)
+        )
+    # Rest of the values are left as they are
+    else:
+        yield root_key, root_value
 
-    if type(value) == dict:
-        for value_key in value.keys():
-            for nested_key in nested_keys(value_key, value[value_key]):
-                yield key + ":" + nested_key
+
+def all_items_of(resource):
+    """Generator of all (key, value) pairs in resource.
+
+    Iterates through all of the flattened (key, value) pairs which are output.
+    Arguments:
+        resource(dict): dictionary with (mainly) resource fields and values
+
+    Returns:
+        (str, value): (key, value) pairs, where value is flattened to either string, or decimal
+    """
+    for key, value in resource.items():
+        for flattened_key, flattened_value in flattened_values(key, value):
+            yield flattened_key, flattened_value
 
 
 def all_resource_fields_of(profile):
@@ -52,9 +80,8 @@ def all_resource_fields_of(profile):
         resource: stream of resource field keys
     """
     resource_fields = set()
-    for resource in all_resources_of(profile):
-        for key in resource.keys():
+    for (_, resource) in all_resources_of(profile):
+        for key, __ in all_items_of(resource):
             if key not in resource_fields:
-                for nested_key in nested_keys(key, resource[key]):
-                    resource_fields.add(nested_key)
-                    yield nested_key
+                resource_fields.add(key)
+                yield key
