@@ -647,8 +647,6 @@ def load_profile_from_args(pcs, profile_name, minor_version):
     Returns:
         dict: loaded profile represented as dictionary
     """
-    perun_log.msg_to_stdout("Running inner wrapper of the 'perun show'", 2)
-
     # If the profile is in raw form
     if not store.is_sha1(profile_name):
         _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
@@ -664,7 +662,7 @@ def load_profile_from_args(pcs, profile_name, minor_version):
 
     # If there are more profiles we should chose
     if not profiles:
-        perun_log.error("{} is not registered in {} index".format(profile_name, minor_version))
+        return None
     chosen_profile = profiles[0]
 
     # Peek the type if the profile is correct and load the json

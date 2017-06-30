@@ -103,9 +103,12 @@ def load_job_info_from_config(pcs):
     collectors = local_config['collectors']
     postprocessors = local_config.get('postprocessors', [])
 
+    if 'cmds' not in local_config.keys():
+        log.error("missing 'cmds' section in local.yml")
+
     info = {
         'cmd': local_config['cmds'],
-        'workload': local_config['workloads'],
+        'workload': local_config.get('workloads', ['']),
         'postprocessor': [post.get('name', '') for post in postprocessors],
         'collector': [collect.get('name', '') for collect in collectors],
         'args': local_config['args'] if 'args' in local_config.keys() else [],
@@ -284,6 +287,7 @@ def store_generated_profile(pcs, prof, job):
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     profile.store_profile_at(full_profile, full_profile_path)
+    log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
 
 
 def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params):
