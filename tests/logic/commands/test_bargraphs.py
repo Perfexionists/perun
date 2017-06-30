@@ -7,7 +7,7 @@ import bokeh.plotting as plotting
 from click.testing import CliRunner
 
 import perun.core.logic.profile as profiles
-import perun.view.bargraph.factory as bargraphs
+import perun.view.bars.factory as bargraphs
 import perun.view.cli as cli
 
 __author__ = 'Tomas Fiedor'
@@ -37,7 +37,7 @@ def test_bars_cli(pcs_full, valid_profile_pool):
         loaded_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] != 'memory':
             continue
-        result = runner.invoke(cli.show, [valid_profile, 'bargraph', '--of=amount', '--stacked',
+        result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=amount', '--stacked',
                                           '--by=uid', '--filename=bars.html'])
         print(result.output)
         assert result.exit_code == 0

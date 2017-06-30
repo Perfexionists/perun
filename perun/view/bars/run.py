@@ -7,7 +7,7 @@ import bokeh.layouts as layouts
 
 import perun.core.logic.query as query
 import perun.utils.log as log
-import perun.view.bargraph.factory as bar_graphs
+import perun.view.bars.factory as bar_graphs
 
 from perun.utils.helpers import pass_profile
 
@@ -124,9 +124,8 @@ def process_key_param(ctx, param, value):
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
               help="Will show the graph in browser.")
 @pass_profile
-def bargraph(profile, filename, view_in_browser, **kwargs):
+def bars(profile, filename, view_in_browser, **kwargs):
     """
-
     Display of the resources in bar format.
 
     \b

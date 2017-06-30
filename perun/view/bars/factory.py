@@ -1,7 +1,6 @@
 """This module contains the BAR graphs creating functions"""
 
 import bkcharts as charts
-import pandas
 
 import perun.utils.log as log
 import perun.utils.bokeh_helpers as bokeh_helpers
