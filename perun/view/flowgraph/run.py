@@ -5,6 +5,7 @@ import bokeh.plotting as plotting
 import click
 import pandas as pandas
 
+import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.core.profile.converters as converters
 import perun.view.flowgraph.bokeh_flow_graph as bokeh_graphs
 import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
@@ -64,7 +65,7 @@ def _get_flow_usage_grid(data_frame, unit, graph_width):
     """
     graph, toggles = bokeh_graphs.flow_usage_graph(data_frame, unit)
 
-    _set_title_visual(graph.title)
+    bokeh_helpers.configure_title(graph.title, "Graph title")
     _set_axis_visual(graph.xaxis)
     _set_axis_visual(graph.yaxis)
     _set_graphs_width(graph, graph_width)
@@ -74,18 +75,6 @@ def _get_flow_usage_grid(data_frame, unit, graph_width):
     grid = layouts.row(graph, widget)
 
     return grid
-
-
-def _set_title_visual(title):
-    """ Sets the graph's title visual style
-
-    Arguments:
-        title(any): Bokeh plot's title object
-    """
-    title.text_font = 'helvetica'
-    title.text_font_style = 'bold'
-    title.text_font_size = '12pt'
-    title.align = 'center'
 
 
 def _set_axis_visual(axis):

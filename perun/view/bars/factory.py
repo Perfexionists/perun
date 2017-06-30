@@ -5,23 +5,9 @@ import bkcharts as charts
 import perun.core.profile.converters as converters
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
-import perun.view.flowgraph.run as helpers
-from perun.utils.bokeh_helpers import GRAPH_LR_PADDING, GRAPH_TB_PADDING
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
-
-
-def set_axis(axis, axis_title):
-    """ Sets the graph's axis visual style
-
-    Arguments:
-        axis(any): Bokeh plot's axis object
-        axis_title(str): title of the axis
-    """
-    axis.axis_label_text_font_style = 'italic'
-    axis.axis_label_text_font_size = '12pt'
-    axis.axis_label = axis_title
 
 
 def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
@@ -59,23 +45,10 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
     else:
         log.error("unknown cummulation type '{}'".format(cummulation_type))
 
-    # Stylize the graph
-    bar_graph.width = graph_width
-    bar_graph.min_border_left = GRAPH_LR_PADDING
-    bar_graph.min_border_right = GRAPH_LR_PADDING
-    bar_graph.min_border_top = GRAPH_TB_PADDING
-    bar_graph.min_border_bottom = GRAPH_TB_PADDING
-    set_axis(bar_graph.xaxis, x_axis_label)
-    set_axis(bar_graph.yaxis, y_axis_label)
-    bar_graph.title.text = graph_title
-    # Fixme: Refactor this!
-    helpers._set_title_visual(bar_graph.title)
-
-    # If of key is ammount, add unit
-    if func not in ('count', 'nunique') and not y_axis_label.endswith("]"):
-        profile_type = profile['header']['type']
-        type_unit = profile['header']['units'][profile_type]
-        bar_graph.yaxis.axis_label = y_axis_label + " [{}]".format(type_unit)
+    # Call basic configuration of the graph
+    bokeh_helpers.configure_graph(
+        bar_graph, profile, func, graph_title, x_axis_label, y_axis_label, graph_width
+    )
 
     return bar_graph
 
