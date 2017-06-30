@@ -1,13 +1,12 @@
-
 import curses
 import os
-import pytest
-
 from copy import deepcopy
 
-import perun.view.flowgraph.run as flowgraphs
+import pytest
+
+import perun.core.profile.converters as converters
 import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
-import perun.utils.profile_converters as converters
+import perun.view.flowgraph.run as flowgraphs
 
 __author__ = 'Tomas Fiedor'
 

@@ -1,14 +1,13 @@
 """Flow graphs visualization of the profiles."""
 
-import click
-
-import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
 import bokeh.layouts as layouts
-import pandas as pandas
 import bokeh.plotting as plotting
-import perun.utils.profile_converters as converters
-import perun.view.flowgraph.bokeh_flow_graph as bokeh_graphs
+import click
+import pandas as pandas
 
+import perun.core.profile.converters as converters
+import perun.view.flowgraph.bokeh_flow_graph as bokeh_graphs
+import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
 from perun.utils.helpers import pass_profile
 
 __author__ = 'Radim Podola'

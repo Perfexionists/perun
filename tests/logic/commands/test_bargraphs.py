@@ -1,12 +1,12 @@
 """Basic testing for generation of bars"""
 
 import os
-import pytest
-import bokeh.plotting as plotting
 
+import bokeh.plotting as plotting
+import pytest
 from click.testing import CliRunner
 
-import perun.core.logic.profile as profiles
+import perun.core.profile.factory as profiles
 import perun.view.bars.factory as bargraphs
 import perun.view.cli as cli
 

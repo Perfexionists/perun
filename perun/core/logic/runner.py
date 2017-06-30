@@ -2,16 +2,15 @@
 
 import os
 
-import perun.core.logic.profile as profile
 import perun.core.logic.store as store
+import perun.core.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as log
-
+from perun.core.logic.pcs import pass_pcs, PCS
 from perun.utils import get_module
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, CollectStatus, PostprocessStatus, \
     Job, Unit
-from perun.core.logic.pcs import pass_pcs, PCS
 
 __author__ = 'Tomas Fiedor'
 

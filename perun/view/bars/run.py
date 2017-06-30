@@ -1,14 +1,13 @@
 """Bar's graphs interpretation of the profiles."""
 
-import click
 import bokeh.core.enums as enums
-import bokeh.plotting as plotting
 import bokeh.layouts as layouts
+import bokeh.plotting as plotting
+import click
 
-import perun.core.logic.query as query
+import perun.core.profile.query as query
 import perun.utils.log as log
 import perun.view.bars.factory as bar_graphs
-
 from perun.utils.helpers import pass_profile
 
 __author__ = 'Radim Podola'

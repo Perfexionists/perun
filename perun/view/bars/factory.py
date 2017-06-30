@@ -2,11 +2,10 @@
 
 import bkcharts as charts
 
-import perun.utils.log as log
+import perun.core.profile.converters as converters
 import perun.utils.bokeh_helpers as bokeh_helpers
-import perun.utils.profile_converters as converters
+import perun.utils.log as log
 import perun.view.flowgraph.run as helpers
-
 from perun.utils.bokeh_helpers import GRAPH_LR_PADDING, GRAPH_TB_PADDING
 
 __author__ = 'Radim Podola'
