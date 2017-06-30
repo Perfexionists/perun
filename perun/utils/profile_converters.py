@@ -1,7 +1,34 @@
 """This module implements translation of the profile to other formats """
 import copy
+import pandas
+import numpy
+
+import perun.core.logic.query as query
 
 __author__ = 'Radim Podola'
+
+
+def resources_to_pandas_dataframe(profile):
+    """Converts resources of profile into dataframe format, that is great for tabular,
+    bokeh, or various other manipulations.
+
+    Arguments:
+        profile(dict): profile dictionary
+
+    Returns:
+        pandas.DataFrame: list of resources as panda dataframe
+    """
+    resource_keys = list(query.all_resource_fields_of(profile))
+    values = {key: [] for key in resource_keys}
+    values['snapshots'] = []
+
+    for (snapshot, resource) in query.all_resources_of(profile):
+        values['snapshots'].append(snapshot)
+        flattened_resource = dict(list(query.all_items_of(resource)))
+        for rk in resource_keys:
+            values[rk].append(flattened_resource.get(rk, numpy.nan))
+
+    return pandas.DataFrame(values)
 
 
 def create_heap_map(profile):
