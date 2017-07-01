@@ -30,7 +30,12 @@ def process_bokeh_axis_title(ctx, param, value):
     if value:
         return value
     elif param.human_readable_name.startswith('x'):
-        return ctx.params['per_key']
+        if 'per_key' in ctx.params.keys():
+            return ctx.params['per_key']
+        elif 'through_key' in ctx.params.keys():
+            return ctx.params['through_key']
+        else:
+            log.error("internal perun error")
     elif param.human_readable_name.startswith('y'):
         return ctx.params['of_key']
     else:
@@ -55,7 +60,7 @@ def process_resource_key_param(ctx, param, value):
     Raises:
         click.BadParameter: if the value is invalid for the profile
     """
-    if param.human_readable_name == 'per_key' and value == 'snapshots':
+    if param.human_readable_name in ('per_key', 'through_key') and value == 'snapshots':
         return value
     # Validate the keys, if it is one of the set
     valid_keys = set(query.all_resource_fields_of(ctx.parent.params['profile']))
