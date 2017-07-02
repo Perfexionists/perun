@@ -80,7 +80,8 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
     # Get minimal and maximal value of y; note we will add some small bonus to the maximal value
     values_data_frame = pandas.DataFrame(data_source)
     minimal_y_value = values_data_frame.min().min()
-    maximal_y_value = 1.05*values_data_frame.max().max()
+    value_maxima = values_data_frame.max()
+    maximal_y_value = 1.05*(value_maxima.max() if not stacked else value_maxima.sum())
 
     # Configure flow specific options
     area_chart.legend.location = 'top_left'

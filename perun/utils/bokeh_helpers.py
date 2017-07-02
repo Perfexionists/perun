@@ -34,7 +34,6 @@ def sort_colours(colours, sort_color_style, keys):
     Returns:
         list: sorted colours according to the chosen sorting mode
     """
-    pass
     if sort_color_style == ColourSort.ByOccurence:
         keys_to_colour = list(zip(keys, colours))
         keys_to_colour.sort()
