@@ -4,6 +4,7 @@ import bkcharts as charts
 import bokeh.models as models
 import pandas
 
+import perun.utils.log as log
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.core.profile.converters as converters
 
@@ -57,8 +58,14 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
     data_source = {}
     for gn, by_key_group_frame in data_frame.groupby(by_key):
         data_source[gn] = [0]*maximal_x_value
-        # Fixme: There should be function ;)
-        source_data_frame = by_key_group_frame.groupby(through_key).sum()
+        through_data_group = by_key_group_frame.groupby(through_key)
+        try:
+            aggregation_function = getattr(through_data_group, func)
+        except AttributeError:
+            log.error("{} function is not supported as aggregation for this visualization".format(
+                func
+            ))
+        source_data_frame = aggregation_function()
         if accumulate:
             accumulated_value = 0
             for index in range(minimal_x_value, maximal_x_value):
