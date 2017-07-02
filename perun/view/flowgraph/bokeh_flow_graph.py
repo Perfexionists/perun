@@ -45,7 +45,6 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
     #  -> this is needed for offseting of the values for the area chart
     minimal_x_value = data_frame[through_key].min()
     maximal_x_value = data_frame[through_key].max()
-    number_of_x_values = maximal_x_value - minimal_x_value + 1
 
     # Obtain colours, which will be sorted in reverse
     key_colours = bokeh_helpers.get_unique_colours_for_(
@@ -57,12 +56,12 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
     #   (i.e. for each value on X axis), the values are either accumulated or not
     data_source = {}
     for gn, by_key_group_frame in data_frame.groupby(by_key):
-        data_source[gn] = [0]*number_of_x_values
+        data_source[gn] = [0]*maximal_x_value
         # Fixme: There should be function ;)
         source_data_frame = by_key_group_frame.groupby(through_key).sum()
         if accumulate:
             accumulated_value = 0
-            for index in range(0, number_of_x_values):
+            for index in range(minimal_x_value, maximal_x_value):
                 accumulated_value += source_data_frame[of_key].get(index + minimal_x_value, 0)
                 data_source[gn][index] = accumulated_value
         else:
@@ -86,6 +85,6 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
     # Configure flow specific options
     area_chart.legend.location = 'top_left'
     area_chart.legend.click_policy = 'hide'
-    area_chart.x_range = models.Range1d(minimal_x_value, maximal_x_value)
+    area_chart.x_range = models.Range1d(minimal_x_value, maximal_x_value - 1)
     area_chart.y_range = models.Range1d(minimal_y_value, maximal_y_value)
     return area_chart
