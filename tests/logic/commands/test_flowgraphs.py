@@ -1,12 +1,12 @@
 import curses
 import os
-from copy import deepcopy
+import bokeh.plotting as plotting
 
 import pytest
 
 import perun.core.profile.converters as converters
 import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
-import perun.view.flowgraph.run as flowgraphs
+import perun.view.flowgraph.bokeh_flow_graph as bokeh_graphs
 
 __author__ = 'Tomas Fiedor'
 
@@ -28,7 +28,10 @@ def test_bokeh_flow(memory_profiles):
     Expecting no errors
     """
     for memory_profile in memory_profiles:
-        flowgraphs._call_flow(deepcopy(memory_profile), "flow.html", 1200, False)
+        bargraph = bokeh_graphs.create_from_params(memory_profile, 'sum', 'amount', 'snapshots',
+                                                   'uid', True, True, 'snapshot', 'amount [B]', '?')
+        plotting.output_file('flow.html')
+        plotting.save(bargraph, 'flow.html')
         assert 'flow.html' in os.listdir(os.getcwd())
 
 

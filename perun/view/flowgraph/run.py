@@ -1,10 +1,7 @@
 """Flow graphs visualization of the profiles."""
 
 import bokeh.core.enums as enums
-import bokeh.layouts as layouts
-import bokeh.plotting as plotting
 import click
-import pandas as pandas
 
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
@@ -15,89 +12,7 @@ import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
 from perun.utils.helpers import pass_profile
 
 __author__ = 'Radim Podola'
-
-
-def _call_terminal_flow(profile):
-    """ Call interactive flow graph in the terminal
-    # Fixme: Why the hell is this dependent on heap map :(
-
-    Arguments:
-        profile(dict): memory profile with records
-    """
-    heap_map = converters.create_heap_map(profile)
-    curses_graphs.flow_graph(heap_map)
-
-
-def _call_flow(profile, filename, width, interactive):
-    """ Creates and draw a grid of the Flow usage graph.
-
-    Arguments:
-        profile(dict): the memory profile
-        filename(str): output filename
-        width(int): width of the bar graph
-        interactive(bool): true if the bokeh session should be interactive
-    """
-    header = profile['header']
-    profile_type = header['type']
-    amount_unit = header['units'][profile_type]
-
-    # converting memory profile to flow usage table
-    flow_table = converters.create_flow_table(profile)
-    # converting flow usage table to pandas DataFrame
-    data_frame = pandas.DataFrame.from_dict(flow_table)
-    # obtaining grid of flow usage graph
-    grid = _get_flow_usage_grid(data_frame, amount_unit, width)
-
-    plotting.output_file(filename)
-    if interactive:
-        plotting.show(grid)
-    else:
-        plotting.save(grid, filename)
-
-
-def _get_flow_usage_grid(data_frame, unit, graph_width):
-    """ Creates a grid of the Flow usage graph.
-
-    Arguments:
-        data_frame(DataFrame): the Pandas DataFrame
-        unit(str): memory amount unit
-        graph_width(int): width of the bar graph
-
-    Returns:
-        any: Bokeh's grid layout object
-    """
-    graph, toggles = bokeh_graphs.flow_usage_graph(data_frame, unit)
-
-    bokeh_helpers.configure_title(graph.title, "Graph title")
-    _set_axis_visual(graph.xaxis)
-    _set_axis_visual(graph.yaxis)
-    _set_graphs_width(graph, graph_width)
-
-    widget = layouts.widgetbox(toggles)
-
-    grid = layouts.row(graph, widget)
-
-    return grid
-
-
-def _set_axis_visual(axis):
-    """ Sets the graph's axis visual style
-
-    Arguments:
-        axis(any): Bokeh plot's axis object
-    """
-    axis.axis_label_text_font_style = 'italic'
-    axis.axis_label_text_font_size = '12pt'
-
-
-def _set_graphs_width(graph, width):
-    """ Sets the graph width
-
-    Arguments:
-        graph(Plot): Bokeh's plot object
-        width(int): width to set
-    """
-    graph.plot_width = width
+__coauthored__ = 'Tomas Fiedor'
 
 
 def process_title(ctx, _, value):
@@ -140,6 +55,8 @@ def process_title(ctx, _, value):
               help="For each of the value of the <by_resource_key> a graph will be output")
 @click.option('--stacked', '-s', is_flag=True, default=False,
               help="Will stack the values according to the <by_resource_key> showing the overall.")
+@click.option('--accumulate/--no-accumulate', default=True,
+              help="Will accumulate the values for all previous values on x axis.")
 # Other options and arguments
 @click.option('--use-terminal', '-t', is_flag=True, default=False,
               help="Shows flow graph in the terminal (using ncurses).")
@@ -157,9 +74,40 @@ def process_title(ctx, _, value):
               help="Will show the graph in browser.")
 @pass_profile
 # Fixme: Consider breaking this to two
-def flowgraph(profile, use_terminal, filename, view_in_browser, **_):
-    """Flow graphs visualization of the profile."""
+def flowgraph(profile, use_terminal, filename, view_in_browser, **kwargs):
+    """
+    Display of the resources in flow format.
+
+    \b
+                            <graph_title>
+                    `
+                    -                      ______     ````````
+                    `                _____/           ` # \\  `
+                    -               /          __     ` @  }->  <by>
+                    `          ____/      ____/       ` & /  `
+    <func>(<of>)    -      ___/       ___/            ````````
+                    `  ___/    ______/       ____
+                    -/  ______/        _____/
+                    `__/______________/
+                    +````||````||````||````||````
+
+                              <through>
+
+    Flow graphs shows the dependency of the values through the other independent variable.
+    For each group of resources identified by <by> key, a graph of dependency of <of> values
+    aggregated by <func> depending on the <through> key is depicted. Moreover, the values
+    can either be accumulated (this way when displaying the value of 'n' on x axis, we accumulate
+    the sum of all values for all m < n) or stacked, where the graphs are output on each other
+    and then one can see the overall trend through all the groups and proportions between
+    each of the group.
+
+    Graphs are displayed using the Bokeh library and can be further customized by adding custom
+    labels for axis, custom graph title and different graph width. Each graph can be loaded from
+    the template according to the template file.
+    """
     if use_terminal:
-        _call_terminal_flow(profile)
+        heap_map = converters.create_heap_map(profile)
+        curses_graphs.flow_graph(heap_map)
     else:
-        _call_flow(profile, filename, 800, view_in_browser)
+        flow_graph = bokeh_graphs.create_from_params(profile, **kwargs)
+        bokeh_helpers.save_graphs_in_column([flow_graph], filename, view_in_browser)

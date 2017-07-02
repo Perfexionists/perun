@@ -13,12 +13,45 @@ GRAPH_B_PADDING = 100
 GRAPH_T_PADDING = 50
 
 
-def get_unique_colours_for_(data_source, key):
+class ColourSort(object):
+    No = 0
+    Reverse = 1
+    ByOccurence = 2
+
+
+def sort_colours(colours, sort_color_style, keys):
+    """Sorts the colours corresponding to the keys according to the given style
+
+    Note: For different visualizations and outputs we want the colours in different format,
+    but still as a list. Some need them in reverse order, osme as they are in the palette and
+    some (like e.g. Bars) needs to be tied to the keys, as they are occuring in the graph.
+
+    Arguments:
+        colours(list): list of chosen colour palette
+        sort_color_style(ColourSort): style of the sorting of the colours
+        keys(list): list of keys, sorted by their appearance
+
+    Returns:
+        list: sorted colours according to the chosen sorting mode
+    """
+    pass
+    if sort_color_style == ColourSort.ByOccurence:
+        keys_to_colour = list(zip(keys, colours))
+        keys_to_colour.sort()
+        return list(map(lambda x: x[1], keys_to_colour))
+    elif sort_color_style == ColourSort.Reverse:
+        return colours[::-1]
+    else:
+        return colours
+
+
+def get_unique_colours_for_(data_source, key, sort_color_style=ColourSort.ByOccurence):
     """Returns list of colours (sorted according to the legend); up to 256 colours.
 
     Arguments:
         data_source(pandas.DataFrame): data frame for which we want to get unique colours
         key(str): key for which we are generating unique colours
+        sort_color_style(ColourSort): style of sorting and assigning the values
     """
     unique_keys = data_source[key].unique()
     unique_keys_num = len(unique_keys)
@@ -27,10 +60,8 @@ def get_unique_colours_for_(data_source, key):
         log.error("plotting to Bokeh backend currently supports only 256 colours")
 
     # This is temporary workaround for non-sorted legends
-    keys_to_colour = list(zip(unique_keys, palettes.viridis(unique_keys_num)))
-    keys_to_colour.sort()
-
-    return list(map(lambda x: x[1], keys_to_colour))
+    colour_palette = palettes.viridis(unique_keys_num)
+    return sort_colours(colour_palette, sort_color_style, unique_keys)
 
 
 def configure_axis(axis, axis_title):

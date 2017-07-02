@@ -1,123 +1,90 @@
 """This module contains the Flow usage graph creating functions"""
-import bokeh.palettes as palletes
-import bokeh.plotting as plotting
+
+import bkcharts as charts
 import bokeh.models as models
-import operator
+import pandas
+
+import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.core.profile.converters as converters
 
 __author__ = 'Radim Podola'
+__coauthored__ = 'Tomas Fiedor'
 
 
-# Fixme: Adept for extraction
-def _add_tools(figure):
-    """ Adds tools to Bokeh's plot.
+def create_from_params(profile, func, of_key, through_key, by_key, stacked, accumulate,
+                       x_axis_label, y_axis_label, graph_title, graph_width=800):
+    """Creates Flow graph according to the given parameters.
 
-    Arguments:
-        figure(Plot): the Bokeh's plot
-    """
-    hover = models.HoverTool(tooltips=dict(location="@name", amount='@y', snapshot='@x'))
-    figure.add_tools(models.PanTool())
-    figure.add_tools(models.WheelZoomTool())
-    figure.add_tools(models.ResetTool())
-    figure.add_tools(models.SaveTool())
-    figure.add_tools(hover)
+    Takes the input profile, converts it first to pandas.DataFrame. Then the data are grouped
+    according to the 'by_key' and then grouped again for each 'through' key. For this atomic
+    groups aggregation function is used.
 
-
-def _add_callback(key, patch, line):
-    """ Adds JS callback to Bokeh's plot.
+    For each computed data, we output the area and points.
 
     Arguments:
-        figure(Plot): the Bokeh's plot
+        profile(dict): dictionary with measured data
+        func(str): function that will be used for aggregation of the data
+        of_key(str): key that specifies which fields of the resource entry will be used as data
+        through_key(str): key that specifies fields of the resource that will be on the x axis
+        by_key(str): key that specifies values for which graphs will be outputed
+        stacked(bool): true if the values of the graphs should be stacked on each other
+          -> this shows the overall values
+        accumulate(bool): true if the values from previous x values should be accumulated
+        x_axis_label(str): label on the x axis
+        y_axis_label(str): label on the y axis
+        graph_title(str): name of the graph
+        graph_width(int): width of the created bokeh graph
 
     Returns:
-        Toggle: Bokeh's Toggle model object
+        charts.Area: flow graph according to the params
     """
-    # JS callback code
-    callback_code = """
-    l_object.visible = toggle.active
-    p_object.visible = toggle.active
-    """
+    # Convert profile to pandas data grid
+    data_frame = converters.resources_to_pandas_dataframe(profile)
 
-    callback = models.CustomJS.from_coffeescript(code=callback_code, args={})
-    toggle = models.Toggle(label=key, button_type="primary", callback=callback)
-    callback.args = {'toggle': toggle, 'p_object': patch, 'l_object': line}
+    # Compute extremes for X axis
+    #  -> this is needed for offseting of the values for the area chart
+    minimal_x_value = data_frame[through_key].min()
+    maximal_x_value = data_frame[through_key].max()
+    number_of_x_values = maximal_x_value - minimal_x_value + 1
 
-    return toggle
+    # Obtain colours, which will be sorted in reverse
+    key_colours = bokeh_helpers.get_unique_colours_for_(
+        data_frame, by_key, sort_color_style=bokeh_helpers.ColourSort.Reverse
+    )
 
+    # Construct the data source (first we group the values by 'by_key' (one graph per each key).
+    #   And then we compute the aggregations of the data grouped again, but by through key
+    #   (i.e. for each value on X axis), the values are either accumulated or not
+    data_source = {}
+    for gn, by_key_group_frame in data_frame.groupby(by_key):
+        data_source[gn] = [0]*number_of_x_values
+        # Fixme: There should be function ;)
+        source_data_frame = by_key_group_frame.groupby(through_key).sum()
+        if accumulate:
+            accumulated_value = 0
+            for index in range(0, number_of_x_values):
+                accumulated_value += source_data_frame[of_key].get(index + minimal_x_value, 0)
+                data_source[gn][index] = accumulated_value
+        else:
+            for t_k, o_k in source_data_frame[of_key].items():
+                data_source[gn][t_k - minimal_x_value] = o_k
 
-def _get_plot(data_frame):
-    """ Creates Flow usage Bokeh's plot.
+    # Construct the area chart
+    area_chart = charts.Area(data_source, stack=stacked, color=key_colours)
 
-    Arguments:
-        data_frame(any): the Pandas DataFrame object
+    # Configure graph and return it
+    bokeh_helpers.configure_graph(
+        area_chart, profile, func, graph_title, x_axis_label, y_axis_label, graph_width
+    )
 
-    Returns:
-        tuple: 1st is Bokeh's figure,
-               2nd is list of Bokeh's toggles
-    """
-    toggles = []
-    data = {}
-    snap_group = data_frame.groupby('snapshots')
+    # Get minimal and maximal value of y; note we will add some small bonus to the maximal value
+    values_data_frame = pandas.DataFrame(data_source)
+    minimal_y_value = values_data_frame.min().min()
+    maximal_y_value = 1.05*values_data_frame.max().max()
 
-    # creating figure for plotting
-    fig = plotting.figure(width=1200, height=800, tools="")
-
-    # TsF: -1, it starts with zero, but should end with last snapshot
-    # +2 because of ending and starting process memory should be 0 -- nicer visualization
-    snap_count = len(snap_group) + 2
-
-    # preparing data structure
-    for uid in data_frame['uid']:
-        data[uid] = [0]*snap_count
-    total_sum = [0]*snap_count
-    # calculating summary of the amount for each location's snapshot
-    for i, group in snap_group:
-        for _, series in group.iterrows():
-            data[series['uid']][i] += series['amount']
-
-    # get colors pallet
-    colors_count = len(data.keys()) if len(data.keys()) <= 256 else 256
-    colors = palletes.viridis(colors_count)
-
-    for key, color in zip(data.keys(), colors):
-        # creating DataSource for each UID
-        source = plotting.ColumnDataSource({'x': range(snap_count),
-                                       'y': data[key],
-                                       'name': [key]*snap_count})
-        total_sum = list(map(operator.add, data[key], total_sum))
-        patch = fig.patch('x', 'y', source=source, color=color, fill_alpha=0.3)
-        line = fig.line('x', 'y', source=source, color=color, line_width=3)
-
-        toggles.append(_add_callback(key, patch, line))
-
-    source = plotting.ColumnDataSource({'x': range(snap_count),
-                                   'y': total_sum,
-                                   'name': ['Total'] * snap_count})
-    fig.line('x', 'y', source=source, color='black', line_width=3)
-
-    return fig, toggles
-
-
-def flow_usage_graph(data_frame, unit):
-    """ Creates Flow usage graph.
-
-    Arguments:
-        data_frame(any): the Pandas DataFrame object
-        unit(str): memory amount unit
-
-    Returns:
-        tuple: 1st is Bokeh's figure,
-               2nd is list of Bokeh's toggles
-    """
-    y_axis_label = "Summary of the allocated memory [{}]".format(unit)
-    x_axis_label = "Snapshots"
-    title_text = "Summary of the allocated memory at all the allocation " \
-                 "locations over all the snapshots"
-
-    fig, toggles = _get_plot(data_frame)
-
-    _add_tools(fig)
-    fig.title.text = title_text
-    fig.xaxis.axis_label = x_axis_label
-    fig.yaxis.axis_label = y_axis_label
-
-    return fig, toggles
+    # Configure flow specific options
+    area_chart.legend.location = 'top_left'
+    area_chart.legend.click_policy = 'hide'
+    area_chart.x_range = models.Range1d(minimal_x_value, maximal_x_value)
+    area_chart.y_range = models.Range1d(minimal_y_value, maximal_y_value)
+    return area_chart
