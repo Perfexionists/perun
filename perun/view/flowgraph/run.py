@@ -43,7 +43,7 @@ def process_title(ctx, _, value):
 
 @click.command()
 @click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
-                type=click.Choice(map(str, enums.Aggregation)))
+                type=click.Choice(list(map(str, enums.Aggregation))))
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Source of the data for the graphs, i.e. what will be displayed on Y axis.")

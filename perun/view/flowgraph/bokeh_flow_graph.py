@@ -57,7 +57,7 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
     #   (i.e. for each value on X axis), the values are either accumulated or not
     data_source = {}
     for gn, by_key_group_frame in data_frame.groupby(by_key):
-        data_source[gn] = [0]*maximal_x_value
+        data_source[gn] = [0]*(maximal_x_value + 1)
         through_data_group = by_key_group_frame.groupby(through_key)
         try:
             aggregation_function = getattr(through_data_group, func)
