@@ -6,6 +6,7 @@ setup(
     py_modules=['perun'],
     packages=find_packages(),
     package_data={'perun': [
+        'view/flamegraph/flamegraph.pl',
         'collect/memory/malloc.so',
         'collect/complexity/target/*.so',
         'collect/complexity/cpp_sources/*.{h,cpp}',
