@@ -46,13 +46,13 @@ def get_most(profile, top, **kwargs):
     summary.sort(key=lambda x: x['sum'], reverse=True)
 
     # get total summary
-    total_sum =  sum(i['sum'] for i in summary)
+    total_sum = sum(i['sum'] for i in summary)
 
     # cutting list length
-    if len(summary) > top:
-        output = pretty.get_pretty_allocations(summary[:top], summary_unit)
-    else:
-        output = pretty.get_pretty_allocations(summary, summary_unit)
+    sum_len = len(summary)
+    output = pretty.get_pretty_allocations(
+        summary[:top if sum_len > top else sum_len], summary_unit
+    )
 
     total_msg = "Total memory allocations: {}{} in\n\n".format(total_sum, summary_unit)
 
@@ -99,20 +99,19 @@ def get_sum(profile, top, **kwargs):
     summary.sort(key=lambda x: x['sum'], reverse=True)
 
     # get total summary
-    total_sum =  sum(i['sum'] for i in summary)
+    total_sum = sum(i['sum'] for i in summary)
 
     # cutting list length
-    if len(summary) > top:
-        output = pretty.get_pretty_allocations(summary[:top], summary_unit)
-    else:
-        output = pretty.get_pretty_allocations(summary, summary_unit)
-
+    sum_len = len(summary)
+    output = pretty.get_pretty_allocations(
+        summary[:top if sum_len > top else sum_len], summary_unit
+    )
     total_msg = "Total allocated memory: {}{} in\n\n".format(total_sum, summary_unit)
 
     return total_msg + output
 
 
-def get_func(profile, function, all, **kwargs):
+def get_func(profile, function, check_trace, **kwargs):
     """ Get allocations of specified function only
 
         Parse the profile records, filter them by specified
@@ -123,7 +122,7 @@ def get_func(profile, function, all, **kwargs):
     Arguments:
         profile(dict): memory profile with records
         function(string): specified function to filter out
-        all(bool): specify if process also partial participation
+        check_trace(bool): specify if process also partial participation
 
     Returns:
         string: modified output
@@ -155,7 +154,7 @@ def get_func(profile, function, all, **kwargs):
         if allocation['subtype'] == 'free':
             continue
 
-        if all:
+        if check_trace:
             res = is_function_in(allocation['trace'], function)
         else:
             res = is_function_in([allocation['uid']], function)
@@ -236,10 +235,10 @@ def get_top(profile, top, **kwargs):
     allocations.sort(key=lambda x: x['amount'], reverse=True)
 
     # cutting list length
-    if len(allocations) > top:
-        output = pretty.get_pretty_resources(allocations[:top], memory_unit, 3)
-    else:
-        output = pretty.get_pretty_resources(allocations, memory_unit, 3)
+    sum_len = len(allocations)
+    output = pretty.get_pretty_resources(
+        allocations[:top if sum_len > top else sum_len], memory_unit, 3
+    )
 
     return output
 
@@ -255,7 +254,3 @@ def is_uid_in(summary, uid):
             return i
 
     return None
-
-
-if __name__ == "__main__":
-    pass

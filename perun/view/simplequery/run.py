@@ -21,7 +21,7 @@ SUPPORTED_MODES = ("list", "top", "most", "sum", "func")
               help="Defines timestamp in the timeline of printed records.")
 @click.option('--function',
               help="Defines name of the function to search for.")
-@click.option('--all', '-a', is_flag=True, default=False,
+@click.option('--all', '-a', 'check_trace', is_flag=True, default=False,
               help="Defines that all the allocations including function are"
                    " printed out (even with partial participation in the call"
                    " trace)")
@@ -31,8 +31,9 @@ def simplequery(profile, mode, **kwargs):
        Argument MODE defines the operation with the profile.
     """
     if mode not in SUPPORTED_MODES:
-        raise click.BadParameter("Mode is not supported. Supported modes are: "
-                                 + str(SUPPORTED_MODES))
+        raise click.BadParameter("mode is not supported, choose one of: {}".format(
+            SUPPORTED_MODES
+        ))
     if mode == "func" and not kwargs['function']:
         raise click.BadParameter("Function not defined")
 
@@ -43,7 +44,9 @@ def simplequery(profile, mode, **kwargs):
         except Exception as e:
             raise IncorrectProfileFormatException('', str(e))
     else:
-        assert False
+        raise click.BadParameter("could not find the function for mode {}".format(
+            mode
+        ))
 
     print(pretty.get_profile_info(profile))
     if output:
