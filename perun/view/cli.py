@@ -11,22 +11,21 @@ import re
 
 import click
 
+import perun.collect
+import perun.core.logic.commands as commands
+import perun.core.logic.config as perun_config
+import perun.core.logic.runner as runner
+import perun.core.logic.store as store
+import perun.core.profile.factory as profiles
+import perun.core.vcs as vcs
+import perun.postprocess
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
-import perun.core.logic.config as perun_config
-import perun.core.logic.commands as commands
-import perun.core.logic.profile as profiles
-import perun.core.logic.runner as runner
-import perun.core.logic.store as store
-import perun.core.vcs as vcs
-import perun.collect
-import perun.postprocess
 import perun.view
-
+from perun.core.logic.pcs import PCS
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException
-from perun.core.logic.pcs import PCS
 
 __author__ = 'Tomas Fiedor'
 

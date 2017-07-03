@@ -1,9 +1,10 @@
 """This module implements translation of the profile to other formats """
 import copy
-import pandas
-import numpy
 
-import perun.core.logic.query as query
+import numpy
+import pandas
+
+import perun.core.profile.query as query
 
 __author__ = 'Radim Podola'
 

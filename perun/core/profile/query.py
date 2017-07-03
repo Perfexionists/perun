@@ -18,7 +18,7 @@ def all_resources_of(profile):
             yield snap_no, resource
 
     # Fix this asap!
-    for resource in profile['global'][0]['resources']:
+    for resource in profile['global']['resources']:
         yield len(profile['snapshots']), resource
 
 

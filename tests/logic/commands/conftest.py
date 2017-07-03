@@ -9,12 +9,12 @@ import tempfile
 import git
 import pytest
 
-import perun.utils.streams as streams
 import perun.core.logic.commands as commands
 import perun.core.logic.pcs as pcs
 import perun.core.logic.store as store
-import perun.core.logic.profile as perun_profile
+import perun.core.profile.factory as perun_profile
 import perun.core.vcs as vcs
+import perun.utils.streams as streams
 
 __author__ = 'Tomas Fiedor'
 

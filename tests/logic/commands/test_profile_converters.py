@@ -3,7 +3,7 @@
 Tests basic functionality of creating other representations of profiles, like e.g for
 heap and heat map visualizations, etc.
 """
-import perun.utils.profile_converters as converters
+import perun.core.profile.converters as converters
 
 __author__ = 'Tomas Fiedor'
 

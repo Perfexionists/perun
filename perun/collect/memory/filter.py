@@ -14,7 +14,7 @@ def validate_profile(func):
             return {}
         # check if there is smt to remove
         try:
-            glob_res = profile['global'][0]['resources']
+            glob_res = profile['global']['resources']
             if not glob_res:
                 return profile
         except (IndexError, KeyError, TypeError):
@@ -76,6 +76,14 @@ def trace_filter(profile, function, source):
     return profile
 
 
+def set_global_region(profile):
+    """
+    Arguments:
+        profile(dict): partially computed profile
+    """
+    profile['global']['resources'] = {}
+
+
 @validate_profile
 def allocation_filter(profile, function, source):
     """ Remove record of specified function or source code out of the profile
@@ -100,14 +108,8 @@ def allocation_filter(profile, function, source):
 
     snapshots = profile['snapshots']
     for snapshot in snapshots:
-
-        snapshot['resources'] = [res for res in snapshot['resources']
-                                 if determinate(res['uid'])]
-
-    if snapshots[-1]['resources']:
-        profile['global'][0]['resources'] = [snapshots[-1]['resources'][-1]]
-    else:
-        profile['global'][0]['resources'] = []
+        snapshot['resources'] = [res for res in snapshot['resources'] if determinate(res['uid'])]
+    set_global_region(profile)
 
     return profile
 
@@ -126,11 +128,7 @@ def remove_uidless_records_from(profile):
     snapshots = profile['snapshots']
     for snapshot in snapshots:
         snapshot['resources'] = [res for res in snapshot['resources'] if res['uid']]
-
-    if snapshots[-1]['resources']:
-        profile['global'][0]['resources'] = [snapshots[-1]['resources'][-1]]
-    else:
-        profile['global'][0]['resources'] = []
+    set_global_region(profile)
 
     return profile
 

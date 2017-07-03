@@ -13,22 +13,21 @@ import re
 import colorama
 import termcolor
 
+import perun.core.logic.config as perun_config
+import perun.core.logic.store as store
+import perun.core.profile.factory as profile
+import perun.core.vcs as vcs
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
-import perun.core.logic.config as perun_config
-import perun.core.logic.profile as profile
-import perun.core.logic.store as store
-import perun.core.vcs as vcs
-
-from perun.utils.log import cprint, cprintln
+from perun.core.logic.pcs import pass_pcs
+from perun.utils.exceptions import NotPerunRepositoryException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ID_TYPE_COLOUR
-from perun.utils.exceptions import NotPerunRepositoryException
-from perun.core.logic.pcs import pass_pcs
+from perun.utils.log import cprint, cprintln
 
 # Init colorama for multiplatform colours
 colorama.init()

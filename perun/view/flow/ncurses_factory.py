@@ -2,10 +2,10 @@
 
 import curses
 import curses.textpad
-import sys
 import math
+import sys
 
-import perun.core.logic.profile as profiles
+import perun.core.profile.factory as profiles
 
 __author__ = 'Radim Podola'
 
