@@ -1,6 +1,5 @@
 """Basic testing for the flame graph generation"""
 
-import filecmp
 import os
 
 from click.testing import CliRunner
