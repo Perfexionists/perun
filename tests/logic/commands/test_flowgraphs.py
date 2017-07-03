@@ -8,8 +8,8 @@ import pytest
 import perun.core.profile.converters as converters
 import perun.core.profile.factory as profiles
 import perun.view.cli as cli
-import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
-import perun.view.flowgraph.bokeh_flow_graph as bokeh_graphs
+import perun.view.flow.ncurses_factory as curses_graphs
+import perun.view.flow.bokeh_factory as bokeh_graphs
 
 __author__ = 'Tomas Fiedor'
 
@@ -37,14 +37,14 @@ def test_flow_cli(pcs_full, valid_profile_pool):
 
         # Classical run --- will accumulate the values
         assert 'flow.html' not in os.listdir(os.getcwd())
-        result = runner.invoke(cli.show, [valid_profile, 'flowgraph', '--of=amount', '--by=uid',
+        result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                           '--stacked', '--filename=flow.html'])
 
         assert result.exit_code == 0
         assert 'flow.html' in os.listdir(os.getcwd())
 
         # Run without accumulation
-        result = runner.invoke(cli.show, [valid_profile, 'flowgraph', '--of=amount', '--by=uid',
+        result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                           '--stacked', '--no-accumulate', '--filename=flow2.html',
                                           '--graph-title=Test'])
         assert result.exit_code == 0
@@ -62,7 +62,7 @@ def test_flow_cli_errors(pcs_full, valid_profile_pool):
         if loaded_profile['header']['type'] != 'memory':
             continue
 
-        result = runner.invoke(cli.show, [valid_profile, 'flowgraph', '--of=undefined', '--by=uid',
+        result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=undefined', '--by=uid',
                                           '--stacked', '--filename=flow.html'])
         assert result.exit_code == 2
         assert "invalid choice" in result.output
@@ -109,7 +109,7 @@ def test_curses_flow(monkeypatch, mock_curses_window, memory_profiles):
 
 @pytest.mark.usefixtures('cleandir')
 def test_curses_logic(monkeypatch, mock_curses_window, memory_profiles):
-    """Test logic of the flowgraph visualization
+    """Test logic of the flow visualization
 
     Expecting no errors, eventually the visualization should end.
     """

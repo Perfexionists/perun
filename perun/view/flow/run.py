@@ -6,8 +6,8 @@ import click
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.core.profile.converters as converters
-import perun.view.flowgraph.bokeh_flow_graph as bokeh_graphs
-import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
+import perun.view.flow.bokeh_factory as bokeh_graphs
+import perun.view.flow.ncurses_factory as curses_graphs
 
 from perun.utils.helpers import pass_profile
 
@@ -74,7 +74,7 @@ def process_title(ctx, _, value):
               help="Will show the graph in browser.")
 @pass_profile
 # Fixme: Consider breaking this to two
-def flowgraph(profile, use_terminal, filename, view_in_browser, **kwargs):
+def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
     """
     Display of the resources in flow format.
 
