@@ -178,9 +178,10 @@ def parse_log(filename, cmd, snapshots_interval):
     if data:
         snapshots.append(data)
 
-    glob[0].update({'resources': [snapshots[-1]['resources'][-1]]})
+    # WTF IS THIS?
+    #glob[0].update({'resources': [snapshots[-1]['resources'][-1]]})
 
-    return {'snapshots': snapshots, 'global': glob}
+    return {'snapshots': snapshots, 'global': {'resources': []}}
 
 
 if __name__ == "__main__":
