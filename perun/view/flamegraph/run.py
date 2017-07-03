@@ -13,7 +13,6 @@ __author__ = 'Radim Podola'
 @click.option('--graph-height', '-h', default=20,
               help="Changes the width of the generated Graph.")
 @pass_profile
-# Fixme: Consider breaking this to two
 def flamegraph(profile, filename, graph_height, **_):
     """Flame graph visualization of the profile."""
     flame.draw_flame_graph(profile, filename, graph_height)

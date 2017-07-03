@@ -36,12 +36,8 @@ def draw_flame_graph(profile, output_file, height):
                                     '--title', title,
                                     '--countname', units,
                                     '--reverse',
-                                    '--height' , str(height)],
+                                    '--height', str(height)],
                                    stdin=subprocess.PIPE,
                                    stdout=out,
                                    cwd=pwd)
         process.communicate(bytes(''.join(flame), encoding='UTF-8'))
-
-
-if __name__ == "__main__":
-    pass
