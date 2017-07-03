@@ -81,7 +81,7 @@ def set_global_region(profile):
     Arguments:
         profile(dict): partially computed profile
     """
-    profile['global']['resources'] = []
+    profile['global']['resources'] = {}
 
 
 @validate_profile

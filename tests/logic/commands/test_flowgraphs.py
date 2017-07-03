@@ -1,12 +1,15 @@
 import curses
 import os
-from copy import deepcopy
+import bokeh.plotting as plotting
 
+from click.testing import CliRunner
 import pytest
 
 import perun.core.profile.converters as converters
-import perun.view.flowgraph.ncurses_flow_graph as curses_graphs
-import perun.view.flowgraph.run as flowgraphs
+import perun.core.profile.factory as profiles
+import perun.view.cli as cli
+import perun.view.flow.ncurses_factory as curses_graphs
+import perun.view.flow.bokeh_factory as bokeh_graphs
 
 __author__ = 'Tomas Fiedor'
 
@@ -21,6 +24,51 @@ def returnnothing(*_):
     return ''
 
 
+def test_flow_cli(pcs_full, valid_profile_pool):
+    """Test runing and creating bokeh flow from the cli
+
+    Expecting no errors and created flow file
+    """
+    runner = CliRunner()
+    for valid_profile in valid_profile_pool:
+        loaded_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
+        if loaded_profile['header']['type'] != 'memory':
+            continue
+
+        # Classical run --- will accumulate the values
+        assert 'flow.html' not in os.listdir(os.getcwd())
+        result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
+                                          '--stacked', '--filename=flow.html'])
+
+        assert result.exit_code == 0
+        assert 'flow.html' in os.listdir(os.getcwd())
+
+        # Run without accumulation
+        result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
+                                          '--stacked', '--no-accumulate', '--filename=flow2.html',
+                                          '--graph-title=Test'])
+        assert result.exit_code == 0
+        assert 'flow2.html' in os.listdir(os.getcwd())
+
+
+def test_flow_cli_errors(pcs_full, valid_profile_pool):
+    """Test running and creating bokeh flow from the cli with error simulations
+
+    Expecting errors, but nothing destructive
+    """
+    runner = CliRunner()
+    for valid_profile in valid_profile_pool:
+        loaded_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
+        if loaded_profile['header']['type'] != 'memory':
+            continue
+
+        result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=undefined', '--by=uid',
+                                          '--stacked', '--filename=flow.html'])
+        assert result.exit_code == 2
+        assert "invalid choice" in result.output
+        assert "choose from" in result.output
+
+
 @pytest.mark.usefixtures('cleandir')
 def test_bokeh_flow(memory_profiles):
     """Test creating bokeh flow graph
@@ -28,7 +76,10 @@ def test_bokeh_flow(memory_profiles):
     Expecting no errors
     """
     for memory_profile in memory_profiles:
-        flowgraphs._call_flow(deepcopy(memory_profile), "flow.html", 1200, False)
+        bargraph = bokeh_graphs.create_from_params(memory_profile, 'sum', 'amount', 'snapshots',
+                                                   'uid', True, True, 'snapshot', 'amount [B]', '?')
+        plotting.output_file('flow.html')
+        plotting.save(bargraph, 'flow.html')
         assert 'flow.html' in os.listdir(os.getcwd())
 
 
@@ -58,7 +109,7 @@ def test_curses_flow(monkeypatch, mock_curses_window, memory_profiles):
 
 @pytest.mark.usefixtures('cleandir')
 def test_curses_logic(monkeypatch, mock_curses_window, memory_profiles):
-    """Test logic of the flowgraph visualization
+    """Test logic of the flow visualization
 
     Expecting no errors, eventually the visualization should end.
     """
