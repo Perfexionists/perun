@@ -10,20 +10,20 @@ import pkgutil
 import re
 
 import click
+import perun.logic.commands as commands
+import perun.logic.runner as runner
+import perun.logic.store as store
+from perun.logic.pcs import PCS
 
 import perun.collect
-import perun.core.logic.commands as commands
-import perun.core.logic.config as perun_config
-import perun.core.logic.runner as runner
-import perun.core.logic.store as store
-import perun.core.profile.factory as profiles
-import perun.core.vcs as vcs
+import perun.logic.config as perun_config
 import perun.postprocess
+import perun.profile.factory as profiles
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
+import perun.vcs as vcs
 import perun.view
-from perun.core.logic.pcs import PCS
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException
 

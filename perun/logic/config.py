@@ -14,11 +14,11 @@ import sys
 
 from ruamel.yaml import YAML
 
+import perun.logic.store as store
 import perun.utils.decorators as decorators
 import perun.utils.exceptions as exceptions
-import perun.utils.streams as streams
 import perun.utils.log as perun_log
-import perun.core.logic.store as store
+import perun.utils.streams as streams
 
 __author__ = 'Tomas Fiedor'
 

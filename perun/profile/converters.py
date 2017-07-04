@@ -4,7 +4,7 @@ import copy
 import numpy
 import pandas
 
-import perun.core.profile.query as query
+import perun.profile.query as query
 
 __author__ = 'Radim Podola'
 

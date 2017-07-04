@@ -11,16 +11,16 @@ import os
 import re
 
 import colorama
+import perun.logic.store as store
 import termcolor
+from perun.logic.pcs import pass_pcs
 
-import perun.core.logic.config as perun_config
-import perun.core.logic.store as store
-import perun.core.profile.factory as profile
-import perun.core.vcs as vcs
+import perun.logic.config as perun_config
+import perun.profile.factory as profile
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
-from perun.core.logic.pcs import pass_pcs
+import perun.vcs as vcs
 from perun.utils.exceptions import NotPerunRepositoryException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \

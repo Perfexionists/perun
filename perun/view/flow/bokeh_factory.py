@@ -3,11 +3,11 @@
 import bkcharts as charts
 import bokeh.models as models
 import pandas
+import perun.profile.factory as profiles
 
-import perun.utils.log as log
+import perun.profile.converters as converters
 import perun.utils.bokeh_helpers as bokeh_helpers
-import perun.core.profile.converters as converters
-import perun.core.profile.factory as profiles
+import perun.utils.log as log
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'

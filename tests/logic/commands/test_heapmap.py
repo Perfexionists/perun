@@ -6,7 +6,7 @@ Uses custom mock object for curses, that implements basic stuff.
 import curses
 from copy import deepcopy
 
-import perun.core.profile.converters as converters
+import perun.profile.converters as converters
 import perun.view.heapmap.heap_map as heap_map
 import perun.view.heapmap.heap_map_colors as heap_colours
 

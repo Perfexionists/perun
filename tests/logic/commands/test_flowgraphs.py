@@ -1,15 +1,15 @@
 import curses
 import os
+
 import bokeh.plotting as plotting
-
-from click.testing import CliRunner
 import pytest
+from click.testing import CliRunner
 
-import perun.core.profile.converters as converters
-import perun.core.profile.factory as profiles
-import perun.view.cli as cli
-import perun.view.flow.ncurses_factory as curses_graphs
+import perun.cli as cli
+import perun.profile.converters as converters
+import perun.profile.factory as profiles
 import perun.view.flow.bokeh_factory as bokeh_graphs
+import perun.view.flow.ncurses_factory as curses_graphs
 
 __author__ = 'Tomas Fiedor'
 

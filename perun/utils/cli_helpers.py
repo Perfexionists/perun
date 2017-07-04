@@ -6,7 +6,7 @@ and returning default values.
 
 import click
 
-import perun.core.profile.query as query
+import perun.profile.query as query
 import perun.utils.log as log
 
 __author__ = 'Tomas Fiedor'

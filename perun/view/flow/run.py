@@ -3,13 +3,12 @@
 import bokeh.core.enums as enums
 import click
 
-import perun.utils.log as log
+import perun.profile.converters as converters
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
-import perun.core.profile.converters as converters
+import perun.utils.log as log
 import perun.view.flow.bokeh_factory as flow_factory
 import perun.view.flow.ncurses_factory as curses_graphs
-
 from perun.utils.exceptions import InvalidParameterException
 from perun.utils.helpers import pass_profile
 

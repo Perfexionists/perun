@@ -7,9 +7,10 @@ by its path.
 
 import os
 
-import perun.core.vcs as vcs
-import perun.core.logic.store as store
-import perun.core.logic.config as config
+import perun.logic.store as store
+
+import perun.logic.config as config
+import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
 

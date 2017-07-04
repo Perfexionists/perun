@@ -4,12 +4,12 @@ Tests whether basic initialization, and re-initializations work, whether excepti
 when working within wrong scopes, how does perun copes with existing perun directories, etc.
 """
 
-import git
 import os
+
+import git
 import pytest
 
-import perun.core.logic.commands as commands
-
+import perun.logic.commands as commands
 from perun.utils.exceptions import UnsupportedModuleException
 
 __author__ = 'Tomas Fiedor'

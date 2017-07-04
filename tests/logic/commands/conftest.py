@@ -7,14 +7,14 @@ import subprocess
 import tempfile
 
 import git
+import perun.logic.pcs as pcs
+import perun.logic.store as store
 import pytest
 
-import perun.core.logic.commands as commands
-import perun.core.logic.pcs as pcs
-import perun.core.logic.store as store
-import perun.core.profile.factory as perun_profile
-import perun.core.vcs as vcs
+import perun.logic.commands as commands
+import perun.profile.factory as perun_profile
 import perun.utils.streams as streams
+import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
 

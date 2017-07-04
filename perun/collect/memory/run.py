@@ -4,12 +4,11 @@ import os
 
 import click
 
-import perun.core.logic.runner as runner
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
 import perun.collect.memory.syscalls as syscalls
+import perun.logic.runner as runner
 import perun.utils.log as log
-
 from perun.utils.helpers import CollectStatus
 
 __author__ = 'Radim Podola'

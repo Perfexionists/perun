@@ -1,9 +1,9 @@
 """This module contains the BAR graphs creating functions"""
 
 import bkcharts as charts
+import perun.profile.factory as profiles
 
-import perun.core.profile.converters as converters
-import perun.core.profile.factory as profiles
+import perun.profile.converters as converters
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
 

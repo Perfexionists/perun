@@ -6,9 +6,9 @@ import bokeh.plotting as plotting
 import pytest
 from click.testing import CliRunner
 
-import perun.core.profile.factory as profiles
+import perun.cli as cli
+import perun.profile.factory as profiles
 import perun.view.bars.factory as bargraphs
-import perun.view.cli as cli
 
 __author__ = 'Tomas Fiedor'
 

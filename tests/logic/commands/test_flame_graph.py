@@ -4,8 +4,8 @@ import os
 
 from click.testing import CliRunner
 
-import perun.core.profile.factory as profiles
-import perun.view.cli as cli
+import perun.cli as cli
+import perun.profile.factory as profiles
 import perun.view.flamegraph.flamegraph as flamegraphs
 
 __author__ = 'Tomas Fiedor'

@@ -6,17 +6,16 @@ the nature of perun enables one to perform efficient deltas, we can achieve good
 performance.
 """
 
-import os
 import json
+import os
 import time
 
-import perun.core.profile.query as query
-import perun.core.logic.store as store
+import perun.logic.store as store
+import perun.profile.query as query
 import perun.utils.log as perun_log
-
+from perun.utils import get_module
 from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException
 from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
-from perun.utils import get_module
 
 __author__ = 'Tomas Fiedor'
 

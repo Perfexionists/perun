@@ -2,8 +2,7 @@
 
 import click
 
-import perun.core.logic.runner as runner
-
+import perun.logic.runner as runner
 from perun.utils.helpers import PostprocessStatus, pass_profile
 
 __author__ = 'Tomas Fiedor'

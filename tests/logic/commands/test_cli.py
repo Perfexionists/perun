@@ -4,11 +4,11 @@ Note that the functionality of the commands themselves are not tested,
 this is done in appropriate test files, only the API is tested."""
 
 import os
-import pytest
 
+import pytest
 from click.testing import CliRunner
 
-import perun.view.cli as cli
+import perun.cli as cli
 
 __author__ = 'Tomas Fiedor'
 

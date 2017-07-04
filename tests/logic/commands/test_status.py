@@ -11,13 +11,12 @@ import os
 import re
 import shutil
 
-import pytest
 import git
+import perun.logic.store as store
+import pytest
 
+import perun.logic.commands as commands
 import perun.utils.timestamps as timestamps
-import perun.core.logic.commands as commands
-import perun.core.logic.store as store
-
 from perun.utils.exceptions import NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
