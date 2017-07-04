@@ -70,3 +70,32 @@ def process_resource_key_param(ctx, param, value):
             value, ", ".join(str(vk) for vk in valid_keys) + error_msg_ending
         ))
     return value
+
+
+def process_continuous_key(ctx, _, value):
+    """Helper function for processing the continuous key for the param.
+
+    Continuous keys are used in the continuous graphs (do'h!) on the x axis, i.e. they have to be
+    numeric. We check all of the keys in the resources.
+
+    Arguments:
+        ctx(click.Context): called context of the process
+        _(click.Option): called parameter
+        value(object): given value for the option param
+
+    Returns:
+        object: value or raises bad parameter
+
+    Raises:
+        click.BadParameter: if the value is invalid for the profile
+    """
+    if value == 'snapshots':
+        return value
+
+    # Get all of the numerical keys
+    valid_numeric_keys = set(query.all_numerical_resource_fields_of(ctx.parent.params['profile']))
+    if value not in valid_numeric_keys:
+        raise click.BadParameter("invalid choice: {}. (choose from {})".format(
+            value, ", ".join(str(vnk) for vnk in valid_numeric_keys) + ", snapshots"
+        ))
+    return value

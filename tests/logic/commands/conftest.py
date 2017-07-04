@@ -104,6 +104,34 @@ class Helpers(object):
         shutil.copystat(profile, copied_filename)
         return copied_filename
 
+    @staticmethod
+    def assert_invalid_cli_choice(cli_result, choice, file=None):
+        """Checks, that click correctly ended as invalid choice
+
+        Arguments:
+            cli_result(click.Result): result of the commandline interface
+            choice(str): choice that we tried
+            file(str): name of the file that should not be created (optional)
+        """
+        assert cli_result.exit_code == 2
+        assert "invalid choice: {}".format(choice) in cli_result.output
+        if file:
+            assert file not in os.listdir(os.getcwd())
+
+    @staticmethod
+    def assert_invalid_param_choice(cli_result, choice, file=None):
+        """Checks that click correctly ended with invalid choice and 1 return code
+        Arguments:
+            cli_result(click.Result): result of the commandline interface
+            choice(str): choice that we tried
+            file(str): name of the file that should not be created (optional)
+        """
+        print(cli_result.output)
+        assert cli_result.exit_code == 1
+        assert "Invalid value '{}'".format(choice) in cli_result.output
+        if file:
+            assert file not in os.listdir(os.getcwd())
+
 
 @pytest.fixture(scope="session")
 def helpers():

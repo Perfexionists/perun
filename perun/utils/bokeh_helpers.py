@@ -14,6 +14,7 @@ GRAPH_T_PADDING = 50
 
 
 class ColourSort(object):
+    """Enumeration of sort modes"""
     No = 0
     Reverse = 1
     ByOccurence = 2
@@ -124,10 +125,10 @@ def configure_graph_canvas(graph, graph_width):
     graph.outline_line_width = 2
     graph.outline_line_color = 'black'
 
-    for r in graph.renderers:
-        if hasattr(r, 'glyph'):
-            r.glyph.line_width = 2
-            r.glyph.line_color = 'black'
+    for renderer in graph.renderers:
+        if hasattr(renderer, 'glyph'):
+            renderer.glyph.line_width = 2
+            renderer.glyph.line_color = 'black'
 
 
 def configure_legend(graph):
@@ -184,3 +185,27 @@ def save_graphs_in_column(graphs, filename, view_in_browser=False):
         plotting.show(output)
     else:
         plotting.save(output, filename)
+
+
+def process_profile_to_graphs(factory_module, profile, filename, view_in_browser, **kwargs):
+    """Wrapper function for constructing the graphs from profile, saving it and viewing.
+
+    Wrapper function that takes the factory module, constructs the graph for the given profile,
+    and then saves it in filename and optionally view in the registered browser.
+
+    Arguments:
+        factory_module(module): module which will create the the graph
+        profile(dict): profile that will be processed
+        filename(str): output filename for the bokeh graph
+        view_in_browser(bool): true if the created graph should be view in registered browser after
+            it is constructed.
+        kwargs(dict): rest of the keyword arguments
+
+    Raises:
+        AttributeError: when the factory_module has not some of the functions
+    """
+    if hasattr(factory_module, 'validate_keywords'):
+        factory_module.validate_keywords(profile, **kwargs)
+
+    graph = factory_module.create_from_params(profile, **kwargs)
+    save_graphs_in_column([graph], filename, view_in_browser)

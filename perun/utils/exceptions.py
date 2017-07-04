@@ -5,7 +5,20 @@ __author__ = 'Tomas Fiedor'
 
 class InvalidParameterException(Exception):
     """Raises when the given parameter is invalid"""
-    pass
+    def __init__(self, parameter, parameter_value, choices_msg=""):
+        """
+        Arguments:
+            parameter(str): name of the parameter that is invalid
+            parameter_value(object): value of the parameter
+            choices_msg(str): string with choices for the valid parameters
+        """
+        self.parameter = parameter
+        self.value = str(parameter_value)
+        self.choices_msg = " " + choices_msg
+
+    def __str__(self):
+        return "Invalid value '{}' for the parameter '{}'".format(self.value, self.parameter) \
+               + self.choices_msg
 
 
 class MissingConfigSectionException(Exception):

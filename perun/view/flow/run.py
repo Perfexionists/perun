@@ -3,12 +3,14 @@
 import bokeh.core.enums as enums
 import click
 
+import perun.utils.log as log
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.core.profile.converters as converters
-import perun.view.flow.bokeh_factory as bokeh_graphs
+import perun.view.flow.bokeh_factory as flow_factory
 import perun.view.flow.ncurses_factory as curses_graphs
 
+from perun.utils.exceptions import InvalidParameterException
 from perun.utils.helpers import pass_profile
 
 __author__ = 'Radim Podola'
@@ -37,18 +39,17 @@ def process_title(ctx, _, value):
             ctx.params['func'].capitalize(), ctx.params['of_key'], ctx.params['through_key'],
             ctx.params['by_key'], ctx.params['stacked']*"(stacked)"
         )
-    else:
-        return value
+    return value
 
 
 @click.command()
 @click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
-                type=click.Choice(list(map(str, enums.Aggregation))))
+                type=click.Choice(list(map(str, enums.Aggregation))), is_eager=True)
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Source of the data for the graphs, i.e. what will be displayed on Y axis.")
 @click.option('--through', '-t', 'through_key', nargs=1, required=False, metavar="<through_key>",
-              is_eager=True, callback=cli_helpers.process_resource_key_param, default='snapshots',
+              is_eager=True, callback=cli_helpers.process_continuous_key, default='snapshots',
               help="Independent variable on the X axis, values will be grouped by this key.")
 @click.option('--by', '-b', 'by_key', nargs=1, required=True, metavar="<by_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
@@ -64,12 +65,12 @@ def process_title(ctx, _, value):
               help="Outputs the graph to file specified by filename.")
 @click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
               callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the X axis of the bar graph.")
+              help="Label on the X axis of the flow graph.")
 @click.option('--y-axis-label', '-yl', metavar="<text>", default=None,
               callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the Y axis of the bar graph.")
+              help="Label on the Y axis of the flow graph.")
 @click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
-              help="Title of the graph.")
+              help="Title of the flow graph.")
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
               help="Will show the graph in browser.")
 @pass_profile
@@ -109,5 +110,11 @@ def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
         heap_map = converters.create_heap_map(profile)
         curses_graphs.flow_graph(heap_map)
     else:
-        flow_graph = bokeh_graphs.create_from_params(profile, **kwargs)
-        bokeh_helpers.save_graphs_in_column([flow_graph], filename, view_in_browser)
+        try:
+            bokeh_helpers.process_profile_to_graphs(
+                flow_factory, profile, filename, view_in_browser, **kwargs
+            )
+        except AttributeError as attr_error:
+            log.error("while creating flow graph: {}".format(str(attr_error)))
+        except InvalidParameterException as ip_error:
+            log.error(str(ip_error))
