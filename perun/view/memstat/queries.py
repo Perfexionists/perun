@@ -6,16 +6,16 @@ import perun.view.memstat.pretty_output as pretty
 __author__ = 'Radim Podola'
 
 
-def get_most(profile, top, **kwargs):
+def get_most(profile, limit_to, **_):
     """ Sort records by the frequency of allocations they made
 
-        Parse the profile records, sort them by the frequency of
-        allocations of memory they made, and also modify the output
-        to be pretty to write into console. Only number of top
-        records are processed.
+        Parse the profile records, sort them by the frequency of allocations of memory they made,
+        and also modify the output to be pretty to write into console.
+        Only number of top records are processed.
+
     Arguments:
         profile(dict): memory profile with records
-        top(int): number of records to process
+        limit_to(int): number of records to process
 
     Returns:
         string: modified output
@@ -51,7 +51,7 @@ def get_most(profile, top, **kwargs):
     # cutting list length
     sum_len = len(summary)
     output = pretty.get_pretty_allocations(
-        summary[:top if sum_len > top else sum_len], summary_unit
+        summary[:limit_to if sum_len > limit_to else sum_len], summary_unit
     )
 
     total_msg = "Total memory allocations: {}{} in\n\n".format(total_sum, summary_unit)
@@ -59,16 +59,15 @@ def get_most(profile, top, **kwargs):
     return total_msg + output
 
 
-def get_sum(profile, top, **kwargs):
+def get_sum(profile, limit_to, **_):
     """ Sort records by summary of the allocated memory
 
-        Parse the profile records, sort them by summary
-        of the allocated memory, and also modify the output
-        to be pretty to write into console. Only number of top
-        records are processed.
+        Parse the profile records, sort them by summary of the allocated memory, and also modify
+        the output to be pretty to write into console. Only number of top records are processed.
+
     Arguments:
         profile(dict): memory profile with records
-        top(int): number of records to process
+        limit_to(int): number of records to process
 
     Returns:
         string: modified output
@@ -104,21 +103,20 @@ def get_sum(profile, top, **kwargs):
     # cutting list length
     sum_len = len(summary)
     output = pretty.get_pretty_allocations(
-        summary[:top if sum_len > top else sum_len], summary_unit
+        summary[:limit_to if sum_len > limit_to else sum_len], summary_unit
     )
     total_msg = "Total allocated memory: {}{} in\n\n".format(total_sum, summary_unit)
 
     return total_msg + output
 
 
-def get_func(profile, function, check_trace, **kwargs):
-    """ Get allocations of specified function only
+def get_func(profile, function, check_trace, **_):
+    """ Get allocations of the specified function only
 
-        Parse the profile records, filter them by specified
-        function participation in the allocations,
-        and also modify the output to be pretty
-        to write into console. Only number of top
-        records are processed.
+        Parse the profile records, filter them by specified function participation in the
+        allocations, and also modify the output to be pretty to write into console.
+        Only number of top records are processed.
+
     Arguments:
         profile(dict): memory profile with records
         function(string): specified function to filter out
@@ -167,13 +165,12 @@ def get_func(profile, function, check_trace, **kwargs):
     return output
 
 
-def get_list(profile, from_time, to_time, **kwargs):
+def get_list(profile, from_time, to_time, **_):
     """ Get allocations list
 
-        Parse the profile records, cut the specified timeline,
-        and also modify the output to be pretty
-        to write into console. Only number of top
-        records are processed.
+        Parse the profile records, cut the specified timeline, and also modify the output to be
+        pretty to write into console. Only number of top records are processed.
+
     Arguments:
         profile(dict): memory profile with records
         from_time(int): starting of timeline
@@ -205,13 +202,12 @@ def get_list(profile, from_time, to_time, **kwargs):
     return output
 
 
-def get_top(profile, top, **kwargs):
+def get_top(profile, top, **_):
     """ Sort records by the amount of allocated memory
 
-        Parse the profile records, sort them by amount
-        of allocated memory, and also modify the output
-        to be pretty to write into console. Only number of top
-        records are processed.
+        Parse the profile records, sort them by amount of allocated memory, and also modify
+        the output to be pretty to write into console. Only number of top records are processed.
+
     Arguments:
         profile(dict): memory profile with records
         top(int): number of records to process
@@ -245,6 +241,11 @@ def get_top(profile, top, **kwargs):
 
 def is_uid_in(summary, uid):
     """ Evaluate if UID is included in SUMMARY
+
+    Arguments:
+        summary(list): list of resources
+        uid(dict): looked-up uid
+
     Returns:
         int: index if it's included, None if not
     """

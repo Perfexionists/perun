@@ -3,14 +3,15 @@ __author__ = 'Radim Podola'
 
 
 def get_pretty_call_trace(trace, indent=2, margin=0):
-    """ Modify the call trace for pretty print
+    """ Transforms the call trace for pretty printing in a string representation
+
     Arguments:
-        trace(list): call trace records
-        indent(int): indentation
-        margin(int): left margin
+        trace(list): records of call traces
+        indent(int): indentation unit, per each level
+        margin(int): staring left margin
 
     Returns:
-        string: modified output
+        string: trace in pretty string format
     """
     output = ''
 
@@ -28,10 +29,11 @@ def get_pretty_call_trace(trace, indent=2, margin=0):
 
 def get_pretty_resources(allocations, unit, indent=2):
     """ Modify the allocations for pretty print
+
     Arguments:
-        allocations(list): allocations records
+        allocations(list): list of allocations records
         unit(string): unit of memory
-        indent(int): indentation
+        indent(int): indentation unit, per each level
 
     Returns:
         string: modified output, stripped of following empty lines
@@ -57,8 +59,9 @@ def get_pretty_resources(allocations, unit, indent=2):
 
 def get_pretty_allocations(summary, unit):
     """ Modify the allocations for pretty print
+
     Arguments:
-        summary(list): allocations records
+        summary(list): list of allocations records
         unit(string): unit of summary factor
 
     Returns:
@@ -93,7 +96,3 @@ def get_profile_info(profile):
     output += str(profile['collector_info']['params']) + '\n'
 
     return output
-
-
-if __name__ == "__main__":
-    pass
