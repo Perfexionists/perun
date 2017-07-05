@@ -141,7 +141,7 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     assert len(os.listdir(pending_dir)) == 3
 
     # Try correct index tag
-    result = runner.invoke(cli.postprocessby, ['0@i', 'normalizer'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'normalizer'])
     assert result.exit_code == 0
     assert len(os.listdir(pending_dir)) == 4
 
