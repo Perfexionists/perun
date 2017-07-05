@@ -1,8 +1,8 @@
 """Simple queries over the profiles."""
 
 import click
-import perun.view.simplequery.queries as qrs
-import perun.view.simplequery.pretty_output as pretty
+import perun.view.memstat.queries as qrs
+import perun.view.memstat.pretty_output as pretty
 from perun.utils.helpers import pass_profile
 from perun.utils.exceptions import IncorrectProfileFormatException
 
@@ -11,7 +11,7 @@ __author__ = 'Radim Podola'
 SUPPORTED_MODES = ("list", "top", "most", "sum", "func")
 
 
-@click.command(name='query')
+@click.command()
 @click.argument('mode', nargs=1, type=str)
 @click.option('--top', '-t', default=10,
               help="Defines a count of the records that will be printed.")
@@ -26,14 +26,10 @@ SUPPORTED_MODES = ("list", "top", "most", "sum", "func")
                    " printed out (even with partial participation in the call"
                    " trace)")
 @pass_profile
-def simplequery(profile, mode, **kwargs):
+def memstat(profile, mode, **kwargs):
     """Simple query over the profile.
        Argument MODE defines the operation with the profile.
     """
-    if mode not in SUPPORTED_MODES:
-        raise click.BadParameter("mode is not supported, choose one of: {}".format(
-            SUPPORTED_MODES
-        ))
     if mode == "func" and not kwargs['function']:
         raise click.BadParameter("Function not defined")
 

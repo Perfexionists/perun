@@ -1,7 +1,7 @@
 """This module implements the interpretation functions of the profile"""
 
 from decimal import Decimal
-import perun.view.simplequery.pretty_output as pretty
+import perun.view.memstat.pretty_output as pretty
 
 __author__ = 'Radim Podola'
 

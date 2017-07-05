@@ -17,6 +17,7 @@ def get_pretty_call_trace(trace, indent=2, margin=0):
     for i, call in enumerate(trace):
         output += ' ' * margin
         output += ' ' * indent * i
+        output += '\u2514'*(i != 0)
         output += call['function']
         output += '  in  ' + call['source']
         output += ':' + str(call['line'])
@@ -69,7 +70,7 @@ def get_pretty_allocations(summary, unit):
         output += '#' + str(i + 1) + ' ' + item['uid']['function'] + ': '
         output += str(item['sum']) + unit
         output += ' in ' + item['uid']['source']
-        output += '\n\n'
+        output += '\n'
 
     return output.strip()
 
