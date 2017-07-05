@@ -23,7 +23,7 @@ def test_memstat(helpers, pcs_full, valid_profile_pool):
     assert result.exit_code == 0
     assert "#10" in result.output
 
-    result = runner.invoke(cli.show, ['1@p', 'memstat', 'top', '--top=15'])
+    result = runner.invoke(cli.show, ['1@p', 'memstat', 'top', '--limit-to=15'])
     assert result.exit_code == 0
     assert "#15" in result.output
 

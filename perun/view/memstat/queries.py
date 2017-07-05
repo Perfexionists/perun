@@ -202,7 +202,7 @@ def get_list(profile, from_time, to_time, **_):
     return output
 
 
-def get_top(profile, top, **_):
+def get_top(profile, limit_to, **_):
     """ Sort records by the amount of allocated memory
 
         Parse the profile records, sort them by amount of allocated memory, and also modify
@@ -210,7 +210,7 @@ def get_top(profile, top, **_):
 
     Arguments:
         profile(dict): memory profile with records
-        top(int): number of records to process
+        limit_to(int): number of records to process
 
     Returns:
         string: modified output
@@ -233,7 +233,7 @@ def get_top(profile, top, **_):
     # cutting list length
     sum_len = len(allocations)
     output = pretty.get_pretty_resources(
-        allocations[:top if sum_len > top else sum_len], memory_unit, 3
+        allocations[:limit_to if sum_len > limit_to else sum_len], memory_unit, 3
     )
 
     return output
