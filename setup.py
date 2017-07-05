@@ -19,6 +19,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        perun=perun.view.cli:cli
+        perun=perun.cli:cli
     ''',
 )

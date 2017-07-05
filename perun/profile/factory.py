@@ -6,16 +6,16 @@ the nature of perun enables one to perform efficient deltas, we can achieve good
 performance.
 """
 
-import os
 import json
+import os
 import time
 
-import perun.core.logic.store as store
+import perun.logic.store as store
+import perun.profile.query as query
 import perun.utils.log as perun_log
-
-from perun.utils.exceptions import IncorrectProfileFormatException
-from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
 from perun.utils import get_module
+from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException
+from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
 
 __author__ = 'Tomas Fiedor'
 
@@ -227,6 +227,40 @@ def extract_job_from_profile(profile):
     workload = profile['header']['workload']
 
     return Job(collector, posts, cmd, workload, params)
+
+
+def is_key_aggregatable_by(profile, func, key, keyname):
+    """Check if the key can be aggregated by the function.
+
+    Everything is countable and hence 'count' and 'nunique' (number of unique values) are
+    valid aggregation functions for everything. Otherwise (e.g. sum, mean), we need numerical
+    values.
+
+    Arguments:
+        profile(dict): profile that will be used against in the validation
+        func(function): function used for aggregation of the data
+        key(str): key that will be aggregated in the graph
+        keyname(str): name of the validated key
+
+    Returns:
+        bool: true if the key is aggregatable by the function
+
+    Raises:
+        InvalidParameterException: if the of_key does not support the given function
+    """
+    # Everything is countable ;)
+    if func in ('count', 'nunique'):
+        return True
+
+    # Get all valid numeric keys and validate
+    valid_keys = set(query.all_numerical_resource_fields_of(profile))
+    if key not in valid_keys:
+        choices = "(choose either count/nunique as aggregation function;"
+        choices += " or from the following keys: {})".format(
+            ", ".join(map(str, valid_keys))
+        )
+        raise InvalidParameterException(keyname, key, choices)
+    return True
 
 
 class ProfileInfo(object):

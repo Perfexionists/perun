@@ -9,14 +9,16 @@
     "workload": "world"
   },
   "collector_info": {
-    "params": null,
+    "params": "",
     "name": "time"
   },
   "postprocessors": [
     {
+      "params": "",
       "name": "filter"
     },
     {
+      "params": "",
       "name": "normalizer"
     }
   ],

@@ -3,19 +3,17 @@
 
 """
 
-
+import collections
 import os
 import subprocess
-import collections
 
 import click
 
-import perun.core.logic.runner as runner
+import perun.collect.complexity.configurator as configurator
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
-import perun.collect.complexity.configurator as configurator
+import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
-
 
 # The profiling record template
 _ProfileRecord = collections.namedtuple('record', ['action', 'func', 'timestamp', 'size'])

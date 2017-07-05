@@ -2,7 +2,8 @@
 
 import os
 import subprocess
-import perun.core.profile.converters as converter
+
+import perun.profile.converters as converter
 
 __author__ = 'Radim Podola'
 _SCRIPT_FILENAME = './flamegraph.pl'

@@ -7,14 +7,14 @@ import subprocess
 import tempfile
 
 import git
+import perun.logic.pcs as pcs
+import perun.logic.store as store
 import pytest
 
-import perun.core.logic.commands as commands
-import perun.core.logic.pcs as pcs
-import perun.core.logic.store as store
-import perun.core.profile.factory as perun_profile
-import perun.core.vcs as vcs
+import perun.logic.commands as commands
+import perun.profile.factory as perun_profile
 import perun.utils.streams as streams
+import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
 
@@ -103,6 +103,47 @@ class Helpers(object):
         perun_profile.store_profile_at(copied_profile, copied_filename)
         shutil.copystat(profile, copied_filename)
         return copied_filename
+
+    @staticmethod
+    def assert_invalid_cli_choice(cli_result, choice, file=None):
+        """Checks, that click correctly ended as invalid choice
+
+        Arguments:
+            cli_result(click.Result): result of the commandline interface
+            choice(str): choice that we tried
+            file(str): name of the file that should not be created (optional)
+        """
+        assert cli_result.exit_code == 2
+        assert "invalid choice: {}".format(choice) in cli_result.output
+        if file:
+            assert file not in os.listdir(os.getcwd())
+
+    @staticmethod
+    def assert_invalid_param_choice(cli_result, choice, file=None):
+        """Checks that click correctly ended with invalid choice and 1 return code
+        Arguments:
+            cli_result(click.Result): result of the commandline interface
+            choice(str): choice that we tried
+            file(str): name of the file that should not be created (optional)
+        """
+        print(cli_result.output)
+        assert cli_result.exit_code == 1
+        assert "Invalid value '{}'".format(choice) in cli_result.output
+        if file:
+            assert file not in os.listdir(os.getcwd())
+
+    @staticmethod
+    def populate_repo_with_untracked_profiles(pcs_path, untracked_profiles):
+        """
+        Populates the jobs directory in the repo by untracked profiles
+
+        Arguments:
+            pcs_path(str): path to PCS
+            untracked_profiles(list): list of untracked profiles to be added to repo
+        """
+        jobs_dir = os.path.join(pcs_path, 'jobs')
+        for valid_profile in untracked_profiles:
+            shutil.copy2(valid_profile, jobs_dir)
 
 
 @pytest.fixture(scope="session")

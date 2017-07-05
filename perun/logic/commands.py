@@ -10,17 +10,17 @@ import inspect
 import os
 import re
 
+import click
 import colorama
+import perun.logic.store as store
 import termcolor
 
-import perun.core.logic.config as perun_config
-import perun.core.logic.store as store
-import perun.core.profile.factory as profile
-import perun.core.vcs as vcs
+import perun.logic.config as perun_config
+import perun.profile.factory as profile
 import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
-from perun.core.logic.pcs import pass_pcs
+import perun.vcs as vcs
 from perun.utils.exceptions import NotPerunRepositoryException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
@@ -28,6 +28,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ID_TYPE_COLOUR
 from perun.utils.log import cprint, cprintln
+from perun.logic.pcs import pass_pcs
 
 # Init colorama for multiplatform colours
 colorama.init()
@@ -510,34 +511,54 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
     """
     # Print with padding
     profile_output_colour = 'white' if list_type == 'tracked' else 'red'
+    index_id_char = 'i' if list_type == 'tracked' else 'p'
     ending = ':\n\n' if not short else "\n"
 
     profile_numbers = calculate_profile_numbers_per_type(profile_list)
     print_profile_numbers(profile_numbers, list_type, ending)
 
     # Skip empty profile list
-    if len(profile_list) == 0 or short:
+    profile_list_len = len(profile_list)
+    profile_list_width = len(str(profile_list_len))
+    if not profile_list_len or short:
         return
 
     # Load formating string for profile
     profile_info_fmt = perun_config.lookup_key_recursively(pcs.path, 'global.profile_info_fmt')
     fmt_tokens, _ = FMT_SCANNER.scan(profile_info_fmt)
 
-    # Print header
-    print("\t", end='')
+    # Compute header length
+    header_len = profile_list_width + 3
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             limit = limit or max_lengths[attr_type] + (2 if attr_type == 'type' else 0)
-            cprint(attr_type.center(limit, ' '), profile_output_colour, HEADER_ATTRS)
+            header_len += limit
+        else:
+            header_len += len(token)
+
+    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
+    # Print header (2 is padding for id)
+    print(" ", end='')
+    cprint("id".center(profile_list_width + 2, ' '), profile_output_colour)
+    print(" ", end='')
+    for (token_type, token) in fmt_tokens:
+        if token_type == 'fmt_string':
+            attr_type, limit, _ = FMT_REGEX.match(token).groups()
+            limit = limit or max_lengths[attr_type] + (2 if attr_type == 'type' else 0)
+            token_string = attr_type.center(limit, ' ')
+            cprint(token_string, profile_output_colour, [])
         else:
             # Print the rest (non token stuff)
-            print(" "*len(token), end='')
+            cprint(token, profile_output_colour)
     print("")
-
+    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
     # Print profiles
-    for profile_info in profile_list:
-        print("\t", end='')
+    for profile_no, profile_info in enumerate(profile_list):
+        print(" ", end='')
+        cprint("{}@{}".format(profile_no, index_id_char).rjust(profile_list_width + 2, ' '),
+               profile_output_colour)
+        print(" ", end='')
         for (token_type, token) in fmt_tokens:
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
@@ -547,6 +568,26 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
             else:
                 cprint(token, profile_output_colour)
         print("")
+    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
+
+
+@pass_pcs
+@lookup_minor_version
+def get_nth_profile_of(pcs, position, minor_version):
+    """Returns the profile at nth position in the index
+
+    Arguments:
+        pcs(PCS): wrapped perun control system
+        position(int): position of the profile we are obtaining
+        minor_version(str): looked up minor version for the wrapped vcs
+    """
+    registered_profiles = get_minor_version_profiles(pcs, minor_version)
+    if 0 <= position < len(registered_profiles):
+        return registered_profiles[position].id
+    else:
+        raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
+            "{}@i".format(position), "0@i", "{}@i".format(len(registered_profiles)-1)
+        ))
 
 
 def get_minor_version_profiles(pcs, minor_version):

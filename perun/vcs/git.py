@@ -4,16 +4,16 @@ Contains concrete implementation of the function needed by perun to extract info
 with version control systems.
 """
 
-import git
-import git.exc
 import os
 
-import perun.core.logic.store as store
-import perun.utils.timestamps as timestamps
-import perun.utils.log as perun_log
+import git
+import git.exc
 
-from perun.utils.helpers import MinorVersion
+import perun.logic.store as store
+import perun.utils.log as perun_log
+import perun.utils.timestamps as timestamps
 from perun.utils.exceptions import VersionControlSystemException
+from perun.utils.helpers import MinorVersion
 
 __author__ = "Tomas Fiedor"
 

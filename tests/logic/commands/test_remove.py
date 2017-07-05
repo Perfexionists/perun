@@ -5,12 +5,12 @@ removing nonexistent profiles, etc.
 """
 
 import os
+
 import git
+import perun.logic.store as store
 import pytest
 
-import perun.core.logic.commands as commands
-import perun.core.logic.store as store
-
+import perun.logic.commands as commands
 from perun.utils.exceptions import NotPerunRepositoryException, EntryNotFoundException
 
 __author__ = 'Tomas Fiedor'

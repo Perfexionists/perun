@@ -2,7 +2,7 @@
 
 import os
 
-import perun.core.logic.runner as runner
+import perun.logic.runner as runner
 
 __author__ = 'Tomas Fiedor'
 
