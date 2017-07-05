@@ -31,7 +31,7 @@ def memstat(profile, mode, **kwargs):
        Argument MODE defines the operation with the profile.
     """
     if mode == "func" and not kwargs['function']:
-        raise click.BadParameter("Function not defined")
+        raise click.BadParameter("missing specified function for list. Use --function=<f>.")
 
     inter_func = getattr(qrs, "get_%s" % mode)
     if inter_func:
