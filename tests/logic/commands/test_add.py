@@ -36,6 +36,7 @@ def assert_before_add(helpers, path, commit, valid_profile):
         def compare_profiles(entry):
             """Helper function for looking up the profile"""
             return entry.path == valid_profile
+
         store.print_index_from_handle(index_handle)
         before_entries_count = store.read_number_of_entries_from_handle(index_handle)
         assert not helpers.exists_profile_in_index_such_that(index_handle, compare_profiles)

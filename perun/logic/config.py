@@ -42,8 +42,8 @@ def init_shared_config_at(path):
 
     shared_config = streams.safely_load_yaml_from_stream("""
 global:
-    profile_info_fmt: '[type]  [cmd]  [workload]  [collector]   ([time]) [id]'
-    minor_version_info_fmt: '[id:6] ([stats]) [desc]'
+    profile_info_fmt: "\u2503 [type] \u2503 [cmd] \u2503 [workload] \u2503 [collector]  \u2503 ([time]) \u2503 [id] \u2503"
+    minor_version_info_fmt: "[id:6] ([stats]) [desc]"
     editor: vim
     """)
 

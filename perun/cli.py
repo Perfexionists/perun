@@ -147,6 +147,23 @@ def init(dst, configure, **kwargs):
                              + (" "*4) + ".perun/local.yml\n")
 
 
+def lookup_nth_pending_filename(position):
+    """
+    Arguments:
+        position(int): position of the pending we will lookup
+
+    Returns:
+        str: pending profile at given position
+    """
+    pending = commands.get_untracked_profiles(PCS(store.locate_perun_dir_on(os.getcwd())))
+    if 0 <= position < len(pending):
+        return pending[position].id
+    else:
+        raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
+            "{}@p".format(position), '0@p', '{}@p'.format(len(pending)-1)
+        ))
+
+
 def filename_lookup_callback(ctx, param, value):
     """Callback function for looking up the profile, if it does not exist
 
@@ -158,7 +175,11 @@ def filename_lookup_callback(ctx, param, value):
     Returns:
         str: filename of the profile
     """
-    return lookup_profile_filename(value)
+    match = store.PENDING_TAG_REGEX.match(value)
+    if match:
+        return lookup_nth_pending_filename(int(match.group(1)))
+    else:
+        return lookup_profile_filename(value)
 
 
 def lookup_profile_filename(profile_name):
@@ -262,6 +283,19 @@ def profile_lookup_callback(ctx, _, value):
         ctx(click.core.Context): context
         param(click.core.Argument): param
     """
+    # 0) First check if the value is tag or not
+    index_tag_match = store.INDEX_TAG_REGEX.match(value)
+    if index_tag_match:
+        index_profile = commands.get_nth_profile_of(
+            int(index_tag_match.group(1)), ctx.params['minor']
+        )
+        return profiles.load_profile_from_file(index_profile, is_raw_profile=False)
+
+    pending_tag_match = store.PENDING_TAG_REGEX.match(value)
+    if pending_tag_match:
+        pending_profile = lookup_nth_pending_filename(int(pending_tag_match.group(1)))
+        return profiles.load_profile_from_file(pending_profile, is_raw_profile=True)
+
     # 1) Check the index, if this is registered
     profile_from_index = commands.load_profile_from_args(value, ctx.params['minor'])
     if profile_from_index:

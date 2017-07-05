@@ -9,7 +9,6 @@ import collections
 import json
 import os
 import re
-import shutil
 
 import git
 import perun.logic.store as store
@@ -54,19 +53,6 @@ def profile_pool_to_info(profile_pool):
             yield (profile_contents['header']['type'],
                    profile_contents['collector_info']['name'],
                    profile_time)
-
-
-def populate_repo_with_untracked_profiles(pcs_path, untracked_profiles):
-    """
-    Populates the jobs directory in the repo by untracked profiles
-
-    Arguments:
-        pcs_path(str): path to PCS
-        untracked_profiles(list): list of untracked profiles to be added to repo
-    """
-    jobs_dir = os.path.join(pcs_path, 'jobs')
-    for valid_profile in untracked_profiles:
-        shutil.copy2(valid_profile, jobs_dir)
 
 
 def assert_head_info(header_line, git_repo):
@@ -180,23 +166,25 @@ def assert_info(out, git_repo, stored_profiles, untracked_profiles):
     assert_tracked_overview_info(out[i], stored_profiles)
     i += 1
     if stored_profiles:
-        # Skip empty line
-        i += 2
+        # Skip empty line and horizontal line
+        i += 4
         count = 0
         profile_info = set(profile_pool_to_info(stored_profiles))
-        while out[i] != '':
+        while out[i].startswith(' '):
             assert_printed_profiles(profile_info, out[i])
             count += 1
             i += 1
+        # Skip horizontal line
+        i += 1
         assert count == len(stored_profiles)
     i += 1
     assert_untracked_overview_info(out[i], untracked_profiles)
     if untracked_profiles:
         # Skip header and empty line
-        i += 3
+        i += 5
         count = 0
         profile_info = set(profile_pool_to_info(untracked_profiles))
-        while out[i] != '':
+        while out[i].startswith(' '):
             assert_printed_profiles(profile_info, out[i])
             count += 1
             i += 1
@@ -287,12 +275,12 @@ def test_status_short_no_profiles(pcs_full, capsys):
     assert_short_info(out, git_repo, [], [])
 
 
-def test_status(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
+def test_status(helpers, pcs_full, capsys, stored_profile_pool, valid_profile_pool):
     """Test calling 'perun status' with expected behaviour
 
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
-    populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
 
     commands.status()
 
@@ -303,12 +291,12 @@ def test_status(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
     assert_info(out, git_repo, stored_profile_pool[1:], valid_profile_pool)
 
 
-def test_status_short(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
+def test_status_short(helpers, pcs_full, capsys, stored_profile_pool, valid_profile_pool):
     """Test calling 'perun status --short' with expected behaviour
 
     Expecting no errors and short display of the current status of the perun.
     """
-    populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
 
     commands.status(**{'short': True})
 

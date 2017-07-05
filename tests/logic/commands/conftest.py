@@ -132,6 +132,19 @@ class Helpers(object):
         if file:
             assert file not in os.listdir(os.getcwd())
 
+    @staticmethod
+    def populate_repo_with_untracked_profiles(pcs_path, untracked_profiles):
+        """
+        Populates the jobs directory in the repo by untracked profiles
+
+        Arguments:
+            pcs_path(str): path to PCS
+            untracked_profiles(list): list of untracked profiles to be added to repo
+        """
+        jobs_dir = os.path.join(pcs_path, 'jobs')
+        for valid_profile in untracked_profiles:
+            shutil.copy2(valid_profile, jobs_dir)
+
 
 @pytest.fixture(scope="session")
 def helpers():

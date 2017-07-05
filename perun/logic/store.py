@@ -6,6 +6,7 @@ or load and store into the directories or filenames.
 
 import binascii
 import hashlib
+import re
 import os
 import string
 import struct
@@ -21,6 +22,10 @@ from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
 from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
+
+
+INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
+PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
 
 
 def touch_file(touched_filename, times=None):
