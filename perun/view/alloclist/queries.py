@@ -1,7 +1,7 @@
 """This module implements the interpretation functions of the profile"""
 
 from decimal import Decimal
-import perun.view.memstat.pretty_output as pretty
+import perun.view.alloclist.pretty_output as pretty
 
 __author__ = 'Radim Podola'
 
@@ -165,8 +165,8 @@ def get_func(profile, function, check_trace, **_):
     return output
 
 
-def get_list(profile, from_time, to_time, **_):
-    """ Get allocations list
+def get_all(profile, from_time, to_time, **_):
+    """ Get allocations list of everything
 
         Parse the profile records, cut the specified timeline, and also modify the output to be
         pretty to write into console. Only number of top records are processed.
