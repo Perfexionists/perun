@@ -25,7 +25,8 @@ import perun.utils.streams as streams
 import perun.vcs as vcs
 import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
-    NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException
+    NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
+    MissingConfigSectionException, InvalidConfigOperationException
 
 __author__ = 'Tomas Fiedor'
 
@@ -43,14 +44,70 @@ def cli(verbose):
         perun_log.VERBOSITY = verbose
 
 
+def validate_key(ctx, _, value):
+    """Validates the value of the key for the different modes.
+
+    For get and set <key> is required, while for edit it has no effect.
+
+    Arguments:
+        ctx(click.Context): called context of the command line
+        _(click.Option): called option (key in this case)
+        value(object): assigned value to the <key> argument
+
+    Returns:
+        object: value for the <key> argument
+    """
+    operation = ctx.params['operation']
+    if operation == 'edit' and value:
+        perun_log.warn('setting <key> argument has no effect in edit config operation')
+    elif operation in ('get', 'set') and not value:
+        raise click.BadParameter("missing <key> argument for {} config operation".format(
+            operation
+        ))
+
+    return value
+
+
+def validate_value(ctx, _, value):
+    """Validates the value parameter for different modes.
+
+    Value is required for set operation, while in get and set has no effect.
+
+    Arguments:
+        ctx(click.Context): called context of the command line
+        _(click.Option): called option (in this case value)
+        value(object): assigned value to the <value> argument
+
+    Returns:
+        object: value for the <key> argument
+    """
+    operation = ctx.params['operation']
+    if operation in ('edit', 'get') and value:
+        perun_log.warn('setting <value> argument has no effect in {} config operation'.format(
+            operation
+        ))
+    elif operation == 'set' and not value:
+        raise click.BadParameter("missing <value> argument for set config operation")
+
+    return value
+
+
 @cli.command()
-@click.argument('key', required=True)
-@click.argument('value', required=False)
-@click.option('--get', '-g', is_flag=True,
-              help="get the value of the key")
-@click.option('--set', '-s', is_flag=True,
-              help="set the value of the key")
-def config(key, value, **kwargs):
+@click.argument('key', required=False, metavar='<key>', callback=validate_key)
+@click.argument('value', required=False, metavar='<value>', callback=validate_value)
+@click.option('--get', '-g', 'operation', is_eager=True, flag_value='get',
+              help="Returns the value of the provided <key>.")
+@click.option('--set', '-s', 'operation', is_eager=True, flag_value='set',
+              help="Sets the value of the <key> to <value> in the configuration file.")
+@click.option('--edit', '-e', 'operation', is_eager=True, flag_value='edit',
+              help="Edits the configuration file in the user defined editor.")
+@click.option('--local', '-l', 'store_type', flag_value='local',
+              help='Sets the local config as working config (.perun/local.yml).')
+@click.option('--shared', '-h', 'store_type', flag_value='shared',
+              help='Sets the shared config as working config (shared.yml).')
+@click.option('--nearest', '-n', 'store_type', flag_value='recursive', default=True,
+              help='Recursively discover the nearest config (differs for modes).')
+def config(**kwargs):
     """Get and set the options of local and global configurations.
 
     For each perun repository, there are two types of config:
@@ -73,7 +130,10 @@ def config(key, value, **kwargs):
             Retrieves the type of the wrapped repository of the local perun.
     """
     perun_log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
-    commands.config(key, value, **kwargs)
+    try:
+        commands.config(**kwargs)
+    except (MissingConfigSectionException, InvalidConfigOperationException) as mcs_err:
+        perun_log.error(str(mcs_err))
 
 
 def configure_local_perun(perun_path):
@@ -84,7 +144,7 @@ def configure_local_perun(perun_path):
     """
     pcs = PCS(perun_path)
     editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
-    local_config_file = os.path.join(pcs.path, 'local.yml')
+    local_config_file = pcs.get_config_file('local')
     try:
         utils.run_external_command([editor, local_config_file])
     except ValueError as v_exception:
@@ -93,7 +153,7 @@ def configure_local_perun(perun_path):
 
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
-@click.option('--vcs-type', metavar='<type>', default='pvcs',
+@click.option('--vcs-type', metavar='<type>', default='git',
               type=click.Choice(utils.get_supported_module_names(vcs, '_init')),
               help="Apart of perun structure, a supported version control system can be wrapped"
                    " and initialized as well.")
@@ -128,23 +188,22 @@ def init(dst, configure, **kwargs):
 
     try:
         commands.init(dst, **kwargs)
+
+        if configure:
+            # Run the interactive configuration of the local perun repository (populating .yml)
+            configure_local_perun(dst)
+        else:
+            perun_log.quiet_info("\nIn order to automatically run jobs configure the matrix at:\n"
+                                 "\n"
+                                 + (" "*4) + ".perun/local.yml\n")
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error(str(unsup_module_exp))
     except PermissionError as perm_exp:
-        # If this is problem with writing to shared.yml, say it is error and ask for sudo
-        if 'shared.yml' in str(perm_exp):
-            perun_log.error("writing to shared config 'shared.yml' requires root permissions")
-        # Else reraise as who knows what kind of mistake is this
-        else:
-            raise perm_exp
-
-    if configure:
-        # Run the interactive configuration of the local perun repository (populating .yml)
-        configure_local_perun(dst)
-    else:
-        perun_log.quiet_info("\nIn order to automatically run the jobs configure the matrix at:\n"
-                             "\n"
-                             + (" "*4) + ".perun/local.yml\n")
+        assert 'shared.yml' in str(perm_exp)
+        perun_log.error("writing to shared config 'shared.yml' requires root permissions")
+    except MissingConfigSectionException:
+        perun_log.error("cannot launch default editor for configuration.\n"
+                        "Please set 'global.editor' key to a valid text editor (e.g. vim).")
 
 
 def lookup_nth_pending_filename(position):
@@ -281,7 +340,8 @@ def profile_lookup_callback(ctx, _, value):
     """
     Arguments:
         ctx(click.core.Context): context
-        param(click.core.Argument): param
+        _(click.core.Argument): param
+        value(str): value of the profile parameter
     """
     # 0) First check if the value is tag or not
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
@@ -368,7 +428,8 @@ def status(**kwargs):
     perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
     try:
         commands.status(**kwargs)
-    except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
+    except (NotPerunRepositoryException, UnsupportedModuleException,
+            MissingConfigSectionException) as exception:
         perun_log.error(str(exception))
 
 

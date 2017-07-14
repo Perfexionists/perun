@@ -31,10 +31,7 @@ Config = collections.namedtuple('Config', ['type', 'path', 'data'])
 def init_shared_config_at(path):
     """
     Arguments:
-        path(str): path where the empty shared config will be initialized
-
-    Returns:
-        bool: whether the config file was successfully created
+        path(str): path where the empty global config will be initialized
     """
     if not path.endswith('shared.yml') and not path.endswith('shared.yaml'):
         path = os.path.join(path, 'shared.yml')
@@ -48,7 +45,6 @@ global:
     """)
 
     write_config_file(shared_config, path)
-    return True
 
 
 def init_local_config_at(path, wrapped_vcs):
@@ -56,9 +52,6 @@ def init_local_config_at(path, wrapped_vcs):
     Arguments:
         path(str): path where the empty shared config will be initialized
         wrapped_vcs(dict): dictionary with wrapped vcs of type {'vcs': {'type', 'url'}}
-
-    Returns:
-        bool: whether the config file was successfully created
     """
     if not path.endswith('local.yml') and not path.endswith('local.yaml'):
         path = os.path.join(path, 'local.yml')
@@ -102,7 +95,6 @@ vcs:
     """.format(wrapped_vcs['vcs']['type'], wrapped_vcs['vcs']['url']))
 
     write_config_file(local_config, path)
-    return True
 
 
 def init_config_at(path, config_type):
@@ -254,26 +246,49 @@ def load_config(config_dir, config_type):
     """
     config_file = os.sep.join([config_dir, ".".join([config_type, 'yml'])])
 
-    if not os.path.exists(config_file):
-        if not init_config_at(config_file, config_type):
-            perun_log.error("Could not initialize {} config at {}".format(
-                config_type,
-                config_dir
-            ))
+    try:
+        if not os.path.exists(config_file):
+            init_config_at(config_file, config_type)
 
-    return Config(config_type, config_file, read_config_file(config_file))
+        return Config(config_type, config_file, read_config_file(config_file))
+    except IOError as io_error:
+        perun_log.error("error initializing {} config: {}".format(
+            config_type, str(io_error)
+        ))
+
+
+def lookup_shared_config_dir():
+    """
+    Returns:
+        str: dir, where the shared config will be stored
+    """
+    environment_dir = os.environ.get('PERUN_CONFIG_DIR')
+    if environment_dir:
+        return environment_dir
+
+    home_directory = os.path.expanduser("~")
+
+    if sys.platform == 'win32':
+        perun_config_dir = os.path.join(home_directory, 'AppData', 'Local', 'perun')
+    elif sys.platform == 'linux':
+        perun_config_dir = os.path.join(home_directory, '.config', 'perun')
+    else:
+        perun_log.error("currently unsupported platform: ".format(sys.platform))
+
+    store.touch_dir_range(home_directory, perun_config_dir)
+    return perun_config_dir
 
 
 @decorators.singleton
 def shared():
     """
-    Returns config corresponding to the global configuration data, i.e.
+    Returns config corresponding to the shared configuration data, i.e.
     such that is shared by all of the perun locations.
 
     Returns:
-        config: returns global config file
+        config: returns shared config file
     """
-    shared_config_dir = os.path.dirname(os.path.realpath(__file__))
+    shared_config_dir = lookup_shared_config_dir()
     return load_config(shared_config_dir, 'shared')
 
 
@@ -307,7 +322,4 @@ def lookup_key_recursively(path, key):
     try:
         return get_key_from_config(local(path), key)
     except exceptions.MissingConfigSectionException:
-        try:
-            return get_key_from_config(shared(), key)
-        except exceptions.MissingConfigSectionException as missing_section_exception:
-            perun_log.error(str(missing_section_exception))
+        return get_key_from_config(shared(), key)

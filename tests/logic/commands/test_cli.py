@@ -173,3 +173,28 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool):
     # Try incorrect index tag
     result = runner.invoke(cli.show, ['666@i', 'raw'])
     assert result.exit_code == 2
+
+
+def test_config(pcs_full):
+    """Test running config
+
+    Expecting no errors, everything shown as it should be
+    """
+    runner = CliRunner()
+
+    # OK usage
+    result = runner.invoke(cli.config, ['--local', '--get', 'vcs.type'])
+    assert result.exit_code == 0
+
+    result = runner.invoke(cli.config, ['--local', '--set', 'vcs.remote', 'url'])
+    assert result.exit_code == 0
+
+    # Error cli usage
+    result = runner.invoke(cli.config, ['--local', '--get'])
+    assert result.exit_code == 2
+
+    result = runner.invoke(cli.config, ['--local', '--get', 'bogus.key'])
+    assert result.exit_code == 1
+
+    result = runner.invoke(cli.config, ['--local', '--set', 'key'])
+    assert result.exit_code == 2

@@ -54,6 +54,22 @@ def touch_dir(touched_dir):
         os.mkdir(touched_dir)
 
 
+def touch_dir_range(touched_dir_start, touched_dir_end):
+    """Iterates through the range of the subdirs between start and end touching each one of the dir
+
+    E.g. for the following:
+    touched_dir_start = '/a/b', touched_dir_end = '/a/b/c/d/e'
+    following will be touched: /a/b, /a/b/c, ..., /a/b/c/d/e
+
+    Arguments:
+        touched_dir_start(str): base case of the touched dirs
+        touched_dir_end(str): end case of the touched dirs
+    """
+    for subdir in path_to_subpaths(touched_dir_end):
+        if subdir.startswith(touched_dir_start):
+            touch_dir(subdir)
+
+
 def path_to_subpaths(path):
     """Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
 
@@ -66,7 +82,6 @@ def path_to_subpaths(path):
     Returns:
         list: list of subpaths
     """
-    assert os.path.isdir(path)
     components = path.split(os.sep)
     return [os.sep + components[0]] + \
            [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]

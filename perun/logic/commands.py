@@ -17,11 +17,12 @@ import termcolor
 
 import perun.logic.config as perun_config
 import perun.profile.factory as profile
-import perun.utils.decorators as decorators
+import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
-from perun.utils.exceptions import NotPerunRepositoryException
+from perun.utils.exceptions import NotPerunRepositoryException, InvalidConfigOperationException, \
+    ExternalEditorErrorException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
@@ -76,57 +77,44 @@ def lookup_minor_version(func):
     return wrapper
 
 
-def is_valid_config_key(key):
-    """Key is valid if it starts either with local. or global.
-
-    Arguments:
-        key(str): key representing the string
-
-    Returns:
-        bool: true if the key is valid config key
-    """
-    return key.startswith('local.') or key.startswith('global.')
-
-
-def proper_combination_is_set(kwargs):
-    """Checks that only one command (--get or --set) is given
-
-    Arguments:
-        kwargs(dict): dictionary of key arguments.
-
-    Returns:
-        bool: true if proper combination of arguments is set for configuration
-    """
-    return kwargs['get'] != kwargs['set'] and any([kwargs['get'], kwargs['set']])
-
-
 @pass_pcs
-@decorators.validate_arguments(['key'], is_valid_config_key)
-@decorators.validate_arguments(['kwargs'], proper_combination_is_set)
-def config(pcs, key, value, **kwargs):
+def config(pcs, store_type, operation, key=None, value=None, **kwargs):
     """Updates the configuration file @p config of the @p pcs perun file
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
+        store_type(str): type of the store (local, shared, or recursive)
+        operation(str): type of the operation over the (key, value) pair (get, set, or edit)
         key(str): key that is looked up or stored in config
         value(str): value we are setting to config
         kwargs(dict): dictionary of keyword arguments
+
+    Raises:
+        ExternalEditorErrorException: raised if there are any problems during invoking of external
+            editor during the 'edit' operation
     """
-    perun_log.msg_to_stdout("Running inner 'perun config' with {}, {}, {}, {}".format(
-        pcs, key, value, kwargs
-    ), 2)
+    config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
 
-    config_type, *sections = key.split('.')
-    key = ".".join(sections)
-
-    config_store = pcs.local_config() if config_type == 'local' else pcs.global_config()
-
-    if kwargs['get']:
-        value = perun_config.get_key_from_config(config_store, key)
+    if operation == 'get' and key:
+        if store_type == 'recursive':
+            value = perun_config.lookup_key_recursively(pcs.get_config_dir('local'), key)
+        else:
+            value = perun_config.get_key_from_config(config_store, key)
         print("{}: {}".format(key, value))
-    elif kwargs['set']:
+    elif operation == 'set' and key and value:
         perun_config.set_key_at_config(config_store, key, value)
         print("Value '{1}' set for key '{0}'".format(key, value))
+    # Edit operation opens the configuration in the external editor
+    elif operation == 'edit':
+        # Lookup the editor in the config and run it as external command
+        editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
+        config_file = pcs.get_config_file(store_type)
+        try:
+            utils.run_external_command([editor, config_file])
+        except Exception as inner_exception:
+            raise ExternalEditorErrorException(editor, str(inner_exception))
+    else:
+        raise InvalidConfigOperationException(store_type, operation, key, value)
 
 
 def init_perun_at(perun_path, init_custom_vcs, is_reinit, vcs_config):
@@ -202,10 +190,6 @@ def init(dst, **kwargs):
         is_pcs_reinitialized = False
 
     init_perun_at(dst, kwargs['vcs_type'] == 'pvcs', is_pcs_reinitialized, vcs_config)
-
-    # Register new performance control system in config
-    global_config = perun_config.shared()
-    perun_config.append_key_at_config(global_config, 'pcs', {'dir': dst})
 
 
 @pass_pcs
