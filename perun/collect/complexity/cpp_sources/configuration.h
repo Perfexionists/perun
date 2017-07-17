@@ -38,8 +38,9 @@ public:
     // Unordered map for function configuration storage, function pointer used as a key.
     std::unordered_map<void *, Config_details> func_config;
     const unsigned long default_instr_data_init_len = 20000;    // Default instrumentation record storage capacity
-    unsigned long instr_data_init_len;                          // Initial storage capacity for instrumentation records
     std::string trace_file_name;                                // Trace log file name
+    unsigned long instr_data_init_len;                          // Initial storage capacity for instrumentation records
+    bool use_direct_file_output;                                // Direct output or saving data
 
     // Custom exception class for reporting a missing configuration file
     class Conf_file_missing_exception : public std::exception {};
@@ -71,13 +72,14 @@ public:
 
 private:
     // Configuration sections parsing status (false - not yet parsed, true - already parsed)
-    // file-name ; storage-init-size ; runtime-filter ; sampling
-    typedef std::array<bool, 4> parsed_info;
+    // internal_data_filename ; internal_storage_size ; internal_direct_output ; runtime_filter ; sampling
+    typedef std::array<bool, 5> parsed_info;
     // Convenience sections access constants
-    const unsigned int section_name      = 0;                   // file-name
-    const unsigned int section_storage   = 1;                   // storage-init-size
-    const unsigned int section_filter    = 2;                   // runtime-filter
-    const unsigned int section_sampling  = 3;                   // sampling
+    const unsigned int section_name      = 0;                   // internal_data_filename
+    const unsigned int section_storage   = 1;                   // internal_storage_size
+    const unsigned int section_output    = 2;                   // internal_direct_output
+    const unsigned int section_filter    = 3;                   // runtime-filter
+    const unsigned int section_sampling  = 4;                   // sampling
 
     std::string file_contents;                                  // Buffered configuration file content
     parsed_info configuration_parsed;                           // Parsing status
@@ -90,6 +92,7 @@ private:
         Magic,              // Magic code - CIRC
         Text_value,         // Textual value
         Number_value,       // Decimal number value
+        Bool_value,         // Boolean value
         Op_colon,           // Operator :
         Op_equals,          // Operator =
         Br_curly_begin,     // Brace type {
@@ -105,7 +108,8 @@ private:
         Init,               // Initial automaton state
         Text,               // Textual value state
         Number,             // Number value state
-        Magic               // Magic code state
+        Magic,              // Magic code state
+        Bool                // Boolean value state
     };
 
     // Method loads the configuration file contents into the file_contents
@@ -177,8 +181,8 @@ private:
     //  -- Conf_file_syntax_exception: in case of invalid configuration syntax
     void Parse_init();
 
-    // Method parses the file-name configuration sequence consisting of
-    // 'file-name' : 'logfile-name' tokens.
+    // Method parses the internal_data_filename configuration sequence consisting of
+    // 'internal_data_filename' : 'logfile-name' tokens.
     // ----------------------------------------------------------------
     // Arguments:
     //  -- None
@@ -188,8 +192,8 @@ private:
     //  -- Conf_file_syntax_exception: in case of invalid configuration syntax
     void Parse_file_name();
 
-    // Method parses the storage-init-size configuration sequence
-    // consisting of 'storage-init-size' : number_value tokens and
+    // Method parses the internal_storage_size configuration sequence
+    // consisting of 'internal_storage_size' : number_value tokens and
     // converts the size to a numeric type.
     // ----------------------------------------------------------------
     // Arguments:
@@ -201,6 +205,19 @@ private:
     //  -- invalid_argument:           if the conversion to numeric type cannot be performed
     //  -- out_of_range:               value is out of the representable range of numeric type
     void Parse_storage_size();
+
+    // Method parses the internal_direct_output configuration sequence
+    // consisting of 'internal_direct_output' : bool_value tokens.
+    // ----------------------------------------------------------------
+    // Arguments:
+    //  -- None
+    // Returns:
+    //  -- void
+    // Throws:
+    //  -- Conf_file_syntax_exception: in case of invalid configuration syntax
+    //  -- invalid_argument:           if the conversion to numeric type cannot be performed
+    //  -- out_of_range:               value is out of the representable range of numeric type
+    void Parse_direct_output();
 
     // Method parses the runtime-filter configuration consisting of
     // filtered addresses.

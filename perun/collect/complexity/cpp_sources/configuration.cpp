@@ -3,7 +3,7 @@
 #include "configuration.h"
 
 
-Configuration::Configuration() : instr_data_init_len{default_instr_data_init_len}, trace_file_name("trace.log")
+Configuration::Configuration() : trace_file_name("trace.log"), instr_data_init_len{default_instr_data_init_len}
 {
     configuration_parsed.fill(false);
 }
@@ -24,15 +24,19 @@ int Configuration::Parse() {
         // Basically if anything goes wrong then exception is thrown and loop breaks
         while (1) {
             Test_next_token_type(Token_t::Text_value, tok_val);
-            if (tok_val == "\"file-name\"") {
+            if (tok_val == "\"internal_data_filename\"") {
                 // File name section
                 Already_parsed_check(section_name);
                 Parse_file_name();
-            } else if (tok_val == "\"init-storage-size\"") {
+            } else if (tok_val == "\"internal_storage_size\"") {
                 // Storage size section
                 Already_parsed_check(section_storage);
                 Parse_storage_size();
-            } else if (tok_val == "\"runtime-filter\"") {
+            } else if (tok_val == "\"internal_direct_output\"") {
+                // Direct output section
+                Already_parsed_check(section_output);
+                Parse_direct_output();
+            } else if (tok_val == "\"runtime_filter\"") {
                 // Filter section
                 Already_parsed_check(section_filter);
                 Parse_filter();
@@ -127,6 +131,9 @@ bool Configuration::Next_token(Token_t &type, std::string &value)
             } else if(isdigit(c)) {
                 FSM_token = FSM_token_states::Number;
                 type = Token_t::Number_value;
+            } else if(c == 'f' || c == 't') {
+                FSM_token = FSM_token_states::Bool;
+                type = Token_t::Bool_value;
             } else {
                 // Invalid character, error
                 throw Conf_file_syntax_exception();
@@ -146,11 +153,21 @@ bool Configuration::Next_token(Token_t &type, std::string &value)
                 position--;
                 return true;
             }
-        } else {
+        } else if(FSM_token == FSM_token_states::Magic) {
             // Magic code token
             if(c == 'C' || c == 'I' || c == 'R') {
                 value += c;
             } else if(value == "CIRC") {
+                position--;
+                return true;
+            } else {
+                throw Conf_file_syntax_exception();
+            }
+        } else {
+            // Bool token
+            if(c == 'a' || c == 'l' || c == 's' || c == 'e' || c == 'r' || c == 'u') {
+                value += c;
+            } else if(value == "false" || value == "true") {
                 position--;
                 return true;
             } else {
@@ -218,6 +235,19 @@ void Configuration::Parse_storage_size() {
     Test_next_token_type(Token_t::Number_value, tok_val);
     // Convert to a unsigned long
     instr_data_init_len = std::stoul(tok_val);
+}
+
+void Configuration::Parse_direct_output() {
+    std::string tok_val;
+
+    Test_next_token_type(Token_t::Op_colon, tok_val);
+    Test_next_token_type(Token_t::Bool_value, tok_val);
+    //Convert to a bool
+    if(tok_val == "false") {
+        use_direct_file_output = false;
+    } else {
+        use_direct_file_output = true;
+    }
 }
 
 void Configuration::Parse_filter() {

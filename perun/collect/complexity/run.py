@@ -35,6 +35,9 @@ _collector_subtypes = {
 # The time conversion constant
 _MICRO_TO_SECONDS = 1000000.0
 
+_DEFAULT_FILENAME = 'trace.log'
+_DEFAULT_STORAGE_SIZE = 20000
+
 
 def before(**kwargs):
     """ Builds, links and configures the complexity collector executable
@@ -107,7 +110,7 @@ def after(**kwargs):
     # Get the trace log path
     print('Starting the post-processing phase...')
     pos = kwargs['cmd'].rfind('/')
-    path = kwargs['cmd'][:pos + 1] + kwargs['file-name']
+    path = kwargs['cmd'][:pos + 1] + kwargs['internal_data_filename']
     address_map = symbols.extract_symbol_address_map(kwargs['cmd'])
 
     resources, call_stack = [], []
@@ -198,7 +201,23 @@ def _process_file_record(record, call_stack, resources, address_map):
 
 
 @click.command()
+@click.option('--target-dir', '-t', type=click.Path(exists=True, resolve_path=True), required=True,
+              help='Target directory path for binary and build data.')
+@click.option('--files', '-f', type=click.Path(exists=True, resolve_path=True), multiple=True, required=True,
+              help='List of source files used to build the binary.')
+@click.option('--rules', '-r', type=str, multiple=True,
+              help='List of functions to profile.')
+@click.option('--internal-data-filename', '-if', type=str, default=_DEFAULT_FILENAME,
+              help='Internal output profiling file name.')
+@click.option('--internal-storage-size', '-is', type=int, default=_DEFAULT_STORAGE_SIZE,
+              help='Initial size of internal profiling data storage.')
+@click.option('--internal-direct-output', '-id', is_flag=True, default=False,
+              help='Profilig data are stored into file directly instead of being saved into data structure'
+                   'and printed later.')
+@click.option('--sampling', '-s', type=(str, int), multiple=True,
+              help='List of sampling configuration in form <function value>.')
 @click.pass_context
-def complexity(ctx):
+def complexity(ctx, **kwargs):
     """Runs the complexity collector, collecting running times for profiles depending on size"""
-    runner.run_collector_from_cli_context(ctx, 'complexity', {})
+    print(kwargs)
+    runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)

@@ -97,14 +97,15 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
         sample_map = _config_create_sample(include_list, config['sampling'])
     filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter, sample_map)
 
-    # Append the file name configuration
-    conf = {'file-name': config['file-name']}
-    # Append the storage size configuration
-    if 'init-storage-size' in config:
-        conf['init-storage-size'] = config['init-storage-size']
+    # Append the internal configuration
+    conf = {
+        'internal_data_filename': config['internal_data_filename'],
+        'internal_storage_size': config['internal_storage_size'],
+        'internal_direct_output': config['internal_direct_output']
+    }
     # Append the runtime filter configuration
     if filter_list:
-        conf['runtime-filter'] = filter_list
+        conf['runtime_filter'] = filter_list
     # Append the sampling configuration
     if sample_dict:
         conf['sampling'] = []
@@ -130,10 +131,10 @@ def _config_create_sample(include_list, sample_list):
     # Try to pair the sample configuration and include list to create sample map 'mangled name: sample value'
     for sample in sample_list:
         # Unify the sampling function name to match the names in include list
-        sample_name = symbols.unify_sample_func(sample['func'])
+        sample_name = symbols.unify_sample_func(sample[0])
         for include_func in include_list:
             if include_func.rule == sample_name:
                 # Sampling name and include list name match
-                sample_map[include_func.mangled_name] = sample['sample']
+                sample_map[include_func.mangled_name] = sample[1]
                 break
     return sample_map
