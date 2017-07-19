@@ -37,10 +37,12 @@ public:
 
     // Unordered map for function configuration storage, function pointer used as a key.
     std::unordered_map<void *, Config_details> func_config;
-    const unsigned long default_instr_data_init_len = 20000;    // Default instrumentation record storage capacity
+
     std::string trace_file_name;                                // Trace log file name
     unsigned long instr_data_init_len;                          // Initial storage capacity for instrumentation records
     bool use_direct_file_output;                                // Direct output or saving data
+
+    const unsigned long default_instr_data_init_len = 20000;    // Default instrumentation record storage capacity
 
     // Custom exception class for reporting a missing configuration file
     class Conf_file_missing_exception : public std::exception {};

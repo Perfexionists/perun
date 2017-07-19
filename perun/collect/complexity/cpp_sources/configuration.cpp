@@ -2,8 +2,8 @@
 #include <sstream>
 #include "configuration.h"
 
-
-Configuration::Configuration() : trace_file_name("trace.log"), instr_data_init_len{default_instr_data_init_len}
+Configuration::Configuration() : trace_file_name("trace.log"), instr_data_init_len{default_instr_data_init_len},
+                                 use_direct_file_output(false)
 {
     configuration_parsed.fill(false);
 }

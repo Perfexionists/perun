@@ -13,6 +13,11 @@ import os
 import json
 import perun.collect.complexity.symbols as symbols
 
+# Default internal parameters
+DEFAULT_DATA_FILENAME = 'trace.log'
+DEFAULT_STORAGE_SIZE = 20000
+DEFAULT_DIRECT_OUTPUT = False
+
 
 def create_runtime_config(executable_path, runtime_filter, include_list, configuration):
     """ Creates the config.conf configuration
@@ -97,6 +102,14 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
         sample_map = _config_create_sample(include_list, config['sampling'])
     filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter, sample_map)
 
+    # Handle the possibly missing internal configuration details
+    if 'internal_data_filename' not in config:
+        config['internal_data_filename'] = DEFAULT_DATA_FILENAME
+    if 'internal_storage_size' not in config:
+        config['internal_storage_size'] = DEFAULT_STORAGE_SIZE
+    if 'internal_direct_output' not in config:
+        config['internal_direct_output'] = DEFAULT_DIRECT_OUTPUT
+
     # Append the internal configuration
     conf = {
         'internal_data_filename': config['internal_data_filename'],
@@ -129,7 +142,10 @@ def _config_create_sample(include_list, sample_list):
     """
     sample_map = dict()
     # Try to pair the sample configuration and include list to create sample map 'mangled name: sample value'
+    # Fixme: tmp hack to handle CommentedMap / tuple input, needs proper solution later (might be larger scale problem?)
     for sample in sample_list:
+        if 'func' in sample:
+            sample = (sample['func'], sample['sample'])
         # Unify the sampling function name to match the names in include list
         sample_name = symbols.unify_sample_func(sample[0])
         for include_func in include_list:

@@ -35,9 +35,6 @@ _collector_subtypes = {
 # The time conversion constant
 _MICRO_TO_SECONDS = 1000000.0
 
-_DEFAULT_FILENAME = 'trace.log'
-_DEFAULT_STORAGE_SIZE = 20000
-
 
 def before(**kwargs):
     """ Builds, links and configures the complexity collector executable
@@ -207,11 +204,11 @@ def _process_file_record(record, call_stack, resources, address_map):
               help='List of source files used to build the binary.')
 @click.option('--rules', '-r', type=str, multiple=True,
               help='List of functions to profile.')
-@click.option('--internal-data-filename', '-if', type=str, default=_DEFAULT_FILENAME,
+@click.option('--internal-data-filename', '-if', type=str, default=configurator.DEFAULT_DATA_FILENAME,
               help='Internal output profiling file name.')
-@click.option('--internal-storage-size', '-is', type=int, default=_DEFAULT_STORAGE_SIZE,
+@click.option('--internal-storage-size', '-is', type=int, default=configurator.DEFAULT_STORAGE_SIZE,
               help='Initial size of internal profiling data storage.')
-@click.option('--internal-direct-output', '-id', is_flag=True, default=False,
+@click.option('--internal-direct-output', '-id', is_flag=True, default=configurator.DEFAULT_DIRECT_OUTPUT,
               help='Profilig data are stored into file directly instead of being saved into data structure'
                    'and printed later.')
 @click.option('--sampling', '-s', type=(str, int), multiple=True,
@@ -219,5 +216,4 @@ def _process_file_record(record, call_stack, resources, address_map):
 @click.pass_context
 def complexity(ctx, **kwargs):
     """Runs the complexity collector, collecting running times for profiles depending on size"""
-    print(kwargs)
     runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)
