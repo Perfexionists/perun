@@ -72,7 +72,7 @@ int Configuration::Parse() {
 void Configuration::Load_file() {
     // Open the config file
     std::ifstream config_file(config_file_name, std::ios::in);
-    if(!config_file) {
+    if(config_file.is_open() == false) {
         // Configuration file is missing
         throw Conf_file_missing_exception();
     }
