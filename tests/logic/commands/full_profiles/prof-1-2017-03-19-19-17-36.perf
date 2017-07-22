@@ -1,0 +1,42 @@
+{
+  "header": {
+    "type": "time",
+    "cmd": "echo",
+    "params": "-e",
+    "units": {
+      "time": "s"
+    },
+    "workload": "world"
+  },
+  "collector_info": {
+    "params": "",
+    "name": "time"
+  },
+  "postprocessors": [
+    {
+      "params": "",
+      "name": "filter"
+    },
+    {
+      "params": "",
+      "name": "normalizer"
+    }
+  ],
+  "global": {
+    "resources": [
+      {
+        "amount": 1.0,
+        "uid": "sys"
+      },
+      {
+        "amount": 1.0,
+        "uid": "real"
+      },
+      {
+        "amount": 1.0,
+        "uid": "user"
+      }
+    ],
+    "timestamp": "0.00"
+  }
+}

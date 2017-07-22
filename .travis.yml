@@ -1,0 +1,37 @@
+language: python
+
+python:
+    - "3.4"
+
+cache: pip 
+
+install:
+    - pip install Cython
+    - pip install -r requirements.txt
+    - pip install -U pytest pytest-cov codecov
+    - make install
+
+before_script:
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
+    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90
+
+script:
+    # Just try that it was installed correctly
+    - perun --help
+    - make test
+    - codecov
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.9
+      - gcc-4.9
+      - time
+      - libunwind8-dev
+
+os:
+  - linux
+
+dist: trusty

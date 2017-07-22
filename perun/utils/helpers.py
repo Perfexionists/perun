@@ -1,9 +1,9 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
 import collections
-import click
-
 from enum import Enum
+
+import click
 
 __author__ = 'Tomas Fiedor'
 
@@ -44,11 +44,16 @@ PROFILE_TYPE_COLOURS = {
     'memory': 'white',
     PROFILE_MALFORMED: 'red'
 }
+PROFILE_DELIMITER = '|'
+ID_TYPE_COLOUR = 'grey'
 
 HEADER_ATTRS = ['underline']
 HEADER_COMMIT_COLOUR = 'green'
-HEADER_INFO_COLOUR = 'grey'
-HEADER_SLASH_COLOUR = 'grey'
+HEADER_INFO_COLOUR = 'white'
+HEADER_SLASH_COLOUR = 'white'
+
+DESC_COMMIT_COLOUR = 'white'
+DESC_COMMIT_ATTRS = ['bold', 'dark']
 
 # Raw output specific thing
 RAW_KEY_COLOUR = 'magenta'
@@ -56,9 +61,10 @@ RAW_ITEM_COLOUR = 'yellow'
 RAW_ATTRS = []
 
 # Job specific
-Job = collections.namedtuple("Job", "collector postprocessors bin workload args")
+Job = collections.namedtuple("Job", "collector postprocessors cmd workload args")
 Unit = collections.namedtuple("Unit", "name params")
-COLLECT_PHASE_BIN = 'blue'
+
+COLLECT_PHASE_CMD = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'
 COLLECT_PHASE_POSTPROCESS = 'yellow'
@@ -71,10 +77,12 @@ pass_profile = click.make_pass_decorator(dict)
 
 
 class CollectStatus(Enum):
+    """Simple enumeration for statuses of the collectors"""
     OK = 0
     ERROR = 1
 
 
 class PostprocessStatus(Enum):
+    """Simple enumeration for statuses of the postprocessors"""
     OK = 0
     ERROR = 1

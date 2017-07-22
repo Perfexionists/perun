@@ -6,7 +6,7 @@
     ],
     "type": "mixed",
     "workload": "/mnt/g/some.txt",
-    "bin": "target"
+    "cmd": "target"
   },
   "collector_info": {
     "params": {

@@ -9,6 +9,7 @@
 #define _GNU_SOURCE
 #include <dlfcn.h> //dlsym()
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h> //clock()
 #include <stdbool.h>
 
@@ -47,6 +48,10 @@ void init_log_file(){
    
    if(!logFile)
       logFile = fopen(LOG_FILE_NAME, "w");
+      if(logFile == NULL){
+         fprintf(stderr, "error: fopen()\n");
+         exit(EXIT_FAILURE);
+      }
    
    profiling = false;
 }
@@ -72,7 +77,10 @@ void *malloc(size_t size){
    static void *(*real_malloc)(size_t) = NULL;
    if(!real_malloc){
       real_malloc = dlsym(RTLD_NEXT, "malloc");
-
+      if(real_malloc == NULL){
+         fprintf(stderr, "error: dlsym() malloc\n");
+         exit(EXIT_FAILURE);
+      }
       init_log_file();
    }
 
@@ -91,7 +99,10 @@ void free(void *ptr){
    static void(*real_free)(void*) = NULL;
    if(!real_free){
       real_free = dlsym(RTLD_NEXT, "free");
-
+      if(real_free == NULL){
+         fprintf(stderr, "error: dlsym() free\n");
+         exit(EXIT_FAILURE);
+      }
       init_log_file();
    }
 
@@ -104,19 +115,25 @@ void free(void *ptr){
 }
 
 void *realloc(void *ptr, size_t size){
-   
+
+   void *old_ptr = NULL;
    static void *(*real_realloc)(void*, size_t) = NULL;
    if(!real_realloc){
       real_realloc = dlsym(RTLD_NEXT, "realloc");
-
+      if(real_realloc == NULL){
+         fprintf(stderr, "error: dlsym() realloc\n");
+         exit(EXIT_FAILURE);
+      }
       init_log_file();
    }
-
+   old_ptr = ptr;
    void *nptr = real_realloc(ptr, size);
 
-   if(!profiling && ptr != NULL){
+   if(!profiling && nptr != NULL){
       
       ad_log("realloc", size, nptr);
+
+      ad_log("free", 0, old_ptr);
    }
 
    return nptr;
@@ -127,7 +144,10 @@ void *calloc(size_t nmemb, size_t size){
    static void *(*real_calloc)(size_t, size_t)= NULL;
    if(!real_calloc){
       real_calloc = dlsym(RTLD_NEXT, "calloc");
-
+      if(real_calloc == NULL){
+         fprintf(stderr, "error: dlsym() calloc\n");
+         exit(EXIT_FAILURE);
+      }
       init_log_file();
    }
 
@@ -146,7 +166,10 @@ void *memalign(size_t alignment, size_t size){
    static void *(*real_memalign)(size_t, size_t) = NULL;
    if(!real_memalign){
       real_memalign = dlsym(RTLD_NEXT, "memalign");
-
+      if(real_memalign == NULL){
+         fprintf(stderr, "error: dlsym() memalign\n");
+         exit(EXIT_FAILURE);      
+      }
       init_log_file();
    }
 
@@ -165,7 +188,10 @@ int posix_memalign(void** memptr, size_t alignment, size_t size){
    static int (*real_posix_memalign)(void**, size_t, size_t) = NULL;
    if(!real_posix_memalign){
       real_posix_memalign = dlsym(RTLD_NEXT, "posix_memalign");
-
+      if(real_posix_memalign == NULL){
+         fprintf(stderr, "error: dlsym() posix_memalign\n");
+         exit(EXIT_FAILURE);
+      }
       init_log_file();
    }
 
@@ -184,7 +210,10 @@ void *valloc(size_t size){
    static void *(*real_valloc)(size_t) = NULL;
    if(!real_valloc){
       real_valloc = dlsym(RTLD_NEXT, "valloc");
-
+      if(real_valloc == NULL){
+         fprintf(stderr, "error: dlsym() valloc\n");
+         exit(EXIT_FAILURE);
+      }
       init_log_file();
    }
 
@@ -203,7 +232,10 @@ void *aligned_alloc(size_t alignment, size_t size){
    static void *(*real_aligned_alloc)(size_t, size_t) = NULL;
    if(!real_aligned_alloc){
       real_aligned_alloc = dlsym(RTLD_NEXT, "aligned_alloc");
-
+      if(real_aligned_alloc == NULL){
+         fprintf(stderr, "error: dlsym() aligned_alloc\n");
+         exit(EXIT_FAILURE);
+      }
       init_log_file();
    }
 

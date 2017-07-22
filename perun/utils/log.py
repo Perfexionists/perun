@@ -1,7 +1,12 @@
 """Set of helper function for logging and printing warnings or errors"""
 
 import logging
+import sys
 import termcolor
+
+from perun.utils.decorators import static_variables
+
+from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
 
 __author__ = 'Tomas Fiedor'
 VERBOSITY = 0
@@ -53,7 +58,7 @@ def info(msg):
     Arguments:
         msg(str): info message that will be printed only when there is at least lvl1 verbosity
     """
-    msg_to_stdout(msg, VERBOSE_INFO)
+    print("info: {}".format(msg))
 
 
 def quiet_info(msg):
@@ -70,9 +75,7 @@ def error(msg, recoverable=False):
         msg(str): error message printe to standard output
         recoverable(bool): whether we can recover from the error
     """
-    print(termcolor.colored(
-        "fatal: {}".format(msg)
-    , 'red'))
+    print(termcolor.colored("fatal: {}".format(msg), 'red'), file=sys.stderr)
 
     # If we cannot recover from this error, we end
     if not recoverable:
@@ -85,4 +88,79 @@ def warn(msg):
         msg(str): warn message printed to standard output
     """
     if not SUPPRESS_WARNINGS:
-        print("perun warning: {}".format(msg))
+        print("warn: {}".format(msg))
+
+
+def print_current_phase(phase_msg, phase_unit, phase_colour):
+    """Print helper coloured message for the current phase
+
+    Arguments:
+        phase_msg(str): message that will be printed to the output
+        phase_unit(str): additional parameter that is passed to the phase_msg
+        phase_colour(str): phase colour defined in helpers.py
+    """
+    print(termcolor.colored(
+        phase_msg.format(
+            termcolor.colored(phase_unit, attrs=COLLECT_PHASE_ATTRS_HIGH)
+        ), phase_colour, attrs=COLLECT_PHASE_ATTRS
+    ))
+
+
+@static_variables(current_job=1)
+def print_job_progress(overall_jobs):
+    """Print the tag with the percent of the jobs currently done
+
+    Arguments:
+        overall_jobs(int): overall number of jobs to be done
+    """
+    percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
+    print("[{}%] ".format(
+        str(percentage_done).rjust(3, ' ')
+    ), end='')
+    print_job_progress.current_job += 1
+
+
+def cprint(string, colour, attrs=None):
+    """Wrapper over coloured print without adding new line
+
+    Arguments:
+        string(str): string that is printed with colours
+        colour(str): colour that will be used to colour the string
+        attrs(list): list of additional attributes for the colouring
+    """
+    attrs = attrs or []
+    print(termcolor.colored(string, colour, attrs=attrs), end='')
+
+
+def cprintln(string, colour, attrs=None, ending='\n'):
+    """Wrapper over coloured print with added new line or other ending
+
+    Arguments:
+        string(str): string that is printed with colours and newline
+        colour(str): colour that will be used to colour the stirng
+        attrs(list): list of additional attributes for the colouring
+        ending(str): ending of the string, be default new line
+    """
+    attrs = attrs or []
+    print(termcolor.colored(string, colour, attrs=attrs), end=ending)
+
+
+def done(ending='\n'):
+    """Helper function that will print green done to the terminal
+
+    Arguments:
+        ending(str): end of the string, by default new line
+    """
+    print('[', end='')
+    cprint("DONE", 'green', attrs=['bold'])
+    print(']', end=ending)
+
+
+def failed(ending='\n'):
+    """
+    Arguments:
+        ending(str): end of the string, by default new line
+    """
+    print('[', end='')
+    cprint("FAILED", 'red', attrs=['bold'])
+    print(']', end=ending)

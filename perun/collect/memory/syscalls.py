@@ -1,5 +1,7 @@
 """This module provides simple wrappers over some linux command line tools"""
+
 import os
+import re
 import subprocess
 
 __author__ = "Radim Podola"
@@ -77,7 +79,45 @@ def run(cmd, params, workload):
     with open('ErrorCollectLog', 'w') as error_log:
         ret = subprocess.call(sys_call, shell=True, stderr=error_log)
 
+    with open('ErrorCollectLog', 'r') as error_log:
+        log = error_log.readlines()
+
+    return ret, "".join(log)
+
+
+def init():
+    """ Initialize the injected library
+
+    Returns:
+        bool: success of the operation
+    """
+    pwd = os.path.dirname(os.path.abspath(__file__))
+    try:
+        ret = subprocess.call(["make"], cwd=pwd)
+    except subprocess.CalledProcessError:
+        return 1
+
     return ret
+
+
+def check_debug_symbols(cmd):
+    """ Check if binary was compiled with debug symbols
+
+    Arguments:
+        cmd(string): binary file to profile
+
+    Returns:
+        bool: True if binary was compiled with debug symbols
+    """
+    try:
+        output = subprocess.check_output(["objdump", "-h", cmd])
+        raw_output = output.decode("utf-8")
+        if re.search("debug", raw_output) is None:
+            return False
+    except subprocess.CalledProcessError:
+        return False
+
+    return True
 
 
 if __name__ == "__main__":

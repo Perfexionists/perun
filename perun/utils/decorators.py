@@ -6,7 +6,7 @@ the functions. Or various checker function, that checks given parameters of the 
 
 import inspect
 
-import perun.utils.exceptions as exceptions
+from perun.utils.exceptions import InvalidParameterException
 
 __author__ = 'Tomas Fiedor'
 
@@ -116,10 +116,7 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
                 if param_name not in validated_args:
                     continue
                 if not validate(param_value, *args, **kwargs):
-                    error_msg = "Invalid value '{}' for parameter '{}'".format(
-                        param_name, param_value
-                    )
-                    raise exceptions.InvalidParameterException(error_msg)
+                    raise InvalidParameterException(param_value, param_name)
 
             return func(*wargs, **wkwargs)
         return wrapper
@@ -140,7 +137,7 @@ def assume_version(version_spec, actual_version):
         """Inner wrapper of the function"""
         def wrapper(*args, **kwargs):
             """Wrapper function of the @p func"""
-            assert version_spec == actual_version and "function {} expects format version {}".format(
+            assert version_spec == actual_version and "function {} expects format of v{}".format(
                 func.__name__, version_spec
             )
             return func(*args, **kwargs)

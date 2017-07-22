@@ -14,7 +14,7 @@ def validate_profile(func):
             return {}
         # check if there is smt to remove
         try:
-            glob_res = profile['global'][0]['resources']
+            glob_res = profile['global']['resources']
             if not glob_res:
                 return profile
         except (IndexError, KeyError, TypeError):
@@ -40,19 +40,19 @@ def remove_allocators(profile):
     """
     allocators = ['malloc', 'calloc', 'realloc', 'free', 'memalign',
                   'posix_memalign', 'valloc', 'aligned_alloc']
-    trace_filter(profile, function=allocators)
+    trace_filter(profile, function=allocators, source=[])
 
     return profile
 
 
 @validate_profile
-def trace_filter(profile, source=(), function=()):
+def trace_filter(profile, function, source):
     """ Remove records in trace section matching source or function
     Arguments:
         profile(dict): dictionary including "snapshots" and
                        "global" sections in the profile
+        function(list): list of "function" records to omit
         source(list): list of "source" records to omit
-        function(list):
 
     Returns:
         dict: updated profile
@@ -76,31 +76,59 @@ def trace_filter(profile, source=(), function=()):
     return profile
 
 
+def set_global_region(profile):
+    """
+    Arguments:
+        profile(dict): partially computed profile
+    """
+    profile['global']['resources'] = {}
+
+
 @validate_profile
-def function_filter(profile, function):
-    """ Remove record of specified function out of the profile
+def allocation_filter(profile, function, source):
+    """ Remove record of specified function or source code out of the profile
     Arguments:
         profile(dict): dictionary including "snapshots" and
                        "global" sections in the profile
-        function(string): function's name to remove record of
+        function(list): function's name to remove record of
+        source(list): source's name to remove record of
 
     Returns:
         dict: updated profile
     """
     def determinate(uid):
         """ Determinate expression """
-        return not uid or uid['function'] != function
+        if not uid:
+            return True
+        if uid['function'] in function:
+            return False
+        if uid['source'] in source:
+            return False
+        return True
 
     snapshots = profile['snapshots']
     for snapshot in snapshots:
+        snapshot['resources'] = [res for res in snapshot['resources'] if determinate(res['uid'])]
+    set_global_region(profile)
 
-        snapshot['resources'] = [res for res in snapshot['resources']
-                                 if determinate(res['uid'])]
+    return profile
 
-    if snapshots[-1]['resources']:
-        profile['global'][0]['resources'] = [snapshots[-1]['resources'][-1]]
-    else:
-        profile['global'][0]['resources'] = []
+
+@validate_profile
+def remove_uidless_records_from(profile):
+    """ Remove record without UID out of the profile
+
+    Arguments:
+        profile(dict): dictionary including "snapshots" and
+                       "global" sections in the profile
+
+    Returns:
+        dict: updated profile
+    """
+    snapshots = profile['snapshots']
+    for snapshot in snapshots:
+        snapshot['resources'] = [res for res in snapshot['resources'] if res['uid']]
+    set_global_region(profile)
 
     return profile
 
