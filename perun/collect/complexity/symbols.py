@@ -12,7 +12,7 @@
 
 import sys
 import subprocess
-import exceptions
+import perun.collect.complexity.exceptions as exceptions  # TODO: merge with general exceptions
 import collections
 
 # Symbol table columns constants
@@ -233,8 +233,7 @@ def _dismantle_symbols(symbol_map):
         # Process each symbol from the map
         try:
             specification_map[key] = _process_symbol(symbol_map[key])
-        except exceptions.UnexpectedPrototypeSyntaxError as e:
-            # print(repr(e), file=sys.stderr)
+        except exceptions.UnexpectedPrototypeSyntaxError:
             pass
     return specification_map
 

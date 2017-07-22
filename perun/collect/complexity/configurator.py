@@ -11,7 +11,7 @@
 
 import os
 import json
-import symbols
+import perun.collect.complexity.symbols as symbols
 
 
 def create_runtime_config(executable_path, runtime_filter, include_list, configuration):

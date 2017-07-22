@@ -5,10 +5,10 @@ takes care of analysis and visualisation and thus connecting the various modules
 
 """
 
-import regression_analysis.methods as reg
-from regression_analysis.regression_models import Models
-import visualizer.interface as Ivisualization
-import visualizer.utils as vis_utils
+import perun.collect.complexity.regression_analysis.methods as reg
+from perun.collect.complexity.regression_analysis.regression_models import Models
+import perun.collect.complexity.visualizer.interface as Ivisualization
+import perun.collect.complexity.visualizer.utils as vis_utils
 
 # The color used for each model plotting
 _model_colors = {
