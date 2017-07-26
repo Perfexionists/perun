@@ -16,11 +16,11 @@ import perun.logic.store as store
 import termcolor
 
 import perun.logic.config as perun_config
+from perun.logic.pcs import pass_pcs
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
-import perun.vcs as vcs
 from perun.utils.exceptions import NotPerunRepositoryException, InvalidConfigOperationException, \
     ExternalEditorErrorException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
@@ -29,7 +29,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ID_TYPE_COLOUR
 from perun.utils.log import cprint, cprintln
-from perun.logic.pcs import pass_pcs
+import perun.vcs as vcs
 
 # Init colorama for multiplatform colours
 colorama.init()
@@ -57,7 +57,7 @@ def lookup_minor_version(func):
     Returns:
         function: decorated function, with minor_version translated or obtained
     """
-    # the position of minor_version is one less, because of  needed pcs parameter
+    # the position of minor_version is one less, because of needed pcs parameter
     f_args, _, _, _, *_ = inspect.getfullargspec(func)
     assert 'pcs' in f_args
     minor_version_position = f_args.index('minor_version') - 1
@@ -78,7 +78,7 @@ def lookup_minor_version(func):
 
 
 @pass_pcs
-def config(pcs, store_type, operation, key=None, value=None, **kwargs):
+def config(pcs, store_type, operation, key=None, value=None, **_):
     """Updates the configuration file @p config of the @p pcs perun file
 
     Arguments:
@@ -87,7 +87,7 @@ def config(pcs, store_type, operation, key=None, value=None, **kwargs):
         operation(str): type of the operation over the (key, value) pair (get, set, or edit)
         key(str): key that is looked up or stored in config
         value(str): value we are setting to config
-        kwargs(dict): dictionary of keyword arguments
+        _(dict): dictionary of keyword arguments
 
     Raises:
         ExternalEditorErrorException: raised if there are any problems during invoking of external
@@ -220,9 +220,13 @@ def add(pcs, profile_name, minor_version, keep_profile=False):
     assert 'type' in unpacked_profile['header'].keys()
 
     if unpacked_profile['origin'] != minor_version:
-        perun_log.error("cannot add profile '{}' to minor index of '{}':"
-                        "profile originates from minor version '{]'"
-                        "".format(profile_name, minor_version, unpacked_profile['origin']))
+        error_msg = "cannot add profile '{}' to minor index of '{}':".format(
+            profile_name, minor_version
+        )
+        error_msg += "profile originates from minor version '{}'".format(
+            unpacked_profile['origin']
+        )
+        perun_log.error(error_msg)
 
     # Remove origin from file
     unpacked_profile.pop('origin')

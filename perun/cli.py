@@ -26,7 +26,7 @@ import perun.vcs as vcs
 import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
-    MissingConfigSectionException, InvalidConfigOperationException
+    MissingConfigSectionException, InvalidConfigOperationException, VersionControlSystemException
 
 __author__ = 'Tomas Fiedor'
 
@@ -223,7 +223,7 @@ def lookup_nth_pending_filename(position):
         ))
 
 
-def filename_lookup_callback(ctx, param, value):
+def added_filename_lookup_callback(ctx, param, value):
     """Callback function for looking up the profile, if it does not exist
 
     Arguments:
@@ -239,6 +239,28 @@ def filename_lookup_callback(ctx, param, value):
         return lookup_nth_pending_filename(int(match.group(1)))
     else:
         return lookup_profile_filename(value)
+
+
+def removed_filename_lookup_callback(ctx, param, value):
+    """
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        str: filename of the profile to be removed
+    """
+    match = store.INDEX_TAG_REGEX.match(value)
+    if match:
+        index_filename = commands.get_nth_profile_of(
+            int(match.group(1)), ctx.params['minor']
+        )
+        start = index_filename.rfind('objects') + len('objects')
+        # Remove the .perun/objects/... prefix and merge the directory and file to sha
+        return "".join(index_filename[start:].split('/'))
+    else:
+        return value
 
 
 def lookup_profile_filename(profile_name):
@@ -275,10 +297,29 @@ def lookup_profile_filename(profile_name):
     return profile_name
 
 
+def minor_version_lookup_callback(ctx, param, value):
+    """
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        str: massaged minor version
+    """
+    if value is not None:
+        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+        try:
+            return vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, value)
+        except VersionControlSystemException as exception:
+            raise click.BadParameter(str(exception))
+
+
 @cli.command()
 @click.argument('profile', required=True, metavar='<profile>',
-                callback=filename_lookup_callback)
-@click.argument('minor', required=False, default=None, metavar='<hash>')
+                callback=added_filename_lookup_callback)
+@click.argument('minor', required=False, default=None, metavar='<hash>', is_eager=True,
+                callback=minor_version_lookup_callback)
 @click.option('--keep-profile', is_flag=True, required=False, default=False,
               help='if set, then the added profile will not be deleted')
 def add(profile, minor, **kwargs):
@@ -306,8 +347,10 @@ def add(profile, minor, **kwargs):
 
 
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>')
-@click.argument('minor', required=False, default=None, metavar='<hash>')
+@click.argument('profile', required=True, metavar='<profile>',
+                callback=removed_filename_lookup_callback)
+@click.argument('minor', required=False, default=None, metavar='<hash>', is_eager=True,
+                callback=minor_version_lookup_callback)
 @click.option('--remove-all', '-A', is_flag=True, default=False,
               help="Remove all occurrences of <profile> from the <hash> index.")
 def rm(profile, minor, **kwargs):
