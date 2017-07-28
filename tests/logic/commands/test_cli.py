@@ -111,21 +111,21 @@ def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
     first_tagged = os.path.relpath(helpers.prepare_profile(pcs_full, valid_profile_pool[0], head))
 
     runner = CliRunner()
-    result = runner.invoke(cli.add, ['0@p', 'HEAD'])
+    result = runner.invoke(cli.add, ['0@p', '--minor=HEAD'])
     assert result.exit_code == 0
     assert "'{}' successfully registered".format(first_tagged) in result.output
 
     runner = CliRunner()
-    result = runner.invoke(cli.add, ['0@p', r"HEAD^{d"])
+    result = runner.invoke(cli.add, ['0@p', r"--minor=HEAD^{d"])
     assert result.exit_code == 2
     assert "Missing closing brace"
 
     runner = CliRunner()
-    result = runner.invoke(cli.add, ['0@p', r"HEAD^}"])
+    result = runner.invoke(cli.add, ['0@p', r"--minor=HEAD^}"])
     assert result.exit_code == 2
 
     runner = CliRunner()
-    result = runner.invoke(cli.add, ['0@p', 'tag2'])
+    result = runner.invoke(cli.add, ['0@p', '--minor=tag2'])
     assert result.exit_code == 2
     assert "Ref 'tag2' did not resolve to object"
 

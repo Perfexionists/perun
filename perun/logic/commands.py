@@ -194,61 +194,69 @@ def init(dst, **kwargs):
 
 @pass_pcs
 @lookup_minor_version
-def add(pcs, profile_name, minor_version, keep_profile=False):
+def add(pcs, profile_names, minor_version, keep_profile=False):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile_name(Profile): profile that will be stored for the minor version
+        profile_names(generator): generator of profiles that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
         keep_profile(bool): if true, then the profile that is about to be added will be not
             deleted, and will be kept as it is. By default false, i.e. profile is deleted.
     """
-    assert minor_version is not None and "Missing minor version specification"
+    added_profile_count = 0
+    for profile_name in profile_names:
+        # Test if the given profile exists (This should hold always, or not?)
+        if not os.path.exists(profile_name):
+            perun_log.error("{} does not exists".format(profile_name), recoverable=True)
+            continue
 
-    perun_log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
-        pcs, profile_name, minor_version
-    ), 2)
+        # Load profile content
+        # Unpack to JSON representation
+        unpacked_profile = profile.load_profile_from_file(profile_name, True)
+        assert 'type' in unpacked_profile['header'].keys()
 
-    # Test if the given profile exists
-    if not os.path.exists(profile_name):
-        perun_log.error("{} does not exists".format(profile_name))
+        if unpacked_profile['origin'] != minor_version:
+            error_msg = "cannot add profile '{}' to minor index of '{}':".format(
+                profile_name, minor_version
+            )
+            error_msg += "profile originates from minor version '{}'".format(
+                unpacked_profile['origin']
+            )
+            perun_log.error(error_msg, recoverable=True)
+            continue
 
-    # Load profile content
-    # Unpack to JSON representation
-    unpacked_profile = profile.load_profile_from_file(profile_name, True)
-    assert 'type' in unpacked_profile['header'].keys()
+        # Remove origin from file
+        unpacked_profile.pop('origin')
+        profile_content = profile.to_string(unpacked_profile)
 
-    if unpacked_profile['origin'] != minor_version:
-        error_msg = "cannot add profile '{}' to minor index of '{}':".format(
-            profile_name, minor_version
-        )
-        error_msg += "profile originates from minor version '{}'".format(
-            unpacked_profile['origin']
-        )
-        perun_log.error(error_msg)
+        # Append header to the content of the file
+        header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(profile_content))
+        profile_content = (header + profile_content).encode('utf-8')
 
-    # Remove origin from file
-    unpacked_profile.pop('origin')
-    profile_content = profile.to_string(unpacked_profile)
+        # Transform to internal representation - file as sha1 checksum and content packed with zlib
+        profile_sum = store.compute_checksum(profile_content)
+        compressed_content = store.pack_content(profile_content)
 
-    # Append header to the content of the file
-    header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(profile_content))
-    profile_content = (header + profile_content).encode('utf-8')
+        # Add to control
+        object_dir = pcs.get_object_directory()
+        store.add_loose_object_to_dir(object_dir, profile_sum, compressed_content)
 
-    # Transform to internal representation - file as sha1 checksum and content packed with zlib
-    profile_sum = store.compute_checksum(profile_content)
-    compressed_content = store.pack_content(profile_content)
+        # Register in the minor_version index
+        store.register_in_index(object_dir, minor_version, profile_name, profile_sum)
 
-    # Add to control
-    store.add_loose_object_to_dir(pcs.get_object_directory(), profile_sum, compressed_content)
+        # Remove the file
+        if not keep_profile:
+            os.remove(profile_name)
 
-    # Register in the minor_version index
-    store.register_in_index(pcs.get_object_directory(), minor_version, profile_name, profile_sum)
+        added_profile_count += 1
 
-    # Remove the file
-    if not keep_profile:
-        os.remove(profile_name)
+    profile_names_len = len(profile_names)
+    if added_profile_count != profile_names_len:
+        perun_log.error("only {}/{} profiles were successfully registered in index".format(
+            added_profile_count, profile_names_len
+        ))
+    perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
 
 
 @pass_pcs
@@ -258,7 +266,7 @@ def remove(pcs, profile_name, minor_version, **kwargs):
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile_name(Profile): profile that will be stored for the minor version
+        profile_name(str): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
         kwargs(dict): dictionary with additional options
 

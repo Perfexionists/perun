@@ -111,7 +111,7 @@ def test_add_on_empty_repo(helpers, pcs_with_empty_git, valid_profile_pool, caps
 
     # Assert that the program ends
     with pytest.raises(SystemExit):
-        commands.add(valid_profile_pool[0], None, keep_profile=True)
+        commands.add([valid_profile_pool[0]], None, keep_profile=True)
 
     # Assert that nothing was added (rather weak, but should be enough)
     after_count = helpers.count_contents_on_path(pcs_with_empty_git.path)
@@ -133,7 +133,7 @@ def test_add_on_no_vcs(helpers, pcs_without_vcs, valid_profile_pool):
     before_count = helpers.count_contents_on_path(pcs_without_vcs.path)
     assert pcs_without_vcs.vcs_type == 'pvcs'
     with pytest.raises(UnsupportedModuleException):
-        commands.add(valid_profile_pool[0], None, keep_profile=True)
+        commands.add([valid_profile_pool[0]], None, keep_profile=True)
 
     # Assert that nothing was added (rather weak, but should be enough)
     after_count = helpers.count_contents_on_path(pcs_without_vcs.path)
@@ -159,7 +159,7 @@ def test_add(helpers, pcs_full, valid_profile_pool):
         before_entries_count = assert_before_add(helpers, obj_path, current_head, valid_profile)
 
         # Add the profile to timestamp
-        commands.add(valid_profile, current_head, keep_profile=True)
+        commands.add([valid_profile], current_head, keep_profile=True)
 
         # Now check, that the profile was successfully added to index, and its entry is valid
         after_entries_count = assert_after_valid_add(helpers, obj_path, current_head, valid_profile)
@@ -188,7 +188,7 @@ def test_add_no_minor(helpers, pcs_full, valid_profile_pool):
         # Check that the profile was NOT in the index before
         before_entries_count = assert_before_add(helpers, obj_path, head, valid_profile)
 
-        commands.add(valid_profile, None, keep_profile=True)
+        commands.add([valid_profile], None, keep_profile=True)
 
         # Now check, that the profile was successfully added to index, and its entry is valid
         after_entries_count = assert_after_valid_add(helpers, obj_path, head, valid_profile)
@@ -213,7 +213,7 @@ def test_add_wrong_minor(helpers, pcs_full, valid_profile_pool):
     before_count = helpers.count_contents_on_path(pcs_full.path)
 
     with pytest.raises(VersionControlSystemException):
-        commands.add(valid_profile_pool[0], wrong_commit, keep_profile=True)
+        commands.add([valid_profile_pool[0]], wrong_commit, keep_profile=True)
 
     # Assert that nothing was added (rather weak, but should be enough)
     after_count = helpers.count_contents_on_path(pcs_full.path)
@@ -232,7 +232,7 @@ def test_add_wrong_profile(helpers, pcs_full, error_profile_pool):
     for error_profile in error_profile_pool:
         before_entries_count = assert_before_add(helpers, pcs_full.path, head, error_profile)
         with pytest.raises(IncorrectProfileFormatException):
-            commands.add(error_profile, None, keep_profile=True)
+            commands.add([error_profile], None, keep_profile=True)
 
         # Assert that the profile was not added into the index
         after_entries_count = assert_after_invalid_add(helpers, pcs_full.path, head, error_profile)
@@ -261,13 +261,13 @@ def test_add_existing(helpers, pcs_full, valid_profile_pool, capsys):
         # Check that the profile was NOT in the index before
         before_entries_count = assert_before_add(helpers, obj_path, head, valid_profile)
 
-        commands.add(valid_profile, None, keep_profile=True)
+        commands.add([valid_profile], None, keep_profile=True)
 
         # Assert that the profile was successfully added to the index
         middle_entries_count = assert_after_valid_add(helpers, obj_path, head, valid_profile)
         assert before_entries_count == (middle_entries_count - 1)
 
-        commands.add(valid_profile, None, keep_profile=True)
+        commands.add([valid_profile], None, keep_profile=True)
 
         # Assert that nothing was added to the index
         after_entries_count = assert_after_valid_add(helpers, obj_path, head, valid_profile)
@@ -291,4 +291,4 @@ def test_add_outside_pcs(valid_profile_pool):
     and thus should not do anything, should be caught on the CLI/UI level
     """
     with pytest.raises(NotPerunRepositoryException):
-        commands.add(valid_profile_pool[0], None, keep_profile=True)
+        commands.add([valid_profile_pool[0]], None, keep_profile=True)
