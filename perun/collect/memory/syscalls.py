@@ -6,6 +6,9 @@ import subprocess
 
 __author__ = "Radim Podola"
 
+demangle_cache = {}
+address_to_line_cache = {}
+
 
 def demangle(name):
     """
@@ -15,11 +18,13 @@ def demangle(name):
     Returns:
         string: demangled name
     """
-    sys_call = ['c++filt']
-    sys_call.append(name)
-    output = subprocess.check_output(sys_call)
+    # Fixme: This could be called just once...
+    if name not in demangle_cache.keys():
+        sys_call = ['c++filt', name]
+        output = subprocess.check_output(sys_call)
+        demangle_cache[name] = output.decode("utf-8").strip()
 
-    return output.decode("utf-8").strip()
+    return demangle_cache[name]
 
 
 def get_extern_funcs(filename):
@@ -30,8 +35,7 @@ def get_extern_funcs(filename):
     Returns:
         list: list of functions from dynamic section
     """
-    sys_call = ['nm', '-D', '-C']
-    sys_call.append(filename)
+    sys_call = ['nm', '-D', '-C', filename]
     output = subprocess.check_output(sys_call)
     output = output.decode("utf-8").splitlines()
     functions = []
@@ -53,13 +57,15 @@ def address_to_line(ip, filename):
         list: list of two objects, 1st is the name of the source file,
               2nd is the line number
     """
-    sys_call = ['addr2line']
-    sys_call.append(ip)
-    sys_call.append('-e')
-    sys_call.append(filename)
-    output = subprocess.check_output(sys_call)
+    # Fixme: This could be called just once...
+    key = ":".join([ip, filename])
+    if key not in address_to_line_cache.keys():
+        sys_call = ['addr2line', ip, '-e', filename]
+        output = subprocess.check_output(sys_call)
 
-    return output.decode("utf-8").strip().split(':')
+        address_to_line_cache[key] = output.decode("utf-8").strip().split(':')
+
+    return address_to_line_cache[key][:]
 
 
 def run(cmd, params, workload):
