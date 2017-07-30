@@ -26,7 +26,7 @@ def build_demangle_cache(names):
     global demangle_cache
 
     list_of_names = list(names)
-    if not all(map(lambda name: PATTERN_WORD.match(name), list_of_names)):
+    if not all(map(PATTERN_WORD.match, list_of_names)):
         log.error("incorrect values in demangled names")
     else:
         sys_call = ['c++filt'] + list_of_names
@@ -58,7 +58,7 @@ def build_address_to_line_cache(addresses, binary_name):
     global address_to_line_cache
 
     list_of_addresses = list(addresses)
-    if not all(map(lambda addr: PATTERN_HEXADECIMAL.match(addr), list_of_addresses)):
+    if not all(map(PATTERN_HEXADECIMAL.match, list_of_addresses)):
         log.error("incorrect values in address translations")
     else:
         sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
