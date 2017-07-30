@@ -5,12 +5,67 @@ __author__ = 'Tomas Fiedor'
 
 class InvalidParameterException(Exception):
     """Raises when the given parameter is invalid"""
-    pass
+    def __init__(self, parameter, parameter_value, choices_msg=""):
+        """
+        Arguments:
+            parameter(str): name of the parameter that is invalid
+            parameter_value(object): value of the parameter
+            choices_msg(str): string with choices for the valid parameters
+        """
+        super().__init__("")
+        self.parameter = parameter
+        self.value = str(parameter_value)
+        self.choices_msg = " " + choices_msg
+
+    def __str__(self):
+        return "Invalid value '{}' for the parameter '{}'".format(self.value, self.parameter) \
+               + self.choices_msg
 
 
 class MissingConfigSectionException(Exception):
     """Raised when the section in config is missing"""
     pass
+
+
+class InvalidConfigOperationException(Exception):
+    """Raised when the operation given to the config handler is not supported"""
+    def __init__(self, store_type, operation, key, value):
+        """
+        Arguments:
+            operation(str): name of the operation
+        """
+        super().__init__("")
+        self.store_type = store_type
+        self.operation = operation
+        self.key = key
+        self.value = value
+
+    def __str__(self):
+        msg = "unsupported {} config operation '{}'".format(self.store_type, self.operation)
+        msg += "with key '{}'".format(self.key) if self.key and not self.value else ""
+        msg += "with value '{}'".format(self.value) if self.value and not self.key else ""
+        msg += "with key/value '{}/{}'".format(
+            self.key, self.value
+        ) if self.value and self.key else ""
+        return msg
+
+
+class ExternalEditorErrorException(Exception):
+    """Raised when there is an error while invoking the external editor"""
+    def __init__(self, editor, reason):
+        """
+        Arguments:
+            editor(str): name of the invoked editor
+            reason(str): reason why the editor failed
+        """
+        super().__init__("")
+        self.editor = editor
+        self.reason = reason
+
+    def __str__(self):
+        return "error while invoking external '{}' editor: {}".format(
+            self.editor, self.reason
+        )
 
 
 class EntryNotFoundException(Exception):
@@ -20,6 +75,7 @@ class EntryNotFoundException(Exception):
         Arguments:
             entry(str): entry we are looking up in the index
         """
+        super().__init__("")
         self.entry = entry
 
     def __str__(self):
@@ -42,6 +98,7 @@ class VersionControlSystemException(Exception):
             msg(str): format string of the error message
             args(list): list of arguments for format string
         """
+        super().__init__(msg)
         self.msg = msg
         self.args = args
 
@@ -57,6 +114,7 @@ class IncorrectProfileFormatException(Exception):
             filename(str): filename of the profile in the wrong format
             msg(str): additional message what is wrong withe profile
         """
+        super().__init__("")
         self.filename = filename
         self.msg = msg
 
@@ -67,6 +125,7 @@ class IncorrectProfileFormatException(Exception):
 class NotPerunRepositoryException(Exception):
     """Raised when command is not called from within the scope of any Perun repository"""
     def __init__(self, path):
+        super().__init__("")
         self.path = path
 
     def __str__(self):
@@ -78,6 +137,7 @@ class NotPerunRepositoryException(Exception):
 class UnsupportedModuleException(Exception):
     """Raised when dynamically loading a module, that is not supported by the perun"""
     def __init__(self, module):
+        super().__init__("")
         self.module = module
 
     def __str__(self):
@@ -94,6 +154,7 @@ class UnsupportedModuleFunctionException(Exception):
         Arguments:
             module(str): name of the module that does not support the given function
         """
+        super().__init__("")
         self.module = module
         self.func = func
 

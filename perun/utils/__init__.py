@@ -104,6 +104,7 @@ def get_supported_module_names(package, function_name):
     Returns:
         list: list of names of supported version control systems
     """
+    # Fixme: refactoring this will yield -0.1s
     module_list = []
     for (_, module_name, _) in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
         module = get_module(module_name)

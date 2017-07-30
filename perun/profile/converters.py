@@ -1,10 +1,12 @@
 """This module implements translation of the profile to other formats """
 import copy
 
-import numpy
-import pandas
+import perun.profile.query as query
 
-import perun.core.profile.query as query
+import demandimport
+with demandimport.enabled():
+    import numpy
+    import pandas
 
 __author__ = 'Radim Podola'
 

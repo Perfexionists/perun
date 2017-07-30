@@ -5,11 +5,11 @@ and profiles assigned to minor versions.
 """
 
 import binascii
+
 import git
 import pytest
 
-import perun.core.logic.commands as commands
-
+import perun.logic.commands as commands
 from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException
 
 __author__ = 'Tomas Fiedor'

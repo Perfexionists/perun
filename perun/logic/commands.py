@@ -10,24 +10,26 @@ import inspect
 import os
 import re
 
+import click
 import colorama
+import perun.logic.store as store
 import termcolor
 
-import perun.core.logic.config as perun_config
-import perun.core.logic.store as store
-import perun.core.profile.factory as profile
-import perun.core.vcs as vcs
-import perun.utils.decorators as decorators
+import perun.logic.config as perun_config
+from perun.logic.pcs import pass_pcs
+import perun.profile.factory as profile
+import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
-from perun.core.logic.pcs import pass_pcs
-from perun.utils.exceptions import NotPerunRepositoryException
+from perun.utils.exceptions import NotPerunRepositoryException, InvalidConfigOperationException, \
+    ExternalEditorErrorException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ID_TYPE_COLOUR
 from perun.utils.log import cprint, cprintln
+import perun.vcs as vcs
 
 # Init colorama for multiplatform colours
 colorama.init()
@@ -55,7 +57,7 @@ def lookup_minor_version(func):
     Returns:
         function: decorated function, with minor_version translated or obtained
     """
-    # the position of minor_version is one less, because of  needed pcs parameter
+    # the position of minor_version is one less, because of needed pcs parameter
     f_args, _, _, _, *_ = inspect.getfullargspec(func)
     assert 'pcs' in f_args
     minor_version_position = f_args.index('minor_version') - 1
@@ -75,57 +77,44 @@ def lookup_minor_version(func):
     return wrapper
 
 
-def is_valid_config_key(key):
-    """Key is valid if it starts either with local. or global.
-
-    Arguments:
-        key(str): key representing the string
-
-    Returns:
-        bool: true if the key is valid config key
-    """
-    return key.startswith('local.') or key.startswith('global.')
-
-
-def proper_combination_is_set(kwargs):
-    """Checks that only one command (--get or --set) is given
-
-    Arguments:
-        kwargs(dict): dictionary of key arguments.
-
-    Returns:
-        bool: true if proper combination of arguments is set for configuration
-    """
-    return kwargs['get'] != kwargs['set'] and any([kwargs['get'], kwargs['set']])
-
-
 @pass_pcs
-@decorators.validate_arguments(['key'], is_valid_config_key)
-@decorators.validate_arguments(['kwargs'], proper_combination_is_set)
-def config(pcs, key, value, **kwargs):
+def config(pcs, store_type, operation, key=None, value=None, **_):
     """Updates the configuration file @p config of the @p pcs perun file
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
+        store_type(str): type of the store (local, shared, or recursive)
+        operation(str): type of the operation over the (key, value) pair (get, set, or edit)
         key(str): key that is looked up or stored in config
         value(str): value we are setting to config
-        kwargs(dict): dictionary of keyword arguments
+        _(dict): dictionary of keyword arguments
+
+    Raises:
+        ExternalEditorErrorException: raised if there are any problems during invoking of external
+            editor during the 'edit' operation
     """
-    perun_log.msg_to_stdout("Running inner 'perun config' with {}, {}, {}, {}".format(
-        pcs, key, value, kwargs
-    ), 2)
+    config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
 
-    config_type, *sections = key.split('.')
-    key = ".".join(sections)
-
-    config_store = pcs.local_config() if config_type == 'local' else pcs.global_config()
-
-    if kwargs['get']:
-        value = perun_config.get_key_from_config(config_store, key)
+    if operation == 'get' and key:
+        if store_type == 'recursive':
+            value = perun_config.lookup_key_recursively(pcs.get_config_dir('local'), key)
+        else:
+            value = perun_config.get_key_from_config(config_store, key)
         print("{}: {}".format(key, value))
-    elif kwargs['set']:
+    elif operation == 'set' and key and value:
         perun_config.set_key_at_config(config_store, key, value)
         print("Value '{1}' set for key '{0}'".format(key, value))
+    # Edit operation opens the configuration in the external editor
+    elif operation == 'edit':
+        # Lookup the editor in the config and run it as external command
+        editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
+        config_file = pcs.get_config_file(store_type)
+        try:
+            utils.run_external_command([editor, config_file])
+        except Exception as inner_exception:
+            raise ExternalEditorErrorException(editor, str(inner_exception))
+    else:
+        raise InvalidConfigOperationException(store_type, operation, key, value)
 
 
 def init_perun_at(perun_path, init_custom_vcs, is_reinit, vcs_config):
@@ -202,64 +191,72 @@ def init(dst, **kwargs):
 
     init_perun_at(dst, kwargs['vcs_type'] == 'pvcs', is_pcs_reinitialized, vcs_config)
 
-    # Register new performance control system in config
-    global_config = perun_config.shared()
-    perun_config.append_key_at_config(global_config, 'pcs', {'dir': dst})
-
 
 @pass_pcs
 @lookup_minor_version
-def add(pcs, profile_name, minor_version, keep_profile=False):
+def add(pcs, profile_names, minor_version, keep_profile=False):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile_name(Profile): profile that will be stored for the minor version
+        profile_names(generator): generator of profiles that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
         keep_profile(bool): if true, then the profile that is about to be added will be not
             deleted, and will be kept as it is. By default false, i.e. profile is deleted.
     """
-    assert minor_version is not None and "Missing minor version specification"
+    added_profile_count = 0
+    for profile_name in profile_names:
+        # Test if the given profile exists (This should hold always, or not?)
+        if not os.path.exists(profile_name):
+            perun_log.error("{} does not exists".format(profile_name), recoverable=True)
+            continue
 
-    perun_log.msg_to_stdout("Running inner wrapper of the 'perun add' with args {}, {}, {}".format(
-        pcs, profile_name, minor_version
-    ), 2)
+        # Load profile content
+        # Unpack to JSON representation
+        unpacked_profile = profile.load_profile_from_file(profile_name, True)
+        assert 'type' in unpacked_profile['header'].keys()
 
-    # Test if the given profile exists
-    if not os.path.exists(profile_name):
-        perun_log.error("{} does not exists".format(profile_name))
+        if unpacked_profile['origin'] != minor_version:
+            error_msg = "cannot add profile '{}' to minor index of '{}':".format(
+                profile_name, minor_version
+            )
+            error_msg += "profile originates from minor version '{}'".format(
+                unpacked_profile['origin']
+            )
+            perun_log.error(error_msg, recoverable=True)
+            continue
 
-    # Load profile content
-    # Unpack to JSON representation
-    unpacked_profile = profile.load_profile_from_file(profile_name, True)
-    assert 'type' in unpacked_profile['header'].keys()
+        # Remove origin from file
+        unpacked_profile.pop('origin')
+        profile_content = profile.to_string(unpacked_profile)
 
-    if unpacked_profile['origin'] != minor_version:
-        perun_log.error("cannot add profile '{}' to minor index of '{}':"
-                        "profile originates from minor version '{]'"
-                        "".format(profile_name, minor_version, unpacked_profile['origin']))
+        # Append header to the content of the file
+        header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(profile_content))
+        profile_content = (header + profile_content).encode('utf-8')
 
-    # Remove origin from file
-    unpacked_profile.pop('origin')
-    profile_content = profile.to_string(unpacked_profile)
+        # Transform to internal representation - file as sha1 checksum and content packed with zlib
+        profile_sum = store.compute_checksum(profile_content)
+        compressed_content = store.pack_content(profile_content)
 
-    # Append header to the content of the file
-    header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(profile_content))
-    profile_content = (header + profile_content).encode('utf-8')
+        # Add to control
+        object_dir = pcs.get_object_directory()
+        store.add_loose_object_to_dir(object_dir, profile_sum, compressed_content)
 
-    # Transform to internal representation - file as sha1 checksum and content packed with zlib
-    profile_sum = store.compute_checksum(profile_content)
-    compressed_content = store.pack_content(profile_content)
+        # Register in the minor_version index
+        store.register_in_index(object_dir, minor_version, profile_name, profile_sum)
 
-    # Add to control
-    store.add_loose_object_to_dir(pcs.get_object_directory(), profile_sum, compressed_content)
+        # Remove the file
+        if not keep_profile:
+            os.remove(profile_name)
 
-    # Register in the minor_version index
-    store.register_in_index(pcs.get_object_directory(), minor_version, profile_name, profile_sum)
+        added_profile_count += 1
 
-    # Remove the file
-    if not keep_profile:
-        os.remove(profile_name)
+    profile_names_len = len(profile_names)
+    if added_profile_count != profile_names_len:
+        perun_log.error("only {}/{} profiles were successfully registered in index".format(
+            added_profile_count, profile_names_len
+        ))
+    perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
 
 
 @pass_pcs
@@ -269,7 +266,7 @@ def remove(pcs, profile_name, minor_version, **kwargs):
 
     Arguments:
         pcs(PCS): object with performance control system wrapper
-        profile_name(Profile): profile that will be stored for the minor version
+        profile_name(str): profile that will be stored for the minor version
         minor_version(str): SHA-1 representation of the minor version
         kwargs(dict): dictionary with additional options
 
@@ -510,34 +507,54 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
     """
     # Print with padding
     profile_output_colour = 'white' if list_type == 'tracked' else 'red'
+    index_id_char = 'i' if list_type == 'tracked' else 'p'
     ending = ':\n\n' if not short else "\n"
 
     profile_numbers = calculate_profile_numbers_per_type(profile_list)
     print_profile_numbers(profile_numbers, list_type, ending)
 
     # Skip empty profile list
-    if len(profile_list) == 0 or short:
+    profile_list_len = len(profile_list)
+    profile_list_width = len(str(profile_list_len))
+    if not profile_list_len or short:
         return
 
     # Load formating string for profile
     profile_info_fmt = perun_config.lookup_key_recursively(pcs.path, 'global.profile_info_fmt')
     fmt_tokens, _ = FMT_SCANNER.scan(profile_info_fmt)
 
-    # Print header
-    print("\t", end='')
+    # Compute header length
+    header_len = profile_list_width + 3
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             limit = limit or max_lengths[attr_type] + (2 if attr_type == 'type' else 0)
-            cprint(attr_type.center(limit, ' '), profile_output_colour, HEADER_ATTRS)
+            header_len += limit
+        else:
+            header_len += len(token)
+
+    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
+    # Print header (2 is padding for id)
+    print(" ", end='')
+    cprint("id".center(profile_list_width + 2, ' '), profile_output_colour)
+    print(" ", end='')
+    for (token_type, token) in fmt_tokens:
+        if token_type == 'fmt_string':
+            attr_type, limit, _ = FMT_REGEX.match(token).groups()
+            limit = limit or max_lengths[attr_type] + (2 if attr_type == 'type' else 0)
+            token_string = attr_type.center(limit, ' ')
+            cprint(token_string, profile_output_colour, [])
         else:
             # Print the rest (non token stuff)
-            print(" "*len(token), end='')
+            cprint(token, profile_output_colour)
     print("")
-
+    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
     # Print profiles
-    for profile_info in profile_list:
-        print("\t", end='')
+    for profile_no, profile_info in enumerate(profile_list):
+        print(" ", end='')
+        cprint("{}@{}".format(profile_no, index_id_char).rjust(profile_list_width + 2, ' '),
+               profile_output_colour)
+        print(" ", end='')
         for (token_type, token) in fmt_tokens:
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
@@ -547,6 +564,26 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
             else:
                 cprint(token, profile_output_colour)
         print("")
+    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
+
+
+@pass_pcs
+@lookup_minor_version
+def get_nth_profile_of(pcs, position, minor_version):
+    """Returns the profile at nth position in the index
+
+    Arguments:
+        pcs(PCS): wrapped perun control system
+        position(int): position of the profile we are obtaining
+        minor_version(str): looked up minor version for the wrapped vcs
+    """
+    registered_profiles = get_minor_version_profiles(pcs, minor_version)
+    if 0 <= position < len(registered_profiles):
+        return registered_profiles[position].id
+    else:
+        raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
+            "{}@i".format(position), "0@i", "{}@i".format(len(registered_profiles)-1)
+        ))
 
 
 def get_minor_version_profiles(pcs, minor_version):

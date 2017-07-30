@@ -1,21 +1,22 @@
 """This module provides methods for parsing raw memory data"""
+
 import re
+
 from decimal import Decimal
-from perun.collect.memory.syscalls import demangle, address_to_line
+import perun.collect.memory.syscalls as syscalls
 
 __author__ = "Radim Podola"
 
-PATTERN_WORD = re.compile(r"\w+")
+PATTERN_WORD = re.compile(r"(\w+|[?])")
 PATTERN_TIME = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 PATTERN_INT = re.compile(r"\d+")
 
 
-def parse_stack(stack, cmd):
+def parse_stack(stack):
     """ Parse stack information of one allocation
     Arguments:
         stack(list): list of raw stack data
-        cmd(string): profiled binary
 
     Returns:
         list: list of formatted structures representing
@@ -29,7 +30,7 @@ def parse_stack(stack, cmd):
         # it's the first word in the call record
         func = PATTERN_WORD.search(call).group()
         # demangling name of function
-        func = demangle(func)
+        func = syscalls.demangle(func)
         call_data.update({'function': func})
 
         # parsing instruction pointer,
@@ -38,7 +39,7 @@ def parse_stack(stack, cmd):
 
         # getting information of instruction pointer,
         # the source file and line number in the source file
-        ip_info = address_to_line(ip, cmd)
+        ip_info = syscalls.address_to_line(ip)
         if ip_info[0] in ["?", "??"]:
             ip_info[0] = "unreachable"
         if ip_info[1] in ["?", "??"]:
@@ -73,11 +74,10 @@ def parse_allocation_location(trace):
     return {}
 
 
-def parse_resources(allocation, cmd):
+def parse_resources(allocation):
     """ Parse resources of one allocation
     Arguments:
         allocation(list): list of raw allocation data
-        cmd(string): profiled binary
 
     Returns:
         structure: formatted structure representing
@@ -102,7 +102,7 @@ def parse_resources(allocation, cmd):
 
     # parsing stack in the moment of allocation
     # to getting trace of it
-    trace = parse_stack(allocation[2:], cmd)
+    trace = parse_stack(allocation[2:])
     data.update({'trace': trace})
 
     # parsed data is memory type
@@ -117,6 +117,7 @@ def parse_resources(allocation, cmd):
 
 def parse_log(filename, cmd, snapshots_interval):
     """ Parse raw data in the log file
+
     Arguments:
         filename(string): name of the log file
         cmd(string): profiled binary
@@ -146,6 +147,18 @@ def parse_log(filename, cmd, snapshots_interval):
     for item in log:
         allocations.append(item.splitlines())
 
+    # Collect names and addresses for demangling and addr2line collective call
+    names, ips = set(), set()
+    for allocation in allocations:
+        for resource in allocation[2:]:
+            name, ip = resource.split(' ')
+            names.add(name)
+            ips.add(ip)
+
+    # Build caches for demangle and addr2line for further calls
+    syscalls.build_demangle_cache(names)
+    syscalls.build_address_to_line_cache(ips, cmd)
+
     snapshots = []
     data = {}
     data.update({'time': '{0:f}'.format(interval)})
@@ -173,7 +186,7 @@ def parse_log(filename, cmd, snapshots_interval):
 
         # using parse_resources()
         # parsing resources,
-        data['resources'].append(parse_resources(allocation, cmd))
+        data['resources'].append(parse_resources(allocation))
 
     if data:
         snapshots.append(data)

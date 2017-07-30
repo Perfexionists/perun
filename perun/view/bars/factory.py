@@ -1,13 +1,36 @@
 """This module contains the BAR graphs creating functions"""
 
-import bkcharts as charts
+import perun.profile.factory as profiles
 
-import perun.core.profile.converters as converters
+import perun.profile.converters as converters
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
 
+import demandimport
+with demandimport.enabled():
+    import bkcharts as charts
+
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
+
+
+def validate_keywords(profile, func, of_key, **_):
+    """Function for validating the keywords before calling the graph generation.
+
+    Checks if the of key can be aggregated by the function.
+
+    Arguments:
+        profile(dict): profile that will be used against in the validation
+        func(function): function used for aggregation of the data
+        of_key(str): key that will be aggregated in the graph
+
+    Returns:
+        bool: true if the values are OK
+
+    Raises:
+        InvalidParameterException: if the of_key does not support the given function
+    """
+    return profiles.is_key_aggregatable_by(profile, func, of_key, "of_key")
 
 
 def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,

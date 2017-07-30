@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import click
 
-import perun.core.profile.converters as heap_representation
+import perun.profile.converters as heap_representation
 import perun.view.heapmap.heap_map as hm
 from perun.utils.helpers import pass_profile
 

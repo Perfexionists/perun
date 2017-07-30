@@ -1,12 +1,18 @@
 """Bar's graphs interpretation of the profiles."""
 
-import bokeh.core.enums as enums
 import click
 
-import perun.view.bars.factory as bar_graphs
+import perun.view.bars.factory as bars_factory
+import perun.utils.log as log
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.bokeh_helpers as bokeh_helpers
+
 from perun.utils.helpers import pass_profile
+from perun.utils.exceptions import InvalidParameterException
+
+import demandimport
+with demandimport.enabled():
+    import bokeh.core.enums as enums
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
@@ -34,13 +40,12 @@ def process_title(ctx, _, value):
             ctx.params['func'].capitalize(), ctx.params['of_key'], ctx.params['per_key'],
             ctx.params['cummulation_type'], ctx.params['by_key']
         )
-    else:
-        return value
+    return value
 
 
 @click.command()
 @click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
-                type=click.Choice(map(str, enums.Aggregation)))
+                type=click.Choice(list(map(str, enums.Aggregation))))
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Source of the data for the bars, i.e. what will be displayed on Y axis.")
@@ -68,7 +73,7 @@ def process_title(ctx, _, value):
               callback=cli_helpers.process_bokeh_axis_title,
               help="Label on the Y axis of the bar graph.")
 @click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
-              help="Title of the graph.")
+              help="Title of the bars graph.")
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
               help="Will show the graph in browser.")
 @pass_profile
@@ -101,5 +106,11 @@ def bars(profile, filename, view_in_browser, **kwargs):
     labels for axis, custom graph title and different graph width. Each graph can be loaded from
     the template according to the template file.
     """
-    bar_graph = bar_graphs.create_from_params(profile, **kwargs)
-    bokeh_helpers.save_graphs_in_column([bar_graph], filename, view_in_browser)
+    try:
+        bokeh_helpers.process_profile_to_graphs(
+            bars_factory, profile, filename, view_in_browser, **kwargs
+        )
+    except AttributeError as attr_error:
+        log.error("while creating graph: {}".format(str(attr_error)))
+    except InvalidParameterException as ip_error:
+        log.error(str(ip_error))

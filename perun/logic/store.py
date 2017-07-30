@@ -6,6 +6,7 @@ or load and store into the directories or filenames.
 
 import binascii
 import hashlib
+import re
 import os
 import string
 import struct
@@ -21,6 +22,10 @@ from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
 from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
+
+
+INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
+PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
 
 
 def touch_file(touched_filename, times=None):
@@ -49,6 +54,22 @@ def touch_dir(touched_dir):
         os.mkdir(touched_dir)
 
 
+def touch_dir_range(touched_dir_start, touched_dir_end):
+    """Iterates through the range of the subdirs between start and end touching each one of the dir
+
+    E.g. for the following:
+    touched_dir_start = '/a/b', touched_dir_end = '/a/b/c/d/e'
+    following will be touched: /a/b, /a/b/c, ..., /a/b/c/d/e
+
+    Arguments:
+        touched_dir_start(str): base case of the touched dirs
+        touched_dir_end(str): end case of the touched dirs
+    """
+    for subdir in path_to_subpaths(touched_dir_end):
+        if subdir.startswith(touched_dir_start):
+            touch_dir(subdir)
+
+
 def path_to_subpaths(path):
     """Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
 
@@ -61,7 +82,6 @@ def path_to_subpaths(path):
     Returns:
         list: list of subpaths
     """
-    assert os.path.isdir(path)
     components = path.split(os.sep)
     return [os.sep + components[0]] + \
            [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
@@ -563,10 +583,6 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
         registered_file(path): filename that is registered
         registered_file_checksum(str): sha-1 representation fo the registered file
     """
-    perun_log.msg_to_stdout("Registering file '{}'({}) into minor version {} index".format(
-        registered_file, registered_file_checksum, minor_version
-    ), 2)
-
     # Create the directory and index (if it does not exist)
     minor_dir, minor_index_file = split_object_name(base_dir, minor_version)
     touch_dir(minor_dir)
@@ -577,48 +593,51 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     entry = IndexEntry(modification_stamp, registered_file_checksum, entry_name, -1)
     write_entry_to_index(minor_index_file, entry)
 
-    if perun_log.VERBOSITY >= perun_log.VERBOSE_DEBUG:
-        print_index(minor_index_file)
-
     reg_rel_path = os.path.relpath(registered_file)
     perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
 
 
 @decorators.assume_version(INDEX_VERSION, 1)
-def remove_from_index(base_dir, minor_version, removed_file, remove_all=False):
-    """
+def remove_from_index(base_dir, minor_version, removed_file_generator, remove_all=False):
+    """Removes stream of removed files from the index.
+
+    Iterates through all of the removed files, and removes their partial/full occurence from the
+    index. The index is walked just once.
+
     Arguments:
         base_dir(str): base directory of the minor version
         minor_version(str): sha-1 representation of the minor version of vcs (like e..g commit)
-        removed_file(path): filename, that is removed from the tracking
+        removed_file_generator(generator):
+            generator of filenames, that will be removed from the tracking
         remove_all(bool): true if all of the entries should be removed
     """
-    def lookup_function(entry):
-        """Helper lookup function according to the type of the removed file"""
-        if is_sha1(removed_file):
-            return entry.checksum == removed_file
-        else:
-            return entry.path == removed_file
-
-    perun_log.msg_to_stdout("Removing entry {} from the minor version {} index".format(
-        removed_file, minor_version
-    ), 2)
-
     # Get directory and index
     _, minor_version_index = split_object_name(base_dir, minor_version)
 
     if not os.path.exists(minor_version_index):
-        raise EntryNotFoundException(removed_file)
+        raise EntryNotFoundException(minor_version_index)
 
     # Lookup all entries for the given function
     with open(minor_version_index, 'rb+') as index_handle:
-        if remove_all:
-            removed_entries = lookup_all_entries_within_index(index_handle, lookup_function)
-        else:
-            removed_entries = [lookup_entry_within_index(index_handle, lookup_function)]
-
+        # Gather all of the entries from the index
         all_entries = [entry for entry in walk_index(index_handle)]
         all_entries.sort(key=lambda unsorted_entry: unsorted_entry.offset)
+        removed_entries = []
+
+        for removed_file in removed_file_generator:
+            def lookup_function(entry):
+                """Helper lookup function according to the type of the removed file"""
+                if is_sha1(removed_file):
+                    return entry.checksum == removed_file
+                else:
+                    return entry.path == removed_file
+
+            if remove_all:
+                removed_entries.append(
+                    lookup_all_entries_within_index(index_handle, lookup_function)
+                )
+            else:
+                removed_entries.extend([lookup_entry_within_index(index_handle, lookup_function)])
 
         # Update number of entries
         index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
@@ -631,6 +650,3 @@ def remove_from_index(base_dir, minor_version, removed_file, remove_all=False):
             write_entry(index_handle, entry)
 
         index_handle.truncate()
-
-    if perun_log.VERBOSITY >= perun_log.VERBOSE_DEBUG:
-        print_index(minor_version_index)

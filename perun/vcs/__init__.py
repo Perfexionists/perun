@@ -29,10 +29,10 @@ def get_minor_head(vcs_type, *args, **kwargs):
     """
     try:
         return dynamic_module_function_call(
-            'perun.core.vcs', vcs_type, '_get_minor_head', *args, **kwargs
+            'perun.vcs', vcs_type, '_get_minor_head', *args, **kwargs
         )
-    except ValueError as e:
-        perun_log.error("could not obtain head minor version: {}".format(e))
+    except ValueError as value_error:
+        perun_log.error("could not obtain head minor version: {}".format(value_error))
 
 
 def init(vcs_type, *args, **kwargs):
@@ -48,7 +48,7 @@ def init(vcs_type, *args, **kwargs):
         vcs_type, args, kwargs
     ), 1)
     return dynamic_module_function_call(
-        'perun.core.vcs', vcs_type, '_init', *args, **kwargs
+        'perun.vcs', vcs_type, '_init', *args, **kwargs
     )
 
 
@@ -66,7 +66,7 @@ def walk_minor_versions(vcs_type, *args, **kwargs):
         vcs_type
     ), 1)
     return dynamic_module_function_call(
-        'perun.core.vcs', vcs_type, '_walk_minor_versions', *args, **kwargs
+        'perun.vcs', vcs_type, '_walk_minor_versions', *args, **kwargs
     )
 
 
@@ -84,7 +84,7 @@ def walk_major_versions(vcs_type, *args, **kwargs):
         vcs_type
     ), 1)
     return dynamic_module_function_call(
-        'perun.core.vcs', vcs_type, '_walk_major_versions', *args, **kwargs
+        'perun.vcs', vcs_type, '_walk_major_versions', *args, **kwargs
     )
 
 
@@ -102,7 +102,7 @@ def get_minor_version_info(vcs_type, *args, **kwargs):
         vcs_type, args, kwargs
     ), 1)
     return dynamic_module_function_call(
-        'perun.core.vcs', vcs_type, '_get_minor_version_info', *args, **kwargs
+        'perun.vcs', vcs_type, '_get_minor_version_info', *args, **kwargs
     )
 
 
@@ -120,7 +120,7 @@ def get_head_major_version(vcs_type, *args, **kwargs):
         vcs_type
     ), 1)
     return dynamic_module_function_call(
-        'perun.core.vcs', vcs_type, '_get_head_major_version', *args, **kwargs
+        'perun.vcs', vcs_type, '_get_head_major_version', *args, **kwargs
     )
 
 
@@ -132,5 +132,20 @@ def check_minor_version_validity(vcs_type, *args, **kwargs):
         kwargs(dict): dictionary of keyword arguments
     """
     dynamic_module_function_call(
-        'perun.core.vcs', vcs_type, '_check_minor_version_validity', *args, **kwargs
+        'perun.vcs', vcs_type, '_check_minor_version_validity', *args, **kwargs
+    )
+
+
+def massage_parameter(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs in which we are massaging the parameters
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+
+    Returns:
+        str: massaged parameter
+    """
+    return dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_massage_parameter', *args, **kwargs
     )

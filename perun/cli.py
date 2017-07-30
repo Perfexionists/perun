@@ -4,28 +4,28 @@ Simple Command Line Interface for the Perun functionality using the Click librar
 calls underlying commands from the commands module.
 """
 
-import logging
 import os
 import pkgutil
 import re
 
 import click
+import perun.logic.commands as commands
+import perun.logic.runner as runner
+import perun.logic.store as store
+from perun.logic.pcs import PCS
 
 import perun.collect
-import perun.core.logic.commands as commands
-import perun.core.logic.config as perun_config
-import perun.core.logic.runner as runner
-import perun.core.logic.store as store
-import perun.core.profile.factory as profiles
-import perun.core.vcs as vcs
+import perun.logic.config as perun_config
 import perun.postprocess
+import perun.profile.factory as profiles
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
+import perun.vcs as vcs
 import perun.view
-from perun.core.logic.pcs import PCS
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
-    NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException
+    NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
+    MissingConfigSectionException, InvalidConfigOperationException, VersionControlSystemException
 
 __author__ = 'Tomas Fiedor'
 
@@ -43,14 +43,70 @@ def cli(verbose):
         perun_log.VERBOSITY = verbose
 
 
+def validate_key(ctx, _, value):
+    """Validates the value of the key for the different modes.
+
+    For get and set <key> is required, while for edit it has no effect.
+
+    Arguments:
+        ctx(click.Context): called context of the command line
+        _(click.Option): called option (key in this case)
+        value(object): assigned value to the <key> argument
+
+    Returns:
+        object: value for the <key> argument
+    """
+    operation = ctx.params['operation']
+    if operation == 'edit' and value:
+        perun_log.warn('setting <key> argument has no effect in edit config operation')
+    elif operation in ('get', 'set') and not value:
+        raise click.BadParameter("missing <key> argument for {} config operation".format(
+            operation
+        ))
+
+    return value
+
+
+def validate_value(ctx, _, value):
+    """Validates the value parameter for different modes.
+
+    Value is required for set operation, while in get and set has no effect.
+
+    Arguments:
+        ctx(click.Context): called context of the command line
+        _(click.Option): called option (in this case value)
+        value(object): assigned value to the <value> argument
+
+    Returns:
+        object: value for the <key> argument
+    """
+    operation = ctx.params['operation']
+    if operation in ('edit', 'get') and value:
+        perun_log.warn('setting <value> argument has no effect in {} config operation'.format(
+            operation
+        ))
+    elif operation == 'set' and not value:
+        raise click.BadParameter("missing <value> argument for set config operation")
+
+    return value
+
+
 @cli.command()
-@click.argument('key', required=True)
-@click.argument('value', required=False)
-@click.option('--get', '-g', is_flag=True,
-              help="get the value of the key")
-@click.option('--set', '-s', is_flag=True,
-              help="set the value of the key")
-def config(key, value, **kwargs):
+@click.argument('key', required=False, metavar='<key>', callback=validate_key)
+@click.argument('value', required=False, metavar='<value>', callback=validate_value)
+@click.option('--get', '-g', 'operation', is_eager=True, flag_value='get',
+              help="Returns the value of the provided <key>.")
+@click.option('--set', '-s', 'operation', is_eager=True, flag_value='set',
+              help="Sets the value of the <key> to <value> in the configuration file.")
+@click.option('--edit', '-e', 'operation', is_eager=True, flag_value='edit',
+              help="Edits the configuration file in the user defined editor.")
+@click.option('--local', '-l', 'store_type', flag_value='local',
+              help='Sets the local config as working config (.perun/local.yml).')
+@click.option('--shared', '-h', 'store_type', flag_value='shared',
+              help='Sets the shared config as working config (shared.yml).')
+@click.option('--nearest', '-n', 'store_type', flag_value='recursive', default=True,
+              help='Recursively discover the nearest config (differs for modes).')
+def config(**kwargs):
     """Get and set the options of local and global configurations.
 
     For each perun repository, there are two types of config:
@@ -72,8 +128,10 @@ def config(key, value, **kwargs):
 
             Retrieves the type of the wrapped repository of the local perun.
     """
-    perun_log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
-    commands.config(key, value, **kwargs)
+    try:
+        commands.config(**kwargs)
+    except (MissingConfigSectionException, InvalidConfigOperationException) as mcs_err:
+        perun_log.error(str(mcs_err))
 
 
 def configure_local_perun(perun_path):
@@ -84,7 +142,7 @@ def configure_local_perun(perun_path):
     """
     pcs = PCS(perun_path)
     editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
-    local_config_file = os.path.join(pcs.path, 'local.yml')
+    local_config_file = pcs.get_config_file('local')
     try:
         utils.run_external_command([editor, local_config_file])
     except ValueError as v_exception:
@@ -93,7 +151,7 @@ def configure_local_perun(perun_path):
 
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
-@click.option('--vcs-type', metavar='<type>', default='pvcs',
+@click.option('--vcs-type', metavar='<type>', default='git',
               type=click.Choice(utils.get_supported_module_names(vcs, '_init')),
               help="Apart of perun structure, a supported version control system can be wrapped"
                    " and initialized as well.")
@@ -124,30 +182,44 @@ def init(dst, configure, **kwargs):
     is supported. Additional parameters can be passed to the wrapped control system initialization
     using the --vcs-params.
     """
-    perun_log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
-
     try:
         commands.init(dst, **kwargs)
+
+        if configure:
+            # Run the interactive configuration of the local perun repository (populating .yml)
+            configure_local_perun(dst)
+        else:
+            perun_log.quiet_info("\nIn order to automatically run jobs configure the matrix at:\n"
+                                 "\n"
+                                 + (" "*4) + ".perun/local.yml\n")
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error(str(unsup_module_exp))
     except PermissionError as perm_exp:
-        # If this is problem with writing to shared.yml, say it is error and ask for sudo
-        if 'shared.yml' in str(perm_exp):
-            perun_log.error("writing to shared config 'shared.yml' requires root permissions")
-        # Else reraise as who knows what kind of mistake is this
-        else:
-            raise perm_exp
+        assert 'shared.yml' in str(perm_exp)
+        perun_log.error("writing to shared config 'shared.yml' requires root permissions")
+    except MissingConfigSectionException:
+        perun_log.error("cannot launch default editor for configuration.\n"
+                        "Please set 'global.editor' key to a valid text editor (e.g. vim).")
 
-    if configure:
-        # Run the interactive configuration of the local perun repository (populating .yml)
-        configure_local_perun(dst)
+
+def lookup_nth_pending_filename(position):
+    """
+    Arguments:
+        position(int): position of the pending we will lookup
+
+    Returns:
+        str: pending profile at given position
+    """
+    pending = commands.get_untracked_profiles(PCS(store.locate_perun_dir_on(os.getcwd())))
+    if 0 <= position < len(pending):
+        return pending[position].id
     else:
-        perun_log.quiet_info("\nIn order to automatically run the jobs configure the matrix at:\n"
-                             "\n"
-                             + (" "*4) + ".perun/local.yml\n")
+        raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
+            "{}@p".format(position), '0@p', '{}@p'.format(len(pending)-1)
+        ))
 
 
-def filename_lookup_callback(ctx, param, value):
+def added_filename_lookup_callback(ctx, param, value):
     """Callback function for looking up the profile, if it does not exist
 
     Arguments:
@@ -158,7 +230,39 @@ def filename_lookup_callback(ctx, param, value):
     Returns:
         str: filename of the profile
     """
-    return lookup_profile_filename(value)
+    massaged_values = set()
+    for single_value in value:
+        match = store.PENDING_TAG_REGEX.match(single_value)
+        if match:
+            massaged_values.add(lookup_nth_pending_filename(int(match.group(1))))
+        else:
+            massaged_values.add(lookup_profile_filename(single_value))
+    return massaged_values
+
+
+def removed_filename_lookup_callback(ctx, param, value):
+    """
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        str: filename of the profile to be removed
+    """
+    massaged_values = set()
+    for single_value in value:
+        match = store.INDEX_TAG_REGEX.match(single_value)
+        if match:
+            index_filename = commands.get_nth_profile_of(
+                int(match.group(1)), ctx.params['minor']
+            )
+            start = index_filename.rfind('objects') + len('objects')
+            # Remove the .perun/objects/... prefix and merge the directory and file to sha
+            massaged_values.add("".join(index_filename[start:].split('/')))
+        else:
+            massaged_values.add(single_value)
+    return massaged_values
 
 
 def lookup_profile_filename(profile_name):
@@ -195,10 +299,30 @@ def lookup_profile_filename(profile_name):
     return profile_name
 
 
+def minor_version_lookup_callback(ctx, param, value):
+    """
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        str: massaged minor version
+    """
+    if value is not None:
+        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+        try:
+            return vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, value)
+        except VersionControlSystemException as exception:
+            raise click.BadParameter(str(exception))
+
+
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>',
-                callback=filename_lookup_callback)
-@click.argument('minor', required=False, default=None, metavar='<hash>')
+@click.argument('profile', required=True, metavar='<profile>', nargs=-1,
+                callback=added_filename_lookup_callback)
+@click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
+              callback=minor_version_lookup_callback,
+              help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.option('--keep-profile', is_flag=True, required=False, default=False,
               help='if set, then the added profile will not be deleted')
 def add(profile, minor, **kwargs):
@@ -217,8 +341,6 @@ def add(profile, minor, **kwargs):
           Adds the profile collected by mcollect profile on mybin with input.txt workload computed
           on 1st March at 16:11 to the head.
     """
-    perun_log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
-
     try:
         commands.add(profile, minor, **kwargs)
     except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
@@ -226,8 +348,11 @@ def add(profile, minor, **kwargs):
 
 
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>')
-@click.argument('minor', required=False, default=None, metavar='<hash>')
+@click.argument('profile', required=True, metavar='<profile>', nargs=-1,
+                callback=removed_filename_lookup_callback)
+@click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
+              callback=minor_version_lookup_callback,
+              help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.option('--remove-all', '-A', is_flag=True, default=False,
               help="Remove all occurrences of <profile> from the <hash> index.")
 def rm(profile, minor, **kwargs):
@@ -246,8 +371,6 @@ def rm(profile, minor, **kwargs):
           Removes the profile collected by mcollect on mybin with input.txt from the workload
           computed on 1st March at 16:11 from the HEAD index
     """
-    perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-
     try:
         commands.remove(profile, minor, **kwargs)
     except (NotPerunRepositoryException, EntryNotFoundException) as exception:
@@ -260,8 +383,22 @@ def profile_lookup_callback(ctx, _, value):
     """
     Arguments:
         ctx(click.core.Context): context
-        param(click.core.Argument): param
+        _(click.core.Argument): param
+        value(str): value of the profile parameter
     """
+    # 0) First check if the value is tag or not
+    index_tag_match = store.INDEX_TAG_REGEX.match(value)
+    if index_tag_match:
+        index_profile = commands.get_nth_profile_of(
+            int(index_tag_match.group(1)), ctx.params['minor']
+        )
+        return profiles.load_profile_from_file(index_profile, is_raw_profile=False)
+
+    pending_tag_match = store.PENDING_TAG_REGEX.match(value)
+    if pending_tag_match:
+        pending_profile = lookup_nth_pending_filename(int(pending_tag_match.group(1)))
+        return profiles.load_profile_from_file(pending_profile, is_raw_profile=True)
+
     # 1) Check the index, if this is registered
     profile_from_index = commands.load_profile_from_args(value, ctx.params['minor'])
     if profile_from_index:
@@ -313,7 +450,6 @@ def log(head, **kwargs):
     \b
     <hash> (<profile_numbers>) <short_info>
     """
-    perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
     try:
         commands.log(head, **kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
@@ -331,16 +467,17 @@ def status(**kwargs):
     Moreover prints the list of tracked profiles lexicographically sorted along with their
     types and creation times.
     """
-    perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
     try:
         commands.status(**kwargs)
-    except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
+    except (NotPerunRepositoryException, UnsupportedModuleException,
+            MissingConfigSectionException) as exception:
         perun_log.error(str(exception))
 
 
 @cli.group()
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
+              callback=minor_version_lookup_callback,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
 def show(ctx, profile, **_):
@@ -365,12 +502,12 @@ def show(ctx, profile, **_):
     """
     ctx.obj = profile
     # TODO: Check that if profile is not SHA-1, then minor must be set
-    perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
 
 
 @cli.group()
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
+              callback=minor_version_lookup_callback,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
 def postprocessby(ctx, profile, **_):
@@ -386,7 +523,6 @@ def postprocessby(ctx, profile, **_):
             values of the resources will be normalized to the interval <0,1>.
     """
     ctx.obj = profile
-    perun_log.msg_to_stdout("Running 'perun postprocessby'", 2, logging.INFO)
 
 
 @cli.group()
@@ -400,7 +536,6 @@ def postprocessby(ctx, profile, **_):
 def collect(ctx, **kwargs):
     """Collect the profile from the given binary, arguments and workload"""
     ctx.obj = kwargs
-    perun_log.msg_to_stdout("Running 'perun collect'", 2, logging.INFO)
 
 
 def init_unit_commands():
@@ -409,6 +544,7 @@ def init_unit_commands():
     Some of the subunits has to be dynamically initialized according to the registered modules,
     like e.g. show has different forms (raw, graphs, etc.).
     """
+    # Fixme: Refactoring this will yield -0.15s
     for (unit, cli_cmd) in [(perun.view, show), (perun.postprocess, postprocessby),
                             (perun.collect, collect)]:
         for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
@@ -437,7 +573,6 @@ def run():
     Either runs the job matrix stored in local.yml configuration or lets the user
     construct the job run using the set of parameters.
     """
-    perun_log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
 
 
 @run.command()

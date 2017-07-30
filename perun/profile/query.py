@@ -1,3 +1,13 @@
+"""Functions for issuing queries over the profiles.
+
+Queries are realized as generators of values over the profile in the dictionary format,
+as specified by the manifesto.
+
+Fixme: Add caching to ease some of the computation.
+"""
+
+import numbers
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -5,7 +15,6 @@ def all_resources_of(profile):
     """Generator of resources from the performance profile.
 
     Iterates through all of the snapshots and global resources.
-    TODO: Make this dynamic by caching
 
     Arguments:
         profile(dict): valid profile with resources
@@ -13,13 +22,15 @@ def all_resources_of(profile):
     Returns:
         (int, dict): yields resources per each snapshot and global section
     """
-    for snap_no, snapshot in enumerate(profile['snapshots']):
+    snapshots = profile.get('snapshots', [])
+    for snap_no, snapshot in enumerate(snapshots):
         for resource in snapshot['resources']:
             yield snap_no, resource
 
     # Fix this asap!
-    for resource in profile['global']['resources']:
-        yield len(profile['snapshots']), resource
+    global_snapshot = profile.get('global', {})
+    for resource in global_snapshot['resources']:
+        yield len(snapshots), resource
 
 
 def flattened_values(root_key, root_value):
@@ -85,3 +96,31 @@ def all_resource_fields_of(profile):
             if key not in resource_fields:
                 resource_fields.add(key)
                 yield key
+
+
+def all_numerical_resource_fields_of(profile):
+    """Generator of all names of the fields occurring in the resources, that takes numeric values.
+
+    Arguments:
+        profile(dict): valid profile with resources
+
+    Returns:
+        str: stream of resource fields key, that takes integer values
+    """
+    resource_fields = set()
+    exclude_fields = set()
+    for (_, resource) in all_resources_of(profile):
+        for key, value in all_items_of(resource):
+            # Instances that are not numbers are removed from the resource fields (i.e. there was
+            # some inconsistency between value) and added to exclude for future usages
+            if not isinstance(value, numbers.Number):
+                resource_fields.discard(value)
+                exclude_fields.add(value)
+            # If we previously encountered incorrect non-numeric value for the key, we do not add
+            # it as a numeric key
+            elif value not in exclude_fields:
+                resource_fields.add(key)
+
+    # Yield the stream of the keys
+    for key in resource_fields:
+        yield key

@@ -7,9 +7,10 @@ by its path.
 
 import os
 
-import perun.core.vcs as vcs
-import perun.core.logic.store as store
-import perun.core.logic.config as config
+import perun.logic.store as store
+import perun.logic.config as config
+import perun.utils.log as log
+import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
 
@@ -78,6 +79,30 @@ class PCS(object):
             directory: directory, where job outputs are stored
         """
         return os.path.join(self.path, "jobs")
+
+    def get_config_dir(self, config_type):
+        """
+        Returns:
+            str: path of to the directory of with the config
+        """
+        if config_type in ('local', 'recursive'):
+            return self.path
+        elif config_type in ('shared', 'global'):
+            return config.lookup_shared_config_dir()
+        else:
+            log.error("wrong configuration type for self.get_config_dir: '{}'".format(config_type))
+
+    def get_config_file(self, config_type):
+        """
+        Returns:
+            str: path of the config of the given type
+        """
+        if config_type in ('local', 'recursive'):
+            return os.path.join(self.path, 'local.yml')
+        elif config_type in ('shared', 'global'):
+            return os.path.join(config.lookup_shared_config_dir(), 'shared.yml')
+        else:
+            log.error("wrong configuration type for self.get_config_file: '{}'".format(config_type))
 
 
 def pass_pcs(func):
