@@ -4,7 +4,6 @@ Simple Command Line Interface for the Perun functionality using the Click librar
 calls underlying commands from the commands module.
 """
 
-import logging
 import os
 import pkgutil
 import re
@@ -545,6 +544,7 @@ def init_unit_commands():
     Some of the subunits has to be dynamically initialized according to the registered modules,
     like e.g. show has different forms (raw, graphs, etc.).
     """
+    # Fixme: Refactoring this will yield -0.15s
     for (unit, cli_cmd) in [(perun.view, show), (perun.postprocess, postprocessby),
                             (perun.collect, collect)]:
         for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):

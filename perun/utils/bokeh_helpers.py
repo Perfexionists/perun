@@ -1,10 +1,12 @@
 """Collection of helper functions for working with bokeh graphs"""
 
-import bokeh.layouts as layouts
-import bokeh.palettes as palettes
-import bokeh.plotting as plotting
-
 import perun.utils.log as log
+
+import demandimport
+with demandimport.enabled():
+    import bokeh.layouts as layouts
+    import bokeh.palettes as palettes
+    import bokeh.plotting as plotting
 
 __author__ = 'Tomas Fiedor'
 
