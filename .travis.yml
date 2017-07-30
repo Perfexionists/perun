@@ -3,10 +3,9 @@ language: python
 python:
     - "3.4"
 
-cache: pip 
+cache: pip
 
 install:
-    - pip install Cython
     - pip install -r requirements.txt
     - pip install -U pytest pytest-cov codecov
     - make install
