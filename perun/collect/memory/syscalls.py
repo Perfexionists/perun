@@ -10,6 +10,23 @@ demangle_cache = {}
 address_to_line_cache = {}
 
 
+def build_demangle_cache(names):
+    """Builds global cache for demangle() function calls.
+
+    Instead of continuous calls to subprocess, this takes all of the collected names
+    and calls the demangle just once, while constructing the cache.
+
+    Arguments:
+        names(set): set of names that will be demangled in future
+    """
+    global demangle_cache
+
+    list_of_names = list(names)
+    sys_call = ['c++filt', " ".join(list_of_names)]
+    output = subprocess.check_output(sys_call).decode("utf-8").strip()
+    demangle_cache = dict(zip(list_of_names, output.split(" ")))
+
+
 def demangle(name):
     """
     Arguments:
@@ -18,13 +35,27 @@ def demangle(name):
     Returns:
         string: demangled name
     """
-    # Fixme: This could be called just once...
-    if name not in demangle_cache.keys():
-        sys_call = ['c++filt', name]
-        output = subprocess.check_output(sys_call)
-        demangle_cache[name] = output.decode("utf-8").strip()
-
     return demangle_cache[name]
+
+
+def build_address_to_line_cache(addresses, binary_name):
+    """Builds global cache for address_to_line() function calls.
+
+    Instead of continuous calls to subprocess, this takes all of the collected
+    names and calls the addr2line just once.
+
+    Arguments:
+        addresses(set): set of addresses that will be translated to line info
+        binary_name(str): name of the binary which will be parsed for info
+    """
+    global address_to_line_cache
+
+    list_of_addresses = list(addresses)
+    sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
+    output = subprocess.check_output(sys_call).decode("utf-8").strip()
+    address_to_line_cache = dict(zip(
+        list_of_addresses, map(lambda x: x.split(':'), output.split("\n"))
+    ))
 
 
 def get_extern_funcs(filename):
@@ -47,25 +78,16 @@ def get_extern_funcs(filename):
     return functions
 
 
-def address_to_line(ip, filename):
+def address_to_line(ip):
     """
     Arguments:
         ip(string): instruction pointer value
-        filename(string): name of file to inspect for debug information
 
     Returns:
         list: list of two objects, 1st is the name of the source file,
               2nd is the line number
     """
-    # Fixme: This could be called just once...
-    key = ":".join([ip, filename])
-    if key not in address_to_line_cache.keys():
-        sys_call = ['addr2line', ip, '-e', filename]
-        output = subprocess.check_output(sys_call)
-
-        address_to_line_cache[key] = output.decode("utf-8").strip().split(':')
-
-    return address_to_line_cache[key][:]
+    return address_to_line_cache[ip][:]
 
 
 def run(cmd, params, workload):
