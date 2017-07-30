@@ -3,6 +3,10 @@
 import os
 import re
 import subprocess
+import perun.utils.log as log
+
+PATTERN_WORD = re.compile(r"(\w+)|[?]")
+PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 
 __author__ = "Radim Podola"
 
@@ -22,9 +26,12 @@ def build_demangle_cache(names):
     global demangle_cache
 
     list_of_names = list(names)
-    sys_call = ['c++filt', " ".join(list_of_names)]
-    output = subprocess.check_output(sys_call).decode("utf-8").strip()
-    demangle_cache = dict(zip(list_of_names, output.split(" ")))
+    if not all(map(lambda name: PATTERN_WORD.match(name), list_of_names)):
+        log.error("incorrect values in demangled names")
+    else:
+        sys_call = ['c++filt'] + list_of_names
+        output = subprocess.check_output(sys_call).decode("utf-8").strip()
+        demangle_cache = dict(zip(list_of_names, output.split("\n")))
 
 
 def demangle(name):
@@ -51,11 +58,14 @@ def build_address_to_line_cache(addresses, binary_name):
     global address_to_line_cache
 
     list_of_addresses = list(addresses)
-    sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
-    output = subprocess.check_output(sys_call).decode("utf-8").strip()
-    address_to_line_cache = dict(zip(
-        list_of_addresses, map(lambda x: x.split(':'), output.split("\n"))
-    ))
+    if not all(map(lambda addr: PATTERN_HEXADECIMAL.match(addr), list_of_addresses)):
+        log.error("incorrect values in address translations")
+    else:
+        sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
+        output = subprocess.check_output(sys_call).decode("utf-8").strip()
+        address_to_line_cache = dict(zip(
+            list_of_addresses, map(lambda x: x.split(':'), output.split("\n"))
+        ))
 
 
 def get_extern_funcs(filename):
