@@ -7,7 +7,7 @@ import perun.collect.memory.syscalls as syscalls
 
 __author__ = "Radim Podola"
 
-PATTERN_WORD = re.compile(r"\w+")
+PATTERN_WORD = re.compile(r"(\w+|[?])")
 PATTERN_TIME = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 PATTERN_INT = re.compile(r"\d+")
