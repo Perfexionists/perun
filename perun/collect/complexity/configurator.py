@@ -82,7 +82,7 @@ def _config_symbols_to_addresses(executable_path, runtime_filter, sample_map):
     return final_filter, final_sample
 
 
-def _config_write_config(config_handle, executable_path, runtime_filter, include_list, config):
+def _config_write_config(config_handle, executable_path, runtime_filter, include_list, job_settings):
     """ Writes the configuration stored in the config dictionary into the file
 
     Arguments:
@@ -90,7 +90,7 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
         executable_path(str): path to the executable which will use the configuration
         runtime_filter(list): addresses of functions to filter at runtime
         include_list(list): list of function symbols(rule_key tuple) to be profiled
-        config(dict): dictionary with configuration data
+        job_settings(dict): dictionary with collect job configuration data
 
     Raises:
         ValueError: if the config file is unexpectedly closed
@@ -98,35 +98,27 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
     """
     sample_map = dict()
     # Create the translation table for identifiers
-    if 'sampling' in config:
-        sample_map = _config_create_sample(include_list, config['sampling'])
+    if 'sampling' in job_settings:
+        sample_map = _config_create_sample(include_list, job_settings['sampling'])
     filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter, sample_map)
 
-    # Handle the possibly missing internal configuration details
-    if 'internal_data_filename' not in config:
-        config['internal_data_filename'] = DEFAULT_DATA_FILENAME
-    if 'internal_storage_size' not in config:
-        config['internal_storage_size'] = DEFAULT_STORAGE_SIZE
-    if 'internal_direct_output' not in config:
-        config['internal_direct_output'] = DEFAULT_DIRECT_OUTPUT
-
-    # Append the internal configuration
-    conf = {
-        'internal_data_filename': config['internal_data_filename'],
-        'internal_storage_size': config['internal_storage_size'],
-        'internal_direct_output': config['internal_direct_output']
+    # Create the internal configuration
+    internal_conf = {
+        'internal_data_filename': job_settings.get('internal_data_filename', DEFAULT_DATA_FILENAME),
+        'internal_storage_size': job_settings.get('internal_storage_size', DEFAULT_STORAGE_SIZE),
+        'internal_direct_output': job_settings.get('internal_direct_output', DEFAULT_DIRECT_OUTPUT),
     }
     # Append the runtime filter configuration
     if filter_list:
-        conf['runtime_filter'] = filter_list
+        internal_conf['runtime_filter'] = filter_list
     # Append the sampling configuration
     if sample_dict:
-        conf['sampling'] = []
+        internal_conf['sampling'] = []
         for sample_rule in sample_dict:
-            conf['sampling'].append({'func': sample_rule, 'sample': sample_dict[sample_rule]})
+            internal_conf['sampling'].append({'func': sample_rule, 'sample': sample_dict[sample_rule]})
 
     # Serializes the configuration dictionary to the proper circ format
-    config_handle.write('CIRC = {0}'.format(json.dumps(conf, sort_keys=True, indent=2)))
+    config_handle.write('CIRC = {0}'.format(json.dumps(internal_conf, sort_keys=True, indent=2)))
 
 
 def _config_create_sample(include_list, sample_list):
