@@ -3,6 +3,28 @@
 """
 
 
+class DictionaryKeysValidationFailed(Exception):
+    """Raised when validated dictionary is actually not a dictionary or has missing/excess keys"""
+    def __init__(self, dictionary, missing_keys, excess_keys):
+        """
+        Arguments:
+            dictionary(dict): the validated dictionary
+            missing_keys(list): list of missing keys in the dictionary
+            excess_keys(list): list of excess forbidden keys in the dictionary
+        """
+        if type(dictionary) is not dict:
+            self.msg = "Validated object '{0}' is not a dictionary.".format(dictionary)
+        elif not missing_keys:
+            self.msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
+                dictionary, ', '.join(excess_keys))
+        elif not excess_keys:
+            self.msg = "Validated dictionary '{0}' is missing required keys: '{1}'.".format(
+                dictionary, ', '.join(missing_keys))
+        else:
+            self.msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}' "
+            "and is missing required keys: '{2}'.".format(dictionary, ', '.join(excess_keys), ', '.join(missing_keys))
+
+
 class GenericRegressionExceptionBase(Exception):
     """Base class for all regression specific exception
 
@@ -23,56 +45,36 @@ class InvalidPointsException(GenericRegressionExceptionBase):
         if msg is not None:
             self.msg = msg
         elif x_len != y_len:
-            self.msg = "Points coordinates x and y have different lengths - x:{0}, y:{1}".format(x_len, y_len)
+            self.msg = "Points coordinates x and y have different lengths - x:{0}, y:{1}.".format(x_len, y_len)
         elif x_len < threshold or y_len < threshold:
-            self.msg = "Too few points coordinates to perform regression - x:{0}, y:{1}".format(x_len, y_len)
+            self.msg = "Too few points coordinates to perform regression - x:{0}, y:{1}.".format(x_len, y_len)
 
 
-class InvalidSequenceSplit(GenericRegressionExceptionBase):
+class InvalidSequenceSplitException(GenericRegressionExceptionBase):
     """Raised when the sequence split would produce too few points to use in regression analysis"""
     def __init__(self, ratio, msg=None):
         self.ratio = ratio
         if msg is not None:
             self.msg = msg
         else:
-            self.msg = "The sequence split would produce too few points: {0}".format(ratio)
+            self.msg = "Too few points would be produced by splitting the data into {0} parts.".format(ratio)
 
 
-class DataFormatExcessArgument(GenericRegressionExceptionBase):
-    """Raised when data format has excess argument which may cause incorrect behaviour"""
-    def __init__(self, argument, msg=None):
-        self.argument = argument
-        if msg is not None:
-            self.msg = msg
-        else:
-            self.msg = "Excess argument in function (data loss warning): {0}".format(str(argument))
-
-
-class DataFormatMissingArgument(GenericRegressionExceptionBase):
-    """Raised when data format is missing required argument"""
-    def __init__(self, argument, msg=None):
-        self.argument = argument
-        if msg is not None:
-            self.msg = msg
-        else:
-            self.msg = "Expected argument missing: {0}".format(str(argument))
-
-
-class DataFormatInvalidCoeffs(GenericRegressionExceptionBase):
+class InvalidCoeffsException(GenericRegressionExceptionBase):
     """Raised when data format contains unexpected number of coefficient"""
     def __init__(self, coeffs_count, msg=None):
         self.coeffs_count = coeffs_count
         if msg is not None:
             self.msg = msg
         else:
-            self.msg = "Missing coefficients list or their count different from: {0}".format(str(coeffs_count))
+            self.msg = "Missing coefficients list or their count different from: {0}.".format(str(coeffs_count))
 
 
-class InvalidModelType(GenericRegressionExceptionBase):
+class InvalidModelException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown regression model is required"""
     def __init__(self, model, msg=None):
         self.model = model
         if msg is not None:
             self.msg = msg
         else:
-            self.msg = "Invalid or unsupported regression model: {0}".format(str(model))
+            self.msg = "Invalid or unsupported regression model: {0}.".format(str(model))

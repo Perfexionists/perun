@@ -5,19 +5,30 @@ import sys
 import json
 
 
-def complexity_collector_provider(filename):
+def data_provider_mapper(profile):
+    """Unified data provider for various profile types.
+
+    Arguments:
+        profile(dict): the loaded profile dictionary
+
+    Returns:
+        generator: generator object created by specific provider function
+    """
+    profile_type = profile['header']['type']
+    return _profile_mapper[profile_type](profile)
+
+
+def complexity_profile_provider(profile):
     """Data provider for complexity collector profiling output.
 
     Arguments:
-        filename(string): the name of complexity profiling file
+        profile(dict): the complexity profile dictionary
 
     Returns:
         generator: each subsequent call returns tuple: x points list, y points list, function name
     """
     # Get the file resources contents
-    with open(filename) as f:
-        data = json.load(f)
-    resources = data['global']['resources']
+    resources = profile['global']['resources']
 
     # Sort the dictionaries by function name for easier traversing
     resources = sorted(resources, key=itemgetter('uid'))
@@ -111,7 +122,7 @@ def profile_store_to_files(resources):
     """Used for the common profile"""
     chunk_num = 0
     # Get the chunks
-    for chunk in complexity_collector_provider(resources):
+    for chunk in complexity_profile_provider(resources):
         with open('chunk_' + str(chunk_num), 'w') as f:
             # Store the uid
             f.write(chunk[2] + '\n')
@@ -127,3 +138,13 @@ def chunk_store_to_file(chunk, filename):
         f.write(chunk[2] + '\n')
         # Write the points
         f.write('\n'.join('{0},{1}'.format(pt[0], pt[1]) for pt in zip(chunk[0], chunk[1])))
+
+
+# profile types : data provider functions mapping dictionary
+# to add new profile type - simply add new keyword and specific provider function with signature:
+#  - return value: generator object that produces required profile data
+#  - parameter: profile dictionary
+_profile_mapper = {
+    'mixed': complexity_profile_provider,
+    'memory': memory_collector_provider
+}

@@ -3,46 +3,44 @@
 """
 
 
-import regression_analysis.regression_exceptions as reg_except
+import perun.postprocess.regression_analysis.regression_exceptions as reg_except
 from random import shuffle
 from operator import itemgetter
 
 # Minimum points count to perform the regression
 MIN_POINTS_COUNT = 2
-# Number of plotting points used by the visualization
-PLOT_DATA_POINTS = 51
 
 
-def check_excess_arg(arg_list, collection):
-    """Checks if collection contains certain unexpected arguments
+def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
+    """Checks the dictionary for missing required keys and excess forbidden keys.
 
     Arguments:
-        arg_list(list): list of arguments that should not be present in a collection
-        collection(iterable): any iterable collection that will be checked
+        dictionary(dict): the inspected dictionary
+        required_keys(list of str): keys that must be present in the inspected dictionary
+        forbidden_keys(list of str): keys that must not be in the inspected dictionary
     Raises:
-        DataFormatExcessArgument: if the collection contains any of the unexpected arguments
+        DictionaryKeysValidationFailed: if the dictionary inspection fails
     Returns:
         None
+
     """
-    for arg in arg_list:
-        if arg in collection:
-            raise reg_except.DataFormatExcessArgument(str(arg))
+    missing_keys, excess_keys = [], []
 
+    # Check the dictionary first
+    if type(dictionary) is not dict:
+        raise reg_except.DictionaryKeysValidationFailed(dictionary, [], [])
+    # Check all the required keys
+    for key in required_keys:
+        if key not in dictionary:
+            missing_keys += key
+    # Check all the forbidden keys
+    for key in forbidden_keys:
+        if key in dictionary:
+            excess_keys += key
 
-def check_missing_arg(arg_list, collection):
-    """Checks if collection is missing required arguments
-
-    Arguments:
-        arg_list(list): list of arguments that should be present in a collection
-        collection(iterable): any iterable collection that will be checked
-    Raises:
-        DataFormatMissingArgument: if the collection is missing any of the arguments
-    Returns:
-        None
-    """
-    for arg in arg_list:
-        if arg not in collection:
-            raise reg_except.DataFormatMissingArgument(str(arg))
+    # Raise exception if needed
+    if missing_keys or excess_keys:
+        raise reg_except.DictionaryKeysValidationFailed(dictionary, missing_keys, excess_keys)
 
 
 def check_points(x_len, y_len, threshold):
@@ -68,10 +66,10 @@ def check_coeffs(coeffs_count, collection):
         coeffs_count(int): the expected count of coefficients
         collection(dict): the dictionary with coefficients member 'coeffs'
     Raises:
-        DataFormatInvalidCoeffs: if the expected coefficients count does not match the actual
+        InvalidCoeffsException: if the expected coefficients count does not match the actual
     """
     if 'coeffs' not in collection or len(collection['coeffs']) != coeffs_count:
-        reg_except.DataFormatInvalidCoeffs(coeffs_count)
+        reg_except.InvalidCoeffsException(coeffs_count)
 
 
 def split_sequence(length, parts):
@@ -86,7 +84,7 @@ def split_sequence(length, parts):
     """
     # Check if the split would produce meaningful values
     if length / parts < 2.0:
-        raise reg_except.InvalidSequenceSplit(length / parts)
+        raise reg_except.InvalidSequenceSplitException(length / parts)
 
     # Get the quotient and remainder
     quot, rem = divmod(length, parts)
