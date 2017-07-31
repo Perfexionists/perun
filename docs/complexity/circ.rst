@@ -4,7 +4,7 @@ ComplexityCollector Internal Runtime Configuration (CIRC) File Draft
 
 Configuration file format used internally by the c/c++ complexity collector.
 
-Version: 1.1
+Version: 1.3
 
 Obligatory file name: circ.conf
 
@@ -13,9 +13,10 @@ File Format
 Current CIRC still-under-development format::
 
   CIRC = {
-    "file-name": "trace.log",
-    "storage-init-size": 20000,
-    "runtime-filter": [
+    "internal_data_filename": "trace.log",
+    "internal_storage_size": 20000,
+    "internal_direct_output": false
+    "runtime_filter": [
       4198356,
       4197960
     ],
@@ -58,13 +59,20 @@ Negative values are not supported (nor needed). Number elements must not have a 
 
   25000
 
+Boolean element
+~~~~~~~~~~~~~~~
+The boolean element is not enclosed in pair of quotes and consists only of two values::
+
+  false
+  true
+
 File Format Description
 -----------------------
 A brief description of the CIRC file format elements.
 
- - file-name: specifies the collector output file name, default value: "trace.log"
- - storage-init-size (optional): specifies the initial storage size if direct file output is not used
- - runtime-filter (optional): specifies functions that must be filtered at runtime
+ - internal_data_filename: specifies the collector output file name, default value: "trace.log"
+ - internal_storage_size (optional): specifies the initial storage size if direct file output is not used
+ - runtime_filter (optional): specifies functions that must be filtered at runtime
  - sampling (optional): specifies function that will be sampled
 
    - func: address of a sampled function
@@ -94,4 +102,8 @@ Changelog reflecting the development
  - 1.2:
 
    - Renamed to the ComplexityCollector Internal Runtime Configuration (CIRC)
+ - 1.3:
+
+   - Added the boolean element and unified the names of the parameters.
+   - Added the internal_direct_output parameter.
 
