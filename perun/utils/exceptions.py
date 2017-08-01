@@ -192,7 +192,7 @@ class GenericRegressionExceptionBase(Exception):
 
 class InvalidPointsException(GenericRegressionExceptionBase):
     """Raised when regression data points count is too low or the x and y coordinates count is different"""
-    def __init__(self, x_len, y_len, threshold=2, msg=None):
+    def __init__(self, x_len, y_len, threshold, msg=None):
         self.x_len = x_len
         self.y_len = y_len
         if msg is not None:

@@ -5,7 +5,6 @@ This module exposes all currently implemented computational methods for regressi
 """
 
 import collections
-import sys
 
 import perun.postprocess.regression_analysis.regression_models as mod
 import perun.utils.exceptions as exceptions
@@ -39,10 +38,11 @@ def compute(data_gen, method, models, **kwargs):
             for result in _methods[method](chunk[0], chunk[1], models, **kwargs):
                 result['uid'] = chunk[2]
                 result['method'] = method
+                result = _transform_to_output_data(result, ['uid', 'method'])
                 analysis.append(result)
         except exceptions.GenericRegressionExceptionBase as e:
-            print("INFO: unable to perform regression analysis on function '{0}'.".format(chunk[2]), file=sys.stderr)
-            print("  - " + e.msg, file=sys.stderr)
+            print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
+            print("  - " + e.msg)
     return analysis
 
 
@@ -71,7 +71,7 @@ def full_computation(x, y, computation_models, **kwargs):
         model = _build_uniform_regression_data_format(x, y, model)
         # Compute each model
         for result in model['computation'](model):
-            yield _transform_to_output_data(result)
+            yield result
 
 
 def iterative_computation(x, y, computation_models, **kwargs):
@@ -116,7 +116,7 @@ def iterative_computation(x, y, computation_models, **kwargs):
             results[best_fit] = next(model_generators[best_fit])
         except StopIteration:
             # The best fitting model finished the computation, end of computation
-            yield _transform_to_output_data(results[best_fit])
+            yield results[best_fit]
             break
 
 
@@ -148,12 +148,16 @@ def interval_computation(x, y, computation_models, **kwargs):
     for part_start, part_end in tools.split_sequence(len(x), kwargs['steps']):
         interval_gen = full_computation(x[part_start:part_end], y[part_start:part_end], computation_models)
         # Provide result for each model on every interval
-        # todo: produce only the best model for each interval
-        for result in interval_gen:
-            yield _transform_to_output_data(result)
+        results = []
+        for model in interval_gen:
+            results.append(model)
+
+        # Find the best model for the given interval
+        best_fit = _find_best_fitting_model(results)
+        yield results[best_fit]
 
 
-def initial_guess_computation(x, y, computation_models, kwargs):
+def initial_guess_computation(x, y, computation_models, **kwargs):
     """The initial guess computation method.
 
     This method does initial computation of a data sample and then computes the rest of the model that has best
@@ -195,7 +199,7 @@ def initial_guess_computation(x, y, computation_models, kwargs):
             results[best_fit] = next(model_generators[best_fit])
         except StopIteration:
             # The best fitting model finished the computation, end of computation
-            yield _transform_to_output_data(results[best_fit])
+            yield results[best_fit]
             break
 
 

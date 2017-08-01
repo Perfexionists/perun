@@ -11,15 +11,23 @@ from perun.postprocess.regression_analysis.regression_models import get_supporte
 
 __author__ = 'Jiri Pavela'
 
-_DEFAULT_STEPS = 5
+_DEFAULT_STEPS = 3
 
 
 def postprocess(profile, **configuration):
     # Validate the input configuration
     tools.validate_dictionary_keys(configuration, ['method', 'regression_models', 'steps'], [])
+
+    # Perform the regression analysis
     analysis = compute(data_provider.data_provider_mapper(profile), configuration['method'],
                        configuration['regression_models'], steps=configuration['steps'])
-    profile['global']['regression_analysis'] = analysis
+
+    # Store the results
+    if 'regression_analysis' not in profile['global']:
+        profile['global']['regression_analysis'] = analysis
+    else:
+        profile['global']['regression_analysis'].extend(analysis)
+
     return PostprocessStatus.OK, "", {'profile': profile}
 
 

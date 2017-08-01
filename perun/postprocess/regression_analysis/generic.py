@@ -154,5 +154,8 @@ def generic_regression_error(data):
     # Compute the error
     sse = data['y_sq_sum'] - data['coeffs'][1] * data['y_sum'] - data['coeffs'][0] * data['xy_sum']
     sst = data['y_sq_sum'] - (data['y_sum'] ** 2) / data['len']
-    data['r_square'] = 1 - sse / sst
+    try:
+        data['r_square'] = 1 - sse / sst
+    except ZeroDivisionError:
+        data['r_square'] = 0.0
     return data

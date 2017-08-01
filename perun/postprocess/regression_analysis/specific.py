@@ -101,5 +101,9 @@ def exp_regression_error(data):
         # Compute the y and y_hat difference
         sse += (y_pt - (data['coeffs'][1] * (data['coeffs'][0] ** x_pt))) ** 2
     sst = y_square_sum - (y_sum ** 2) / data['len']
-    data['r_square'] = 1 - sse / sst
+    # Account for possible zero division error
+    try:
+        data['r_square'] = 1 - sse / sst
+    except ZeroDivisionError:
+        data['r_square'] = 0.0
     return data

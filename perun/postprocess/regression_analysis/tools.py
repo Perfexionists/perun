@@ -8,7 +8,7 @@ from random import shuffle
 from operator import itemgetter
 
 # Minimum points count to perform the regression
-MIN_POINTS_COUNT = 2
+MIN_POINTS_COUNT = 3
 
 
 def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
@@ -56,7 +56,7 @@ def check_points(x_len, y_len, threshold):
         None
     """
     if x_len < threshold or y_len < threshold or x_len != y_len:
-        raise exceptions.InvalidPointsException(x_len, y_len)
+        raise exceptions.InvalidPointsException(x_len, y_len, MIN_POINTS_COUNT)
 
 
 def check_coeffs(coeffs_count, collection):
