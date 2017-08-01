@@ -25,13 +25,13 @@ def test_rm_outside_pcs(stored_profile_pool):
     """
     with pytest.raises(NotPerunRepositoryException):
         # Remove first profile from the head
-        commands.remove(stored_profile_pool[0], None)
+        commands.remove([stored_profile_pool[0]], None)
 
 
 def test_rm_on_empty_repo(pcs_with_empty_git, stored_profile_pool, capsys):
     """Test calling 'perun rm', when the wrapped VCS is empty"""
     with pytest.raises(SystemExit):
-        commands.remove(stored_profile_pool[0], None)
+        commands.remove([stored_profile_pool[0]], None)
 
     # Test that nothing is printed on out and something is printed on err
     out, err = capsys.readouterr()
@@ -53,7 +53,7 @@ def test_rm_no_profiles(helpers, pcs_full, capsys):
     git_repo.index.commit("new commit")
 
     with pytest.raises(EntryNotFoundException):
-        commands.remove('nonexistent.perf', None)
+        commands.remove(['nonexistent.perf'], None)
 
     out, _ = capsys.readouterr()
     assert out == ''
@@ -70,7 +70,7 @@ def test_rm_nonexistent(helpers, pcs_full, capsys):
     """
     before_count = helpers.count_contents_on_path(pcs_full.path)
     with pytest.raises(EntryNotFoundException):
-        commands.remove('nonexistent.perf', None)
+        commands.remove(['nonexistent.perf'], None)
 
     out, _ = capsys.readouterr()
     assert out == ''
@@ -101,7 +101,7 @@ def test_rm(helpers, pcs_full, stored_profile_pool, capsys):
     with helpers.open_index(pcs_full.path, head) as index_handle:
         assert helpers.exists_profile_in_index_such_that(index_handle, entry_contains_profile)
 
-    commands.remove(deleted_profile, None)
+    commands.remove([deleted_profile], None)
 
     with helpers.open_index(pcs_full.path, head) as index_handle:
         assert not helpers.exists_profile_in_index_such_that(index_handle, entry_contains_profile)

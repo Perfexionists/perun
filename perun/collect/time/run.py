@@ -8,6 +8,8 @@ from perun.utils.helpers import CollectStatus
 
 __author__ = 'Tomas Fiedor'
 
+TIME_TYPES = ('real', 'user', 'sys')
+
 
 def collect(**kwargs):
     """Phase for collection of the profile data"""
@@ -19,7 +21,8 @@ def collect(**kwargs):
     collected_data = utils.get_stdout_from_external_command(command).split('\n')
 
     times = {
-        t[0]: t[1] for t in map(lambda x: x.split(' '), collected_data) if len(t) == 2
+        t[0]: t[1] for t in map(lambda x: x.split(' '), collected_data)
+        if len(t) == 2 and t[0] in TIME_TYPES
     }
 
     return CollectStatus.OK, "", {'profile': {

@@ -12,7 +12,7 @@
 
 import sys
 import subprocess
-import perun.collect.complexity.exceptions as exceptions  # TODO: merge with general exceptions
+import perun.utils.exceptions as exceptions
 import collections
 
 # Symbol table columns constants

@@ -1,13 +1,16 @@
 """This module contains the Flow usage graph creating functions"""
 
-import bkcharts as charts
-import bokeh.models as models
-import pandas
 import perun.profile.factory as profiles
 
 import perun.profile.converters as converters
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
+
+import demandimport
+with demandimport.enabled():
+    import bkcharts as charts
+    import bokeh.models as models
+    import pandas
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'

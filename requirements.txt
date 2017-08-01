@@ -1,7 +1,7 @@
 click==6.7
 termcolor==1.1.0
 colorama==0.3.7
-kivy==1.9.1
 ruamel.yaml==0.15.6
 pandas==0.20.2
 bokeh==0.12.6
+demandimport==0.3.4

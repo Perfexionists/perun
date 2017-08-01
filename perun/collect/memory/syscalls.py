@@ -3,8 +3,35 @@
 import os
 import re
 import subprocess
+import perun.utils.log as log
+
+PATTERN_WORD = re.compile(r"(\w+)|[?]")
+PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 
 __author__ = "Radim Podola"
+
+demangle_cache = {}
+address_to_line_cache = {}
+
+
+def build_demangle_cache(names):
+    """Builds global cache for demangle() function calls.
+
+    Instead of continuous calls to subprocess, this takes all of the collected names
+    and calls the demangle just once, while constructing the cache.
+
+    Arguments:
+        names(set): set of names that will be demangled in future
+    """
+    global demangle_cache
+
+    list_of_names = list(names)
+    if not all(map(PATTERN_WORD.match, list_of_names)):
+        log.error("incorrect values in demangled names")
+    else:
+        sys_call = ['c++filt'] + list_of_names
+        output = subprocess.check_output(sys_call).decode("utf-8").strip()
+        demangle_cache = dict(zip(list_of_names, output.split("\n")))
 
 
 def demangle(name):
@@ -15,11 +42,30 @@ def demangle(name):
     Returns:
         string: demangled name
     """
-    sys_call = ['c++filt']
-    sys_call.append(name)
-    output = subprocess.check_output(sys_call)
+    return demangle_cache[name]
 
-    return output.decode("utf-8").strip()
+
+def build_address_to_line_cache(addresses, binary_name):
+    """Builds global cache for address_to_line() function calls.
+
+    Instead of continuous calls to subprocess, this takes all of the collected
+    names and calls the addr2line just once.
+
+    Arguments:
+        addresses(set): set of addresses that will be translated to line info
+        binary_name(str): name of the binary which will be parsed for info
+    """
+    global address_to_line_cache
+
+    list_of_addresses = list(addresses)
+    if not all(map(PATTERN_HEXADECIMAL.match, list_of_addresses)):
+        log.error("incorrect values in address translations")
+    else:
+        sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
+        output = subprocess.check_output(sys_call).decode("utf-8").strip()
+        address_to_line_cache = dict(zip(
+            list_of_addresses, map(lambda x: x.split(':'), output.split("\n"))
+        ))
 
 
 def get_extern_funcs(filename):
@@ -30,8 +76,7 @@ def get_extern_funcs(filename):
     Returns:
         list: list of functions from dynamic section
     """
-    sys_call = ['nm', '-D', '-C']
-    sys_call.append(filename)
+    sys_call = ['nm', '-D', '-C', filename]
     output = subprocess.check_output(sys_call)
     output = output.decode("utf-8").splitlines()
     functions = []
@@ -43,23 +88,16 @@ def get_extern_funcs(filename):
     return functions
 
 
-def address_to_line(ip, filename):
+def address_to_line(ip):
     """
     Arguments:
         ip(string): instruction pointer value
-        filename(string): name of file to inspect for debug information
 
     Returns:
         list: list of two objects, 1st is the name of the source file,
               2nd is the line number
     """
-    sys_call = ['addr2line']
-    sys_call.append(ip)
-    sys_call.append('-e')
-    sys_call.append(filename)
-    output = subprocess.check_output(sys_call)
-
-    return output.decode("utf-8").strip().split(':')
+    return address_to_line_cache[ip][:]
 
 
 def run(cmd, params, workload):

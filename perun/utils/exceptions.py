@@ -12,6 +12,7 @@ class InvalidParameterException(Exception):
             parameter_value(object): value of the parameter
             choices_msg(str): string with choices for the valid parameters
         """
+        super().__init__("")
         self.parameter = parameter
         self.value = str(parameter_value)
         self.choices_msg = " " + choices_msg
@@ -33,6 +34,7 @@ class InvalidConfigOperationException(Exception):
         Arguments:
             operation(str): name of the operation
         """
+        super().__init__("")
         self.store_type = store_type
         self.operation = operation
         self.key = key
@@ -56,6 +58,7 @@ class ExternalEditorErrorException(Exception):
             editor(str): name of the invoked editor
             reason(str): reason why the editor failed
         """
+        super().__init__("")
         self.editor = editor
         self.reason = reason
 
@@ -72,6 +75,7 @@ class EntryNotFoundException(Exception):
         Arguments:
             entry(str): entry we are looking up in the index
         """
+        super().__init__("")
         self.entry = entry
 
     def __str__(self):
@@ -94,6 +98,7 @@ class VersionControlSystemException(Exception):
             msg(str): format string of the error message
             args(list): list of arguments for format string
         """
+        super().__init__(msg)
         self.msg = msg
         self.args = args
 
@@ -109,6 +114,7 @@ class IncorrectProfileFormatException(Exception):
             filename(str): filename of the profile in the wrong format
             msg(str): additional message what is wrong withe profile
         """
+        super().__init__("")
         self.filename = filename
         self.msg = msg
 
@@ -119,6 +125,7 @@ class IncorrectProfileFormatException(Exception):
 class NotPerunRepositoryException(Exception):
     """Raised when command is not called from within the scope of any Perun repository"""
     def __init__(self, path):
+        super().__init__("")
         self.path = path
 
     def __str__(self):
@@ -130,6 +137,7 @@ class NotPerunRepositoryException(Exception):
 class UnsupportedModuleException(Exception):
     """Raised when dynamically loading a module, that is not supported by the perun"""
     def __init__(self, module):
+        super().__init__("")
         self.module = module
 
     def __str__(self):
@@ -146,6 +154,7 @@ class UnsupportedModuleFunctionException(Exception):
         Arguments:
             module(str): name of the module that does not support the given function
         """
+        super().__init__("")
         self.module = module
         self.func = func
 

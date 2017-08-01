@@ -15,7 +15,7 @@
 */
 
 
-Trace_context_wrapper::Trace_context_wrapper() : use_direct_file_output{false}, config()
+Trace_context_wrapper::Trace_context_wrapper() : config()
 {
     // Get the configuration information
     int ret_code = config.Parse();
@@ -24,7 +24,7 @@ Trace_context_wrapper::Trace_context_wrapper() : use_direct_file_output{false}, 
     }
 
     // Setup the storage if needed
-    if(!use_direct_file_output) {
+    if(config.use_direct_file_output == false) {
         try {
             instr_data.clear();
             instr_data.reserve(config.instr_data_init_len);
@@ -35,14 +35,14 @@ Trace_context_wrapper::Trace_context_wrapper() : use_direct_file_output{false}, 
                 instr_data.reserve(config.default_instr_data_init_len);
             } catch(const std::length_error &) {
                 // The ultimate fail, resort to the direct file output
-                use_direct_file_output = true;
+                config.use_direct_file_output = true;
             }
         }
     }
 
     // Open the trace log file
     trace_log.open(config.trace_file_name, std::ios::out | std::ios::trunc);
-    if(!trace_log.is_open()) {
+    if(trace_log.is_open() == false) {
         // File opening failed, terminate
         instr_data.clear();
         config.func_config.clear();
@@ -60,7 +60,7 @@ Trace_context_wrapper::~Trace_context_wrapper()
 
     if(trace_log.is_open()) {
         // Records are stored in the vector
-        if(!use_direct_file_output) {
+        if(config.use_direct_file_output == false) {
             // Save the records into the trace file
             Print_vector_to_file();
         }
@@ -110,7 +110,7 @@ void Trace_context_wrapper::Create_instrumentation_record(void *func, char io)
     }
 
     // Vector is used for data storage
-    if(!use_direct_file_output) {
+    if(config.use_direct_file_output == false) {
         timestamp now = duration_cast<microseconds>(Time::now().time_since_epoch());
         instr_data.push_back(Instrument_data(io, func, now));
     } else {
@@ -122,7 +122,7 @@ void Trace_context_wrapper::Create_instrumentation_record(void *func, char io)
 void Trace_context_wrapper::Create_instrumentation_record(void *func, char io, timestamp now, std::size_t size)
 {
     // Vector is used for data storage
-    if(!use_direct_file_output) {
+    if(config.use_direct_file_output == false) {
         instr_data.push_back(Instrument_data(io, func, now, size));
     } else {
         // Direct output to the file
