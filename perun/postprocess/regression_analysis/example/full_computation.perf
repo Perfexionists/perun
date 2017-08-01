@@ -1,0 +1,322 @@
+{
+  "origin": "af10c9ae9eafec1e44cb48dbe498b513d679fbcd",
+  "header": {
+    "cmd": "complexity",
+    "workload": "",
+    "type": "mixed",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "params": ""
+  },
+  "postprocessors": [],
+  "collector_info": {
+    "name": "complexity",
+    "params": {
+      "sampling": [
+        [
+          "SLList_insert",
+          1
+        ],
+        [
+          "func1",
+          1
+        ]
+      ],
+      "internal_direct_output": false,
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ],
+      "internal_data_filename": "trace.log",
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
+      "internal_storage_size": 20000,
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ]
+    }
+  },
+  "global": {
+    "resources": [
+      {
+        "amount": 14,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 0,
+        "uid": "SLList_init(SLList*)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 0,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 1,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 2,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 3,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 4,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 5,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 6,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 7,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 8,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 9,
+        "uid": "SLList_insert(SLList*, int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 10,
+        "uid": "SLList_search(SLList*, int)"
+      },
+      {
+        "amount": 3,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 10,
+        "uid": "SLList_destroy(SLList*)"
+      },
+      {
+        "amount": 16,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 0,
+        "uid": "SLListcls::SLListcls()"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 0,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 1,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 2,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 3,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 4,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 5,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 6,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 7,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 8,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 9,
+        "uid": "SLListcls::Insert(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 10,
+        "uid": "SLListcls::Search(int)"
+      },
+      {
+        "amount": 2,
+        "subtype": "time delta",
+        "type": "mixed",
+        "structure-unit-size": 0,
+        "uid": "SLListcls::~SLListcls()"
+      }
+    ],
+    "time": "0.000165s",
+    "regression_analysis": [
+      {
+        "r_square": 0.08716810077128712,
+        "x_limits": [
+          0,
+          9
+        ],
+        "model": "exponential",
+        "method": "full",
+        "uid": "SLList_insert(SLList*, int)",
+        "coeffs": [
+          0.962897772531164,
+          1.6765023965471761
+        ]
+      },
+      {
+        "r_square": 0.09818181818181748,
+        "x_limits": [
+          0,
+          9
+        ],
+        "model": "linear",
+        "method": "full",
+        "uid": "SLList_insert(SLList*, int)",
+        "coeffs": [
+          -0.05454545454545454,
+          1.7454545454545454
+        ]
+      },
+      {
+        "r_square": 0.03329866167394768,
+        "x_limits": [
+          0,
+          9
+        ],
+        "model": "quadratic",
+        "method": "full",
+        "uid": "SLList_insert(SLList*, int)",
+        "coeffs": [
+          -0.003397822619790583,
+          1.5968379446640317
+        ]
+      },
+      {
+        "r_square": 0.2413966098961683,
+        "x_limits": [
+          0,
+          9
+        ],
+        "model": "exponential",
+        "method": "full",
+        "uid": "SLListcls::Insert(int)",
+        "coeffs": [
+          0.9508388309470824,
+          2.1844540019524348
+        ]
+      },
+      {
+        "r_square": 0.27272727272727704,
+        "x_limits": [
+          0,
+          9
+        ],
+        "model": "linear",
+        "method": "full",
+        "uid": "SLListcls::Insert(int)",
+        "coeffs": [
+          -0.07272727272727272,
+          2.1272727272727274
+        ]
+      },
+      {
+        "r_square": 0.2718258095832473,
+        "x_limits": [
+          0,
+          9
+        ],
+        "model": "quadratic",
+        "method": "full",
+        "uid": "SLListcls::Insert(int)",
+        "coeffs": [
+          -0.007766451702378475,
+          2.021343873517787
+        ]
+      }
+    ]
+  }
+}

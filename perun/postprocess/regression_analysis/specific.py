@@ -35,7 +35,11 @@ def quad_regression_error(data):
     for x_pt, y_pt in zip(data['x'][:data['len']], data['y'][:data['len']]):
         sse += (y_pt - (data['coeffs'][1] + data['coeffs'][0] * (x_pt ** 2))) ** 2
     sst = data['y_sq_sum'] - (data['y_sum'] ** 2) / data['len']
-    data['r_square'] = 1 - sse / sst
+    # Account for possible zero division error
+    try:
+        data['r_square'] = 1 - sse / sst
+    except ZeroDivisionError:
+        data['r_square'] = 0.0
     return data
 
 
@@ -70,7 +74,11 @@ def power_regression_error(data):
             # In case of power failure skip the calculation step
             continue
     sst = y_square_sum - (y_sum ** 2) / data['len']
-    data['r_square'] = 1 - sse / sst
+    # Account for possible zero division error
+    try:
+        data['r_square'] = 1 - sse / sst
+    except ZeroDivisionError:
+        data['r_square'] = 0.0
     return data
 
 
