@@ -9,7 +9,7 @@ the sections of _models dictionary representing the model properties.
 
 import perun.postprocess.regression_analysis.generic as generic
 import perun.postprocess.regression_analysis.specific as specific
-import perun.postprocess.regression_analysis.regression_exceptions as reg_except
+import perun.utils.exceptions as exceptions
 import math
 
 
@@ -41,7 +41,7 @@ def map_to_models(regression_models):
     else:
         for model in regression_models:
             if model not in _models.keys():
-                raise reg_except.InvalidModelException(model)
+                raise exceptions.InvalidModelException(model)
             else:
                 yield _models[model].copy()
 

@@ -8,7 +8,7 @@ import collections
 import sys
 
 import perun.postprocess.regression_analysis.regression_models as mod
-import perun.postprocess.regression_analysis.regression_exceptions as reg_except
+import perun.utils.exceptions as exceptions
 import perun.postprocess.regression_analysis.tools as tools
 
 
@@ -26,6 +26,7 @@ def compute(data_gen, method, models, **kwargs):
         kwargs: various additional configuration arguments for specific models
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         list of dict: the computation results
 
@@ -39,7 +40,7 @@ def compute(data_gen, method, models, **kwargs):
                 result['uid'] = chunk[2]
                 result['method'] = method
                 analysis.append(result)
-        except reg_except.GenericRegressionExceptionBase as e:
+        except exceptions.GenericRegressionExceptionBase as e:
             print("INFO: unable to perform regression analysis on function '{0}'.".format(chunk[2]), file=sys.stderr)
             print("  - " + e.msg, file=sys.stderr)
     return analysis
@@ -57,6 +58,7 @@ def full_computation(x, y, computation_models, **kwargs):
         kwargs: additional configuration parameters
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         iterable: the generator object which produces computed models one by one as a transformed output
                   data dictionary
@@ -88,6 +90,7 @@ def iterative_computation(x, y, computation_models, **kwargs):
         kwargs: additional configuration parameters
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         iterable: the generator object which produces best fitting model as a transformed data dictionary
 
@@ -133,6 +136,7 @@ def interval_computation(x, y, computation_models, **kwargs):
         kwargs: additional configuration parameters, 'steps' expected
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         the generator object which produces computed models one by one for every interval as a transformed
         output data dictionary
@@ -144,6 +148,7 @@ def interval_computation(x, y, computation_models, **kwargs):
     for part_start, part_end in tools.split_sequence(len(x), kwargs['steps']):
         interval_gen = full_computation(x[part_start:part_end], y[part_start:part_end], computation_models)
         # Provide result for each model on every interval
+        # todo: produce only the best model for each interval
         for result in interval_gen:
             yield _transform_to_output_data(result)
 
@@ -164,6 +169,7 @@ def initial_guess_computation(x, y, computation_models, kwargs):
         kwargs: additional configuration parameters, 'steps' expected
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         iterable: the generator object that produces the complete result in one step
 
@@ -206,6 +212,7 @@ def bisection_computation(x, y, computation_models, **kwargs):
         kwargs: additional configuration parameters
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         iterable: the generator object that produces interval models in order
 
@@ -213,10 +220,12 @@ def bisection_computation(x, y, computation_models, **kwargs):
     # Sort the regression data
     x, y = tools.sort_points(x, y)
 
+    # Compute the initial model on the whole data set
     init_model = _compute_bisection_model(x, y, computation_models)
 
-    for submodel in _bisection_step(x, y, computation_models, init_model):
-        yield submodel
+    # Do bisection and try to find different model for the new sections
+    for sub_model in _bisection_step(x, y, computation_models, init_model):
+        yield sub_model
 
 
 def _bisection_step(x, y, computation_models, last_model):
@@ -234,6 +243,7 @@ def _bisection_step(x, y, computation_models, last_model):
         last_model(dict): the full interval model that is split
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         iterable: the generator object that produces interval result
 
@@ -280,6 +290,8 @@ def _transform_to_output_data(data, extra_keys=None):
     Arguments:
         data(dict): the data dictionary with results
         extra_keys(list of str): the extra keys to include
+    Raises:
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         dict: the output dictionary
 
@@ -328,6 +340,7 @@ def _compute_bisection_model(x, y, computation_models, **kwargs):
         kwargs: additional configuration parameters
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
         dict: the best fitting model
     """
@@ -350,6 +363,9 @@ def _build_uniform_regression_data_format(x, y, model):
         x(list): the list of x points coordinates
         y(list): the list of y points coordinates
         model(dict): the regression model properties
+    Raises:
+        InvalidPointsException: if the points count is too low or their coordinates list have different lengths
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Return:
         dict: the uniform data dictionary
 
@@ -365,6 +381,8 @@ def _build_uniform_regression_data_format(x, y, model):
     return model
 
 # supported methods mapping
+# - every method must have the same argument signature to be called in 'compute' function
+# -- the signature: x, y, models, **kwargs
 _methods = collections.OrderedDict([
     ('full', full_computation),
     ('iterative', iterative_computation),

@@ -22,6 +22,7 @@ def generic_compute_regression(input_data):
         input_data(dict): the regression model dictionary from regression_model (e.g. the 'linear' section)
     Raises:
         GenericRegressionExceptionBase: the derived exceptions as used in the generator or function list
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Return:
         iterable: generator object which produces regression model computation steps in a data dictionary
 
@@ -50,6 +51,7 @@ def generic_regression_data(data):
         data(dict): the initialized data dictionary
     Raises:
         GenericRegressionExceptionBase: the derived exceptions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Return:
         iterable: generator object which produces intermediate results for each computation step in a data dictionary
 
@@ -110,7 +112,7 @@ def generic_regression_coefficients(data):
     Arguments:
         data(dict): the data dictionary with intermediate results
     Raises:
-        DataFormatMissingArgument: if the data dictionary is missing any of the keys
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Return:
         dict: the data dictionary updated with coefficients
 
@@ -140,7 +142,7 @@ def generic_regression_error(data):
     Arguments:
         data(dict): the data dictionary with intermediate results and coefficients
     Raises:
-        DataFormatMissingArgument: if the data dictionary is missing any of the keys
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
         InvalidCoeffsException: if the data dictionary has incorrect number of coefficients
     Return:
         dict: the data dictionary updated with error value

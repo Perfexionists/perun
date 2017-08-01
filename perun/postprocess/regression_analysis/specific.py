@@ -21,7 +21,7 @@ def quad_regression_error(data):
     Arguments:
         data(dict): the data dictionary with intermediate results and coefficients
     Raises:
-        DataFormatMissingArgument: if the data dictionary is missing any of the keys
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
         InvalidCoeffsException: if the data dictionary has incorrect number of coefficients
     Return:
         dict: the data dictionary updated with error value
@@ -48,7 +48,7 @@ def power_regression_error(data):
     Arguments:
         data(dict): the data dictionary with intermediate results and coefficients
     Raises:
-        DataFormatMissingArgument: if the data dictionary is missing any of the keys
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
         InvalidCoeffsException: if the data dictionary has incorrect number of coefficients
     Return:
         dict: the data dictionary updated with error value
@@ -83,7 +83,7 @@ def exp_regression_error(data):
     Arguments:
         data(dict): the data dictionary with intermediate results and coefficients
     Raises:
-        DataFormatMissingArgument: if the data dictionary is missing any of the keys
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
         InvalidCoeffsException: if the data dictionary has incorrect number of coefficients
     Return:
         dict: the data dictionary updated with error value

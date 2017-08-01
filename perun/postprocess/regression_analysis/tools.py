@@ -3,7 +3,7 @@
 """
 
 
-import perun.postprocess.regression_analysis.regression_exceptions as reg_except
+import perun.utils.exceptions as exceptions
 from random import shuffle
 from operator import itemgetter
 
@@ -28,7 +28,7 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
 
     # Check the dictionary first
     if type(dictionary) is not dict:
-        raise reg_except.DictionaryKeysValidationFailed(dictionary, [], [])
+        raise exceptions.DictionaryKeysValidationFailed(dictionary, [], [])
     # Check all the required keys
     for key in required_keys:
         if key not in dictionary:
@@ -40,7 +40,7 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
 
     # Raise exception if needed
     if missing_keys or excess_keys:
-        raise reg_except.DictionaryKeysValidationFailed(dictionary, missing_keys, excess_keys)
+        raise exceptions.DictionaryKeysValidationFailed(dictionary, missing_keys, excess_keys)
 
 
 def check_points(x_len, y_len, threshold):
@@ -56,7 +56,7 @@ def check_points(x_len, y_len, threshold):
         None
     """
     if x_len < threshold or y_len < threshold or x_len != y_len:
-        raise reg_except.InvalidPointsException(x_len, y_len)
+        raise exceptions.InvalidPointsException(x_len, y_len)
 
 
 def check_coeffs(coeffs_count, collection):
@@ -69,7 +69,7 @@ def check_coeffs(coeffs_count, collection):
         InvalidCoeffsException: if the expected coefficients count does not match the actual
     """
     if 'coeffs' not in collection or len(collection['coeffs']) != coeffs_count:
-        reg_except.InvalidCoeffsException(coeffs_count)
+        exceptions.InvalidCoeffsException(coeffs_count)
 
 
 def split_sequence(length, parts):
@@ -79,12 +79,14 @@ def split_sequence(length, parts):
     Arguments:
         length(int): the length to split
         parts(int): the number of parts
+    Raises:
+        InvalidSequenceSplitException: if the result of split produces too few points
     Returns:
         iterable: the generator object
     """
     # Check if the split would produce meaningful values
     if length / parts < 2.0:
-        raise reg_except.InvalidSequenceSplitException(length / parts)
+        raise exceptions.InvalidSequenceSplitException(length / parts)
 
     # Get the quotient and remainder
     quot, rem = divmod(length, parts)
@@ -100,6 +102,8 @@ def shuffle_points(x, y):
     Arguments:
         x(list): the x coordinates list
         y(list): the y coordinates list
+    Raises:
+        InvalidPointsException: if the points count is too low or their coordinates list have different lengths
     Returns:
         tuple:  x: the randomized x sequence
                 y: the randomized y sequence
@@ -118,6 +122,8 @@ def sort_points(x, y):
     Arguments:
         x(list): the x coordinates list
         y(list): the y coordinates list
+    Raises:
+        InvalidPointsException: if the points count is too low or their coordinates list have different lengths
     Returns:
         tuple:  x: the sorted x sequence
                 y: the sorted y sequence
