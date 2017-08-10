@@ -13,7 +13,7 @@ def data_provider_mapper(profile):
         generator: generator object created by specific provider function
     """
     profile_type = profile['header']['type']
-    return _profile_mapper[profile_type](profile)
+    return _PROFILE_MAPPER[profile_type](profile)
 
 
 def complexity_profile_provider(profile):
@@ -54,6 +54,6 @@ def complexity_profile_provider(profile):
 # to add new profile type - simply add new keyword and specific provider function with signature:
 #  - return value: generator object that produces required profile data
 #  - parameter: profile dictionary
-_profile_mapper = {
+_PROFILE_MAPPER = {
     'mixed': complexity_profile_provider
 }

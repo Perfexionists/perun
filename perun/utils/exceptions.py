@@ -173,17 +173,26 @@ class DictionaryKeysValidationFailed(Exception):
             missing_keys(list): list of missing keys in the dictionary
             excess_keys(list): list of excess forbidden keys in the dictionary
         """
-        if type(dictionary) is not dict:
-            self.msg = "Validated object '{0}' is not a dictionary.".format(dictionary)
-        elif not missing_keys:
-            self.msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
-                dictionary, ', '.join(excess_keys))
-        elif not excess_keys:
-            self.msg = "Validated dictionary '{0}' is missing required keys: '{1}'.".format(
-                dictionary, ', '.join(missing_keys))
+        super().__init__("")
+        self.dictionary = dictionary
+        self.missing_keys = missing_keys
+        self.excess_keys = excess_keys
+
+    def __str__(self):
+        if not isinstance(self.dictionary, dict):
+            msg = "Validated object '{0}' is not a dictionary.".format(self.dictionary)
+        elif not self.missing_keys:
+            msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
+                self.dictionary, ', '.join(self.excess_keys))
+        elif not self.excess_keys:
+            msg = "Validated dictionary '{0}' is missing required keys: '{1}'.".format(
+                self.dictionary, ', '.join(self.missing_keys))
         else:
-            self.msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}' "
-            "and is missing required keys: '{2}'.".format(dictionary, ', '.join(excess_keys), ', '.join(missing_keys))
+            msg = ("Validated dictionary '{0}' has excess forbidden keys: '{1}' and is "
+                   "missing required keys: '{2}'.".format(self.dictionary,
+                                                          ', '.join(self.excess_keys),
+                                                          ', '.join(self.missing_keys)))
+        return msg
 
 
 # Regression analysis exception hierarchy
@@ -196,47 +205,62 @@ class GenericRegressionExceptionBase(Exception):
     """
     def __init__(self, msg):
         """Base constructor with exception message"""
+        super().__init__("")
         self.msg = msg
+
+    def __str__(self):
+        return self.msg
 
 
 class InvalidPointsException(GenericRegressionExceptionBase):
-    """Raised when regression data points count is too low or the x and y coordinates count is different"""
-    def __init__(self, x_len, y_len, threshold, msg=None):
+    """Raised when regression data points count is too low or
+    the x and y coordinates count is different"""
+    def __init__(self, x_len, y_len, threshold):
+        super().__init__("")
         self.x_len = x_len
         self.y_len = y_len
-        if msg is not None:
-            self.msg = msg
-        elif x_len != y_len:
-            self.msg = "Points coordinates x and y have different lengths - x:{0}, y:{1}.".format(x_len, y_len)
-        elif x_len < threshold or y_len < threshold:
-            self.msg = "Too few points coordinates to perform regression - x:{0}, y:{1}.".format(x_len, y_len)
+        self.threshold = threshold
+
+    def __str__(self):
+        if self.x_len != self.y_len:
+            self.msg = ("Points coordinates x and y have different lengths - x:{0}, "
+                        "y:{1}.".format(self.x_len, self.y_len))
+        elif self.x_len < self.threshold or self.y_len < self.threshold:
+            self.msg = ("Too few points coordinates to perform regression - x:{0}, "
+                        "y:{1}.".format(self.x_len, self.y_len))
+        return self.msg
 
 
 class InvalidSequenceSplitException(GenericRegressionExceptionBase):
     """Raised when the sequence split would produce too few points to use in regression analysis"""
-    def __init__(self, ratio, msg=None):
+    def __init__(self, ratio):
+        super().__init__("")
         self.ratio = ratio
-        if msg is not None:
-            self.msg = msg
-        else:
-            self.msg = "Too few points would be produced by splitting the data into {0} parts.".format(ratio)
+
+    def __str__(self):
+        self.msg = ("Too few points would be produced by splitting the data into {0} "
+                    "parts.".format(self.ratio))
+        return self.msg
 
 
 class InvalidCoeffsException(GenericRegressionExceptionBase):
     """Raised when data format contains unexpected number of coefficient"""
-    def __init__(self, coeffs_count, msg=None):
+    def __init__(self, coeffs_count):
+        super().__init__("")
         self.coeffs_count = coeffs_count
-        if msg is not None:
-            self.msg = msg
-        else:
-            self.msg = "Missing coefficients list or their count different from: {0}.".format(str(coeffs_count))
+
+    def __str__(self):
+        self.msg = ("Missing coefficients list or their count different from: {0}.".format(
+            str(self.coeffs_count)))
+        return self.msg
 
 
 class InvalidModelException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown regression model is required"""
-    def __init__(self, model, msg=None):
+    def __init__(self, model):
+        super().__init__("")
         self.model = model
-        if msg is not None:
-            self.msg = msg
-        else:
-            self.msg = "Invalid or unsupported regression model: {0}.".format(str(model))
+
+    def __str__(self):
+        self.msg = "Invalid or unsupported regression model: {0}.".format(str(self.model))
+        return self.msg

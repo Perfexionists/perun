@@ -19,12 +19,15 @@ def generic_compute_regression(input_data):
     and function list (func_list).
 
     Arguments:
-        input_data(dict): the regression model dictionary from regression_model (e.g. the 'linear' section)
+        input_data(dict): the regression model dictionary from regression_model
+        (e.g. the 'linear' section)
     Raises:
-        GenericRegressionExceptionBase: the derived exceptions as used in the generator or function list
+        GenericRegressionExceptionBase: the derived exceptions as used in the generator
+                                        or function list
         DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Return:
-        iterable: generator object which produces regression model computation steps in a data dictionary
+        iterable: generator object which produces regression model computation steps in a data
+                  dictionary
 
     """
     # Get intermediate results from data generator
@@ -40,12 +43,12 @@ def generic_regression_data(data):
 
     Produces the sums of x, y, square x, square y and x * y values. Also provides the x min/max
     values and the number of points.
-    Expects 'x', 'y', 'fx', 'fy' and 'steps' keys in data dictionary. 'fx' and 'fy' refer to the x and y
-    values modification for the sums (e.g. log10 for x values => sum of log10(x) values). The steps
-    key allows to split the points sequence into parts (for iterative computation), where each part
-    continues the computation (the part contains results from the previous).
-    Updates the data dictionary with 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'y_sq_sum', 'len', 'x_min'
-    and 'x_max' keys.
+    Expects 'x', 'y', 'fx', 'fy' and 'steps' keys in data dictionary. 'fx' and 'fy' refer to the x
+    and y values modification for the sums (e.g. log10 for x values => sum of log10(x) values).
+    The steps key allows to split the points sequence into parts (for iterative computation),
+    where each part continues the computation (the part contains results from the previous).
+    Updates the data dictionary with 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'y_sq_sum', 'len',
+    'x_min' and 'x_max' keys.
 
     Arguments:
         data(dict): the initialized data dictionary
@@ -53,7 +56,8 @@ def generic_regression_data(data):
         GenericRegressionExceptionBase: the derived exceptions
         DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Return:
-        iterable: generator object which produces intermediate results for each computation step in a data dictionary
+        iterable: generator object which produces intermediate results for each computation step
+                  in a data dictionary
 
     """
     tools.validate_dictionary_keys(data, ['x', 'y', 'fx', 'fy', 'steps'], [])
@@ -105,9 +109,10 @@ def generic_regression_coefficients(data):
     The function uses the general coefficient computation formula, which produces two coefficients
     based on the intermediate results from the data generator.
     Expects 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'len', 'fa', 'fb' keys in data dictionary. The
-    'fa' and 'fb' keys refer to the coefficients modification function (similar to the 'fx' and 'fy'),
-    which is applied after the coefficients are computed.
-    Updates the data dictionary with 'coeffs' key containing the coefficients list in descending order.
+    'fa' and 'fb' keys refer to the coefficients modification function (similar to the 'fx' and
+    'fy'), which is applied after the coefficients are computed.
+    Updates the data dictionary with 'coeffs' key containing the coefficients list in descending
+    order.
 
     Arguments:
         data(dict): the data dictionary with intermediate results
@@ -117,7 +122,8 @@ def generic_regression_coefficients(data):
         dict: the data dictionary updated with coefficients
 
     """
-    tools.validate_dictionary_keys(data, ['fa', 'fb', 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'len'], [])
+    tools.validate_dictionary_keys(data,
+                                   ['fa', 'fb', 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'len'], [])
 
     # Compute the coefficients
     s_xy = data['xy_sum'] - data['x_sum'] * data['y_sum'] / data['len']
@@ -154,8 +160,5 @@ def generic_regression_error(data):
     # Compute the error
     sse = data['y_sq_sum'] - data['coeffs'][1] * data['y_sum'] - data['coeffs'][0] * data['xy_sum']
     sst = data['y_sq_sum'] - (data['y_sum'] ** 2) / data['len']
-    try:
-        data['r_square'] = 1 - sse / sst
-    except ZeroDivisionError:
-        data['r_square'] = 0.0
+    data['r_square'] = tools.r_square_safe(sse, sst)
     return data

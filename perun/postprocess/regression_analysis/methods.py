@@ -12,7 +12,12 @@ import perun.postprocess.regression_analysis.tools as tools
 
 
 def get_supported_methods():
-    return [key for key in _methods.keys()]
+    """Provides all currently supported computational methods as a list of their names.
+
+    Returns:
+        list of str: the names of all supported methods
+    """
+    return [key for key in _METHODS.keys()]
 
 
 def compute(data_gen, method, models, **kwargs):
@@ -20,7 +25,7 @@ def compute(data_gen, method, models, **kwargs):
 
     Arguments:
         data_gen(iter): the generator object with collected data (data provider generators)
-        method(str): the _methods key value indicating requested computation method
+        method(str): the _METHODS key value indicating requested computation method
         models(list of str): list of requested regression models to compute
         kwargs: various additional configuration arguments for specific models
     Raises:
@@ -35,7 +40,7 @@ def compute(data_gen, method, models, **kwargs):
 
     for chunk in data_gen:
         try:
-            for result in _methods[method](chunk[0], chunk[1], models, **kwargs):
+            for result in _METHODS[method](chunk[0], chunk[1], models, **kwargs):
                 result['uid'] = chunk[2]
                 result['method'] = method
                 result = _transform_to_output_data(result, ['uid', 'method'])
@@ -46,69 +51,62 @@ def compute(data_gen, method, models, **kwargs):
     return analysis
 
 
-def full_computation(x, y, computation_models, **kwargs):
+def full_computation(x_pts, y_pts, computation_models, **kwargs):
     """The full computation method which fully computes every specified regression model.
 
     The method might have performance issues in case of too many models or data points.
 
     Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be fully computed
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
         kwargs: additional configuration parameters
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
         DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
-        iterable: the generator object which produces computed models one by one as a transformed output
-                  data dictionary
+        iterable: the generator object which produces computed models one by one as a transformed
+                  output data dictionary
 
     """
     # Get all the models properties
     for model in mod.map_to_models(computation_models):
         # Update the properties accordingly
         model['steps'] = 1
-        model = _build_uniform_regression_data_format(x, y, model)
+        model = _build_uniform_regression_data_format(x_pts, y_pts, model)
         # Compute each model
         for result in model['computation'](model):
             yield result
 
 
-def iterative_computation(x, y, computation_models, **kwargs):
+def iterative_computation(x_pts, y_pts, computation_models, **kwargs):
     """The iterative computation method.
 
-    This method splits the regression data evenly into random parts, which are incrementally computed. Only
-    the currently best fitting model is computed in each step.
+    This method splits the regression data evenly into random parts, which are incrementally
+    computed. Only the currently best fitting model is computed in each step.
 
-    This method might produce only local result (local extrema), but it's generally faster than the full
-    computation method.
+    This method might produce only local result (local extrema), but it's generally faster than
+    the full computation method.
 
     Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be fully computed
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
         kwargs: additional configuration parameters
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
         DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
-        iterable: the generator object which produces best fitting model as a transformed data dictionary
+        iterable: the generator object which produces best fitting model as a transformed data
+                  dictionary
 
     """
-    x, y = tools.shuffle_points(x, y)
+    x_pts, y_pts = tools.shuffle_points(x_pts, y_pts)
 
-    model_generators = []
-    results = []
-    # Get all the models properties
-    for model in mod.map_to_models(computation_models):
-        # Transform the properties
-        model['steps'] = kwargs['steps']
-        data = _build_uniform_regression_data_format(x, y, model)
-        # Do a single computational step for each model
-        model_generators.append(model['computation'](data))
-        results.append(next(model_generators[-1]))
-
-    best_fit = None
+    # Do the initial step for specified models
+    model_generators, results = _models_initial_step(x_pts, y_pts, computation_models,
+                                                     kwargs['steps'])
+    best_fit = -1
     while True:
         try:
             # Get the best fitting model and do next computation step
@@ -120,33 +118,34 @@ def iterative_computation(x, y, computation_models, **kwargs):
             break
 
 
-def interval_computation(x, y, computation_models, **kwargs):
+def interval_computation(x_pts, y_pts, computation_models, **kwargs):
     """The interval computation method.
 
-    This method splits the regression data into evenly distributed sorted parts (i.e. intervals) and each
-    interval is computed separately using the full computation.
+    This method splits the regression data into evenly distributed sorted parts (i.e. intervals)
+    and each interval is computed separately using the full computation.
 
-    This technique allows to find different regression models in each interval and thus discover different
-    complexity behaviour for algorithm based on it's input size.
+    This technique allows to find different regression models in each interval and thus discover
+    different complexity behaviour for algorithm based on it's input size.
 
     Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be fully computed
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
         kwargs: additional configuration parameters, 'steps' expected
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
         DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Returns:
-        the generator object which produces computed models one by one for every interval as a transformed
-        output data dictionary
+        the generator object which produces computed models one by one for every interval as
+        a transformed output data dictionary
 
     """
     # Sort the regression data
-    x, y = tools.sort_points(x, y)
+    x_pts, y_pts = tools.sort_points(x_pts, y_pts)
     # Split the data into intervals and do a full computation on each one of them
-    for part_start, part_end in tools.split_sequence(len(x), kwargs['steps']):
-        interval_gen = full_computation(x[part_start:part_end], y[part_start:part_end], computation_models)
+    for part_start, part_end in tools.split_sequence(len(x_pts), kwargs['steps']):
+        interval_gen = full_computation(x_pts[part_start:part_end], y_pts[part_start:part_end],
+                                        computation_models)
         # Provide result for each model on every interval
         results = []
         for model in interval_gen:
@@ -157,19 +156,19 @@ def interval_computation(x, y, computation_models, **kwargs):
         yield results[best_fit]
 
 
-def initial_guess_computation(x, y, computation_models, **kwargs):
+def initial_guess_computation(x_pts, y_pts, computation_models, **kwargs):
     """The initial guess computation method.
 
-    This method does initial computation of a data sample and then computes the rest of the model that has best
-    r^2 coefficient.
+    This method does initial computation of a data sample and then computes the rest of the model
+    that has best r^2 coefficient.
 
-    This method might produce only local result (local extrema), but it's generally faster than the full
-    computation method.
+    This method might produce only local result (local extrema), but it's generally faster than the
+    full computation method.
 
     Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be fully computed
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
         kwargs: additional configuration parameters, 'steps' expected
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
@@ -178,18 +177,11 @@ def initial_guess_computation(x, y, computation_models, **kwargs):
         iterable: the generator object that produces the complete result in one step
 
     """
-    x, y = tools.shuffle_points(x, y)
+    x_pts, y_pts = tools.shuffle_points(x_pts, y_pts)
 
-    model_generators = []
-    results = []
-    # Get all the models properties
-    for model in mod.map_to_models(computation_models):
-        # Transform the properties
-        model['steps'] = kwargs['steps']
-        data = _build_uniform_regression_data_format(x, y, model)
-        # Do a single computational step for each model
-        model_generators.append(model['computation'](data))
-        results.append(next(model_generators[-1]))
+    # Do the initial step for specified models
+    model_generators, results = _models_initial_step(x_pts, y_pts, computation_models,
+                                                     kwargs['steps'])
     # Find the model that fits the most
     best_fit = _find_best_fitting_model(results)
 
@@ -203,16 +195,16 @@ def initial_guess_computation(x, y, computation_models, **kwargs):
             break
 
 
-def bisection_computation(x, y, computation_models, **kwargs):
+def bisection_computation(x_pts, y_pts, computation_models, **kwargs):
     """The bisection computation method.
 
-    This method computes the best fitting model for the whole profiling data and then perform interval
-    bisection in order to find potential difference between interval models.
+    This method computes the best fitting model for the whole profiling data and then perform
+    interval bisection in order to find potential difference between interval models.
 
     Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be fully computed
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
         kwargs: additional configuration parameters
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
@@ -222,28 +214,53 @@ def bisection_computation(x, y, computation_models, **kwargs):
 
     """
     # Sort the regression data
-    x, y = tools.sort_points(x, y)
+    x_pts, y_pts = tools.sort_points(x_pts, y_pts)
 
     # Compute the initial model on the whole data set
-    init_model = _compute_bisection_model(x, y, computation_models)
+    init_model = _compute_bisection_model(x_pts, y_pts, computation_models)
 
     # Do bisection and try to find different model for the new sections
-    for sub_model in _bisection_step(x, y, computation_models, init_model):
+    for sub_model in _bisection_step(x_pts, y_pts, computation_models, init_model):
         yield sub_model
 
 
-def _bisection_step(x, y, computation_models, last_model):
+def _compute_bisection_model(x_pts, y_pts, computation_models, **kwargs):
+    """Compute specified models on a given data set and find the best fitting model.
+
+    Currently uses the full computation method.
+
+    Arguments:
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models that will be computed
+        kwargs: additional configuration parameters
+    Raises:
+        GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    Returns:
+        dict: the best fitting model
+    """
+
+    results = []
+    # Compute the step using the full computation
+    for result in full_computation(x_pts, y_pts, computation_models, **kwargs):
+        results.append(result)
+    # Find the best model
+    return results[_find_best_fitting_model(results)]
+
+
+def _bisection_step(x_pts, y_pts, computation_models, last_model):
     """The bisection step computation.
 
-    Performs one computation step for bisection. Splits the interval set by x, y and tries to compute each
-    half. In case of model change, the interval is split again and the process repeats. Otherwise the last
-    model is used as a final model.
+    Performs one computation step for bisection. Splits the interval set by x_pts, y_pts and
+    tries to compute each half. In case of model change, the interval is split again and the
+    process repeats. Otherwise the last model is used as a final model.
 
 
     Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be fully computed
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
         last_model(dict): the full interval model that is split
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
@@ -255,41 +272,85 @@ def _bisection_step(x, y, computation_models, last_model):
     # Split the interval and compute each one of them
     half_models = []
     parts = []
-    for part_start, part_end in tools.split_sequence(len(x), 2):
-        half_models.append(_compute_bisection_model(x[part_start:part_end], y[part_start:part_end], computation_models))
+    for part_start, part_end in tools.split_sequence(len(x_pts), 2):
+        half_models.append(
+            _compute_bisection_model(x_pts[part_start:part_end], y_pts[part_start:part_end],
+                                     computation_models))
         parts.append((part_start, part_end))
 
     # The half models are not different, return the full interval model
-    if half_models[0]['model'] == last_model['model'] and half_models[1]['model'] == last_model['model']:
+    if (half_models[0]['model'] == last_model['model'] and
+            half_models[1]['model'] == last_model['model']):
         yield last_model
         return
 
-    if half_models[0]['model'] != last_model['model']:
-        # First model is different, continue with bisection
-        for submodel in _bisection_step(
-                x[parts[0][0]:parts[0][1]], y[parts[0][0]:parts[0][1]], computation_models, half_models[0]):
-            yield submodel
-    else:
-        # First model is the same, but the second is not, return the half model
-        yield half_models[0]
+    # Check the first half interval and continue with bisection if needed
+    _bisection_solve_half_model(x_pts[parts[0][0]:parts[0][1]], y_pts[parts[0][0]:parts[0][1]],
+                                computation_models, half_models[0], last_model)
+    # Check the second half interval and continue with bisection if needed
+    _bisection_solve_half_model(x_pts[parts[1][0]:parts[1][1]], y_pts[parts[1][0]:parts[1][1]],
+                                computation_models, half_models[1], last_model)
 
-    if half_models[1]['model'] != last_model['model']:
-        # Second model is different, continue with bisection
-        for submodel in _bisection_step(
-                x[parts[1][0]:parts[1][1]], y[parts[1][0]:parts[1][1]], computation_models, half_models[1]):
+
+def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, last_model):
+    """Helper function for solving half intervals and producing their results.
+
+    The functions checks if the model has changed for the given half and if yes, then continues
+    with bisection - otherwise the half model is used as the final one for the interval.
+
+    Arguments:
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
+        half_model(dict): the half interval model
+        last_model(dict): the full interval model that is split
+    """
+    if half_model['model'] != last_model['model']:
+        # The model is different, continue with bisection
+        for submodel in _bisection_step(x_pts, y_pts, computation_models, half_model):
             yield submodel
     else:
-        # Second model is the same, but the first was not
-        yield half_models[1]
+        # The model is the same
+        yield half_model
+
+
+def _models_initial_step(x_pts, y_pts, computation_models, steps):
+    """Performs initial step with specified models in multi-step methods.
+
+    Arguments:
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
+        computation_models(tuple of str): the collection of regression models to compute
+        steps(int): number of total steps
+    Raises:
+        GenericRegressionExceptionBase: derived versions which are used in the computation functions
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    Returns:
+        tuple: list of model generators
+               list of model initial step results
+
+    """
+    model_generators = []
+    results = []
+    # Get all the models properties
+    for model in mod.map_to_models(computation_models):
+        # Transform the properties
+        model['steps'] = steps
+        data = _build_uniform_regression_data_format(x_pts, y_pts, model)
+        # Do a single computational step for each model
+        model_generators.append(model['computation'](data))
+        results.append(next(model_generators[-1]))
+    return model_generators, results
 
 
 def _transform_to_output_data(data, extra_keys=None):
-    """Transforms the data dictionary into their output format - omitting computational details and keys that are
-       not important for the result and it's further manipulation.
+    """Transforms the data dictionary into their output format - omitting computational details
+    and keys that are not important for the result and it's further manipulation.
 
-    The function provides dictionary with 'model', 'coeffs', 'r_square' and 'x_limits' keys taken from the
-    data dictionary. The function also allows to specify extra keys to be included in the output dictionary.
-    If certain key is missing in the data dictionary, then it's not included in the output dictionary.
+    The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_interval_start' and
+    'x_interval_end' keys taken from the data dictionary. The function also allows to specify
+    extra keys to be included in the output dictionary. If certain key is missing in the data
+    dictionary, then it's not included in the output dictionary.
 
     Arguments:
         data(dict): the data dictionary with results
@@ -308,14 +369,16 @@ def _transform_to_output_data(data, extra_keys=None):
         transform_keys += extra_keys
     transformed = {key: data[key] for key in transform_keys if key in data}
     # Specify the x borders
-    transformed['x_limits'] = [data['x_min'], data['x_max']]
+    transformed['x_interval_start'] = data['x_min']
+    transformed['x_interval_end'] = data['x_max']
     return transformed
 
 
 def _find_best_fitting_model(model_results):
     """Finds the model which is currently the best fitting one.
 
-    This function operates on a (intermediate) result dictionaries, where 'r_square' key is required.
+    This function operates on a (intermediate) result dictionaries,
+    where 'r_square' key is required.
 
     Arguments:
         model_results(list of dict): the list of result dictionaries for models
@@ -332,54 +395,31 @@ def _find_best_fitting_model(model_results):
     return best_fit
 
 
-def _compute_bisection_model(x, y, computation_models, **kwargs):
-    """Compute specified models on a given data set and find the best fitting model.
+def _build_uniform_regression_data_format(x_pts, y_pts, model):
+    """Creates the uniform regression data dictionary from the model properties and regression
+    data points.
 
-    Currently uses the full computation method.
-
-    Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be computed
-        kwargs: additional configuration parameters
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-    Returns:
-        dict: the best fitting model
-    """
-
-    results = []
-    # Compute the step using the full computation
-    for result in full_computation(x, y, computation_models, **kwargs):
-        results.append(result)
-    # Find the best model
-    return results[_find_best_fitting_model(results)]
-
-
-def _build_uniform_regression_data_format(x, y, model):
-    """Creates the uniform regression data dictionary from the model properties and regression data points.
-
-    The uniform data dictionary is used in the regression computation as it allows to build generic and
-    easily extensible computational methods and models.
+    The uniform data dictionary is used in the regression computation as it allows to build
+    generic and easily extensible computational methods and models.
 
     Arguments:
-        x(list): the list of x points coordinates
-        y(list): the list of y points coordinates
+        x_pts(list): the list of x points coordinates
+        y_pts(list): the list of y points coordinates
         model(dict): the regression model properties
     Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have different lengths
+        InvalidPointsException: if the points count is too low or their coordinates list have
+                                different lengths
         DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     Return:
         dict: the uniform data dictionary
 
     """
     # Check the requirements
-    tools.check_points(len(x), len(y), tools.MIN_POINTS_COUNT)
+    tools.check_points(len(x_pts), len(y_pts), tools.MIN_POINTS_COUNT)
     tools.validate_dictionary_keys(model, ['data_gen'], ['x', 'y'])
 
-    model['x'] = x
-    model['y'] = y
+    model['x'] = x_pts
+    model['y'] = y_pts
     # Initialize the data generator
     model['data_gen'] = model['data_gen'](model)
     return model
@@ -387,7 +427,7 @@ def _build_uniform_regression_data_format(x, y, model):
 # supported methods mapping
 # - every method must have the same argument signature to be called in 'compute' function
 # -- the signature: x, y, models, **kwargs
-_methods = collections.OrderedDict([
+_METHODS = collections.OrderedDict([
     ('full', full_computation),
     ('iterative', iterative_computation),
     ('interval', interval_computation),

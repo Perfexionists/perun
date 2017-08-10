@@ -9,7 +9,7 @@ This module contains the required specific versions for the models computation.
 import perun.postprocess.regression_analysis.tools as tools
 
 
-_approx_zero = 0.000001
+_APPROX_ZERO = 0.000001
 
 
 def quad_regression_error(data):
@@ -35,11 +35,7 @@ def quad_regression_error(data):
     for x_pt, y_pt in zip(data['x'][:data['len']], data['y'][:data['len']]):
         sse += (y_pt - (data['coeffs'][1] + data['coeffs'][0] * (x_pt ** 2))) ** 2
     sst = data['y_sq_sum'] - (data['y_sum'] ** 2) / data['len']
-    # Account for possible zero division error
-    try:
-        data['r_square'] = 1 - sse / sst
-    except ZeroDivisionError:
-        data['r_square'] = 0.0
+    data['r_square'] = tools.r_square_safe(sse, sst)
     return data
 
 
@@ -75,10 +71,7 @@ def power_regression_error(data):
             continue
     sst = y_square_sum - (y_sum ** 2) / data['len']
     # Account for possible zero division error
-    try:
-        data['r_square'] = 1 - sse / sst
-    except ZeroDivisionError:
-        data['r_square'] = 0.0
+    data['r_square'] = tools.r_square_safe(sse, sst)
     return data
 
 
@@ -110,8 +103,5 @@ def exp_regression_error(data):
         sse += (y_pt - (data['coeffs'][1] * (data['coeffs'][0] ** x_pt))) ** 2
     sst = y_square_sum - (y_sum ** 2) / data['len']
     # Account for possible zero division error
-    try:
-        data['r_square'] = 1 - sse / sst
-    except ZeroDivisionError:
-        data['r_square'] = 0.0
+    data['r_square'] = tools.r_square_safe(sse, sst)
     return data

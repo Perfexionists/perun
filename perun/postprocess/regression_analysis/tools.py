@@ -2,13 +2,16 @@
 
 """
 
-
-import perun.utils.exceptions as exceptions
 from random import shuffle
 from operator import itemgetter
 
+import perun.utils.exceptions as exceptions
+
+
 # Minimum points count to perform the regression
 MIN_POINTS_COUNT = 3
+# R^2 value if computation failed
+_R_SQUARE_DEFAULT = 0.0
 
 
 def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
@@ -27,7 +30,7 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
     missing_keys, excess_keys = [], []
 
     # Check the dictionary first
-    if type(dictionary) is not dict:
+    if not isinstance(dictionary, dict):
         raise exceptions.DictionaryKeysValidationFailed(dictionary, [], [])
     # Check all the required keys
     for key in required_keys:
@@ -51,7 +54,8 @@ def check_points(x_len, y_len, threshold):
         y_len(int): the count of y coordinates
         threshold(int): the minimum number of points
     Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have different lengths
+        InvalidPointsException: if the points count is too low or their coordinates list have
+                                different lengths
     Returns:
         None
     """
@@ -96,41 +100,59 @@ def split_sequence(length, parts):
         yield start, end
 
 
-def shuffle_points(x, y):
+def shuffle_points(x_pts, y_pts):
     """Shuffles the x and y coordinates sequence to produce random points sequence.
 
     Arguments:
-        x(list): the x coordinates list
-        y(list): the y coordinates list
+        x_pts(list): the x coordinates list
+        y_pts(list): the y coordinates list
     Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have different lengths
+        InvalidPointsException: if the points count is too low or their coordinates list have
+                                different lengths
     Returns:
         tuple:  x: the randomized x sequence
                 y: the randomized y sequence
     """
     # Build one list to ensure the coordinates are paired after the shuffle
-    check_points(len(x), len(y), MIN_POINTS_COUNT)
-    points = list(zip(x, y))
+    check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
+    points = list(zip(x_pts, y_pts))
     shuffle(points)
-    x, y = zip(*points)
-    return x, y
+    x_pts, y_pts = zip(*points)
+    return x_pts, y_pts
 
 
-def sort_points(x, y):
-    """Sorts the x and y coordinates sequence by x values in the ascending order.
+def sort_points(x_pts, y_pts):
+    """Sorts the x and y_pts coordinates sequence by x values in the ascending order.
 
     Arguments:
-        x(list): the x coordinates list
-        y(list): the y coordinates list
+        x_pts(list): the x coordinates list
+        y_pts(list): the y_pts coordinates list
     Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have different lengths
+        InvalidPointsException: if the points count is too low or their coordinates list have
+                                different lengths
     Returns:
         tuple:  x: the sorted x sequence
-                y: the sorted y sequence
+                y_pts: the sorted y_pts sequence
     """
     # Build one list to ensure the coordinates are paired after the sorting
-    check_points(len(x), len(y), MIN_POINTS_COUNT)
-    points = list(zip(x, y))
+    check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
+    points = list(zip(x_pts, y_pts))
     points.sort(key=itemgetter(0))
-    x, y = zip(*points)
-    return x, y
+    x_pts, y_pts = zip(*points)
+    return x_pts, y_pts
+
+
+def r_square_safe(sse, sst):
+    """The safe r square computation accounting for possible zero division errors.
+
+    Arguments:
+        sse(float): sum of squares of errors
+        sst(float): total sum of squares
+    Returns:
+        float: the r^2 coefficient value
+
+    """
+    try:
+        return 1 - sse / sst
+    except ZeroDivisionError:
+        return _R_SQUARE_DEFAULT
