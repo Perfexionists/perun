@@ -14,7 +14,7 @@ import perun.cli as cli
 __author__ = 'Tomas Fiedor'
 
 
-def test_regression_analysis_incorrect(pcs_full):
+def test_reg_analysis_incorrect(pcs_full):
     """Test various failure scenarios for regression analysis cli.
 
     Expecting no exceptions, all tests should end with status code 2.
@@ -97,7 +97,7 @@ def test_regression_analysis_incorrect(pcs_full):
     assert 'Got unexpected extra argument (iterative)' in result.output
 
 
-def test_regression_analysis_correct(pcs_full):
+def test_reg_analysis_correct(pcs_full):
     """Test correct usages of the regression analysis cli.
 
     Expecting no exceptions and errors, all tests should end with status code 0.
