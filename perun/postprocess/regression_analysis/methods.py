@@ -47,7 +47,7 @@ def compute(data_gen, method, models, **kwargs):
                 analysis.append(result)
         except exceptions.GenericRegressionExceptionBase as e:
             print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
-            print("  - " + e.msg)
+            print("  - " + e.__str__())
     return analysis
 
 

@@ -39,12 +39,13 @@ def postprocess(profile, **configuration):
 
 @click.command()
 @click.option('--method', '-m', type=click.Choice(get_supported_methods()),
-              required=True,
+              required=True, multiple=False,
               help='The regression method that will be used for computation.')
 @click.option('--regression_models', '-r', type=click.Choice(get_supported_models()),
               required=False, multiple=True,
-              help='List of regression models used by the regression method to fit the data.')
-@click.option('--steps', '-s', type=int,
+              help=('List of regression models used by the regression method to fit the data. '
+                    'If omitted, all regression models will be used in the computation.'))
+@click.option('--steps', '-s', type=click.IntRange(1, None, True),
               required=False, default=_DEFAULT_STEPS,
               help='The number of steps / data parts used by the iterative, interval and '
                    'initial guess methods')

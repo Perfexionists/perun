@@ -233,13 +233,14 @@ class InvalidPointsException(GenericRegressionExceptionBase):
 
 class InvalidSequenceSplitException(GenericRegressionExceptionBase):
     """Raised when the sequence split would produce too few points to use in regression analysis"""
-    def __init__(self, ratio):
+    def __init__(self, parts, ratio):
         super().__init__("")
+        self.parts = parts
         self.ratio = ratio
 
     def __str__(self):
         self.msg = ("Too few points would be produced by splitting the data into {0} "
-                    "parts.".format(self.ratio))
+                    "parts (resulting ratio: {1}).".format(self.parts, self.ratio))
         return self.msg
 
 

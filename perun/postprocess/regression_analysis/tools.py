@@ -90,7 +90,7 @@ def split_sequence(length, parts):
     """
     # Check if the split would produce meaningful values
     if length / parts < 2.0:
-        raise exceptions.InvalidSequenceSplitException(length / parts)
+        raise exceptions.InvalidSequenceSplitException(parts, length / parts)
 
     # Get the quotient and remainder
     quot, rem = divmod(length, parts)
