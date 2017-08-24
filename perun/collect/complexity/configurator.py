@@ -139,15 +139,12 @@ def _config_create_sample(include_list, sample_list):
     sample_map = dict()
     # Try to pair the sample configuration and include list to create sample map
     # 'mangled name: sample value'
-    # Fixme: tmp hack to handle CommentedMap / tuple input, needs proper solution later
     for sample in sample_list:
-        if 'func' in sample:
-            sample = (sample['func'], sample['sample'])
         # Unify the sampling function name to match the names in include list
-        sample_name = symbols.unify_sample_func(sample[0])
+        sample_name = symbols.unify_sample_func(sample['func'])
         for include_func in include_list:
             if include_func.rule == sample_name:
                 # Sampling name and include list name match
-                sample_map[include_func.mangled_name] = sample[1]
+                sample_map[include_func.mangled_name] = sample['sample']
                 break
     return sample_map

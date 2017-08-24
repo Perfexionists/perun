@@ -196,6 +196,28 @@ def _process_file_record(record, call_stack, resources, address_map):
     return 1
 
 
+def sampling_to_dictionary(ctx, param, value):
+    """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
+
+    Arguments:
+        ctx(dict): click context
+        param(object): the parameter object
+        value(list): the list of sampling values
+    Returns:
+        list of dict: list of sampling dictionaries
+    """
+    if value is not None:
+        # Initialize
+        sampling_list = []
+        # Transform the tuple to more human readable dictionary
+        for sample in value:
+            sampling_list.append({
+                "func": sample[0],
+                "sample": sample[1]
+            })
+        return sampling_list
+
+
 @click.command()
 @click.option('--target-dir', '-t', type=click.Path(exists=True, resolve_path=True), required=True,
               help='Target directory path for binary and build data.')
@@ -213,8 +235,8 @@ def _process_file_record(record, call_stack, resources, address_map):
               default=configurator.DEFAULT_DIRECT_OUTPUT,
               help=('Profilig data are stored into file directly instead of being saved into data '
                     'structure and printed later.'))
-@click.option('--sampling', '-s', type=(str, int), multiple=True,
-              help='List of sampling configuration in form <function value>.')
+@click.option('--sampling', '-s', type=(str, int), multiple=True, callback=sampling_to_dictionary,
+              help='List of sampling configuration in form <function_name value>.')
 @click.pass_context
 def complexity(ctx, **kwargs):
     """Runs the complexity collector, collecting running times for profiles depending on size"""
