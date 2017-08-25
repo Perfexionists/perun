@@ -142,6 +142,21 @@ def sort_points(x_pts, y_pts):
     return x_pts, y_pts
 
 
+def zip_points(x_pts, y_pts, len_start=0, len_end=-1):
+    """Creates points pair (x, y) useful for iteration.
+
+    Arguments:
+        x_pts(list): list of x points
+        y_pts(list): list of y points
+        len_start(int): slicing start value
+        len_end(int): slicing end value
+    Returns:
+        iterable: zip iterator object
+
+    """
+    return zip(x_pts[len_start:len_end], y_pts[len_start:len_end])
+
+
 def r_square_safe(sse, sst):
     """The safe r square computation accounting for possible zero division errors.
 

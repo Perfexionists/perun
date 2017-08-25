@@ -32,7 +32,7 @@ def quad_regression_error(data):
 
     # Compute the sse with specific quadratic model formula
     sse = 0
-    for x_pt, y_pt in zip(data['x'][:data['len']], data['y'][:data['len']]):
+    for x_pt, y_pt in tools.zip_points(data['x'], data['y'], 0, data['len']):
         sse += (y_pt - (data['coeffs'][1] + data['coeffs'][0] * (x_pt ** 2))) ** 2
     sst = data['y_sq_sum'] - (data['y_sum'] ** 2) / data['len']
     data['r_square'] = tools.r_square_safe(sse, sst)
@@ -59,7 +59,7 @@ def power_regression_error(data):
 
     sse = 0.0
     y_sum, y_square_sum = 0.0, 0.0
-    for x_pt, y_pt in zip(data['x'][:data['len']], data['y'][:data['len']]):
+    for x_pt, y_pt in tools.zip_points(data['x'], data['y'], 0, data['len']):
         # Computes the actual y and y square sums without the 'fy' modification
         y_sum += y_pt
         y_square_sum += y_pt ** 2
@@ -95,7 +95,7 @@ def exp_regression_error(data):
 
     sse = 0
     y_sum, y_square_sum = 0.0, 0.0
-    for x_pt, y_pt in zip(data['x'][:data['len']], data['y'][:data['len']]):
+    for x_pt, y_pt in tools.zip_points(data['x'], data['y'], 0, data['len']):
         # Computes the actual y and y square sums without the 'fy' modification
         y_sum += y_pt
         y_square_sum += y_pt**2
