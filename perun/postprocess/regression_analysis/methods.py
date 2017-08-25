@@ -47,7 +47,7 @@ def compute(data_gen, method, models, **kwargs):
                 analysis.append(result)
         except exceptions.GenericRegressionExceptionBase as e:
             print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
-            print("  - " + e.__str__())
+            print("  - " + str(e))
     return analysis
 
 
@@ -343,37 +343,6 @@ def _models_initial_step(x_pts, y_pts, computation_models, steps):
     return model_generators, results
 
 
-def _transform_to_output_data(data, extra_keys=None):
-    """Transforms the data dictionary into their output format - omitting computational details
-    and keys that are not important for the result and it's further manipulation.
-
-    The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_interval_start' and
-    'x_interval_end' keys taken from the data dictionary. The function also allows to specify
-    extra keys to be included in the output dictionary. If certain key is missing in the data
-    dictionary, then it's not included in the output dictionary.
-
-    Arguments:
-        data(dict): the data dictionary with results
-        extra_keys(list of str): the extra keys to include
-    Raises:
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-    Returns:
-        dict: the output dictionary
-
-    """
-    tools.validate_dictionary_keys(data, ['model', 'coeffs', 'r_square', 'x_max', 'x_min'], [])
-
-    # Specify the keys which should be directly mapped
-    transform_keys = ['model', 'coeffs', 'r_square']
-    if extra_keys is not None:
-        transform_keys += extra_keys
-    transformed = {key: data[key] for key in transform_keys if key in data}
-    # Specify the x borders
-    transformed['x_interval_start'] = data['x_min']
-    transformed['x_interval_end'] = data['x_max']
-    return transformed
-
-
 def _find_best_fitting_model(model_results):
     """Finds the model which is currently the best fitting one.
 
@@ -393,6 +362,46 @@ def _find_best_fitting_model(model_results):
         if model_results[i]['r_square'] > model_results[best_fit]['r_square']:
             best_fit = i
     return best_fit
+
+
+def _transform_to_output_data(data, extra_keys=None):
+    """Transforms the data dictionary into their output format - omitting computational details
+    and keys that are not important for the result and it's further manipulation.
+
+    The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_interval_start' and
+    'x_interval_end' keys taken from the data dictionary. The function also allows to specify
+    extra keys to be included in the output dictionary. If certain key is missing in the data
+    dictionary, then it's not included in the output dictionary. Coefficients are saved with
+    default names 'b0', 'b1'...
+
+    Arguments:
+        data(dict): the data dictionary with results
+        extra_keys(list of str): the extra keys to include
+    Raises:
+        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    Returns:
+        dict: the output dictionary
+
+    """
+    tools.validate_dictionary_keys(data, ['model', 'coeffs', 'r_square', 'x_max', 'x_min'], [])
+
+    # Specify the keys which should be directly mapped
+    transform_keys = ['model', 'r_square']
+    if extra_keys is not None:
+        transform_keys += extra_keys
+    transformed = {key: data[key] for key in transform_keys if key in data}
+    # Specify the x borders
+    transformed['x_interval_start'] = data['x_min']
+    transformed['x_interval_end'] = data['x_max']
+    # Transform the coefficients
+    transformed['coeffs'] = []
+    for idx, coeff in enumerate(reversed(data['coeffs'])):
+        transformed['coeffs'].append({
+            'name': 'b{0}'.format(idx),
+            'value': coeff
+        })
+
+    return transformed
 
 
 def _build_uniform_regression_data_format(x_pts, y_pts, model):
