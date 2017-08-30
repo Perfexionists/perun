@@ -88,6 +88,33 @@ def test_collect_correct(pcs_full):
     assert result.exit_code == 0
 
 
+def test_collect_complexity(pcs_full, complexity_collect_job):
+    """Test running the complexity collector from the CLI with parameter handling
+
+    Expecting no errors
+    """
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    job_params = complexity_collect_job[5]['collector_params']['complexity']
+
+    files = [
+        '-f{}'.format(os.path.abspath(os.path.join(script_dir, file)))
+        for file in job_params['files']
+    ]
+    rules = [
+        '-r{}'.format(rule) for rule in job_params['rules']
+    ]
+    samplings = sum([
+        ['-s {}'.format(sample['func']), sample['sample']] for sample in job_params['sampling']
+    ], [])
+    runner = CliRunner()
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+                                         'complexity',
+                                         '-t{}'.format(job_params['target_dir']),
+                                         ] + files + rules + samplings)
+
+    assert result.exit_code == 0
+
+
 def test_show_help(pcs_full):
     """Test running show to see if there are registered modules for showing
 
