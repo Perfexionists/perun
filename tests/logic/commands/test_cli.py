@@ -14,6 +14,193 @@ import perun.cli as cli
 __author__ = 'Tomas Fiedor'
 
 
+def test_reg_analysis_incorrect(pcs_full):
+    """Test various failure scenarios for regression analysis cli.
+
+    Expecting no exceptions, all tests should end with status code 2.
+    """
+
+    # Instantiate the runner fist
+    runner = CliRunner()
+
+    # Test the lack of arguments
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis'])
+    assert result.exit_code == 2
+    assert 'Usage' in result.output
+
+    # Test non-existing argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-f'])
+    assert result.exit_code == 2
+    assert 'no such option: -f' in result.output
+
+    # Test malformed method argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--metod', 'full'])
+    assert result.exit_code == 2
+    assert 'no such option: --metod' in result.output
+
+    # Test missing method value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m'])
+    assert result.exit_code == 2
+    assert '-m option requires an argument' in result.output
+
+    # Test invalid method name
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'extra'])
+    assert result.exit_code == 2
+    assert 'Invalid value for "--method"' in result.output
+
+    # Test malformed model argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'full',
+                                               '--regresion_models'])
+    assert result.exit_code == 2
+    assert 'no such option: --regresion_models' in result.output
+
+    # Test missing model value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'full',
+                                               '-r'])
+    assert result.exit_code == 2
+    assert '-r option requires an argument' in result.output
+
+    # Test invalid model name
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full', '-r',
+                                               'ultimastic'])
+    assert result.exit_code == 2
+    assert 'Invalid value for "--regression_models"' in result.output
+
+    # Test multiple models specification with one invalid value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'quad', '-r', 'fail'])
+    assert result.exit_code == 2
+    assert 'Invalid value for "--regression_models"' in result.output
+
+    # Test malformed steps argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all', '--seps'])
+    assert result.exit_code == 2
+    assert ' no such option: --seps' in result.output
+
+    # Test missing steps value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all', '-s'])
+    assert result.exit_code == 2
+    assert '-s option requires an argument' in result.output
+
+    # Test invalid steps type
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full', '-r',
+                                               'all', '-s', '0.5'])
+    assert result.exit_code == 2
+    assert '0.5 is not a valid integer' in result.output
+
+    # Test multiple method specification resulting in extra argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               'iterative'])
+    assert result.exit_code == 2
+    assert 'Got unexpected extra argument (iterative)' in result.output
+
+
+def test_reg_analysis_correct(pcs_full):
+    """Test correct usages of the regression analysis cli.
+
+    Expecting no exceptions and errors, all tests should end with status code 0.
+    """
+
+    # Instantiate the runner fist
+    runner = CliRunner()
+
+    # Test the help printout first
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--help'])
+    assert result.exit_code == 0
+    assert 'Usage' in result.output
+
+    # Test multiple method specifications -> the last one is chosen
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-m', 'iterative'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the full computation method with all models set as a default value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the iterative method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the interval method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'interval'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the initial guess method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'initial_guess'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the bisection method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'bisection'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification on full computation
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification for multiple models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'quad', '-r', 'exp'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification for all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'log', '-r', 'quad',
+                                               '-r', 'power', '-r', 'exp'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification for all models values (also with 'all' value)
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'log', '-r', 'quad',
+                                               '-r', 'power', '-r', 'exp', '-r', 'all'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test steps specification for full computation which has no effect
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all', '-s', '100'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test reasonable steps value for iterative method
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative',
+                                               '-r', 'all', '-s', '4'])
+    assert result.exit_code == 0
+    assert result.output.count('Too few points') == 5
+    assert 'Successfully postprocessed' in result.output
+
+    # Test too many steps output
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative',
+                                               '-r', 'all', '-s', '1000'])
+    assert result.exit_code == 0
+    assert result.output.count('Too few points') == 7
+    assert 'Successfully postprocessed' in result.output
+
+    # Test steps value clamping with iterative method
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative',
+                                               '-r', 'all', '-s', '-1'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test different arguments positions
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-s', '2', '-r', 'all',
+                                               '-m', 'full'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+
 def test_status_correct(pcs_full):
     """Test running perun status in perun directory, without any problems.
 
