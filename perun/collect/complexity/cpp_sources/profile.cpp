@@ -80,6 +80,7 @@ void Trace_context_wrapper::Print_vector_to_file()
             trace_log << instr_data[i].action << " " << instr_data[i].function_address << " "
                       << instr_data[i].now.count() << " " << instr_data[i].struct_size << std::endl;
         }
+        instr_data.clear();
     } else {
         // File unexpectedly closed
         instr_data.clear();

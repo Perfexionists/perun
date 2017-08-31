@@ -36,7 +36,8 @@ def create_runtime_config(executable_path, runtime_filter, include_list, configu
     config_path = _config_construct_file_path(executable_path)
     with open(config_path, 'w') as config_handle:
         # Write the configuration settings
-        _config_write_config(config_handle, executable_path, runtime_filter, include_list, configuration)
+        _config_write_config(config_handle, executable_path, runtime_filter, include_list,
+                             configuration)
 
 
 def _config_construct_file_path(executable_path):
@@ -82,7 +83,8 @@ def _config_symbols_to_addresses(executable_path, runtime_filter, sample_map):
     return final_filter, final_sample
 
 
-def _config_write_config(config_handle, executable_path, runtime_filter, include_list, job_settings):
+def _config_write_config(config_handle, executable_path, runtime_filter, include_list,
+                         job_settings):
     """ Writes the configuration stored in the config dictionary into the file
 
     Arguments:
@@ -100,7 +102,8 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
     # Create the translation table for identifiers
     if 'sampling' in job_settings:
         sample_map = _config_create_sample(include_list, job_settings['sampling'])
-    filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter, sample_map)
+    filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter,
+                                                            sample_map)
 
     # Create the internal configuration
     internal_conf = {
@@ -115,7 +118,8 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
     if sample_dict:
         internal_conf['sampling'] = []
         for sample_rule in sample_dict:
-            internal_conf['sampling'].append({'func': sample_rule, 'sample': sample_dict[sample_rule]})
+            internal_conf['sampling'].append(
+                {'func': sample_rule, 'sample': sample_dict[sample_rule]})
 
     # Serializes the configuration dictionary to the proper circ format
     config_handle.write('CIRC = {0}'.format(json.dumps(internal_conf, sort_keys=True, indent=2)))
@@ -133,16 +137,14 @@ def _config_create_sample(include_list, sample_list):
         dict: the created sample map
     """
     sample_map = dict()
-    # Try to pair the sample configuration and include list to create sample map 'mangled name: sample value'
-    # Fixme: tmp hack to handle CommentedMap / tuple input, needs proper solution later (might be larger scale problem?)
+    # Try to pair the sample configuration and include list to create sample map
+    # 'mangled name: sample value'
     for sample in sample_list:
-        if 'func' in sample:
-            sample = (sample['func'], sample['sample'])
         # Unify the sampling function name to match the names in include list
-        sample_name = symbols.unify_sample_func(sample[0])
+        sample_name = symbols.unify_sample_func(sample['func'])
         for include_func in include_list:
             if include_func.rule == sample_name:
                 # Sampling name and include list name match
-                sample_map[include_func.mangled_name] = sample[1]
+                sample_map[include_func.mangled_name] = sample['sample']
                 break
     return sample_map
