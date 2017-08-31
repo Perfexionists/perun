@@ -12,16 +12,18 @@
 
 import sys
 import subprocess
-import perun.utils.exceptions as exceptions
 import collections
+
+import perun.utils.exceptions as exceptions
 
 # Symbol table columns constants
 _SYMTABLE_NAME_COLUMN = 8
 _SYMTABLE_ADDR_COLUMN = 2
 
 # The named tuple collection for storage of decomposed function prototypes
-PrototypeParts = collections.namedtuple('prototype_parts', ['identifier', 'args', 'scoped_body', 'scoped_args',
-                                                            'full_body', 'full_args'])
+PrototypeParts = collections.namedtuple(
+    'prototype_parts', ['identifier', 'args', 'scoped_body', 'scoped_args', 'full_body',
+                        'full_args'])
 # The named tuple collection serving as a key for include list
 RuleKey = collections.namedtuple('rule_key', ['mangled_name', 'rule'])
 
@@ -82,7 +84,8 @@ def extract_symbol_address_map(executable_path):
     # Get the mangled function names and addresses
     symbols = _get_symbols(executable_path, [_SYMTABLE_ADDR_COLUMN, _SYMTABLE_NAME_COLUMN])
     # Create address map as hex address: mangled name
-    address_map = {('0x' + symbols[i].lstrip('0')): symbols[i + 1] for i in range(0, len(symbols), 2)}
+    address_map = {('0x' + symbols[i].lstrip('0')): symbols[i + 1]
+                   for i in range(0, len(symbols), 2)}
     # Translate the mangled names
     name_map = translate_mangled_symbols(list(address_map.values()))
     for record in address_map:
@@ -174,11 +177,10 @@ def _get_symbols(executable_path, columns):
     # Convert the columns list to string parameter
     columns_str = ','.join(str(column) for column in columns)
 
-    # # readelf -sW exec | awk '$4 == "FUNC" && $7 != "UND"' | awk '{$2=$2};1' | cut -d' ' -f columns
-    cmd = "readelf -sW " + executable_path + \
-          " | awk '$4 == \"FUNC\" && $7 != \"UND\"' | awk '{$2=$2};1' | cut -d' ' -f " + columns_str
-    ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    symbols = ps.communicate()[0]
+    cmd = ("readelf -sW " + executable_path + " | awk '$4 == \"FUNC\" && $7 != \"UND\"' | "
+                                              "awk '{$2=$2};1' | cut -d' ' -f " + columns_str)
+    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    symbols = process.communicate()[0]
 
     # Decode the bytes and create list
     symbols = symbols.decode(sys.stdout.encoding).replace(' ', '\n').split('\n')
@@ -196,7 +198,8 @@ def _finalize_exclude_lists(exclude_list, include_list):
 
     Arguments:
         exclude_list(dict): function symbols to be excluded as 'mangled name: prototype parts tuple'
-        include_list(dict): function symbols to be profiled as 'rule_key tuple: prototype parts tuple'
+        include_list(dict): function symbols to be profiled as
+                            'rule_key tuple: prototype parts tuple'
 
     Returns:
         tuple: list of statically excluded function identifiers
@@ -257,13 +260,14 @@ def _process_symbol(function_prototype):
     arguments = _remove_argument_scopes(scoped_args)
 
     # Build the tuple from prototype parts
-    return PrototypeParts(identifier, arguments, scoped_body, scoped_args, prototype_body, prototype_args)
+    return PrototypeParts(identifier, arguments, scoped_body, scoped_args, prototype_body,
+                          prototype_args)
 
 
 def _unify_function_format(function_prototype):
-    """ Unifies the format in which are functions stored, compared etc. Notably all redundant whitespaces
-        are removed, return type is removed and function prototype is split into prototype body and
-        argument list.
+    """ Unifies the format in which are functions stored, compared etc. Notably all redundant
+        whitespaces are removed, return type is removed and function prototype is split into
+        prototype body and argument list.
 
     Arguments:
         function_prototype(str): the 'raw' function prototype
@@ -325,8 +329,7 @@ def _split_prototype(function_prototype):
     # Split the prototype into body and argument part
     if arg_start != -1:
         return function_prototype[:arg_start], function_prototype[arg_start:arg_end + 1]
-    else:
-        return function_prototype, ''
+    return function_prototype, ''
 
 
 def _extract_function_identifier(function_prototype):
@@ -506,8 +509,10 @@ def _build_symbol_from_rules(symbol_parts, rule_details):
     """ Builds the symbol from its part, which are specified in the rule details
 
     Arguments:
-        symbol_parts(dict): the symbol parts dictionary in form 'mangled name: prototype_parts tuple'
-        rule_details(list): list of prototype_parts attribute names which are used to build the symbol
+        symbol_parts(dict): the symbol parts dictionary in form
+                            'mangled name: prototype_parts tuple'
+        rule_details(list): list of prototype_parts attribute names which are used to build the
+                            symbol
 
     Returns:
         str: the built symbol
