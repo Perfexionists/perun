@@ -35,7 +35,6 @@ class Trace_context_wrapper {
     // Using vector as we need effective insertion and no additional memory usage for storage, no searching
     std::vector<Instrument_data> instr_data;
 
-    bool use_direct_file_output;            // Output instrumentation records directly to the file
     const unsigned int max_records = 19998; // Number of records to store before printing them to the file
     std::ofstream trace_log;                // Trace output stream
 

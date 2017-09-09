@@ -1,6 +1,6 @@
-=================================================
-  Perun: Lightweight Performance Control System
-=================================================
+===============================================
+  Perun: Lightweight Performance Version System
+===============================================
 
 .. image:: https://travis-ci.org/tfiedor/perun.svg?branch=develop
     :target: https://travis-ci.org/tfiedor/perun
@@ -77,3 +77,21 @@ techniques and wrappers for graphical and command line interface.
     :width: 500px
     :scale: 40%
     :align: center
+
+Acknowledgements
+================
+
+We thank for the support received from the Red Hat (Brno) and H2020 ECSEL project Aquas (link_).
+
+Further we would like to thank the following concrete people (in the alphabetic order) for
+their (sometimes even just a little) help:
+
+  * Jan Fiedor (Honeywell)---for feedback, and technical discussions;
+  * Martin Hruska (BUT FIT)---for feedback, and technical discussions;
+  * Petr Müller (SAP)---for nice discussion about the project;
+  * Hanka Pluhackova (BUT FIT)---for awesome logo, theoretical discussions about statistics, feedback, and lots of ideas;
+  * Adam Rogalewicz (BUT FIT)---for support, theoretical discussions, feedback;
+  * Tomas Vojnar (BUT FIT)---for support, theoretical discussions, feedback;
+  * Jan Zeleny (Red Hat)---for awesome support, and feedback.
+
+.. _link: http://aquas-project.eu/

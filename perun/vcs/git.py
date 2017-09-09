@@ -126,7 +126,7 @@ def _parse_commit(commit):
         commit(git.Commit): commit object
 
     Returns:
-        MinorVersion: namedtuple representing the minor version (date author email checksum desc parents)
+        MinorVersion: namedtuple of minor version (date author email checksum desc parents)
     """
     checksum = str(commit)
     commit_parents = [str(parent) for parent in commit.parents]
@@ -154,7 +154,7 @@ def _get_minor_version_info(git_repo, minor_version):
         minor_version(str): identification of minor_version
 
     Returns:
-        MinorVersion: namedtuple representing the minor version (date author email checksum desc parents)
+        MinorVersion: namedtuple of minor version (date author email checksum desc parents)
     """
     assert store.is_sha1(minor_version)
 
@@ -192,7 +192,43 @@ def _check_minor_version_validity(git_repo, minor_version):
     """
     try:
         git_repo.rev_parse(str(minor_version))
-    except git.exc.BadName:
-        raise VersionControlSystemException("minor version '{}' could not be found", minor_version)
-    except ValueError:
-        raise VersionControlSystemException("minor version '{}' is missing in the vcs", minor_version)
+    except (git.exc.BadName, ValueError) as inner_exception:
+        raise VersionControlSystemException(
+            "minor version '{}' could not be found: {}", minor_version, str(inner_exception)
+        )
+
+
+@create_repo_from_path
+def _massage_parameter(git_repo, parameter, parameter_type=None):
+    """Parameter massaging takes a parameter and unites it to the unified context
+
+    Given a parameter (in the context of git, this is rev), of a given parameter_type (e.g. tree,
+    commit, blob, etc.) calls 'git rev-parse parameter^{parameter_type}' to translate the rev to
+    to be used for other.
+
+    Arguments:
+        git_repo(git.Repo): wrapped git repository
+
+    Returns:
+        str: massaged parameter
+
+    Raises:
+        VersionControlSystemException: when there is an error while rev-parsing the parameter
+    """
+    try:
+        if parameter_type:
+            parameter += "^{{{0}}}".format(parameter_type)
+        return str(git_repo.rev_parse(parameter))
+    except git.exc.BadName as bo_exception:
+        raise VersionControlSystemException("parameter '{}' could not be found: {}".format(
+            parameter, str(bo_exception)
+        ))
+    except ValueError as ve_exception:
+        raise VersionControlSystemException("parameter '{}' could not be parsed: {}".format(
+            parameter.replace('{', '{{').replace('}', '}}'),
+            ve_exception.args[0].replace('{', '{{').replace('}', '}}')
+        ))
+    except IndentationError as ie_exception:
+        raise VersionControlSystemException("parameter '{}' represents invalid reflog: {}".format(
+            parameter, str(ie_exception)
+        ))

@@ -12,6 +12,7 @@ class InvalidParameterException(Exception):
             parameter_value(object): value of the parameter
             choices_msg(str): string with choices for the valid parameters
         """
+        super().__init__("")
         self.parameter = parameter
         self.value = str(parameter_value)
         self.choices_msg = " " + choices_msg
@@ -33,6 +34,7 @@ class InvalidConfigOperationException(Exception):
         Arguments:
             operation(str): name of the operation
         """
+        super().__init__("")
         self.store_type = store_type
         self.operation = operation
         self.key = key
@@ -56,6 +58,7 @@ class ExternalEditorErrorException(Exception):
             editor(str): name of the invoked editor
             reason(str): reason why the editor failed
         """
+        super().__init__("")
         self.editor = editor
         self.reason = reason
 
@@ -72,6 +75,7 @@ class EntryNotFoundException(Exception):
         Arguments:
             entry(str): entry we are looking up in the index
         """
+        super().__init__("")
         self.entry = entry
 
     def __str__(self):
@@ -94,6 +98,7 @@ class VersionControlSystemException(Exception):
             msg(str): format string of the error message
             args(list): list of arguments for format string
         """
+        super().__init__(msg)
         self.msg = msg
         self.args = args
 
@@ -109,6 +114,7 @@ class IncorrectProfileFormatException(Exception):
             filename(str): filename of the profile in the wrong format
             msg(str): additional message what is wrong withe profile
         """
+        super().__init__("")
         self.filename = filename
         self.msg = msg
 
@@ -119,6 +125,7 @@ class IncorrectProfileFormatException(Exception):
 class NotPerunRepositoryException(Exception):
     """Raised when command is not called from within the scope of any Perun repository"""
     def __init__(self, path):
+        super().__init__("")
         self.path = path
 
     def __str__(self):
@@ -130,6 +137,7 @@ class NotPerunRepositoryException(Exception):
 class UnsupportedModuleException(Exception):
     """Raised when dynamically loading a module, that is not supported by the perun"""
     def __init__(self, module):
+        super().__init__("")
         self.module = module
 
     def __str__(self):
@@ -146,6 +154,7 @@ class UnsupportedModuleFunctionException(Exception):
         Arguments:
             module(str): name of the module that does not support the given function
         """
+        super().__init__("")
         self.module = module
         self.func = func
 
@@ -153,3 +162,106 @@ class UnsupportedModuleFunctionException(Exception):
         return "Function '{}' is not implemented withit the '{}' module".format(
             self.module, self.func
         )
+
+
+class DictionaryKeysValidationFailed(Exception):
+    """Raised when validated dictionary is actually not a dictionary or has missing/excess keys"""
+    def __init__(self, dictionary, missing_keys, excess_keys):
+        """
+        Arguments:
+            dictionary(dict): the validated dictionary
+            missing_keys(list): list of missing keys in the dictionary
+            excess_keys(list): list of excess forbidden keys in the dictionary
+        """
+        super().__init__("")
+        self.dictionary = dictionary
+        self.missing_keys = missing_keys
+        self.excess_keys = excess_keys
+
+    def __str__(self):
+        if not isinstance(self.dictionary, dict):
+            msg = "Validated object '{0}' is not a dictionary.".format(self.dictionary)
+        elif not self.missing_keys:
+            msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
+                self.dictionary, ', '.join(self.excess_keys))
+        elif not self.excess_keys:
+            msg = "Validated dictionary '{0}' is missing required keys: '{1}'.".format(
+                self.dictionary, ', '.join(self.missing_keys))
+        else:
+            msg = ("Validated dictionary '{0}' has excess forbidden keys: '{1}' and is "
+                   "missing required keys: '{2}'.".format(self.dictionary,
+                                                          ', '.join(self.excess_keys),
+                                                          ', '.join(self.missing_keys)))
+        return msg
+
+
+# Regression analysis exception hierarchy
+class GenericRegressionExceptionBase(Exception):
+    """Base class for all regression specific exception
+
+    All specific exceptions should be derived from the base
+    - this allows to catch all regression exceptions in one clause
+
+    """
+    def __init__(self, msg):
+        """Base constructor with exception message"""
+        super().__init__("")
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
+class InvalidPointsException(GenericRegressionExceptionBase):
+    """Raised when regression data points count is too low or
+    the x and y coordinates count is different"""
+    def __init__(self, x_len, y_len, threshold):
+        super().__init__("")
+        self.x_len = x_len
+        self.y_len = y_len
+        self.threshold = threshold
+
+    def __str__(self):
+        if self.x_len != self.y_len:
+            self.msg = ("Points coordinates x and y have different lengths - x:{0}, "
+                        "y:{1}.".format(self.x_len, self.y_len))
+        elif self.x_len < self.threshold or self.y_len < self.threshold:
+            self.msg = ("Too few points coordinates to perform regression - x:{0}, "
+                        "y:{1}.".format(self.x_len, self.y_len))
+        return self.msg
+
+
+class InvalidSequenceSplitException(GenericRegressionExceptionBase):
+    """Raised when the sequence split would produce too few points to use in regression analysis"""
+    def __init__(self, parts, ratio):
+        super().__init__("")
+        self.parts = parts
+        self.ratio = ratio
+
+    def __str__(self):
+        self.msg = ("Too few points would be produced by splitting the data into {0} "
+                    "parts (resulting ratio: {1}).".format(self.parts, self.ratio))
+        return self.msg
+
+
+class InvalidCoeffsException(GenericRegressionExceptionBase):
+    """Raised when data format contains unexpected number of coefficient"""
+    def __init__(self, coeffs_count):
+        super().__init__("")
+        self.coeffs_count = coeffs_count
+
+    def __str__(self):
+        self.msg = ("Missing coefficients list or their count different from: {0}.".format(
+            str(self.coeffs_count)))
+        return self.msg
+
+
+class InvalidModelException(GenericRegressionExceptionBase):
+    """Raised when invalid or unknown regression model is required"""
+    def __init__(self, model):
+        super().__init__("")
+        self.model = model
+
+    def __str__(self):
+        self.msg = "Invalid or unsupported regression model: {0}.".format(str(self.model))
+        return self.msg

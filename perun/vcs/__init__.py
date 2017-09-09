@@ -31,8 +31,8 @@ def get_minor_head(vcs_type, *args, **kwargs):
         return dynamic_module_function_call(
             'perun.vcs', vcs_type, '_get_minor_head', *args, **kwargs
         )
-    except ValueError as e:
-        perun_log.error("could not obtain head minor version: {}".format(e))
+    except ValueError as value_error:
+        perun_log.error("could not obtain head minor version: {}".format(value_error))
 
 
 def init(vcs_type, *args, **kwargs):
@@ -133,4 +133,19 @@ def check_minor_version_validity(vcs_type, *args, **kwargs):
     """
     dynamic_module_function_call(
         'perun.vcs', vcs_type, '_check_minor_version_validity', *args, **kwargs
+    )
+
+
+def massage_parameter(vcs_type, *args, **kwargs):
+    """
+    Arguments:
+        vcs_type(str): type of the vcs in which we are massaging the parameters
+        args(list): list of non-keyword arguments
+        kwargs(dict): dictionary of keyword arguments
+
+    Returns:
+        str: massaged parameter
+    """
+    return dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_massage_parameter', *args, **kwargs
     )

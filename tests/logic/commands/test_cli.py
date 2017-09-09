@@ -3,8 +3,8 @@
 Note that the functionality of the commands themselves are not tested,
 this is done in appropriate test files, only the API is tested."""
 
-import git
 import os
+import git
 
 import pytest
 from click.testing import CliRunner
@@ -12,6 +12,193 @@ from click.testing import CliRunner
 import perun.cli as cli
 
 __author__ = 'Tomas Fiedor'
+
+
+def test_reg_analysis_incorrect(pcs_full):
+    """Test various failure scenarios for regression analysis cli.
+
+    Expecting no exceptions, all tests should end with status code 2.
+    """
+
+    # Instantiate the runner fist
+    runner = CliRunner()
+
+    # Test the lack of arguments
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis'])
+    assert result.exit_code == 2
+    assert 'Usage' in result.output
+
+    # Test non-existing argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-f'])
+    assert result.exit_code == 2
+    assert 'no such option: -f' in result.output
+
+    # Test malformed method argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--metod', 'full'])
+    assert result.exit_code == 2
+    assert 'no such option: --metod' in result.output
+
+    # Test missing method value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m'])
+    assert result.exit_code == 2
+    assert '-m option requires an argument' in result.output
+
+    # Test invalid method name
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'extra'])
+    assert result.exit_code == 2
+    assert 'Invalid value for "--method"' in result.output
+
+    # Test malformed model argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'full',
+                                               '--regresion_models'])
+    assert result.exit_code == 2
+    assert 'no such option: --regresion_models' in result.output
+
+    # Test missing model value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'full',
+                                               '-r'])
+    assert result.exit_code == 2
+    assert '-r option requires an argument' in result.output
+
+    # Test invalid model name
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full', '-r',
+                                               'ultimastic'])
+    assert result.exit_code == 2
+    assert 'Invalid value for "--regression_models"' in result.output
+
+    # Test multiple models specification with one invalid value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'quad', '-r', 'fail'])
+    assert result.exit_code == 2
+    assert 'Invalid value for "--regression_models"' in result.output
+
+    # Test malformed steps argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all', '--seps'])
+    assert result.exit_code == 2
+    assert ' no such option: --seps' in result.output
+
+    # Test missing steps value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all', '-s'])
+    assert result.exit_code == 2
+    assert '-s option requires an argument' in result.output
+
+    # Test invalid steps type
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full', '-r',
+                                               'all', '-s', '0.5'])
+    assert result.exit_code == 2
+    assert '0.5 is not a valid integer' in result.output
+
+    # Test multiple method specification resulting in extra argument
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               'iterative'])
+    assert result.exit_code == 2
+    assert 'Got unexpected extra argument (iterative)' in result.output
+
+
+def test_reg_analysis_correct(pcs_full):
+    """Test correct usages of the regression analysis cli.
+
+    Expecting no exceptions and errors, all tests should end with status code 0.
+    """
+
+    # Instantiate the runner fist
+    runner = CliRunner()
+
+    # Test the help printout first
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--help'])
+    assert result.exit_code == 0
+    assert 'Usage' in result.output
+
+    # Test multiple method specifications -> the last one is chosen
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-m', 'iterative'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the full computation method with all models set as a default value
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the iterative method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the interval method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'interval'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the initial guess method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'initial_guess'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test the bisection method with all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'bisection'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification on full computation
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification for multiple models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'quad', '-r', 'exp'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification for all models
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'log', '-r', 'quad',
+                                               '-r', 'power', '-r', 'exp'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test explicit models specification for all models values (also with 'all' value)
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'linear', '-r', 'log', '-r', 'quad',
+                                               '-r', 'power', '-r', 'exp', '-r', 'all'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test steps specification for full computation which has no effect
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+                                               '-r', 'all', '-s', '100'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test reasonable steps value for iterative method
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative',
+                                               '-r', 'all', '-s', '4'])
+    assert result.exit_code == 0
+    assert result.output.count('Too few points') == 5
+    assert 'Successfully postprocessed' in result.output
+
+    # Test too many steps output
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative',
+                                               '-r', 'all', '-s', '1000'])
+    assert result.exit_code == 0
+    assert result.output.count('Too few points') == 7
+    assert 'Successfully postprocessed' in result.output
+
+    # Test steps value clamping with iterative method
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'iterative',
+                                               '-r', 'all', '-s', '-1'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
+
+    # Test different arguments positions
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-s', '2', '-r', 'all',
+                                               '-m', 'full'])
+    assert result.exit_code == 0
+    assert 'Successfully postprocessed' in result.output
 
 
 def test_status_correct(pcs_full):
@@ -88,6 +275,33 @@ def test_collect_correct(pcs_full):
     assert result.exit_code == 0
 
 
+def test_collect_complexity(pcs_full, complexity_collect_job):
+    """Test running the complexity collector from the CLI with parameter handling
+
+    Expecting no errors
+    """
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    job_params = complexity_collect_job[5]['collector_params']['complexity']
+
+    files = [
+        '-f{}'.format(os.path.abspath(os.path.join(script_dir, file)))
+        for file in job_params['files']
+    ]
+    rules = [
+        '-r{}'.format(rule) for rule in job_params['rules']
+    ]
+    samplings = sum([
+        ['-s {}'.format(sample['func']), sample['sample']] for sample in job_params['sampling']
+    ], [])
+    runner = CliRunner()
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+                                         'complexity',
+                                         '-t{}'.format(job_params['target_dir']),
+                                         ] + files + rules + samplings)
+
+    assert result.exit_code == 0
+
+
 def test_show_help(pcs_full):
     """Test running show to see if there are registered modules for showing
 
@@ -100,10 +314,10 @@ def test_show_help(pcs_full):
     assert 'raw' in result.output
 
 
-def test_add_tag(helpers, pcs_full, valid_profile_pool):
+def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
     """Test running add with tags instead of profile
 
-    Expecting no errors and profile added as it should
+    Expecting no errors and profile added as it should, or errors for incorrect revs
     """
     git_repo = git.Repo(os.path.split(pcs_full.path)[0])
     head = str(git_repo.head.commit)
@@ -111,14 +325,61 @@ def test_add_tag(helpers, pcs_full, valid_profile_pool):
     first_tagged = os.path.relpath(helpers.prepare_profile(pcs_full, valid_profile_pool[0], head))
 
     runner = CliRunner()
-    result = runner.invoke(cli.add, ['0@p'])
-    print(result.output)
+    result = runner.invoke(cli.add, ['0@p', '--minor=HEAD'])
     assert result.exit_code == 0
     assert "'{}' successfully registered".format(first_tagged) in result.output
+
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['0@p', r"--minor=HEAD^{d"])
+    assert result.exit_code == 2
+    assert "Missing closing brace"
+
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['0@p', r"--minor=HEAD^}"])
+    assert result.exit_code == 2
+
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['0@p', '--minor=tag2'])
+    assert result.exit_code == 2
+    assert "Ref 'tag2' did not resolve to object"
+
+
+def test_add_tag(helpers, pcs_full, valid_profile_pool):
+    """Test running add with tags instead of profile
+
+    Expecting no errors and profile added as it should
+    """
+    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    head = str(git_repo.head.commit)
+    parent = str(git_repo.head.commit.parents[0])
+    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    first_sha = os.path.relpath(helpers.prepare_profile(pcs_full, valid_profile_pool[0], head))
+    os.path.relpath(helpers.prepare_profile(pcs_full, valid_profile_pool[1], parent))
+
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['0@p'])
+    assert result.exit_code == 0
+    assert "'{}' successfully registered".format(first_sha) in result.output
+
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['0@p'])
+    assert result.exit_code == 1
+    assert "originates from minor version '{}'".format(parent) in result.output
 
     result = runner.invoke(cli.add, ['10@p'])
     assert result.exit_code == 2
     assert '0@p' in result.output
+
+
+def test_remove_tag(helpers, pcs_full):
+    """Test running remove with tags instead of profile
+
+    Expecting no errors and profile removed as it should
+    """
+    runner = CliRunner()
+    result = runner.invoke(cli.rm, ['0@i'])
+    assert result.exit_code == 0
+    assert "removed" in result.output
 
 
 def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):

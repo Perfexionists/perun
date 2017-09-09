@@ -11,7 +11,12 @@
 
 import os
 import json
-import symbols
+import perun.collect.complexity.symbols as symbols
+
+# Default internal parameters
+DEFAULT_DATA_FILENAME = 'trace.log'
+DEFAULT_STORAGE_SIZE = 20000
+DEFAULT_DIRECT_OUTPUT = False
 
 
 def create_runtime_config(executable_path, runtime_filter, include_list, configuration):
@@ -31,7 +36,8 @@ def create_runtime_config(executable_path, runtime_filter, include_list, configu
     config_path = _config_construct_file_path(executable_path)
     with open(config_path, 'w') as config_handle:
         # Write the configuration settings
-        _config_write_config(config_handle, executable_path, runtime_filter, include_list, configuration)
+        _config_write_config(config_handle, executable_path, runtime_filter, include_list,
+                             configuration)
 
 
 def _config_construct_file_path(executable_path):
@@ -77,7 +83,8 @@ def _config_symbols_to_addresses(executable_path, runtime_filter, sample_map):
     return final_filter, final_sample
 
 
-def _config_write_config(config_handle, executable_path, runtime_filter, include_list, config):
+def _config_write_config(config_handle, executable_path, runtime_filter, include_list,
+                         job_settings):
     """ Writes the configuration stored in the config dictionary into the file
 
     Arguments:
@@ -85,7 +92,7 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
         executable_path(str): path to the executable which will use the configuration
         runtime_filter(list): addresses of functions to filter at runtime
         include_list(list): list of function symbols(rule_key tuple) to be profiled
-        config(dict): dictionary with configuration data
+        job_settings(dict): dictionary with collect job configuration data
 
     Raises:
         ValueError: if the config file is unexpectedly closed
@@ -93,26 +100,29 @@ def _config_write_config(config_handle, executable_path, runtime_filter, include
     """
     sample_map = dict()
     # Create the translation table for identifiers
-    if 'sampling' in config:
-        sample_map = _config_create_sample(include_list, config['sampling'])
-    filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter, sample_map)
+    if 'sampling' in job_settings:
+        sample_map = _config_create_sample(include_list, job_settings['sampling'])
+    filter_list, sample_dict = _config_symbols_to_addresses(executable_path, runtime_filter,
+                                                            sample_map)
 
-    # Append the file name configuration
-    conf = {'file-name': config['file-name']}
-    # Append the storage size configuration
-    if 'init-storage-size' in config:
-        conf['init-storage-size'] = config['init-storage-size']
+    # Create the internal configuration
+    internal_conf = {
+        'internal_data_filename': job_settings.get('internal_data_filename', DEFAULT_DATA_FILENAME),
+        'internal_storage_size': job_settings.get('internal_storage_size', DEFAULT_STORAGE_SIZE),
+        'internal_direct_output': job_settings.get('internal_direct_output', DEFAULT_DIRECT_OUTPUT),
+    }
     # Append the runtime filter configuration
     if filter_list:
-        conf['runtime-filter'] = filter_list
+        internal_conf['runtime_filter'] = filter_list
     # Append the sampling configuration
     if sample_dict:
-        conf['sampling'] = []
+        internal_conf['sampling'] = []
         for sample_rule in sample_dict:
-            conf['sampling'].append({'func': sample_rule, 'sample': sample_dict[sample_rule]})
+            internal_conf['sampling'].append(
+                {'func': sample_rule, 'sample': sample_dict[sample_rule]})
 
     # Serializes the configuration dictionary to the proper circ format
-    config_handle.write('CIRC = {0}'.format(json.dumps(conf, sort_keys=True, indent=2)))
+    config_handle.write('CIRC = {0}'.format(json.dumps(internal_conf, sort_keys=True, indent=2)))
 
 
 def _config_create_sample(include_list, sample_list):
@@ -127,7 +137,8 @@ def _config_create_sample(include_list, sample_list):
         dict: the created sample map
     """
     sample_map = dict()
-    # Try to pair the sample configuration and include list to create sample map 'mangled name: sample value'
+    # Try to pair the sample configuration and include list to create sample map
+    # 'mangled name: sample value'
     for sample in sample_list:
         # Unify the sampling function name to match the names in include list
         sample_name = symbols.unify_sample_func(sample['func'])

@@ -4,7 +4,6 @@ Simple Command Line Interface for the Perun functionality using the Click librar
 calls underlying commands from the commands module.
 """
 
-import logging
 import os
 import pkgutil
 import re
@@ -26,7 +25,7 @@ import perun.vcs as vcs
 import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
-    MissingConfigSectionException, InvalidConfigOperationException
+    MissingConfigSectionException, InvalidConfigOperationException, VersionControlSystemException
 
 __author__ = 'Tomas Fiedor'
 
@@ -129,7 +128,6 @@ def config(**kwargs):
 
             Retrieves the type of the wrapped repository of the local perun.
     """
-    perun_log.msg_to_stdout("Running 'perun config'", 2, logging.INFO)
     try:
         commands.config(**kwargs)
     except (MissingConfigSectionException, InvalidConfigOperationException) as mcs_err:
@@ -184,8 +182,6 @@ def init(dst, configure, **kwargs):
     is supported. Additional parameters can be passed to the wrapped control system initialization
     using the --vcs-params.
     """
-    perun_log.msg_to_stdout("Running 'perun init'", 2, logging.INFO)
-
     try:
         commands.init(dst, **kwargs)
 
@@ -223,7 +219,7 @@ def lookup_nth_pending_filename(position):
         ))
 
 
-def filename_lookup_callback(ctx, param, value):
+def added_filename_lookup_callback(ctx, param, value):
     """Callback function for looking up the profile, if it does not exist
 
     Arguments:
@@ -234,11 +230,39 @@ def filename_lookup_callback(ctx, param, value):
     Returns:
         str: filename of the profile
     """
-    match = store.PENDING_TAG_REGEX.match(value)
-    if match:
-        return lookup_nth_pending_filename(int(match.group(1)))
-    else:
-        return lookup_profile_filename(value)
+    massaged_values = set()
+    for single_value in value:
+        match = store.PENDING_TAG_REGEX.match(single_value)
+        if match:
+            massaged_values.add(lookup_nth_pending_filename(int(match.group(1))))
+        else:
+            massaged_values.add(lookup_profile_filename(single_value))
+    return massaged_values
+
+
+def removed_filename_lookup_callback(ctx, param, value):
+    """
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        str: filename of the profile to be removed
+    """
+    massaged_values = set()
+    for single_value in value:
+        match = store.INDEX_TAG_REGEX.match(single_value)
+        if match:
+            index_filename = commands.get_nth_profile_of(
+                int(match.group(1)), ctx.params['minor']
+            )
+            start = index_filename.rfind('objects') + len('objects')
+            # Remove the .perun/objects/... prefix and merge the directory and file to sha
+            massaged_values.add("".join(index_filename[start:].split('/')))
+        else:
+            massaged_values.add(single_value)
+    return massaged_values
 
 
 def lookup_profile_filename(profile_name):
@@ -275,10 +299,30 @@ def lookup_profile_filename(profile_name):
     return profile_name
 
 
+def minor_version_lookup_callback(ctx, param, value):
+    """
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        str: massaged minor version
+    """
+    if value is not None:
+        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+        try:
+            return vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, value)
+        except VersionControlSystemException as exception:
+            raise click.BadParameter(str(exception))
+
+
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>',
-                callback=filename_lookup_callback)
-@click.argument('minor', required=False, default=None, metavar='<hash>')
+@click.argument('profile', required=True, metavar='<profile>', nargs=-1,
+                callback=added_filename_lookup_callback)
+@click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
+              callback=minor_version_lookup_callback,
+              help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.option('--keep-profile', is_flag=True, required=False, default=False,
               help='if set, then the added profile will not be deleted')
 def add(profile, minor, **kwargs):
@@ -297,8 +341,6 @@ def add(profile, minor, **kwargs):
           Adds the profile collected by mcollect profile on mybin with input.txt workload computed
           on 1st March at 16:11 to the head.
     """
-    perun_log.msg_to_stdout("Running 'perun add'", 2, logging.INFO)
-
     try:
         commands.add(profile, minor, **kwargs)
     except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
@@ -306,8 +348,11 @@ def add(profile, minor, **kwargs):
 
 
 @cli.command()
-@click.argument('profile', required=True, metavar='<profile>')
-@click.argument('minor', required=False, default=None, metavar='<hash>')
+@click.argument('profile', required=True, metavar='<profile>', nargs=-1,
+                callback=removed_filename_lookup_callback)
+@click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
+              callback=minor_version_lookup_callback,
+              help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.option('--remove-all', '-A', is_flag=True, default=False,
               help="Remove all occurrences of <profile> from the <hash> index.")
 def rm(profile, minor, **kwargs):
@@ -326,8 +371,6 @@ def rm(profile, minor, **kwargs):
           Removes the profile collected by mcollect on mybin with input.txt from the workload
           computed on 1st March at 16:11 from the HEAD index
     """
-    perun_log.msg_to_stdout("Running 'perun rm'", 2, logging.INFO)
-
     try:
         commands.remove(profile, minor, **kwargs)
     except (NotPerunRepositoryException, EntryNotFoundException) as exception:
@@ -407,7 +450,6 @@ def log(head, **kwargs):
     \b
     <hash> (<profile_numbers>) <short_info>
     """
-    perun_log.msg_to_stdout("Running 'perun log'", 2, logging.INFO)
     try:
         commands.log(head, **kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
@@ -425,7 +467,6 @@ def status(**kwargs):
     Moreover prints the list of tracked profiles lexicographically sorted along with their
     types and creation times.
     """
-    perun_log.msg_to_stdout("Running 'perun status'", 2, logging.INFO)
     try:
         commands.status(**kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException,
@@ -436,6 +477,7 @@ def status(**kwargs):
 @cli.group()
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
+              callback=minor_version_lookup_callback,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
 def show(ctx, profile, **_):
@@ -460,12 +502,12 @@ def show(ctx, profile, **_):
     """
     ctx.obj = profile
     # TODO: Check that if profile is not SHA-1, then minor must be set
-    perun_log.msg_to_stdout("Running 'perun show'", 2, logging.INFO)
 
 
 @cli.group()
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
+              callback=minor_version_lookup_callback,
               help='Perun will lookup the profile at different minor version (default is HEAD).')
 @click.pass_context
 def postprocessby(ctx, profile, **_):
@@ -481,7 +523,6 @@ def postprocessby(ctx, profile, **_):
             values of the resources will be normalized to the interval <0,1>.
     """
     ctx.obj = profile
-    perun_log.msg_to_stdout("Running 'perun postprocessby'", 2, logging.INFO)
 
 
 @cli.group()
@@ -495,7 +536,6 @@ def postprocessby(ctx, profile, **_):
 def collect(ctx, **kwargs):
     """Collect the profile from the given binary, arguments and workload"""
     ctx.obj = kwargs
-    perun_log.msg_to_stdout("Running 'perun collect'", 2, logging.INFO)
 
 
 def init_unit_commands():
@@ -504,6 +544,7 @@ def init_unit_commands():
     Some of the subunits has to be dynamically initialized according to the registered modules,
     like e.g. show has different forms (raw, graphs, etc.).
     """
+    # Fixme: Refactoring this will yield -0.15s
     for (unit, cli_cmd) in [(perun.view, show), (perun.postprocess, postprocessby),
                             (perun.collect, collect)]:
         for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
@@ -532,7 +573,6 @@ def run():
     Either runs the job matrix stored in local.yml configuration or lets the user
     construct the job run using the set of parameters.
     """
-    perun_log.msg_to_stdout("Running 'perun run'", 2, logging.INFO)
 
 
 @run.command()

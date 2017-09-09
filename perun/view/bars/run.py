@@ -1,6 +1,5 @@
 """Bar's graphs interpretation of the profiles."""
 
-import bokeh.core.enums as enums
 import click
 
 import perun.view.bars.factory as bars_factory
@@ -10,6 +9,10 @@ import perun.utils.bokeh_helpers as bokeh_helpers
 
 from perun.utils.helpers import pass_profile
 from perun.utils.exceptions import InvalidParameterException
+
+import demandimport
+with demandimport.enabled():
+    import bokeh.core.enums as enums
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'

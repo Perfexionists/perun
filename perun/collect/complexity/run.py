@@ -19,7 +19,7 @@ import perun.utils.exceptions as exceptions
 _ProfileRecord = collections.namedtuple('record', ['action', 'func', 'timestamp', 'size'])
 
 # The collect phase status messages
-_collector_status_msg = {
+_COLLECTOR_STATUS_MSG = {
     0:  'OK',
     1:  'Err: profile output file cannot be opened.',
     2:  'Err: profile output file closed unexpectedly.',
@@ -28,7 +28,7 @@ _collector_status_msg = {
 }
 
 # The collector subtypes
-_collector_subtypes = {
+_COLLECTOR_SUBTYPES = {
     'delta': 'time delta'
 }
 
@@ -68,7 +68,7 @@ def before(**kwargs):
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
 
         kwargs['cmd'] = exec_path
-        return 0, _collector_status_msg[0], dict(kwargs)
+        return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
     # The "expected" exception types
     except (OSError, ValueError, subprocess.CalledProcessError,
             UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as exception:
@@ -90,7 +90,7 @@ def collect(**kwargs):
     collector_dir, collector_exec = _get_collector_executable_and_dir(kwargs['cmd'])
     return_code = subprocess.call(('./' + collector_exec), cwd=collector_dir)
     print('Done.\n')
-    return return_code, _collector_status_msg[return_code], dict(kwargs)
+    return return_code, _COLLECTOR_STATUS_MSG[return_code], dict(kwargs)
 
 
 def after(**kwargs):
@@ -107,7 +107,7 @@ def after(**kwargs):
     # Get the trace log path
     print('Starting the post-processing phase...')
     pos = kwargs['cmd'].rfind('/')
-    path = kwargs['cmd'][:pos + 1] + kwargs['file-name']
+    path = kwargs['cmd'][:pos + 1] + kwargs['internal_data_filename']
     address_map = symbols.extract_symbol_address_map(kwargs['cmd'])
 
     resources, call_stack = [], []
@@ -144,7 +144,7 @@ def after(**kwargs):
         }
     }
     print('Done.\n')
-    return 0, _collector_status_msg[0], dict(kwargs)
+    return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
 
 def _get_collector_executable_and_dir(collector_exec_path):
@@ -189,16 +189,55 @@ def _process_file_record(record, call_stack, resources, address_map):
         resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
                           'uid': address_map[record.func],
                           'type': 'mixed',
-                          'subtype': _collector_subtypes['delta'],
+                          'subtype': _COLLECTOR_SUBTYPES['delta'],
                           'structure-unit-size': int(record.size)})
         return 0
-    else:
-        # Call stack function frames not matching
-        return 1
+    # Call stack function frames not matching
+    return 1
+
+
+def sampling_to_dictionary(ctx, param, value):
+    """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
+
+    Arguments:
+        ctx(dict): click context
+        param(object): the parameter object
+        value(list): the list of sampling values
+    Returns:
+        list of dict: list of sampling dictionaries
+    """
+    if value is not None:
+        # Initialize
+        sampling_list = []
+        # Transform the tuple to more human readable dictionary
+        for sample in value:
+            sampling_list.append({
+                "func": sample[0],
+                "sample": sample[1]
+            })
+        return sampling_list
 
 
 @click.command()
+@click.option('--target-dir', '-t', type=click.Path(exists=True, resolve_path=True), required=True,
+              help='Target directory path for binary and build data.')
+@click.option('--files', '-f', type=click.Path(exists=True, resolve_path=True), multiple=True,
+              required=True,
+              help='List of source files used to build the binary.')
+@click.option('--rules', '-r', type=str, multiple=True,
+              help='List of functions to profile.')
+@click.option('--internal-data-filename', '-if', type=str,
+              default=configurator.DEFAULT_DATA_FILENAME,
+              help='Internal output profiling file name.')
+@click.option('--internal-storage-size', '-is', type=int, default=configurator.DEFAULT_STORAGE_SIZE,
+              help='Initial size of internal profiling data storage.')
+@click.option('--internal-direct-output', '-id', is_flag=True,
+              default=configurator.DEFAULT_DIRECT_OUTPUT,
+              help=('Profilig data are stored into file directly instead of being saved into data '
+                    'structure and printed later.'))
+@click.option('--sampling', '-s', type=(str, int), multiple=True, callback=sampling_to_dictionary,
+              help='List of sampling configuration in form <function_name value>.')
 @click.pass_context
-def complexity(ctx):
+def complexity(ctx, **kwargs):
     """Runs the complexity collector, collecting running times for profiles depending on size"""
-    runner.run_collector_from_cli_context(ctx, 'complexity', {})
+    runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)

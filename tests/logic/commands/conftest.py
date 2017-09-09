@@ -319,11 +319,10 @@ def pcs_full():
 
     # Populate PCS with profiles
     root_profile = Helpers.prepare_profile(pcs_obj, profiles[0], str(root))
-    commands.add(root_profile, str(root))
+    commands.add([root_profile], str(root))
     chead_profile1 = Helpers.prepare_profile(pcs_obj, profiles[1], str(current_head))
     chead_profile2 = Helpers.prepare_profile(pcs_obj, profiles[2], str(current_head))
-    commands.add(chead_profile1, str(current_head))
-    commands.add(chead_profile2, str(current_head))
+    commands.add([chead_profile1, chead_profile2], str(current_head))
 
     # Assert that we have five blobs: 2 for commits and 3 for profiles
     pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
