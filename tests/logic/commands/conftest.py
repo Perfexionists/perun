@@ -221,12 +221,23 @@ def complexity_collect_job():
     }}
 
 
-def get_all_profiles():
-    """Helper generator for generating stream of profiles"""
-    pool_path = os.path.join(os.path.split(__file__)[0], "to_add_profiles")
-    profile_filenames = os.listdir(pool_path)
-    profiles = [os.path.join(pool_path, filename) for filename in profile_filenames]
-    profiles.sort()
+def all_profiles_in(directory, sort=False):
+    """Helper function that generates stream of (sorted) profiles in specified directory
+
+    Arguments:
+        directory(str): the name (not path!) of the profile directory
+        sort(bool): flag used to lexicographically sort profiles found in the directory
+
+    Returns:
+        generator: stream of profiles located in the given directory
+    """
+    # Build the directory path and list of all profiles in it
+    pool_path = os.path.join(os.path.split(__file__)[0], directory)
+    profiles = [os.path.join(pool_path, prof_file) for prof_file in os.listdir(pool_path)]
+    # Sort if required
+    if sort:
+        profiles.sort()
+
     for profile in profiles:
         yield profile
 
@@ -237,7 +248,7 @@ def valid_profile_pool():
     Returns:
         list: dictionary with profiles that are not assigned and can be distributed
     """
-    yield list(filter(lambda p: 'err' not in p, get_all_profiles()))
+    yield list(filter(lambda p: 'err' not in p, all_profiles_in("to_add_profiles", True)))
 
 
 @pytest.fixture(scope="session")
@@ -246,7 +257,7 @@ def error_profile_pool():
     Returns:
         list: list with profiles that contains some kind of error
     """
-    yield list(filter(lambda p: 'err' in p, get_all_profiles()))
+    yield list(filter(lambda p: 'err' in p, all_profiles_in("to_add_profiles", True)))
 
 
 @pytest.fixture(scope="session")
@@ -255,8 +266,7 @@ def stored_profile_pool():
     Returns:
         list: list of stored profiles in the pcs_full
     """
-    prof_dirpath = os.path.join(os.path.split(__file__)[0], "full_profiles")
-    profiles = [os.path.join(prof_dirpath, prof_file) for prof_file in os.listdir(prof_dirpath)]
+    profiles = list(all_profiles_in("full_profiles"))
     assert len(profiles) == 3
     return profiles
 
@@ -269,7 +279,7 @@ def get_loaded_profiles(profile_type):
     Returns:
         generator: stream of profiles of the given type
     """
-    for valid_profile in filter(lambda p: 'err' not in p, get_all_profiles()):
+    for valid_profile in filter(lambda p: 'err' not in p, all_profiles_in("to_add_profiles", True)):
         loaded_profile = perun_profile.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] == profile_type:
             yield loaded_profile
@@ -282,6 +292,16 @@ def memory_profiles():
         generator: generator of fully loaded memory profiles as dictionaries
     """
     yield get_loaded_profiles('memory')
+
+
+@pytest.fixture(scope="function")
+def query_profiles():
+    """
+    Returns:
+        generator: generator of fully loaded query profiles as tuple (profile_name, dictionary)
+    """
+    for profile in list(all_profiles_in("query_profiles")):
+        yield (profile, perun_profile.load_profile_from_file(profile, True))
 
 
 @pytest.fixture(scope="function")
