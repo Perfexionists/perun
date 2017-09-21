@@ -222,14 +222,14 @@ def complexity_collect_job():
 
 
 def all_profiles_in(directory, sort=False):
-    """Helper function that generates stream of (sorted) profiles in specified directory
+    """Helper function that generates stream of (sorted) profile paths in specified directory
 
     Arguments:
         directory(str): the name (not path!) of the profile directory
         sort(bool): flag used to lexicographically sort profiles found in the directory
 
     Returns:
-        generator: stream of profiles located in the given directory
+        generator: stream of profile paths located in the given directory
     """
     # Build the directory path and list of all profiles in it
     pool_path = os.path.join(os.path.split(__file__)[0], directory)
@@ -294,14 +294,26 @@ def memory_profiles():
     yield get_loaded_profiles('memory')
 
 
+def load_all_profiles_in(directory):
+    """Generates stream of loaded (i.e. dictionaries) profiles in the specified directory.
+
+    Arguments:
+        directory(str): the name (not path!) of the profile directory
+
+    Returns:
+        generator: stream of loaded profiles as tuple (profile_name, dictionary)
+    """
+    for profile in list(all_profiles_in(directory)):
+        yield (profile, perun_profile.load_profile_from_file(profile, True))
+
+
 @pytest.fixture(scope="function")
 def query_profiles():
     """
     Returns:
         generator: generator of fully loaded query profiles as tuple (profile_name, dictionary)
     """
-    for profile in list(all_profiles_in("query_profiles")):
-        yield (profile, perun_profile.load_profile_from_file(profile, True))
+    yield load_all_profiles_in("query_profiles")
 
 
 @pytest.fixture(scope="function")

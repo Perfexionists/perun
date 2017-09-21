@@ -7,6 +7,7 @@ Fixme: Add caching to ease some of the computation.
 """
 
 import numbers
+import perun.utils.exceptions as exceptions
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = "Jiri Pavela"
@@ -188,7 +189,8 @@ def all_models_of(profile):
         models = profile.get('global', {}).get('models', [])
     except AttributeError:
         # global is not dict-like type with get method
-        return
+        raise exceptions.IncorrectProfileFormatException(
+            'profile', "'global' is not a dictionary") from None
 
     for model_idx, model in enumerate(models):
         yield model_idx, model
