@@ -24,15 +24,26 @@ def all_resources_of(profile):
     Returns:
         (int, dict): yields resources per each snapshot and global section
     """
-    snapshots = profile.get('snapshots', [])
-    for snap_no, snapshot in enumerate(snapshots):
-        for resource in snapshot['resources']:
-            yield snap_no, resource
+    try:
+        # Get snapshot resources
+        snapshots = profile.get('snapshots', [])
+        for snap_no, snapshot in enumerate(snapshots):
+            for resource in snapshot['resources']:
+                yield snap_no, resource
 
-    # Fix this asap!
-    global_snapshot = profile.get('global', {})
-    for resource in global_snapshot['resources']:
-        yield len(snapshots), resource
+        # Get global resources
+        resources = profile.get('global', {}).get('resources', [])
+        for resource in resources:
+            yield len(snapshots), resource
+
+    except AttributeError:
+        # Element is not dict-like type with get method
+        raise exceptions.IncorrectProfileFormatException(
+            'profile', "Expected dictionary, got different type.") from None
+    except KeyError:
+        # Dictionary does not contain specified key
+        raise exceptions.IncorrectProfileFormatException(
+            'profile', "Missing key in dictionary.") from None
 
 
 def flattened_values(root_key, root_value):
@@ -42,7 +53,7 @@ def flattened_values(root_key, root_value):
     to comma separated representation and rest is left as it is.
 
     Arguments:
-        root_key(str): name of the processed key, that is going to be flattened
+        root_key(str or int): name (or index) of the processed key, that is going to be flattened
         root_value(object): value that is flattened
 
     Returns:
@@ -54,13 +65,15 @@ def flattened_values(root_key, root_value):
         for key, value in all_items_of(root_value):
             # Add one level of hierarchy with ':'
             nested_values.append(value)
-            yield root_key + ":" + key, value
-        # Additionally return the overall key asi joined values of its nested stuff
-        yield root_key, ":".join(map(str, nested_values))
+            yield str(root_key) + ":" + key, value
+        # Additionally return the overall key as joined values of its nested stuff,
+        # only if root is not a list (i.e. root key is not int = index)!
+        if isinstance(root_key, str):
+            yield root_key, ":".join(map(str, nested_values))
     # Lists are merged as comma separated keys
     elif isinstance(root_value, list):
-        yield root_key, ', '.join(
-            ":".join(str(nested_value[1]) for nested_value in flattened_values(str(i), lv))
+        yield root_key, ','.join(
+            ":".join(str(nested_value[1]) for nested_value in flattened_values(i, lv))
             for (i, lv) in enumerate(root_value)
         )
     # Rest of the values are left as they are
