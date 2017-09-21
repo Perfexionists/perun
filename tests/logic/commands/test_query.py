@@ -32,8 +32,8 @@ _MEMORY_AMOUNT_LIST = [0, 4, 8, 12, 16, 20]
 _MEMORY_TRACE_FUNCTION_COUNT = 13
 # expected 'trace::function' list of memory profile
 _MEMORY_TRACE_FUNCTION_LIST = ['__libc_start_main', '_start', 'calloc', 'factorial', 'foo1', 'foo2',
-                           'free', 'main', 'malloc', 'memalign', 'posix_memalign', 'realloc',
-                           'valloc']
+                               'free', 'main', 'malloc', 'memalign', 'posix_memalign', 'realloc',
+                               'valloc']
 # number of unique values in 'uid:line' key in memory profile
 _MEMORY_UID_LINE_COUNT = 13
 # expected 'uid:line' list of memory profile
@@ -113,7 +113,7 @@ def test_memory_prof_resources_empty(query_profiles):
 
     # Get all resource fields of the memory profile
     resources = list(query.all_resources_of(mem_profile))
-    assert len(resources) == 0
+    assert not resources
 
 
 def test_complexity_prof_resources(query_profiles):
@@ -141,7 +141,7 @@ def test_complexity_prof_resources_empty(query_profiles):
 
     # Get all resource fields of the complexity profile
     resources = list(query.all_resources_of(complexity_profile))
-    assert len(resources) == 0
+    assert not resources
 
 
 def test_resources_corrupted(query_profiles):
@@ -191,7 +191,7 @@ def test_all_models_empty(query_profiles):
 
     # Get all models in profile that has none
     models = list(query.all_models_of(models_profile))
-    assert len(models) == 0
+    assert not models
 
 
 def test_all_models_corrupted(query_profiles):
@@ -263,7 +263,7 @@ def test_unique_resource_values(query_profiles):
 
     # Test key that is not in the resources
     unique_values = list(query.unique_resource_values_of(mem_profile, 'test:testing::test'))
-    assert len(unique_values) == 0
+    assert not unique_values
 
 
 def test_unique_model_values(query_profiles):
@@ -289,4 +289,4 @@ def test_unique_model_values(query_profiles):
 
     # Test key that is not in the models
     unique_values = list(query.unique_resource_values_of(models_profile, 'test'))
-    assert len(unique_values) == 0
+    assert not unique_values
