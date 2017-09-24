@@ -38,11 +38,11 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
     # Check all the required keys
     for key in required_keys:
         if key not in dictionary:
-            missing_keys += key
+            missing_keys.append(key)
     # Check all the forbidden keys
     for key in forbidden_keys:
         if key in dictionary:
-            excess_keys += key
+            excess_keys.append(key)
 
     # Raise exception if needed
     if missing_keys or excess_keys:
