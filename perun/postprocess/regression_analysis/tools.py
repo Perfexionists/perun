@@ -176,20 +176,6 @@ def r_square_safe(sse, sst):
         return R_SQUARE_DEFAULT
 
 
-def check_zero(value):
-    """ Checks if the number is zero and returns zero approximate instead.
-
-    Arguments:
-        value(float or int): the number to check
-
-    Returns:
-        float or int: returns the zero approximate or the value
-    """
-    if abs(value) < APPROX_ZERO:
-        return APPROX_ZERO
-    return value
-
-
 def linspace_safe(start, end, steps):
     """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
