@@ -3,9 +3,34 @@
 Tests basic functionality of creating other representations of profiles, like e.g for
 heap and heat map visualizations, etc.
 """
+import pytest
+import perun.utils.exceptions as exceptions
 import perun.profile.converters as converters
+import perun.profile.query as query
+
+import tests.logic.commands.conftest as conf
 
 __author__ = 'Tomas Fiedor'
+__coauthored__ = 'Jiri Pavela'
+
+
+# TODO: duplication, where to store common useful functions for tests?
+def profile_filter(generator, rule):
+    """Finds concrete profile by the rule in profile generator.
+
+    Arguments:
+        generator(generator): stream of profiles as tuple: (name, dict)
+        rule(str): string to search in the name
+
+    Returns:
+        dict: first profile with name containing the rule
+    """
+    # Loop the generator and test the rule
+    for profile in generator:
+        if rule in profile[0]:
+            return profile[1]
+    # No match found
+    return None
 
 
 def test_flame_graph(memory_profiles):
@@ -65,3 +90,37 @@ def test_flow_table(memory_profiles):
     for memory_profile in memory_profiles:
         flow_info = converters.create_flow_table(memory_profile)
         assert len(flow_info['snapshots']) > 0
+
+
+def test_coefficients_to_points_correct(postprocess_profiles):
+    """ Test correct conversion from models coefficients to points that can be used for plotting.
+
+    Expecting no errors and updated dictionary
+    """
+    # Acquire the models query profile
+    models_profile = profile_filter(postprocess_profiles, 'complexity-models.perf')
+    assert models_profile is not None
+
+    # Get all models and perform the conversion on all of them
+    # TODO: add more advanced checks
+    models = list(query.all_models_of(models_profile))
+    for model in models:
+        data = converters.plot_data_from_coefficients_of(model[1])
+        assert 'plot_x' in data
+        assert 'plot_y' in data
+
+
+def test_coefficients_to_points_corrupted_model(postprocess_profiles):
+    """ Test conversion from models coefficients to points on a profile with invalid model.
+
+    Expecting to catch InvalidModelException exception.
+    """
+    # Acquire the corrupted models query profile with invalid model
+    models_profile = profile_filter(postprocess_profiles, 'complexity-models-corrupted-model.perf')
+    assert models_profile is not None
+
+    # Get all models and perform the conversion on all of them
+    models = list(query.all_models_of(models_profile))
+    with pytest.raises(exceptions.InvalidModelException):
+        for model in models:
+            converters.plot_data_from_coefficients_of(model[1])
