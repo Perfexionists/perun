@@ -7,8 +7,10 @@ Fixme: Add caching to ease some of the computation.
 """
 
 import numbers
+import perun.utils.exceptions as exceptions
 
 __author__ = 'Tomas Fiedor'
+__coauthored__ = "Jiri Pavela"
 
 
 def all_resources_of(profile):
@@ -22,15 +24,26 @@ def all_resources_of(profile):
     Returns:
         (int, dict): yields resources per each snapshot and global section
     """
-    snapshots = profile.get('snapshots', [])
-    for snap_no, snapshot in enumerate(snapshots):
-        for resource in snapshot['resources']:
-            yield snap_no, resource
+    try:
+        # Get snapshot resources
+        snapshots = profile.get('snapshots', [])
+        for snap_no, snapshot in enumerate(snapshots):
+            for resource in snapshot['resources']:
+                yield snap_no, resource
 
-    # Fix this asap!
-    global_snapshot = profile.get('global', {})
-    for resource in global_snapshot['resources']:
-        yield len(snapshots), resource
+        # Get global resources
+        resources = profile.get('global', {}).get('resources', [])
+        for resource in resources:
+            yield len(snapshots), resource
+
+    except AttributeError:
+        # Element is not dict-like type with get method
+        raise exceptions.IncorrectProfileFormatException(
+            'profile', "Expected dictionary, got different type.") from None
+    except KeyError:
+        # Dictionary does not contain specified key
+        raise exceptions.IncorrectProfileFormatException(
+            'profile', "Missing key in dictionary.") from None
 
 
 def flattened_values(root_key, root_value):
@@ -40,7 +53,7 @@ def flattened_values(root_key, root_value):
     to comma separated representation and rest is left as it is.
 
     Arguments:
-        root_key(str): name of the processed key, that is going to be flattened
+        root_key(str or int): name (or index) of the processed key, that is going to be flattened
         root_value(object): value that is flattened
 
     Returns:
@@ -52,13 +65,15 @@ def flattened_values(root_key, root_value):
         for key, value in all_items_of(root_value):
             # Add one level of hierarchy with ':'
             nested_values.append(value)
-            yield root_key + ":" + key, value
-        # Additionally return the overall key asi joined values of its nested stuff
-        yield root_key, ":".join(map(str, nested_values))
+            yield str(root_key) + ":" + key, value
+        # Additionally return the overall key as joined values of its nested stuff,
+        # only if root is not a list (i.e. root key is not int = index)!
+        if isinstance(root_key, str):
+            yield root_key, ":".join(map(str, nested_values))
     # Lists are merged as comma separated keys
     elif isinstance(root_value, list):
-        yield root_key, ', '.join(
-            ":".join(str(nested_value[1]) for nested_value in flattened_values(str(i), lv))
+        yield root_key, ','.join(
+            ":".join(str(nested_value[1]) for nested_value in flattened_values(i, lv))
             for (i, lv) in enumerate(root_value)
         )
     # Rest of the values are left as they are
@@ -124,3 +139,112 @@ def all_numerical_resource_fields_of(profile):
     # Yield the stream of the keys
     for key in resource_fields:
         yield key
+
+
+def unique_resource_values_of(profile, resource_key):
+    """Generator of all unique key values occurring in the resources. The key can contain ':'
+    symbol indicating another level of dictionary hierarchy or '::' for list / set level,
+    e.g. trace::function.
+
+    Arguments:
+        profile(dict): valid profile with resources
+        resource_key(str): the resources key identifier whose unique values are returned
+
+    Returns:
+        iterable: stream of unique resource key values
+    """
+    for value in _unique_values_generator(profile, resource_key, all_resources_of):
+        yield value
+
+
+def all_key_values_of(resource, resource_key):
+    """Generator of all key values in resource. The key can contain ':' symbol indicating another
+    level of dictionary hierarchy or '::' for list / set level, e.g. trace::function.
+
+    Arguments:
+        resource(dict or iterable): valid dictionary with resource keys and values
+        resource_key(str): the resource key identifier to search for
+
+    Returns:
+        iterable: stream of values
+    """
+    # Convert the key identifier to iterable hierarchy
+    key_hierarchy = resource_key.split(":")
+
+    # Iterate the hierarchy
+    for level_idx, key_level in enumerate(key_hierarchy):
+        if key_level == '' and isinstance(resource, (list, set)):
+            # The level is list, iterate all the members recursively
+            for item in resource:
+                for result in all_key_values_of(item, ':'.join(key_hierarchy[level_idx + 1:])):
+                    yield result
+            return
+        elif key_level in resource:
+            # The level is dict, find key
+            resource = resource[key_level]
+        else:
+            # No match
+            return
+    yield resource
+
+
+def all_models_of(profile):
+    """Generator of all 'models' records from the performance profile.
+
+    Arguments:
+        profile(dict): valid profile with models
+
+    Returns:
+        (int, dict): yields 'models' records
+    """
+    # Get models if any
+    try:
+        models = profile.get('global', {}).get('models', [])
+    except AttributeError:
+        # global is not dict-like type with get method
+        raise exceptions.IncorrectProfileFormatException(
+            'profile', "'global' is not a dictionary") from None
+
+    for model_idx, model in enumerate(models):
+        yield model_idx, model
+
+
+def unique_model_values_of(profile, model_key):
+    """Generator of all unique key values occurring in the models. The key can contain ':'
+    symbol indicating another level of dictionary hierarchy or '::' for list / set level,
+    e.g. trace::function.
+
+    Arguments:
+        profile(dict): valid profile with models
+        model_key(str): the models key identifier whose unique values are returned
+
+    Returns:
+        iterable: stream of unique model key values
+    """
+    for value in _unique_values_generator(profile, model_key, all_models_of):
+        yield value
+
+
+def _unique_values_generator(profile, key, blocks_gen):
+    """Generator of all unique values of 'key' occurring in the profile blocks generated by
+    'blocks_gen'.
+
+    Arguments:
+        profile(dict): valid profile with models
+        key(str): the key identifier whose unique values are returned
+        blocks_gen(iterable): the data blocks generator (e.g. all_resources_of)
+
+    Returns:
+        iterable: stream of unique key values
+    """
+    # value can be dict, list, set etc and not only simple type, thus the list
+    unique_values = list()
+    for (_, resource) in blocks_gen(profile):
+        # Get all values the key contains
+        for value in all_key_values_of(resource, key):
+            # Return only the unique ones
+            if value not in unique_values:
+                unique_values.append(value)
+                yield value
+
+# Todo: add optimized version for multiple key search in one go? Need to discuss interface etc.
