@@ -1,8 +1,13 @@
+""" Module for regression analysis transformations. Serves as a simple interface for higher-level
+    modules (e.g. profile/converters).
+
+"""
+
 from perun.postprocess.regression_analysis.regression_models import get_transformation_data_for
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def transform_coefficients_to_points(model):
+def coefficients_to_points(model):
     """ Transform computed coefficients from regression analysis into points, which can be
         plotted as a function / curve.
 

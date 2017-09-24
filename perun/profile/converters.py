@@ -477,7 +477,7 @@ def plot_data_from_coefficients_of(model):
     Return:
         dict: updated models dictionary with 'plot_x' and 'plot_y' lists
     """
-    return transformations.transform_coefficients_to_points(model)
+    return transformations.coefficients_to_points(model)
 
 
 if __name__ == "__main__":

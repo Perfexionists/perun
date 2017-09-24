@@ -187,8 +187,7 @@ def check_zero(value):
     """
     if abs(value) < APPROX_ZERO:
         return APPROX_ZERO
-    else:
-        return value
+    return value
 
 
 def linspace_safe(start, end, steps):

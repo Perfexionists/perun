@@ -107,8 +107,7 @@ def map_model_to_key(model):
     # Check the key validity
     if model is not None and model in elements:
         return elements[model]
-    else:
-        return None
+    return None
 
 
 # Supported models properties
