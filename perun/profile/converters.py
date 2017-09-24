@@ -2,6 +2,7 @@
 import copy
 
 import perun.profile.query as query
+import perun.postprocess.regression_analysis.transformations as transformations
 
 import demandimport
 with demandimport.enabled():
@@ -464,6 +465,19 @@ def _get_line_from_frame(frame):
     return "{}()~{}~{}".format(frame['function'],
                                frame['source'],
                                frame['line'])
+
+
+def plot_data_from_coefficients_of(model):
+    """ Transform computed coefficients from regression analysis into points, which can be
+        plotted as a function / curve. Wrapper over regression analysis transformation function.
+
+    Arguments:
+        model(dict): the models dictionary from profile
+
+    Return:
+        dict: updated models dictionary with 'plot_x' and 'plot_y' lists
+    """
+    return transformations.transform_coefficients_to_points(model)
 
 
 if __name__ == "__main__":

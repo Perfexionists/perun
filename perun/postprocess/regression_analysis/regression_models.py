@@ -10,6 +10,7 @@ import math
 
 import perun.postprocess.regression_analysis.generic as generic
 import perun.postprocess.regression_analysis.specific as specific
+import perun.postprocess.regression_analysis.extensions.plot_models as plot
 import perun.utils.exceptions as exceptions
 
 
@@ -24,12 +25,48 @@ def get_supported_models():
     return [key for key in sorted(_MODELS.keys())]
 
 
-def map_to_models(regression_models):
-    """The mapping generator which provides the sections of _MODELS dictionary according to
-    specified models list.
+def get_supported_transformations(model_key):
+    """Provides all currently supported transformations for given model as a list of their names.
 
     Arguments:
-        regression_models(tuple): the list of Models values
+        model_key(str): model key (e.g. 'log') for which the transformations are gathered
+
+    Returns:
+        list of str: the names of all supported transformations for given model
+    """
+    return [t for t in _MODELS.get(model_key, {}).get('transformations', {}).keys()]
+
+
+def get_transformation_data_for(regression_model, transformation):
+    """Provides transformation dictionary from _MODELS for specific transformation and model.
+
+    Arguments:
+        regression_model(str): the regression model in which to search for transformation
+        transformation(str): transformation name (key in _MODELS transformation, e.g. plot_model)
+                             that identify the desired transformation dictionary
+
+    Returns:
+        dict: the transformation dictionary
+    """
+    # Get the model key first
+    key = map_model_to_key(regression_model)
+    if key is None:
+        # Model does not exist
+        raise exceptions.InvalidModelException(regression_model)
+
+    # Now get the transformations
+    if transformation not in get_supported_transformations(key):
+        # Model does not support requested transformation
+        raise exceptions.InvalidTransformationException(regression_model, transformation)
+    return _MODELS[key]['transformations'][transformation]
+
+
+def map_keys_to_models(regression_models_keys):
+    """The mapping generator which provides the sections of _MODELS dictionary according to
+    specified model keys list.
+
+    Arguments:
+        regression_models_keys(tuple): the list of Models values
     Raises:
         InvalidModelException: if specified model does not have a properties record in _MODELS
                                dictionary
@@ -38,21 +75,41 @@ def map_to_models(regression_models):
 
     """
     # Convert single value to list
-    if not isinstance(regression_models, tuple):
-        regression_models = tuple(regression_models)
+    if not isinstance(regression_models_keys, tuple):
+        regression_models_keys = tuple(regression_models_keys)
 
     # Get all models
-    if not regression_models or 'all' in regression_models:
+    if not regression_models_keys or 'all' in regression_models_keys:
         for model in sorted(_MODELS.keys()):
             if model != 'all':
                 yield _MODELS[model].copy()
     # Specific models
     else:
-        for model in regression_models:
+        for model in regression_models_keys:
             if model not in _MODELS.keys():
                 raise exceptions.InvalidModelException(model)
             else:
                 yield _MODELS[model].copy()
+
+
+def map_model_to_key(model):
+    """ The mapping function which takes model name and provides the _MODELS key containing
+        the model dictionary.
+
+    Arguments:
+        model(str): the model name to map
+
+    Returns:
+        str:  the _MODELS key containing the model data
+    """
+    # Collect all models in _MODELS as a dict of model: key
+    elements = {_MODELS[m].get('model'): m for m in _MODELS.keys()}
+    # Check the key validity
+    if model is not None and model in elements:
+        return elements[model]
+    else:
+        return None
+
 
 # Supported models properties
 # Each model record contains the parameters required by the computational functions,
@@ -71,7 +128,13 @@ _MODELS = {
         'func_list': [
             generic.generic_regression_coefficients,
             generic.generic_regression_error
-        ]
+        ],
+        'transformations': {
+            'plot_model': {
+                'computation': plot.model_plot_computation,
+                'y_pts_func': plot.linear_model_plot
+            }
+        }
     },
     'log': {
         'model': 'logarithmic',
@@ -79,13 +142,19 @@ _MODELS = {
         'fy': lambda y: y,
         'fa': lambda a: a,
         'fb': lambda b: b,
-        'fp': math.log10,
         'data_gen': generic.generic_regression_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
             generic.generic_regression_coefficients,
             generic.generic_regression_error
-        ]
+        ],
+        'transformations': {
+            'plot_model': {
+                'computation': plot.model_plot_computation,
+                'y_pts_func': plot.generic_model_plot,
+                'fp': math.log10
+            }
+        }
     },
     'quad': {
         'model': 'quadratic',
@@ -93,13 +162,19 @@ _MODELS = {
         'fy': lambda y: y,
         'fa': lambda a: a,
         'fb': lambda b: b,
-        'fp': lambda p: p ** 2,
         'data_gen': generic.generic_regression_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
             generic.generic_regression_coefficients,
             specific.quad_regression_error
-        ]
+        ],
+        'transformations': {
+            'plot_model': {
+                'computation': plot.model_plot_computation,
+                'y_pts_func': plot.generic_model_plot,
+                'fp': lambda p: p ** 2
+            }
+        }
     },
     'power': {
         'model': 'power',
@@ -112,7 +187,13 @@ _MODELS = {
         'func_list': [
             generic.generic_regression_coefficients,
             specific.power_regression_error
-        ]
+        ],
+        'transformations': {
+            'plot_model': {
+                'computation': plot.model_plot_computation,
+                'y_pts_func': plot.power_model_plot
+            }
+        }
     },
     'exp': {
         'model': 'exponential',
@@ -125,6 +206,12 @@ _MODELS = {
         'func_list': [
             generic.generic_regression_coefficients,
             specific.exp_regression_error
-        ]
+        ],
+        'transformations': {
+            'plot_model': {
+                'computation': plot.model_plot_computation,
+                'y_pts_func': plot.exp_model_plot
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@
 
 from random import shuffle
 from operator import itemgetter
+import numpy as np
 
 import perun.utils.exceptions as exceptions
 
@@ -11,7 +12,9 @@ import perun.utils.exceptions as exceptions
 # Minimum points count to perform the regression
 MIN_POINTS_COUNT = 3
 # R^2 value if computation failed
-_R_SQUARE_DEFAULT = 0.0
+R_SQUARE_DEFAULT = 0.0
+# Zero approximation to avoid zero division etc.
+APPROX_ZERO = 0.000001
 
 
 def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
@@ -170,4 +173,39 @@ def r_square_safe(sse, sst):
     try:
         return 1 - sse / sst
     except ZeroDivisionError:
-        return _R_SQUARE_DEFAULT
+        return R_SQUARE_DEFAULT
+
+
+def check_zero(value):
+    """ Checks if the number is zero and returns zero approximate instead.
+
+    Arguments:
+        value(float or int): the number to check
+
+    Returns:
+        float or int: returns the zero approximate or the value
+    """
+    if abs(value) < APPROX_ZERO:
+        return APPROX_ZERO
+    else:
+        return value
+
+
+def linspace_safe(start, end, steps):
+    """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
+        points in the array, which prevents zero division errors.
+
+    Arguments:
+        start(int or float): the start of interval
+        end(int or float): the end of interval
+        steps(int): number of points to split the interval into
+
+    Returns:
+        ndarray: the numpy array containing points
+    """
+    # Slice the interval to points
+    x_pts = np.linspace(start, end, steps)
+    # Replace all zeros by zero approximation to prevent zero division errors
+    # Result of linspace is array, not tuple, with these arguments
+    x_pts[np.abs(x_pts) < APPROX_ZERO] = APPROX_ZERO
+    return x_pts
