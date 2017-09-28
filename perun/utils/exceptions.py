@@ -257,11 +257,24 @@ class InvalidCoeffsException(GenericRegressionExceptionBase):
 
 
 class InvalidModelException(GenericRegressionExceptionBase):
-    """Raised when invalid or unknown regression model is required"""
+    """Raised when invalid or unknown regression model is requested"""
     def __init__(self, model):
         super().__init__("")
         self.model = model
 
     def __str__(self):
         self.msg = "Invalid or unsupported regression model: {0}.".format(str(self.model))
+        return self.msg
+
+
+class InvalidTransformationException(GenericRegressionExceptionBase):
+    """Raised when invalid or unknown model transformation is requested"""
+    def __init__(self, model, transformation):
+        super().__init__("")
+        self.model = model
+        self.transformation = transformation
+
+    def __str__(self):
+        self.msg = ("Invalid or unsupported transformation: {0} for model: {1}."
+                    .format(str(self.transformation), str(self.model)))
         return self.msg

@@ -70,7 +70,7 @@ def full_computation(x_pts, y_pts, computation_models, **kwargs):
 
     """
     # Get all the models properties
-    for model in mod.map_to_models(computation_models):
+    for model in mod.map_keys_to_models(computation_models):
         # Update the properties accordingly
         model['steps'] = 1
         model = _build_uniform_regression_data_format(x_pts, y_pts, model)
@@ -333,7 +333,7 @@ def _models_initial_step(x_pts, y_pts, computation_models, steps):
     model_generators = []
     results = []
     # Get all the models properties
-    for model in mod.map_to_models(computation_models):
+    for model in mod.map_keys_to_models(computation_models):
         # Transform the properties
         model['steps'] = steps
         data = _build_uniform_regression_data_format(x_pts, y_pts, model)

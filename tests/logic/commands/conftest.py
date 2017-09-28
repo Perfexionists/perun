@@ -317,6 +317,16 @@ def query_profiles():
 
 
 @pytest.fixture(scope="function")
+def postprocess_profiles():
+    """
+    Returns:
+        generator: generator of fully loaded postprocess profiles as tuple
+                   (profile_name, dictionary)
+    """
+    yield load_all_profiles_in("postprocess_profiles")
+
+
+@pytest.fixture(scope="function")
 def pcs_full():
     """
     Returns:
