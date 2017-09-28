@@ -9,9 +9,6 @@ This module contains the required specific versions for the models computation.
 import perun.postprocess.regression_analysis.tools as tools
 
 
-_APPROX_ZERO = 0.000001
-
-
 def quad_regression_error(data):
     """The quadratic specific function for error computation.
 
