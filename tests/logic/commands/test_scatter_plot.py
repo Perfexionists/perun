@@ -5,7 +5,7 @@ import os
 from click.testing import CliRunner
 
 import perun.cli as cli
-import perun.view.scatter_plot.factory as scatter
+import perun.view.scatter.factory as scatter
 
 __author__ = 'Jiri Pavela'
 
@@ -70,13 +70,13 @@ def test_scatter_plot_cli(pcs_full, postprocess_profiles):
 
     # Run the cli on the given profile
     runner = CliRunner()
-    result = runner.invoke(cli.show, [profile[0], 'scatter_plot', '--of=amount',
-                                      '--per=structure-unit-size', '--filename=scatter_plot',
+    result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amount',
+                                      '--per=structure-unit-size', '--filename=scatter',
                                       '-xl=structure-unit-size', '-yl=amount [us]'])
 
     assert result.exit_code == 0
-    assert 'scatter_plot_result0.html' in os.listdir(os.getcwd())
-    assert 'scatter_plot_result1.html' in os.listdir(os.getcwd())
+    assert 'scatter_result0.html' in os.listdir(os.getcwd())
+    assert 'scatter_result1.html' in os.listdir(os.getcwd())
 
 
 def test_scatter_plot_cli_errors(pcs_full, postprocess_profiles):
@@ -91,19 +91,19 @@ def test_scatter_plot_cli_errors(pcs_full, postprocess_profiles):
 
     runner = CliRunner()
     # Try invalid view argument
-    result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amount',
+    result = runner.invoke(cli.show, [profile[0], 'scatterr', '--of=amount',
                                       '--per=structure-unit-size'])
     assert result.exit_code == 2
-    assert 'No such command "scatter"' in result.output
+    assert 'No such command "scatterr"' in result.output
 
     # Try invalid --of value
-    result = runner.invoke(cli.show, [profile[0], 'scatter_plot', '--of=amou',
+    result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amou',
                                       '--per=structure-unit-size'])
     assert result.exit_code == 2
     assert 'invalid choice: amou' in result.output
 
     # Try invalid --per value
-    result = runner.invoke(cli.show, [profile[0], 'scatter_plot', '--of=amount',
+    result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amount',
                                       '--per=struct'])
     assert result.exit_code == 2
     assert 'invalid choice: struct' in result.output

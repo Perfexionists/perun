@@ -4,7 +4,7 @@ import click
 
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.bokeh_helpers as bokeh_helpers
-import perun.view.scatter_plot.factory as scatter_factory
+import perun.view.scatter.factory as scatter_factory
 
 from perun.utils.helpers import pass_profile
 
@@ -63,7 +63,7 @@ def process_title(ctx, _, value):
 #                     "Value '*' serves as a wildcard. Similarly to uid filter, the '--for-model' "
 #                     "has precedence in filter construction."))
 # Bokeh graph specific
-@click.option('--filename', '-f', default="scatter_plot", metavar="<html>",
+@click.option('--filename', '-f', default="scatter", metavar="<html>",
               help="Outputs the graph to the file specified by filename.")
 @click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
               callback=cli_helpers.process_bokeh_axis_title,
@@ -76,7 +76,7 @@ def process_title(ctx, _, value):
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
               help="Will show the graph in browser.")
 @pass_profile
-def scatter_plot(profile, filename, view_in_browser, **kwargs):
+def scatter(profile, filename, view_in_browser, **kwargs):
     """
     Display of the resources and models in scatter plot format.
 
