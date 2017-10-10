@@ -285,11 +285,15 @@ def _bisection_step(x_pts, y_pts, computation_models, last_model):
         return
 
     # Check the first half interval and continue with bisection if needed
-    _bisection_solve_half_model(x_pts[parts[0][0]:parts[0][1]], y_pts[parts[0][0]:parts[0][1]],
-                                computation_models, half_models[0], last_model)
+    for half_model in _bisection_solve_half_model(x_pts[parts[0][0]:parts[0][1]],
+                                                  y_pts[parts[0][0]:parts[0][1]],
+                                                  computation_models, half_models[0], last_model):
+        yield half_model
     # Check the second half interval and continue with bisection if needed
-    _bisection_solve_half_model(x_pts[parts[1][0]:parts[1][1]], y_pts[parts[1][0]:parts[1][1]],
-                                computation_models, half_models[1], last_model)
+    for half_model in _bisection_solve_half_model(x_pts[parts[1][0]:parts[1][1]],
+                                                  y_pts[parts[1][0]:parts[1][1]],
+                                                  computation_models, half_models[1], last_model):
+        yield half_model
 
 
 def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, last_model):
@@ -307,8 +311,12 @@ def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, la
     """
     if half_model['model'] != last_model['model']:
         # The model is different, continue with bisection
-        for submodel in _bisection_step(x_pts, y_pts, computation_models, half_model):
-            yield submodel
+        try:
+            for submodel in _bisection_step(x_pts, y_pts, computation_models, half_model):
+                yield submodel
+        except exceptions.InvalidPointsException:
+            # Too few submodel points to perform regression, use the half model instead
+            yield half_model
     else:
         # The model is the same
         yield half_model
