@@ -9,7 +9,6 @@ the sections of _models dictionary representing the model properties.
 import math
 
 import perun.postprocess.regression_analysis.generic as generic
-import perun.postprocess.regression_analysis.specific as specific
 import perun.postprocess.regression_analysis.extensions.plot_models as plot
 import perun.utils.exceptions as exceptions
 
@@ -116,6 +115,25 @@ def map_model_to_key(model):
 # The record can also contain optional parameters as needed.
 _MODELS = {
     'all': {},  # key representing all models
+    'const': {
+        'model': 'constant',
+        'fx': lambda x: 0,
+        'fy': lambda y: y,
+        'fa': lambda a: a,
+        'fb': lambda b: b,
+        'data_gen': generic.generic_regression_data,
+        'computation': generic.generic_compute_regression,
+        'func_list': [
+            generic.generic_regression_coefficients,
+            generic.generic_regression_error
+        ],
+        'transformations': {
+            'plot_model': {
+                'computation': plot.model_plot_computation,
+                'y_pts_func': plot.const_model_plot
+            }
+        }
+    },
     'linear': {
         'model': 'linear',
         'fx': lambda x: x,
@@ -137,7 +155,7 @@ _MODELS = {
     },
     'log': {
         'model': 'logarithmic',
-        'fx': math.log10,
+        'fx': math.log,
         'fy': lambda y: y,
         'fa': lambda a: a,
         'fb': lambda b: b,
@@ -155,26 +173,27 @@ _MODELS = {
             }
         }
     },
-    'quad': {
-        'model': 'quadratic',
-        'fx': lambda x: x ** 2,
-        'fy': lambda y: y,
-        'fa': lambda a: a,
-        'fb': lambda b: b,
-        'data_gen': generic.generic_regression_data,
-        'computation': generic.generic_compute_regression,
-        'func_list': [
-            generic.generic_regression_coefficients,
-            specific.quad_regression_error
-        ],
-        'transformations': {
-            'plot_model': {
-                'computation': plot.model_plot_computation,
-                'y_pts_func': plot.generic_model_plot,
-                'fp': lambda p: p ** 2
-            }
-        }
-    },
+    # Currently not required, as quadratic model can be computed using the power model
+    # 'quad': {
+    #     'model': 'quadratic',
+    #     'fx': lambda x: x ** 2,
+    #     'fy': lambda y: y,
+    #     'fa': lambda a: a,
+    #     'fb': lambda b: b,
+    #     'data_gen': generic.generic_regression_data,
+    #     'computation': generic.generic_compute_regression,
+    #     'func_list': [
+    #         generic.generic_regression_coefficients,
+    #         generic.generic_regression_error
+    #     ],
+    #     'transformations': {
+    #         'plot_model': {
+    #             'computation': plot.model_plot_computation,
+    #             'y_pts_func': plot.generic_model_plot,
+    #             'fp': lambda p: p ** 2
+    #         }
+    #     }
+    # },
     'power': {
         'model': 'power',
         'fx': math.log10,
@@ -185,7 +204,7 @@ _MODELS = {
         'computation': generic.generic_compute_regression,
         'func_list': [
             generic.generic_regression_coefficients,
-            specific.power_regression_error
+            generic.generic_regression_error
         ],
         'transformations': {
             'plot_model': {
@@ -204,7 +223,7 @@ _MODELS = {
         'computation': generic.generic_compute_regression,
         'func_list': [
             generic.generic_regression_coefficients,
-            specific.exp_regression_error
+            generic.generic_regression_error
         ],
         'transformations': {
             'plot_model': {

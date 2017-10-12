@@ -77,6 +77,30 @@ def generic_model_plot(data):
     return data
 
 
+def const_model_plot(data):
+    """ The constant model specific version for plot_y points computation. This version is
+        more efficient for the plotting computation than the generic one.
+
+    Expects 'b0' key in the data dictionary.
+
+    Updates the data dictionary with 'plot_y' lists containing the y values for plotting.
+
+    Arguments:
+        data(dict): the data dictionary with computed linear model
+    Raises:
+        DictionaryKeysValidationFailed: if the data dictionary is missing any of the keys
+    Return:
+        dict: the data dictionary updated with 'plot_y'
+
+    """
+    # Validate the data dictionary
+    tools.validate_dictionary_keys(data, ['b0'], [])
+
+    # Create constant array of b0 coefficient value
+    data['plot_y'] = np.full((DEFAULT_SMOOTHNESS, ), data['b0'])
+    return data
+
+
 def linear_model_plot(data):
     """ The linear specific version for plot_y points computation. This version is slightly
         more efficient for the plotting computation than the generic one.
