@@ -2,7 +2,7 @@
 import copy
 
 import perun.profile.query as query
-import perun.postprocess.regression_analysis.transformations as transformations
+import perun.postprocess.regression_analysis.transform as transform
 
 import demandimport
 with demandimport.enabled():
@@ -10,6 +10,7 @@ with demandimport.enabled():
     import pandas
 
 __author__ = 'Radim Podola'
+__coauthors__ = ['Tomas Fiedor', 'Jirka Pavela']
 
 
 def resources_to_pandas_dataframe(profile):
@@ -35,7 +36,7 @@ def resources_to_pandas_dataframe(profile):
     return pandas.DataFrame(values)
 
 
-def create_heap_map(profile):
+def to_heap_map_format(profile):
     """ Create the HEAP map representation for visualization
 
     Arguments:
@@ -104,7 +105,7 @@ def create_heap_map(profile):
             'unit': profile['header']['units']['memory']}
 
 
-def create_heat_map(profile):
+def to_heat_map_format(profile):
     """ Create the HEAT map representation for visualization
 
     Arguments:
@@ -145,9 +146,7 @@ def create_heat_map(profile):
     heat_map = get_heat_map(resources, min_address, max_address)
 
     return {"type": 'heat',
-            "stats": {'max_address': max_address,
-                      'min_address': min_address,
-                     },
+            "stats": {'max_address': max_address, 'min_address': min_address, },
             "map": heat_map,
             'unit': profile['header']['units']['memory']}
 
@@ -349,8 +348,10 @@ def add_stats(snapshots):
            }
 
 
-def create_allocations_table(profile):
+def to_allocations_table(profile):
     """ Create the allocations table
+
+    Fixme: Where exactly is this used?
 
     Arguments:
         profile(dict): the memory profile
@@ -379,15 +380,17 @@ def create_allocations_table(profile):
         for alloc in snap['resources']:
             table['snapshots'].append(i + 1)
             table['amount'].append(alloc['amount'])
-            table['uid'].append(_get_line_from_frame(alloc['uid']))
+            table['uid'].append(to_string_line(alloc['uid']))
             table['subtype'].append(alloc['subtype'])
             table['address'].append(alloc['address'])
 
     return table
 
 
-def create_flow_table(profile):
+def to_flow_table(profile):
     """ Create the heap map table
+
+    Fixme: Where exactly is this used
 
     Arguments:
         profile(dict): the memory profile
@@ -404,7 +407,7 @@ def create_flow_table(profile):
         }
     uid object is serialized into: function()~source~line
     """
-    heap = create_heap_map(profile)
+    heap = to_heap_map_format(profile)
 
     table = {
         'snapshots': [],
@@ -421,14 +424,14 @@ def create_flow_table(profile):
 
             table['snapshots'].append(i + 1)
             table['amount'].append(alloc['amount'])
-            table['uid'].append(_get_line_from_frame(uid_chunk))
+            table['uid'].append(to_string_line(uid_chunk))
             table['subtype'].append(alloc['subtype'])
             table['address'].append(alloc['address'])
 
     return table
 
 
-def create_flame_graph_format(profile):
+def to_flame_graph_format(profile):
     """ Create the format suitable for the Flame-graph visualization
 
     Arguments:
@@ -443,7 +446,7 @@ def create_flame_graph_format(profile):
             if alloc['subtype'] != 'free':
                 stack_str = ""
                 for frame in alloc['trace']:
-                    line = _get_line_from_frame(frame)
+                    line = to_string_line(frame)
                     stack_str += line + ';'
                 if stack_str and stack_str.endswith(';'):
                     final = stack_str[:-1]
@@ -453,7 +456,7 @@ def create_flame_graph_format(profile):
     return stacks
 
 
-def _get_line_from_frame(frame):
+def to_string_line(frame):
     """ Create string representing call stack's frame
 
     Arguments:
@@ -462,9 +465,7 @@ def _get_line_from_frame(frame):
     Returns:
         str: line representing call stack's frame
     """
-    return "{}()~{}~{}".format(frame['function'],
-                               frame['source'],
-                               frame['line'])
+    return "{}()~{}~{}".format(frame['function'], frame['source'], frame['line'])
 
 
 def plot_data_from_coefficients_of(model):
@@ -477,8 +478,4 @@ def plot_data_from_coefficients_of(model):
     Return:
         dict: updated models dictionary with 'plot_x' and 'plot_y' lists
     """
-    return transformations.coefficients_to_points(model)
-
-
-if __name__ == "__main__":
-    pass
+    return transform.coefficients_to_points(model)

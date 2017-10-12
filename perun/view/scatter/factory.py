@@ -4,7 +4,7 @@ from operator import itemgetter
 from collections import defaultdict
 
 import perun.profile.query as query
-import perun.profile.converters as converters
+import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 
 import demandimport
@@ -72,7 +72,7 @@ def generate_plot_data_slices(profile):
             uid_models(list)
     """
     # Get resources for scatter plot points and models for curves
-    resource_table = converters.resources_to_pandas_dataframe(profile)
+    resource_table = convert.resources_to_pandas_dataframe(profile)
     models = list(map(itemgetter(1), query.all_models_of(profile)))
     # Get unique uids from profile, each uid (and optionally interval) will have separate graph
     uids = query.unique_resource_values_of(profile, 'uid')
@@ -103,7 +103,7 @@ def draw_models(graph, models):
     colour_palette = palettes.viridis(len(models))
     for idx, model in enumerate(models):
         # Convert the coefficients to points that can be plotted
-        model = converters.plot_data_from_coefficients_of(model)
+        model = convert.plot_data_from_coefficients_of(model)
         # Create legend for the plotted model
         coeffs = ', '.join('{}={:f}'.format(c['name'], c['value']) for c in model['coeffs'])
         legend = '{0}: {1}, r^2={2:f}'.format(model['model'], coeffs, model['r_square'])

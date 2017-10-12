@@ -1,14 +1,12 @@
-"""Basic tests for profile converters module.
+"""Basic tests for profile convert module.
 
 Tests basic functionality of creating other representations of profiles, like e.g for
 heap and heat map visualizations, etc.
 """
 import pytest
 import perun.utils.exceptions as exceptions
-import perun.profile.converters as converters
+import perun.profile.convert as convert
 import perun.profile.query as query
-
-import tests.logic.commands.conftest as conf
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = 'Jiri Pavela'
@@ -39,7 +37,7 @@ def test_flame_graph(memory_profiles):
     Expecting no errors and returned list of lines representing the format by greg.
     """
     for memory_profile in memory_profiles:
-        flame_graph = converters.create_flame_graph_format(memory_profile)
+        flame_graph = convert.to_flame_graph_format(memory_profile)
 
         line_no = 0
         for snap in memory_profile['snapshots']:
@@ -57,7 +55,7 @@ def test_heap_map(memory_profiles):
     Expecting no errors and returned dictionary with internal format of the heap map
     """
     for memory_profile in memory_profiles:
-        heap_map = converters.create_heap_map(memory_profile)
+        heap_map = convert.to_heap_map_format(memory_profile)
         assert len(heap_map['snapshots']) == len(memory_profile['snapshots'])
 
 
@@ -67,7 +65,7 @@ def test_heat_map(memory_profiles):
     Expecting no errors and returned dictionary with the internal representation
     """
     for memory_profile in memory_profiles:
-        heat_map = converters.create_heat_map(memory_profile)
+        heat_map = convert.to_heat_map_format(memory_profile)
         number_of_cells = (heat_map['stats']['max_address'] - heat_map['stats']['min_address'])
         assert len(heat_map['map']) == number_of_cells
 
@@ -78,7 +76,7 @@ def test_allocation_table(memory_profiles):
     Expecting no error and returned dictionary with allocation info
     """
     for memory_profile in memory_profiles:
-        allocation_info = converters.create_allocations_table(memory_profile)
+        allocation_info = convert.to_allocations_table(memory_profile)
         assert len(allocation_info['snapshots']) > 0
 
 
@@ -88,7 +86,7 @@ def test_flow_table(memory_profiles):
     Expecting no error and returned dictionary with some flow info
     """
     for memory_profile in memory_profiles:
-        flow_info = converters.create_flow_table(memory_profile)
+        flow_info = convert.to_flow_table(memory_profile)
         assert len(flow_info['snapshots']) > 0
 
 
@@ -105,7 +103,7 @@ def test_coefficients_to_points_correct(postprocess_profiles):
     # TODO: add more advanced checks
     models = list(query.all_models_of(models_profile))
     for model in models:
-        data = converters.plot_data_from_coefficients_of(model[1])
+        data = convert.plot_data_from_coefficients_of(model[1])
         assert 'plot_x' in data
         assert 'plot_y' in data
 
@@ -123,4 +121,4 @@ def test_coefficients_to_points_corrupted_model(postprocess_profiles):
     models = list(query.all_models_of(models_profile))
     with pytest.raises(exceptions.InvalidModelException):
         for model in models:
-            converters.plot_data_from_coefficients_of(model[1])
+            convert.plot_data_from_coefficients_of(model[1])

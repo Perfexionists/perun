@@ -3,7 +3,7 @@
 import os
 import subprocess
 
-import perun.profile.converters as converter
+import perun.profile.convert as converter
 
 __author__ = 'Radim Podola'
 _SCRIPT_FILENAME = './flamegraph.pl'
@@ -21,7 +21,7 @@ def draw_flame_graph(profile, output_file, height):
         height(int): graphs height
     """
     # converting profile format to format suitable to Flame graph visualization
-    flame = converter.create_flame_graph_format(profile)
+    flame = converter.to_flame_graph_format(profile)
 
     header = profile['header']
     profile_type = header['type']

@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import click
 
-import perun.profile.converters as heap_representation
+import perun.profile.convert as heap_representation
 import perun.view.heapmap.heap_map as hm
 from perun.utils.helpers import pass_profile
 
@@ -17,8 +17,8 @@ def _call_heap(profile):
     Arguments:
         profile(dict): memory profile with records
     """
-    heap_map = heap_representation.create_heap_map(deepcopy(profile))
-    heat_map = heap_representation.create_heat_map(profile)
+    heap_map = heap_representation.to_heap_map_format(deepcopy(profile))
+    heat_map = heap_representation.to_heat_map_format(profile)
     hm.heap_map(heap_map, heat_map)
 
 
