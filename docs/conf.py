@@ -31,9 +31,7 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -104,10 +102,14 @@ html_static_path = ['_static']
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
 html_sidebars = {
+    'index': [
+        'about.html', 'sourcelink.html', 'searchbox.html'
+    ],
     '**': [
         'about.html',
-        'navigation.html',
+        'localtoc.html',
         'relations.html',  # needs 'show_related': True theme option to display
+        'sourcelink.html',
         'searchbox.html',
     ]
 }

@@ -10,11 +10,13 @@ Welcome to Perun's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   overview
+   profile
+   cli
+   collectors
+   postprocessors
+   views
+   jobs
+   config
+   logs
+   internals
