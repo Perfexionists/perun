@@ -15,7 +15,7 @@ setup(
     ]},
     install_requires=[
         'click', 'termcolor', 'colorama', 'ruamel.yaml', 'GitPython', 'bokeh', 'pandas',
-        'demandimport'
+        'demandimport', "Sphinx"
     ],
 
     entry_points='''
