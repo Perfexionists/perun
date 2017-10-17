@@ -13,4 +13,7 @@ dev:
 install:
 	python3 setup.py install
 
-.PHONY: init test
+docs:
+	$(MAKE) -C docs dirhtml
+
+.PHONY: init test docs install dev run-gui
