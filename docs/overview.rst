@@ -1,96 +1,274 @@
-Overview of Perun: Performance Under Control
-============================================
+Perun: Performance Under Control
+================================
 
-Have you ever encountered a sudden performance degradation and could not figure out, when and
-where the degradation was introduced?
-Have you ever felt that you complete lost the control of the performance of your application?
-Do you think that you have no idea whether the overall performance of your application is getting
-better or not over the time?
+Have you ever encountered a sudden performance degradation and could not figure out, when and where
+the degradation was introduced?  Have you ever felt that you completely lost the control of the
+performance of your application?  Do you think that you have no idea whether the overall performance
+of your application is getting better or not over the time? Is it hard for you to set performance
+regression testing everytime you create a new project?
 
-Then, have no fear!
+For tracking versions we already have Versioning Control Systems, and for performance we now have a
+Performance Versioning System!
 
-Perun is an open source light-weight Performance Control System! It puts a leash on your performance
-and keeps it under YOUR control. Revision (or version) control systems track how your code base is
-changing, what features were added and keeps a snapshots of version of projects. And actually you
-can run all of the performance tests manually and then use VCS to store the actual profiles for
-each minor version of your project, however, you are forced to do all of the profiling, annotations
-with tag etc. by yourself, otherwise you WILL LOSE the precise history of the performance
-your application.
+Perun is an open source light-weight Performance Versioning System. While revision (or version)
+control systems track how your code base is changing, what features were added and keeps a snapshots
+of version of projects, they are mostly tuned for this purpose. And actually you can run all of the
+performance regressions tests manually and then use, e.g. git, to store the actual profiles for each
+minor version of your project, however, you are forced to do all of the profiling, annotations with
+tag and basic informations, etc. yourself, otherwise you lose the precise history of the performance
+your application.  Or you are forced to use the database and lose the flexibility and easy usage of
+the versioning systems.
 
-Perun addresses such limitations by fully taking control of the performance of your applications.
-In particular, it adds:
+.. todo::
 
-  1. **Context**---each profile is assigned to concrete minor version adding the missing context to
-     your profiles---what was changed in the code base, when it was changed and who made the changes.
-  2. **Automation**---perun can add hooks to your version control system to make sure you never miss
-     to generate new profiles for each new minor or major version of your project. Morever, inspired
-     by continuous integration systems, it easily lets you build the matrix of the jobs meant to run
-     for each minor version.
-  3. **Timeline**---perun preservers the history of your project, and lets you see, how the
-     performance of your project changed during the time.
+   Add references to corresponding sections
+
+Perun serves as a wrapper over the existing Versioning Systems allowing one to automate the
+performance regression test runs and as well handles the mapping of performance profiles to
+corresponding minor versions. In particular, it has the following advantages:
+
+  1. **Context**---each profile is assigned to a concrete minor version adding the missing context
+     to your profiles---what was changed in the code base, when it was changed and who made the
+     changes. The profiles, of course, contains information about the performance regression run.
+
+  2. **Automation**---Perun contains hooks for supported version control system to make sure you
+     never miss to generate new profiles for each new minor or major version of your project.
+     Morever, inspired by continuous integration systems, it contains a natural format for
+     specifying the automated jobs.
+
+  3. **Genericity**---format of the performance profiles, supported by Perun, is based on JSON
+     notation and has just a minor requirements and restrictions. Perun tool suite contains a basic
+     set of generic (and several specific) visualization, postprocessing and collection modules as
+     a basic building and analysis blocks. Moreover, Perun poses a minor requirements for creating
+     and registering new modules.
+
+  4. **Easy to use**---the workflow, interface and storage of Perun is heavily inspired by the git
+     systems providing natural use (at least for majority of potential users). Current version has
+     a Command Line Interface consisting of commands similar to git (like e.g. add, status, log).
+     Interactive Graphical User Interface is currently in development.
+
+.. todo::
+
+   Add picture of the overall architecture (the one with the stuff)
 
 Installation
 ------------
 
-Simply run something.
+You can install Perun as follows::
+
+    make init
+    make install
+
+This installs Perun to your system as a python package. You can then run perun safely from the
+command line using the ``perun`` command. Run either ``perun --help`` or check the :doc:`cli`
+documentation for more information about running Perun commands.
+
+.. note::
+   Depending on your OS and the location of Python libraries, you might require root permissions
+   to install Perun.
+
+.. todo::
+   Make the note text smaller ;)
+
+Alternatively you can install Perun in development mode::
+
+    make init
+    make install
+
+This method of installation allows you to make a changes to the code, which are then reflected
+by the installation.
 
 Lifetime of a profile
 ---------------------
 
-Profiles are defined in an unified format based on JSON format. Once profiles are generated,
-the profile files are compressed and stored in the perun directory structure, and are assigned to
-the current context of the project---current head minor version of the project.
+Format of performance profiles is based on JSON format and tries to unify the various metrics and
+collection methods. Profiles are stored in a storage (parallel to vcs storage), compressed using
+the `zlib` method along with the additional information, like e.g. how the profile was collected,
+how it was postprocessed, used metric units, etc. The exact format of the profile storage and
+its internals are in :doc:`internals`.
 
-Profiles are generated by the set of supported collectors (like e.g. memory collector, time collector
-suited for complexity analysis, or collector driven by regular expressions) and can be further
-enhanced and transformed by sequence of postprocessing sets (like e.g. filters, normalizers, etc.).
+Profiles are generated by the set of supported collectors (like e.g. :ref:`complexity-col` for
+collecting time durations along with sizes of data structures, or classical :ref:`time-col` ) and
+can be further refined and transformed by sequence of postprocessing steps (like e.g.
+:ref:`regression-post` for estimating regression models of dependent variables based on independent
+variables, or :ref:`normalizer-post`, etc.).
 
-Such profiles then can be visualized by the set of visualization techniques like e.g. flame graphs,
-heap maps, various scatter plots, etc.
+Stored profiles then can be visualized by the set of visualization techniques like e.g.
+:ref:`flame-graph-viz`, :ref:`scatter-viz`, or customizable :ref:`bars-viz` and :ref:`flow-viz`.
+
+.. todo::
+   Add links to examples of visualizers and stuff.
+
+.. todo::
+   Add picture of the lifetime of a profile
 
 Perun architecture
 ------------------
 
-Perun is divided into three main parts---view, data and logic---similarly to the model-view-control
-design. Data contains a core unit of the Perun---the profile and the wrapper over the existing
-version control system. The logic is in charge of automatization, manipulations and generation
-of the profiles---it consists of set of collectors for generation of the profiles, set of postprocessors
-for transformation of profiles and hooks to version control systems and other external units to
-achieve automatization. The view is an independent module, which contains various visualization
-techniques and wrappers for graphical and command line interface.
+Logically Perun can be divided into several parts---logic (commands, runners, store), data (vcs and
+profile), and set of building blocks (collectors, postprocessors and visualizers). Data part is the
+core unit of the Perun---it consists of the profile manipulation and supported wrappers (currently
+only git) over the existing version control systems. The logic is in charge of automation,
+higher-logic manipulations and generation of the profiles. At last the Perun suite contains set of
+collectors for generation of the profiles, set of postprocessors for transformation and  various
+visualization techniques and wrappers for graphical and command line interface.
+
+.. todo::
+   Add picture of the architecture
 
 Features
 --------
 
-Many features, such wow, like:
+.. todo::
+Add external links to bokeh and click and yaml
 
-  * Super special
-  * Mega awesome
-  * Everything is expensive
+Perun has the following features and advantages:
+
+  * **Unified format**---we base our format on JSON with several minor requirements and restrictions,
+    like e.g. specifying header region or set of resources under certain keys. This allows us to
+    reuse existing postprocessors and visualisers to achieve greate flexibility.
+  * **Natural specification of Runs**---we base the specification of jobs on Yaml format. In project
+    configuration we let the user define the set of collectors, set of postprocessors and runnable
+    applications along with different parameter combinations and input workload. Based on this
+    specification we build a job matrix, which is the sequentially run.
+  * **Git-inspired Interface**---the :doc:`cli` is inspired by git version control systems and
+    has commands like e.g. ``add``, ``remove``, ``status``, ``log``, etc. Moreover, the interface
+    is built using the Click library providing flexible option and argument handling. We designed
+    our interface to have a natural feeling when executing the commands.
+  * **Efficient storage**---performance profiles are stored compressed in the storage in parallel to
+    versions of the software. Each stored object is identified by hash indentificator allowing quick
+    lookup and reusing of object blobs.
+  * **Multiplatform-support**---Perun is implemented in Python 3 and its implementation is supported
+    both by Windows and Unix platforms.
+  * **Regression Analysis**---we have implemented a module for :ref:`regression-post`, which
+    supports several different strategies for finding the best model for given data. Moreover, we
+    support a more fine analysis of the data by performing regression analysis on smaller intervals,
+    or based on bisective method.
+  * **Interactive Visualizations**---Perun's tool suite includes several visualization techniques,
+    some of them based on Bokeh visualization library, which provides nice and interactive plots,
+    in exchange of scalability (note that we are currently exploring libraries that can scale better)
+  * **Useful API for profile manipulation**---we employ helper modules for external working with
+    our profiles (besides loading and basic usage)---we have API for executing simple queries
+    over the resources or other parts of the profiles, or convert and transform the profiles to
+    different representations (e.g. pandas data frame, or flame-graph format).
+
+Currently we are working on several extensions of Perun, which should push the usability of Perun
+even further. Namely, in near future we plan to merge the following features into Perun:
+
+  * **Automatic Detection of Performance Degradation**---we are currently exploring effective
+    heuristics for automatic detection of performance degradation between two project versions (e.g.
+    between two commits). Our methods are based on statistical methods and outputs of
+    :ref:`regression-post`.
+
+  * **Regular Expression Driven Collector**---one of our planned collectors is based on parsing the
+    standard textual output for a custom specified metrics, specified by regular expressions. We
+    believe this will allow generic and quick usage to generate the profiles without the need of
+    creating new collectors.
+
+  * **Fuzzing Collector**---another planned collector is based on method of fuzz testing---i.e.
+    modifying inputs in order to force error or, in our case, performance change. We believe that
+    this collector can generate interesting profiles and lead to a better understanding of ones
+    applications.
+
+  * **Clustering Postprocessor**---we are exploring ways to make any profile usable for regression
+    analysis. Clustering is based on assumption, that there exists a independent variable
+    (but unknown to us) that can be used to model the dependent variable (in our case the amount
+    of resources). Clustering tries to find the optimal clustering of the depedent values in order
+    to be usable by :ref:`regression-post`.
+
+  * **Automatic Hooks**---in very near future, we want to include the basic feature of Perun,
+    namely the automatic hooks, that will allow to automate the runs of job matrix, automatic
+    detection of degradation and efficient storage.
 
 Customization
 -------------
 
-Many things can be customized inside Perun, like e.g.
+In order to extend Perun with custom modules (collectors, postprocessors and visualizations) one
+needs to implement ``run.py`` module inside the custom package stored in appropriate package
+(``perun.collect``, ``perun.postprocess`` and ``perun.view`` respectively).
 
-  * Collectors
-  * Postprocessors
-  * Views
+If you think your custom module could help others, please send us a PR, we will review it and
+in case it is suitable for wider audience, we will include it in our suite.
+
+Custom Collector
+^^^^^^^^^^^^^^^^
+
+Collectors in general work in three phases:
+
+  1. **Before**---optional phase before the actual collection of profiling data. This corresponds to
+     various initializations, custom compilation, etc.
+
+  2. **Collect**---the actual collection of profiling data, which generates the profile w.r.t.
+     the unified format.
+
+  3. **After**---optional phase after the data has been successfully collected. This e.g.
+     corresponds to needing filter or transformation of the profile.
+
+Each collector is registered in ``perun.collect`` package and needs one ``run.py`` module.
+In order to register a new collector in minimal one needs to implement the following api in the
+``run.py`` module::
+
+  def before(**kwargs):
+      """(optional) Phase before execution of collector"""
+      return status_code, status_msg, kwargs
+
+  def collect(**kwargs):
+      """Collection of the profile---returned profile is in kwargs['profile']"""
+      return status_code, status_msg, kwargs
+
+  def after(**kwargs):
+      """(optional) Final postprocessing of the generated profile"""
+      return status_code, status_msg, kwargs
+
+Custom Postprocessor
+^^^^^^^^^^^^^^^^^^^^
+
+Postprocessors in general work the same as collectors.
+The API has a similar requirements and one needs to implement the following in the
+``run.py`` module::
+
+  def before(**kwargs):
+      """(optional) Phase before execution of postprocessor"""
+      return status_code, status_msg, kwargs
+
+  def postprocess(**kwargs):
+      """Postprocessing of the profile---returned profile is in kwargs['profile']"""
+      return status_code, status_msg, kwargs
+
+  def after(**kwargs):
+      """(optional) Final postprocessing of the generated profile"""
+      return status_code, status_msg, kwargs
+
+Custom Visualization
+^^^^^^^^^^^^^^^^^^^^
+
+Visualizations has to be based on the unified profile format (or its supported conversions) and
+has to specify the following in the ``run.py`` module::
+
+  import perun.utils.helpers as helpers
+
+  @helpers.pass_profile
+  def <visualization_name>(profile, **kwargs):
+      """Display the profile in custom format"""
+      pass
+
 
 Acknowledgements
 ----------------
 
-We thank for the support received from the Red Hat (Brno) and H2020 ECSEL project Aquas (link_).
+We thank for the support received from the Red Hat (Brno), Brno University of Technology (BUT FIT)
+and H2020 ECSEL project Aquas (link_).
 
 Further we would like to thank the following concrete people (in the alphabetic order) for
-their (sometimes even just a little) help:
+their (sometimes even just a little) contributions:
 
-  * Jan Fiedor (Honeywell)---for feedback, and technical discussions;
-  * Martin Hruska (BUT FIT)---for feedback, and technical discussions;
-  * Petr Müller (SAP)---for nice discussion about the project;
-  * Hanka Pluhackova (BUT FIT)---for awesome logo, theoretical discussions about statistics, feedback, and lots of ideas;
-  * Adam Rogalewicz (BUT FIT)---for support, theoretical discussions, feedback;
-  * Tomas Vojnar (BUT FIT)---for support, theoretical discussions, feedback;
-  * Jan Zeleny (Red Hat)---for awesome support, and feedback.
+  * **Jan Fiedor** (Honeywell)---for feedback, and technical discussions;
+  * **Martin Hruska** (BUT FIT)---for feedback, and technical discussions;
+  * **Petr Müller** (SAP)---for nice discussion about the project;
+  * **Michal Kotoun** (BUT FIT)---for feedback, and having faith in this repo;
+  * **Hanka Pluhackova** (BUT FIT)---for awesome logo, theoretical discussions about statistics, feedback, and lots of ideas;
+  * **Adam Rogalewicz** (BUT FIT)---for support, theoretical discussions, feedback;
+  * **Tomas Vojnar** (BUT FIT)---for support, theoretical discussions, feedback;
+  * **Jan Zeleny** (Red Hat)---for awesome support, and feedback.
 
 .. _link: http://aquas-project.eu/
