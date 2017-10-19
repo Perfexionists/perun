@@ -3,6 +3,8 @@
 import logging
 import sys
 import termcolor
+import io
+import pydoc
 
 from perun.utils.decorators import static_variables
 
@@ -17,9 +19,48 @@ VERBOSE_INFO = 1
 VERBOSE_RELEASE = 0
 
 SUPPRESS_WARNINGS = False
+SUPPRESS_PAGING = True
 
 # set the logging for the perun
 logging.basicConfig(filename='perun.log', level=logging.DEBUG)
+
+
+def paged_function(func):
+    """Adds paging of the output to standard stream
+
+    This decorator serves as a pager for long outputs to the standard stream. As a pager currently,
+    'less -R' is used. Further extension to Windows and weird terminals without less -R is planned.
+
+    Fixme: Try the paging on windows
+    Fixme: Uhm, what about standard error?
+
+    Arguments:
+        func(function): original wrapped function that will be paged
+    """
+    def wrapper(*args, **kwargs):
+        """Wrapper for the original function whose output will be paged
+
+        Arguments:
+            args(list): list of positional arguments for original function
+            kwargs(dict): dictionary of key:value arguments for original function
+        """
+        if SUPPRESS_PAGING:
+            return func(*args, **kwargs)
+
+        # Replace the original standard output with string buffer
+        sys.stdout = io.StringIO()
+
+        # Run the original input with positional and key-value arguments
+        result = func(*args, **kwargs)
+
+        # Read the caught standard output and then restore the original stream
+        sys.stdout.seek(0)
+        stdout_str = "".join(sys.stdout.readlines())
+        sys.stdout = sys.__stdout__
+        pydoc.pipepager(stdout_str, "less -R")
+
+        return result
+    return wrapper
 
 
 def _log_msg(stream, msg, msg_verbosity, log_level):

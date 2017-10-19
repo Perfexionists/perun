@@ -31,13 +31,19 @@ __author__ = 'Tomas Fiedor'
 
 
 @click.group()
+@click.option('--no-pager', default=False, is_flag=True,
+              help='Disables paging of the standard output (for log and status).')
 @click.option('--verbose', '-v', count=True, default=0,
-              help='sets verbosity of the perun log')
-def cli(verbose):
+              help='Sets verbosity of the perun log')
+def cli(verbose, no_pager):
     """Perun is a performance control system used to store profiles efficiently.
 
     Run 'perun init' to initialize your very first perun repository in the current directory.
     """
+    # by default the pager is suppressed, and only calling it from the CLI enables it,
+    # through --no-pager set by default to False you enable the paging
+    perun_log.SUPPRESS_PAGING = no_pager
+
     # set the verbosity level of the log
     if perun_log.VERBOSITY < verbose:
         perun_log.VERBOSITY = verbose
