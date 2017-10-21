@@ -1,83 +1,99 @@
 """Module with generic functions for regression analysis.
 
 These generic functions are reusable parts of the regression computation.
-All functions operate with one argument - the data dictionary that contains the required arguments.
-All functions return the updated data dictionary.
+
+All functions operate on the data / model dictionaries, which are unpacked during the function call
+ - this allows more readable function specifications and easier function calls.
+
+All functions return or yield some form of data dictionary, which is then appended to the base
+data dictionary.
+
 This allows to extend and modify the computation process as long as all the functions follow
 the given argument and return value conventions.
 
 """
 
-
-import perun.postprocess.regression_analysis.tools as tools
 from math import sqrt
+import perun.postprocess.regression_analysis.tools as tools
 
 
-def generic_compute_regression(input_data):
+def generic_compute_regression(data_gen, func_list, **model):
     """The core of the computation process.
 
     Computes the regression model according to the provided sequence of generator ('data_gen')
     and function list (func_list).
 
     Arguments:
-        input_data(dict): the regression model dictionary from regression_model
+        data_gen(iterable): generator object which provide computation values (sum of x etc.)
+        func_list(list): list of functions which are applied in order to the data from generator
+        model(dict): the regression model dictionary from regression_model
         (e.g. the 'linear' section)
     Raises:
         GenericRegressionExceptionBase: the derived exceptions as used in the generator
                                         or function list
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+        TypeError: if the required function arguments are not in the unpacked dictionary input
     Return:
         iterable: generator object which produces regression model computation steps in a data
                   dictionary
 
     """
     # Get intermediate results from data generator
-    for data in input_data['data_gen']:
+    for data in data_gen:
+        # Update the data with model dictionary
+        data.update(model)
         # Apply every function on the model data to compute all needed values
-        for func in input_data['func_list']:
-            data = func(data)
+        for func in func_list:
+            result = func(**data)
+            data.update(result)
         yield data
 
 
-def generic_regression_data(data):
+def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
     """The generic data generator.
 
     Produces the sums of x, y, square x, square y and x * y values. Also provides the x min/max
     values and the number of points.
-    Expects 'x', 'y', 'fx', 'fy' and 'steps' keys in data dictionary. 'fx' and 'fy' refer to the x
-    and y values modification for the sums (e.g. log10 for x values => sum of log10(x) values).
-    The steps key allows to split the points sequence into parts (for iterative computation),
+
+    'f_x' and 'f_y' refer to the x and y values modification for the sums (e.g. log10 for x values
+    => sum of log10(x) values).
+
+    The 'steps' allows to split the points sequence into parts (for iterative computation),
     where each part continues the computation (the part contains results from the previous).
-    Updates the data dictionary with 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'y_sq_sum', 'len',
-    'len_sqrt', 'x_min' and 'x_max' keys.
+
+    Yielded data dictionary contains 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'y_sq_sum', 'pts_num',
+    'num_sqrt', 'x_interval_start' and 'x_interval_end' keys.
 
     Arguments:
-        data(dict): the initialized data dictionary
+        x_pts(list): the list of x data points
+        y_pts(list): the list of y data points
+        f_x(function): function object for modification of x values (e.g. log10, **2, etc.) as
+                       specified by the model formula
+        f_y(function): function object for modification of y values (e.g. log10, **2, etc.) as
+                       specified by the model formula
+        steps(int): splits the data generation into specified steps
     Raises:
         GenericRegressionExceptionBase: the derived exceptions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+        TypeError: if the required function arguments are not in the unpacked dictionary input
     Return:
         iterable: generator object which produces intermediate results for each computation step
                   in a data dictionary
 
     """
-    tools.validate_dictionary_keys(data, ['x', 'y', 'fx', 'fy', 'steps'], [])
-
     # We also need the min and max values
-    x_min = data['x'][0]
-    x_max = data['x'][0]
+    x_min = x_pts[0]
+    x_max = x_pts[0]
 
     # Compute the sums of x, y, x^2, y^2 and x*y
     x_sum, y_sum, x_square_sum, y_square_sum, xy_sum = 0.0, 0.0, 0.0, 0.0, 0.0
     # Split the computation into specified steps
-    for part_start, part_end in tools.split_sequence(len(data['x']), data['steps']):
+    for part_start, part_end in tools.split_sequence(len(x_pts), steps):
         skipped = 0
-        for x_pt, y_pt in zip(data['x'][part_start:part_end], data['y'][part_start:part_end]):
+        for x_pt, y_pt in zip(x_pts[part_start:part_end], y_pts[part_start:part_end]):
 
-            # Account for possible domain errors with fx and fy functions, simply skip the point
+            # Account for possible domain errors with f_x and f_y functions, simply skip the point
             try:
-                x_tmp = data['fx'](x_pt)
-                y_tmp = data['fy'](y_pt)
+                x_tmp = f_x(x_pt)
+                y_tmp = f_y(y_pt)
             except ValueError:
                 skipped += 1
                 continue
@@ -93,28 +109,28 @@ def generic_regression_data(data):
             x_min, x_max = min(x_min, x_pt), max(x_max, x_pt)
 
         # Computation step is complete, save the data
-        data['x_sum'] = x_sum
-        data['y_sum'] = y_sum
-        data['xy_sum'] = xy_sum
-        data['x_sq_sum'] = x_square_sum
-        data['y_sq_sum'] = y_square_sum
-        data['len'] = part_end - skipped
-        data['len_sqrt'] = sqrt(data['len'])
-        data['x_min'] = x_min
-        data['x_max'] = x_max
+        pts_num = part_end - skipped
+        data = dict(
+            x_sum=x_sum, y_sum=y_sum, xy_sum=xy_sum, x_sq_sum=x_square_sum,
+            y_sq_sum=y_square_sum, pts_num=pts_num, num_sqrt=sqrt(pts_num),
+            x_interval_start=x_min, x_interval_end=x_max
+        )
         yield data
 
 
-def generic_regression_coefficients(data):
+def generic_regression_coefficients(
+        f_a, f_b, x_sum, y_sum, xy_sum, x_sq_sum, pts_num, num_sqrt, **_):
     """The generic function for coefficients computation.
 
     The function uses the general coefficient computation formula, which produces two coefficients
     based on the intermediate results from the data generator.
-    Expects 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'len', 'len_sqrt', 'fa', 'fb' keys in data
-    dictionary. The 'fa' and 'fb' keys refer to the coefficients modification function (similar to
-    the 'fx' and 'fy'), which is applied after the coefficients are computed.
-    Updates the data dictionary with intermediate values 's_xx', 's_xy' and 'coeffs' key containing
-    the coefficients list in descending order.
+
+    The 'f_a' and 'f_b' refer to the coefficients modification function (similar to the 'f_x' and
+    'f_y', e.g. 10**x for b0 coefficient => 10**(b0) coefficient value)), which is applied after
+    the coefficients are computed.
+
+    Returns the data dictionary with intermediate values 's_xx', 's_xy' and 'coeffs' key containing
+    the coefficients list in ascending order.
 
     The coefficients are computed using formula below:
         b0 = (SUM(y) - b1 * SUM(x)) / n
@@ -130,47 +146,49 @@ def generic_regression_coefficients(data):
 
             for x, y in range <0, n - 1>
             the formulas are transformed (->) to avoid computation with extremely big values,
-            which can occur in models that use power of x / y values (e.g. quad, power ...)
+            which can occur in models that use power of x / y values (e.g. power ...)
 
-    The coefficients are further modified using the 'fa' and 'fb':
-        b0 = fa(b0)
-        b1 = fb(b1)
+    The coefficients are further modified using the 'f_a' and 'f_b':
+        b0 = f_a(b0)
+        b1 = f_b(b1)
 
         e.g. b1 = log10(b1)
 
     Arguments:
-        data(dict): the data dictionary with intermediate results
+        f_a(function): function object for modification of b0 coefficient (e.g. 10**x) as
+                       specified by the model formula
+        f_b(function): function object for modification of b1 coefficient (e.g. 10**x) as
+                       specified by the model formula
+        x_sum(float): sum of x points values
+        y_sum(float): sum of y points values
+        xy_sum(float): sum of x*y values
+        x_sq_sum(float): sum of x^2 values
+        pts_num(int): number of summed points
+        num_sqrt(float): square root of pts_num
     Raises:
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+        TypeError: if the required function arguments are not in the unpacked dictionary input
     Return:
-        dict: the data dictionary updated with coefficients and intermediate results
+        dict: data dictionary with coefficients and intermediate results
 
     """
-    tools.validate_dictionary_keys(
-        data, ['fa', 'fb', 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'len', 'len_sqrt'], [])
-
     # Compute the coefficients
-    s_xy = data['xy_sum'] - (data['x_sum'] / data['len_sqrt']) * (data['y_sum'] / data['len_sqrt'])
-    s_xx = data['x_sq_sum'] - ((data['x_sum'] / data['len_sqrt']) ** 2)
+    s_xy = xy_sum - (x_sum / num_sqrt) * (y_sum / num_sqrt)
+    s_xx = x_sq_sum - ((x_sum / num_sqrt) ** 2)
     try:
         b1 = s_xy / s_xx
     except ZeroDivisionError:
         b1 = s_xy / tools.APPROX_ZERO
-    b0 = (data['y_sum'] - b1 * data['x_sum']) / data['len']
+    b0 = (y_sum - b1 * x_sum) / pts_num
 
     # Apply the modification functions on the coefficients and save them
-    data['coeffs'] = [data['fb'](b1), data['fa'](b0)]
-    data['s_xy'] = s_xy
-    data['s_xx'] = s_xx
+    data = dict(coeffs=[f_a(b0), f_b(b1)], s_xy=s_xy, s_xx=s_xx)
     return data
 
 
-def generic_regression_error(data):
+def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
     """The generic function for error (r^2) computation.
 
-    Expects 's_xy', 's_xx', 'y_sum', 'y_sq_sum', 'len', 'len_sqrt', 'coeffs' keys in the data
-    dictionary.
-    Updates the dictionary with 'r_square' value representing the model error.
+    Returns data dictionary with 'r_square' value representing the model error.
 
     This function computes the error using the general formula:
         r^2 = rss / tss where
@@ -189,31 +207,34 @@ def generic_regression_error(data):
         TSS corresponds to the Total sum of squares.
 
     Arguments:
-        data(dict): the data dictionary with intermediate results and coefficients
+        s_xy(float): intermediate value from coefficients computation
+        s_xx(float): intermediate value from coefficients computation
+        y_sum(float): sum of y values
+        y_sq_sum(float): sum of y^2 values
+        num_sqrt(float): square root of number of points summed
     Raises:
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        InvalidCoeffsException: if the data dictionary has incorrect number of coefficients
+        TypeError: if the required function arguments are not in the unpacked dictionary input
     Return:
-        dict: the data dictionary updated with error value
+        dict: data dictionary with error value, tss and rss results
 
     """
-    tools.validate_dictionary_keys(data, ['y_sum', 'y_sq_sum', 'len', 'coeffs'], [])
-    tools.check_coeffs(2, data)
-
     # Compute the TSS
-    tss = data['y_sq_sum'] - ((data['y_sum'] / data['len_sqrt']) ** 2)
+    tss = y_sq_sum - ((y_sum / num_sqrt) ** 2)
     # Compute the RSS
     try:
-        rss = (data['s_xy'] / sqrt(data['s_xx'])) ** 2
+        rss = (s_xy / sqrt(s_xx)) ** 2
     except (ZeroDivisionError, ValueError):
         # s_xx or square root of s_xx is zero, approximate
-        rss = (data['s_xy'] / tools.APPROX_ZERO) ** 2
+        rss = (s_xy / tools.APPROX_ZERO) ** 2
 
     # Compute the r^2
     try:
-        data['r_square'] = rss / tss
+        r_square = rss / tss
     except ZeroDivisionError:
         # Approximate 0 in TSS
-        data['r_square'] = rss / tools.APPROX_ZERO
+        r_square = rss / tools.APPROX_ZERO
+
+    # Save the data
+    data = dict(rss=rss, tss=tss, r_square=r_square)
 
     return data

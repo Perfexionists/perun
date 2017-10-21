@@ -68,7 +68,7 @@ def test_reg_analysis_incorrect(pcs_full):
 
     # Test multiple models specification with one invalid value
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
-                                               '-r', 'linear', '-r', 'quad', '-r', 'fail'])
+                                               '-r', 'linear', '-r', 'fail'])
     assert result.exit_code == 2
     assert 'Invalid value for "--regression_models"' in result.output
 
@@ -150,21 +150,21 @@ def test_reg_analysis_correct(pcs_full):
 
     # Test explicit models specification for multiple models
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
-                                               '-r', 'linear', '-r', 'quad', '-r', 'exp'])
+                                               '-r', 'linear', '-r', 'log', '-r', 'exp'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification for all models
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
-                                               '-r', 'linear', '-r', 'log', '-r', 'quad',
-                                               '-r', 'power', '-r', 'exp'])
+                                               '-r', 'linear', '-r', 'log', '-r', 'power',
+                                               '-r', 'exp'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification for all models values (also with 'all' value)
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
-                                               '-r', 'linear', '-r', 'log', '-r', 'quad',
-                                               '-r', 'power', '-r', 'exp', '-r', 'all'])
+                                               '-r', 'linear', '-r', 'log', '-r', 'power',
+                                               '-r', 'exp', '-r', 'all'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 

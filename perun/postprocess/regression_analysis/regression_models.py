@@ -1,8 +1,8 @@
 """The module with supported regression models specification.
 
 This module contains specification of supported regression model and support for their application.
-The Models enum allows to specify which models should be computed and the mapping functions yields
-the sections of _models dictionary representing the model properties.
+The _MODELS dict allows to specify which models should be computed and the mapping functions yields
+the sections of _MODELS dictionary representing the model properties.
 
 """
 
@@ -21,7 +21,8 @@ def get_supported_models():
     Returns:
         list of str: the names of all supported models and 'all' specifier
     """
-    return [key for key in sorted(_MODELS.keys())]
+    # Disable quadratic model, but allow to process already existing profiles with quad model
+    return [key for key in sorted(_MODELS.keys()) if key != 'quad']
 
 
 def get_supported_transformations(model_key):
@@ -102,7 +103,7 @@ def map_model_to_key(model):
         str:  the _MODELS key containing the model data
     """
     # Collect all models in _MODELS as a dict of model: key
-    elements = {_MODELS[m].get('model'): m for m in _MODELS.keys()}
+    elements = {_MODELS[m].get('model'): m for m in _MODELS}
     # Check the key validity
     if model is not None and model in elements:
         return elements[model]
@@ -113,14 +114,31 @@ def map_model_to_key(model):
 # Each model record contains the parameters required by the computational functions,
 # the data generator and list of functions.
 # The record can also contain optional parameters as needed.
+# Keys description:
+# - model: full name of the regression model
+# - f_x: function that modifies x values in model computation according to formulae
+# - f_y: function that modifies y values in model computation according to formulae
+# - f_a: function that modifies b0 (a) coefficient in model computation according to formulae
+# - f_b: function that modifies b1 (b) coefficient in model computation according to formulae
+# - data_gen: function that generates intermediate values from points for model computation
+# - computation: core function that controls the model computation
+# - func_list: functions that are applied to the 'data_gen'erated values
+# -------------------------------------------------------------------------------------
+# Transformations: section for extensions and transformations of the resulting models
+# - plot_model: section for transformations of model properties to points which can be plotted
+# -- computation: core function that controls the transformation process
+# -- model_x: function that produces x coordinates of points
+# -- model_y: function that produces y coordinates of points
+# -- m_fx: function that modifies x coordinates according to formulae
+# -- formula: function with formula for y coordinates computation
 _MODELS = {
     'all': {},  # key representing all models
     'const': {
         'model': 'constant',
-        'fx': lambda x: 0,
-        'fy': lambda y: y,
-        'fa': lambda a: a,
-        'fb': lambda b: b,
+        'f_x': lambda x: 0,
+        'f_y': lambda y: y,
+        'f_a': lambda a: a,
+        'f_b': lambda b: b,
         'data_gen': generic.generic_regression_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
@@ -130,16 +148,18 @@ _MODELS = {
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
-                'y_pts_func': plot.const_model_plot
+                'model_x': plot.linear_plot_x_pts,
+                'model_y': plot.generic_plot_y_pts,
+                'formula': lambda b0, b1, x: b0 + b1 * x
             }
         }
     },
     'linear': {
         'model': 'linear',
-        'fx': lambda x: x,
-        'fy': lambda y: y,
-        'fa': lambda a: a,
-        'fb': lambda b: b,
+        'f_x': lambda x: x,
+        'f_y': lambda y: y,
+        'f_a': lambda a: a,
+        'f_b': lambda b: b,
         'data_gen': generic.generic_regression_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
@@ -149,16 +169,18 @@ _MODELS = {
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
-                'y_pts_func': plot.linear_model_plot
+                'model_x': plot.linear_plot_x_pts,
+                'model_y': plot.generic_plot_y_pts,
+                'formula': lambda b0, b1, x: b0 + b1 * x
             }
         }
     },
     'log': {
         'model': 'logarithmic',
-        'fx': math.log,
-        'fy': lambda y: y,
-        'fa': lambda a: a,
-        'fb': lambda b: b,
+        'f_x': math.log,
+        'f_y': lambda y: y,
+        'f_a': lambda a: a,
+        'f_b': lambda b: b,
         'data_gen': generic.generic_regression_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
@@ -168,38 +190,20 @@ _MODELS = {
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
-                'y_pts_func': plot.generic_model_plot,
-                'fp': math.log10
+                'model_x': plot.generic_plot_x_pts,
+                'model_y': plot.generic_plot_y_pts,
+                'm_fx': math.log,
+                'formula': lambda b0, b1, x: b0 + b1 * x
             }
         }
     },
-    # Currently not required, as quadratic model can be computed using the power model
-    # 'quad': {
-    #     'model': 'quadratic',
-    #     'fx': lambda x: x ** 2,
-    #     'fy': lambda y: y,
-    #     'fa': lambda a: a,
-    #     'fb': lambda b: b,
-    #     'data_gen': generic.generic_regression_data,
-    #     'computation': generic.generic_compute_regression,
-    #     'func_list': [
-    #         generic.generic_regression_coefficients,
-    #         generic.generic_regression_error
-    #     ],
-    #     'transformations': {
-    #         'plot_model': {
-    #             'computation': plot.model_plot_computation,
-    #             'y_pts_func': plot.generic_model_plot,
-    #             'fp': lambda p: p ** 2
-    #         }
-    #     }
-    # },
-    'power': {
-        'model': 'power',
-        'fx': math.log10,
-        'fy': math.log10,
-        'fa': lambda a: 10 ** a,
-        'fb': lambda b: b,
+    # Should not be used for new profiles, the quadratic model can be achieved using the power model
+    'quad': {
+        'model': 'quadratic',
+        'f_x': lambda x: x ** 2,
+        'f_y': lambda y: y,
+        'f_a': lambda a: a,
+        'f_b': lambda b: b,
         'data_gen': generic.generic_regression_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
@@ -209,16 +213,40 @@ _MODELS = {
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
-                'y_pts_func': plot.power_model_plot
+                'model_x': plot.generic_plot_x_pts,
+                'model_y': plot.generic_plot_y_pts,
+                'm_fx': lambda p: p ** 2,
+                'formula': lambda b0, b1, x: b0 + b1 * x
+            }
+        }
+    },
+    'power': {
+        'model': 'power',
+        'f_x': math.log10,
+        'f_y': math.log10,
+        'f_a': lambda a: 10 ** a,
+        'f_b': lambda b: b,
+        'data_gen': generic.generic_regression_data,
+        'computation': generic.generic_compute_regression,
+        'func_list': [
+            generic.generic_regression_coefficients,
+            generic.generic_regression_error
+        ],
+        'transformations': {
+            'plot_model': {
+                'computation': plot.model_plot_computation,
+                'model_x': plot.generic_plot_x_pts,
+                'model_y': plot.generic_plot_y_pts,
+                'formula': lambda b0, b1, x: b0 * x ** b1
             }
         }
     },
     'exp': {
         'model': 'exponential',
-        'fx': lambda x: x,
-        'fy': math.log10,
-        'fa': lambda a: 10 ** a,
-        'fb': lambda b: 10 ** b,
+        'f_x': lambda x: x,
+        'f_y': math.log10,
+        'f_a': lambda a: 10 ** a,
+        'f_b': lambda b: 10 ** b,
         'data_gen': generic.generic_regression_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
@@ -228,7 +256,9 @@ _MODELS = {
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
-                'y_pts_func': plot.exp_model_plot
+                'model_x': plot.generic_plot_x_pts,
+                'model_y': plot.generic_plot_y_pts,
+                'formula': lambda b0, b1, x: b0 * b1 ** x
             }
         }
     }

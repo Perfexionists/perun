@@ -8,7 +8,6 @@ The postprocessby CLI is tested in test_cli module.
 """
 
 from perun.postprocess.regression_analysis.run import postprocess
-# import tests.logic.commands.conftest as conf
 
 __author__ = 'Jiri Pavela'
 
@@ -307,7 +306,3 @@ def test_exp_model(postprocess_profiles):
     compare_results(model['r_square'], 1.0)
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b0'][0], 1.0)
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 2.0)
-
-
-# if __name__ == '__main__':
-#     test_const_model(conf.load_all_profiles_in('postprocess_profiles'))

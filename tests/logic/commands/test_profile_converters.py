@@ -8,8 +8,6 @@ import perun.utils.exceptions as exceptions
 import perun.profile.converters as converters
 import perun.profile.query as query
 
-import tests.logic.commands.conftest as conf
-
 __author__ = 'Tomas Fiedor'
 __coauthored__ = 'Jiri Pavela'
 

@@ -160,7 +160,7 @@ def zip_points(x_pts, y_pts, len_start=0, len_end=-1):
     return zip(x_pts[len_start:len_end], y_pts[len_start:len_end])
 
 
-def linspace_safe(start, end, steps):
+def split_model_interval(start, end, steps):
     """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
 
