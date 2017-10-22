@@ -6,7 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
-import perun.profile.converters as converters
+import perun.profile.convert as convert
 import perun.profile.factory as profiles
 import perun.view.flow.bokeh_factory as bokeh_graphs
 import perun.view.flow.ncurses_factory as curses_graphs
@@ -116,7 +116,7 @@ def test_curses_flow(monkeypatch, mock_curses_window, memory_profiles):
     monkeypatch.setattr(curses, 'napms', donothing)
 
     for memory_profile in memory_profiles:
-        heap_map = converters.create_heap_map(memory_profile)
+        heap_map = convert.to_heap_map_format(memory_profile)
         vis_obj = curses_graphs.FlowGraphVisualization(mock_curses_window, heap_map)
         vis_obj.print_intro()
         vis_obj.print_resize_req()
@@ -145,5 +145,5 @@ def test_curses_logic(monkeypatch, mock_curses_window, memory_profiles):
     ])
 
     for memory_profile in memory_profiles:
-        heap_map = converters.create_heap_map(memory_profile)
+        heap_map = convert.to_heap_map_format(memory_profile)
         curses_graphs.flow_graph_logic(mock_curses_window, heap_map)

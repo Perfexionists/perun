@@ -2,7 +2,7 @@
 
 import perun.profile.factory as profiles
 
-import perun.profile.converters as converters
+import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
 
@@ -63,7 +63,7 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
         charts.Area: flow graph according to the params
     """
     # Convert profile to pandas data grid
-    data_frame = converters.resources_to_pandas_dataframe(profile)
+    data_frame = convert.resources_to_pandas_dataframe(profile)
     data_source = construct_data_source_from(
         data_frame, func, of_key, by_key, through_key, accumulate
     )

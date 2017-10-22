@@ -2,7 +2,7 @@
 
 import click
 
-import perun.profile.converters as converters
+import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
@@ -109,7 +109,7 @@ def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
     the template according to the template file.
     """
     if use_terminal:
-        heap_map = converters.create_heap_map(profile)
+        heap_map = convert.to_heap_map_format(profile)
         curses_graphs.flow_graph(heap_map)
     else:
         try:
