@@ -6,7 +6,7 @@ Uses custom mock object for curses, that implements basic stuff.
 import curses
 from copy import deepcopy
 
-import perun.profile.converters as converters
+import perun.profile.convert as convert
 import perun.view.heapmap.heap_map as heap_map
 import perun.view.heapmap.heap_map_colors as heap_colours
 
@@ -30,7 +30,7 @@ def test_heat_map(mock_curses_window, monkeypatch, memory_profiles):
     monkeypatch.setattr(curses, 'color_pair', returnnothing)
 
     for memory_profile in memory_profiles:
-        heat_map_representation = converters.create_heat_map(memory_profile)
+        heat_map_representation = convert.to_heat_map_format(memory_profile)
         hm_visualization = heap_map.HeapMapVisualization(
             mock_curses_window, heat_map_representation, heap_colours.HeapMapColors.NO_COLORS
         )
@@ -54,7 +54,7 @@ def test_heap_map(mock_curses_window, monkeypatch, memory_profiles):
     monkeypatch.setattr(curses, 'color_pair', returnnothing)
 
     for memory_profile in memory_profiles:
-        heap_map_representation = converters.create_heap_map(memory_profile)
+        heap_map_representation = convert.to_heap_map_format(memory_profile)
         hm_visualization = heap_map.HeapMapVisualization(
             mock_curses_window, heap_map_representation, heap_colours.HeapMapColors.NO_COLORS
         )
@@ -79,7 +79,7 @@ def test_heap_and_heat_logic(mock_curses_window, monkeypatch, memory_profiles):
     monkeypatch.setattr(curses, 'color_pair', returnnothing)
 
     for memory_profile in memory_profiles:
-        heap_map_repr = converters.create_heap_map(deepcopy(memory_profile))
-        heat_map_repr = converters.create_heat_map(memory_profile)
+        heap_map_repr = convert.to_heap_map_format(deepcopy(memory_profile))
+        heat_map_repr = convert.to_heat_map_format(memory_profile)
         colour_mode = heap_colours.HeapMapColors.NO_COLORS
         heap_map.heap_map_logic(mock_curses_window, heap_map_repr, heat_map_repr, colour_mode)

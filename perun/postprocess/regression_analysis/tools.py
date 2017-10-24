@@ -160,23 +160,7 @@ def zip_points(x_pts, y_pts, len_start=0, len_end=-1):
     return zip(x_pts[len_start:len_end], y_pts[len_start:len_end])
 
 
-def r_square_safe(sse, sst):
-    """The safe r square computation accounting for possible zero division errors.
-
-    Arguments:
-        sse(float): sum of squares of errors
-        sst(float): total sum of squares
-    Returns:
-        float: the r^2 coefficient value
-
-    """
-    try:
-        return 1 - sse / sst
-    except ZeroDivisionError:
-        return R_SQUARE_DEFAULT
-
-
-def linspace_safe(start, end, steps):
+def split_model_interval(start, end, steps):
     """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
 

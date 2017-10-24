@@ -1,5 +1,5 @@
 """ Extension for regression model coefficients transformation into array of points. The points
-    array can be then used for model plotting as a series of lines forming a curved line.
+    array can be then used for model plotting as a series of lines forming a (curved) line.
 """
 
 import perun.postprocess.regression_analysis.tools as tools
@@ -7,141 +7,107 @@ import numpy as np
 
 
 # Default model curve smoothness specified as number of points generated from x interval
-# The higher, the smoother are the curves
+# The higher the value, the smoother the curves, the longer the computation tho.
+# Default value is an empirically chosen compromise between speed and smoothness
 DEFAULT_SMOOTHNESS = 51
 
 
-def model_plot_computation(data):
-    """ The model plotting computation wrapper. Handles common operations regardless of model,
-        uses 'y_pts_func' to compute y values, which can be model-specific
+def model_plot_computation(model_x, model_y, **data):
+    """ The model plotting computation wrapper.
 
-    Expects 'y_pts_func', 'x_interval_start', 'x_interval_end', 'b0' and 'b1' keys in the
-    data dictionary.
+    Handles required operations for all models, such as creating x and y plot points.
+    The model specifics are handled by the 'model_x' and 'model_y' functions and other parameters.
 
-    Updates the data dictionary with 'plot_x' and 'plot_y' lists containing the model points
+    'model_x' is function object which computes the x points for plotting
+    'model_y' is function object which computes the y points for plotting
+
+    Creates data dictionary with 'plot_x' and 'plot_y' lists containing the model points
     for plotting.
 
     Arguments:
-        data(dict): the data dictionary with computed regression model
+        model_x(function): function for computation of x plot points
+        model_y(function): function for computation of y plot points
+        data(dict): data dictionary with computed regression model
     Raises:
-        DictionaryKeysValidationFailed: if the data dictionary is missing any of the keys
+        TypeError: if the required function arguments are not in the unpacked dictionary input
     Return:
-        dict: the data dictionary updated with plotting points
+        dict: data dictionary with 'plot_x' and 'plot_y' points
 
     """
-    # Validate the data dictionary
-    tools.validate_dictionary_keys(data, ['y_pts_func', 'x_interval_start', 'x_interval_end'], [])
+    # Build the x points from the x interval values, stored as 'plot_x'
+    plot_data = model_x(**data)
+    # Update the data for next computation
+    data.update(plot_data)
+    # Compute the function values for x points, stored as 'plot_y'
+    plot_data.update(model_y(**data))
 
-    # Split the x length into evenly distributed points
-    data['plot_x'] = tools.linspace_safe(data['x_interval_start'], data['x_interval_end'],
-                                         data.get('smoothness', DEFAULT_SMOOTHNESS))
-    # Compute the function values for x_pts which are stored as 'plot_y'
-    data = data['y_pts_func'](data)
-    # Validate that the y function generated 'plot_y'
-    tools.validate_dictionary_keys(data, ['plot_x', 'plot_y'], [])
-    return data
+    return plot_data
 
 
-def generic_model_plot(data):
-    """ The generic function for plot_y points computation. This function computes the points
-        for model plotting using the general formula.
+def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOOTHNESS, **_):
+    """Generic version of model x points computation.
 
-    Expects 'plot_x', 'fp', 'b0' and 'b1' keys in the data dictionary.
-    The 'fp' function modifies the value of point x according to the regression model.
-
-    Updates the data dictionary with 'plot_y' lists containing the y values for plotting.
+    Splits the x interval of model into number of points.
 
     Arguments:
-        data(dict): the data dictionary with computed regression model
+        x_interval_start(int or float): the left bound of the x interval
+        x_interval_end(int or float): the right bound of the x interval
+        smoothness(int): number of points to produce from the interval
     Raises:
-        DictionaryKeysValidationFailed: if the data dictionary is missing any of the keys
-    Return:
-        dict: the data dictionary updated with 'plot_y'
-
+        TypeError: if the required function arguments are not in the unpacked dictionary input
+    Returns:
+        dict: data dictionary with 'plot_x' array
     """
-    # Validate the data dictionary
-    tools.validate_dictionary_keys(data, ['plot_x', 'fp', 'b0', 'b1'], [])
-
-    # Compute the function value for each x point
-    y_pts = []
-    remove_list = []
-    for idx, x_pt in enumerate(data['plot_x']):
-        try:
-            y_pts.append(data['fp'](x_pt))
-        except ValueError:
-            # Possible domain error
-            remove_list.append(idx)
-    if remove_list:
-        data['plot_x'] = np.delete(data['plot_x'], remove_list)
-    data['plot_y'] = np.array(data['b0'] + data['b1'] * np.array(y_pts))
-    return data
+    # Produce number of points from the interval
+    plot_x = tools.split_model_interval(x_interval_start, x_interval_end, smoothness)
+    return dict(plot_x=plot_x)
 
 
-def linear_model_plot(data):
-    """ The linear specific version for plot_y points computation. This version is slightly
-        more efficient for the plotting computation than the generic one.
+def linear_plot_x_pts(x_interval_start, x_interval_end, **_):
+    """Specific version of model x points computation.
 
-    Expects 'plot_x', 'b0' and 'b1' keys in the data dictionary.
-
-    Updates the data dictionary with 'plot_y' lists containing the y values for plotting.
+    Creates array with only the interval border values (i.e. [interval_start, interval_end])
 
     Arguments:
-        data(dict): the data dictionary with computed linear model
+        x_interval_start(int or float): the left bound of the x interval
+        x_interval_end(int or float): the right bound of the x interval
     Raises:
-        DictionaryKeysValidationFailed: if the data dictionary is missing any of the keys
-    Return:
-        dict: the data dictionary updated with 'plot_y'
-
+        TypeError: if the required function arguments are not in the unpacked dictionary input
+    Returns:
+        dict: data dictionary with 'plot_x' array
     """
-    # Validate the data dictionary
-    tools.validate_dictionary_keys(data, ['plot_x', 'b0', 'b1'], [])
-
-    # Compute the function value for every x value
-    data['plot_y'] = np.array(data['b0'] + data['b1'] * np.array(data['plot_x']))
-    return data
+    # Create simple two-value array
+    plot_x = np.array([x_interval_start, x_interval_end])
+    return dict(plot_x=plot_x)
 
 
-def power_model_plot(data):
-    """ The power specific version for plot_y points computation.
+def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, **_):
+    """ The generic function for y points computation.
 
-    Expects 'plot_x', 'b0' and 'b1' keys in the data dictionary.
+    This function computes the y points for model plotting using the 'fp' formula.
 
-    Updates the data dictionary with 'plot_y' lists containing the y values for plotting.
+    The 'm_fx' function modifies the value of point x according to the regression model if needed
+    (e.g. x**2, log, ...).
+
+    Creates data dictionary with 'plot_y' containing the y values for plotting.
 
     Arguments:
-        data(dict): the data dictionary with computed power model
+        plot_x(numpy array): array of x points
+        b0(float): the b0 model coefficient
+        b1(float): the b1 model coefficient
+        formula(function): function object containing the computation formula
+        m_fx(function): function object with x values modification
     Raises:
-        DictionaryKeysValidationFailed: if the data dictionary is missing any of the keys
+        TypeError: if the required function arguments are not in the unpacked dictionary input
     Return:
-        dict: the data dictionary updated with 'plot_y'
+        dict: data dictionary with 'plot_y' array
 
     """
-    # Validate the data dictionary
-    tools.validate_dictionary_keys(data, ['plot_x', 'b0', 'b1'], [])
+    # Modify the x points if needed
+    if m_fx:
+        f_x = np.vectorize(m_fx)
+        plot_x = f_x(plot_x)
+    # Apply the computation formula
+    plot_y = np.array(formula(b0, b1, plot_x))
 
-    # Compute the function value for every x value
-    data['plot_y'] = np.array(data['b0'] * np.array(data['plot_x']) ** data['b1'])
-    return data
-
-
-def exp_model_plot(data):
-    """ The exponential specific version for plot_y points computation.
-
-    Expects 'plot_x', 'b0' and 'b1' keys in the data dictionary.
-
-    Updates the data dictionary with 'plot_y' lists containing the y values for plotting.
-
-    Arguments:
-        data(dict): the data dictionary with computed exponential model
-    Raises:
-        DictionaryKeysValidationFailed: if the data dictionary is missing any of the keys
-    Return:
-        dict: the data dictionary updated with 'plot_y'
-
-    """
-    # Validate the data dictionary
-    tools.validate_dictionary_keys(data, ['plot_x', 'b0', 'b1'], [])
-
-    # Compute the function value for every x value
-    data['plot_y'] = np.array(data['b0'] * data['b1'] ** np.array(data['plot_x']))
-    return data
+    return dict(plot_y=plot_y)

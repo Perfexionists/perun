@@ -349,6 +349,7 @@ def print_profile_numbers(profile_numbers, profile_types, line_ending='\n'):
         cprintln('(no {} profiles)'.format(profile_types), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
 
 
+@perun_log.paged_function
 @pass_pcs
 @lookup_minor_version
 def log(pcs, minor_version, short=False, **_):
@@ -633,6 +634,7 @@ def get_untracked_profiles(pcs):
     return profile_list
 
 
+@perun_log.paged_function
 @pass_pcs
 def status(pcs, short=False):
     """Prints the status of performance control system
