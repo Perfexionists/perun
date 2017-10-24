@@ -229,6 +229,7 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
     """
     try:
         cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
+        collector_params.update(ctx.obj['params'])
         run_single_job(cmd, args, workload, [collector_name], [], **{
             'collector_params': {collector_name: collector_params}
         })

@@ -30,6 +30,9 @@ def safely_load_yaml_from_stream(yaml_stream):
     Arguments:
         yaml_stream(str): stream in the yaml format (or not)
     """
+    # Remove the trailing doublequotes screwing correct loading of yaml
+    if type(yaml_stream) == str and yaml_stream[0] == '"' and yaml_stream[-1] == '"':
+        yaml_stream = yaml_stream[1:-1]
     loaded_yaml = YAML().load(yaml_stream)
 
     if not loaded_yaml and yaml_stream:

@@ -531,13 +531,40 @@ def postprocessby(ctx, profile, **_):
     ctx.obj = profile
 
 
+def parse_yaml_single_param(ctx, param, value):
+    """Callback function for parsing the yaml files to dictionary object, when called from 'collect'
+
+    This does not require specification of the collector to which the params correspond and is
+    meant as massaging of parameters for 'perun -p file collect ...' command.
+
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed and read from commandline
+        value(str): value that is being read from the commandline
+
+    Returns:
+        dict: parsed yaml file
+    """
+    unit_to_params = {}
+    for yaml_file in value:
+        # First check if this is file
+        if os.path.exists(yaml_file):
+            unit_to_params.update(streams.safely_load_yaml_from_file(yaml_file))
+        else:
+            unit_to_params.update(streams.safely_load_yaml_from_stream(yaml_file))
+    return unit_to_params
+
+
 @cli.group()
-@click.option('--cmd', '-c', nargs=1, required=True, multiple=True,
+@click.option('--cmd', '-c', nargs=1, required=False, multiple=True, default=[''],
               help='Command that we will collect data from single collector.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
               help='Additional arguments for the command.')
 @click.option('--workload', '-w', nargs=1, required=False, multiple=True, default=[''],
               help='Inputs for the command, i.e. so called workloads.')
+@click.option('--params', '-p', nargs=1, required=False, multiple=True,
+              callback=parse_yaml_single_param,
+              help='Additional parameters for called collector')
 @click.pass_context
 def collect(ctx, **kwargs):
     """Collect the profile from the given binary, arguments and workload"""

@@ -219,10 +219,9 @@ def sampling_to_dictionary(ctx, param, value):
 
 
 @click.command()
-@click.option('--target-dir', '-t', type=click.Path(exists=True, resolve_path=True), required=True,
+@click.option('--target-dir', '-t', type=click.Path(exists=True, resolve_path=True),
               help='Target directory path for binary and build data.')
 @click.option('--files', '-f', type=click.Path(exists=True, resolve_path=True), multiple=True,
-              required=True,
               help='List of source files used to build the binary.')
 @click.option('--rules', '-r', type=str, multiple=True,
               help='List of functions to profile.')
@@ -233,11 +232,15 @@ def sampling_to_dictionary(ctx, param, value):
               help='Initial size of internal profiling data storage.')
 @click.option('--internal-direct-output', '-id', is_flag=True,
               default=configurator.DEFAULT_DIRECT_OUTPUT,
-              help=('Profilig data are stored into file directly instead of being saved into data '
+              help=('Profiling data are stored into file directly instead of being saved into data '
                     'structure and printed later.'))
 @click.option('--sampling', '-s', type=(str, int), multiple=True, callback=sampling_to_dictionary,
               help='List of sampling configuration in form <function_name value>.')
 @click.pass_context
 def complexity(ctx, **kwargs):
     """Runs the complexity collector, collecting running times for profiles depending on size"""
+    if 'target_dir' not in ctx.obj['params'] and not kwargs['target_dir']:
+        raise click.exceptions.BadOptionUsage("Missing option \"--target-dir\" / \"-t\"")
+    if 'files' not in ctx.obj['params'] and not kwargs['files']:
+        raise click.exceptions.BadOptionUsage("Missing option \"--files\" / \"-f\"")
     runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)

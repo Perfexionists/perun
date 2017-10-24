@@ -308,6 +308,26 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
 
     assert result.exit_code == 0
 
+    # Test running the job from the params using the job file
+    script_dir = os.path.split(__file__)[0]
+    source_dir = os.path.join(script_dir, 'collect_complexity')
+    job_config_file = os.path.join(source_dir, 'job.yml')
+    result = runner.invoke(cli.collect, ['-p{}'.format(job_config_file), 'complexity'])
+    assert result.exit_code == 0
+
+    # Test running the job from the params using the yaml string
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+                                         '-p\"target_dir: {}\"'.format(job_params['target_dir']),
+                                         'complexity'] + files + rules + samplings)
+    assert result.exit_code == 0
+
+    # Try missing parameters --target-dir and --files
+    result = runner.invoke(cli.collect, ['complexity'])
+    assert result.exit_code == 2
+
+    result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
+    assert result.exit_code == 2
+
 
 def test_show_help(pcs_full):
     """Test running show to see if there are registered modules for showing
