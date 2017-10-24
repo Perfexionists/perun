@@ -474,8 +474,12 @@ def plot_data_from_coefficients_of(model):
 
     Arguments:
         model(dict): the models dictionary from profile
-
     Return:
         dict: updated models dictionary with 'plot_x' and 'plot_y' lists
     """
-    return transform.coefficients_to_points(model)
+    model.update(transform.coefficients_to_points(**model))
+    return model
+
+
+if __name__ == "__main__":
+    pass
