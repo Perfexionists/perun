@@ -7,6 +7,7 @@ calls underlying commands from the commands module.
 import os
 import pkgutil
 import re
+import sys
 
 import click
 import perun.logic.commands as commands
@@ -158,7 +159,7 @@ def configure_local_perun(perun_path):
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
 @click.option('--vcs-type', metavar='<type>', default='git',
-              type=click.Choice(utils.get_supported_module_names(vcs, '_init')),
+              type=click.Choice(utils.get_supported_module_names('vcs')),
               help="Apart of perun structure, a supported version control system can be wrapped"
                    " and initialized as well.")
 @click.option('--vcs-path', metavar='<path>',
@@ -571,15 +572,17 @@ def collect(ctx, **kwargs):
     ctx.obj = kwargs
 
 
-def init_unit_commands():
+def init_unit_commands(lazy_init=True):
     """Runs initializations for all of the subcommands (shows, collectors, postprocessors)
 
     Some of the subunits has to be dynamically initialized according to the registered modules,
     like e.g. show has different forms (raw, graphs, etc.).
     """
-    # Fixme: Refactoring this will yield -0.15s
-    for (unit, cli_cmd) in [(perun.view, show), (perun.postprocess, postprocessby),
-                            (perun.collect, collect)]:
+    for (unit, cli_cmd, cli_arg) in [(perun.view, show, 'show'),
+                                     (perun.postprocess, postprocessby, 'postprocessby'),
+                                     (perun.collect, collect, 'collect')]:
+        if lazy_init and cli_arg not in sys.argv:
+            continue
         for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
             # Skip modules, only packages can be used for show
             if not module[2]:
@@ -678,18 +681,14 @@ def parse_yaml_param(ctx, param, value):
 @click.option('--workload', '-w', nargs=1, required=False, multiple=True, default=[''],
               help='Inputs for the binary, i.e. so called workloads, that are run on binary.')
 @click.option('--collector', '-c', nargs=1, required=True, multiple=True,
-              type=click.Choice(
-                  utils.get_supported_module_names(perun.collect, 'COLLECTOR_TYPE')
-              ),
+              type=click.Choice(utils.get_supported_module_names('collect')),
               help='Collector unit used to collect the profiling data for the binary.')
 @click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
               callback=parse_yaml_param,
               help='Parameters for the given collector read from the file in YAML format or'
                    'as a string..')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
-              type=click.Choice(
-                  utils.get_supported_module_names(perun.postprocess, 'SUPPORTED_PROFILES')
-              ),
+              type=click.Choice(utils.get_supported_module_names('postprocess')),
               help='Additional postprocessing phases on profiles, after collection of the data.')
 @click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
               callback=parse_yaml_param,

@@ -9,6 +9,7 @@ import tempfile
 import git
 import perun.logic.pcs as pcs
 import perun.logic.store as store
+import perun.cli as cli
 import pytest
 
 import perun.logic.commands as commands
@@ -17,6 +18,14 @@ import perun.utils.streams as streams
 import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
+
+
+@pytest.fixture(scope="session", autouse=True)
+def initialize_cli_modules():
+    """
+    Initializes the click commands (those that are dynamically initialized) only once per session
+    """
+    cli.init_unit_commands(False)
 
 
 class Helpers(object):

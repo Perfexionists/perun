@@ -71,7 +71,8 @@ def lookup_minor_version(func):
             arg_list[minor_version_position] = vcs.get_minor_head(
                 pcs.vcs_type, pcs.vcs_path)
             args = tuple(arg_list)
-        vcs.check_minor_version_validity(pcs.vcs_type, pcs.vcs_path, args[minor_version_position])
+        else:
+            vcs.check_minor_version_validity(pcs.vcs_type, pcs.vcs_path, args[minor_version_position])
         return func(pcs, *args, **kwargs)
 
     return wrapper
