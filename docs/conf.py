@@ -174,4 +174,16 @@ texinfo_documents = [
 ]
 
 
-
+def setup(app):
+    import sphinx
+    app.add_object_type(
+        'perfreg', 'preg',
+        objname='perf format region',
+        indextemplate='pair: %s; perf format region'
+    )
+    app.add_object_type(
+        'perfkey', 'pkey',
+        objname='perf format key',
+        ref_nodeclass=sphinx.addnodes.literal_emphasis,
+        indextemplate='pair: %s; perf format key'
+    )

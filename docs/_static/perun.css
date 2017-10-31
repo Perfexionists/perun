@@ -3,3 +3,8 @@
 div.note {
     font-size: 75%;
 }
+
+.perfkey code.descname {
+    font-weight: normal;
+    font-style: italic;
+}

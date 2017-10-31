@@ -85,6 +85,7 @@ def all_items_of(resource):
     """Generator of all (key, value) pairs in resource.
 
     Iterates through all of the flattened (key, value) pairs which are output.
+
     Arguments:
         resource(dict): dictionary with (mainly) resource fields and values
 
@@ -248,3 +249,7 @@ def _unique_values_generator(profile, key, blocks_gen):
                 yield value
 
 # Todo: add optimized version for multiple key search in one go? Need to discuss interface etc.
+
+# Guard for imports through sphinx
+if __name__ == "__main__":
+    pass

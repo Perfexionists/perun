@@ -39,46 +39,40 @@ def resources_to_pandas_dataframe(profile):
 def to_heap_map_format(profile):
     """ Create the HEAP map representation for visualization
 
+    Format of the heap map representation is following::
+
+        {
+            "type": type of representation (heap/heat),
+            "unit": used memory unit (string),
+            "stats": {
+                # same stats as for "snapshots", but aggregated
+            },
+            "info": [{ # uid of the function which made the allocation
+                "line": "(int)",
+                "function": "(string)",
+                "source": "(string)"
+             }],
+            "snapshots": [{
+                "time": "time of the snapshot (string)",
+                "max_amount": "maximum allocated memory in snapshot (int)",
+                "min_amount": "minimum allocated memory in snapshot (int)",
+                "sum_amount": "sum of allocated memory in snapshot (int)",
+                "max_address": "maximal address where we allocated (int)",
+                "min_address": "minimal address where we allocated (int)",
+                "map": [{ # mapping of all the allocations in snapshot
+                    "address": "starting address of the allocation (int)",
+                    "amount": "amount of the allocated memory (int)",
+                    "uid": "index to info list with uid info (int)",
+                    "subtype": "allocator (string)"
+                }]
+            }]
+        }
+
     Arguments:
         profile(dict): the memory profile
 
     Returns:
         dict: the heap map representation
-
-    Format of the heap map representation is following:
-        {"type": type of representation (heap/heat)
-         "unit": used memory unit (string),
-         "stats": { # same stats like for each snapshots but calculated
-                    # over all the snapshots
-                    # (except sum_amount -> max_sum_amount instead)
-                    },
-         "info": [{uid of the function which made the allocation
-                    "line": (int),
-                    "function": (string),
-                    "source": (string)
-                 }]
-         "snapshots": [
-            {"time": time of the snapshot (string),
-             "max_amount": maximum amount of the allocated memory
-                           in snapshot (int),
-             "min_amount": minimum amount of the allocated memory
-                           in snapshot (int),
-             "sum_amount": summary of the amount of the allocated memory
-                           in snapshots (int)
-             "max_address": maximal address of the allocated memory
-                            in snapshot(int),
-             "min_address": minimal address of the allocated memory
-                            in snapshot (int),
-             "map": [ # mapping of all the allocations in snapshot
-                {"address": starting address of the allocated memory (int),
-                 "amount": amount of the allocated memory (int),
-                 "uid": index to info list with absolutely uid info (int),
-                 "subtype": allocator (string)
-                }
-             ]
-            }
-         ]
-        }
     """
     snapshots = [a for a in profile['snapshots']]
 
@@ -108,25 +102,27 @@ def to_heap_map_format(profile):
 def to_heat_map_format(profile):
     """ Create the HEAT map representation for visualization
 
+
+    Format of the heat map representation is following::
+
+        {
+            "type": type of representation (heap/heat)
+            "unit": used memory unit (string),
+            "stats": {
+                "max_address": maximal allocated address in snapshot(int),
+                "min_address": minimal allocated address in snapshot (int)
+            },
+            "map": [
+                # mapping all the allocations to number of accesses
+                # such that size of array == max_address - min_address
+            ]
+        }
+
     Arguments:
         profile(dict): the memory profile
 
     Returns:
         dict: the heat map representation
-
-    Format of the heat map representation is following:
-        {"type": type of representation (heap/heat)
-         "unit": used memory unit (string),
-         "stats": {"max_address": maximal address of the allocated memory
-                                  in snapshot(int),
-                   "min_address": minimal address of the allocated memory
-                                  in snapshot (int)
-                  },
-         "map": [# mapping all the allocations to number of access to address
-                 # size of array == max_address - min_address
-                    0, 0, 5
-                ]
-        }
     """
     resources = []
     for snap in profile['snapshots']:
@@ -481,5 +477,6 @@ def plot_data_from_coefficients_of(model):
     return model
 
 
+# Guard for imports through sphinx
 if __name__ == "__main__":
     pass
