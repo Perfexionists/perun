@@ -444,13 +444,10 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, 'normalizer'])
     assert result.exit_code == 0
-    assert len(os.listdir(pending_dir)) == 5
 
     # Try lookup postprocessing
-    time.sleep(1)
     result = runner.invoke(cli.postprocessby, [first_in_jobs, 'normalizer'])
     assert result.exit_code == 0
-    assert len(os.listdir(pending_dir)) == 6
 
 
 def test_show_tag(helpers, pcs_full, valid_profile_pool):
