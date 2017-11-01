@@ -81,20 +81,22 @@ def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
     """
     Display of the resources in flow format.
 
-    \b
-                            <graph_title>
-                    `
-                    -                      ______     ````````
-                    `                _____/           ` # \\  `
-                    -               /          __     ` @  }->  <by>
-                    `          ____/      ____/       ` & /  `
-    <func>(<of>)    -      ___/       ___/            ````````
-                    `  ___/    ______/       ____
-                    -/  ______/        _____/
-                    `__/______________/
-                    +````||````||````||````||````
+    ::
 
-                              <through>
+        \b
+                                <graph_title>
+                        `
+                        -                      ______     ````````
+                        `                _____/           ` # \\  `
+                        -               /          __     ` @  }->  <by>
+                        `          ____/      ____/       ` & /  `
+        <func>(<of>)    -      ___/       ___/            ````````
+                        `  ___/    ______/       ____
+                        -/  ______/        _____/
+                        `__/______________/
+                        +````||````||````||````||````
+
+                                  <through>
 
     Flow graphs shows the dependency of the values through the other independent variable.
     For each group of resources identified by <by> key, a graph of dependency of <of> values

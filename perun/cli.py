@@ -370,10 +370,11 @@ def add(profile, minor, **kwargs):
 
     If no <hash> is given, then the HEAD of the wrapped control system is used instead.
 
-    Example of adding profiles:
+    Example of adding profiles::
 
         \b
         perun add mybin-mcollect-input.txt-2017-03-01-16-11-04.perf
+
           Adds the profile collected by mcollect profile on mybin with input.txt workload computed
           on 1st March at 16:11 to the head.
     """
@@ -399,11 +400,11 @@ def rm(profile, minor, **kwargs):
 
     If no <hash> is given, then the HEAD of the wrapped control system is used instead.
 
-    Examples of removing profiles:
-
+    Examples of removing profiles::
 
         \b
         perun rm mybin-mcollect-input.txt-2017-03-01-16-11-04.perf
+
           Removes the profile collected by mcollect on mybin with input.txt from the workload
           computed on 1st March at 16:11 from the HEAD index
     """
@@ -651,7 +652,7 @@ def matrix(**kwargs):
     From the config file, a job matrix is constructed as a cartesian product of binaries with
     workloads and collectors. After each job the set of postprocessors are run.
 
-    Example contents of the local.yml configuration file:
+    Example contents of the local.yml configuration file::
 
         \b
         bins:

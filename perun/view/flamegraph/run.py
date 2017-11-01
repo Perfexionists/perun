@@ -18,17 +18,19 @@ def flamegraph(profile, filename, graph_height, **_):
     Flame graph shows the relative and inclusive presence of the resources according to the stack
     depth. This visualization uses the awesome script made by © Brendan Gregg!
 
-    \b
-                    `
-                    -                         .
-                    `                         |
-                    -              ..         |     .
-                    `              ||         |     |
-                    -              ||        ||    ||
-                    `            |%%|       |--|  |!|
-                    -     |## g() ##|     |#g()#|***|
-                    ` |&&&& f() &&&&|===== h() =====|
-                    +````||````||````||````||````||````
+    ::
+
+        \b
+                        `
+                        -                         .
+                        `                         |
+                        -              ..         |     .
+                        `              ||         |     |
+                        -              ||        ||    ||
+                        `            |%%|       |--|  |!|
+                        -     |## g() ##|     |#g()#|***|
+                        ` |&&&& f() &&&&|===== h() =====|
+                        +````||````||````||````||````||````
 
     Flame graph allows one to quickly identify hotspots, that are the source of the resource
     consumption complexity. On X axis, a relative consumption of the data is depicted, while on

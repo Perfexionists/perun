@@ -3,19 +3,112 @@
 Command Line Interface
 ======================
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+.. automodule:: perun.cli
 
-.. _cli-ref:
+.. click:: perun.cli:cli
+   :prog: perun
 
-CLI Reference
+.. _cli-main-ref:
+
+Perun Commands
+--------------
+
+.. click:: perun.cli:init
+   :prog: perun init
+
+.. click:: perun.cli:config
+   :prog: perun config
+
+.. click:: perun.cli:add
+   :prog: perun add
+
+.. click:: perun.cli:rm
+   :prog: perun rm
+
+.. click:: perun.cli:status
+   :prog: perun status
+
+.. click:: perun.cli:log
+   :prog: perun log
+
+.. click:: perun.cli:job
+   :prog: perun run job
+
+.. click:: perun.cli:matrix
+   :prog: perun run matrix
+
+.. _cli-collect-ref:
+
+Collect Commands
+----------------
+
+.. _cli-collect-units-ref:
+
+.. click:: perun.cli:collect
+   :prog: perun collect
+
+Collect units
+~~~~~~~~~~~~~
+
+.. _cli-postprocess-ref:
+
+.. click:: perun.collect.complexity.run:complexity
+   :prog: perun collect complexity
+
+.. click:: perun.collect.memory.run:memory
+   :prog: perun collect memory
+
+.. click:: perun.collect.time.run:time
+   :prog: perun collect time
+
+Postprocess Commands
+--------------------
+
+.. _cli-postprocess-units-ref:
+
+.. click:: perun.cli:postprocessby
+   :prog: perun postprocessby
+
+Postprocess units
+~~~~~~~~~~~~~~~~~
+
+.. _cli-show-ref:
+
+.. click:: perun.postprocess.normalizer.run:normalizer
+   :prog: perun postprocessby normalizer
+
+.. click:: perun.postprocess.regression_analysis.run:regression_analysis
+   :prog: perun postprocessby regression_analysis
+
+Show Commands
 -------------
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+.. click:: perun.cli:show
+   :prog: perun show
+
+.. _cli-show-units-ref:
+
+Show units
+~~~~~~~~~~
+
+.. click:: perun.view.alloclist.run:alloclist
+   :prog: perun show alloclist
+
+.. click:: perun.view.bars.run:bars
+   :prog: perun show bars
+
+.. click:: perun.view.flamegraph.run:flamegraph
+   :prog: perun show flamegraph
+
+.. click:: perun.view.flow.run:flow
+   :prog: perun show flow
+
+.. click:: perun.view.heapmap.run:heapmap
+   :prog: perun show heapmap
+
+.. click:: perun.view.raw.run:raw
+   :prog: perun show raw
+
+.. click:: perun.view.scatter.run:scatter
+   :prog: perun show scatter
+

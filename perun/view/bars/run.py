@@ -81,20 +81,22 @@ def bars(profile, filename, view_in_browser, **kwargs):
     """
     Display of the resources in bar format.
 
-    \b
-                            <graph_title>
-                    `
-                    -         .::.                ````````
-                    `         :&&:                ` # \\  `
-                    -   .::.  ::::        .::.    ` @  }->  <by>
-                    `   :##:  :##:        :&&:    ` & /  `
-    <func>(<of>)    -   :##:  :##:  .::.  :&&:    ````````
-                    `   ::::  :##:  :&&:  ::::
-                    -   :@@:  ::::  ::::  :##:
-                    `   :@@:  :@@:  :##:  :##:
-                    +````||````||````||````||````
+    ::
 
-                                <per>
+        \b
+                                <graph_title>
+                        `
+                        -         .::.                ````````
+                        `         :&&:                ` # \\  `
+                        -   .::.  ::::        .::.    ` @  }->  <by>
+                        `   :##:  :##:        :&&:    ` & /  `
+        <func>(<of>)    -   :##:  :##:  .::.  :&&:    ````````
+                        `   ::::  :##:  :&&:  ::::
+                        -   :@@:  ::::  ::::  :##:
+                        `   :@@:  :@@:  :##:  :##:
+                        +````||````||````||````||````
+
+                                    <per>
 
     Bar graphs shows aggregation of resources according to the given criteria. Each bar
     displays <func> of resources from <of> key (e.g. sum of amounts, average of amounts, etc.)

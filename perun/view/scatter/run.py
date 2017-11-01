@@ -80,20 +80,22 @@ def scatter(profile, filename, view_in_browser, **kwargs):
     """
     Display of the resources and models in scatter plot format.
 
-    \b
-                            <graph_title>
-                    `                         o
-                    -                        /
-                    `                       /o       ```````````````````
-                    -                     _/         `  o o = <points> `
-                    `                   _- o         `    _             `
-    <of>            -               __--o            `  _-  = <models> `
-                    `    _______--o- o               `                 `
-                    -    o  o  o                     ```````````````````
-                    `
-                    +````||````||````||````||````
+    ::
 
-                                <per>
+        \b
+                                <graph_title>
+                        `                         o
+                        -                        /
+                        `                       /o       ```````````````````
+                        -                     _/         `  o o = <points> `
+                        `                   _- o         `    _             `
+        <of>            -               __--o            `  _-  = <models> `
+                        `    _______--o- o               `                 `
+                        -    o  o  o                     ```````````````````
+                        `
+                        +````||````||````||````||````
+
+                                    <per>
 
     Scatter plot shows resources as points according to the given parameters. The plot
     interprets <per> and <of> as x, y coordinates for the points. The scatter plot also displays
