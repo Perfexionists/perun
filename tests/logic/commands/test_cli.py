@@ -6,6 +6,7 @@ this is done in appropriate test files, only the API is tested."""
 import os
 import git
 import re
+import time
 
 import pytest
 from click.testing import CliRunner
@@ -438,6 +439,19 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     assert result.exit_code == 2
     assert len(os.listdir(pending_dir)) == 4
 
+    # Try absolute postprocessing
+    first_in_jobs = os.listdir(pending_dir)[0]
+    absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
+    result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, 'normalizer'])
+    assert result.exit_code == 0
+    assert len(os.listdir(pending_dir)) == 5
+
+    # Try lookup postprocessing
+    time.sleep(1)
+    result = runner.invoke(cli.postprocessby, [first_in_jobs, 'normalizer'])
+    assert result.exit_code == 0
+    assert len(os.listdir(pending_dir)) == 6
+
 
 def test_show_tag(helpers, pcs_full, valid_profile_pool):
     """Test running show with several valid and invalid tags
@@ -445,6 +459,7 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool):
     Expecting no errors (or caught errors), everythig shown as it should be
     """
     helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    pending_dir = os.path.join(pcs_full.path, 'jobs')
 
     runner = CliRunner()
     result = runner.invoke(cli.show, ['0@p', 'raw'])
@@ -461,6 +476,16 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool):
     # Try incorrect index tag
     result = runner.invoke(cli.show, ['666@i', 'raw'])
     assert result.exit_code == 2
+
+    # Try absolute showing
+    first_in_jobs = os.listdir(pending_dir)[0]
+    absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
+    result = runner.invoke(cli.show, [absolute_first_in_jobs, 'raw'])
+    assert result.exit_code == 0
+
+    # Try lookup showing
+    result = runner.invoke(cli.show, [first_in_jobs, 'raw'])
+    assert result.exit_code == 0
 
 
 def test_config(pcs_full):

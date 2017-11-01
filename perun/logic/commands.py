@@ -689,10 +689,10 @@ def load_profile_from_args(pcs, profile_name, minor_version):
     # If the profile is in raw form
     if not store.is_sha1(profile_name):
         _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
+        # If there is nothing at all in the index, since it is not even created ;)
+        #   we returning nothing otherwise we lookup entries in index
         if not os.path.exists(minor_index_file):
-            perun_log.error("index of minor version {1} has no profile '{0}' registered".format(
-                profile_name, minor_version
-            ))
+            return None
         with open(minor_index_file, 'rb') as minor_handle:
             lookup_pred = lambda entry: entry.path == profile_name
             profiles = store.lookup_all_entries_within_index(minor_handle, lookup_pred)
