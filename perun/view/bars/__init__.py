@@ -1,5 +1,5 @@
 """
-Display of the resources in bar format.
+Display of the resources in bar format::
 
                               <graph_title>
                    `

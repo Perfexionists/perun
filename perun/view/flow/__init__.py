@@ -1,19 +1,19 @@
 """
-Display of the resources in flow format.
+Display of the resources in flow format::
 
-                        <graph_title>
-                `
-                -                      ______     ````````
-                `                _____/           ` # \\  `
-                -               /          __     ` @  }->  <by>
-                `          ____/      ____/       ` & /  `
-<func>(<of>)    -      ___/       ___/            ````````
-                `  ___/    ______/       ____
-                -/  ______/        _____/
-                `__/______________/
-                +````||````||````||````||````
+                            <graph_title>
+                    `
+                    -                      ______     ````````
+                    `                _____/           ` # \\  `
+                    -               /          __     ` @  }->  <by>
+                    `          ____/      ____/       ` & /  `
+    <func>(<of>)    -      ___/       ___/            ````````
+                    `  ___/    ______/       ____
+                    -/  ______/        _____/
+                    `__/______________/
+                    +````||````||````||````||````
 
-                          <through>
+                              <through>
 
 Flow graphs shows the dependency of the values through the other independent variable.
 For each group of resources identified by <by> key, a graph of dependency of <of> values
