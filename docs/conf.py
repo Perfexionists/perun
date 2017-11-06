@@ -175,6 +175,7 @@ texinfo_documents = [
 
 
 def setup(app):
+    # Profile Format specific markup
     import sphinx
     app.add_object_type(
         'perfreg', 'preg',
@@ -186,4 +187,23 @@ def setup(app):
         objname='perf format key',
         ref_nodeclass=sphinx.addnodes.literal_emphasis,
         indextemplate='pair: %s; perf format key'
+    )
+
+    # Matrix specific markup
+    app.add_object_type(
+        'matrixunit', 'munit',
+        objname='matrix format unit',
+        indextemplate='pair: %s; matrix format unit'
+    )
+
+    # Configuration specific markup
+    app.add_object_type(
+        'confunit', 'cunit',
+        objname='configuration unit',
+        indextemplate='pair: %s; configuration unit'
+    )
+    app.add_object_type(
+        'confkey', 'ckey',
+        objname='configuration key',
+        indextemplate='pair: %s; configuration key'
     )

@@ -8,3 +8,13 @@ div.note {
     font-weight: normal;
     font-style: italic;
 }
+
+.matrixkey code.descname {
+    font-weight: normal;
+    font-style: italic;
+}
+
+.confkey code.descname {
+    font-weight: normal;
+    font-style: italic;
+}
