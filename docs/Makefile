@@ -19,8 +19,15 @@ html:
 	@echo "Finished generating HTML documentation in $(BUILDDIR)/html."
 
 dirhtml:
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
+	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo "Finished generating HTML documentation in $(BUILDDIR)/dirhtml."
+
+latex:
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
+	# Remove characters that seems to be problematic for latexmk...
+	sed -i.bak 's///g;s/┃/|/g;s/═/=/g;s/▣/*/g' $(BUILDDIR)/latex/Perun.tex
+	make -C $(BUILDDIR)/latex all-pdf
+	@echo "Finished generating latex pdf documentation in $(BUILDDIR)/latex."
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
