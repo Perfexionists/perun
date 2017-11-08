@@ -6,7 +6,6 @@ this is done in appropriate test files, only the API is tested."""
 import os
 import git
 import re
-import time
 
 import pytest
 from click.testing import CliRunner
@@ -232,8 +231,45 @@ def test_init_correct():
     Expecting no exceptions, no errors, zero status.
     """
     runner = CliRunner()
-    result = runner.invoke(cli.init, ['--vcs-type=git'])
+    dst = str(os.getcwd())
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
     assert result.exit_code == 0
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_init_correct_with_params():
+    """Test running init from cli with parameters for git, without any problems
+
+    Expecting no exceptions, no errors, zero status.
+    """
+    runner = CliRunner()
+    dst = str(os.getcwd())
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--vcs-flag', 'bare'])
+    assert result.exit_code == 0
+    assert 'config' in os.listdir(os.getcwd())
+    with open(os.path.join(os.getcwd(), 'config'), 'r') as config_file:
+        assert "bare = true" in "".join(config_file.readlines())
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_init_correct_with_params_and_flags(helpers):
+    """Test running init from cli with parameters and flags for git, without any problems
+
+    Expecting no exceptions, no errors, zero status.
+    """
+    runner = CliRunner()
+    dst = str(os.getcwd())
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--vcs-flag', 'quiet',
+                                      '--vcs-param', 'separate-git-dir', 'sepdir'])
+    assert result.exit_code == 0
+    assert 'sepdir' in os.listdir(os.getcwd())
+    initialized_dir = os.path.join(os.getcwd(), 'sepdir')
+    dir_content = os.listdir(initialized_dir)
+
+    # Should be enough for sanity check
+    assert 'HEAD' in dir_content
+    assert 'refs' in dir_content
+    assert 'branches' in dir_content
 
 
 def test_add_correct(helpers, pcs_full, valid_profile_pool):

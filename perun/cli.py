@@ -156,6 +156,30 @@ def configure_local_perun(perun_path):
         perun_log.error("could not invoke '{}' editor: {}".format(editor, str(v_exception)))
 
 
+def parse_vcs_parameter(ctx, param, value):
+    """Parses flags and parameters for version control system during the init
+
+    Collects all flags (as flag: True) and parameters (as key value pairs) inside the
+    ctx.params['vcs_params'] dictionary, which is then send to the initialization of vcs.
+
+    Arguments:
+        ctx(Context): context of the called command
+        param(click.Option): parameter that is being parsed
+        value(str): value that is being read from the commandline
+
+    Returns:
+        tuple: tuple of flags or parameters
+    """
+    if 'vcs_params' not in ctx.params.keys():
+        ctx.params['vcs_params'] = {}
+    for v in value:
+        if param.name.endswith("param"):
+            ctx.params['vcs_params'][v[0]] = v[1]
+        else:
+            ctx.params['vcs_params'][v] = True
+    return value
+
+
 @cli.command()
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
 @click.option('--vcs-type', metavar='<type>', default='git',
@@ -164,8 +188,13 @@ def configure_local_perun(perun_path):
                    " and initialized as well.")
 @click.option('--vcs-path', metavar='<path>',
               help="Initializes the supported version control system at different path.")
-@click.option('--vcs-params', metavar='<params>',
-              help="Passes additional param to a supported version control system initialization.")
+@click.option('--vcs-param', nargs=2, metavar='<param>', multiple=True,
+              callback=parse_vcs_parameter,
+              help="Passes additional parameter to a supported version control system "
+                   "initialization.")
+@click.option('--vcs-flag', nargs=1, metavar='<flag>', multiple=True,
+              callback=parse_vcs_parameter,
+              help="Passes additional flags to a supported version control system initialization")
 @click.option('--configure', '-c', is_flag=True, default=False,
               help='Opens the local configuration file for initial configuration edit.')
 def init(dst, configure, **kwargs):
