@@ -192,7 +192,7 @@ def test_git_exists_already(capsys):
 
     # Capture the out and check if the message contained "Reinitialized"
     out, _ = capsys.readouterr()
-    expected = out.split("\n")[0].strip()
+    expected = out.split("\n")[1].strip()
     assert expected == "Reinitialized existing Git repository in {}".format(pcs_path)
 
 
@@ -259,12 +259,6 @@ def test_git_with_bogus_params():
             'vcs_params': {'bare': 'no'}
         })
 
-    # Assert that nothing was created
-    dir_content = os.listdir(pcs_path)
-    assert '.perun' not in dir_content
-    assert 'repo' not in dir_content
-    assert len(dir_content) == 0
-
 
 @pytest.mark.usefixtures('cleandir')
 def test_unsupported_vcs():
@@ -283,6 +277,4 @@ def test_unsupported_vcs():
         })
 
     dir_content = os.listdir(pcs_path)
-    assert '.perun' not in dir_content
     assert '.git' not in dir_content
-    assert len(dir_content) == 0
