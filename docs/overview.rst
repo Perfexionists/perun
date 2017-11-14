@@ -334,7 +334,7 @@ New visualizations have to be based on the :ref:`profile-spec` (or its supported
       """Display the profile in custom format"""
       pass
 
-The Click_ library is used for command line interface.  For full explanation how to register and
+The Click_ library is used for command line interface. For full explanation how to register and
 create a new collector module refer to :ref:`views-custom`.
 
 Acknowledgements

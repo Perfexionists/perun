@@ -11,6 +11,7 @@ Welcome to Perun's documentation!
    :caption: Contents:
 
    overview
+   example
    profile
    cli
    collectors
