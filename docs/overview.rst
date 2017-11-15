@@ -4,6 +4,11 @@ Perun: Performance Under Control
 .. image:: /../figs/perun-logo.png
    :align: center
 
+.. _Bokeh: https://bokeh.pydata.org/en/latest/
+.. _Click: http://click.pocoo.org/5/
+.. _JSON: https://www.json.org/ 
+.. _Yaml: http://yaml.org/
+
 What is Perun?
 --------------
 
@@ -48,7 +53,7 @@ particular, it has the following advantages over databases and sole Version Cont
      of jobs is inspired by continuous integration systems, and is designed as YAML file, which
      serves as a natural format for specifying the automated jobs.
 
-  3. **Genericity**---supported format of the performance profiles is based on JSON notation and
+  3. **Genericity**---supported format of the performance profiles is based on JSON_ notation and
      has just a minor requirements and restrictions. Perun tool suite contains a basic set of
      generic (and several specific) visualizations, postprocessing and collection modules which
      can be used as building blocks for automating jobs and interpreting results. Perun itself
@@ -111,7 +116,7 @@ directly through mail or `create a new Issue`_.
 Lifetime of a profile
 ---------------------
 
-Format of performance profiles is based on JSON format. It tries to unify various performance
+Format of performance profiles is based on JSON_ format. It tries to unify various performance
 metrics and methods for collecting and postprocessing of profiling data. Profiles themselves are
 stored in a storage (parallel to vcs storage; currently in filesystem), compressed using the `zlib`
 compression method along with the additional information, such as how the profile was collected,
@@ -158,11 +163,6 @@ to :ref:`collectors-custom`, :ref:`postprocessors-custom` and :ref:`views-custom
 
 List of Features
 ----------------
-
-.. _Bokeh: https://bokeh.pydata.org/en/latest/
-.. _Click: http://click.pocoo.org/5/
-.. _JSON: https://www.json.org/ 
-.. _Yaml: http://yaml.org/
 
 In the following, we list the foremost features and advantages of Perun:
 

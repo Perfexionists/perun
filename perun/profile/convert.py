@@ -1,4 +1,17 @@
-"""This module implements translation of the profile to other formats """
+"""``perun.profile.convert`` is a module which specifies interface for
+conversion of profiles from :ref:`profile-spec` to other formats.
+
+.. _Pandas library: https://docs.python.org/3.7/library/json.html
+
+Run the following in the Python interpreter to extend the capabilities of
+Python to different formats of profiles::
+
+    import perun.profile.convert
+
+Combined with ``perun.profile.factory``, ``perun.profile.query`` and e.g.
+`Pandas library`_ one can obtain efficient interpreter for executing more
+complex queries and statistical tests over the profiles.
+"""
 import copy
 
 import perun.profile.query as query
@@ -14,14 +27,35 @@ __coauthors__ = ['Tomas Fiedor', 'Jirka Pavela']
 
 
 def resources_to_pandas_dataframe(profile):
-    """Converts resources of profile into dataframe format, that is great for tabular,
-    bokeh, or various other manipulations.
+    """Converts the profile (w.r.t :ref:`profile-spec`) to format supported by
+    `Pandas library`_.
 
-    Arguments:
-        profile(dict): profile dictionary
+    Queries through all of the resources in the `profile`, and flattens each
+    key and value to the tabular representation. Refer to `Pandas library`_ for
+    more possibilities how to work with the tabular representation of collected
+    resources.
 
-    Returns:
-        pandas.DataFrame: list of resources as panda dataframe
+    E.g. given `time` and `memory` profiles ``tprof`` and ``mprof``
+    respectively, one can obtain the following formats::
+
+        >>> convert.resources_to_pandas_dataframe(tprof)
+           amount  snapshots   uid
+        0  0.616s          0  real
+        1  0.500s          0  user
+        2  0.125s          0   sys
+
+        >>> convert.resources_to_pandas_dataframe(mmprof)
+            address  amount  snapshots subtype                   trace    type
+        0  19284560       4          0  malloc  malloc:unreachabl...  memory
+        1  19284560       0          0    free  free:unreachable:...  memory
+
+                          uid uid:function  uid:line                 uid:source
+        0  main:../memo...:22         main        22   ../memory_collect_test.c
+        1  main:../memo...:27         main        27   ../memory_collect_test.c
+
+    :param dict profile: dictionary with profile w.r.t. :ref:`profile-spec`
+    :returns: converted profile to ``pandas.DataFramelist`` with resources
+        flattened as a pandas dataframe
     """
     resource_keys = list(query.all_resource_fields_of(profile))
     values = {key: [] for key in resource_keys}
@@ -37,17 +71,19 @@ def resources_to_pandas_dataframe(profile):
 
 
 def to_heap_map_format(profile):
-    """ Create the HEAP map representation for visualization
+    """Simplifies the profile (w.r.t. :ref:`profile-spec`) to a representation
+    more suitable for interpretation in the `heap map` format.
 
-    Format of the heap map representation is following::
+    This format is used as an internal representation in the
+    :ref:`views-heapmap` visualization module. It specification is as follows:
+
+    .. code-block:: json
 
         {
-            "type": type of representation (heap/heat),
-            "unit": used memory unit (string),
-            "stats": {
-                # same stats as for "snapshots", but aggregated
-            },
-            "info": [{ # uid of the function which made the allocation
+            "type": "type of representation (heap/heat)",
+            "unit": "used memory unit (string)",
+            "stats": {},
+            "info": [{
                 "line": "(int)",
                 "function": "(string)",
                 "source": "(string)"
@@ -59,7 +95,7 @@ def to_heap_map_format(profile):
                 "sum_amount": "sum of allocated memory in snapshot (int)",
                 "max_address": "maximal address where we allocated (int)",
                 "min_address": "minimal address where we allocated (int)",
-                "map": [{ # mapping of all the allocations in snapshot
+                "map": [{
                     "address": "starting address of the allocation (int)",
                     "amount": "amount of the allocated memory (int)",
                     "uid": "index to info list with uid info (int)",
@@ -68,11 +104,21 @@ def to_heap_map_format(profile):
             }]
         }
 
-    Arguments:
-        profile(dict): the memory profile
+    `Type` specifies either the heap or heat representation of the data. For
+    each `snapshot`, we have a one `map` of addresses to allocated chunks of
+    different subtypes of allocators and `uid`. Moreover, both `snapshot` and
+    `stats` contains several aggregated data (e.g. min, or max address) for
+    visualization of the memory.
 
-    Returns:
-        dict: the heap map representation
+    The usage of :ref:`views-heapmap` is for visualization of address space
+    regarding the allocations during different time's of the program (i.e.
+    snapshots) and is meant for detecting inefficient allocations or
+    fragmentations of memory space.
+
+    :param dict profile: profile w.r.t. :ref:`profile-spec` of **memory**
+        `type`
+    :returns: dictionary containing heap map representation usable for
+        :ref:`views-heapmap` visualization module.
     """
     snapshots = [a for a in profile['snapshots']]
 
@@ -100,29 +146,33 @@ def to_heap_map_format(profile):
 
 
 def to_heat_map_format(profile):
-    """ Create the HEAT map representation for visualization
+    """Simplifies the profile (w.r.t. :ref:`profile-spec`) to a representation
+    more suitable for interpretation in the `heat map` format.
 
+    This format is used as an internal aggregation of the allocations through
+    all of the snapshots in the :ref:`views-heapmap` visualization module.
+    The specification is similar to :func:`to_heap_map_format` as follows:
 
-    Format of the heat map representation is following::
+    .. code-block:: json
 
         {
-            "type": type of representation (heap/heat)
-            "unit": used memory unit (string),
+            "type": "type of representation (heap/heat)",
+            "unit": "used memory unit (string)",
             "stats": {
-                "max_address": maximal allocated address in snapshot(int),
-                "min_address": minimal allocated address in snapshot (int)
+                "max_address": "maximal address in snapshot (int)",
+                "min_address": "minimal address in snapshot (int)"
             },
-            "map": [
-                # mapping all the allocations to number of accesses
-                # such that size of array == max_address - min_address
-            ]
+            "map": [ ]
         }
 
-    Arguments:
-        profile(dict): the memory profile
+    The main difference is in the `map`, where the data are aggregated over the
+    snapshots represented by value representing the colours. The `warmer` the
+    colour the more it was allocated on the concrete address.
 
-    Returns:
-        dict: the heat map representation
+    :param dict profile: profile w.r.t. :ref:`profile-spec` of **memory**
+        `type`
+    :returns: dictionary containing heat map representation usable for
+        :ref:`views-heapmap` visualization module.
     """
     resources = []
     for snap in profile['snapshots']:
@@ -428,13 +478,34 @@ def to_flow_table(profile):
 
 
 def to_flame_graph_format(profile):
-    """ Create the format suitable for the Flame-graph visualization
+    """Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the
+    format supported by perl script of Brendan Gregg.
 
-    Arguments:
-        profile(dict): the memory profile
+    .. todo::
+        Add example of the format
 
-    Returns:
-        list: list of lines, each representing one allocation call stack
+    .. _Brendan Gregg's homepage: http://www.brendangregg.com/index.html
+
+    :ref:`views-flame-graph` can be used to visualize the inclusive consumption
+    of resources w.r.t. the call trace of the resource. It is useful for fast
+    detection, which point at the trace is the hotspot (or bottleneck) in the
+    computation. Refer to :ref:`views-flame-graph` for full capabilities of our
+    Wrapper. For more information about flame graphs itself, please check
+    `Brendan Gregg's homepage`_.
+
+    Example of format is as follows::
+
+        >>> print(''.join(convert.to_flame_graph_format(memprof)))
+        malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4
+        valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0;_start()~unreachable~0 8
+        main()~/home/user/dev/test02.c~79 156
+
+    Each line corresponds to some collected resource (in this case amount of
+    allocated memory) preceeded by its trace (i.e. functions or other unique
+    identifiers joined using ``;`` character.
+
+    :param dict profile: the memory profile
+    :returns: list of lines, each representing one allocation call stack
     """
     stacks = []
     for snap in profile['snapshots']:
@@ -465,13 +536,15 @@ def to_string_line(frame):
 
 
 def plot_data_from_coefficients_of(model):
-    """ Transform computed coefficients from regression analysis into points, which can be
-        plotted as a function / curve. Wrapper over regression analysis transformation function.
+    """Transform coefficients computed by
+    :ref:`postprocessors-regression-analysis` into dictionary of points,
+    plotable as a function or curve. This function serves as a public wrapper
+    over regression analysis transformation function.
 
-    Arguments:
-        model(dict): the models dictionary from profile
-    Return:
-        dict: updated models dictionary with 'plot_x' and 'plot_y' lists
+    :param dict model: the models dictionary from profile (refer to
+        :pkey:`models`)
+    :returns dict: updated models dictionary extended with `plot_x` and
+        `plot_y` lists
     """
     model.update(transform.coefficients_to_points(**model))
     return model

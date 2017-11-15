@@ -77,6 +77,8 @@ Regression Analysis
 
 .. automodule:: perun.postprocess.regression_analysis.run
 
+.. _postprocessors-regression-analysis-cli:
+
 Command Line Interface
 """"""""""""""""""""""
 

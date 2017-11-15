@@ -40,6 +40,8 @@ Complexity Collector
 
 .. automodule:: perun.collect.complexity.run
 
+.. _collectors-complexity-cli:
+
 Command Line Interface
 """"""""""""""""""""""
 
