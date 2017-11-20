@@ -1,3 +1,5 @@
+from docutils import nodes
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
@@ -174,6 +176,38 @@ texinfo_documents = [
 ]
 
 
+def doctree_read_handler(_, doctree):
+    """Handler for postprocessing the read doctree
+
+    This is used to remove \b (or \x08) characters from the text since they are
+    the remnants of Click library, which uses these characters to literally
+    interpret and not rewrap paragraphs.
+
+    Iterates through all of the node.Text children and replace them with
+    \b/\x08 free text.
+
+    :param _: unused parameter, the application of document
+    :param doctree: parsed document tree
+    """
+    # Traverse all of the literal block and paragraph glocks
+    # if "\b" or "\x08" is found in the text, we remove it.
+    # Note: this is remnant of click documentation, which uses this
+    # character to literally interpret paragraphs and not rewrap
+    postprocesses_node_list = (
+        nodes.paragraph, nodes.literal_block, nodes.term
+    )
+
+    for postprocessed_node in postprocesses_node_list:
+        for child in doctree.traverse(postprocessed_node):
+            if '\b' in str(child) or '\x08' in str(child):
+                for text_node in child.traverse(nodes.Text):
+                    replaced_text = text_node.replace("\b\n", '')
+                    replaced_text = replaced_text.replace("\b", '')
+                    replaced_text = replaced_text.replace("\x08\n", '')
+                    replaced_text = replaced_text.replace("\x08", '')
+                    child.replace(text_node, nodes.Text(replaced_text))
+
+
 def setup(app):
     # Profile Format specific markup
     import sphinx
@@ -207,3 +241,5 @@ def setup(app):
         objname='configuration key',
         indextemplate='pair: %s; configuration key'
     )
+
+    app.connect('doctree-read', doctree_read_handler)

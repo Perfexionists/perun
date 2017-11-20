@@ -58,6 +58,11 @@ List of Supported Options
     Contains set of global options and specifications for Perun. Currently this contains formatting
     specifications for ``perun log`` and ``perun status``, editor, etc.
 
+.. confkey:: paging
+
+.. todo::
+    To be done both in implementation and here in documentation :P
+
 .. confkey:: editor
 
     User choice of editor, used for manual text-editing configuration files of Perun. Specified

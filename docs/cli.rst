@@ -42,15 +42,13 @@ Perun Commands
 Collect Commands
 ----------------
 
-.. _cli-collect-units-ref:
-
 .. click:: perun.cli:collect
    :prog: perun collect
 
+.. _cli-collect-units-ref:
+
 Collect units
 ~~~~~~~~~~~~~
-
-.. _cli-postprocess-ref:
 
 .. click:: perun.collect.complexity.run:complexity
    :prog: perun collect complexity
@@ -61,18 +59,20 @@ Collect units
 .. click:: perun.collect.time.run:time
    :prog: perun collect time
 
+.. _cli-postprocess-ref:
+
 Postprocess Commands
 --------------------
-
-.. _cli-postprocess-units-ref:
 
 .. click:: perun.cli:postprocessby
    :prog: perun postprocessby
 
+.. _cli-postprocess-units-ref:
+
 Postprocess units
 ~~~~~~~~~~~~~~~~~
 
-.. _cli-show-ref:
+.. _cli-views-ref:
 
 .. click:: perun.postprocess.normalizer.run:normalizer
    :prog: perun postprocessby normalizer
@@ -86,7 +86,7 @@ Show Commands
 .. click:: perun.cli:show
    :prog: perun show
 
-.. _cli-show-units-ref:
+.. _cli-views-units-ref:
 
 Show units
 ~~~~~~~~~~
@@ -105,9 +105,6 @@ Show units
 
 .. click:: perun.view.heapmap.run:heapmap
    :prog: perun show heapmap
-
-.. click:: perun.view.raw.run:raw
-   :prog: perun show raw
 
 .. click:: perun.view.scatter.run:scatter
    :prog: perun show scatter

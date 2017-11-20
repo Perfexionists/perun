@@ -481,9 +481,6 @@ def to_flame_graph_format(profile):
     """Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the
     format supported by perl script of Brendan Gregg.
 
-    .. todo::
-        Add example of the format
-
     .. _Brendan Gregg's homepage: http://www.brendangregg.com/index.html
 
     :ref:`views-flame-graph` can be used to visualize the inclusive consumption

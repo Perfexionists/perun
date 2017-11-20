@@ -1,7 +1,36 @@
-"""Command Line Interface for the Perun performance control.
+"""Perun can be run from the command line (if correctly installed) using the
+command interface inspired by git.
 
-Simple Command Line Interface for the Perun functionality using the Click library,
-calls underlying commands from the commands module.
+The Command Line Interface is implemented using the Click_ library, which
+allows both effective definition of new commands and finer parsing of the
+command line arguments. The intefrace can be broken into several groups:
+
+    1. **Core commands**: namely ``init``, ``config``, ``add``, ``rm``,
+    ``status``, ``log`` and ``run`` commands (which consists of commands ``run
+    job`` and ``run matrix``). These commands automate the creation of
+    performance profiles and are used for management of the Perun repository.
+    Refer to :ref:`cli-main-ref` for details about commands.
+
+    2. **Collect commands**: group of ``collect COLLECTOR`` commands, where
+    ``COLLECTOR`` stands for one of the collector of :ref:`collectors-list`.
+    Each ``COLLECTOR`` has its own API, refer to :ref:`cli-collect-units-ref`
+    for thorough description of API of individual collectors.
+
+    3. **Postprocessby commands**: group of ``postprocessby POSTPROCESSOR``
+    commands, where ``POSTPROCESSOR`` stands for one of the postprocessor of
+    :ref:`postprocessors-list`. Each ``POSTPROCESSOR`` has its own API, refer
+    to :ref:`cli-postprocess-units-ref` for thorough description of API of
+    individual postprocessors.
+
+    4. **View commands**: group of ``view VISUALIZATION`` commands, where
+    ``VISUALIZATION`` stands for one of the visualizer of :ref:`views-list`.
+    Each ``VISUALIZATION`` has its own API, refer to :ref:`cli-views-units-ref`
+    for thorough description of API of individual views.
+
+Graphical User Interface is currently in development and hopefully will extend
+the flexibility of Perun's usage.
+
+.. _Click: http://click.pocoo.org/5/
 """
 
 import os
@@ -33,13 +62,34 @@ __author__ = 'Tomas Fiedor'
 
 @click.group()
 @click.option('--no-pager', default=False, is_flag=True,
-              help='Disables paging of the standard output (for log and status).')
+              help='Disable paging of the long standard output (currently'
+              ' affects only ``status`` and ``log`` outputs). See '
+              ':ckey:`paging` to change the default paging strategy.')
 @click.option('--verbose', '-v', count=True, default=0,
-              help='Sets verbosity of the perun log')
+              help='Increase the verbosity of the standard output. Verbosity '
+              'is incremental, and each level increases the extent of output.')
 def cli(verbose, no_pager):
-    """Perun is a performance control system used to store profiles efficiently.
+    """Perun is an open source light-weight Performance Versioning System.
 
-    Run 'perun init' to initialize your very first perun repository in the current directory.
+    In order to initialize Perun in current directory run the following::
+
+        perun init
+
+    This initializes basic structure in ``.perun`` directory, together with
+    possible reinitialization of git repository in current directory. In order
+    to set basic configuration and define jobs for your project run the
+    following::
+
+        perun config --edit
+
+    This opens editor and allows you to specify configuration of your project
+    and choose set of collectors for capturing resources. See :doc:`jobs` and
+    :doc:`config` for more details.
+
+    In order to generate first set of profiles for your current ``HEAD`` run the
+    following::
+
+        perun run matrix
     """
     # by default the pager is suppressed, and only calling it from the CLI enables it,
     # through --no-pager set by default to False you enable the paging
@@ -102,38 +152,56 @@ def validate_value(ctx, _, value):
 @click.argument('key', required=False, metavar='<key>', callback=validate_key)
 @click.argument('value', required=False, metavar='<value>', callback=validate_value)
 @click.option('--get', '-g', 'operation', is_eager=True, flag_value='get',
-              help="Returns the value of the provided <key>.")
+              help="Retrieves the value of the provided <key>.")
 @click.option('--set', '-s', 'operation', is_eager=True, flag_value='set',
               help="Sets the value of the <key> to <value> in the configuration file.")
 @click.option('--edit', '-e', 'operation', is_eager=True, flag_value='edit',
               help="Edits the configuration file in the user defined editor.")
 @click.option('--local', '-l', 'store_type', flag_value='local',
-              help='Sets the local config as working config (.perun/local.yml).')
+              help='Will lookup or set in the local config i.e. '
+              '``.perun/local.yml``.')
 @click.option('--shared', '-h', 'store_type', flag_value='shared',
-              help='Sets the shared config as working config (shared.yml).')
+              help='Will lookup or set in the shared config i.e. '
+              '``shared.yml.``')
 @click.option('--nearest', '-n', 'store_type', flag_value='recursive', default=True,
-              help='Recursively discover the nearest config (differs for modes).')
+              help='Will recursively discover the nearest suitable config. The'
+              ' lookup strategy can differ for ``--set`` and '
+              '``--get``/``--edit``.')
 def config(**kwargs):
-    """Get and set the options of local and global configurations.
+    """Manages local and shared configuration.
 
-    For each perun repository, there are two types of config:
+    In perun there exists two external configurations:
 
-        local.yml - this is local repository found in .perun directory, contains the
-        local configuration with informations about wrapped repositories and job matrix
-        used for quick generation of profiles (see 'perun run matrix --help' for more
-        information about the syntax of local configuration for construction of job matrix).
+        1. ``local.yml``: the local configuration stored in ``.perun``
+           directory, containing  the keys such as specification of wrapped
+           repository or job matrix used for quick generation of profiles (run
+           ``perun run matrix --help`` or refer to :doc:`jobs` for information
+           how to construct the job matrix).
 
-        shared.yml - this is global repository for the system, which contains the information
-        about perun repositories located throughout the system.
+        2. ``shared.yml`` - the global configuration shared by all Perun
+           instances, containing shared keys, such as text editor, formatting
+           string, etc.
 
-    The syntax of the key contains out of section separated by dots, where the first section
-    represents the type of the config (either local or shared).
+    The syntax of the ``<key>`` consists of section separated by dots, e.g.
+    ``vcs.type`` specifies ``type`` key in ``vcs`` section. There exists three
+    modes of lookup, ``--local``, ``--shared`` and ``nearest``, which locates
+    or sets the <key> in local, shared or nearest configuration (e.g. when one
+    is trying to get some key, there may be nested perun instances that do not
+    contain the given key). By default, perun locates the nearest config.
 
-    Example usage:
+    When neither of ``--get``, ``--set`` or ``--edit`` is set, an error is
+    raised. Otherwise the latest action is used.
 
-        perun config --get local.vsc.type
+    Refer to :doc:`config` for full description of configurations and
+    :ref:`config-types` for full list of configuration options.
 
-            Retrieves the type of the wrapped repository of the local perun.
+    E.g. using the following can retrieve the type of the nearest perun
+    wrapper:
+
+    .. code-block:: bash
+
+        $ perun config --get vsc.type
+        vcs.type: git
     """
     try:
         commands.config(**kwargs)
@@ -184,39 +252,54 @@ def parse_vcs_parameter(ctx, param, value):
 @click.argument('dst', required=False, default=os.getcwd(), metavar='<path>')
 @click.option('--vcs-type', metavar='<type>', default='git',
               type=click.Choice(utils.get_supported_module_names('vcs')),
-              help="Apart of perun structure, a supported version control system can be wrapped"
-                   " and initialized as well.")
+              help="In parallel to initialization of Perun, initialize the vcs"
+              " of <type> as well (by default ``git``).")
 @click.option('--vcs-path', metavar='<path>',
-              help="Initializes the supported version control system at different path.")
+              help="Sets the destination of wrapped vcs initialization at "
+              "<path>.")
 @click.option('--vcs-param', nargs=2, metavar='<param>', multiple=True,
               callback=parse_vcs_parameter,
-              help="Passes additional parameter to a supported version control system "
-                   "initialization.")
+              help="Passes additional (key, value) parameter to initialization"
+              " of version control system, e.g. ``separate-git-dir dir``.")
 @click.option('--vcs-flag', nargs=1, metavar='<flag>', multiple=True,
               callback=parse_vcs_parameter,
-              help="Passes additional flags to a supported version control system initialization")
+              help="Passes additional flag to a initialization of version "
+              "control system, e.g. ``bare``.")
 @click.option('--configure', '-c', is_flag=True, default=False,
-              help='Opens the local configuration file for initial configuration edit.')
+              help='After successful initialization of both systems, opens '
+              'the local configuration using the :ckey:`editor` set in shared '
+              'config.')
 def init(dst, configure, **kwargs):
-    """Initialize the new perun performance control system or reinitializes existing one.
+    """Initializes performance versioning system at the destination path.
 
-    The command initializes the perun control system directory with basic directory and file
-    structure inside the .perun directory. By default are created the following directories:
+    ``perun init`` command initializes the perun's infrastructure with basic
+    file and directory structure inside the ``.perun`` directory. Refer to
+    :ref:`internals-overview` for more details about storage of Perun. By
+    default following directories are created:
 
-        \b
-        /jobs---stores computed profiles, that are yet to be assigned to concrete minor versions
-        /objects---stores packed contents and minor version informations
-        /cache---stores number of unpacked profiles for quick access
-        local.yml---local configuration file with job matrix, information about wrapped vcs, etc.
+        1. ``.perun/jobs``: storage of performance profiles not yet assigned to
+           concrete minor versions.
 
-    Perun is initialized at <path>. If no <path> is given, then it is initialized within the
-    current working directory. If there already exists a performance control system, file and
-    directory structure is only reinitialized.
+        2. ``.perun/objects``: storage of packed contents of performance
+           profiles and additional informations about minor version of wrapped
+           vcs system.
 
-    By default, a custom version control system is initialized. This can be changed by stating
-    the type of the wrapped control system using the --vcs-type parameter. Currently only git
-    is supported. Additional parameters can be passed to the wrapped control system initialization
-    using the --vcs-params.
+        3. ``.perun/cache``: fast access cache of selected latest unpacked
+           profiles
+
+        4. ``.perun/local.yml``: local configuration, storing specification of
+           wrapped repository, jobs configuration, etc. Refer to :doc:`config`
+           for more details.
+
+    The infrastructure is initialized at <path>. If no <path> is given, then
+    current working directory is used instead. In case there already exists a
+    performance versioning system, the infrastructure is only reinitialized.
+
+    By default, a control system is initialized as well. This can be changed by
+    by setting the ``--vcs-type`` parameter (currently we support ``git`` and
+    ``tagit``---a lightweight git-based wrapped based on tags). Additional
+    parameters can be passed to the wrapped control system initialization using
+    the ``--vcs-params``.
     """
     try:
         commands.init(dst, **kwargs)
@@ -358,25 +441,57 @@ def minor_version_lookup_callback(ctx, param, value):
                 callback=added_filename_lookup_callback)
 @click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
               callback=minor_version_lookup_callback,
-              help='Perun will lookup the profile at different minor version (default is HEAD).')
+              help='<profile> will be stored at this minor version (default is HEAD).')
 @click.option('--keep-profile', is_flag=True, required=False, default=False,
-              help='if set, then the added profile will not be deleted')
+              help='Keeps the profile in filesystem after registering it in'
+              ' Perun storage. Otherwise it is deleted.')
 def add(profile, minor, **kwargs):
-    """Assigns given profile to the concrete minor version storing its content in the perun dir.
+    """Links profile to concrete minor version storing its content in the
+    ``.perun`` dir and registering the profile in internal minor version index.
 
-    Takes the given <profile>, packs its content using the zlib compression module and stores it
-    inside the perun objects directory. The packed profile is then registered within the minor
-    version index represented by the <hash>.
+    In order to link <profile> to given minor version <hash> the following
+    steps are executed:
 
-    If no <hash> is given, then the HEAD of the wrapped control system is used instead.
+        1. We check in <profile> that its :preg:`origin` key corresponds to
+           <hash>. This serves as a check, that we do not assign profiles to
+           different minor versions.
 
-    Example of adding profiles::
+        2. The :preg:`origin` is removed and contents of <profile> are
+           compresed using `zlib` compression method.
 
-        \b
-        perun add mybin-mcollect-input.txt-2017-03-01-16-11-04.perf
+        3. Binary header for the profile is constructed.
 
-          Adds the profile collected by mcollect profile on mybin with input.txt workload computed
-          on 1st March at 16:11 to the head.
+        4. Compressed contents are appended to header, and this blob is stored
+           in ``.perun/objects`` directory.
+
+        5. New blob is registered in <hash> minor version's index.
+
+        6. Unless ``--keep-profile`` is set. The original profile is deleted.
+
+    If no `<hash>` is specified, then current ``HEAD`` of the wrapped version
+    control system is used instead. Massaging of <hash> is taken care of by
+    underlying version control system (e.g. git uses ``git rev-parse``).
+
+    <profile> can either be a ``pending tag`` or a fullpath. ``Pending tags``
+    are in form of ``i@p``, where ``i`` stands for an index in the pending
+    profile directory (i.e. ``.perun/jobs``) and ``@p`` is literal suffix.
+    Run ``perun status`` to see the `tag` anotation of pending profiles.
+
+    Example of adding profiles:
+
+    .. code-block:: bash
+
+        $ perun add mybin-memory-input.txt-2017-03-01-16-11-04.perf
+
+    This command adds the profile collected by `memory` collector during
+    profiling ``mybin`` command with ``input.txt`` workload on 1st March at
+    16:11 to the current ``HEAD``.
+
+    An error is raised if the command is executed outside of range of any
+    perun, if <profile> points to incorrect profile (i.e. not w.r.t.
+    :ref:`profile-spec`) or <hash> does not point to valid minor version ref.
+
+    See :doc:`internals` for information how perun handles profiles internally.
     """
     try:
         commands.add(profile, minor, **kwargs)
@@ -389,24 +504,44 @@ def add(profile, minor, **kwargs):
                 callback=removed_filename_lookup_callback)
 @click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
               callback=minor_version_lookup_callback,
-              help='Perun will lookup the profile at different minor version (default is HEAD).')
+              help='<profile> will be stored at this minor version (default is HEAD).')
 @click.option('--remove-all', '-A', is_flag=True, default=False,
-              help="Remove all occurrences of <profile> from the <hash> index.")
+              help="Removes all occurrences of <profile> from the <hash> index.")
 def rm(profile, minor, **kwargs):
-    """Removes the given profile from the concrete minor version removing it from the index.
+    """Unlinks the profile from the given minor version, keeping the contents
+    stored in ``.perun`` directory.
 
-    Takes the given <profile>, looks it up at the <hash> minor version and removes it from the
-    index. The contents of the profile are kept packed inside the objects directory.
+    <profile> is unlinked in the following steps:
 
-    If no <hash> is given, then the HEAD of the wrapped control system is used instead.
+        1. <profile> is looked up in the <hash> minor version's internal index.
 
-    Examples of removing profiles::
+        2. In case <profile> is not found. An error is raised.
 
-        \b
-        perun rm mybin-mcollect-input.txt-2017-03-01-16-11-04.perf
+        3. Otherwise, the record corresponding to <hash> is erased. However,
+           the original blob is kept in ``.perun/objects``.
 
-          Removes the profile collected by mcollect on mybin with input.txt from the workload
-          computed on 1st March at 16:11 from the HEAD index
+    If no `<hash>` is specified, then current ``HEAD`` of the wrapped version
+    control system is used instead. Massaging of <hash> is taken care of by
+    underlying version control system (e.g. git uses ``git rev-parse``).
+
+    <profile> can either be a ``index tag`` or a path specifying the profile.
+    ``Index tags`` are in form of ``i@i``, where ``i`` stands for an index in
+    the minor version's index and ``@i`` is literal suffix. Run ``perun
+    status`` to see the `tags` of current ``HEAD``'s index.
+
+    Examples of removing profiles:
+
+    .. code-block:: bash
+
+        $ perun rm 2@i
+
+    This commands removes the third (we index from zero) profile in the index
+    of registered profiles of current ``HEAD``.
+
+    An error is raised if the command is executed outside of range of any
+    Perun or if <profile> is not found inside the <hash> index.
+
+    See :doc:`internals` for information how perun handles profiles internally.
     """
     try:
         commands.remove(profile, minor, **kwargs)
@@ -453,39 +588,37 @@ def profile_lookup_callback(ctx, _, value):
 @cli.command()
 @click.argument('head', required=False, default=None, metavar='<hash>')
 @click.option('--count-only', is_flag=True, default=False,
-              help="Instead of showing list of all profiles, log will only show aggregated count of"
-                   "profiles.")
+              help="Shows only aggregated data without minor version history"
+              " description")
 @click.option('--show-aggregate', is_flag=True, default=False,
-              help="Log will display the aggregated profile value for each minor version.")
+              help="Includes the aggregated values for each minor version.")
 @click.option('--last', default=1, metavar='<int>',
-              help="Log will display only last <int> entries.")
+              help="Limits the output of log to last <int> entries.")
 @click.option('--no-merged', is_flag=True, default=False,
-              help="Log will not display merges of minor versions.")
+              help="Skips merges during the iteration of the project history.")
 @click.option('--short', '-s', is_flag=True, default=False,
-              help="Log will display a short version of the history.")
+              help="Shortens the output of ``log`` to include only most "
+              "necessary information.")
 def log(head, **kwargs):
-    """Prints the history of the the perun control system and its wrapped version control system.
+    """Shows history of versions and associated profiles.
 
-    Prints the history of the wrapped version control system and all of the associated profiles
-    starting from the <hash> point, printing the information about number of profiles, about
-    concrete minor versions and its parents sorted by the date.
+    Shows the history of the wrapped version control system and all of the
+    associated profiles starting from the <hash> point, outputing the
+    information about number of profiles, about descriptions ofconcrete minor
+    versions, their parents, parents etc.
+
+    If ``perun log --short`` is issued, the shorter version of the ``log`` is
+    outputted.
 
     In no <hash> is given, then HEAD of the version control system is used as a starting point.
 
-    By default the long format is printed of the following form:
+    Unless ``perun --no-pager log`` is issued as command, or appropriate
+    :ckey:`paging` option is set, the outputs of log will be paged (by
+    default using ``less``.
 
-    \b
-    Minor version <hash>
-    <int> tracked profiles (<profile_type_numbers>)
-    Author: <name> <email> <author_date>
-    Parent: <hash>
-    <desc>
-
-    If --short | -s option is given, then the log is printed in the following short format,
-    one entry per line:
-
-    \b
-    <hash> (<profile_numbers>) <short_info>
+    Refer to :ref:`logs-log` for information how to customize the outputs of
+    ``log`` or how to set :ckey:`global.minor_version_info_fmt` in nearest
+    configuration.
     """
     try:
         commands.log(head, **kwargs)
@@ -495,14 +628,29 @@ def log(head, **kwargs):
 
 @cli.command()
 @click.option('--short', '-s', required=False, default=False, is_flag=True,
-              help="Prints the status of the control systems using the short format.")
+              help="Shortens the output of ``status`` to include only most"
+              " necessary informations.")
 def status(**kwargs):
-    """Shows the status of the perun control system and wrapped version control system.
+    """Shows the status of vcs, associated profiles and perun.
 
-    Shows the status of the both perun control system and wrapped version control system. Prints
-    the current minor version head, current major version and description of the minor version.
-    Moreover prints the list of tracked profiles lexicographically sorted along with their
+    Shows the status of both the nearest perun and wrapped version control
+    system. For vcs this outputs e.g. the current minor version ``HEAD``,
+    current major version and description of the ``HEAD``.  Moreover ``status``
+    prints the lists of tracked and pending (found in ``.perun/jobs``) profiles
+    lexicographically sorted along with additional information such as their
     types and creation times.
+
+    Unless ``perun --no-pager status`` is issued as command, or appropriate
+    :ckey:`paging` option is set, the outputs of status will be paged (by
+    default using ``less``.
+
+    An error is raised if the command is executed outside of range of any
+    perun, or configuration misses certain configuration keys
+    (namely ``global.profile_info_fmt``).
+
+    Refer to :ref:`logs-status` for information how to customize the outputs of
+    ``status`` or how to set :ckey:`global.profile_info_fmt` in nearest
+    configuration.
     """
     try:
         commands.status(**kwargs)
@@ -515,27 +663,49 @@ def status(**kwargs):
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
               callback=minor_version_lookup_callback,
-              help='Perun will lookup the profile at different minor version (default is HEAD).')
+              help='Will check the index of different minor version <hash>'
+              ' during the profile lookup')
 @click.pass_context
 def show(ctx, profile, **_):
-    """Shows the profile stored and registered within the perun control system.
+    """Interprets the given profile using the selected visualization technique.
 
-    Looks up the index of the given minor version and finds the <profile> and prints it
-    to the command line. Either the profile is given as a .perf name, which is
-    looked up within the index of the file or the hash is given, which represents
-    the concrete object profile stored within perun.
+    Looks up the given profile and interprets it using the selected
+    visualization technique. Some of the techniques outputs either to
+    terminal (using ``ncurses``) or generates HTML files, which can be
+    browseable in the web browser (using ``bokeh`` library). Refer to concrete
+    techniques for concrete options and limitations.
 
-    Example usage:
+    The shown <profile> will be looked up in the following steps:
 
-        perun show -c -o -m ddff3e echo-time-hello-2017-03-01-16-11-04.perf raw
+        1. If <profile> is in form ``i@i`` (i.e, an `index tag`), then `ith`
+           record registered in the minor version <hash> index will be shown.
 
-            Shows the profile of the ddff3e minor version in raw format, coloured, summarized in
-            one line.
+        2. If <profile> is in form ``i@p`` (i.e., an `pending tag`), then
+           `ith` profile stored in ``.perun/jobs`` will be shown.
 
-        perun show echo-time-hello-2017-04-02-13-13-34-12.perf memory heap
+        3. <profile> is looked-up within the minor version <hash> index for a
+           match. In case the <profile> is registered there, it will be shown.
 
-            Shows the given profile of the current HEAD of the wrapped repository using as the heap
-            map (if the profile is of memory type).
+        4. <profile> is looked-up within the ``.perun/jobs`` directory. In case
+           there is a match, the found profile will be shown.
+
+        5. Otherwise, the directory is walked for any match. Each found match
+           is asked for confirmation by user.
+
+    Example 1. The following command will show the first profile registered at
+    index of ``HEAD~1`` commit. The resulting graph will contain bars
+    representing sum of amounts per each subtype of resources and will be shown
+    in the browser::
+
+        perun show -m HEAD~1 0@i bars sum --of 'amount' --per 'subtype' -v
+
+    Example 2. The following command will show the profile at the absolute path
+    using in raw JSON format::
+
+        perun show ./echo-time-hello-2017-04-02-13-13-34-12.perf raw
+
+    For a thorough list and description of supported visualization techniques
+    refer to :ref:`views-list`.
     """
     ctx.obj = profile
     # TODO: Check that if profile is not SHA-1, then minor must be set
@@ -545,19 +715,56 @@ def show(ctx, profile, **_):
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
               callback=minor_version_lookup_callback,
-              help='Perun will lookup the profile at different minor version (default is HEAD).')
+              help='Will check the index of different minor version <hash>'
+              ' during the profile lookup')
 @click.pass_context
 def postprocessby(ctx, profile, **_):
-    """Postprocesses the profile stored and registered within the perun control system.
+    """Postprocesses the given stored or pending profile using selected
+    postprocessor.
 
-    Fixme: Default should not be head, but storage?
+    Runs the single postprocessor unit on given looked-up profile. The
+    postprocessed file will be then stored in ``.perun/jobs/`` directory as a
+    file, by default with filanem in form of::
 
-    Example usage:
+        bin-collector-workload-timestamp.perf
 
-        perun postprocessby echo-time-hello-2017-04-02-13-13-34-12.perf normalizer
+    The postprocessed <profile> will be looked up in the following steps:
 
-            Postprocesses the profile echo-time-hello by normalizer, where for each snapshots,
-            values of the resources will be normalized to the interval <0,1>.
+        1. If <profile> is in form ``i@i`` (i.e, an `index tag`), then `ith`
+           record registered in the minor version <hash> index will be
+           postprocessed.
+
+        2. If <profile> is in form ``i@p`` (i.e., an `pending tag`), then
+           `ith` profile stored in ``.perun/jobs`` will be postprocessed.
+
+        3. <profile> is looked-up within the minor version <hash> index for a
+           match. In case the <profile> is registered there, it will be
+           postprocessed.
+
+        4. <profile> is looked-up within the ``.perun/jobs`` directory. In case
+           there is a match, the found profile will be postprocessed.
+
+        5. Otherwise, the directory is walked for any match. Each found match
+           is asked for confirmation by user.
+
+    For checking the associated `tags` to profiles run ``perun status``.
+
+    Example 1. The following command will postprocess the given profile
+    stored at given path by normalizer, i.e. for each snapshot, the resources
+    will be normalized to the interval <0, 1>::
+
+        perun postprocessby ./echo-time-hello-2017-04-02-13-13-34-12.perf normalizer
+
+    Example 2. The following command will postprocess the second profile stored
+    in index of commit preceeding the current head using interval regression
+    analysis::
+
+        perun postprocessby -m HEAD~1 1@i regression_analysis --method=interval
+
+    For a thorough list and description of supported postprocessors refer to
+    :ref:`postprocessors-list`. For a more subtle running of profiling jobs and
+    more complex configuration consult either ``perun run matrix --help`` or
+    ``perun run job --help``.
     """
     ctx.obj = profile
 
@@ -588,17 +795,40 @@ def parse_yaml_single_param(ctx, param, value):
 
 @cli.group()
 @click.option('--cmd', '-c', nargs=1, required=False, multiple=True, default=[''],
-              help='Command that we will collect data from single collector.')
+              help='Command that is being profiled. Either corresponds to some'
+              ' script, binary or command, e.g. ``./mybin`` or ``perun``.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
-              help='Additional arguments for the command.')
+              help='Additional parameters for <cmd>. E.g. ``status`` or '
+              '``-al`` is command parameter.')
 @click.option('--workload', '-w', nargs=1, required=False, multiple=True, default=[''],
-              help='Inputs for the command, i.e. so called workloads.')
+              help='Inputs for <cmd>. E.g. ``./subdir`` is possible workload'
+              'for ``ls`` command.')
 @click.option('--params', '-p', nargs=1, required=False, multiple=True,
               callback=parse_yaml_single_param,
-              help='Additional parameters for called collector')
+              help='Additional parameters for called collector read from '
+              'file in YAML format.')
 @click.pass_context
 def collect(ctx, **kwargs):
-    """Collect the profile from the given binary, arguments and workload"""
+    """Generates performance profile using selected collector.
+
+    Runs the single collector unit (registered in Perun) on given profiled
+    command (optionaly with given arguments and workloads) and generates
+    performance profile. The generated profile is then stored in
+    ``.perun/jobs/`` directory as a file, by default with filename in form of::
+
+        bin-collector-workload-timestamp.perf
+
+    Generated profiles will not be postprocessed in any way. Consult ``perun
+    postprocessby --help`` in order to postprocess the resulting profile.
+
+    The configuration of collector can be specified in external YAML file given
+    by the ``-p``/``--params`` argument.
+
+    For a thorough list and description of supported collectors refer to
+    :ref:`collectors-list`. For a more subtle running of profiling jobs and
+    more complex configuration consult either ``perun run matrix --help`` or
+    ``perun run job --help``.
+    """
     ctx.obj = kwargs
 
 
@@ -634,7 +864,7 @@ def init_unit_commands(lazy_init=True):
 
 @cli.group()
 def run():
-    """Run the jobs either using the job matrix or single command line command.
+    """Generates batch of profiles w.r.t. specification of list of jobs.
 
     Either runs the job matrix stored in local.yml configuration or lets the user
     construct the job run using the set of parameters.
@@ -645,39 +875,20 @@ def run():
 def matrix(**kwargs):
     """Runs the jobs matrix specified in the local.yml configuration.
 
-    The job matrix is defined using the yaml configuration format and consists of specification
-    of binaries with corresponding arguments, workloads, supported collectors of profiling data
-    and postprocessors that alter the collected profiles.
+    This commands loads the jobs configuration from local configuration, builds
+    the `job matrix` and subsequently runs the jobs collecting list of
+    profiles. Each profile is then stored in ``.perun/jobs`` directory and
+    moreover is annotated using by setting :preg:`origin` key to current
+    ``HEAD``. This serves as check to not assing such profiles to different
+    minor versions.
 
-    From the config file, a job matrix is constructed as a cartesian product of binaries with
-    workloads and collectors. After each job the set of postprocessors are run.
+    The job matrix is defined in the yaml format and consists of specification
+    of binaries with corresponding arguments, workloads, supported collectors
+    of profiling data and postprocessors that alter the collected profiles.
 
-    Example contents of the local.yml configuration file::
-
-        \b
-        bins:
-          - ./mybin
-          - ./otherbin
-
-        \b
-        workloads:
-          - input.in
-          - other_input.in
-
-        \b
-        collectors:
-          - name: time
-
-        \b
-        postprocessors:
-          - name: filter
-          - name: normalizer
-
-    This will run four jobs './mybin input.in', './mybin other_input.in', './otherbin input.in' and
-    './otherbin other_input.in' with the time collector. Each collection will be afterwards post
-    processed using the filter and normalizer postprocessors.
-
-    For full documentation of the local.yml syntax consult the documentation.
+    Refer to :doc:`jobs` and :ref:`jobs-matrix` for more details how to specify
+    the job matrix inside local configuration and to :doc:`config` how to work
+    with Perun's configuration files.
     """
     runner.run_matrix_job(**kwargs)
 
@@ -705,53 +916,82 @@ def parse_yaml_param(ctx, param, value):
 
 @run.command()
 @click.option('--cmd', '-b', nargs=1, required=True, multiple=True,
-              help='Binary unit that we are collecting data for.')
+              help='Command that is being profiled. Either corresponds to some'
+              ' script, binary or command, e.g. ``./mybin`` or ``perun``.')
 @click.option('--args', '-a', nargs=1, required=False, multiple=True,
-              help='Additional arguments for the binary unit.')
+              help='Additional parameters for <cmd>. E.g. ``status`` or '
+              '``-al`` is command parameter.')
 @click.option('--workload', '-w', nargs=1, required=False, multiple=True, default=[''],
-              help='Inputs for the binary, i.e. so called workloads, that are run on binary.')
+              help='Inputs for <cmd>. E.g. ``./subdir`` is possible workload'
+              'for ``ls`` command.')
 @click.option('--collector', '-c', nargs=1, required=True, multiple=True,
               type=click.Choice(utils.get_supported_module_names('collect')),
-              help='Collector unit used to collect the profiling data for the binary.')
+              help='Profiler used for collection of profiling data for the'
+              ' given <cmd>')
 @click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
               callback=parse_yaml_param,
-              help='Parameters for the given collector read from the file in YAML format or'
-                   'as a string..')
+              help='Additional parameters for the <collector> read from the'
+              ' file in YAML format')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
               type=click.Choice(utils.get_supported_module_names('postprocess')),
-              help='Additional postprocessing phases on profiles, after collection of the data.')
+              help='After each collection of data will run <postprocessor> to '
+              'postprocess the collected resources.')
 @click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
               callback=parse_yaml_param,
-              help='Parameters for the given postprocessor read from the file in the YAML format or'
-                   'as a string.')
+              help='Additional parameters for the <postprocessor> read from the'
+              ' file in YAML format')
 def job(**kwargs):
     """Run specified batch of perun jobs to generate profiles.
 
-    Computed profiles are stored inside the .perun/jobs/ directory as a files in form of:
+    This command correspond to running one isolated batch of profiling jobs,
+    outside of regular profilings. Run ``perun run matrix``, after specifying
+    job matrix in local configuration to automate regular profilings of your
+    project. After the batch is generated, each profile is taged with
+    :preg:`origin` set to current ``HEAD``. This serves as check to not assing
+    such profiles to different minor versions.
+
+    By default the profiles computed by this batch job are stored inside the
+    ``.perun/jobs/`` directory as a files in form of::
 
         bin-collector-workload-timestamp.perf
 
-    Profiles can be further stored in the perun control system using the command:
+    In order to store generated profiles run the following, with ``i@p``
+    corresponding to `pending tag`, which can be obtained by running ``perun
+    status``::
 
-        perun add profile.perf
+        perun add i@p
 
-    Example runs:
+    .. code-block:: bash
 
         perun run job -c time -b ./mybin -w file.in -w file2.in -p normalizer
 
-            Runs two jobs './mybin file.in' and './mybin file2.in' and collects the raw profile
-            using the time collector. The profiles are afterwards normalized with the normalizer.
+    This command profiles two commands ``./mybin file.in`` and ``./mybin
+    file2.in`` and collects the profiling data using the
+    :ref:`collectors-time`. The profiles are afterwards normalized with the
+    :ref:`postprocessors-normalizer`.
 
-        perun run job -c comp-collect -b ./mybin -w sll.cpp -cp targetdir=./src
+    .. code-block:: bash
 
-            Runs one job './mybin sll.cpp' using the comp-collect collector (note that comp-collect
-            compiles custom binary from targetdir source)
+        perun run job -c complexity -b ./mybin -w sll.cpp -cp complexity targetdir=./src
+
+    This commands runs one job './mybin sll.cpp' using the
+    :ref:`collectors-complexity`, which uses custom binaries targeted at
+    ``./src`` directory.
+
+    .. code-block:: bash
 
         perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p filter
 
-            Runs two jobs './mybin input.txt' and './otherbin input.txt' and collects the memory
-            profile using the mcollect collector. The profiles are afterwards postprocessed,
-            first using the normalizer and them with filter.
+    This commands runs two jobs ``./mybin input.txt`` and ``./otherbin
+    input.txt`` and collects the profiles using the :ref:`collectors-memory`.
+    The profiles are afterwards postprocessed, first using the
+    :ref:`postprocessors-normalizer` and them with
+    :ref:`postprocessors-filter`.
+
+    Refer to :doc:`jobs` and :doc:`profile` for more details about automation
+    and lifetimes of profiles. For list of available collectors and
+    postprocessors refer to :ref:`collectors-list` and
+    :ref:`postprocessors-list` respectively.
     """
     runner.run_single_job(**kwargs)
 
