@@ -103,24 +103,24 @@ def scatter(profile, filename, view_in_browser, **kwargs):
     The example output of the scatter is as follows::
 
         \b
-                                    <graph_title>
-                            `                         o
-                            -                        /
-                            `                       /o       ```````````````````
-                            -                     _/         `  o o = <points> `
-                            `                   _- o         `    _             `
-            <of>            -               __--o            `  _-  = <models> `
-                            `    _______--o- o               `                 `
-                            -    o  o  o                     ```````````````````
-                            `
-                            +````||````||````||````||````
+                                  <graph_title>
+                          `                         o
+                          -                        /
+                          `                       /o       ```````````````````
+                          -                     _/         `  o o = <points> `
+                          `                   _- o         `    _             `
+            <of>          -               __--o            `  _-  = <models> `
+                          `    _______--o- o               `                 `
+                          -    o  o  o                     ```````````````````
+                          `
+                          +````||````||````||````||````
 
-                                        <per>
+                                      <per>
 
     Refer to :ref:`views-scatter` for more thorough description and example of
     `scatter` interpretation possibilities. For more thorough explanation of
     regression analysis and models refer to
-    :ref:`postprocess-regression-analysis`.
+    :ref:`postprocessors-regression-analysis`.
     """
     # discuss multiple results plotting (i.e. grid of plots? separate files? etc.)
     # Temporary solution for plotting multiple graphs from one command

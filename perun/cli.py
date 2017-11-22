@@ -980,13 +980,13 @@ def job(**kwargs):
 
     .. code-block:: bash
 
-        perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p filter
+        perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p regression_analysis
 
     This commands runs two jobs ``./mybin input.txt`` and ``./otherbin
     input.txt`` and collects the profiles using the :ref:`collectors-memory`.
     The profiles are afterwards postprocessed, first using the
-    :ref:`postprocessors-normalizer` and them with
-    :ref:`postprocessors-filter`.
+    :ref:`postprocessors-normalizer` and then with
+    :ref:`postprocessors-regression-analysis`.
 
     Refer to :doc:`jobs` and :doc:`profile` for more details about automation
     and lifetimes of profiles. For list of available collectors and

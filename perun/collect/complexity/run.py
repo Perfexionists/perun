@@ -1,6 +1,8 @@
-""" Standardized complexity collector module with before, collect and after functions to perform
-    the initialization, collection and postprocessing of collection data
+"""Wrapper for complexity collector, which collects profiling data about
+running times and sizes of structures.
 
+Specifies before, collect and after functions to perform the initialization,
+collection and postprocessing of collection data.
 """
 
 import collections

@@ -1,0 +1,207 @@
+{
+  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae",
+  "header": {
+    "cmd": "",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "workload": "",
+    "params": "",
+    "type": "mixed"
+  },
+  "collector_info": {
+    "name": "complexity",
+    "params": {
+      "target_dir": "./target",
+      "internal_data_filename": "trace.log",
+      "internal_direct_output": false,
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "internal_storage_size": 20000,
+      "rules": [
+        "SLList_init",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy"
+      ],
+      "files": [
+        "../example_sources/simple_sll_cpp/main.cpp",
+        "../example_sources/simple_sll_cpp/SLList.h",
+        "../example_sources/simple_sll_cpp/SLListcls.h"
+      ]
+    }
+  },
+  "postprocessors": [],
+  "global": {
+    "models": [
+      {
+        "coeffs": [
+          {
+            "value": 0.75,
+            "name": "b0"
+          },
+          {
+            "value": 0.0,
+            "name": "b1"
+          }
+        ],
+        "uid": "SLList_insert(SLList*, int)",
+        "x_interval_end": 3,
+        "model": "constant",
+        "r_square": 0.0,
+        "method": "full",
+        "x_interval_start": 0
+      },
+      {
+        "coeffs": [
+          {
+            "value": 1.0,
+            "name": "b0"
+          },
+          {
+            "value": 1.0,
+            "name": "b1"
+          }
+        ],
+        "uid": "SLList_insert(SLList*, int)",
+        "x_interval_end": 3,
+        "model": "exponential",
+        "r_square": 0.0,
+        "method": "full",
+        "x_interval_start": 0
+      },
+      {
+        "coeffs": [
+          {
+            "value": 0.6,
+            "name": "b0"
+          },
+          {
+            "value": 0.1,
+            "name": "b1"
+          }
+        ],
+        "uid": "SLList_insert(SLList*, int)",
+        "x_interval_end": 3,
+        "model": "linear",
+        "r_square": 0.06666666666666667,
+        "method": "full",
+        "x_interval_start": 0
+      },
+      {
+        "coeffs": [
+          {
+            "value": 0.08877935258260898,
+            "name": "b0"
+          },
+          {
+            "value": 0.9675751528184126,
+            "name": "b1"
+          }
+        ],
+        "uid": "SLList_insert(SLList*, int)",
+        "x_interval_end": 3,
+        "model": "logarithmic",
+        "r_square": 0.8668309711260865,
+        "method": "full",
+        "x_interval_start": 0
+      },
+      {
+        "coeffs": [
+          {
+            "value": 1.0,
+            "name": "b0"
+          },
+          {
+            "value": 0.0,
+            "name": "b1"
+          }
+        ],
+        "uid": "SLList_insert(SLList*, int)",
+        "x_interval_end": 3,
+        "model": "power",
+        "r_square": 0.0,
+        "method": "full",
+        "x_interval_start": 0
+      },
+      {
+        "coeffs": [
+          {
+            "value": 0.5714285714285714,
+            "name": "b0"
+          },
+          {
+            "value": 0.05102040816326531,
+            "name": "b1"
+          }
+        ],
+        "uid": "SLList_insert(SLList*, int)",
+        "x_interval_end": 3,
+        "model": "quadratic",
+        "r_square": 0.17006802721088435,
+        "method": "full",
+        "x_interval_start": 0
+      }
+    ],
+    "resources": [
+      {
+        "amount": 6,
+        "subtype": "time delta",
+        "uid": "SLList_init(SLList*)",
+        "structure-unit-size": 0,
+        "type": "mixed"
+      },
+      {
+        "amount": 0,
+        "subtype": "time delta",
+        "uid": "SLList_search(SLList*, int)",
+        "structure-unit-size": 0,
+        "type": "mixed"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 0,
+        "type": "mixed"
+      },
+      {
+        "amount": 0,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 1,
+        "type": "mixed"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 2,
+        "type": "mixed"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 3,
+        "type": "mixed"
+      },
+      {
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_destroy(SLList*)",
+        "structure-unit-size": 4,
+        "type": "mixed"
+      }
+    ],
+    "time": "6.8e-05s"
+  }
+}

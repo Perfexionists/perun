@@ -1,0 +1,34 @@
+{
+  "origin": "9524dd21a51ed5d462b802fd3bc7e070462cceac",
+  "header": {
+    "params": "status",
+    "type": "time",
+    "cmd": "perun",
+    "workload": "--short",
+    "units": {
+      "time": "s"
+    }
+  },
+  "collector_info": {
+    "params": {},
+    "name": "time"
+  },
+  "postprocessors": [],
+  "global": {
+    "timestamp": "2.32",
+    "resources": [
+      {
+        "amount": 0.59,
+        "uid": "sys"
+      },
+      {
+        "amount": 0.32,
+        "uid": "user"
+      },
+      {
+        "amount": 2.32,
+        "uid": "real"
+      }
+    ]
+  },
+}
