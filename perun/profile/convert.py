@@ -1,7 +1,7 @@
 """``perun.profile.convert`` is a module which specifies interface for
 conversion of profiles from :ref:`profile-spec` to other formats.
 
-.. _Pandas library: https://docs.python.org/3.7/library/json.html
+.. _pandas: https://pandas.pydata.org/
 
 Run the following in the Python interpreter to extend the capabilities of
 Python to different formats of profiles::
@@ -9,7 +9,7 @@ Python to different formats of profiles::
     import perun.profile.convert
 
 Combined with ``perun.profile.factory``, ``perun.profile.query`` and e.g.
-`Pandas library`_ one can obtain efficient interpreter for executing more
+`pandas`_ library one can obtain efficient interpreter for executing more
 complex queries and statistical tests over the profiles.
 """
 import copy
@@ -28,10 +28,10 @@ __coauthors__ = ['Tomas Fiedor', 'Jirka Pavela']
 
 def resources_to_pandas_dataframe(profile):
     """Converts the profile (w.r.t :ref:`profile-spec`) to format supported by
-    `Pandas library`_.
+    `pandas`_ library.
 
     Queries through all of the resources in the `profile`, and flattens each
-    key and value to the tabular representation. Refer to `Pandas library`_ for
+    key and value to the tabular representation. Refer to `pandas`_ libray for
     more possibilities how to work with the tabular representation of collected
     resources.
 

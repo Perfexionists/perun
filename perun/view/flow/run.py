@@ -67,7 +67,7 @@ def process_title(ctx, _, value):
 @click.option('--accumulate/--no-accumulate', default=True,
               help="Will accumulate the values for all previous values of X axis.")
 # Other options and arguments
-@click.option('--use-terminal', '-t', is_flag=True, default=False,
+@click.option('--use-terminal', '-ut', is_flag=True, default=False,
               help="Shows flow graph in the terminal using ncurses library.")
 @click.option('--filename', '-f', default="flow.html", metavar="<html>",
               help="Sets the outputs for the graph to the file.")

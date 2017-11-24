@@ -1,29 +1,12 @@
-"""
-Display of the resources in bar format::
+""" `Bar graphs` displays resources as bars, with moderate customization
+possibilities (regarding the sources for axes, or grouping keys). The output
+backend of `Bars` is both Bokeh_ and ncurses_ (with limited possibilities
+though). Bokeh_ graphs support either the stacked format (bars of different
+groups will be stacked on top of each other) or grouped format (bars of
+different groups will be displayed next to each other).
 
-                              <graph_title>
-                   `
-                   -         .::.                ````````
-                   `         :&&:                ` # \\  `
-                   -   .::.  ::::        .::.    ` @  }->  <by>
-                   `   :##:  :##:        :&&:    ` & /  `
-   <func>(<of>)    -   :##:  :##:  .::.  :&&:    ````````
-                   `   ::::  :##:  :&&:  ::::
-                   -   :@@:  ::::  ::::  :##:
-                   `   :@@:  :@@:  :##:  :##:
-                   +````||````||````||````||````
-
-                                <per>
-
-Bar graphs shows aggregation of resources according to the given criteria. Each bar
-displays <func> of resources from <of> key (e.g. sum of amounts, average of amounts, etc.)
-per each <per> key (e.g. per each snapshot). Moreover, the graphs can either be (i) stacked,
-where the different values of <by> key are shown above each other, or (ii) grouped, where the
-different values of <by> key are shown next to each other.
-
-Graphs are displayed using the Bokeh library and can be further customized by adding custom
-labels for axis, custom graph title and different graph width. Each graph can be loaded from
-the template according to the template file.
+.. _Bokeh: https://bokeh.pydata.org/en/latest/
+.. _ncurses: https://www.gnu.org/software/ncurses/ncurses.html
 """
 
 SUPPORTED_PROFILES = ['memory']
