@@ -3,31 +3,48 @@
 Perun Internals
 ===============
 
-Perun acts as a wrapper around the version control system, which stores and annotates the
-information about profiles. Currently only ``git`` is supported as a version control system.
-In order to register support for new version control system consult :ref:`internals-vcs-custom`.
-Internally Perun is inspired by GIT and stores the profiles similarly as objects compressed
-by zlib and identified by hashes. :ref:`internals-store` describes the internal model of Perun
-more briefly.
+.. _JSON: https://www.json.org/ 
 
-.. todo::
-    Mention that taggit is work in progress.
+Conceptually one Perun instances serves as a wrapper around the existing version control system
+(e.g. some repository). Perun takes specializes on storing the performance profiles and manages the
+link between minor versions and their corresponding profiles. Currently as a target vcs we support
+only ``git``, with a custom lightweigth vcs being in development (called ``tagit``). The
+architecture of Perun contains an interface that can be used to register support for new version
+control system as described in :ref:`internals-vcs-custom`. Internal structure of one instance of
+Perun is inspired by git: performance profiles are similarly stored as objects compressed by zlib
+method and identified by hashes. :ref:`internals-store` describes the internal model of Perun more
+briefly.
 
-.. todo::
-    Add picture how Perun and VCS coexist
+.. image:: /../figs/perun-vs-vcs.*
+   :align: center
+   :width: 100%
 
-.. todo::
-    Add picture, where Perun and VCS is highlighted along with what is stored etc.
+The diagram above highlights the responsibilities and storage of individual systems. Version
+control systems manage the functionality of the project---its versions and precise code
+changes---but lack proper support for managing performance. On the other hand, performance
+versioning systems manages the performance of project---its individual performance profiles, data
+visualizations of various statistics---but lack the precise functionality changes. This means that
+vcs stores the actual code chungs and version references and pvs stores the actual profiling data.
+
+.. image:: /../figs/perun-flow.*
+   :align: center
+   :width: 100%
+
+This diagram shows one of the proper usages of Perun's tool suite. Each developer keeps his own
+instance of both versioning and performance systems. In this mode one can share both the code
+changes and performance measurement through the wider range of developers.
 
 .. _internals-vcs:
 
 Version Control Systems
 -----------------------
 
-Version Control System takes care of storing changes between different versions (or snapshots) of
-project. For each change one often requires to store the performance profiles in order to detect
-potential performance degradation. :ref:`internals-vcs-api` describes the necessary API that
-Perun requires in order to serve as a wrapper over VCS of given type.
+Version Control System manages the history of functionality of one project, i.e. stores the changes
+between different versions (or snapshots) of project. Each code change usually requires
+corresponding the performance profiles in order to detect potential performance degradation early
+in the development. The following subsection :ref:`internals-vcs-api` describes the layer which
+serves as an interface in Perun which supplies the necessary information between the version
+control and performance versioning systems.
 
 .. _internals-vcs-api:
 
@@ -59,43 +76,81 @@ Creating Support for Custom VCS
 
 You can register support for your own version control system as follows:
 
-    1. Create a new module in ``perun/vcs`` implementing functions from :ref:`internals-vcs-api`.
+    1. Create a new module in ``perun/vcs`` directory implementing functions from
+       :ref:`internals-vcs-api`.
 
-    2. Register your newly created module in :func:`get_supported_module_names`.
+    2. Finally register your newly created vcs wrapper in :func:`get_supported_module_names`
+       located in ``perun.utils.__init__.py``:
 
-    3. Verify that registering did not break anything in the Perun and optionally reinstall Perun::
+    .. literalinclude:: _static/templates/supported_module_names_collectors.py
+        :language: python
+        :linenos:
+        :diff: _static/templates/supported_module_names.py
+
+    3. Optionally implement batch of automatic test cases using (preferably based on pytest_) in
+       ``tests`` directory. Verify that registering did not break anything in the Perun, your
+       wrapper is correct and optionally reinstall Perun::
 
         make test
         make install
+    
+    4. If you think your wrapper could help others, please, consider making `Pull Request`_.
+
+.. _Pull Request: https://github.com/tfiedor/perun/pull/new/develop
+.. _pytest: https://docs.pytest.org/en/latest/ 
 
 .. _internals-store:
 
 Perun Storage
 -------------
 
-The current version of Perun storage is based on GIT and is meant for easy distribution, flexibility
-and easier managing. Different versions of storages are currently in design. All of the internal
-files are stored in the ``.perun`` directory consisting of the following infrastructure::
+The current internal representation of Perun storage is based on git internals and is meant for
+easy distribution, flexibility and easier managing. The possible extension of Perun to different
+versions of storages is currently under consideration. Internal objects and files for one local
+instance of Perun are stored in the filesystem in the ``.perun`` directory consisting of the
+following infrastructure::
 
     .perun/
-        |-- /cache
         |-- /jobs
         |-- /objects
         |-- local.yml
 
-``.perun/cache``:
-    Currently in design, is meant to store the latest, unpacked profiles for quicker handling.
-
 ``.perun/jobs``:
-    Contains pending jobs, that were generated by collectors, or postprocessed by some
-    postprocessors, but are not yet assigned to concrete minor versions. These profiles contains
-    the tag ``origin`` inside which specifies which minor version is the parent of the profile.
-    This is meant to prevent assigning profiles to incorrect minor versions.
+    Contains pending jobs, i.e. those that were generated by collectors, postprocessed by some
+    postprocessors, or automatically generated by ``perun run`` commands, but are not yet assigned
+    to concrete minor versions. These profiles contains the tag :preg:`origin` that maps the
+    profile to concrete minor version, i.e. the parent of the profile. This key serves as a
+    prevention of assigning profiles to incorrect minor versions.
+
+    .. code-block:: bash
+
+        .perun/jobs
+            |-- /baseline.perf
+            |-- /sll-comparison.perf
+            |-- /skip-lists-medium-height.perf
+            |-- /skip-lists-unlimited-height.perf
 
 ``.perun/objects``:
-    Contains objects of Perun compressed by zlib. An object of Perun is either a index corresponding
-    to a minor version, which lists information about assigned profiles for a given minor version.
-    Or the object is compressed profile (but without the ``origin`` tag, since it already assigned).
+    Corresponds to main storage of Perun and contains object primitives. Every object of Perun is
+    represented by unique identifier (mostly by sha representation) and corresponds either to an
+    object blob (containing compressed profile) or to an index of a corresponding minor version,
+    which lists assigned profiles for the given minor version.
+
+    .. code-block:: bash
+
+        .perun/objects
+            |-- /07
+                |-- f2b4bfa06f6b1be5713f2bbae7740838456758
+                |-- 99dc4c5891947bdf7e26341231ca533432a1f1
+            |-- /3d
+                |-- 3859b46db4eea5866a0b2b28997fac25a95430
+            |-- /ff
+                |-- d35c8962d8d2019d7762a7bc6980c1d0f2fcd7
+                |-- d88aabca6e5427c78ea647e955ffa00d1cd615
+
+    Each object from ``.perun/objects`` is represented by hash value, where the first two characters
+    are used to specify directory and the rest of the hash value a file name, where the index or
+    compressed file is stored.
 
 ``local.yml``:
     Contains local configuration, e.g. the specification of wrapped repository, job matrixes or
@@ -105,49 +160,153 @@ files are stored in the ``.perun`` directory consisting of the following infrast
 Perun Index Specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Perun Index is in binary format with the following specification:
+Each minor version of vcs, which has any profile assigned, has corresponding index file in the
+``.perun/object`` according to its identification. The index file itself is stored in binary format
+with the following specification.
 
-`4B`:
-    `pidx` magic constant specifying that the file is perun index
+.. image:: /../figs/perun-index-spec.*
+   :align: center
+   :width: 100%
 
-`4B`:
-    Version of the index (for potential future backward compatibility)
+`Index signature` [4B]:
+    Signature are the first bytes of the index containing ascii string `pidx`, which serves as an
+    quick identification of minor version index.
 
-`4B`:
-    Number of entries in the index
+`Index version` [4B]:
+    Specification of version of conding of the index. Versioning is introduced for potential future
+    backward compatibility with possible different specifications of index.
 
-`?B`:
-    Variable number of index entries, where each entry consists of following parts:
+`Number of Entries` [4B]:
+    Integer count of the number of entries found in the index. Each entry of the index is of
+    variable length and lists the profiles with mapping to their corresponding objects.
 
-    * `4B`: Timestamp of the profile
-    * `20B`: SHA identification of the profile, i.e. where in ``.perun/objects`` the profile is
-      compressed
-    * `?B`: Path of variable length terminated by null byte.
+`Entries` [`variable length`]:
+    One entry of the index corresponds to one assigned profile. Each entry is of variable lenght
+    and contains the identification of the original profile file, together with timestamp of
+    creation and the identification of the compressed object, that contains the actual profiling
+    data. Each entry can be broken into following parts:
 
+    * `Creation time` [4B]: creation time of the profile represented as 4B timestamp.
+    * `Profile ID` [20B]: unique identification of the profile, i.e. specification of the concrete
+      compressed object located in the ``.perun/objects``. Profile ID is always in form of SHA-1
+      hash, which is obtained from the contents.
+    * `Origin Path` [`variable length`: Original path to the profile represented as ascii string of
+      variable length terminated by null byte.
+
+`Checksum` [20B]:
+    Checksum of the whole index, which serves for error detection.
+
+Perun Object Specification
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each non-index object consist of short header ended with zero byte, consisting of header signature
+string, type of the profile and lenght of the content, and raw content of the performance profile
+w.r.t. :ref:`profile-spec`. First we compute the checksum for these data, which serves as an
+identification in the minor version indexes and in ``.perun/objects`` directory. Finally, the
+object is compressed using zlib method and stored in the ``.perun/objects`` compressed.
+
+.. image:: /../figs/perun-object-spec.*
+   :align: center
+   :width: 100%
+
+`Signature` [7B]:
+    Signature is a 7B prefix containing ascii string "profile". Serves for quick identification of
+    profile.
+
+`Type` [`variable length`]:
+    Ascii specification of the profile type. This serves for quick and easy parsing of profiles.
+
+`Content Lenght` [4B]:
+    Integer count of the non-header data followed after the zero byte in bytes.
+
+`Content` [`variable length`]:
+    Contents of the performance profile w.r.t. :ref:`profile-spec`. 
 
 The Lifetime of profile: Internals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The following subsections describes in more detail the basics of profile manipulations, namely
+registering, removing and lookuping up profiles.
+
 Registering new profile
 """""""""""""""""""""""
 
-.. todo::
-    Write how new profiles is assigned to a given minor version
+Given a profile, w.r.t. :ref:`profile-spec`, called ``sll-vs-skiplist.perf``, registering this
+profile in ``HEAD`` minor version index, the following steps are executed:
+
+    1. ``sll-vs-skiplist.perf`` is loaded and parsed into JSON_. Profile is verified whether it is
+       in format specified by :ref:`profile-spec`.
+
+    2. :preg:`origin` key is compared with the massaged ``HEAD`` minor version. In case it
+       differes, an error is raised and adding the profiles is canceled, as we are trying to
+       register performance profile corresponding to other point of history. Otherwise the
+       :preg:`origin` is removed from the profile and will not be stored in persistent storage.
+
+    3. We construct the header for the profile consisting of ``profile`` prefix, the type of the
+       specified by :pkey:`type` and length of the unpacked JSON_ representation of profile, joined
+       by spaces and ended by null byte.
+
+    4. JSON_ contents of performance profile are appended to the header resulting into one ``object``.
+
+    5. An SHA-1 hash ``checksum`` is computed out of the ``object``. The hash serves both as a check
+       that the profile was not damaged during next usage, as well as identification in the
+       filesystem.
+
+    6. The ``object`` is compressed using `zlib` compression method and stored in the
+       ``.perun/objects`` directory. First two characters of ``checksum`` specifies the target
+       directory and the rest specifies the resulting filename.
+
+    7. An index corresponding to the ``HEAD`` minor version is opened (if it does not exist, it is
+       newly created first). Minor version index is also represented by its hash, where first two
+       characters of hash is used as directory and the rest as filename.
+
+    8. An entry for ``sll-vs-skiplist.perf`` with given modification time is registered within the
+       index pointing to the ``checksum`` object with compressed data. The number of registered
+       profiles in index is increased.
+
+    9. Unless it is specified otherwise, the ``sll-vs-skiplist.perf`` is removed from filesystem.
+
+.. image:: /../figs/register-profile.*
+    :align: center
+    :width: 100%
+    
 
 Removing profile from index
 """""""""""""""""""""""""""
 
-.. todo::
-    Write how the profile is removed from the index, step by step
+Given a profile filename ``sll-vs-skiplist.perf``, removing it from the ``HEAD`` minor version
+index, requires the following steps to be executed:
+
+    1. An index corresponding to the ``HEAD`` minor version is opened. Minor version index is
+       represented by its hash, where first two characters of hash is used as directory and the
+       rest as filename. If the index does not exist, removing ends with an error.
+
+    2. An entry for ``sll-vs-skiplist.perf`` is looked up within within the index. If it is not
+       found, the removing ends with an error. Other wise, the entry is removed from the index and
+       the number of registered profiles in index is decreased.
+
+    3. The original compresed object, which was stored in the entry is kept in the
+       ``.perun/objects`` directory.
 
 Looking up profile
 """"""""""""""""""
 
-.. todo::
-    Write how the profile is looked up during show/etc/talk about tags etc.
+Profiles are looked-up during the ``perun show``, ``perun add``, ``perun postprocessby`` or ``perun
+rm`` and can be found in several places, namely the filesystem, pending storage or registered in
+index. Priorities during the lookup are usually as follows:
 
-.. todo::
-    Add some picture of layers and stuff like that
+    1. If the specification of profile is in form of ``i@i`` or ``i@p`` (i.e. the `index` and
+       `pending` tags respectively), then ``i`` th profile registered in index or stored in
+       pending jobs directory (``.perun/jobs``) is used.
 
-.. todo::
-    Add some picture specifying the internal of index
+    2. Index of corresponding minor version is searched. 
+
+    3. Absolute path in filesystem is checked.
+
+    4. ``.perun/jobs`` directory is searched for match, i.e. one can specify just partial name of
+       the profile during the lookup.
+
+    5. Otherwise the whole scope of filesystem is walked. Each successful match asks user for
+       confirmation until the profile is found.
+
+Refer to :doc:`cli` for precise specification of lookups during individual commands.

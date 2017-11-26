@@ -21,6 +21,15 @@ with the :preg:`origin` set to the current ``HEAD`` of the wrapped repository. `
 check during registering profiles in the indexes of minor versions. Profile with `origin` different
 from the target minor version will not be assigned, as it would violate the correctness of the
 performance history of the project.
+    
+.. image:: /../figs/perun-jobs-flow.*
+    :align: center
+    :width: 100%
+
+The figure above show the overview of the jobs flow in Perun. The runner module is initialized form
+user interfaces and from local (or shared) configurations and internally generates the matrix of
+jobs which are run in the sequence. Each job is then finished with storing the generated profile in
+the internal storage.
 
 .. note::
 
@@ -32,9 +41,6 @@ performance history of the project.
 
     If you do not want to miss profiling, e.g. after each push, commit, etc., check out `git
     hooks`_. ``git hooks`` allows you to run custom scripts on certain git event triggers.
-    
-.. todo::
-    Add the picture of flow from cli/gui through to the storage
 
 .. todo::
     Change the notes to "Tips" or something like that
