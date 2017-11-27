@@ -545,8 +545,3 @@ def plot_data_from_coefficients_of(model):
     """
     model.update(transform.coefficients_to_points(**model))
     return model
-
-
-# Guard for imports through sphinx
-if __name__ == "__main__":
-    pass

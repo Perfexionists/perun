@@ -385,7 +385,3 @@ def _unique_values_generator(profile, key, blocks_gen):
                 yield value
 
 # Todo: add optimized version for multiple key search in one go? Need to discuss interface etc.
-
-# Guard for imports through sphinx
-if __name__ == "__main__":
-    pass
