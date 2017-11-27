@@ -38,5 +38,28 @@ def collect(**kwargs):
 @click.command()
 @click.pass_context
 def time(ctx):
-    """Runs the wrapper over the time command"""
+    """Generates `time` performance profile, capturing overall running times of
+    the profiled command.
+    
+    \b
+      * **Limitations**: `none`
+      * **Metric**: running `time`
+      * **Dependencies**: `none`
+      * **Default units**: `s`
+
+    This is a wrapper over the ``time`` linux unitility and captures resources
+    in the following form:
+
+    .. code-block:: json
+
+        \b
+        {
+            "amount": 0.59,
+            "type": "time",
+            "uid": "sys"
+        }
+
+    Refer to :ref:`collectors-time` for more thorough description and examples
+    of `complexity` collector.
+    """
     runner.run_collector_from_cli_context(ctx, 'time', {})

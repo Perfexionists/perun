@@ -1,6 +1,8 @@
-""" Standardized complexity collector module with before, collect and after functions to perform
-    the initialization, collection and postprocessing of collection data
+"""Wrapper for complexity collector, which collects profiling data about
+running times and sizes of structures.
 
+Specifies before, collect and after functions to perform the initialization,
+collection and postprocessing of collection data.
 """
 
 import collections
@@ -219,25 +221,68 @@ def sampling_to_dictionary(ctx, param, value):
 
 
 @click.command()
-@click.option('--target-dir', '-t', type=click.Path(exists=True, resolve_path=True), required=True,
-              help='Target directory path for binary and build data.')
+@click.option('--target-dir', '-t', type=click.Path(exists=True, resolve_path=True),
+              help='Target directory path for customly compiled binary and'
+              ' temporary build data.')
 @click.option('--files', '-f', type=click.Path(exists=True, resolve_path=True), multiple=True,
-              required=True,
-              help='List of source files used to build the binary.')
+              help='List of C/C++ source files that will be used to build the'
+              ' custom binary with injected profiling commands. Must be valid'
+              ' resolvable path')
 @click.option('--rules', '-r', type=str, multiple=True,
-              help='List of functions to profile.')
+              help='Marks the function for profiling.')
 @click.option('--internal-data-filename', '-if', type=str,
               default=configurator.DEFAULT_DATA_FILENAME,
-              help='Internal output profiling file name.')
+              help='Sets the different path for internal output filename for'
+              ' storing temporary profiling data file name.')
 @click.option('--internal-storage-size', '-is', type=int, default=configurator.DEFAULT_STORAGE_SIZE,
-              help='Initial size of internal profiling data storage.')
+              help='Increases the size of internal profiling data storage.')
 @click.option('--internal-direct-output', '-id', is_flag=True,
               default=configurator.DEFAULT_DIRECT_OUTPUT,
-              help=('Profilig data are stored into file directly instead of being saved into data '
+              help=('If set, profiling data will be stored into the internal'
+                    ' log file directly instead of being saved into data '
                     'structure and printed later.'))
 @click.option('--sampling', '-s', type=(str, int), multiple=True, callback=sampling_to_dictionary,
-              help='List of sampling configuration in form <function_name value>.')
+              help='Sets the sampling of the given function to every <int> call.')
 @click.pass_context
 def complexity(ctx, **kwargs):
-    """Runs the complexity collector, collecting running times for profiles depending on size"""
+    """Generates `complexity` performance profile, capturing running times of
+    function depending on underlying structural sizes.
+
+    \b
+      * **Limitations**: C/C++ binaries
+      * **Metric**: `mixed` (captures both `time` and `size` consumption)
+      * **Dependencies**: ``libprofile.so`` and ``libprofapi.so``
+      * **Default units**: `ms` for `time`, `element number` for `size`
+
+    Example of collected resources is as follows:
+
+    .. code-block:: json
+
+        \b
+        {
+            "amount": 11,
+            "subtype": "time delta",
+            "type": "mixed",
+            "uid": "SLList_init(SLList*)",
+            "structure-unit-size": 0
+        }
+
+    Complexity profiles are suitable for postprocessing by
+    :ref:`postprocessors-regression-analysis` since they capture depedency of
+    time consumption depending on the size of the structure. This allows one to
+    model the estimation of complexity of individual functions.
+
+    Scatter plots are suitable visualization for profiles collected by
+    `complexity` collector, which plots individual points along with regression
+    models (if the profile was postprocessed by regression analysis). Run
+    ``perun show scatter --help`` or refer to :ref:`views-scatter` for more
+    information about `scatter plots`.
+
+    Refer to :ref:`collectors-complexity` for more thorough description and
+    examples of `complexity` collector.
+    """
+    if 'target_dir' not in ctx.obj['params'] and not kwargs['target_dir']:
+        raise click.exceptions.BadOptionUsage("Missing option \"--target-dir\" / \"-t\"")
+    if 'files' not in ctx.obj['params'] and not kwargs['files']:
+        raise click.exceptions.BadOptionUsage("Missing option \"--files\" / \"-f\"")
     runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)

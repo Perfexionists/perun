@@ -137,14 +137,60 @@ def after(cmd, sampling=DEFAULT_SAMPLING, **kwargs):
 
 @click.command()
 @click.option('--sampling', '-s', default=DEFAULT_SAMPLING,
-              help="Profile data sampling interval.")
+              help='Sets the sampling interval for profiling the allocations.'
+              ' I.e. memory snapshots will be collected each <sampling>'
+              ' seconds.')
 @click.option('--no-source',
-              help="Will exclude the source file from profiling.")
+              help='Will exclude allocations done from <no_source> file during'
+              ' the profiling.')
 @click.option('--no-func',
-              help="Will exclude the function from profiling.")
+              help='Will exclude allocations done by <no func> function during'
+              ' the profiling.')
 @click.option('--all', '-a', is_flag=True, default=False,
-              help="Will include all allocators and unreachable records in call trace.")
+              help='Will record the full trace for each allocation, i.e. it'
+              ' will include all allocators and even unreachable records.')
 @click.pass_context
 def memory(ctx, **kwargs):
-    """Runs memory collect, collecting allocation through the program execution"""
+    """Generates `memory` performance profiel, capturing memory allocations of
+    different types along with target address and full call trace.
+
+    \b
+      * **Limitations**: C/C++ binaries
+      * **Metric**: `memory`
+      * **Dependencies**: ``libunwind.so`` and custom ``libmalloc.so``
+      * **Default units**: `B` for `memory`
+
+    The following snippet shows the example of resources collected by `memory`
+    profiler. It captures allocations done by functions with more detailed
+    description, such as the type of allocation, trace, etc.
+
+    .. code-block:: json
+
+        \b
+        {
+            "type": "memory",
+            "subtype": "malloc",
+            "address": 19284560,
+            "amount": 4,
+            "trace": [
+                {
+                    "source": "../memory_collect_test.c",
+                    "function": "main",
+                    "line": 22
+                },
+            ],
+            "uid": {
+                "source": "../memory_collect_test.c",
+                "function": "main",
+                "line": 22
+            }
+        },
+
+    `Memory` profiles can be efficiently interpreted using :ref:`views-heapmap`
+    technique (together with its `heat` mode), which shows memory allocations
+    (by functions) in memory address map.
+
+    Refer to :ref:`collectors-memory` for more thorough description and
+    examples of `memory` collector.
+    """
     runner.run_collector_from_cli_context(ctx, 'memory', kwargs)

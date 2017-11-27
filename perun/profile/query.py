@@ -1,10 +1,21 @@
-"""Functions for issuing queries over the profiles.
+"""``perun.profile.query`` is a module which specifies interface for issuing
+queries over the profiles w.r.t :ref:`profile-spec`.
 
-Queries are realized as generators of values over the profile in the dictionary format,
-as specified by the manifesto.
+.. _Pandas library: https://docs.python.org/3.7/library/json.html
 
-Fixme: Add caching to ease some of the computation.
+Run the following in the Python interpreter to extend the capabilities of
+profile to query over profiles, iterate over resources or models, etc.::
+
+    import perun.profile.query
+
+Combined with ``perun.profile.factory``, ``perun.profile.convert`` and e.g.
+`Pandas library`_ one can obtain efficient interpreter for executing more
+complex queries and statistical tests over the profiles.
+
+
 """
+# TODO: Consider adding caching to ease some of the computations (in case it is
+# time consuming)
 
 import numbers
 import perun.utils.exceptions as exceptions
@@ -14,15 +25,22 @@ __coauthored__ = "Jiri Pavela"
 
 
 def all_resources_of(profile):
-    """Generator of resources from the performance profile.
+    """Generator for iterating through all of the resources contained in the
+    performance profile.
 
-    Iterates through all of the snapshots and global resources.
+    Generator iterates through all of the snapshots, and subsequently yields
+    collected resources. For more thorough description of format of resources
+    refer to :pkey:`resources`. Resources are not flattened and, thus, can
+    contain nested dictionaries (e.g. for `traces` or `uids`).
 
-    Arguments:
-        profile(dict): valid profile with resources
-
-    Returns:
-        (int, dict): yields resources per each snapshot and global section
+    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :returns: iterable stream of resources represented as pair ``(int, dict)``
+        of snapshot number and the resources w.r.t. the specification of the
+        :pkey:`resources`
+    :raises AttributeError: when the profile is not in the format as given
+        by :ref:`profile-spec`
+    :raises KeyError: when the profile misses some expected key, as given
+        by :ref:`profile-spec`
     """
     try:
         # Get snapshot resources
@@ -82,14 +100,41 @@ def flattened_values(root_key, root_value):
 
 
 def all_items_of(resource):
-    """Generator of all (key, value) pairs in resource.
+    """Generator for iterating through all of the flattened items contained
+    inside the resource w.r.t :pkey:`resources` specification.
 
-    Iterates through all of the flattened (key, value) pairs which are output.
-    Arguments:
-        resource(dict): dictionary with (mainly) resource fields and values
+    Generator iterates through all of the items contained in the `resource` in
+    flattened form (i.e. it does not contain nested dictionaries). Resources
+    should be w.r.t :pkey:`resources` specification.
 
-    Returns:
-        (str, value): (key, value) pairs, where value is flattened to either string, or decimal
+    E.g. the following resource:
+
+    .. code-block:: json
+
+        {
+            "type": "memory",
+            "amount": 4,
+            "uid": {
+                "source": "../memory_collect_test.c",
+                "function": "main",
+                "line": 22
+            }
+        }
+
+    yields the following stream of resources::
+
+        ("type", "memory")
+        ("amount", 4)
+        ("uid", "../memory_collect_test.c:main:22")
+        ("uid:source", "../memory_collect_test.c")
+        ("uid:function", "main")
+        ("uid:line": 22)
+
+    :param dict resource: dictionary representing one resource
+        w.r.t :pkey:`resources`
+    :returns: iterable stream of ``(str, value)`` pairs, where the ``value`` is
+        flattened to either a `string`, or `decimal` representation and ``str``
+        corresponds to the key of the item
     """
     for key, value in resource.items():
         for flattened_key, flattened_value in flattened_values(key, value):
@@ -97,13 +142,29 @@ def all_items_of(resource):
 
 
 def all_resource_fields_of(profile):
-    """Generator of all names of the fields occurring in the resources.
+    """Generator for iterating through all of the fields (both flattened and
+    original) that are occuring in the resources.
 
-    Arguments:
-        profile(dict): valid profile with resources
+    Generator iterates through all of the resources and checks their flattened
+    keys. In case some of the keys were not yet processed, they are yielded.
 
-    Returns:
-        resource: stream of resource field keys
+    E.g. considering the example profiles from :pkey:`resources`, the function
+    yields the following for `memory`, `time` and `complexity` profiles
+    respectively (considering we convert the stream to list)::
+
+        memory_resource_fields = [
+            'type', 'address', 'amount', 'uid:function', 'uid:source',
+            'uid:line', 'uid', 'trace', 'subtype'
+        ]
+        time_resource_fields = [
+            'type', 'amount', 'uid'
+        ]
+        complexity_resource_fields = [
+            'type', 'amount', 'structure-unit-size', 'subtype', 'uid'
+        ]
+
+    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :returns: iterable stream of resource field keys represented as `str`
     """
     resource_fields = set()
     for (_, resource) in all_resources_of(profile):
@@ -114,13 +175,25 @@ def all_resource_fields_of(profile):
 
 
 def all_numerical_resource_fields_of(profile):
-    """Generator of all names of the fields occurring in the resources, that takes numeric values.
+    """Generator for iterating through all of the fields (both flattened and
+    original) that are occuring in the resources and takes as domain integer
+    values.
 
-    Arguments:
-        profile(dict): valid profile with resources
+    Generator iterates through all of the resources and checks their flattened
+    keys and yields them in case they were not yet processed. If the instance
+    of the key does not contain integer values, it is skipped.
 
-    Returns:
-        str: stream of resource fields key, that takes integer values
+    E.g. considering the example profiles from :pkey:`resources`, the function
+    yields the following for `memory`, `time` and `complexity` profiles
+    respectively (considering we convert the stream to list)::
+
+        memory_num_resource_fields = ['address', 'amount', 'uid:line']
+        time_num_resource_fields = ['amount']
+        complexity_num_resource_fields = ['amount', 'structure-unit-size']
+
+    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :returns: iterable stream of resource fields key as `str`, that takes
+        integer values
     """
     resource_fields = set()
     exclude_fields = set()
@@ -142,31 +215,59 @@ def all_numerical_resource_fields_of(profile):
 
 
 def unique_resource_values_of(profile, resource_key):
-    """Generator of all unique key values occurring in the resources. The key can contain ':'
-    symbol indicating another level of dictionary hierarchy or '::' for list / set level,
-    e.g. trace::function.
+    """Generator of all unique key values occurring in the resources, w.r.t.
+    :pkey:`resources` specification of resources.
 
-    Arguments:
-        profile(dict): valid profile with resources
-        resource_key(str): the resources key identifier whose unique values are returned
+    Iterates through all of the values of given ``resource_keys`` and yields
+    only unique values. Note that the key can contain ':' symbol indicating
+    another level of dictionary hierarchy or '::' for specifying keys in list
+    or set level, e.g. in case of `traces` one uses ``trace::function``.
 
-    Returns:
-        iterable: stream of unique resource key values
+    E.g. considering the example profiles from :pkey:`resources`, the function
+    yields the following for `memory`, `time` and `complexity` profiles stored
+    in variables ``mprof``, ``tprof`` and ``cprof`` respectively::
+
+        >>> list(query.unique_resource_values_of(mprof, 'subtype')
+        ['malloc', 'free']
+        >>> list(query.unique_resource_values_of(tprof, 'amount')
+        [0.616, 0.500, 0.125]
+        >>> list(query.unique_resource_values_of(cprof, 'uid')
+        ['SLList_init(SLList*)', 'SLList_search(SLList*, int)',
+         'SLList_insert(SLList*, int)', 'SLList_destroy(SLList*)']
+
+    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :param str resource_key: the resources key identifier whose unique values
+        will be iterated
+    :returns: iterable stream of unique resource key values
     """
     for value in _unique_values_generator(profile, resource_key, all_resources_of):
         yield value
 
 
 def all_key_values_of(resource, resource_key):
-    """Generator of all key values in resource. The key can contain ':' symbol indicating another
-    level of dictionary hierarchy or '::' for list / set level, e.g. trace::function.
+    """Generator of all (not essentially unique) key values in resource, w.r.t
+    :pkey:`resources` specification of resources.
 
-    Arguments:
-        resource(dict or iterable): valid dictionary with resource keys and values
-        resource_key(str): the resource key identifier to search for
+    Iterates through all of the values of given ``resource_key`` and yields
+    every value it finds. Note that the key can contain ':' symbol indicating
+    another level of dictionary hierarchy or '::' for specifying keys in list
+    or set level, e.g. in case of `traces` one uses ``trace::function``.
 
-    Returns:
-        iterable: stream of values
+    E.g. considering the example profiles from :pkey:`resources` and the
+    resources ``mres`` from the profile of `memory` type, we can obtain all of
+    the values of ``trace::function`` key as follows::
+
+        >>> query.all_key_values_of(mres, 'trace::function')
+        ['free', 'main', '__libc_start_main', '_start']
+
+    Note that this is mostly useful for iterating through list or nested
+    dictionaries.
+
+    :param dict resource: dictionary representing one resource
+        w.r.t :pkey:`resources`
+    :param str resource_key: the resources key identifier whose unique values
+        will be iterated
+    :returns: iterable stream of all resource key values
     """
     # Convert the key identifier to iterable hierarchy
     key_hierarchy = resource_key.split(":")
@@ -189,13 +290,34 @@ def all_key_values_of(resource, resource_key):
 
 
 def all_models_of(profile):
-    """Generator of all 'models' records from the performance profile.
+    """Generator of all 'models' records from the performance profile w.r.t.
+    :ref:`profile-spec`.
 
-    Arguments:
-        profile(dict): valid profile with models
+    Takes a profile, postprocessed by :ref:`postprocessors-regression-analysis`
+    and iterates through all of its models (for more details about models refer
+    to :pkey:`models` or :ref:`postprocessors-regression-analysis`).
 
-    Returns:
-        (int, dict): yields 'models' records
+    E.g. given some complexity profile ``complexity_prof``, we can iterate its
+    models as follows:
+
+        >>> gen = query.all_models_of(complexity_prof)
+        >>> gen.__next__()
+        (0, {'x_interval_start': 0, 'model': 'constant', 'method': 'full',
+        'coeffs': [{'name': 'b0', 'value': 0.5644496762801648}, {'name': 'b1',
+        'value': 0.0}], 'uid': 'SLList_insert(SLList*, int)', 'r_square': 0.0,
+        'x_interval_end': 11892})
+        >>> gen.__next__()
+        (1, {'x_interval_start': 0, 'model': 'exponential', 'method': 'full',
+        'coeffs': [{'name': 'b0', 'value': 0.9909792049684152}, {'name': 'b1',
+        'value': 1.000004056250301}], 'uid': 'SLList_insert(SLList*, int)',
+        'r_square': 0.007076437903106431, 'x_interval_end': 11892})
+
+
+    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :returns: iterable stream of ``(int, dict)`` pairs, where first yields the
+        positional number of model and latter correponds to one 'models'
+        record (for more details about models refer to :pkey:`models` or
+        :ref:`postprocessors-regression-analysis`)
     """
     # Get models if any
     try:
@@ -210,16 +332,31 @@ def all_models_of(profile):
 
 
 def unique_model_values_of(profile, model_key):
-    """Generator of all unique key values occurring in the models. The key can contain ':'
-    symbol indicating another level of dictionary hierarchy or '::' for list / set level,
-    e.g. trace::function.
+    """Generator of all unique key values occurring in the models in the
+    resources of given performance profile w.r.t. :ref:`profile-spec`.
 
-    Arguments:
-        profile(dict): valid profile with models
-        model_key(str): the models key identifier whose unique values are returned
+    Iterates through all of the values of given ``resource_keys`` and yields
+    only unique values. Note that the key can contain ':' symbol indicating
+    another level of dictionary hierarchy or '::' for specifying keys in list
+    or set level, e.g. in case of `traces` one uses ``trace::function``.  For
+    more details about the specification of models refer to :pkey:`models` or
+    :ref:`postprocessors-regression-analysis`).
 
-    Returns:
-        iterable: stream of unique model key values
+    E.g. given some complexity profile ``complexity_prof``, we can obtain
+    unique values of keys from `models` as follows:
+
+        >>> list(query.unique_model_values_of(complexity_prof, 'model')
+        ['constant', 'exponential', 'linear', 'logarithmic', 'quadratic']
+        >>> list(query.unique_model_values_of(cprof, 'r_square'))
+        [0.0, 0.007076437903106431, 0.0017560012128507133,
+         0.0008704119815403224, 0.003480627284909902, 0.001977866710139782,
+         0.8391363620083871, 0.9840099999298596, 0.7283427343995424,
+         0.9709120064750161, 0.9305786182556899]
+
+    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :param str model_key: key identifier from `models` for which we query
+        its unique values
+    :returns: iterable stream of unique model key values
     """
     for value in _unique_values_generator(profile, model_key, all_models_of):
         yield value

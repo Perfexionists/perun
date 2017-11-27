@@ -1,27 +1,8 @@
-"""
-Flame graph shows the relative and inclusive presence of the resources according to the stack
-depth. This visualization uses the awesome script made by © Brendan Gregg!
-
-                           `
-                           -                         .
-                           `                         |
-                           -              ..         |     .
-                           `              ||         |     |
-                           -              ||        ||    ||
-                           `            |%%|       |--|  |!|
-                           -     |## g() ##|     |#g()#|***|
-                           ` |&&&& f() &&&&|===== h() =====|
-                           +````||````||````||````||````||````
-
-Flame graph allows one to quickly identify hotspots, that are the source of the resource
-consumption complexity. On X axis, a relative consumption of the data is depicted, while on
-    Y axis a stack depth is displayed. The wider the bars are on the X axis are, the more the
-function consumed resources relative to others.
-
-Acknowledgements: Big thanks to Brendan Gregg for creating the original perl script for creating
-flame graphs out of simple format. If you like this visualization technique, please check out
-this guy's site (http://brendangregg.com) for more information about performance, profiling and
-useful talks and visualization techniques!
+"""`Flame graph` shows the relative consumption of resources w.r.t. to the
+trace of the resource origin. Currently it is limited to `memory` profiles
+(however, the generalization of the module is in plan). The usage of flame
+graphs is for faster localization of resource consumption hot spots and
+bottlenecks.
 """
 
 SUPPORTED_PROFILES = ['memory']

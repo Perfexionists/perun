@@ -231,8 +231,45 @@ def test_init_correct():
     Expecting no exceptions, no errors, zero status.
     """
     runner = CliRunner()
-    result = runner.invoke(cli.init, ['--vcs-type=git'])
+    dst = str(os.getcwd())
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
     assert result.exit_code == 0
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_init_correct_with_params():
+    """Test running init from cli with parameters for git, without any problems
+
+    Expecting no exceptions, no errors, zero status.
+    """
+    runner = CliRunner()
+    dst = str(os.getcwd())
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--vcs-flag', 'bare'])
+    assert result.exit_code == 0
+    assert 'config' in os.listdir(os.getcwd())
+    with open(os.path.join(os.getcwd(), 'config'), 'r') as config_file:
+        assert "bare = true" in "".join(config_file.readlines())
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_init_correct_with_params_and_flags(helpers):
+    """Test running init from cli with parameters and flags for git, without any problems
+
+    Expecting no exceptions, no errors, zero status.
+    """
+    runner = CliRunner()
+    dst = str(os.getcwd())
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--vcs-flag', 'quiet',
+                                      '--vcs-param', 'separate-git-dir', 'sepdir'])
+    assert result.exit_code == 0
+    assert 'sepdir' in os.listdir(os.getcwd())
+    initialized_dir = os.path.join(os.getcwd(), 'sepdir')
+    dir_content = os.listdir(initialized_dir)
+
+    # Should be enough for sanity check
+    assert 'HEAD' in dir_content
+    assert 'refs' in dir_content
+    assert 'branches' in dir_content
 
 
 def test_add_correct(helpers, pcs_full, valid_profile_pool):
@@ -307,6 +344,26 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
                                          ] + files + rules + samplings)
 
     assert result.exit_code == 0
+
+    # Test running the job from the params using the job file
+    script_dir = os.path.split(__file__)[0]
+    source_dir = os.path.join(script_dir, 'collect_complexity')
+    job_config_file = os.path.join(source_dir, 'job.yml')
+    result = runner.invoke(cli.collect, ['-p{}'.format(job_config_file), 'complexity'])
+    assert result.exit_code == 0
+
+    # Test running the job from the params using the yaml string
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+                                         '-p\"target_dir: {}\"'.format(job_params['target_dir']),
+                                         'complexity'] + files + rules + samplings)
+    assert result.exit_code == 0
+
+    # Try missing parameters --target-dir and --files
+    result = runner.invoke(cli.collect, ['complexity'])
+    assert result.exit_code == 2
+
+    result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
+    assert result.exit_code == 2
 
 
 def test_show_help(pcs_full):
@@ -418,6 +475,16 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     assert result.exit_code == 2
     assert len(os.listdir(pending_dir)) == 4
 
+    # Try absolute postprocessing
+    first_in_jobs = os.listdir(pending_dir)[0]
+    absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
+    result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, 'normalizer'])
+    assert result.exit_code == 0
+
+    # Try lookup postprocessing
+    result = runner.invoke(cli.postprocessby, [first_in_jobs, 'normalizer'])
+    assert result.exit_code == 0
+
 
 def test_show_tag(helpers, pcs_full, valid_profile_pool):
     """Test running show with several valid and invalid tags
@@ -425,6 +492,7 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool):
     Expecting no errors (or caught errors), everythig shown as it should be
     """
     helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    pending_dir = os.path.join(pcs_full.path, 'jobs')
 
     runner = CliRunner()
     result = runner.invoke(cli.show, ['0@p', 'raw'])
@@ -441,6 +509,16 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool):
     # Try incorrect index tag
     result = runner.invoke(cli.show, ['666@i', 'raw'])
     assert result.exit_code == 2
+
+    # Try absolute showing
+    first_in_jobs = os.listdir(pending_dir)[0]
+    absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
+    result = runner.invoke(cli.show, [absolute_first_in_jobs, 'raw'])
+    assert result.exit_code == 0
+
+    # Try lookup showing
+    result = runner.invoke(cli.show, [first_in_jobs, 'raw'])
+    assert result.exit_code == 0
 
 
 def test_config(pcs_full):

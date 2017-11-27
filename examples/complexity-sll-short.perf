@@ -1,0 +1,97 @@
+{
+  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae",
+  "header": {
+    "cmd": "",
+    "type": "mixed",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "workload": "",
+    "params": ""
+  },
+  "collector_info": {
+    "name": "complexity",
+    "params": {
+      "internal_data_filename": "trace.log",
+      "target_dir": "./target",
+      "files": [
+        "../example_sources/simple_sll_cpp/main.cpp",
+        "../example_sources/simple_sll_cpp/SLList.h",
+        "../example_sources/simple_sll_cpp/SLListcls.h"
+      ],
+      "rules": [
+        "SLList_init",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy"
+      ],
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "internal_direct_output": false,
+      "internal_storage_size": 20000
+    }
+  },
+  "postprocessors": [],
+  "global": {
+    "time": "6.8e-05s",
+    "resources": [
+      {
+        "type": "mixed",
+        "amount": 6,
+        "subtype": "time delta",
+        "uid": "SLList_init(SLList*)",
+        "structure-unit-size": 0
+      },
+      {
+        "type": "mixed",
+        "amount": 0,
+        "subtype": "time delta",
+        "uid": "SLList_search(SLList*, int)",
+        "structure-unit-size": 0
+      },
+      {
+        "type": "mixed",
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 0
+      },
+      {
+        "type": "mixed",
+        "amount": 0,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 1
+      },
+      {
+        "type": "mixed",
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 2
+      },
+      {
+        "type": "mixed",
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_insert(SLList*, int)",
+        "structure-unit-size": 3
+      },
+      {
+        "type": "mixed",
+        "amount": 1,
+        "subtype": "time delta",
+        "uid": "SLList_destroy(SLList*)",
+        "structure-unit-size": 4
+      }
+    ]
+  }
+}

@@ -9,6 +9,7 @@ import tempfile
 import git
 import perun.logic.pcs as pcs
 import perun.logic.store as store
+import perun.cli as cli
 import pytest
 
 import perun.logic.commands as commands
@@ -17,6 +18,14 @@ import perun.utils.streams as streams
 import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
+
+
+@pytest.fixture(scope="session", autouse=True)
+def initialize_cli_modules():
+    """
+    Initializes the click commands (those that are dynamically initialized) only once per session
+    """
+    cli.init_unit_commands(False)
 
 
 class Helpers(object):
@@ -346,7 +355,7 @@ def pcs_full():
     profiles = stored_profile_pool()
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
-    commands.init_perun_at(pcs_path, False, False, {'vcs': {'url': '../', 'type': 'git'}})
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
 
     # Construct the PCS object
     pcs_obj = pcs.PCS(pcs_path)
@@ -398,7 +407,7 @@ def pcs_with_empty_git():
     # Change working dir into the temporary directory
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
-    commands.init_perun_at(pcs_path, False, False, {'vcs': {'url': '../', 'type': 'git'}})
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
 
     # Construct the PCS object
     pcs_obj = pcs.PCS(pcs_path)
@@ -421,7 +430,7 @@ def pcs_without_vcs():
     # Change working dir into the temporary directory
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
-    commands.init_perun_at(pcs_path, False, False, {'vcs': {'url': '../', 'type': 'pvcs'}})
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'pvcs'}})
 
     # Construct the PCS object
     pcs_obj = pcs.PCS(pcs_path)

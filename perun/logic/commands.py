@@ -71,7 +71,8 @@ def lookup_minor_version(func):
             arg_list[minor_version_position] = vcs.get_minor_head(
                 pcs.vcs_type, pcs.vcs_path)
             args = tuple(arg_list)
-        vcs.check_minor_version_validity(pcs.vcs_type, pcs.vcs_path, args[minor_version_position])
+        else:
+            vcs.check_minor_version_validity(pcs.vcs_type, pcs.vcs_path, args[minor_version_position])
         return func(pcs, *args, **kwargs)
 
     return wrapper
@@ -117,16 +118,13 @@ def config(pcs, store_type, operation, key=None, value=None, **_):
         raise InvalidConfigOperationException(store_type, operation, key, value)
 
 
-def init_perun_at(perun_path, init_custom_vcs, is_reinit, vcs_config):
+def init_perun_at(perun_path, is_reinit, vcs_config):
     """Initialize the .perun directory at given path
 
     Initializes or reinitializes the .perun directory at the given path.
-    Additionaly, if init_custom_vcs is set to true, the custom version control
-    system is initialized as well.
 
     Arguments:
         perun_path(path): path where new perun performance control system will be stored
-        init_custom_vcs(bool): true if the custom vcs should be initialized as well
         is_reinit(bool): true if this is existing perun, that will be reinitialized
         vcs_config(dict): dictionary of form {'vcs': {'type', 'url'}} for local config init
     """
@@ -137,14 +135,6 @@ def init_perun_at(perun_path, init_custom_vcs, is_reinit, vcs_config):
     store.touch_dir(os.path.join(perun_full_path, 'jobs'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
     perun_config.init_local_config_at(perun_full_path, vcs_config)
-
-    # Initialize the custom (manual) version control system
-    if init_custom_vcs:
-        custom_vcs_path = os.path.join(perun_full_path, 'vcs')
-        store.touch_dir(custom_vcs_path)
-        store.touch_dir(os.path.join(custom_vcs_path, 'objects'))
-        store.touch_dir(os.path.join(custom_vcs_path, 'tags'))
-        store.touch_file(os.path.join(custom_vcs_path, 'HEAD'))
 
     # Perun successfully created
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
@@ -167,10 +157,6 @@ def init(dst, **kwargs):
     vcs_type = kwargs['vcs_type']
     vcs_path = kwargs['vcs_path'] or dst
     vcs_params = kwargs['vcs_params']
-    if vcs_type and not vcs.init(vcs_type, vcs_path, vcs_params):
-        perun_log.error("Could not initialize empty {} repository at {}".format(
-            vcs_type, vcs_path
-        ))
 
     # Construct local config
     vcs_config = {
@@ -189,7 +175,17 @@ def init(dst, **kwargs):
     except NotPerunRepositoryException:
         is_pcs_reinitialized = False
 
-    init_perun_at(dst, kwargs['vcs_type'] == 'pvcs', is_pcs_reinitialized, vcs_config)
+    init_perun_at(dst, is_pcs_reinitialized, vcs_config)
+
+    # If the wrapped repo could not be initialized we end with error. The user should adjust this
+    # himself and fix it in the config. Note that this decision was made after tagit design,
+    # where one needs to further adjust some options in initialized directory.
+    if vcs_type and not vcs.init(vcs_type, vcs_path, vcs_params):
+        perun_log.error("Could not initialize empty {0} repository at {1}.\n"
+                        "Either reinitialize perun with 'perun init' or initialize {0} repository"
+                        "manually and fix the path to vcs in 'perun config --edit'"
+                        "".format(vcs_type, vcs_path
+        ))
 
 
 @pass_pcs
@@ -688,10 +684,10 @@ def load_profile_from_args(pcs, profile_name, minor_version):
     # If the profile is in raw form
     if not store.is_sha1(profile_name):
         _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
+        # If there is nothing at all in the index, since it is not even created ;)
+        #   we returning nothing otherwise we lookup entries in index
         if not os.path.exists(minor_index_file):
-            perun_log.error("index of minor version {1} has no profile '{0}' registered".format(
-                profile_name, minor_version
-            ))
+            return None
         with open(minor_index_file, 'rb') as minor_handle:
             lookup_pred = lambda entry: entry.path == profile_name
             profiles = store.lookup_all_entries_within_index(minor_handle, lookup_pred)

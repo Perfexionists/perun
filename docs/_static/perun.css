@@ -1,0 +1,25 @@
+@import url("alabaster.css");
+
+div.note {
+    font-size: 75%;
+}
+
+.perfkey code.descname {
+    font-weight: normal;
+    font-style: italic;
+}
+
+.matrixkey code.descname {
+    font-weight: normal;
+    font-style: italic;
+}
+
+.confkey code.descname {
+    font-weight: normal;
+    font-style: italic;
+}
+
+/* Fixing the overflow in the udiff tables */
+div.highlight-udiff table.highlighttable td pre {
+    font-size: 0.65em;
+}

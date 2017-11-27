@@ -77,35 +77,50 @@ def process_title(ctx, _, value):
               help="Will show the graph in browser.")
 @pass_profile
 def scatter(profile, filename, view_in_browser, **kwargs):
-    """
-    Display of the resources and models in scatter plot format.
+    """Interactive visualization of resources and models in scatter plot format.
+
+    Scatter plot shows resources as points according to the given parameters.
+    The plot interprets <per> and <of> as x, y coordinates for the points. The
+    scatter plot also displays models located in the profile as a curves/lines.
+
+    .. _Bokeh: https://bokeh.pydata.org/en/latest/
 
     \b
-                            <graph_title>
-                    `                         o
-                    -                        /
-                    `                       /o       ```````````````````
-                    -                     _/         `  o o = <points> `
-                    `                   _- o         `    _             `
-    <of>            -               __--o            `  _-  = <models> `
-                    `    _______--o- o               `                 `
-                    -    o  o  o                     ```````````````````
-                    `
-                    +````||````||````||````||````
+      * **Limitations**: `none`.
+      * **Interpretation style**: graphical
+      * **Visualization backend**: Bokeh_
 
-                                <per>
+    Features in progress:
 
-    Scatter plot shows resources as points according to the given parameters. The plot
-    interprets <per> and <of> as x, y coordinates for the points. The scatter plot also displays
-    models located in the profile as a curves/lines.
+      * uid filters
+      * models filters
+      * multiple graphs interpretation
 
-    features in progress:
-      - uid filters
-      - models filters
-      - multiple graphs interpretation
+    Graphs are displayed using the Bokeh_ library and can be further customized
+    by adding custom labels for axis, custom graph title and different graph
+    width.
 
-    Graphs are displayed using the Bokeh library and can be further customized by adding custom
-    labels for axis, custom graph title and different graph width.
+    The example output of the scatter is as follows::
+
+        \b
+                                  <graph_title>
+                          `                         o
+                          -                        /
+                          `                       /o       ```````````````````
+                          -                     _/         `  o o = <points> `
+                          `                   _- o         `    _             `
+            <of>          -               __--o            `  _-  = <models> `
+                          `    _______--o- o               `                 `
+                          -    o  o  o                     ```````````````````
+                          `
+                          +````||````||````||````||````
+
+                                      <per>
+
+    Refer to :ref:`views-scatter` for more thorough description and example of
+    `scatter` interpretation possibilities. For more thorough explanation of
+    regression analysis and models refer to
+    :ref:`postprocessors-regression-analysis`.
     """
     # discuss multiple results plotting (i.e. grid of plots? separate files? etc.)
     # Temporary solution for plotting multiple graphs from one command

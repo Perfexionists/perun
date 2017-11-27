@@ -5,7 +5,6 @@ or load and store into the directories or filenames.
 """
 
 import binascii
-import hashlib
 import re
 import os
 import string
@@ -20,6 +19,10 @@ from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
     INDEX_NUMBER_OF_ENTRIES_OFFSET, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     READ_CHUNK_SIZE
 from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException
+
+import demandimport
+with demandimport.enabled():
+    import hashlib
 
 __author__ = 'Tomas Fiedor'
 

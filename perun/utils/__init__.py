@@ -5,7 +5,6 @@ are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 """
 
 import importlib
-import pkgutil
 import subprocess
 
 from .log import msg_to_stdout, error
@@ -95,22 +94,33 @@ def get_module(module_name):
 get_module.cache = {}
 
 
-def get_supported_module_names(package, function_name):
-    """Obtains list of supported modules stored in the package.
+def get_supported_module_names(package):
+    """Obtains list of supported modules supported by the package.
 
-    Takes the package, iterates through all of the modules and check, if they contain the
-    function_name, that serves as simple identifier of search modules.
+    Contains the hard-coded dictionary of packages and their supported values. This simply does
+    a key lookup and returns the list of supported values.
+
+    This was originally dynamic collection of all the modules through beautiful module iteration,
+    which was shown to be completely uselessly slow than this hardcoded table. Since I assume, that
+    new modules will be registered very rarely, I think it is ok to have it implemented like this.
+
+    Arguments:
+        package(str): name of the package for which we want to obtain the supported modules
+          one of ('vcs', 'collect', 'postprocess')
 
     Returns:
-        list: list of names of supported version control systems
+        list: list of names of supported modules for the given package
     """
-    # Fixme: refactoring this will yield -0.1s
-    module_list = []
-    for (_, module_name, _) in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
-        module = get_module(module_name)
-        if hasattr(module, function_name):
-            module_list.append(module_name.split('.')[-1])
-    return module_list
+    if package not in ('vcs', 'collect', 'postprocess', 'view'):
+        error("trying to call get_supported_module_names with incorrect package '{}'".format(
+            package
+        ))
+    return {
+        'vcs': ['git'],
+        'collect': ['complexity', 'memory', 'time'],
+        'postprocess': ['filter', 'normalizer', 'regression_analysis'],
+        'view': ['alloclist', 'bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
+    }[package]
 
 
 def merge_dictionaries(lhs, rhs):
