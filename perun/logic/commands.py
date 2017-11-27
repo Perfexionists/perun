@@ -27,7 +27,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER, ID_TYPE_COLOUR
+    DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER
 from perun.utils.log import cprint, cprintln
 import perun.vcs as vcs
 
@@ -463,8 +463,6 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
     # Print the actual token
     if info_attr == 'type':
         cprint("[{}]".format(profile_info_value), PROFILE_TYPE_COLOURS[profile_raw_value])
-    elif info_attr == 'id':
-        cprint("{}".format(profile_info_value), ID_TYPE_COLOUR)
     else:
         cprint(profile_info_value, default_color)
 

@@ -59,6 +59,7 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
     """
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)
+    data_frame.sort_values([per_key, by_key], inplace=True)
 
     # Create basic graph:
     if cummulation_type == 'stacked':
@@ -91,7 +92,8 @@ def create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key):
     """
     bar_graph = charts.Bar(
         data_frame, label=per_key, values=of_key, agg=func, stack=by_key, bar_width=1.0,
-        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save",
+        tooltips=[(by_key, '@{}'.format(by_key))],
+        tools="pan,wheel_zoom,box_zoom,zoom_in,zoom_out,reset,save",
         color=bokeh_helpers.get_unique_colours_for_(data_frame, by_key)
     )
     return bar_graph
@@ -112,7 +114,8 @@ def create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key):
     """
     bar_graph = charts.Bar(
         data_frame, label=per_key, values=of_key, agg=func, group=by_key, bar_width=1.0,
-        tooltips=[(by_key, '@{}'.format(by_key))], tools="pan, wheel_zoom, reset, save",
+        tooltips=[(by_key, '@{}'.format(by_key))],
+        tools="pan,wheel_zoom,box_zoom,zoom_in,zoom_out,reset,save",
         color=bokeh_helpers.get_unique_colours_for_(data_frame, by_key)
     )
     return bar_graph

@@ -143,6 +143,7 @@ def configure_legend(graph):
     graph.legend.border_line_alpha = 1.0
     graph.legend.label_text_font_style = 'bold'
     graph.legend.location = 'top_right'
+    graph.legend.click_policy = 'hide'
 
 
 def configure_graph(graph, profile, func, graph_title, x_axis_label, y_axis_label, graph_width):
