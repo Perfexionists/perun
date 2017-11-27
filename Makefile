@@ -13,4 +13,15 @@ dev:
 install:
 	python3 setup.py install
 
-.PHONY: init test
+docs:
+	$(MAKE) -C docs html
+
+docs-latex:
+	$(MAKE) -C docs latex
+
+docs-all:
+	$(MAKE) -C docs html
+	$(MAKE) -C docs dirhtml
+	$(MAKE) -C docs latex
+
+.PHONY: init test docs install dev run-gui

@@ -49,64 +49,91 @@ def process_title(ctx, _, value):
                 type=click.Choice(list(map(str, enums.Aggregation))), is_eager=True)
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Source of the data for the graphs, i.e. what will be displayed on Y axis.")
+              help="Sets key that is source of the data for the flow,"
+              " i.e. what will be displayed on Y axis, e.g. the amount of"
+              " resources.")
 @click.option('--through', '-t', 'through_key', nargs=1, required=False, metavar="<through_key>",
               is_eager=True, callback=cli_helpers.process_continuous_key, default='snapshots',
-              help="Independent variable on the X axis, values will be grouped by this key.")
+              help="Sets key that is source of the data value, i.e. the"
+              " independent variable, like e.g. snapshots or size of the"
+              " structure.")
 @click.option('--by', '-b', 'by_key', nargs=1, required=True, metavar="<by_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="For each of the value of the <by_resource_key> a graph will be output")
+              help="For each <by_resource_key> one graph will be output, e.g."
+              " for each subtype or for each location of resource.")
 @click.option('--stacked', '-s', is_flag=True, default=False,
-              help="Will stack the values according to the <by_resource_key> showing the overall.")
+              help="Will stack the y axis values for different <by> keys"
+              " on top of each other. Additionaly shows the sum of the values.")
 @click.option('--accumulate/--no-accumulate', default=True,
-              help="Will accumulate the values for all previous values on x axis.")
+              help="Will accumulate the values for all previous values of X axis.")
 # Other options and arguments
-@click.option('--use-terminal', '-t', is_flag=True, default=False,
-              help="Shows flow graph in the terminal (using ncurses).")
+@click.option('--use-terminal', '-ut', is_flag=True, default=False,
+              help="Shows flow graph in the terminal using ncurses library.")
 @click.option('--filename', '-f', default="flow.html", metavar="<html>",
-              help="Outputs the graph to file specified by filename.")
+              help="Sets the outputs for the graph to the file.")
 @click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
               callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the X axis of the flow graph.")
+              help="Sets the custom label on the X axis of the flow graph.")
 @click.option('--y-axis-label', '-yl', metavar="<text>", default=None,
               callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the Y axis of the flow graph.")
+              help="Sets the custom label on the Y axis of the flow graph.")
 @click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
-              help="Title of the flow graph.")
+              help="Sets the custom title of the flow graph.")
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
-              help="Will show the graph in browser.")
+              help="The generated graph will be immediately opened in the"
+              " browser (firefox will be used).")
 @pass_profile
 # Fixme: Consider breaking this to two
 def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
-    """
-    Display of the resources in flow format.
+    """Customizable interpretation of resources using the flow format.
+
+    .. _Bokeh: https://bokeh.pydata.org/en/latest/
 
     \b
-                            <graph_title>
-                    `
-                    -                      ______     ````````
-                    `                _____/           ` # \\  `
-                    -               /          __     ` @  }->  <by>
-                    `          ____/      ____/       ` & /  `
-    <func>(<of>)    -      ___/       ___/            ````````
-                    `  ___/    ______/       ____
-                    -/  ______/        _____/
-                    `__/______________/
-                    +````||````||````||````||````
+      * **Limitations**: `none`.
+      * **Interpretation style**: graphical, textual
+      * **Visualization backend**: Bokeh_, ncurses
 
-                              <through>
+    `Flow` graph shows the values resources depending on the independent
+    variable as basic graph. For each group of resources identified by unique
+    value of ``<by>`` key, one graph shows the dependency of ``<of>`` values
+    aggregated by ``<func>`` depending on the ``<through>`` key. Moreover, the
+    values can either be accumulated (this way when displaying the value of 'n'
+    on x axis, we accumulate the sum of all values for all m < n) or stacked,
+    where the graphs are output on each other and then one can see the overall
+    trend through all the groups and proportions between each of the group.
 
-    Flow graphs shows the dependency of the values through the other independent variable.
-    For each group of resources identified by <by> key, a graph of dependency of <of> values
-    aggregated by <func> depending on the <through> key is depicted. Moreover, the values
-    can either be accumulated (this way when displaying the value of 'n' on x axis, we accumulate
-    the sum of all values for all m < n) or stacked, where the graphs are output on each other
-    and then one can see the overall trend through all the groups and proportions between
-    each of the group.
+    Bokeh_ library is the current interpretation backend, which generates HTML
+    files, that can be opened directly in the browser. Resulting graphs can be
+    further customized by adding custom labels for axes, custom graph title or
+    different graph width.
 
-    Graphs are displayed using the Bokeh library and can be further customized by adding custom
-    labels for axis, custom graph title and different graph width. Each graph can be loaded from
-    the template according to the template file.
+    Example 1. The following will show the average amount (in this case
+    the function running time) of each function depending on the size of the
+    structure over which the given function operated::
+
+        perun show 0@i flow mean --of 'amount' --per 'structure-unit-size'
+            --acumulated --by 'uid'
+
+    The example output of the bars is as follows::
+
+        \b
+                                        <graph_title>
+                                `
+                                -                      ______    ````````
+                                `                _____/          ` # \\  `
+                                -               /          __    ` @  }->  <by>
+                                `          ____/      ____/      ` & /  `
+                <func>(<of>)    -      ___/       ___/           ````````
+                                `  ___/    ______/       ____
+                                -/  ______/        _____/
+                                `__/______________/
+                                +````||````||````||````||````
+
+                                          <through>
+
+    Refer to :ref:`views-flow` for more thorough description and example of
+    `flow` interpretation possibilities.
     """
     if use_terminal:
         heap_map = convert.to_heap_map_format(profile)

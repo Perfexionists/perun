@@ -1,0 +1,95 @@
+{
+  "origin": "74288675e4074f1ad5bbb0d3b3253911ab42267a",
+  "header": {
+    "type": "memory",
+    "workload": "",
+    "cmd": "./mct",
+    "units": {
+      "memory": "B"
+    },
+    "params": ""
+  },
+  "collector_info": {
+    "name": "memory",
+    "params": {
+      "no_func": null,
+      "no_source": null,
+      "all": false,
+      "sampling": 0.025
+    }
+  },
+  "postprocessors": [],
+  "snapshots": [
+    {
+      "resources": [
+      {
+          "type": "memory",
+          "subtype": "malloc",
+          "address": 19284560,
+          "amount": 4,
+          "trace": [
+            {
+              "source": "unreachable",
+              "function": "malloc",
+              "line": 0
+            },
+            {
+              "source": "../memory_collect_test.c",
+              "function": "main",
+              "line": 22
+            },
+            {
+              "source": "unreachable",
+              "function": "__libc_start_main",
+              "line": 0
+            },
+            {
+              "source": "unreachable",
+              "function": "_start",
+              "line": 0
+            }
+          ],
+          "uid": {
+            "source": "../memory_collect_test.c",
+            "function": "main",
+            "line": 22
+          }
+        },
+        {
+          "type": "memory",
+          "subtype": "free",
+          "address": 19284560,
+          "amount": 0,
+          "trace": [
+            {
+              "source": "unreachable",
+              "function": "free",
+              "line": 0
+            },
+            {
+              "source": "../memory_collect_test.c",
+              "function": "main",
+              "line": 27
+            },
+            {
+              "source": "unreachable",
+              "function": "__libc_start_main",
+              "line": 0
+            },
+            {
+              "source": "unreachable",
+              "function": "_start",
+              "line": 0
+            }
+          ],
+          "uid": {
+            "source": "../memory_collect_test.c",
+            "function": "main",
+            "line": 27
+          }
+        }
+      ],
+      "time": "0.025000"
+    }
+  ]
+}

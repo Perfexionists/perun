@@ -48,63 +48,87 @@ def process_title(ctx, _, value):
                 type=click.Choice(list(map(str, enums.Aggregation))))
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Source of the data for the bars, i.e. what will be displayed on Y axis.")
+              help="Sets key that is source of the data for the bars, i.e. what will be displayed on Y axis.")
 @click.option('--per', '-p', 'per_key', default='snapshots', nargs=1, metavar="<per_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Keys that will be displayed on X axis of the bar graph.")
+              help="Sets key that is source of values displayed on X axis of the bar graph.")
 @click.option('--by', '-b', 'by_key', default=None, nargs=1, metavar="<by_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Will stack the bars according to the given key.")
+              help="Sets the key that will be used either for stacking or"
+              " grouping of values")
 @click.option('--stacked', '-s', 'cummulation_type', flag_value='stacked', default=True,
               is_eager=True,
-              help="If set to true, then values will be stacked up by <resource_key> specified by"
+              help="Will stack the values by <resource_key> specified by"
                    " option --by.")
 @click.option('--grouped', '-g', 'cummulation_type', flag_value='grouped',
               is_eager=True,
-              help="If set to true, then values will be grouped up by <resource_key> specified by"
+              help="Will stack the values by <resource_key> specified by"
                    " option --by.")
 # Bokeh graph specific
 @click.option('--filename', '-f', default="bars.html", metavar="<html>",
-              help="Outputs the graph to the file specified by filename.")
+              help="Sets the outputs for the graph to the file.")
 @click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
               callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the X axis of the bar graph.")
+              help="Sets the custom label on the X axis of the bar graph.")
 @click.option('--y-axis-label', '-yl', metavar="<text>", default=None,
               callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the Y axis of the bar graph.")
+              help="Sets the custom label on the Y axis of the bar graph.")
 @click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
-              help="Title of the bars graph.")
+              help="Sets the custom title of the bars graph.")
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
-              help="Will show the graph in browser.")
+              help="The generated graph will be immediately opened in the"
+              " browser (firefox will be used).")
 @pass_profile
 def bars(profile, filename, view_in_browser, **kwargs):
-    """
-    Display of the resources in bar format.
+    """Customizable interpretation of resources using the bar format.
+
+    .. _Bokeh: https://bokeh.pydata.org/en/latest/
 
     \b
-                            <graph_title>
-                    `
-                    -         .::.                ````````
-                    `         :&&:                ` # \\  `
-                    -   .::.  ::::        .::.    ` @  }->  <by>
-                    `   :##:  :##:        :&&:    ` & /  `
-    <func>(<of>)    -   :##:  :##:  .::.  :&&:    ````````
-                    `   ::::  :##:  :&&:  ::::
-                    -   :@@:  ::::  ::::  :##:
-                    `   :@@:  :@@:  :##:  :##:
-                    +````||````||````||````||````
+      * **Limitations**: `none`.
+      * **Interpretation style**: graphical
+      * **Visualization backend**: Bokeh_
 
-                                <per>
+    `Bars` graph shows the aggregation (e.g. sum, count, etc.) of resources of
+    given types (or keys). Each bar shows ``<func>`` of resources from ``<of>``
+    key (e.g. sum of amounts, average of amounts, count of types, etc.) per
+    each ``<per>`` key (e.g. per each snapshot, or per each type).  Moreover,
+    the graphs can either be (i) stacked, where the different values of
+    ``<by>`` key are shown above each other, or (ii) grouped, where the
+    different values of ``<by>`` key are shown next to each other. Refer to
+    :pkey:`resources` for examples of keys that can be used as ``<of>``,
+    ``<key>``, ``<per>`` or ``<by>``.
 
-    Bar graphs shows aggregation of resources according to the given criteria. Each bar
-    displays <func> of resources from <of> key (e.g. sum of amounts, average of amounts, etc.)
-    per each <per> key (e.g. per each snapshot). Moreover, the graphs can either be (i) stacked,
-    where the different values of <by> key are shown above each other, or (ii) grouped, where the
-    different values of <by> key are shown next to each other.
+    Bokeh_ library is the current interpretation backend, which generates HTML
+    files, that can be opened directly in the browser. Resulting graphs can be
+    further customized by adding custom labels for axes, custom graph title or
+    different graph width.
 
-    Graphs are displayed using the Bokeh library and can be further customized by adding custom
-    labels for axis, custom graph title and different graph width. Each graph can be loaded from
-    the template according to the template file.
+    Example 1. The following will display the sum of sum of amounts of all
+    resources of given for each subtype, stacked by uid (e.g. the locations in
+    the program)::
+
+        perun show 0@i bars sum --of 'amount' --per 'subtype' --stacked --by 'uid'
+
+    The example output of the bars is as follows::
+
+        \b
+                                        <graph_title>
+                                `
+                                -         .::.                ````````
+                                `         :&&:                ` # \\  `
+                                -   .::.  ::::        .::.    ` @  }->  <by>
+                                `   :##:  :##:        :&&:    ` & /  `
+                <func>(<of>)    -   :##:  :##:  .::.  :&&:    ````````
+                                `   ::::  :##:  :&&:  ::::
+                                -   :@@:  ::::  ::::  :##:
+                                `   :@@:  :@@:  :##:  :##:
+                                +````||````||````||````||````
+
+                                            <per>
+
+    Refer to :ref:`views-bars` for more thorough description and example of
+    `bars` interpretation possibilities.
     """
     try:
         bokeh_helpers.process_profile_to_graphs(

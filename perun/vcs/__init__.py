@@ -15,17 +15,22 @@ __author__ = 'Tomas Fiedor'
 
 
 def get_minor_head(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs that we are calling the function for
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
+    """Returns the string representation of head of current major version, i.e.
+    for git this returns the massaged HEAD reference.
 
-    Returns:
-        str: unique representation of current head (usually SHA-1)
+    This function is called mainly during the outputs of ``perun log`` and
+    ``perun status`` but also during the automatic generation of profiles
+    (either by ``perun run`` or ``perun collect``), where the retrieved
+    identification is used as :preg:`origin`.
 
-    Raises:
-        ValueError: In case there is no reference head
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :returns: unique string representation of current head (usually in SHA)
+    :raises ValueError: if the head cannot be retrieved from the current
+        context
     """
     try:
         return dynamic_module_function_call(
@@ -36,13 +41,19 @@ def get_minor_head(vcs_type, *args, **kwargs):
 
 
 def init(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs that we are calling the function for
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
-    Returns:
-        bool: true if the vcs was successfully initialized at vcs_path
+    """Calls the implementation of initialization of wrapped underlying version
+    control system.
+
+    The initialization should take care of both reinitialization of existing
+    version control system instances and newly created instances. Init is
+    called during the ``perun init`` command from command line interface.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :return: true if the underlying vcs was successfully initialized
     """
     perun_log.msg_to_stdout("Initializing {} version control with params {} and {}".format(
         vcs_type, args, kwargs
@@ -53,14 +64,21 @@ def init(vcs_type, *args, **kwargs):
 
 
 def walk_minor_versions(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs that we are calling the function for
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
+    """Generator of minor versions for the given major version, which yields
+    the ``MinorVersion`` named tuples containing the following information:
+    ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation
+    of the minor version), ``commit_description`` and ``commit_parents`` (i.e.
+    other minor versions).
 
-    Returns:
-        str: minor version sha-1 representation
+    Minor versions are walked through this function during the ``perun log``
+    command.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :returns: iterable stream of minor version representation
     """
     perun_log.msg_to_stdout("Walking minor versions of type {}".format(
         vcs_type
@@ -71,14 +89,16 @@ def walk_minor_versions(vcs_type, *args, **kwargs):
 
 
 def walk_major_versions(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs that we are calling the function for
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
+    """Generator of major versions for the current wrapped repository.
 
-    Returns:
-        str: major version representation
+    This function is currently unused, but will be needed in the future.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :returns: interable stream of major version representation
     """
     perun_log.msg_to_stdout("Walking major versions of type {}".format(
         vcs_type
@@ -89,14 +109,22 @@ def walk_major_versions(vcs_type, *args, **kwargs):
 
 
 def get_minor_version_info(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs that we are calling the function for
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
+    """Yields the specification of concrete minor version in form of
+    the ``MinorVersion`` named tuples containing the following information:
+    ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation
+    of the minor version), ``commit_description`` and ``commit_parents`` (i.e.
+    other minor versions).
 
-    Returns:
-        MinorVersion: minor version named tuple for further process
+    This function is a non-generator alternative of
+    :func:`perun.vcs.walk_minor_versions` and is used during the ``perun
+    status`` output to display the specifics of minor version.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :returns: minor version named tuple
     """
     perun_log.msg_to_stdout("Getting minor version info of type {} and args {}, {}".format(
         vcs_type, args, kwargs
@@ -107,14 +135,18 @@ def get_minor_version_info(vcs_type, *args, **kwargs):
 
 
 def get_head_major_version(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs that we are calling the function for
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
+    """Returns the string representation of current major version of the
+    wrapped repository.
 
-    Returns:
-        str: identification of the major version
+    Major version is displayed during the ``perun status`` output, which shows
+    the current working major version of the project.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :returns: string representation of the major version
     """
     perun_log.msg_to_stdout("Getting head major version of type {}".format(
         vcs_type
@@ -125,11 +157,19 @@ def get_head_major_version(vcs_type, *args, **kwargs):
 
 
 def check_minor_version_validity(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs that we are calling the function for
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
+    """Checks whether the given minor version specification corresponds to the
+    wrapped version control system, and is not in wrong format.
+
+    Minor version validity is mostly checked during the lookup of the minor
+    versions from the command line interface.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :raise VersionControlSystemException: when the given minor version is
+        invalid in the context of the wrapped version control system.
     """
     dynamic_module_function_call(
         'perun.vcs', vcs_type, '_check_minor_version_validity', *args, **kwargs
@@ -137,14 +177,20 @@ def check_minor_version_validity(vcs_type, *args, **kwargs):
 
 
 def massage_parameter(vcs_type, *args, **kwargs):
-    """
-    Arguments:
-        vcs_type(str): type of the vcs in which we are massaging the parameters
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
+    """Conversion function for massaging (or unifying different representations
+    of objects) the parameters for version control systems.
 
-    Returns:
-        str: massaged parameter
+    Massaging is mainly executed during from the command line interface, when
+    one can e.g. use the references (like ``HEAD``) to specify concrete minor
+    versions. Massing then unifies e.g. the references or proper hash
+    representations, to just one representation for internal processing.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param list args: list of non-keyword arguments passed to implemenetation
+        of the wrapped vcs layer
+    :param dict kwargs: dictionary of keyword arguments passed to
+        implementation of the wrapped vcs layer
+    :returns: string representation of parameter
     """
     return dynamic_module_function_call(
         'perun.vcs', vcs_type, '_massage_parameter', *args, **kwargs

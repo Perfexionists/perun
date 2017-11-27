@@ -18,6 +18,7 @@ script:
     # Just try that it was installed correctly
     - perun --help
     - make test
+    - make docs
     - codecov
 
 addons:

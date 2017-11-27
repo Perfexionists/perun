@@ -1,9 +1,17 @@
-"""Functions for loading and working with the profiles.
+"""``perun.profile.factory`` specifies collective interface for basic
+manipulation with profiles.
 
-Profiles of perun have .perf extensions and follow a JSON-like format for storing
-the data about profiles. The JSON approach is good for human readability and since
-the nature of perun enables one to perform efficient deltas, we can achieve good
-performance.
+The format of profiles is w.r.t. :ref:`profile-spec`. This module contains
+helper functions for loading and storing of the profiles either in the
+persistent memory or in filesystem (in this case, the profile is in
+uncompressed format).
+
+.. _Python JSON library: https://docs.python.org/3.7/library/json.html
+
+For further manipulations refer either to :ref:`profile-conversion-api`
+(implemented in ``perun.profile.convert`` module) or :ref:`profile-query-api`
+(implemented in ``perun.profile.query module``). For full specification how to
+handle the JSON objects in Python refer to `Python JSON library`_.
 """
 
 import json
@@ -41,16 +49,15 @@ def generate_profile_name(job):
 
 
 def load_profile_from_file(file_name, is_raw_profile):
-    """
-    Arguments:
-        file_name(str): path to the file
-        is_raw_profile(bool): true if the profile is in json format already
+    """Loads profile w.r.t :ref:`profile-spec` from file.
 
-    Returns:
-        dict: JSON dictionary
-
-    Raises:
-        IncorrectProfileFormatException: when the profile file does not exist
+    :param str file_name: file path, where the profile is stored
+    :param bool is_raw_profile: if set to true, then the profile was loaded
+        from the file system and is thus in the JSON already and does not have
+        to be decompressed and unpacked to JSON format.
+    :returns: JSON dictionary w.r.t. :ref:`profile-spec`
+    :raises IncorrectProfileFormatException: raised, when **filename** contains
+        data, which cannot be converted to valid :ref:`profile-spec`
     """
     if not os.path.exists(file_name):
         raise IncorrectProfileFormatException(file_name, "file '{}' not found")
@@ -181,10 +188,10 @@ def finalize_profile_for_job(pcs, collected_data, job):
 
 
 def store_profile_at(profile, file_path):
-    """
-    Arguments:
-        profile(dict): profile in JSON format
-        file_path(str): path to the file of the profile
+    """Stores profile w.r.t. :ref:`profile-spec` to output file.
+
+    :param dict profile: dictionary with profile w.r.t. :ref:`profile-spec`
+    :param str file_path: output path, where the `profile` will be stored
     """
     with open(file_path, 'w') as profile_handle:
         json.dump(profile, profile_handle, indent=2)
