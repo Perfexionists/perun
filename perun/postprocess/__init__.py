@@ -32,7 +32,8 @@ about running command line commands and capabilities fo interpretation
 techniques respectively. Internals of perun storage is described in
 :doc:`internals`.
 
-.. todo::
-    Add picture of architecture of Perun with collectors highlighted
+.. image:: /../figs/architecture-postprocessors.*
+    :width: 100%
+    :align: center
 """
 __author__ = 'Tomas Fiedor'

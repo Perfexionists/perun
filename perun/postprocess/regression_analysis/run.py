@@ -94,6 +94,7 @@ def regression_analysis(profile, **kwargs):
 
     .. code-block:: json
 
+        \b
         {
             "uid": "SLList_insert(SLList*, int)",
             "r_square": 0.0017560012128507133,

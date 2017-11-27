@@ -42,9 +42,6 @@ the internal storage.
     If you do not want to miss profiling, e.g. after each push, commit, etc., check out `git
     hooks`_. ``git hooks`` allows you to run custom scripts on certain git event triggers.
 
-.. todo::
-    Change the notes to "Tips" or something like that
-
 .. _git hooks: https://git-scm.com/book/gr/v2/Customizing-Git-Git-Hooks
 
 Runner CLI
@@ -133,7 +130,7 @@ Note that each phase should return the following tripple: (``status code``, ``st
 of error prints the ``status message``.
 
 .. image:: /../figs/lifetime-of-profile.*
-   :width: 100%
+   :width: 70%
    :align: center
 
 For specification and details about collectors, postprocessors and internal storage of Perun refer

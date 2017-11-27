@@ -12,11 +12,10 @@ Combined with ``perun.profile.factory``, ``perun.profile.convert`` and e.g.
 `Pandas library`_ one can obtain efficient interpreter for executing more
 complex queries and statistical tests over the profiles.
 
-.. todo::
 
-    Consider adding caching to ease some of the computations (in case it is
-    time consuming)
 """
+# TODO: Consider adding caching to ease some of the computations (in case it is
+# time consuming)
 
 import numbers
 import perun.utils.exceptions as exceptions

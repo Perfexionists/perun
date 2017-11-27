@@ -35,8 +35,9 @@ Note that interface of show allows one to use `index` and `pending` tags of
 form ``i@i`` and ``i@p`` respectively, which serve as a quality-of-life feature
 for easy specification of visualized profiles.
 
-.. todo::
-    Add picture of architecture of Perun with collectors highlighted
+.. image:: /../figs/architecture-views.*
+    :width: 100%
+    :align: center
 
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
 .. _ncurses: https://www.gnu.org/software/ncurses/ncurses.html

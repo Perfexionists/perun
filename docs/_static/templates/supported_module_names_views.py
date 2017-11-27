@@ -8,5 +8,6 @@ def get_supported_module_names(package):
         'vcs': ['git'],
         'collect': ['complexity', 'memory', 'time'],
         'postprocess': ['filter', 'normalizer', 'regression_analysis'],
-        'view': ['alloclist', 'bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter', 'myview']
+        'view': ['alloclist', 'bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter', 
+                 'myview']
     }[package]

@@ -148,9 +148,6 @@ List of Supported Options
 
     ``[local-only]`` Refer to :munit:`postprocessors`
 
-.. todo::
-    Fix the wrong high-lighting
-
 .. _config-cli:
 
 Command Line Interface
