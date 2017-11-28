@@ -76,8 +76,11 @@ List of Supported Options
 
 .. confkey:: global.paging
 
-.. todo::
-    To be done both in implementation and here in documentation :P
+    Sets the paging for ``perun log`` and ``perun status``. Paging can be currently set to the
+    following four options: ``always`` (both ``log`` and ``status`` will be paged), ``only-log``
+    (only output of ``log`` will be paged), ``only-status`` (only output of ``status`` will be
+    paged and ``never``. By default ``only-log`` is used in the configuration. The behaviour of
+    paging can be overwritten by option ``--no-pager`` (see :doc:`cli`).
 
 .. confkey:: global.editor
 

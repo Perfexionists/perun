@@ -6,6 +6,8 @@ import perun.utils as utils
 import perun.vcs as vcs
 import perun.collect as collect
 import perun.postprocess as postprocess
+import perun.logic.config as config
+import perun.logic.commands as commands
 import perun.view as view
 
 __author__ = 'Tomas Fiedor'
@@ -96,3 +98,33 @@ def test_get_supported_modules():
     assert_all_registered_cli_units('collect', collect, ['collect'])
     assert_all_registered_cli_units('postprocess', postprocess, ['postprocess'])
     assert_all_registered_cli_units('view', view, [])
+
+
+def test_paging_and_config(monkeypatch, capsys):
+    """Helper function for testing various configs of paging through turn_off_paging_wrt_config"""
+    cfg = config.Config('shared', '', {'global': {'paging': 'always'}})
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    assert commands.turn_off_paging_wrt_config('status')
+    assert commands.turn_off_paging_wrt_config('log')
+
+    cfg = config.Config('shared', '', {'global': {'paging': 'only-log'}})
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    assert not commands.turn_off_paging_wrt_config('status')
+    assert commands.turn_off_paging_wrt_config('log')
+
+    cfg = config.Config('shared', '', {'global': {'paging': 'only-status'}})
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    assert commands.turn_off_paging_wrt_config('status')
+    assert not commands.turn_off_paging_wrt_config('log')
+
+    cfg = config.Config('shared', '', {'global': {'paging': 'never'}})
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    assert not commands.turn_off_paging_wrt_config('status')
+    assert not commands.turn_off_paging_wrt_config('log')
+
+    cfg = config.Config('shared', '', {})
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    assert commands.turn_off_paging_wrt_config('status')
+    assert commands.turn_off_paging_wrt_config('log')
+    out, _ = capsys.readouterr()
+    assert 'warn' in out and 'missing ``global.paging``' in out

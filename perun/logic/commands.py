@@ -22,7 +22,7 @@ import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 from perun.utils.exceptions import NotPerunRepositoryException, InvalidConfigOperationException, \
-    ExternalEditorErrorException
+    ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
@@ -345,7 +345,34 @@ def print_profile_numbers(profile_numbers, profile_types, line_ending='\n'):
         cprintln('(no {} profiles)'.format(profile_types), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
 
 
-@perun_log.paged_function
+def turn_off_paging_wrt_config(paged_function):
+    """Helper function for checking if the function should be paged or not according to the config
+    setting ``global.paging``.
+
+    If in global config the ``global.paging`` is set to ``always``, then any function should be
+    paged. Otherwise we check if ``global.paging`` contains either ``only-log`` or ``only-status``.
+
+    :param str paged_function: name of the paged function, which will be looked up in config
+    :return: true if the function should be paged (unless --no-pager is set)
+    """
+    try:
+        paging_option = perun_config.get_key_from_config(perun_config.shared(), 'global.paging')
+    # Test for backward compatibility with old instances of Perun and possible issues
+    except MissingConfigSectionException:
+        perun_log.warn("""corrupted shared configuration file: missing ``global.paging`` option.
+
+Run ``perun config --shared --edit`` and set the ``global.paging`` to one of following:
+    always, only-log, only-status, never
+
+Consult the documentation (Configuration and Logs) for more information about paging of
+output of status, log and others.
+        """)
+        return True
+    return paging_option == 'always' or \
+        (paging_option.startswith('only-') and paging_option.endswith(paged_function))
+
+
+@perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('log'))
 @pass_pcs
 @lookup_minor_version
 def log(pcs, minor_version, short=False, **_):
@@ -628,7 +655,7 @@ def get_untracked_profiles(pcs):
     return profile_list
 
 
-@perun_log.paged_function
+@perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('status'))
 @pass_pcs
 def status(pcs, short=False):
     """Prints the status of performance control system
