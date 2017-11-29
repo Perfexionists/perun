@@ -12,18 +12,18 @@ HEAD
 0.11 (2017-11-27)
 -----------------
 
-**Adding proper documentation** 
+**Adding proper documentation**
 
 `commit: a2ad710aafa171dfc6974c7121b572ee3ea2033b`
-    
+
   - add HTML and latex documentation
-  - refactor the documentation of publicly visible moduels    
-  - add additional figures and examples of outputs and profiles 
+  - refactor the documentation of publicly visible modules
+  - add additional figures and examples of outputs and profiles
   - switch order of initialization of Perun instances and vcs
-  - break vcs-params to vcs-flags and vcs-param    
+  - break vcs-params to vcs-flags and vcs-param
   - fix the issue with missing index
   - enhance the performance of Perun (guarding, rewriting to table lookup, or lazy inits)
-  - add loading of yaml parameters from CLI 
+  - add loading of yaml parameters from CLI
 
 0.10.1 (2017-10-24)
 -------------------
@@ -31,7 +31,7 @@ HEAD
 **Remodeling of the  regression analysis interface**
 
 `commit: 14ce41c28d4d847ed2c74eac6a2dbfe7644cfd93`
-    
+
   - refactor the interface of regression analysis
   - update the regression analysis error computation
   - add new parameters for plotting models
@@ -43,8 +43,8 @@ HEAD
   - add paging for perun log and status
   - rename converters and transformations modules
 
-0.9 (2017-10-10)
-----------------
+0.10 (2017-10-10)
+-----------------
 
 **Add Scatter plot visualization module**
 
@@ -55,7 +55,7 @@ HEAD
   - add examples of scatter plot graphs
 
 0.9.2 (2017-09-28)
--------------------
+------------------
 
 **Extend the regression analysis module**
 
@@ -86,8 +86,8 @@ HEAD
 
   - add regression analysis postprocessor module
   - add example resulting profiles
-    
-    
+
+
 0.8.3 (2017-08-31)
 ------------------
 
@@ -149,14 +149,14 @@ HEAD
 **Refactor flow graph to a more generic form**
 
 `commit: eb33811236575599fc9aa82ce417c492be22d79b`
-    
+
   - refactor flow to more generic format
   - work with flattened pandas.DataFrame format
   - use set of generators and queries for manipulation with profiles
   - make the cli API generic
   - polish the visual apeal of flow graphs
   - simplify output to bokeh.charts.Area
-  - add basic testing of bokeh flow graphs 
+  - add basic testing of bokeh flow graphs
   - fix the issue with additional layer in memory profs
 
 0.7.1 (2017-06-30)
@@ -189,7 +189,7 @@ HEAD
 **Add Flow graph visualization**
 
 `commit: 5683141b2e622af871eabc1c7259654151177256`
-    
+
   - integrate flow graph visualization
 
 0.5.1 (2016-06-22)
@@ -211,7 +211,7 @@ HEAD
 **Add Heap map visualization**
 
 `commit: 6ac6e43080f0a9b0c856636ed5ae12ee25a3d4df`
-    
+
   - integrate Heap map visualization
   - add thorough testing of heap and heat map
   - refactor profile converting
@@ -235,7 +235,7 @@ HEAD
 **Collective fixes mostly for Memory collector**
 
 `commit: 4d94299bc196292284995aabdce0c702e76b33ca`
-    
+
   - fix a collector issue with zero value addresses
   - add checking validity of the looked up minor version
   - fix issue with incorrect parameter of the NotPerunRepositoryException
@@ -253,7 +253,7 @@ HEAD
 **Collective fixes mosty for Complexity collector**
 
 `commit: 13bebd88613fce58458d50207aea01ee7f672f86`
-    
+
   - fixed size data container growth if functions were sampled
   - enhance the perun status with info about untracked profiles
   - add colours to printing of profile list (red for untracked)

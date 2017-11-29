@@ -601,7 +601,7 @@ def get_nth_profile_of(pcs, position, minor_version):
     """
     registered_profiles = get_minor_version_profiles(pcs, minor_version)
     if 0 <= position < len(registered_profiles):
-        return registered_profiles[position].id
+        return registered_profiles[position].realpath
     else:
         raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
             "{}@i".format(position), "0@i", "{}@i".format(len(registered_profiles)-1)
