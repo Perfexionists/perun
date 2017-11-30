@@ -216,7 +216,7 @@ def configure_local_perun(perun_path):
         perun_path(str): destination path of the perun repository
     """
     pcs = PCS(perun_path)
-    editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
+    editor = perun_config.lookup_key_recursively(pcs.path, 'general.editor')
     local_config_file = pcs.get_config_file('local')
     try:
         utils.run_external_command([editor, local_config_file])
@@ -318,7 +318,7 @@ def init(dst, configure, **kwargs):
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except MissingConfigSectionException:
         perun_log.error("cannot launch default editor for configuration.\n"
-                        "Please set 'global.editor' key to a valid text editor (e.g. vim).")
+                        "Please set 'general.editor' key to a valid text editor (e.g. vim).")
 
 
 def lookup_nth_pending_filename(position):
@@ -617,7 +617,7 @@ def log(head, **kwargs):
     default using ``less``.
 
     Refer to :ref:`logs-log` for information how to customize the outputs of
-    ``log`` or how to set :ckey:`global.minor_version_info_fmt` in nearest
+    ``log`` or how to set :ckey:`format.log` in nearest
     configuration.
     """
     try:
@@ -646,10 +646,10 @@ def status(**kwargs):
 
     An error is raised if the command is executed outside of range of any
     perun, or configuration misses certain configuration keys
-    (namely ``global.profile_info_fmt``).
+    (namely ``format.status``).
 
     Refer to :ref:`logs-status` for information how to customize the outputs of
-    ``status`` or how to set :ckey:`global.profile_info_fmt` in nearest
+    ``status`` or how to set :ckey:`format.status` in nearest
     configuration.
     """
     try:

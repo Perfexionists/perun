@@ -6,7 +6,7 @@ HEAD
 
 **To be included in next release**
 
-  - add global.paging option (see :ckey:`global.paging`)
+  - add global.paging option (see :ckey:`general.paging`)
   - improve bokeh outputs (with click policy, and better lines)
 
 0.11 (2017-11-27)

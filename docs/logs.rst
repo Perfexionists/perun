@@ -14,7 +14,7 @@ numbers, configurations of profiling run, etc.
 The format of outputs of both ``log`` and ``status`` can be customized by setting the formatting
 strings c.f. :ref:`logs-log` and :ref:`logs-status`. Moreover, outputs are paged (currently using
 the ``less -R`` command) by default. To turn off the paging, run the ``perun`` with ``--no-pager``
-option (see :doc:`cli`) or set :ckey:`global.paging`.
+option (see :doc:`cli`) or set :ckey:`general.paging`.
 
 .. _logs-status:
 
@@ -22,7 +22,7 @@ Customizing Statuses
 --------------------
 
 The output of ``perun status`` is defined w.r.t. formatting string specified in configuration in
-:ckey:`global.profile_info_fmt` key (looked up recursively in the nearest local configuration, or
+:ckey:`format.status` key (looked up recursively in the nearest local configuration, or
 in global configuration). The formatting string consists of raw delimiters and special tags, which
 serves as templates to output specific informations about concrete profiles, such as the profiling
 configuration, type of profile, creating timestamps, etc.
@@ -47,7 +47,7 @@ the given, which can be used in ``add``, ``rm``, ``show`` and ``postprocessby`` 
 wildcard for concrete profiles, e.g. ``perun add 0@p`` would register the first profile stored in
 the pending ``.perun/jobs`` directory to the index of current head. Tags are always in form of
 ``i@p`` (for pending profiles) and ``i@i`` for profiles registered in index, where ``i`` stands for
-position in the corresponding storage, index from zero. 
+position in the corresponding storage, index from zero.
 
 The specification of the formatting string can contain the following special tags:
 
@@ -85,11 +85,11 @@ The specification of the formatting string can contain the following special tag
 Customizing Logs
 ----------------
 
-.. todo:: 
+.. todo::
     FFS, this is not even currently working in Perun. ^\(-_-)/^
 
 The output of ``perun log --short`` is defined w.r.t. formatting string specified in configuration
-in :ckey:`global.minor_version_info_fmt` key (looked up recursively in the nearest local
+in :ckey:`format.log` key (looked up recursively in the nearest local
 configuration, or in global configuration). The formatting string can contain both raw characters
 (such as delimiters, etc.) and special tags, which serves as templates to output information for
 concrete minor version such as minor version description, number of assigned profiles, etc.

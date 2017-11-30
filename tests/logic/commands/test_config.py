@@ -30,20 +30,20 @@ def test_get_exists(pcs_full, capsys):
     assert err == ''
 
     # Get valid thing from global
-    commands.config('shared', 'get', 'global.editor')
+    commands.config('shared', 'get', 'general.editor')
     out_global, err = capsys.readouterr()
-    assert 'global.editor: ' in out_global
+    assert 'general.editor: ' in out_global
     assert err == ''
 
     # First verify there is nothing in local
     with pytest.raises(MissingConfigSectionException):
-        commands.config('local', 'get', 'global.editor')
+        commands.config('local', 'get', 'general.editor')
         out, err = capsys.readouterr()
         assert out == err
         assert 'fatal' in err
 
     # Now try to recursively obtain the same thing
-    commands.config('recursive', 'get', 'global.editor')
+    commands.config('recursive', 'get', 'general.editor')
     out, err = capsys.readouterr()
     assert out == out_global
     assert err == ''
@@ -97,13 +97,13 @@ def test_edit(pcs_full, capsys):
     Expecting no errors or exceptions
     """
     # First try to get the exception by calling bogus editor
-    commands.config('local', 'set', 'global.editor', 'bogus')
+    commands.config('local', 'set', 'general.editor', 'bogus')
     with pytest.raises(ExternalEditorErrorException):
         commands.config('local', 'edit')
     capsys.readouterr()
 
     # Use cat as a valid editor
-    commands.config('local', 'set', 'global.editor', 'cat')
+    commands.config('local', 'set', 'general.editor', 'cat')
     commands.config('local', 'edit')
     capsys.readouterr()
     _, err = capsys.readouterr()

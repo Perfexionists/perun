@@ -108,7 +108,7 @@ def config(pcs, store_type, operation, key=None, value=None, **_):
     # Edit operation opens the configuration in the external editor
     elif operation == 'edit':
         # Lookup the editor in the config and run it as external command
-        editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
+        editor = perun_config.lookup_key_recursively(pcs.path, 'general.editor')
         config_file = pcs.get_config_file(store_type)
         try:
             utils.run_external_command([editor, config_file])
@@ -347,21 +347,21 @@ def print_profile_numbers(profile_numbers, profile_types, line_ending='\n'):
 
 def turn_off_paging_wrt_config(paged_function):
     """Helper function for checking if the function should be paged or not according to the config
-    setting ``global.paging``.
+    setting ``general.paging``.
 
-    If in global config the ``global.paging`` is set to ``always``, then any function should be
-    paged. Otherwise we check if ``global.paging`` contains either ``only-log`` or ``only-status``.
+    If in global config the ``genera.paging`` is set to ``always``, then any function should be
+    paged. Otherwise we check if ``general.paging`` contains either ``only-log`` or ``only-status``.
 
     :param str paged_function: name of the paged function, which will be looked up in config
     :return: true if the function should be paged (unless --no-pager is set)
     """
     try:
-        paging_option = perun_config.get_key_from_config(perun_config.shared(), 'global.paging')
+        paging_option = perun_config.get_key_from_config(perun_config.shared(), 'general.paging')
     # Test for backward compatibility with old instances of Perun and possible issues
     except MissingConfigSectionException:
-        perun_log.warn("""corrupted shared configuration file: missing ``global.paging`` option.
+        perun_log.warn("""corrupted shared configuration file: missing ``general.paging`` option.
 
-Run ``perun config --shared --edit`` and set the ``global.paging`` to one of following:
+Run ``perun config --shared --edit`` and set the ``general.paging`` to one of following:
     always, only-log, only-status, never
 
 Consult the documentation (Configuration and Logs) for more information about paging of
@@ -542,7 +542,7 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
         return
 
     # Load formating string for profile
-    profile_info_fmt = perun_config.lookup_key_recursively(pcs.path, 'global.profile_info_fmt')
+    profile_info_fmt = perun_config.lookup_key_recursively(pcs.path, 'format.status')
     fmt_tokens, _ = FMT_SCANNER.scan(profile_info_fmt)
 
     # Compute header length
