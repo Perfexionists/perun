@@ -29,9 +29,9 @@ class PCS(object):
         """
         assert os.path.isdir(fullpath)
         self.path = os.path.join(fullpath, '.perun')
-        self.vcs_type = config.get_key_from_config(config.local(self.path), 'vcs.type')
+        self.vcs_type = config.local(self.path).get('vcs.type')
         self.vcs_path = os.path.abspath(os.path.join(
-            self.path, config.get_key_from_config(config.local(self.path), 'vcs.url')
+            self.path, config.local(self.path).get('vcs.url')
         ))
 
     def local_config(self):

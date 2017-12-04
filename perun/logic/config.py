@@ -1,13 +1,12 @@
-"""Config is a wrapper over local and global configuration files.
+"""Config is a module for storing and managing local, global and temporary configuration files.
 
-Config provides collection of methods to work with configuration files, both global and local.
-Configurations are implemented as a YAML forward, for possible checks and in order to stay unified
-with CI, like e.g. travis, which usually uses yaml format.
+Config provides instances of Configuration objects, for both temporary, global and local types.
+Stored configurations are in YAML format, inspired e.g. by Travis.
 
-There are two types of config: local, corresponding to concrete pcs, and global, which contains
-global information and configurations, like e.g. list of registered repositories.
+There are three types of config: local, corresponding to concrete pcs, global, which contains
+global information and configurations, like e.g. list of registered repositories, and temporary,
+containing formats and options for one execution of perun command.
 """
-import collections
 import os
 import re
 import sys
@@ -22,16 +21,122 @@ import perun.utils.streams as streams
 
 __author__ = 'Tomas Fiedor'
 
-Config = collections.namedtuple('Config', ['type', 'path', 'data'])
 
-# TODO: Could there be an issue that the config is changed during the run?
-# I think, that each command is run once, so no, but for GUI version this may differ
+def is_valid_key(key):
+    """Validation function for key representing one option in config section.
+
+    Validates that the given string key is in form of dot separated (.) strings. Each delimited
+    string represents one subsection, with last string representing the option.
+
+    :param str key: string we are validating
+    :returns: true if the given key is in correct key format
+    """
+    valid_key_pattern = re.compile(r"^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$")
+    return valid_key_pattern.match(key) is not None
+
+
+class Config(object):
+    """Config represents one instance of configuration of given type.
+
+    Configurations are represented by their type and dictionary containing (possibly nested)
+    section with concrete keys, such as the following::
+
+        {
+            'general': {
+                'paging': 'only-log'
+                'editor': 'vim'
+            },
+            'format': {
+                'status': '[type] > [origin]',
+                'log': '[id:6]: [desc]'
+            }
+        }
+
+    If the path is set, then the config will be saved to the given path, if the config is modified
+    during the run.
+    """
+    def __init__(self, config_type, path, config_initial_data):
+        """
+        :param str config_type: type of the configuration (one of 'local', 'global', 'temporary')
+        :param str path: path leading to the configuration (if stored internally)
+        :param dict config_initial_data: dictionary representation of the stored config, can either
+            be empty for some configuration, or loaded from the filesystem
+        """
+        self.type = config_type
+        self.path = path
+        self.data = config_initial_data
+
+    @decorators.validate_arguments(['key'], is_valid_key)
+    def set(self, key, value):
+        """Overrides the value of the key in the config.
+
+        :param str key: list of sections separated by dots
+        :param object value: value we are writing to the key at config
+        """
+        *sections, last_section = key.split('.')
+        _locate_section_from_query(self.data, sections)[last_section] = value
+        write_config_to(self.path, self.data)
+
+    @decorators.validate_arguments(['key'], is_valid_key)
+    def append(self, key, value):
+        """Appends the value of the key to the given option in the config.
+
+        This requires the key to point to a list option.
+
+        :param str key: list of sections separated by dots
+        :param object value: value we are appending to the key at config
+        """
+        *sections, last_section = key.split('.')
+        section_location = _locate_section_from_query(self.data, sections)
+        if last_section not in section_location.keys():
+            section_location[last_section] = []
+        section_location[last_section].append(value)
+        write_config_to(self.path, self.data)
+
+    @decorators.validate_arguments(['key'], is_valid_key)
+    def get(self, key):
+        """Returns the value of the key stored in the config.
+
+        :param str key: list of section separated by dots
+        :returns value: retrieved value of the key at config
+        :raises exceptions.MissingConfigSectionException: if the key is not present in the config
+        """
+        sections = key.split('.')
+
+        section_iterator = self.data
+        for section in sections:
+            section_iterator = _ascend_by_section_safely(section_iterator, section)
+        return section_iterator
+
+
+def write_config_to(path, config_data):
+    """Stores the config data on the path
+
+    :param str path: path where the config will be stored to
+    :param dict config_data: dictionary with contents of the configuration
+    """
+    perun_log.msg_to_stdout("Writing config '{}' at {}".format(
+        config_data, path
+    ), 2)
+    with open(path, 'w') as yaml_file:
+        YAML().dump(config_data, yaml_file)
+
+
+def read_config_from(path):
+    """Reads the config data from the path
+
+    :param str path: source path of the config
+    :returns: configuration data represented as dictionary of keys and their appropriate values
+        (possibly nested)
+    """
+    return streams.safely_load_yaml_from_file(path)
 
 
 def init_shared_config_at(path):
-    """
-    Arguments:
-        path(str): path where the empty global config will be initialized
+    """Creates the new configuration at given path with sane defaults of e.g. editor, paging of
+    outputs or formats for status or log commands.
+
+    :param str path: path where the empty global config will be initialized
     """
     if not path.endswith('shared.yml') and not path.endswith('shared.yaml'):
         path = os.path.join(path, 'shared.yml')
@@ -47,14 +152,15 @@ format:
     shortlog: "[id:6] ([stats]) [desc]"
     """)
 
-    write_config_file(shared_config, path)
+    write_config_to(path, shared_config)
 
 
 def init_local_config_at(path, wrapped_vcs):
-    """
-    Arguments:
-        path(str): path where the empty shared config will be initialized
-        wrapped_vcs(dict): dictionary with wrapped vcs of type {'vcs': {'type', 'url'}}
+    """Creates the new local configuration at given path with sane defaults and helper comments
+    for use in order to initialize the config matrix.
+
+    :param str path: path where the empty shared config will be initialized
+    :param dict wrapped_vcs: dictionary with wrapped vcs of type {'vcs': {'type', 'url'}}
     """
     if not path.endswith('local.yml') and not path.endswith('local.yaml'):
         path = os.path.join(path, 'local.yml')
@@ -97,70 +203,27 @@ vcs:
 ## Try '$ perun postprocessby --help' to obtain list of supported collectors!
     """.format(wrapped_vcs['vcs']['type'], wrapped_vcs['vcs']['url']))
 
-    write_config_file(local_config, path)
+    write_config_to(path, local_config)
 
 
 def init_config_at(path, config_type):
-    """
-    Arguments:
-        path(str): path where the empty shared config will be initialized
-        config_type(str): type of the config (either shared or local)
+    """Wrapping function for calling appropriate initialization function of local and global config.
 
-    Returns:
-        bool: whether the config file was successfully created
+    :param str path: path where the empty shared config will be initialized
+    :param str config_type: type of the config (either shared or local)
+    :returns: true if the config file was successfully created
     """
     init_function_name = "init_{}_config_at".format(config_type)
     return getattr(sys.modules[__name__], init_function_name)(path)
 
 
-def read_config_file(path):
-    """
-    Arguments:
-        path(str): source path of the config
-
-    Returns:
-        dict: yaml config
-    """
-    return streams.safely_load_yaml_from_file(path)
-
-
-def write_config_file(config, path):
-    """
-    Arguments:
-        config(yaml): configuration dictionary
-        path(str): path, where the configuration will be stored
-    """
-    perun_log.msg_to_stdout("Writing config '{}' at {}".format(
-        config, path
-    ), 2)
-    with open(path, 'w') as yaml_file:
-        YAML().dump(config, yaml_file)
-
-
-def is_valid_key(key):
-    """Validates that key is in form of ".".join(sections)
-
-    Arguments:
-        key(str): string we are validating
-
-    Returns:
-        bool: true if the key is in valid format
-    """
-    valid_key_pattern = re.compile(r"^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$")
-    return valid_key_pattern.match(key) is not None
-
-
 def _locate_section_from_query(config_data, sections):
-    """
-    Iterates through the config_data and queries the subsections from the list
-    of the sections, returning the last one.
+    """Iterates through the config dictionary and queries the subsections from the list of the
+    sections, returning the last one.
 
-    Arguments:
-        config_data(dict): dictionary representing yaml configuration
-        sections(list): list of sections in config
-
-    Returns:
-        dict: dictionary representing the section that will be updated
+    :param dict config_data: dictionary representing yaml configuration
+    :param list sections: list of sections in config
+    :returns: dictionary representing the section that will be updated
     """
 
     section_iterator = config_data
@@ -171,81 +234,31 @@ def _locate_section_from_query(config_data, sections):
     return section_iterator
 
 
-@decorators.validate_arguments(['key'], is_valid_key)
-def set_key_at_config(config, key, value):
-    """
-    Arguments:
-        config(Config): named tuple with config we are writing
-        key(str): list of section separated by dots
-        value(arbitrary): value we are writing to the key at config
-    """
-    *sections, last_section = key.split('.')
-    _locate_section_from_query(config.data, sections)[last_section] = value
-    write_config_file(config.data, config.path)
-
-
-@decorators.validate_arguments(['key'], is_valid_key)
-def append_key_at_config(config, key, value):
-    """
-    Fixme: What if there is nothing?
-    Arguments:
-        config(Config): named tuple with config we are writing
-        key(str): list of section separated by dots
-        value(arbitrary): value we are writing to the key at config
-    """
-    *sections, last_section = key.split('.')
-    section_location = _locate_section_from_query(config.data, sections)
-    if last_section not in section_location.keys():
-        section_location[last_section] = []
-    section_location[last_section].append(value)
-    write_config_file(config.data, config.path)
-
-
 def _ascend_by_section_safely(section_iterator, section_key):
-    """
-    Ascend by one level in the section_iterator. In case the section_key
-    is not in the section_iterator, MissingConfigSectionException is raised.
+    """Ascends by one level in the section_iterator.
 
-    Arguments:
-        section_iterator(dict): dictionary with sections
-        section_key(str): section in dictionary
+    In case the section_key is not in the section_iterator, MissingConfigSectionException is raised.
 
-    Returns:
-        dict: section after ascending by the section key
+    :param dict section_iterator: dictionary with sections
+    :param str section_key: section in dictionary
+    :returns: dictionary or the key after ascending by one section key
+    :raises exceptions.MissingConfigSectionException: when the given section_key is not found in the
+        configuration object.
     """
     if section_key not in section_iterator:
-        raise exceptions.MissingConfigSectionException("Missing section '{}' in config file".format(
-            section_key
-        ))
+        raise exceptions.MissingConfigSectionException(
+            "missing section '{}' in the config file".format(section_key)
+        )
     return section_iterator[section_key]
 
 
-@decorators.validate_arguments(['key'], is_valid_key)
-def get_key_from_config(config, key):
-    """
-    Arguments:
-        config(Config): named tuple with config we are writing
-        key(str): list of section separated by dots
-
-    Returns:
-        value: value of the key at config
-    """
-    sections = key.split('.')
-
-    section_iterator = config.data
-    for section in sections:
-        section_iterator = _ascend_by_section_safely(section_iterator, section)
-    return section_iterator
-
-
 def load_config(config_dir, config_type):
-    """
-    Arguments:
-        config_dir(str): directory, where the config is stored
-        config_type(str): type of the config (either shared or local)
+    """Loads the configuration of given type from the appropriate file (either local.yml or
+    global.yml).
 
-    Returns:
-        config: loaded config
+    :param str config_dir: directory, where the config is stored
+    :param str config_type: type of the config (either shared or local)
+    :returns: loaded Config object with populated data and set path and type
     """
     config_file = os.sep.join([config_dir, ".".join([config_type, 'yml'])])
 
@@ -253,7 +266,7 @@ def load_config(config_dir, config_type):
         if not os.path.exists(config_file):
             init_config_at(config_file, config_type)
 
-        return Config(config_type, config_file, read_config_file(config_file))
+        return Config(config_type, config_file, read_config_from(config_file))
     except IOError as io_error:
         perun_log.error("error initializing {} config: {}".format(
             config_type, str(io_error)
@@ -261,9 +274,16 @@ def load_config(config_dir, config_type):
 
 
 def lookup_shared_config_dir():
-    """
-    Returns:
-        str: dir, where the shared config will be stored
+    """Performs a lookup of the shared config dir on the given platform.
+
+    First we check if PERUN_CONFIG_DIR environmental variable is set, otherwise, we try to expand
+    the home directory of the user and according to the platform we return the sane location.
+
+    On windows systems, we use the AppData\Local\perun directory in the user space, on linux
+    system we use the ~/.config/perun. Other platforms are not supported, however can be initialized
+    using the PERUN_CONFIG_DIR.
+
+    :returns: dir, where the shared config will be stored
     """
     environment_dir = os.environ.get('PERUN_CONFIG_DIR')
     if environment_dir:
@@ -276,7 +296,10 @@ def lookup_shared_config_dir():
     elif sys.platform == 'linux':
         perun_config_dir = os.path.join(home_directory, '.config', 'perun')
     else:
-        perun_log.error("currently unsupported platform: ".format(sys.platform))
+        perun_log.error("""{} platform is currently unsupported.
+
+Set `PERUN_CONFIG_DIR` environment variable to a valid directory, where the global config will be stored and rerun the command.
+        """.format(sys.platform))
 
     store.touch_dir_range(home_directory, perun_config_dir)
     return perun_config_dir
@@ -284,12 +307,10 @@ def lookup_shared_config_dir():
 
 @decorators.singleton
 def shared():
-    """
-    Returns config corresponding to the shared configuration data, i.e.
-    such that is shared by all of the perun locations.
+    """Returns the configuration corresponding to the shared configuration data, i.e. the config
+    possibly shared by all perun instances.
 
-    Returns:
-        config: returns shared config file
+    :returns: shared Config file
     """
     shared_config_dir = lookup_shared_config_dir()
     return load_config(shared_config_dir, 'shared')
@@ -297,18 +318,20 @@ def shared():
 
 @decorators.singleton_with_args
 def local(path):
-    """
-    Returns config corresponding to the local configuration data,
-    located at @p path.
+    """Returns the configuration corresponding to the one local configuration data, located at @p
+    path.
 
-    Arguments:
-        path(src): path corresponding to the perun instance
-
-    Returns:
-        config: returns local config for given path
+    :param src path: path corresponding to the perun instance
+    :returns config: local Config from the given path
     """
-    assert os.path.isdir(path)
-    return load_config(path, 'local')
+    if os.path.isdir(path):
+        return load_config(path, 'local')
+    else:
+        perun_log.warn("""local configuration file at {} does not exist.
+
+Creating an empty configuration. Run ``perun config --local --edit`` to initialized or modify the local configuration in text editor.
+        """.format(path))
+        return Config('local', path, {})
 
 
 def lookup_key_recursively(path, key):
@@ -318,11 +341,11 @@ def lookup_key_recursively(path, key):
     that have higher priority. In case there is nothing set in the config, we will check the
     global config.
 
-    Arguments:
-        path(str): path to the local config
-        key(str): key we are looking up
+    :param str path: path to the local config
+    :param str key: key we are looking up
     """
+    # Fixme: this should contain recursive lookup for other instances and also the temporary config
     try:
-        return get_key_from_config(local(path), key)
+        return local(path).get(key)
     except exceptions.MissingConfigSectionException:
-        return get_key_from_config(shared(), key)
+        return shared().get(key)

@@ -100,10 +100,10 @@ def config(pcs, store_type, operation, key=None, value=None, **_):
         if store_type == 'recursive':
             value = perun_config.lookup_key_recursively(pcs.get_config_dir('local'), key)
         else:
-            value = perun_config.get_key_from_config(config_store, key)
+            value = config_store.get(key)
         print("{}: {}".format(key, value))
     elif operation == 'set' and key and value:
-        perun_config.set_key_at_config(config_store, key, value)
+        config_store.set(key, value)
         print("Value '{1}' set for key '{0}'".format(key, value))
     # Edit operation opens the configuration in the external editor
     elif operation == 'edit':
@@ -356,7 +356,7 @@ def turn_off_paging_wrt_config(paged_function):
     :return: true if the function should be paged (unless --no-pager is set)
     """
     try:
-        paging_option = perun_config.get_key_from_config(perun_config.shared(), 'general.paging')
+        paging_option = perun_config.shared().get('general.paging')
     # Test for backward compatibility with old instances of Perun and possible issues
     except MissingConfigSectionException:
         perun_log.warn("""corrupted shared configuration file: missing ``general.paging`` option.
