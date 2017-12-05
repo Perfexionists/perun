@@ -166,3 +166,12 @@ change the nearest local (resp. global) configuration run ``perun config --local
 
 .. click:: perun.cli:config
    :prog: perun config
+
+.. click:: perun.cli:config_get
+   :prog: perun config get
+
+.. click:: perun.cli:config_set
+   :prog: perun config set
+
+.. click:: perun.cli:config_edit
+   :prog: perun config edit

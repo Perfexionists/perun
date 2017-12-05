@@ -21,7 +21,7 @@ import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
-from perun.utils.exceptions import NotPerunRepositoryException, InvalidConfigOperationException, \
+from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
@@ -79,43 +79,54 @@ def lookup_minor_version(func):
 
 
 @pass_pcs
-def config(pcs, store_type, operation, key=None, value=None, **_):
-    """Updates the configuration file @p config of the @p pcs perun file
+def config_get(pcs, store_type, key):
+    """Gets from the store_type configuration the value of the given key.
 
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        store_type(str): type of the store (local, shared, or recursive)
-        operation(str): type of the operation over the (key, value) pair (get, set, or edit)
-        key(str): key that is looked up or stored in config
-        value(str): value we are setting to config
-        _(dict): dictionary of keyword arguments
-
-    Raises:
-        ExternalEditorErrorException: raised if there are any problems during invoking of external
-            editor during the 'edit' operation
+    :param PCS pcs: object with performance control system wrapper
+    :param str store_type: type of the store lookup (local, shared of recursive)
+    :param str key: list of section delimited by dot (.)
     """
     config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
 
-    if operation == 'get' and key:
-        if store_type == 'recursive':
-            value = perun_config.lookup_key_recursively(pcs.get_config_dir('local'), key)
-        else:
-            value = config_store.get(key)
-        print("{}: {}".format(key, value))
-    elif operation == 'set' and key and value:
-        config_store.set(key, value)
-        print("Value '{1}' set for key '{0}'".format(key, value))
-    # Edit operation opens the configuration in the external editor
-    elif operation == 'edit':
-        # Lookup the editor in the config and run it as external command
-        editor = perun_config.lookup_key_recursively(pcs.path, 'general.editor')
-        config_file = pcs.get_config_file(store_type)
-        try:
-            utils.run_external_command([editor, config_file])
-        except Exception as inner_exception:
-            raise ExternalEditorErrorException(editor, str(inner_exception))
+    if store_type == 'recursive':
+        value = perun_config.lookup_key_recursively(pcs.get_config_dir('local'), key)
     else:
-        raise InvalidConfigOperationException(store_type, operation, key, value)
+        value = config_store.get(key)
+    print("{}: {}".format(key, value))
+
+
+@pass_pcs
+def config_set(pcs, store_type, key, value):
+    """Sets in the store_type configuration the key to the given value.
+
+    :param PCS pcs: object with performance control system wrapper
+    :param str store_type: type of the store lookup (local, shared of recursive)
+    :param str key: list of section delimited by dot (.)
+    :param object value: arbitrary value that will be set in the configuration
+    """
+    config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
+
+    config_store.set(key, value)
+    print("Value '{1}' set for key '{0}'".format(key, value))
+
+
+@pass_pcs
+def config_edit(pcs, store_type):
+    """Runs the external editor stored in general.editor key in order to edit the config file.
+
+    :param PCS pcs: object with performance control system wrapper
+    :param str store_type: type of the store (local, shared, or recursive)
+    :raises MissingConfigSectionException: when the general.editor is not found in any config
+    :raises ExternalEditorErrorException: raised if there are any problems during invoking of
+        external editor during the 'edit' operation
+    """
+    # Lookup the editor in the config and run it as external command
+    editor = perun_config.lookup_key_recursively(pcs.path, 'general.editor')
+    config_file = pcs.get_config_file(store_type)
+    try:
+        utils.run_external_command([editor, config_file])
+    except Exception as inner_exception:
+        raise ExternalEditorErrorException(editor, str(inner_exception))
 
 
 def init_perun_at(perun_path, is_reinit, vcs_config):

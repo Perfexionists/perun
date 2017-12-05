@@ -19,6 +19,15 @@ Perun Commands
 .. click:: perun.cli:config
    :prog: perun config
 
+.. click:: perun.cli:config_get
+   :prog: perun config get
+
+.. click:: perun.cli:config_set
+   :prog: perun config set
+
+.. click:: perun.cli:config_edit
+   :prog: perun config edit
+
 .. click:: perun.cli:add
    :prog: perun add
 

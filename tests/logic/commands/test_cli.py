@@ -529,18 +529,22 @@ def test_config(pcs_full):
     runner = CliRunner()
 
     # OK usage
-    result = runner.invoke(cli.config, ['--local', '--get', 'vcs.type'])
+    result = runner.invoke(cli.config, ['--local', 'get', 'vcs.type'])
     assert result.exit_code == 0
 
-    result = runner.invoke(cli.config, ['--local', '--set', 'vcs.remote', 'url'])
+    result = runner.invoke(cli.config, ['--local', 'set', 'vcs.remote', 'url'])
     assert result.exit_code == 0
 
     # Error cli usage
-    result = runner.invoke(cli.config, ['--local', '--get'])
+    result = runner.invoke(cli.config, ['--local', 'get'])
     assert result.exit_code == 2
 
-    result = runner.invoke(cli.config, ['--local', '--get', 'bogus.key'])
+    result = runner.invoke(cli.config, ['--local', 'get', 'bogus.key'])
     assert result.exit_code == 1
 
-    result = runner.invoke(cli.config, ['--local', '--set', 'key'])
+    result = runner.invoke(cli.config, ['--local', 'set', 'key'])
     assert result.exit_code == 2
+
+    result = runner.invoke(cli.config, ['--local', 'get', 'wrong,key'])
+    assert result.exit_code == 2
+    assert "invalid format" in result.output
