@@ -334,6 +334,47 @@ Creating an empty configuration. Run ``perun config --local --edit`` to initiali
         return Config('local', path, {})
 
 
+@decorators.singleton
+def runtime():
+    """
+    Returns the configuration corresponding to the one runtime of perun command, not stored anywhere
+    and serving as a temporary shared storage through various functions. Moreover this is also
+    used to temporary rewrite some options looked-up in the recursive manner.
+
+    runtime = {
+        'output_filename_template': ''
+        'perun_scope': PCS()
+        'output_filename_queue': []
+        'input_filename_queue': []
+        'format': {
+            'shortlog': ''
+            'status': ''
+        }
+    }
+
+    :returns: runtime temporary config
+    """
+    return Config('runtime', '', {
+        'output_filename_queue': [],
+        'input_filename_queue': []
+    })
+
+
+def get_hierarchy(path):
+    """Iteratively yields the configurations of perun in order in which they should be looked
+    up.
+
+    First we check the runtime/temporary configuration, then we walk the local instances of
+    configurations and last we check the global config.
+
+    :param str path: starting path of the hierarchy
+    :returns: iterable stream of configurations in the priority order
+    """
+    yield runtime()
+    yield local(path)
+    yield shared()
+
+
 def lookup_key_recursively(path, key):
     """Recursively looks up the key first in the local config and then in the global.
 
@@ -345,7 +386,9 @@ def lookup_key_recursively(path, key):
     :param str key: key we are looking up
     """
     # Fixme: this should contain recursive lookup for other instances and also the temporary config
-    try:
-        return local(path).get(key)
-    except exceptions.MissingConfigSectionException:
-        return shared().get(key)
+    for config_instance in get_hierarchy(path):
+        try:
+            return config_instance.get(key)
+        except exceptions.MissingConfigSectionException:
+            continue
+    raise exceptions.MissingConfigSectionException
