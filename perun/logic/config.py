@@ -75,7 +75,9 @@ class Config(object):
         """
         *sections, last_section = key.split('.')
         _locate_section_from_query(self.data, sections)[last_section] = value
-        write_config_to(self.path, self.data)
+        if self.path:
+            print(self.path)
+            write_config_to(self.path, self.data)
 
     @decorators.validate_arguments(['key'], is_valid_key)
     def append(self, key, value):
@@ -91,7 +93,8 @@ class Config(object):
         if last_section not in section_location.keys():
             section_location[last_section] = []
         section_location[last_section].append(value)
-        write_config_to(self.path, self.data)
+        if self.path:
+            write_config_to(self.path, self.data)
 
     @decorators.validate_arguments(['key'], is_valid_key)
     def get(self, key):
@@ -150,6 +153,8 @@ general:
 format:
     status: "\u2503 [type] \u2503 [collector]  \u2503 ([time]) \u2503 [origin] \u2503"
     shortlog: "[id:6] ([stats]) [desc]"
+    output_profile_template: "%collector%-%cmd%-%args%-%workload%-%date%"
+    output_show_template: "%collector%-%cmd%-%args%-%workload%-%date%"
     """)
 
     write_config_to(path, shared_config)
@@ -360,33 +365,31 @@ def runtime():
     })
 
 
-def get_hierarchy(path):
+def get_hierarchy():
     """Iteratively yields the configurations of perun in order in which they should be looked
     up.
 
     First we check the runtime/temporary configuration, then we walk the local instances of
     configurations and last we check the global config.
 
-    :param str path: starting path of the hierarchy
     :returns: iterable stream of configurations in the priority order
     """
     yield runtime()
-    yield local(path)
+    yield local(os.path.join(store.locate_perun_dir_on(os.getcwd()), ".perun"))
     yield shared()
 
 
-def lookup_key_recursively(path, key):
+def lookup_key_recursively(key):
     """Recursively looks up the key first in the local config and then in the global.
 
     This is used e.g. for formatting strings or editors, where first we have our local configs,
     that have higher priority. In case there is nothing set in the config, we will check the
     global config.
 
-    :param str path: path to the local config
     :param str key: key we are looking up
     """
     # Fixme: this should contain recursive lookup for other instances and also the temporary config
-    for config_instance in get_hierarchy(path):
+    for config_instance in get_hierarchy():
         try:
             return config_instance.get(key)
         except exceptions.MissingConfigSectionException:

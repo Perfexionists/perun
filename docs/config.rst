@@ -135,6 +135,70 @@ List of Supported Options
         07f2b4  (1|0|1|0 profiles) Add necessary files for perun to work on this repo.
         bd3dc3  ---no--profiles--- root
 
+.. confkey:: format.output_profile_template
+
+    ``[recursive]`` Specifies the format for automatic generation of profile files (e.g. when
+    running ``perun run job``, ``perun run matrix``, ``perun collect`` or ``perun postprocessby``.
+    The formatting string consists either of raw characters or special tags, that output
+    information according to the resulting profile. By default the following formatting string is
+    set in the global configuration::
+
+        "%collector%-%cmd%-%args%-%workload%-%date%" 
+    
+    The supported tags are as follows:
+
+    ``%collector%``:
+
+        Placeholder for the collection unit that collected the profiling data of the given profile.
+        Refer to :ref:`collectors-list` for full list of supported collectors.
+
+    ``%postprocessors%``:
+
+        Placeholder for list of postprocessors that were used on the given profile. The resulting
+        string consists of postprocessor names joined by ``-and-`` string, i.e. for example this will
+        output string ``normalizer-and-filter``.
+
+    ``%<unit>.<param>%``:
+
+        Placeholder for concrete value of ``<param>`` of one unit ``<unit>`` (either collector or
+        postprocessor)
+
+    ``%cmd%``:
+        
+        Placeholder for the command that was profiled, i.e. some binary, script or command (refer
+        to :munit:`cmds` or :doc:`jobs` for more details).
+
+    ``%args%``:
+        
+        Placeholder for arguments that were supplied to the profiled command (refer to
+        :munit:`args` or :doc:`jobs` for more details).
+
+    ``%workload%``:
+        
+        Placeholder for workload that was supplied to the profiled command (refer to
+        :munit:`workloads` or :doc:`jobs` for more details).
+
+    ``%type%``:
+        
+        Placeholder for global type of the resources of the profile, i.e. `memory`, `time`,
+        `mixed`, etc.
+
+    ``%date%``:
+
+        Placeholder for the time and date that the profile was generated in form of
+        ``YEAR-MONTH-DAY-HOUR-MINUTES-SECONDS``.
+
+    ``%origin%``:
+
+        Placeholder for the origin of the profile, i.e. the minor version identification for which
+        the profiles was generated and the profiling data was collected.
+
+    ``%counter%``:
+
+        Placeholder for increasing counter (counting from 0) for one run of perun. Note that this
+        may rewrite existing profiles and is mostly meant to distinguish between profiles during
+        one batch run of profile generation (e.g. when ``perun run matrix`` is executed).
+
 .. confkey:: cmds
 
     ``[local-only]`` Refer to :munit:`cmds`.

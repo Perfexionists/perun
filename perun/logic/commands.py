@@ -89,7 +89,7 @@ def config_get(pcs, store_type, key):
     config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
 
     if store_type == 'recursive':
-        value = perun_config.lookup_key_recursively(pcs.get_config_dir('local'), key)
+        value = perun_config.lookup_key_recursively(key)
     else:
         value = config_store.get(key)
     print("{}: {}".format(key, value))
@@ -121,7 +121,7 @@ def config_edit(pcs, store_type):
         external editor during the 'edit' operation
     """
     # Lookup the editor in the config and run it as external command
-    editor = perun_config.lookup_key_recursively(pcs.path, 'general.editor')
+    editor = perun_config.lookup_key_recursively('general.editor')
     config_file = pcs.get_config_file(store_type)
     try:
         utils.run_external_command([editor, config_file])
@@ -553,7 +553,7 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
         return
 
     # Load formating string for profile
-    profile_info_fmt = perun_config.lookup_key_recursively(pcs.path, 'format.status')
+    profile_info_fmt = perun_config.lookup_key_recursively('format.status')
     fmt_tokens, _ = FMT_SCANNER.scan(profile_info_fmt)
 
     # Compute header length

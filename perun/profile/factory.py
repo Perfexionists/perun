@@ -17,7 +17,9 @@ handle the JSON objects in Python refer to `Python JSON library`_.
 import json
 import os
 import time
+import re
 
+import perun.logic.config as config
 import perun.logic.store as store
 import perun.profile.query as query
 import perun.utils.log as perun_log
@@ -28,24 +30,127 @@ from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
 __author__ = 'Tomas Fiedor'
 
 
-def generate_profile_name(job):
+PROFILE_COUNTER = 0
+
+
+def lookup_value(container, key, missing):
+    """Helper function for getting the key from the container. If it is not present in the container
+    or it is empty string or empty object, the function should return the missing constant.
+
+    :param dict container: dictionary container
+    :param str key: string representation of the key
+    :param str missing: string constant that is returned if key is not present in container,
+        or is set to empty string or None.
+    :return:
+    """
+    return str(container.get(key, missing)) or missing
+
+
+def sanitize_filepart(part):
+    """Helper function for sanitization of part of the filenames
+
+    :param part: part of the filename, that needs to be sanitized, i.e. we are removing invalid
+        characters
+    :return: sanitized string representation of the part
+    """
+    invalid_characters = r"# %&{}\<>*?/ $!'\":@"
+    return "".join('_' if c in invalid_characters else c for c in str(part))
+
+
+def lookup_param(profile, unit, param):
+    """Helper function for looking up the unit in the profile (can be either collector or
+    postprocessor and finds the value of the param in it
+
+    :param dict profile: dictionary with profile information w.r.t profile specification
+    :param str unit: unit in which the parameter is located
+    :param str param: parameter we will use in the resulting profile
+    :return:
+    """
+    unit_param_map = {
+        post['name']: post['params'] for post in profile.get('postprocessors', [])
+    }
+    used_collector = profile['collector_info']
+    unit_param_map.update({
+        used_collector.get('name', '?'): used_collector.get('params', {})
+    })
+
+    # Lookup the unit params
+    unit_params = unit_param_map.get(unit)
+    if unit_params:
+        return sanitize_filepart(list(query.all_key_values_of(unit_params, param))[0]) or "_"
+    else:
+        return "_"
+
+
+def generate_profile_name(profile):
     """Constructs the profile name with the extension .perf from the job.
 
     The profile is identified by its binary, collector, workload and the time
     it was run.
 
-    Arguments:
-        job(Job): generate profile name for file corresponding to the job
+    Valid tags:
+        `%collector%`:
+            Name of the collector
+        `%postprocessors%`:
+            Joined list of postprocessing phases
+        `%<unit>.<param>%`:
+            Parameter of the collector given by concrete name
+        `%cmd%`:
+            Command of the job
+        `%args%`:
+            Arguments of the job
+        `%workload%`:
+            Workload of the job
+        `%type%`:
+            Type of the generated profile
+        `%date%`:
+            Current date
+        `%origin%`:
+            Origin of the profile
+        `%counter%`:
+            Increasing argument
 
-    Returns:
-        str: string for the given profile that will be stored
+    :param dict profile: generate the corresponding profile for given name
+    :returns str: string for the given profile that will be stored
     """
-    return "{0}-{1}-{2}-{3}.perf".format(
-        os.path.split(job.cmd)[-1],
-        job.collector.name,
-        os.path.split(job.workload)[-1],
-        time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
-    )
+    global PROFILE_COUNTER
+    fmt_parser = re.Scanner([
+        (r"%collector%", lambda scanner, token: lookup_value(profile['collector_info'], 'name', "_")),
+        (r"%postprocessors%", lambda scanner, token:
+            ("after-" + "-and-".join(map(lambda p: p['name'], profile['postprocessors'])))
+                if len(profile['postprocessors']) else '_'
+         ),
+        (r"%[^.]+\.[^%]+%", lambda scanner, token:
+            lookup_param(profile, *token[1:-1].split('.', maxsplit=1))
+         ),
+        (r"%cmd%", lambda scanner, token:
+            os.path.split(lookup_value(profile['header'], 'cmd', '_'))[-1]
+         ),
+        (r"%args%", lambda scanner, token:
+            "[" + sanitize_filepart(lookup_value(profile['header'], 'args', '_')) + "]"
+         ),
+        (r"%workload%", lambda scanner, token:
+            "[" + sanitize_filepart(
+                os.path.split(lookup_value(profile['header'], 'workload', '_'))[-1]
+            ) + "]"
+         ),
+        (r"%type%", lambda scanner, token: lookup_value(profile['header'], 'type', '_')),
+        (r"%date%", lambda scanner, token: time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())),
+        (r"%origin%", lambda scanner, token: lookup_value(profile, 'origin', '_')),
+        (r"%counter%", lambda scanner, token: str(PROFILE_COUNTER)),
+        (r"%%", lambda scanner, token: token),
+        ('[^%]+', lambda scanner, token: token)
+    ])
+    PROFILE_COUNTER += 1
+
+    # Obtain the formatting template from the configuration
+    template = config.lookup_key_recursively('format.output_profile_template')
+    tokens, rest = fmt_parser.scan(template)
+    if rest:
+        perun_log.error("formatting string '{}' could not be parsed\n\n".format(template) +
+                        "Run perun config to modify the formatting pattern. "
+                        "Refer to documentation for more information about formatting patterns")
+    return "".join(tokens) + ".perf"
 
 
 def load_profile_from_file(file_name, is_raw_profile):

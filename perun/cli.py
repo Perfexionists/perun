@@ -263,7 +263,7 @@ def configure_local_perun(perun_path):
         perun_path(str): destination path of the perun repository
     """
     pcs = PCS(perun_path)
-    editor = perun_config.lookup_key_recursively(pcs.path, 'general.editor')
+    editor = perun_config.lookup_key_recursively('general.editor')
     local_config_file = pcs.get_config_file('local')
     try:
         utils.run_external_command([editor, local_config_file])

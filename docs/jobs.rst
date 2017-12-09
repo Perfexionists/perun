@@ -16,11 +16,12 @@ following name of the template::
    command-collector-workload-Y-m-d-H-M-S.perf
 
 Where ``command`` corresponds to the name of the application (or script), for which we collected
-the data using ``collector`` on ``workload`` at given specified date. New profiles are annotated
-with the :preg:`origin` set to the current ``HEAD`` of the wrapped repository. `origin` serves as a
-check during registering profiles in the indexes of minor versions. Profile with `origin` different
-from the target minor version will not be assigned, as it would violate the correctness of the
-performance history of the project.
+the data using ``collector`` on ``workload`` at given specified date. You can change the template
+for profile name generation by setting :ckey:`format.output_profile_template`. New profiles are
+annotated with the :preg:`origin` set to the current ``HEAD`` of the wrapped repository. `origin`
+serves as a check during registering profiles in the indexes of minor versions. Profile with
+`origin` different from the target minor version will not be assigned, as it would violate the
+correctness of the performance history of the project.
 
 .. image:: /../figs/perun-jobs-flow.*
     :align: center

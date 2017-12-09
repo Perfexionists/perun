@@ -80,18 +80,6 @@ class PCS(object):
         """
         return os.path.join(self.path, "jobs")
 
-    def get_config_dir(self, config_type):
-        """
-        Returns:
-            str: path of to the directory of with the config
-        """
-        if config_type in ('local', 'recursive'):
-            return self.path
-        elif config_type in ('shared', 'global'):
-            return config.lookup_shared_config_dir()
-        else:
-            log.error("wrong configuration type for self.get_config_dir: '{}'".format(config_type))
-
     def get_config_file(self, config_type):
         """
         Returns:
