@@ -758,8 +758,28 @@ def show(ctx, profile, **_):
     # TODO: Check that if profile is not SHA-1, then minor must be set
 
 
+def set_output_formatting_string(_, __, value):
+    """Sets the value of the output_profile_template to the given value in the runtime
+    configuration.
+
+    :param click.Context _: called context of the parameter
+    :param click.Option __: parameter we are processing
+    :param Object value: concrete value of the object that we are storing
+    :returns str: set string (though it is set in the runtime config as well)
+    """
+    if value:
+        perun_config.runtime().set('format.output_profile_template', str(value))
+    return value
+
+
 @cli.group()
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
+@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
+              default=None,
+              help='Specifies the template for automatic generation of output filename'
+              ' This way the postprocessed file will have a resulting filename w.r.t to this'
+              ' parameter. Refer to :ckey:`format.output_profile_template` for more'
+              ' details about the format of the template.')
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
               callback=minor_version_lookup_callback,
               help='Will check the index of different minor version <hash>'
@@ -854,6 +874,12 @@ def parse_yaml_single_param(ctx, param, value):
               callback=parse_yaml_single_param,
               help='Additional parameters for called collector read from '
               'file in YAML format.')
+@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
+              default=None,
+              help='Specifies the template for automatic generation of output filename'
+                   ' This way the file with collected data will have a resulting filename w.r.t '
+                   ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
+                   ' details about the format of the template.')
 @click.pass_context
 def collect(ctx, **kwargs):
     """Generates performance profile using selected collector.
@@ -910,11 +936,17 @@ def init_unit_commands(lazy_init=True):
 
 
 @cli.group()
+@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
+              default=None,
+              help='Specifies the template for automatic generation of output filename'
+                   ' This way the file with collected data will have a resulting filename w.r.t '
+                   ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
+                   ' details about the format of the template.')
 def run(**kwargs):
     """Generates batch of profiles w.r.t. specification of list of jobs.
 
-    Either runs the job matrix stored in local.yml configuration or lets the user
-    construct the job run using the set of parameters.
+    Either runs the job matrix stored in local.yml configuration or lets the
+    user construct the job run using the set of parameters.
     """
 
 

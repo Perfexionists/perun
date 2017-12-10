@@ -40,6 +40,9 @@ Perun Commands
 .. click:: perun.cli:log
    :prog: perun log
 
+.. click:: perun.cli:run
+   :prog: perun run
+
 .. click:: perun.cli:job
    :prog: perun run job
 

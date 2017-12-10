@@ -11,6 +11,7 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.logic.config as config
 
 __author__ = 'Tomas Fiedor'
 
@@ -364,6 +365,18 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
 
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
     assert result.exit_code == 2
+
+    # Try different template
+    result = runner.invoke(cli.collect, [
+        '-ot', '%collector%-profile',
+        '-c{}'.format(job_params['target_dir']),
+        '-p\"target_dir: {}\"'.format(job_params['target_dir']),
+        'complexity'
+    ] + files + rules + samplings)
+    print(result.output)
+    del config.runtime().data['format']
+    assert result.exit_code == 0
+    assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
 
 
 def test_show_help(pcs_full):
