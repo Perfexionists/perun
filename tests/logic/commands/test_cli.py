@@ -373,7 +373,6 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
         '-p\"target_dir: {}\"'.format(job_params['target_dir']),
         'complexity'
     ] + files + rules + samplings)
-    print(result.output)
     del config.runtime().data['format']
     assert result.exit_code == 0
     assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output

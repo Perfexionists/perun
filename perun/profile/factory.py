@@ -285,10 +285,10 @@ def finalize_profile_for_job(pcs, collected_data, job):
     assert 'global' in collected_data.keys() or 'snapshots' in collected_data.keys()
 
     profile = {'origin': pcs.get_head()}
+    profile.update(collected_data)
     profile.update({'header': generate_header_for_profile(job)})
     profile.update({'collector_info': generate_collector_info(job)})
     profile.update({'postprocessors': generate_postprocessor_info(job)})
-    profile.update(collected_data)
     return profile
 
 
