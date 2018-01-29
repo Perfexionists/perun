@@ -114,7 +114,7 @@ def load_job_info_from_config(pcs):
         'collector_params': {
             collect.get('name', ''): collect.get('params', {}) for collect in collectors
             },
-        'postprocesor_params': {
+        'postprocessor_params': {
             post.get('name', ''): post.get('params', {}) for post in postprocessors
             }
     }
@@ -335,6 +335,9 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
                 c_status, prof = run_collector(job.collector, job)
                 if c_status != CollectStatus.OK or not prof:
                     continue
+
+                # Temporary nasty hack
+                prof = profile.finalize_profile_for_job(pcs, prof, job)
 
                 for postprocessor in job.postprocessors:
                     log.print_job_progress(number_of_jobs)

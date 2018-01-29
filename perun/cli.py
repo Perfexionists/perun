@@ -863,7 +863,7 @@ def init_unit_commands(lazy_init=True):
 
 
 @cli.group()
-def run():
+def run(**kwargs):
     """Generates batch of profiles w.r.t. specification of list of jobs.
 
     Either runs the job matrix stored in local.yml configuration or lets the user
