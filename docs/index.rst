@@ -20,3 +20,9 @@ Welcome to Perun's documentation!
    config
    logs
    internals
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Changes:
+
+    changelog

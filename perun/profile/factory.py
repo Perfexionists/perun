@@ -289,8 +289,8 @@ class ProfileInfo(object):
         # Load the data from JSON, which contains additional information about profile
         loaded_profile = load_profile_from_file(real_path, is_raw_profile)
 
-        self.path = path
-        self.id = os.path.relpath(real_path, os.getcwd())
+        self.origin = path
+        self.realpath = os.path.relpath(real_path, os.getcwd())
         self.type = loaded_profile['header']['type']
         self.time = mtime
         self.cmd = loaded_profile['header']['cmd']
@@ -300,5 +300,5 @@ class ProfileInfo(object):
         self.checksum = None
 
     valid_attributes = [
-        "path", "type", "time", "cmd", "args", "workload", "collector", "checksum", "id"
+        "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "origin"
     ]

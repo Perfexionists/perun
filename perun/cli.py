@@ -331,7 +331,7 @@ def lookup_nth_pending_filename(position):
     """
     pending = commands.get_untracked_profiles(PCS(store.locate_perun_dir_on(os.getcwd())))
     if 0 <= position < len(pending):
-        return pending[position].id
+        return pending[position].realpath
     else:
         raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
             "{}@p".format(position), '0@p', '{}@p'.format(len(pending)-1)
@@ -863,7 +863,7 @@ def init_unit_commands(lazy_init=True):
 
 
 @cli.group()
-def run():
+def run(**kwargs):
     """Generates batch of profiles w.r.t. specification of list of jobs.
 
     Either runs the job matrix stored in local.yml configuration or lets the user

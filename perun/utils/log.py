@@ -5,9 +5,9 @@ import sys
 import termcolor
 import io
 import pydoc
+import functools
 
 from perun.utils.decorators import static_variables
-
 from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
 
 __author__ = 'Tomas Fiedor'
@@ -25,7 +25,7 @@ SUPPRESS_PAGING = True
 logging.basicConfig(filename='perun.log', level=logging.DEBUG)
 
 
-def paged_function(func):
+def page_function_if(func, paging_switch):
     """Adds paging of the output to standard stream
 
     This decorator serves as a pager for long outputs to the standard stream. As a pager currently,
@@ -34,8 +34,11 @@ def paged_function(func):
     Fixme: Try the paging on windows
     Fixme: Uhm, what about standard error?
 
-    Arguments:
-        func(function): original wrapped function that will be paged
+    Note that this should be used by itself but by @paged_function() decorator
+
+    :param function func: original wrapped function that will be paged
+    :param bool paging_switch: external paging condition, if set to tru the function will not be
+        paged
     """
     def wrapper(*args, **kwargs):
         """Wrapper for the original function whose output will be paged
@@ -44,7 +47,7 @@ def paged_function(func):
             args(list): list of positional arguments for original function
             kwargs(dict): dictionary of key:value arguments for original function
         """
-        if SUPPRESS_PAGING:
+        if SUPPRESS_PAGING or not paging_switch:
             return func(*args, **kwargs)
 
         # Replace the original standard output with string buffer
@@ -61,6 +64,17 @@ def paged_function(func):
 
         return result
     return wrapper
+
+
+def paged_function(paging_switch):
+    """The wrapper of the ``page_function_if`` to serve as a decorator, which partially applies the
+    paging_switch. This way the function will accept only the function as parameter and can serve as
+    decorator.
+
+    :param bool paging_switch: external paging condition, if set to tru the function will not be
+    :return: wrapped paged function
+    """
+    return functools.partial(page_function_if, paging_switch=paging_switch)
 
 
 def _log_msg(stream, msg, msg_verbosity, log_level):

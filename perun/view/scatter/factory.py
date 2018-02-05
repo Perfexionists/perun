@@ -109,7 +109,9 @@ def draw_models(graph, models):
         legend = '{0}: {1}, r^2={2:f}'.format(model['model'], coeffs, model['r_square'])
         # Plot the model
         graph.line(x=model['plot_x'], y=model['plot_y'],
-                   line_color=colour_palette[idx], line_width=2.5, legend=legend)
+                   line_color='#000000', line_width=7.5, legend=legend)
+        graph.line(x=model['plot_x'], y=model['plot_y'],
+                   line_color=colour_palette[idx], line_width=3.5, legend=legend)
     return graph
 
 
@@ -136,7 +138,9 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
     for data_slice, models_slice in generate_plot_data_slices(profile):
         # Plot the points as a scatter plot
         scatter = charts.Scatter(data_slice, x=per_key, y=of_key, title=graph_title,
-                                 xlabel=x_axis_label, ylabel=y_axis_label)
+                                 xlabel=x_axis_label, ylabel=y_axis_label,
+                                 tools="pan,wheel_zoom,box_zoom,zoom_in,zoom_out,crosshair,"
+                                       "reset,save")
 
         # Configure the graph properties
         # Create the graph title as a combination of default parameter, uid, method and
