@@ -641,7 +641,7 @@ def get_untracked_profiles(pcs):
     """
     profile_list = []
     # Transform each profile of the path to the ProfileInfo object
-    for untracked_path in os.listdir(pcs.get_job_directory()):
+    for untracked_path in sorted(os.listdir(pcs.get_job_directory())):
         if not untracked_path.endswith('perf'):
             continue
 
