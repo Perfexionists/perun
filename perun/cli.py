@@ -233,8 +233,8 @@ def config_set(ctx, key, value):
 
     .. code-block:: bash
 
-        $ perun config set format.shortlog "| [origin] | [collector] |"
-        format.shortlog: | [origin] | [collector] |
+        $ perun config set format.shortlog "| %origin% | %collector% |"
+        format.shortlog: | %origin% | %collector% |
     """
     commands.config_set(ctx.obj['store_type'], key, value)
 

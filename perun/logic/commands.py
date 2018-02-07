@@ -36,11 +36,11 @@ colorama.init()
 UNTRACKED_REGEX = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 # Regex for parsing the formating tag [<tag>:<size>f<fill_char>]
-FMT_REGEX = re.compile("[[]([a-zA-Z]+)(:[0-9]+)?(f.)?[]]")
+FMT_REGEX = re.compile("%([a-zA-Z]+)(:[0-9]+)?(f.)?%")
 # Scanner for parsing formating strings, i.e. breaking it to parts
 FMT_SCANNER = re.Scanner([
-    (r"[[]([a-zA-Z]+)(:[0-9]+)?(f.)?[]]", lambda scanner, token: ("fmt_string", token)),
-    (r"[^][]*", lambda scanner, token: ("rest", token)),
+    (r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%", lambda scanner, token: ("fmt_string", token)),
+    (r"[^%]+", lambda scanner, token: ("rest", token)),
 ])
 
 

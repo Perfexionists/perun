@@ -29,7 +29,7 @@ configuration, type of profile, creating timestamps, etc.
 
 E.g. the following formatting string::
 
-     ┃ [type] ┃ [cmd] ┃ [workload] ┃ [collector]  ┃ ([time]) ┃
+     ┃ %type% ┃ %cmd% ┃ %workload% ┃ %collector%  ┃ (%time%) ┃
 
 will yield the following status when running ``perun status`` (both for stored and pending
 profiles)::
@@ -51,32 +51,32 @@ position in the corresponding storage, index from zero.
 
 The specification of the formatting string can contain the following special tags:
 
-``[type]``:
+``%type%``:
     Lists the most generic type of the profile according to the collected resources serving as
     quick tagging of similar profiles. Currently Perun supports `memory`, `time`, `mixed`.
 
-``[cmd]``:
+``%cmd%``:
     Lists the command for which the data was collected, this e.g. corresponds to the binary or
     script that was executed and profiled using collector/profiler. Refer to :ref:`jobs-overview`
     for more information about profiling jobs and commands.
 
-``[args]``:
+``%args%``:
     Lists the arguments (or parameters) which were passed to the profiled command. Refer to
     :ref:`jobs-overview` for more information about profiling jobs and command arguments.
 
-``[workload]``:
+``%workload%``:
     List input workload which was passed to the profiled command, i.e. some inputs of the profiled
     program, script or binary. Refer to :ref:`jobs-overview` for more information about profiling
     jobs and command workloads.
 
-``[collector]``:
+``%collector%``:
     Lists the collector which was used to obtain the given profile. Refer to :doc:`collectors` for
     list of supported collectors and more information about collection of profiles.
 
-``[time]``:
+``%time%``:
     Timestamp when the profile was last modified in format `YEAR-MONTH-DAY HOURS:MINUTES:SECONDS`.
 
-``[id]``:
+``%id%``:
     Original identification of the profile. This corresponds to the name of the generated profile
     and the original path.
 
@@ -93,7 +93,7 @@ concrete minor version such as minor version description, number of assigned pro
 
 E.g. the following formatting string::
 
-    '[checksum:6] ([stats]) [desc]'
+    '%checksum:6% (%stats%) %desc%'
 
 will yield the following output when running ``perun log --short``::
 
@@ -105,26 +105,26 @@ will yield the following output when running ``perun log --short``::
 
 The specification of the formatting string can contain the following special tags:
 
-``[checksum:num]``: Identification of the minor version (should be hash preferably). If we take
+``%checksum:num%``: Identification of the minor version (should be hash preferably). If we take
     ``git`` as an example ``checksum`` will correspond to the SHA of one commit.
 
-``[stats]``:
+``%stats%``:
     Lists short summary of overall number of profiles (``a``) and number of memory (``m``), mixed
     (``x``) and time (``t``) profiles assinged to given minor version.
 
-``[desc:num]``: Lists short description of the minor version, limiting to the first sentence of the
+``%desc:num%``: Lists short description of the minor version, limiting to the first sentence of the
     description. If we take ``git`` as an example this will correspond to the short commit message.
 
-``[date:num]``:
+``%date:num%``:
     Lists the date the minor version was commited (in the wrapped vcs).
 
-``[author:num]``:
+``%author:num%``:
     Lists the author of the minor version (not commiter).
 
-``[email:num]``:
+``%email:num%``:
     Lists the email of the author of the minor version.
 
-``[parents:num]``:
+``%parents:num%``:
     Lists the parents of the given minor version. Note that one minor version can have potentially
     several parents, e.g. in git, when the merge of two commits happens.
 

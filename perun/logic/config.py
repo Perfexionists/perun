@@ -47,8 +47,8 @@ class Config(object):
                 'editor': 'vim'
             },
             'format': {
-                'status': '[type] > [origin]',
-                'log': '[checksum:6]: [desc]'
+                'status': '%type% > %origin%',
+                'log': '%checksum:6%: %desc%'
             }
         }
 
@@ -151,8 +151,8 @@ general:
     paging: only-log
 
 format:
-    status: "\u2503 [type] \u2503 [collector]  \u2503 ([time]) \u2503 [origin] \u2503"
-    shortlog: "[checksum:6] ([stats]) [desc]"
+    status: "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %origin% \u2503"
+    shortlog: "%checksum:6% (%stats%) %desc%"
     output_profile_template: "%collector%-%cmd%-%args%-%workload%-%date%"
     output_show_template: "%collector%-%cmd%-%args%-%workload%-%date%"
     """)

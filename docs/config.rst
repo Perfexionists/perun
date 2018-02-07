@@ -103,7 +103,7 @@ List of Supported Options
 
     E.g. the following formatting string::
 
-         ┃ [type] ┃ [cmd] ┃ [workload] ┃ [collector]  ┃ ([time]) ┃
+         ┃ %type% ┃ %cmd% ┃ %workload% ┃ %collector%  ┃ (%time%) ┃
 
     will yield the following status when running ``perun status`` (both for stored and pending
     profiles)::
@@ -126,7 +126,7 @@ List of Supported Options
 
     E.g. the following formatting string::
 
-        '[id:6] ([stats]) [desc]'
+        '%id:6% (%stats%) %desc%'
 
     will yield the following output when running ``perun log --short``::
 
@@ -143,8 +143,8 @@ List of Supported Options
     information according to the resulting profile. By default the following formatting string is
     set in the global configuration::
 
-        "%collector%-%cmd%-%args%-%workload%-%date%" 
-    
+        "%collector%-%cmd%-%args%-%workload%-%date%"
+
     The supported tags are as follows:
 
     ``%collector%``:
@@ -164,22 +164,22 @@ List of Supported Options
         postprocessor)
 
     ``%cmd%``:
-        
+
         Placeholder for the command that was profiled, i.e. some binary, script or command (refer
         to :munit:`cmds` or :doc:`jobs` for more details).
 
     ``%args%``:
-        
+
         Placeholder for arguments that were supplied to the profiled command (refer to
         :munit:`args` or :doc:`jobs` for more details).
 
     ``%workload%``:
-        
+
         Placeholder for workload that was supplied to the profiled command (refer to
         :munit:`workloads` or :doc:`jobs` for more details).
 
     ``%type%``:
-        
+
         Placeholder for global type of the resources of the profile, i.e. `memory`, `time`,
         `mixed`, etc.
 

@@ -48,7 +48,7 @@ def test_log_on_no_vcs(pcs_without_vcs):
 
 
 def test_log_short_error(pcs_full, capsys, monkeypatch):
-    cfg = config.Config('shared', '', {'format': {'shortlog': '[checksum:6] -> [notexist]'}})
+    cfg = config.Config('shared', '', {'format': {'shortlog': '%checksum:6% -> %notexist%'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
 
     with pytest.raises(SystemExit):
