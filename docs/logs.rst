@@ -85,9 +85,6 @@ The specification of the formatting string can contain the following special tag
 Customizing Logs
 ----------------
 
-.. todo::
-    FFS, this is not even currently working in Perun. ^\(-_-)/^
-
 The output of ``perun log --short`` is defined w.r.t. formatting string specified in configuration
 in :ckey:`format.log` key (looked up recursively in the nearest local
 configuration, or in global configuration). The formatting string can contain both raw characters
@@ -96,7 +93,7 @@ concrete minor version such as minor version description, number of assigned pro
 
 E.g. the following formatting string::
 
-    '[id:6] ([stats]) [desc]'
+    '[checksum:6] ([stats]) [desc]'
 
 will yield the following output when running ``perun log --short``::
 
@@ -108,28 +105,29 @@ will yield the following output when running ``perun log --short``::
 
 The specification of the formatting string can contain the following special tags:
 
-``[id:num]``:
-    Identification of the minor version (should be hash preferably). If we take ``git`` as an
-    example ``id`` will correspond to the SHA of one commit. Specifying ``num`` in the template
-    will shorten the displayed identification to ``num`` characters.
+``[checksum:num]``: Identification of the minor version (should be hash preferably). If we take
+    ``git`` as an example ``checksum`` will correspond to the SHA of one commit.
 
 ``[stats]``:
     Lists short summary of overall number of profiles (``a``) and number of memory (``m``), mixed
     (``x``) and time (``t``) profiles assinged to given minor version.
 
-``[desc]``:
-    Lists short description of the minor version. If we take ``git`` as an example this will
-    correspond to the short commit message.
+``[desc:num]``: Lists short description of the minor version, limiting to the first sentence of the
+    description. If we take ``git`` as an example this will correspond to the short commit message.
 
-``[date]``:
+``[date:num]``:
     Lists the date the minor version was commited (in the wrapped vcs).
 
-``[author]``:
+``[author:num]``:
     Lists the author of the minor version (not commiter).
 
-``[email]``:
+``[email:num]``:
     Lists the email of the author of the minor version.
 
-``[parents]``:
+``[parents:num]``:
     Lists the parents of the given minor version. Note that one minor version can have potentially
     several parents, e.g. in git, when the merge of two commits happens.
+
+Specifying ``num`` in the selected tags will shorten the displayed identification to ``num``
+characters only. In case the specified ``num`` is smaller then the length of the attribute name,
+then the shortening will be limited to the lenght of the attribute name.

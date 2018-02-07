@@ -48,7 +48,7 @@ class Config(object):
             },
             'format': {
                 'status': '[type] > [origin]',
-                'log': '[id:6]: [desc]'
+                'log': '[checksum:6]: [desc]'
             }
         }
 
@@ -152,7 +152,7 @@ general:
 
 format:
     status: "\u2503 [type] \u2503 [collector]  \u2503 ([time]) \u2503 [origin] \u2503"
-    shortlog: "[id:6] ([stats]) [desc]"
+    shortlog: "[checksum:6] ([stats]) [desc]"
     output_profile_template: "%collector%-%cmd%-%args%-%workload%-%date%"
     output_show_template: "%collector%-%cmd%-%args%-%workload%-%date%"
     """)

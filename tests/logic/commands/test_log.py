@@ -5,10 +5,13 @@ and profiles assigned to minor versions.
 """
 
 import binascii
+import os
 
 import git
 import pytest
 
+import perun.logic.config as config
+import perun.logic.store as store
 import perun.logic.commands as commands
 from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException
 
@@ -44,6 +47,18 @@ def test_log_on_no_vcs(pcs_without_vcs):
         commands.log(None)
 
 
+def test_log_short_error(pcs_full, capsys, monkeypatch):
+    cfg = config.Config('shared', '', {'format': {'shortlog': '[checksum:6] -> [notexist]'}})
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+
+    with pytest.raises(SystemExit):
+        commands.log(None, short=True)
+
+    out, err = capsys.readouterr()
+    assert len(err) != 0
+    assert "object does not contain 'notexist' attribute" in err
+
+
 def test_log_short(pcs_full, capsys):
     """Test calling 'perun log --short', which outputs shorter info
 
@@ -68,6 +83,19 @@ def test_log_short(pcs_full, capsys):
 
         assert c_binsha in out
         assert c_short_msg in out
+
+    file = os.path.join(os.getcwd(), 'file3')
+    store.touch_file(file)
+    git_repo.index.add([file])
+    git_repo.index.commit("new commit")
+
+    commands.log(None, short=True)
+
+    out, err = capsys.readouterr()
+    # Assert nothing was printed on error stream
+    assert len(err) == 0
+    # Assert we have one line per each commit + 1 for header
+    assert len(out.split('\n')) - 1 == len(commits) + 2
 
 
 def test_log(pcs_full, capsys):

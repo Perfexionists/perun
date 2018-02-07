@@ -27,7 +27,7 @@ from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    DESC_COMMIT_ATTRS, DESC_COMMIT_COLOUR, PROFILE_DELIMITER
+    PROFILE_DELIMITER, MinorVersion
 from perun.utils.log import cprint, cprintln
 import perun.vcs as vcs
 
@@ -288,31 +288,6 @@ def remove(pcs, profile_name, minor_version, **kwargs):
     store.remove_from_index(object_directory, minor_version, profile_name, **kwargs)
 
 
-def print_short_minor_info_header():
-    """Prints short header for the --short-minor option"""
-    # Print left column---minor versions
-    print(termcolor.colored(
-        "minor  ", HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS
-    ), end='')
-
-    # Print middle column---profile number info
-    slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
-    end_msg = termcolor.colored(' profiles) ', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
-    print(termcolor.colored(" ({0}{4}{1}{4}{2}{4}{3}{5}".format(
-        termcolor.colored('a', HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS),
-        termcolor.colored('m', PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS),
-        termcolor.colored('x', PROFILE_TYPE_COLOURS['mixed'], attrs=HEADER_ATTRS),
-        termcolor.colored('t', PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
-        slash,
-        end_msg
-    ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS), end='')
-
-    # Print right column---minor version one line details
-    print(termcolor.colored(
-        "info".ljust(MAXIMAL_LINE_WIDTH, ' '), HEADER_INFO_COLOUR, attrs=HEADER_ATTRS
-    ))
-
-
 def calculate_profile_numbers_per_type(profile_list):
     """Calculates how many profiles of given type are in the profile type.
 
@@ -403,13 +378,22 @@ def log(pcs, minor_version, short=False, **_):
 
     # Print header for --short-minors
     if short:
-        print_short_minor_info_header()
-
-    # Walk the minor versions and print them
-    for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, minor_version):
-        if short:
-            print_short_minor_version_info(pcs, minor)
-        else:
+        minor_versions = list(vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, minor_version))
+        # Reduce the descriptions of minor version to one liners
+        for mv_no, minor_version in enumerate(minor_versions):
+            minor_versions[mv_no] = minor_version._replace(desc=minor_version.desc.split("\n")[0])
+        minor_version_maxima = calculate_maximal_lengths_for_object_list(
+            minor_versions, MinorVersion._fields
+        )
+        # Update manually the maxima for the printed supported profile types, each requires two
+        # characters and 9 stands for " profiles" string
+        minor_version_maxima.update({
+            'stats': 2*len(SUPPORTED_PROFILE_TYPES) + 9
+        })
+        print_short_minor_version_info_list(pcs, minor_versions, minor_version_maxima)
+    else:
+        # Walk the minor versions and print them
+        for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, minor_version):
             cprintln("Minor Version {}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
             base_dir = pcs.get_object_directory()
             tracked_profiles = store.get_profile_number_for_minor(base_dir, minor.checksum)
@@ -417,45 +401,94 @@ def log(pcs, minor_version, short=False, **_):
             print_minor_version_info(minor, indent=1)
 
 
-def print_short_minor_version_info(pcs, minor_version):
+def adjust_limit(limit, attr_type, maxima, padding=0):
+    """Returns the adjusted value of the limit for the given field output in status or log
+
+    Takes into the account the limit, which is specified in the field (e.g. as checksum:6),
+    the maximal values of the given fields. Additionally, one can add a padding, e.g. for
+    the type tag.
+
+    :param match limit: matched string from the formatting string specifying the limit
+    :param str attr_type: string name of the attribute, which we are limiting
+    :param dict maxima: maximas of values of given attribute types
+    :param int padding: additional padding of the limit not contributed to maxima
+    :return: adjusted value of the limit w.r.t. attribute type and maxima
     """
+    return max(int(limit[1:]), len(attr_type)) if limit else maxima[attr_type] + padding
+
+
+def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
+    """Prints list of profiles and counts per type of tracked/untracked profiles.
+
+    Prints the list of profiles, trims the sizes of each information according to the
+    computed maximal lengths If the output is short, the list itself is not printed,
+    just the information about counts. Tracked and untracked differs in colours.
+
     Arguments:
-        pcs(PCS): object with performance control system wrapper
-        minor_version(MinorVersion): minor version object
+        minor_version_list(list): list of profiles of MinorVersionInfo objects
+        max_lengths(dict): dictionary with maximal sizes for the output of profiles
     """
-    tracked_profiles = store.get_profile_number_for_minor(
-        pcs.get_object_directory(), minor_version.checksum
-    )
-    short_checksum = minor_version.checksum[:6]
-    print(termcolor.colored("{}  ".format(
-        short_checksum
-    ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
+    # Load formating string for profile
+    minor_version_output_colour = 'white'
+    minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
+    fmt_tokens, _ = FMT_SCANNER.scan(minor_version_info_fmt)
 
-    if tracked_profiles['all']:
-        print(termcolor.colored("(", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
-        print(termcolor.colored("{}".format(
-            tracked_profiles['all']
-        ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
+    # Print header (2 is padding for id)
+    for (token_type, token) in fmt_tokens:
+        if token_type == 'fmt_string':
+            attr_type, limit, _ = FMT_REGEX.match(token).groups()
+            if attr_type == 'stats':
+                slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+                end_msg = termcolor.colored(' profiles', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+                print(termcolor.colored("{0}{4}{1}{4}{2}{4}{3}{5}".format(
+                    termcolor.colored('a', HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS),
+                    termcolor.colored('m', PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS),
+                    termcolor.colored('x', PROFILE_TYPE_COLOURS['mixed'], attrs=HEADER_ATTRS),
+                    termcolor.colored('t', PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
+                    slash,
+                    end_msg
+                ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS), end='')
+            else:
+                limit = adjust_limit(limit, attr_type, max_lengths)
+                token_string = attr_type.center(limit, ' ')
+                cprint(token_string, minor_version_output_colour, attrs=HEADER_ATTRS)
+        else:
+            # Print the rest (non token stuff)
+            cprint(token, minor_version_output_colour, attrs=HEADER_ATTRS)
+    print("")
+    # Print profiles
+    for profile_info in minor_version_list:
+        for (token_type, token) in fmt_tokens:
+            if token_type == 'fmt_string':
+                attr_type, limit, fill = FMT_REGEX.match(token).groups()
+                limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
+                if attr_type == 'stats':
+                    tracked_profiles = store.get_profile_number_for_minor(
+                        pcs.get_object_directory(), profile_info.checksum
+                    )
+                    if tracked_profiles['all']:
+                        print(termcolor.colored("{}".format(
+                            tracked_profiles['all']
+                        ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
 
-        # Print the coloured numbers
-        for profile_type in SUPPORTED_PROFILE_TYPES:
-            print("{}{}".format(
-                termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
-                termcolor.colored("{}".format(
-                    tracked_profiles[profile_type]
-                ), PROFILE_TYPE_COLOURS[profile_type])
-            ), end='')
+                        # Print the coloured numbers
+                        for profile_type in SUPPORTED_PROFILE_TYPES:
+                            print("{}{}".format(
+                                termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
+                                termcolor.colored("{}".format(
+                                    tracked_profiles[profile_type]
+                                ), PROFILE_TYPE_COLOURS[profile_type])
+                            ), end='')
 
-        print(termcolor.colored(" profiles)", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
-    else:
-        print(termcolor.colored('---no--profiles---', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
-
-    short_description = minor_version.desc.split("\n")[0].ljust(MAXIMAL_LINE_WIDTH)
-    if len(short_description) > MAXIMAL_LINE_WIDTH:
-        short_description = short_description[:MAXIMAL_LINE_WIDTH-3] + "..."
-    print(termcolor.colored(
-        " {0} ".format(short_description), DESC_COMMIT_COLOUR, attrs=DESC_COMMIT_ATTRS
-    ))
+                        print(termcolor.colored(" profiles", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
+                    else:
+                        print(termcolor.colored('--no--profiles--', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+                else:
+                    print_formating_token(minor_version_info_fmt, profile_info, attr_type, limit,
+                                          default_color=minor_version_output_colour, value_fill=fill or ' ')
+            else:
+                cprint(token, minor_version_output_colour)
+        print("")
 
 
 def print_minor_version_info(head_minor_version, indent=0):
@@ -479,11 +512,11 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
     """Prints the token from the fmt_string, according to the values stored in info_object
 
     info_attr is one of the tokens from fmt_string, which is extracted from the info_object,
-    that stores the real value. This value is then outputed to stdout with colours, fills,
+    that stores the real value. This value is then output to stdout with colours, fills,
     and is trimmed to the given size.
 
     Arguments:
-        fmt_string(str): formating string for the given token
+        fmt_string(str): formatting string for the given token
         info_object(object): object with stored information (ProfileInfo or MinorVersion)
         size_limit(int): will limit the output of the value of the info_object to this size
         info_attr(str): attribute we are looking up in the info_object
@@ -492,35 +525,38 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
     """
     # Check if encountered incorrect token in the formating string
     if not hasattr(info_object, info_attr):
-        perun_log.error("invalid formating string '{}'".format(fmt_string))
+        perun_log.error("invalid formatting string '{}':"
+                        "object does not contain '{}' attribute".format(
+                            fmt_string, info_attr))
 
     # Obtain the value for the printing
-    profile_raw_value = getattr(info_object, info_attr)
-    profile_info_value = profile_raw_value.ljust(size_limit, value_fill)
+    raw_value = getattr(info_object, info_attr)
+    info_value = raw_value[:size_limit].ljust(size_limit, value_fill)
 
     # Print the actual token
     if info_attr == 'type':
-        cprint("[{}]".format(profile_info_value), PROFILE_TYPE_COLOURS[profile_raw_value])
+        cprint("[{}]".format(info_value), PROFILE_TYPE_COLOURS[raw_value])
     else:
-        cprint(profile_info_value, default_color)
+        cprint(info_value, default_color)
 
 
-def calculate_maximal_lenghts_for_profile_infos(profile_list):
-    """For given profile list, will calculate the maximal sizes for its values for table view.
+def calculate_maximal_lengths_for_object_list(object_list, valid_attributes):
+    """For given object list, will calculate the maximal sizes for its values for table view.
 
     Arguments:
-        profile_list(list): list of ProfileInfo informations
+        object_list(list): list of objects (e.g. ProfileInfo or MinorVersion) information
+        valid_attributes(list): list of valid attributes of objects from list
 
     Returns:
         dict: dictionary with maximal lengths for profiles
     """
-    # Measure the maxima for the lenghts of the profile names and profile types
+    # Measure the maxima for the lengths of the object info
     max_lengths = collections.defaultdict(int)
-    for profile_info in profile_list:
-        for attr in profile.ProfileInfo.valid_attributes:
-            assert hasattr(profile_info, attr)
+    for object_info in object_list:
+        for attr in valid_attributes:
+            assert hasattr(object_info, attr)
             max_lengths[attr] \
-                = max(len(attr), max_lengths[attr], len(str(getattr(profile_info, attr))))
+                = max(len(attr), max_lengths[attr], len(str(getattr(object_info, attr))))
     return max_lengths
 
 
@@ -561,7 +597,7 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
-            limit = limit or max_lengths[attr_type] + (2 if attr_type == 'type' else 0)
+            limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
             header_len += limit
         else:
             header_len += len(token)
@@ -574,7 +610,7 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
-            limit = limit or max_lengths[attr_type] + (2 if attr_type == 'type' else 0)
+            limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
             token_string = attr_type.center(limit, ' ')
             cprint(token_string, profile_output_colour, [])
         else:
@@ -591,7 +627,7 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
         for (token_type, token) in fmt_tokens:
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
-                limit = limit or max_lengths[attr_type]
+                limit = adjust_limit(limit, attr_type, max_lengths)
                 print_formating_token(profile_info_fmt, profile_info, attr_type, limit,
                                       default_color=profile_output_colour, value_fill=fill or ' ')
             else:
@@ -698,7 +734,9 @@ def status(pcs, short=False):
     # Print profiles
     minor_version_profiles = get_minor_version_profiles(pcs, minor_head)
     untracked_profiles = get_untracked_profiles(pcs)
-    maxs = calculate_maximal_lenghts_for_profile_infos(minor_version_profiles + untracked_profiles)
+    maxs = calculate_maximal_lengths_for_object_list(
+        minor_version_profiles + untracked_profiles, profile.ProfileInfo.valid_attributes
+    )
     print_profile_info_list(pcs, minor_version_profiles, maxs, short)
     if not short:
         print("")
