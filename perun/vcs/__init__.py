@@ -157,7 +157,7 @@ def check_minor_version_validity(vcs_type, vcs_path, minor_version):
     :param str vcs_path: source path of the wrapped vcs
     :param str minor_version: the specification of minor version (in form of
         sha e.g.) for which we are checking the validity
-    :raise VersionControlSystemException: when the given minor version is
+    :raises VersionControlSystemException: when the given minor version is
         invalid in the context of the wrapped version control system.
     """
     dynamic_module_function_call(

@@ -11,7 +11,8 @@ import os
 import re
 import sys
 
-from ruamel.yaml import YAML
+from ruamel.yaml import YAML, scanner
+
 
 import perun.logic.store as store
 import perun.utils.decorators as decorators
@@ -132,7 +133,11 @@ def read_config_from(path):
     :returns: configuration data represented as dictionary of keys and their appropriate values
         (possibly nested)
     """
-    return streams.safely_load_yaml_from_file(path)
+    try:
+        return streams.safely_load_yaml_from_file(path)
+    except scanner.ScannerError as scanner_error:
+        perun_log.error("corrupted configuration file '{}': {}\n".format(path, str(scanner_error))
+                        + "\nPerhaps you did not escape strings with special characters in quotes?")
 
 
 def init_shared_config_at(path):

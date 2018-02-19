@@ -14,8 +14,8 @@ __author__ = 'Tomas Fiedor'
 
 def safely_load_yaml_from_file(yaml_file):
     """
-    Arguments:
-        yaml_file(str): name of the yaml file
+    :param str yaml_file: name of the yaml file
+    :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
     """
     if not os.path.exists(yaml_file):
         log.warn('yaml source file \'{}\' does not exist'.format(yaml_file))
@@ -27,10 +27,10 @@ def safely_load_yaml_from_file(yaml_file):
 
 def safely_load_yaml_from_stream(yaml_stream):
     """
-    Arguments:
-        yaml_stream(str): stream in the yaml format (or not)
+    :param str yaml_stream: stream in the yaml format (or not)
+    :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
     """
-    # Remove the trailing doublequotes screwing correct loading of yaml
+    # Remove the trailing double quotes screwing correct loading of yaml
     if type(yaml_stream) == str and yaml_stream[0] == '"' and yaml_stream[-1] == '"':
         yaml_stream = yaml_stream[1:-1]
     loaded_yaml = YAML().load(yaml_stream)
