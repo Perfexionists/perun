@@ -560,3 +560,25 @@ def test_config(pcs_full):
     result = runner.invoke(cli.config, ['--local', 'get', 'wrong,key'])
     assert result.exit_code == 2
     assert "invalid format" in result.output
+
+
+def test_check_head(pcs_with_degradations):
+    """Test checking degradation for one point of history
+
+    Expecting correct behaviours
+    """
+    runner = CliRunner()
+
+    result = runner.invoke(cli.check_head, [])
+    assert result.exit_code == 0
+
+
+def test_check_all(pcs_with_degradations):
+    """Test checking degradation for whole history
+
+    Expecting correct behaviours
+    """
+    runner = CliRunner()
+
+    result = runner.invoke(cli.check_all, [])
+    assert result.exit_code == 0
