@@ -40,6 +40,7 @@ import sys
 
 import click
 import perun.logic.commands as commands
+import perun.check as check
 import perun.logic.runner as runner
 import perun.logic.store as store
 from perun.logic.pcs import PCS
@@ -58,6 +59,20 @@ from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModule
     MissingConfigSectionException, ExternalEditorErrorException, VersionControlSystemException
 
 __author__ = 'Tomas Fiedor'
+
+
+def process_unsupported_option(_, param, value):
+    """Processes the currently unsupported option.
+
+    :param click.Context _: called context of the parameter
+    :param click.Option param: parameter we are processing
+    :param Object value: value of the parameter we are trying to set
+    :return:  basically nothing
+    """
+    if value:
+        perun_log.error("option '{}'".format(param.human_readable_name) +
+                        "is unsupported/not implemented in this version of perun"
+                        "\n\nPlease update your perun or wait patiently for the implementation")
 
 
 @click.group()
@@ -1073,6 +1088,46 @@ def job(**kwargs):
     :ref:`postprocessors-list` respectively.
     """
     runner.run_single_job(**kwargs)
+
+
+@cli.group('check')
+@click.option('--compute-missing', '-c', callback=process_unsupported_option,
+              is_flag=True, default=False,
+              help='whenever there are missing profiles in the given point of history'
+              ' the matrix will be rerun and new generated profiles assigned.')
+def check_group(**_):
+    """Checks for possible degradation within the project history.
+
+    This either runs the degradation check on the current head of the project, i.e. only between
+    head and its nearest predecessors with corresponding profiles or crawls the whole repository
+    checkouting the older versions, rebuilding the stuff and running the degradation checks.
+    """
+
+
+@check_group.command('head')
+@click.argument('head_minor', required=False, metavar='<hash>', nargs=1,
+                callback=minor_version_lookup_callback, default='HEAD')
+def check_head(head_minor):
+    """Checks the degradation between current head and its predecessors.
+
+    This check iterates over all registered profiles of current head, and tries to find
+    nearest predecessor minor version, where the profile with the same configuration exists.
+    When it finds such a pair, it runs the degradation check w.r.t strategy set in configuration
+    and reports the results.
+    """
+    check.degradation_in_minor(head_minor)
+
+
+@check_group.command('all')
+@click.argument('minor_head', required=False, metavar='<hash>', nargs=1,
+                callback=minor_version_lookup_callback, default='HEAD')
+def check_all(minor_head):
+    """Checks the degradation between all points of history.
+
+    This subsequently checks the all points of history with their predecessors. Optionally one
+    can rebuild the project and recompute the missing profiles.
+    """
+    check.degradation_in_history(minor_head)
 
 
 # Initialization of other stuff

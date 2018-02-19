@@ -346,6 +346,64 @@ def full_profiles():
 
 
 @pytest.fixture(scope="function")
+def pcs_with_degradations():
+    """
+    Returns:
+        PCS: object with performance control system, initialized with some files and stuff
+    """
+    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    profiles = [
+        os.path.join(pool_path, 'linear_base.perf'),
+        os.path.join(pool_path, 'linear_base_degradated.perf'),
+        os.path.join(pool_path, 'quad_base.perf')
+    ]
+    # Change working dir into the temporary directory
+    pcs_path = tempfile.mkdtemp()
+    os.chdir(pcs_path)
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
+
+    # Construct the PCS object
+    pcs_obj = pcs.PCS(pcs_path)
+
+    # Initialize git
+    vcs.init('git', pcs_path, {})
+
+    # Populate repo with commits
+    repo = git.Repo(pcs_path)
+
+    # Create first commit
+    file1 = os.path.join(pcs_path, "file1")
+    store.touch_file(file1)
+    repo.index.add([file1])
+    root = repo.index.commit("root")
+
+    # Create second commit
+    file2 = os.path.join(pcs_path, "file2")
+    store.touch_file(file2)
+    repo.index.add([file2])
+    middle_head = repo.index.commit("second commit")
+
+    # Create second commit
+    file3 = os.path.join(pcs_path, "file3")
+    store.touch_file(file3)
+    repo.index.add([file3])
+    current_head = repo.index.commit("third commit")
+
+    # Populate PCS with profiles
+    root_profile = Helpers.prepare_profile(pcs_obj, profiles[0], str(root))
+    commands.add([root_profile], str(root))
+    middle_profile = Helpers.prepare_profile(pcs_obj, profiles[1], str(middle_head))
+    commands.add([middle_profile], str(middle_head))
+    head_profile = Helpers.prepare_profile(pcs_obj, profiles[2], str(current_head))
+    commands.add([head_profile], str(current_head))
+
+    yield pcs_obj
+
+    # clean up the directory
+    shutil.rmtree(pcs_path)
+
+
+@pytest.fixture(scope="function")
 def pcs_full():
     """
     Returns:
