@@ -23,6 +23,7 @@ import perun.logic.config as config
 import perun.logic.store as store
 import perun.profile.query as query
 import perun.utils.log as perun_log
+import perun.utils.decorators as decorators
 from perun.utils import get_module
 from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException
 from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
@@ -314,6 +315,25 @@ def to_string(profile):
     return json.dumps(profile)
 
 
+@decorators.singleton_with_args
+def to_config_tuple(profile):
+    """Converts the profile to the tuple representing its configuration
+
+    Note: Maybe unneeded.
+
+    :param dict profile: profile we are converting to configuration tuple
+    :returns: tuple of (collector.name, cmd, args, workload, [postprocessors])
+    """
+    profile_header = profile['header']
+    return (
+        profile['collector_info']['name'],
+        profile_header['cmd'],
+        profile_header['args'],
+        profile_header['workload'],
+        [postprocessor['name'] for postprocessor in profile['postprocessors']]
+    )
+
+
 def extract_job_from_profile(profile):
     """Extracts information from profile about job, that was done to generate the profile.
 
@@ -402,7 +422,14 @@ class ProfileInfo(object):
         self.args = loaded_profile['header']['params']
         self.workload = loaded_profile['header']['workload']
         self.collector = loaded_profile['collector_info']['name']
+        self.postprocessors = [
+            postprocessor['name'] for postprocessor in loaded_profile['postprocessors']
+        ]
         self.checksum = None
+        self.config_tuple = (
+            self.collector, self.cmd, self.args, self.workload,
+            ",".join(self.postprocessors)
+        )
 
     valid_attributes = [
         "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "origin"
