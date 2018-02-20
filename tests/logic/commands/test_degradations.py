@@ -5,6 +5,7 @@ import git
 
 import perun.profile.factory as factory
 import perun.check as check
+import perun.check.average_amount_threshold as aat
 
 __author__ = 'Tomas Fiedor'
 
@@ -66,5 +67,11 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     out, err = capsys.readouterr()
     assert "Detected degradation" in out
     assert "from 'linear' to 'power'" in out
+    assert "SLList_search(SLList*, int)" in out
+    assert err == ""
+
+    aat.average_amount_threshold(profiles[1], profiles[2])
+    out, err = capsys.readouterr()
+    assert "Detected degradation" in out
     assert "SLList_search(SLList*, int)" in out
     assert err == ""
