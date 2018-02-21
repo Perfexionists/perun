@@ -37,8 +37,11 @@ def degradation_in_minor(pcs, minor_version):
     minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
     baseline_version_queue = minor_version_info.parents
 
-    print("* [{}]: {}".format(
-        minor_version_info.checksum[:6],
+    print("* ", end='')
+    log.cprint("{}".format(
+        minor_version_info.checksum[:6]
+    ), 'yellow', attrs=[])
+    print(": {}".format(
         minor_version_info.desc.split("\n")[0].strip()
     ))
     while target_profile_queue and baseline_version_queue:
@@ -53,8 +56,11 @@ def degradation_in_minor(pcs, minor_version):
         # Print header
         if baseline_profiles:
             print("|\\")
-            print("| * [{}]: {}".format(
-                baseline_info.checksum[:6],
+            print("| * ", end='')
+            log.cprint("{}".format(
+                baseline_info.checksum[:6]
+            ), 'yellow', attrs=[])
+            print(": {}".format(
                 baseline_info.desc.split("\n")[0].strip()
             ))
 
@@ -62,7 +68,13 @@ def degradation_in_minor(pcs, minor_version):
         for baseline_config, baseline_profile in baseline_profiles.items():
             target_profile = target_profile_queue.get(baseline_config)
             if target_profile:
-                print("|  for configuration = {}".format(baseline_config))
+                # Print information about configuration
+                print("|   > collected by ", end='')
+                log.cprint("{}".format(baseline_config[0]), 'magenta', attrs=['bold'])
+                if baseline_config[4]:
+                    print("+", end='')
+                    log.cprint("{}".format(baseline_config[4]), 'magenta', attrs=['bold'])
+                print(" for cmd: '$ {}'".format(" ".join(baseline_config[1:4])))
                 for degradation in degradation_between_profiles(baseline_profile, target_profile):
                     print('|   - ', end='')
                     log.cprint(
@@ -73,13 +85,21 @@ def degradation_in_minor(pcs, minor_version):
                     log.cprintln('{}'.format(degradation.location), 'white', attrs=['bold'])
                     # second row if change happened
                     if degradation.result != PerformanceChange.NoChange:
+                        if degradation.result in (
+                                PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
+                        ):
+                            from_colour = 'red'
+                            to_colour = 'green'
+                        else:
+                            from_colour = 'green'
+                            to_colour = 'red'
                         print('|       from: ', end='')
                         log.cprint(
-                            '{}'.format(degradation.from_baseline), 'yellow', attrs=['bold']
+                            '{}'.format(degradation.from_baseline), from_colour, attrs=[]
                         )
                         print(' -> to: ', end='')
                         log.cprint(
-                            '{}'.format(degradation.to_target), 'yellow', attrs=['bold']
+                            '{}'.format(degradation.to_target), to_colour, attrs=[]
                         )
                         if degradation.confidence_type != 'no':
                             print(' (with confidence ', end='')
@@ -145,13 +165,15 @@ class DegradationInfo(object):
         self.confidence_rate = cr
 
 PerformanceChange = Enum(
-    'PerformanceChange', 'Degradation MaybeDegradation NoChange MaybeOptimization Optimization'
+    'PerformanceChange', 'Degradation MaybeDegradation ' +
+    'Unknown NoChange MaybeOptimization Optimization'
 )
 
 CHANGE_STRINGS = {
     PerformanceChange.Degradation: 'Degradation',
     PerformanceChange.MaybeDegradation: 'Maybe Degradation',
     PerformanceChange.NoChange: 'No Change',
+    PerformanceChange.Unknown: 'Unknown',
     PerformanceChange.MaybeOptimization: 'Maybe Optimization',
     PerformanceChange.Optimization: 'Optimization'
 }
@@ -159,6 +181,7 @@ CHANGE_COLOURS = {
     PerformanceChange.Degradation: 'red',
     PerformanceChange.MaybeDegradation: 'yellow',
     PerformanceChange.NoChange: 'white',
+    PerformanceChange.Unknown: 'grey',
     PerformanceChange.MaybeOptimization: 'cyan',
     PerformanceChange.Optimization: 'blue'
 }
