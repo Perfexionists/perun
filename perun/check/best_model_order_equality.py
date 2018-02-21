@@ -1,4 +1,5 @@
 import perun.profile.query as query
+import perun.check as check
 
 __author__ = 'Tomas Fiedor'
 
@@ -41,10 +42,13 @@ def best_model_order_equality(baseline_profile, target_profile):
             confidence = min(best_corresponding_baseline_model[1], best_model[1])
             if confidence >= CONFIDENCE_THRESHOLD \
                and best_corresponding_baseline_model[0] != best_model[0]:
-                print("Detected degradation from '{}' to '{}' model for {} function".format(
-                    best_corresponding_baseline_model[0], best_model[0], uid
-                ), end=' ')
-                print("with confidence of minimal r_square = {}".format(
-                    confidence
-                ))
+                change = check.PerformanceChange.Degradation
+            else:
+                change = check.PerformanceChange.NoChange
 
+            yield check.DegradationInfo(
+                change, "order", uid,
+                best_corresponding_baseline_model[0],
+                best_model[0],
+                "r_square", confidence
+            )
