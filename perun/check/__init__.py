@@ -1,4 +1,7 @@
+from enum import Enum
+
 import perun.profile.factory as profiles
+import perun.utils.log as log
 import perun.logic.commands as commands
 import perun.utils as utils
 import perun.vcs as vcs
@@ -31,27 +34,64 @@ def degradation_in_minor(pcs, minor_version):
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     target_profile_queue = profiles_to_queue(pcs, minor_version)
-    baseline_version_queue = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version).parents
+    minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
+    baseline_version_queue = minor_version_info.parents
 
-    if baseline_version_queue:
-        print("Checking degradation in '{}' minor version".format(minor_version))
+    print("* [{}]: {}".format(
+        minor_version_info.checksum[:6],
+        minor_version_info.desc.split("\n")[0].strip()
+    ))
     while target_profile_queue and baseline_version_queue:
         # Pop the nearest baseline
         baseline = baseline_version_queue.pop(0)
         baseline_profiles = profiles_to_queue(pcs, baseline)
 
+        baseline_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, baseline)
         # Enqueue the parents in BFS manner
-        baseline_version_queue.extend(
-            vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, baseline).parents
-        )
+        baseline_version_queue.extend(baseline_info.parents)
+
+        # Print header
+        if baseline_profiles:
+            print("|\\")
+            print("| * [{}]: {}".format(
+                baseline_info.checksum[:6],
+                baseline_info.desc.split("\n")[0].strip()
+            ))
 
         # Iterate through the profiles and check degradation between those of same configuration
         for baseline_config, baseline_profile in baseline_profiles.items():
             target_profile = target_profile_queue.get(baseline_config)
             if target_profile:
-                degradation_between_profiles(baseline_profile, target_profile)
+                print("|  for configuration = {}".format(baseline_config))
+                for degradation in degradation_between_profiles(baseline_profile, target_profile):
+                    print('|   - ', end='')
+                    log.cprint(
+                        '{}'.format(CHANGE_STRINGS[degradation.result]).ljust(20),
+                        CHANGE_COLOURS[degradation.result], attrs=['bold']
+                    )
+                    print(' at ', end='')
+                    log.cprintln('{}'.format(degradation.location), 'white', attrs=['bold'])
+                    # second row if change happened
+                    if degradation.result != PerformanceChange.NoChange:
+                        print('|       from: ', end='')
+                        log.cprint(
+                            '{}'.format(degradation.from_baseline), 'yellow', attrs=['bold']
+                        )
+                        print(' -> to: ', end='')
+                        log.cprint(
+                            '{}'.format(degradation.to_target), 'yellow', attrs=['bold']
+                        )
+                        if degradation.confidence_type != 'no':
+                            print(' (with confidence ', end='')
+                            log.cprint(
+                                '{} = {}'.format(
+                                    degradation.confidence_type, degradation.confidence_rate),
+                                'white', attrs=['bold']
+                            )
+                            print(')', end='')
+                        print('')
                 del target_profile_queue[target_profile.config_tuple]
-
+        print('|')
 
 @pass_pcs
 def degradation_in_history(pcs, head):
@@ -79,7 +119,7 @@ def degradation_between_profiles(baseline_profile, target_profile):
     if type(target_profile) is not dict:
         target_profile = profiles.load_profile_from_file(target_profile.realpath, False)
     degradation_method = get_strategy_for_configuration(baseline_profile)
-    utils.dynamic_module_function_call(
+    return utils.dynamic_module_function_call(
         'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
     )
 
@@ -92,3 +132,33 @@ def get_strategy_for_configuration(profile):
         the same configuration type
     """
     return "best_model_order_equality"
+
+
+class DegradationInfo(object):
+    def __init__(self, res, t, loc, fb, tt, ct="no", cr=0):
+        self.result = res
+        self.type = t
+        self.location = loc
+        self.from_baseline = fb
+        self.to_target = tt
+        self.confidence_type = ct
+        self.confidence_rate = cr
+
+PerformanceChange = Enum(
+    'PerformanceChange', 'Degradation MaybeDegradation NoChange MaybeOptimization Optimization'
+)
+
+CHANGE_STRINGS = {
+    PerformanceChange.Degradation: 'Degradation',
+    PerformanceChange.MaybeDegradation: 'Maybe Degradation',
+    PerformanceChange.NoChange: 'No Change',
+    PerformanceChange.MaybeOptimization: 'Maybe Optimization',
+    PerformanceChange.Optimization: 'Optimization'
+}
+CHANGE_COLOURS = {
+    PerformanceChange.Degradation: 'red',
+    PerformanceChange.MaybeDegradation: 'yellow',
+    PerformanceChange.NoChange: 'white',
+    PerformanceChange.MaybeOptimization: 'cyan',
+    PerformanceChange.Optimization: 'blue'
+}

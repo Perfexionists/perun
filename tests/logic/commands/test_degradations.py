@@ -20,7 +20,7 @@ def test_degradation_in_minor(pcs_with_degradations, capsys):
 
     check.degradation_in_minor(head)
     out, err = capsys.readouterr()
-    assert "Detected degradation" in out
+    assert "Degradation" in out
     assert err == ""
 
 
@@ -34,7 +34,7 @@ def test_degradation_in_history(pcs_with_degradations, capsys):
 
     check.degradation_in_history(head)
     out, err = capsys.readouterr()
-    assert "Detected degradation" in out
+    assert "Degradation" in out
     assert err == ""
 
 
@@ -51,27 +51,15 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     ]
     # Cannot detect degradation using BMOE strategy betwen these pairs of profiles,
     # since the best models are same with good confidence
-    check.degradation_between_profiles(profiles[0], profiles[1])
-    out, err = capsys.readouterr()
-    assert "Detected degradation" not in out
-    assert err == ""
+    result = list(check.degradation_between_profiles(profiles[0], profiles[1]))
+    assert check.PerformanceChange.NoChange in [r.result for r in result]
 
     # Can detect degradation using BMOE strategy betwen these pairs of profiles
-    check.degradation_between_profiles(profiles[1], profiles[2])
-    out, err = capsys.readouterr()
-    assert "Detected degradation" in out
-    assert "from 'linear' to 'power'" in out
-    assert "SLList_search(SLList*, int)" in out
-    assert err == ""
-    check.degradation_between_profiles(profiles[0], profiles[2])
-    out, err = capsys.readouterr()
-    assert "Detected degradation" in out
-    assert "from 'linear' to 'power'" in out
-    assert "SLList_search(SLList*, int)" in out
-    assert err == ""
+    result = check.degradation_between_profiles(profiles[1], profiles[2])
+    assert check.PerformanceChange.Degradation in [r.result for r in result]
 
-    aat.average_amount_threshold(profiles[1], profiles[2])
-    out, err = capsys.readouterr()
-    assert "Detected degradation" in out
-    assert "SLList_search(SLList*, int)" in out
-    assert err == ""
+    result = check.degradation_between_profiles(profiles[0], profiles[2])
+    assert check.PerformanceChange.Degradation in [r.result for r in result]
+
+    result = aat.average_amount_threshold(profiles[1], profiles[2])
+    assert check.PerformanceChange.Degradation in [r.result for r in result]

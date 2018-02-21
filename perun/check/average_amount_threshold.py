@@ -1,4 +1,5 @@
 import perun.profile.convert as convert
+import perun.check as check
 __author__ = 'Tomas Fiedor'
 
 
@@ -32,8 +33,13 @@ def average_amount_threshold(baseline_profile, target_profile):
         baseline_average = baseline_averages.get(target_uid, 0)
         if baseline_average:
             difference_ration = target_average / baseline_average
+            # TODO: Add units to the from and to
             if difference_ration >= THRESHOLD:
-                print("Detected degradation from avg '{}' to '{}' for {} function".format(
-                    baseline_average, target_average, target_uid
-                ), end=' ')
-                print("with no confidence at all.")
+                change = check.PerformanceChange.Degradation
+            else:
+                change = check.PerformanceChange.NoChange
+
+            yield check.DegradationInfo(
+                change, "value", target_uid,
+                "{}".format(baseline_average), "{}".format(target_average)
+            )
