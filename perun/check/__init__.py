@@ -26,6 +26,93 @@ def profiles_to_queue(pcs, minor_version):
     }
 
 
+def print_minor_version(minor_version):
+    """Helper function for printing minor version to the degradation output
+
+    Currently printed in form of:
+
+    * sha[:6]: desc
+
+    :param MinorVersion minor_version: informations about minor version
+    """
+    print("* ", end='')
+    log.cprint("{}".format(
+        minor_version.checksum[:6]
+    ), 'yellow', attrs=[])
+    print(": {}".format(
+        minor_version.desc.split("\n")[0].strip()
+    ))
+
+
+def print_configuration(config):
+    """Helper function for printing information about configuration of given profile
+
+    :param tuple config: configuration tuple (collector, cmd, args, workload, postprocessors)
+    """
+    print("  > collected by ", end='')
+    log.cprint("{}".format(config[0]), 'magenta', attrs=['bold'])
+    if config[4]:
+        print("+", end='')
+        log.cprint("{}".format(config[4]), 'magenta', attrs=['bold'])
+    print(" for cmd: '$ {}'".format(" ".join(config[1:4])))
+
+
+def get_degradation_change_colours(degradation_result):
+    """Returns the tuple of two colours w.r.t degradation results.
+
+    If the change was optimization (or possible optimization) then we print the first model as
+    red and the other by green (since we went from better to worse model). On the other hand if the
+    change was degradation, then we print the first one green (was better) and the other as red
+    (is now worse). Otherwise (for Unknown and no change) we keep the stuff yellow, though this
+    is not used at all
+
+    :param PerformanceChange degradation_result: change of the performance
+    :returns: tuple of (from model string colour, to model string colour)
+    """
+    if degradation_result in (
+            PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
+    ):
+        return 'red', 'green'
+    elif degradation_result in (
+            PerformanceChange.Degradation, PerformanceChange.MaybeDegradation
+    ):
+        return 'green', 'red'
+    else:
+        return 'yellow', 'yellow'
+
+
+def print_degradation_results(degradation):
+    """Helper function for printing results of degradation detection
+
+    :param DegradationInfo degradation: results of degradation detected in given profile
+    """
+    print('|   - ', end='')
+    # Print the actual result
+    log.cprint(
+        '{}'.format(CHANGE_STRINGS[degradation.result]).ljust(20),
+        CHANGE_COLOURS[degradation.result], attrs=['bold']
+    )
+    # Print the location of the degradation
+    print(' at ', end='')
+    log.cprintln('{}'.format(degradation.location), 'white', attrs=['bold'])
+    # Print the exact rate of degradation and the confidence (if there is any
+    if degradation.result != PerformanceChange.NoChange:
+        from_colour, to_colour = get_degradation_change_colours(degradation.result)
+        print('|       from: ', end='')
+        log.cprint('{}'.format(degradation.from_baseline), from_colour, attrs=[])
+        print(' -> to: ', end='')
+        log.cprint('{}'.format(degradation.to_target), to_colour, attrs=[])
+        if degradation.confidence_type != 'no':
+            print(' (with confidence ', end='')
+            log.cprint(
+                '{} = {}'.format(
+                    degradation.confidence_type, degradation.confidence_rate),
+                'white', attrs=['bold']
+            )
+            print(')', end='')
+        print('')
+
+
 @pass_pcs
 def degradation_in_minor(pcs, minor_version):
     """Checks for degradation according to the profiles stored for the given minor version.
@@ -36,82 +123,33 @@ def degradation_in_minor(pcs, minor_version):
     target_profile_queue = profiles_to_queue(pcs, minor_version)
     minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
     baseline_version_queue = minor_version_info.parents
-
-    print("* ", end='')
-    log.cprint("{}".format(
-        minor_version_info.checksum[:6]
-    ), 'yellow', attrs=[])
-    print(": {}".format(
-        minor_version_info.desc.split("\n")[0].strip()
-    ))
+    print_minor_version(minor_version_info)
     while target_profile_queue and baseline_version_queue:
         # Pop the nearest baseline
         baseline = baseline_version_queue.pop(0)
-        baseline_profiles = profiles_to_queue(pcs, baseline)
 
-        baseline_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, baseline)
         # Enqueue the parents in BFS manner
+        baseline_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, baseline)
         baseline_version_queue.extend(baseline_info.parents)
 
-        # Print header
+        # Print header if there is at least some profile to check against
+        baseline_profiles = profiles_to_queue(pcs, baseline)
         if baseline_profiles:
-            print("|\\")
-            print("| * ", end='')
-            log.cprint("{}".format(
-                baseline_info.checksum[:6]
-            ), 'yellow', attrs=[])
-            print(": {}".format(
-                baseline_info.desc.split("\n")[0].strip()
-            ))
+            print("|\\\n| ", end='')
+            print_minor_version(baseline_info)
 
         # Iterate through the profiles and check degradation between those of same configuration
         for baseline_config, baseline_profile in baseline_profiles.items():
             target_profile = target_profile_queue.get(baseline_config)
             if target_profile:
                 # Print information about configuration
-                print("|   > collected by ", end='')
-                log.cprint("{}".format(baseline_config[0]), 'magenta', attrs=['bold'])
-                if baseline_config[4]:
-                    print("+", end='')
-                    log.cprint("{}".format(baseline_config[4]), 'magenta', attrs=['bold'])
-                print(" for cmd: '$ {}'".format(" ".join(baseline_config[1:4])))
+                print("| ", end='')
+                print_configuration(baseline_config)
                 for degradation in degradation_between_profiles(baseline_profile, target_profile):
-                    print('|   - ', end='')
-                    log.cprint(
-                        '{}'.format(CHANGE_STRINGS[degradation.result]).ljust(20),
-                        CHANGE_COLOURS[degradation.result], attrs=['bold']
-                    )
-                    print(' at ', end='')
-                    log.cprintln('{}'.format(degradation.location), 'white', attrs=['bold'])
-                    # second row if change happened
-                    if degradation.result != PerformanceChange.NoChange:
-                        if degradation.result in (
-                                PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
-                        ):
-                            from_colour = 'red'
-                            to_colour = 'green'
-                        else:
-                            from_colour = 'green'
-                            to_colour = 'red'
-                        print('|       from: ', end='')
-                        log.cprint(
-                            '{}'.format(degradation.from_baseline), from_colour, attrs=[]
-                        )
-                        print(' -> to: ', end='')
-                        log.cprint(
-                            '{}'.format(degradation.to_target), to_colour, attrs=[]
-                        )
-                        if degradation.confidence_type != 'no':
-                            print(' (with confidence ', end='')
-                            log.cprint(
-                                '{} = {}'.format(
-                                    degradation.confidence_type, degradation.confidence_rate),
-                                'white', attrs=['bold']
-                            )
-                            print(')', end='')
-                        print('')
+                    print_degradation_results(degradation)
                 del target_profile_queue[target_profile.config_tuple]
         print('|')
+
 
 @pass_pcs
 def degradation_in_history(pcs, head):
