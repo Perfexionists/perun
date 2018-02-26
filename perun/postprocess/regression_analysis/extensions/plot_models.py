@@ -111,3 +111,31 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, **_):
     plot_y = np.array(formula(b0, b1, plot_x))
 
     return dict(plot_y=plot_y)
+
+
+def quad_plot_y_pts(plot_x, b0, b1, b2, formula, **_):
+    """ The quadratic function for y points computation.
+
+    This function computes the y points for model plotting using the 'fp' formula.
+
+    The 'm_fx' function modifies the value of point x according to the regression model if needed
+    (e.g. x**2, log, ...).
+
+    Creates data dictionary with 'plot_y' containing the y values for plotting.
+
+    Arguments:
+        plot_x(numpy array): array of x points
+        b0(float): the b0 model coefficient
+        b1(float): the b1 model coefficient
+        b2(float): the b2 model coefficient
+        formula(function): function object containing the computation formula
+    Raises:
+        TypeError: if the required function arguments are not in the unpacked dictionary input
+    Return:
+        dict: data dictionary with 'plot_y' array
+
+    """
+    # Apply the computation formula
+    plot_y = np.array(formula(b0, b1, b2, plot_x))
+
+    return dict(plot_y=plot_y)
