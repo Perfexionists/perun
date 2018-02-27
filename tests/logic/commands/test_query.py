@@ -4,6 +4,7 @@ Contains tests for query results of various valid / invalid profiles.
 """
 
 import pytest
+import itertools
 import perun.utils.exceptions as exceptions
 import perun.profile.query as query
 
@@ -149,6 +150,7 @@ def test_resources_corrupted(query_profiles):
 
     Expected IncorrectProfileFormatException-s.
     """
+    query_profiles, query_profiles_copy = itertools.tee(query_profiles)
     # Acquire the query profile with corrupted global section
     corrupted_profile = profile_filter(query_profiles, 'corrupted-global.perf')
     assert corrupted_profile is not None
@@ -158,7 +160,7 @@ def test_resources_corrupted(query_profiles):
         list(query.all_resources_of(corrupted_profile))
 
     # Acquire the query profile with corrupted global section
-    corrupted_profile = profile_filter(query_profiles, 'corrupted-snapshots.perf')
+    corrupted_profile = profile_filter(query_profiles_copy, 'corrupted-snapshots.perf')
     assert corrupted_profile is not None
 
     # Get all resources in profile that has corrupted snapshots structure

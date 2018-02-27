@@ -55,7 +55,7 @@ import perun.vcs as vcs
 import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
-    MissingConfigSectionException, InvalidConfigOperationException, VersionControlSystemException
+    MissingConfigSectionException, ExternalEditorErrorException, VersionControlSystemException
 
 __author__ = 'Tomas Fiedor'
 
@@ -100,63 +100,28 @@ def cli(verbose, no_pager):
         perun_log.VERBOSITY = verbose
 
 
-def validate_key(ctx, _, value):
-    """Validates the value of the key for the different modes.
-
-    For get and set <key> is required, while for edit it has no effect.
+def validate_key(_, param, value):
+    """Validates whether the value of the key is in correct format---strings delimited by dot.
 
     Arguments:
-        ctx(click.Context): called context of the command line
-        _(click.Option): called option (key in this case)
+        _(click.Context): called context of the command line
+        param(click.Option): called option (key in this case)
         value(object): assigned value to the <key> argument
 
     Returns:
         object: value for the <key> argument
     """
-    operation = ctx.params['operation']
-    if operation == 'edit' and value:
-        perun_log.warn('setting <key> argument has no effect in edit config operation')
-    elif operation in ('get', 'set') and not value:
-        raise click.BadParameter("missing <key> argument for {} config operation".format(
-            operation
-        ))
-
+    if not perun_config.is_valid_key(str(value)):
+        raise click.BadParameter("<key> argument '{}' for {} config operation is in invalid format."
+            "Valid key should be represented as sections delimited by dot (.),"
+            " e.g. general.paging is valid key.".format(
+                value, str(param.param_type_name)
+            )
+        )
     return value
 
 
-def validate_value(ctx, _, value):
-    """Validates the value parameter for different modes.
-
-    Value is required for set operation, while in get and set has no effect.
-
-    Arguments:
-        ctx(click.Context): called context of the command line
-        _(click.Option): called option (in this case value)
-        value(object): assigned value to the <value> argument
-
-    Returns:
-        object: value for the <key> argument
-    """
-    operation = ctx.params['operation']
-    if operation in ('edit', 'get') and value:
-        perun_log.warn('setting <value> argument has no effect in {} config operation'.format(
-            operation
-        ))
-    elif operation == 'set' and not value:
-        raise click.BadParameter("missing <value> argument for set config operation")
-
-    return value
-
-
-@cli.command()
-@click.argument('key', required=False, metavar='<key>', callback=validate_key)
-@click.argument('value', required=False, metavar='<value>', callback=validate_value)
-@click.option('--get', '-g', 'operation', is_eager=True, flag_value='get',
-              help="Retrieves the value of the provided <key>.")
-@click.option('--set', '-s', 'operation', is_eager=True, flag_value='set',
-              help="Sets the value of the <key> to <value> in the configuration file.")
-@click.option('--edit', '-e', 'operation', is_eager=True, flag_value='edit',
-              help="Edits the configuration file in the user defined editor.")
+@cli.group()
 @click.option('--local', '-l', 'store_type', flag_value='local',
               help='Will lookup or set in the local config i.e. '
               '``.perun/local.yml``.')
@@ -165,32 +130,61 @@ def validate_value(ctx, _, value):
               '``shared.yml.``')
 @click.option('--nearest', '-n', 'store_type', flag_value='recursive', default=True,
               help='Will recursively discover the nearest suitable config. The'
-              ' lookup strategy can differ for ``--set`` and '
-              '``--get``/``--edit``.')
-def config(**kwargs):
-    """Manages local and shared configuration.
+              ' lookup strategy can differ for ``set`` and '
+              '``get``/``edit``.')
+@click.pass_context
+def config(ctx, **kwargs):
+    """Manages the stored local and shared configuration.
 
-    In perun there exists two external configurations:
+    Perun supports two external configurations:
 
         1. ``local.yml``: the local configuration stored in ``.perun``
-           directory, containing  the keys such as specification of wrapped
+           directory, containing the keys such as specification of wrapped
            repository or job matrix used for quick generation of profiles (run
            ``perun run matrix --help`` or refer to :doc:`jobs` for information
            how to construct the job matrix).
 
-        2. ``shared.yml`` - the global configuration shared by all Perun
+        2. ``shared.yml``:  the global configuration shared by all perun
            instances, containing shared keys, such as text editor, formatting
            string, etc.
 
-    The syntax of the ``<key>`` consists of section separated by dots, e.g.
-    ``vcs.type`` specifies ``type`` key in ``vcs`` section. There exists three
-    modes of lookup, ``--local``, ``--shared`` and ``nearest``, which locates
-    or sets the <key> in local, shared or nearest configuration (e.g. when one
-    is trying to get some key, there may be nested perun instances that do not
-    contain the given key). By default, perun locates the nearest config.
+    The syntax of the ``<key>`` in most operations consists of section
+    separated by dots, e.g. ``vcs.type`` specifies ``type`` key in ``vcs``
+    section. The lookup of the ``<key>`` can be performed in three modes,
+    ``--local``, ``--shared`` and ``--nearest``, locating or setting the
+    ``<key>`` in local, shared or nearest configuration respectively (e.g. when
+    one is trying to get some key, there may be nested perun instances that do
+    not contain the given key). By default, perun operates in the nearest
+    config mode.
 
-    When neither of ``--get``, ``--set`` or ``--edit`` is set, an error is
-    raised. Otherwise the latest action is used.
+    Refer to :doc:`config` for full description of configurations and
+    :ref:`config-types` for full list of configuration options.
+
+    E.g. using the following one can retrieve the type of the nearest perun
+    instance wrapper:
+
+    .. code-block:: bash
+
+        $ perun config get vsc.type
+        vcs.type: git
+    """
+    ctx.obj = kwargs
+
+
+@config.command('get')
+@click.argument('key', required=True, metavar='<key>', callback=validate_key)
+@click.pass_context
+def config_get(ctx, key):
+    """Looks up the given ``<key>`` within the configuration hierarchy and returns
+    the stored value.
+
+    The syntax of the ``<key>`` consists of section separated by dots, e.g.
+    ``vcs.type`` specifies ``type`` key in ``vcs`` section. The lookup of the
+    ``<key>`` can be performed in three modes, ``--local``, ``--shared`` and
+    ``--nearest``, locating the ``<key>`` in local, shared or nearest
+    configuration respectively (e.g. when one is trying to get some key, there
+    may be nested perun instances that do not contain the given key). By
+    default, perun operates in the nearest config mode.
 
     Refer to :doc:`config` for full description of configurations and
     :ref:`config-types` for full list of configuration options.
@@ -200,13 +194,66 @@ def config(**kwargs):
 
     .. code-block:: bash
 
-        $ perun config --get vsc.type
+        $ perun config get vsc.type
         vcs.type: git
+
+        $ perun config --shared get general.editor
+        general.editor: vim
     """
     try:
-        commands.config(**kwargs)
-    except (MissingConfigSectionException, InvalidConfigOperationException) as mcs_err:
+        commands.config_get(ctx.obj['store_type'], key)
+    except MissingConfigSectionException as mcs_err:
         perun_log.error(str(mcs_err))
+
+
+@config.command('set')
+@click.argument('key', required=True, metavar='<key>', callback=validate_key)
+@click.argument('value', required=True, metavar='<value>')
+@click.pass_context
+def config_set(ctx, key, value):
+    """Sets the value of the ``<key>`` to the given ``<value>`` in the target
+    configuration file.
+
+    The syntax of the ``<key>`` corresponds of section separated by dots, e.g.
+    ``vcs.type`` specifies ``type`` key in ``vcs`` section. Perun sets the
+    ``<key>`` in three modes, ``--local``, ``--shared`` and ``--nearest``,
+    which sets the ``<key>`` in local, shared or nearest configuration
+    respectively (e.g.  when one is trying to get some key, there may be nested
+    perun instances that do not contain the given key). By default, perun will
+    operate in the nearest config mode.
+
+    The ``<value>`` is arbitrary depending on the key.
+
+    Refer to :doc:`config` for full description of configurations and
+    :ref:`config-types` for full list of configuration options and their
+    values.
+
+    E.g. using the following can set the log format for nearest perun instance
+    wrapper:
+
+    .. code-block:: bash
+
+        $ perun config set format.shortlog "| %origin% | %collector% |"
+        format.shortlog: | %origin% | %collector% |
+    """
+    commands.config_set(ctx.obj['store_type'], key, value)
+
+
+@config.command('edit')
+@click.pass_context
+def config_edit(ctx):
+    """Edits the configuration file in the external editor.
+
+    The used editor is specified by the :ckey:`general.editor` option,
+    specified in the nearest perun configuration..
+
+    Refer to :doc:`config` for full description of configurations and
+    :ref:`config-types` for full list of configuration options.
+    """
+    try:
+        commands.config_edit(ctx.obj['store_type'])
+    except (ExternalEditorErrorException, MissingConfigSectionException) as editor_exception:
+        perun_log.error("could not invoke external editor: {}".format(str(editor_exception)))
 
 
 def configure_local_perun(perun_path):
@@ -216,7 +263,7 @@ def configure_local_perun(perun_path):
         perun_path(str): destination path of the perun repository
     """
     pcs = PCS(perun_path)
-    editor = perun_config.lookup_key_recursively(pcs.path, 'global.editor')
+    editor = perun_config.lookup_key_recursively('general.editor')
     local_config_file = pcs.get_config_file('local')
     try:
         utils.run_external_command([editor, local_config_file])
@@ -318,7 +365,7 @@ def init(dst, configure, **kwargs):
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except MissingConfigSectionException:
         perun_log.error("cannot launch default editor for configuration.\n"
-                        "Please set 'global.editor' key to a valid text editor (e.g. vim).")
+                        "Please set 'general.editor' key to a valid text editor (e.g. vim).")
 
 
 def lookup_nth_pending_filename(position):
@@ -617,7 +664,7 @@ def log(head, **kwargs):
     default using ``less``.
 
     Refer to :ref:`logs-log` for information how to customize the outputs of
-    ``log`` or how to set :ckey:`global.minor_version_info_fmt` in nearest
+    ``log`` or how to set :ckey:`format.log` in nearest
     configuration.
     """
     try:
@@ -646,10 +693,10 @@ def status(**kwargs):
 
     An error is raised if the command is executed outside of range of any
     perun, or configuration misses certain configuration keys
-    (namely ``global.profile_info_fmt``).
+    (namely ``format.status``).
 
     Refer to :ref:`logs-status` for information how to customize the outputs of
-    ``status`` or how to set :ckey:`global.profile_info_fmt` in nearest
+    ``status`` or how to set :ckey:`format.status` in nearest
     configuration.
     """
     try:
@@ -711,8 +758,28 @@ def show(ctx, profile, **_):
     # TODO: Check that if profile is not SHA-1, then minor must be set
 
 
+def set_output_formatting_string(_, __, value):
+    """Sets the value of the output_profile_template to the given value in the runtime
+    configuration.
+
+    :param click.Context _: called context of the parameter
+    :param click.Option __: parameter we are processing
+    :param Object value: concrete value of the object that we are storing
+    :returns str: set string (though it is set in the runtime config as well)
+    """
+    if value:
+        perun_config.runtime().set('format.output_profile_template', str(value))
+    return value
+
+
 @cli.group()
 @click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
+@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
+              default=None,
+              help='Specifies the template for automatic generation of output filename'
+              ' This way the postprocessed file will have a resulting filename w.r.t to this'
+              ' parameter. Refer to :ckey:`format.output_profile_template` for more'
+              ' details about the format of the template.')
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
               callback=minor_version_lookup_callback,
               help='Will check the index of different minor version <hash>'
@@ -807,6 +874,12 @@ def parse_yaml_single_param(ctx, param, value):
               callback=parse_yaml_single_param,
               help='Additional parameters for called collector read from '
               'file in YAML format.')
+@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
+              default=None,
+              help='Specifies the template for automatic generation of output filename'
+                   ' This way the file with collected data will have a resulting filename w.r.t '
+                   ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
+                   ' details about the format of the template.')
 @click.pass_context
 def collect(ctx, **kwargs):
     """Generates performance profile using selected collector.
@@ -863,11 +936,17 @@ def init_unit_commands(lazy_init=True):
 
 
 @cli.group()
-def run():
+@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
+              default=None,
+              help='Specifies the template for automatic generation of output filename'
+                   ' This way the file with collected data will have a resulting filename w.r.t '
+                   ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
+                   ' details about the format of the template.')
+def run(**kwargs):
     """Generates batch of profiles w.r.t. specification of list of jobs.
 
-    Either runs the job matrix stored in local.yml configuration or lets the user
-    construct the job run using the set of parameters.
+    Either runs the job matrix stored in local.yml configuration or lets the
+    user construct the job run using the set of parameters.
     """
 
 

@@ -27,29 +27,6 @@ class MissingConfigSectionException(Exception):
     pass
 
 
-class InvalidConfigOperationException(Exception):
-    """Raised when the operation given to the config handler is not supported"""
-    def __init__(self, store_type, operation, key, value):
-        """
-        Arguments:
-            operation(str): name of the operation
-        """
-        super().__init__("")
-        self.store_type = store_type
-        self.operation = operation
-        self.key = key
-        self.value = value
-
-    def __str__(self):
-        msg = "unsupported {} config operation '{}'".format(self.store_type, self.operation)
-        msg += "with key '{}'".format(self.key) if self.key and not self.value else ""
-        msg += "with value '{}'".format(self.value) if self.value and not self.key else ""
-        msg += "with key/value '{}/{}'".format(
-            self.key, self.value
-        ) if self.value and self.key else ""
-        return msg
-
-
 class ExternalEditorErrorException(Exception):
     """Raised when there is an error while invoking the external editor"""
     def __init__(self, editor, reason):

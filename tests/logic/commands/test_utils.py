@@ -102,22 +102,22 @@ def test_get_supported_modules():
 
 def test_paging_and_config(monkeypatch, capsys):
     """Helper function for testing various configs of paging through turn_off_paging_wrt_config"""
-    cfg = config.Config('shared', '', {'global': {'paging': 'always'}})
+    cfg = config.Config('shared', '', {'general': {'paging': 'always'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     assert commands.turn_off_paging_wrt_config('status')
     assert commands.turn_off_paging_wrt_config('log')
 
-    cfg = config.Config('shared', '', {'global': {'paging': 'only-log'}})
+    cfg = config.Config('shared', '', {'general': {'paging': 'only-log'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     assert not commands.turn_off_paging_wrt_config('status')
     assert commands.turn_off_paging_wrt_config('log')
 
-    cfg = config.Config('shared', '', {'global': {'paging': 'only-status'}})
+    cfg = config.Config('shared', '', {'general': {'paging': 'only-status'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     assert commands.turn_off_paging_wrt_config('status')
     assert not commands.turn_off_paging_wrt_config('log')
 
-    cfg = config.Config('shared', '', {'global': {'paging': 'never'}})
+    cfg = config.Config('shared', '', {'general': {'paging': 'never'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     assert not commands.turn_off_paging_wrt_config('status')
     assert not commands.turn_off_paging_wrt_config('log')
@@ -127,4 +127,4 @@ def test_paging_and_config(monkeypatch, capsys):
     assert commands.turn_off_paging_wrt_config('status')
     assert commands.turn_off_paging_wrt_config('log')
     out, _ = capsys.readouterr()
-    assert 'warn' in out and 'missing ``global.paging``' in out
+    assert 'warn' in out and 'missing ``general.paging``' in out
