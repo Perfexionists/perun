@@ -13,6 +13,29 @@ from perun.logic.pcs import pass_pcs
 __author__ = 'Tomas Fiedor'
 
 
+PerformanceChange = Enum(
+    'PerformanceChange', 'Degradation MaybeDegradation ' +
+                         'Unknown NoChange MaybeOptimization Optimization'
+)
+
+CHANGE_STRINGS = {
+    PerformanceChange.Degradation: 'Degradation',
+    PerformanceChange.MaybeDegradation: 'Maybe Degradation',
+    PerformanceChange.NoChange: 'No Change',
+    PerformanceChange.Unknown: 'Unknown',
+    PerformanceChange.MaybeOptimization: 'Maybe Optimization',
+    PerformanceChange.Optimization: 'Optimization'
+}
+CHANGE_COLOURS = {
+    PerformanceChange.Degradation: 'red',
+    PerformanceChange.MaybeDegradation: 'yellow',
+    PerformanceChange.NoChange: 'white',
+    PerformanceChange.Unknown: 'grey',
+    PerformanceChange.MaybeOptimization: 'cyan',
+    PerformanceChange.Optimization: 'blue'
+}
+
+
 def profiles_to_queue(pcs, minor_version):
     """Retrieves the list of profiles corresponding to minor version and transforms them to map.
 
@@ -220,6 +243,24 @@ def is_rule_applicable_for(rule, configuration):
     return True
 
 
+def parse_strategy(strategy):
+    """Translates the given string to the real name of the strategy---callable function.
+
+    This handles short names for the degradation strategies.
+
+    :param str strategy: name of the strategy
+    :return:
+    """
+    short_strings = {
+        'aat': 'average_amount_threshold',
+        'bmoe': 'best_model_order_equality'
+    }
+    if strategy in short_strings.keys():
+        return short_strings[strategy]
+    else:
+        return strategy
+
+
 def get_strategies_for_configuration(profile):
     """Retrieves the best strategy for the given profile configuration
 
@@ -245,7 +286,7 @@ def get_strategies_for_configuration(profile):
                 and 'method' in strategy.keys()\
                 and strategy['method'] not in already_applied_strategies:
             first_applied = True
-            method = strategy['method']
+            method = parse_strategy(strategy['method'])
             already_applied_strategies.append(method)
             yield method
 
@@ -283,26 +324,3 @@ class DegradationInfo(object):
         self.to_target = tt
         self.confidence_type = ct
         self.confidence_rate = cr
-
-
-PerformanceChange = Enum(
-    'PerformanceChange', 'Degradation MaybeDegradation ' +
-                         'Unknown NoChange MaybeOptimization Optimization'
-)
-
-CHANGE_STRINGS = {
-    PerformanceChange.Degradation: 'Degradation',
-    PerformanceChange.MaybeDegradation: 'Maybe Degradation',
-    PerformanceChange.NoChange: 'No Change',
-    PerformanceChange.Unknown: 'Unknown',
-    PerformanceChange.MaybeOptimization: 'Maybe Optimization',
-    PerformanceChange.Optimization: 'Optimization'
-}
-CHANGE_COLOURS = {
-    PerformanceChange.Degradation: 'red',
-    PerformanceChange.MaybeDegradation: 'yellow',
-    PerformanceChange.NoChange: 'white',
-    PerformanceChange.Unknown: 'grey',
-    PerformanceChange.MaybeOptimization: 'cyan',
-    PerformanceChange.Optimization: 'blue'
-}
