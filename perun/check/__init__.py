@@ -212,7 +212,8 @@ def is_rule_applicable_for(rule, configuration):
             postprocessors = [post['name'] for post in configuration['postprocessors']]
             if value not in postprocessors:
                 return False
-        elif key == 'collector' and configuration['collector_info']['name'] != value:
+        elif key == 'collector':
+            if configuration['collector_info']['name'] != value:
                 return False
         elif configuration['header'].get(key, None) != value:
             return False
