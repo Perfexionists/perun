@@ -168,7 +168,7 @@ def test_add(helpers, pcs_full, valid_profile_pool):
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
     #   one of the profiles already in the tracking
     after_count = helpers.count_contents_on_path(pcs_full.path)
-    assert before_count[1] == (after_count[1] - (len(valid_profile_pool) - 1))
+    assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
 
 
 def test_add_no_minor(helpers, pcs_full, valid_profile_pool):
@@ -197,7 +197,7 @@ def test_add_no_minor(helpers, pcs_full, valid_profile_pool):
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
     #   one of the profiles already in the tracking
     after_count = helpers.count_contents_on_path(pcs_full.path)
-    assert before_count[1] == (after_count[1] - (len(valid_profile_pool) - 1))
+    assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
 
 
 def test_add_wrong_minor(helpers, pcs_full, valid_profile_pool):
@@ -280,7 +280,7 @@ def test_add_existing(helpers, pcs_full, valid_profile_pool, capsys):
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
     #   one of the profiles already in the tracking
     after_count = helpers.count_contents_on_path(pcs_full.path)
-    assert before_count[1] == (after_count[1] - (len(valid_profile_pool) - 1))
+    assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
 
 
 @pytest.mark.usefixtures('cleandir')
