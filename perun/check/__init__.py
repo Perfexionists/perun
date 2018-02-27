@@ -106,32 +106,35 @@ def get_degradation_change_colours(degradation_result):
         return 'yellow', 'yellow'
 
 
-def print_degradation_results(degradation):
+def print_degradation_results(deg_info):
     """Helper function for printing results of degradation detection
 
-    :param DegradationInfo degradation: results of degradation detected in given profile
+    :param DegradationInfo deg_info: results of degradation detected in given profile
     """
+    # We do not print the information about no change, if the verbosity is not at least info level
+    if log.is_verbosity_below(log.VERBOSE_INFO) and deg_info.result == PerformanceChange.NoChange:
+        return
     print('|       - ', end='')
     # Print the actual result
     log.cprint(
-        '{}'.format(CHANGE_STRINGS[degradation.result]).ljust(20),
-        CHANGE_COLOURS[degradation.result], attrs=['bold']
+        '{}'.format(CHANGE_STRINGS[deg_info.result]).ljust(20),
+        CHANGE_COLOURS[deg_info.result], attrs=['bold']
     )
     # Print the location of the degradation
     print(' at ', end='')
-    log.cprintln('{}'.format(degradation.location), 'white', attrs=['bold'])
+    log.cprintln('{}'.format(deg_info.location), 'white', attrs=['bold'])
     # Print the exact rate of degradation and the confidence (if there is any
-    if degradation.result != PerformanceChange.NoChange:
-        from_colour, to_colour = get_degradation_change_colours(degradation.result)
+    if deg_info.result != PerformanceChange.NoChange:
+        from_colour, to_colour = get_degradation_change_colours(deg_info.result)
         print('|           from: ', end='')
-        log.cprint('{}'.format(degradation.from_baseline), from_colour, attrs=[])
+        log.cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
         print(' -> to: ', end='')
-        log.cprint('{}'.format(degradation.to_target), to_colour, attrs=[])
-        if degradation.confidence_type != 'no':
+        log.cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
+        if deg_info.confidence_type != 'no':
             print(' (with confidence ', end='')
             log.cprint(
                 '{} = {}'.format(
-                    degradation.confidence_type, degradation.confidence_rate),
+                    deg_info.confidence_type, deg_info.confidence_rate),
                 'white', attrs=['bold']
             )
             print(')', end='')
@@ -170,8 +173,15 @@ def degradation_in_minor(pcs, minor_version):
                 # Print information about configuration
                 print("| ", end='')
                 print_configuration(baseline_config)
+                found_change = False
                 for degradation in degradation_between_profiles(baseline_profile, target_profile):
+                    found_change = found_change or degradation.result != PerformanceChange.NoChange
                     print_degradation_results(degradation)
+                if not found_change and log.is_verbosity_below(log.VERBOSE_INFO):
+                    print('|       - ', end='')
+                    log.cprint(CHANGE_STRINGS[PerformanceChange.NoChange],
+                               CHANGE_COLOURS[PerformanceChange.NoChange], attrs=['bold'])
+                    print(' detected')
                 del target_profile_queue[target_profile.config_tuple]
         print('|')
 
@@ -204,7 +214,7 @@ def degradation_between_profiles(baseline_profile, target_profile):
 
     # We run all of the degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for_configuration(baseline_profile):
-        print("|     > applying '{}' method)".format(degradation_method))
+        print("|     > applying '{}' method".format(degradation_method))
         yield from utils.dynamic_module_function_call(
             'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
         )
