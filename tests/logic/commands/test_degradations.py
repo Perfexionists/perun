@@ -71,6 +71,17 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     for deg in result:
         check.print_degradation_results(deg)
 
+    # Can detect optimizations both using BMOE and AAT
+    result = list(aat.average_amount_threshold(profiles[2], profiles[1]))
+    assert check.PerformanceChange.Optimization in [r.result for r in result]
+    for deg in result:
+        check.print_degradation_results(deg)
+
+    result = list(bmoe.best_model_order_equality(profiles[2], profiles[1]))
+    assert check.PerformanceChange.Optimization in [r.result for r in result]
+    for deg in result:
+        check.print_degradation_results(deg)
+
 
 def test_strategies():
     """Set of basic tests for handling the strategies

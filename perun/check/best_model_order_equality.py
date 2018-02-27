@@ -4,6 +4,14 @@ import perun.check as check
 __author__ = 'Tomas Fiedor'
 
 CONFIDENCE_THRESHOLD = 0.9
+MODEL_ORDERING = [
+    'constant',
+    'logarithmic',
+    'linear',
+    'quadratic',
+    'power',
+    'exponential'
+]
 
 
 def get_best_models_of(profile):
@@ -42,7 +50,12 @@ def best_model_order_equality(baseline_profile, target_profile):
             confidence = min(best_corresponding_baseline_model[1], best_model[1])
             if confidence >= CONFIDENCE_THRESHOLD \
                and best_corresponding_baseline_model[0] != best_model[0]:
-                change = check.PerformanceChange.Degradation
+                baseline_ordering = MODEL_ORDERING.index(best_corresponding_baseline_model[0])
+                target_ordering = MODEL_ORDERING.index(best_model[0])
+                if baseline_ordering > target_ordering:
+                    change = check.PerformanceChange.Optimization
+                else:
+                    change = check.PerformanceChange.Degradation
             else:
                 change = check.PerformanceChange.NoChange
 

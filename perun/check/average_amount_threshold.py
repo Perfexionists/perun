@@ -3,7 +3,8 @@ import perun.check as check
 __author__ = 'Tomas Fiedor'
 
 
-THRESHOLD = 2.0
+DEGRADATION_THRESHOLD = 2.0
+OPTIMIZATION_THRESHOLD = 0.5
 
 
 def get_averages(profile):
@@ -29,17 +30,21 @@ def average_amount_threshold(baseline_profile, target_profile):
     baseline_averages = get_averages(baseline_profile)
     target_averages = get_averages(target_profile)
 
+    # Temporary solution ;)
+    unit = list(baseline_profile['header']['units'].values())[0]
     for target_uid, target_average in target_averages.items():
         baseline_average = baseline_averages.get(target_uid, 0)
         if baseline_average:
             difference_ration = target_average / baseline_average
-            # TODO: Add units to the from and to
-            if difference_ration >= THRESHOLD:
+            if difference_ration >= DEGRADATION_THRESHOLD:
                 change = check.PerformanceChange.Degradation
+            elif difference_ration <= OPTIMIZATION_THRESHOLD:
+                change = check.PerformanceChange.Optimization
             else:
                 change = check.PerformanceChange.NoChange
 
             yield check.DegradationInfo(
                 change, "value", target_uid,
-                "{}".format(baseline_average.round(2)), "{}".format(target_average.round(2))
+                "{}{}".format(baseline_average.round(2), unit),
+                "{}{}".format(target_average.round(2), unit)
             )
