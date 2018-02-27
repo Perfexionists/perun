@@ -398,7 +398,7 @@ def is_key_aggregatable_by(profile, func, key, keyname):
 class ProfileInfo(object):
     """Structure for storing information about profiles.
 
-    This is mainly used for formated output of the profile list using
+    This is mainly used for formatted output of the profile list using
     the command line interface
     """
     def __init__(self, path, real_path, mtime, is_raw_profile=False):

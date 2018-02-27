@@ -11,6 +11,7 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.utils.decorators as decorators
 import perun.logic.config as config
 
 __author__ = 'Tomas Fiedor'
@@ -374,6 +375,8 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
         'complexity'
     ] + files + rules + samplings)
     del config.runtime().data['format']
+    decorators.func_args_cache['lookup_key_recursively'].pop(
+        tuple(["format.output_profile_template"]), None)
     assert result.exit_code == 0
     assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
 

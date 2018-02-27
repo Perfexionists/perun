@@ -1,8 +1,10 @@
 from enum import Enum
 
+import perun.utils.exceptions as exceptions
 import perun.profile.factory as profiles
 import perun.utils.log as log
 import perun.logic.commands as commands
+import perun.logic.config as config
 import perun.utils as utils
 import perun.vcs as vcs
 
@@ -86,7 +88,7 @@ def print_degradation_results(degradation):
 
     :param DegradationInfo degradation: results of degradation detected in given profile
     """
-    print('|   - ', end='')
+    print('|       - ', end='')
     # Print the actual result
     log.cprint(
         '{}'.format(CHANGE_STRINGS[degradation.result]).ljust(20),
@@ -98,7 +100,7 @@ def print_degradation_results(degradation):
     # Print the exact rate of degradation and the confidence (if there is any
     if degradation.result != PerformanceChange.NoChange:
         from_colour, to_colour = get_degradation_change_colours(degradation.result)
-        print('|       from: ', end='')
+        print('|           from: ', end='')
         log.cprint('{}'.format(degradation.from_baseline), from_colour, attrs=[])
         print(' -> to: ', end='')
         log.cprint('{}'.format(degradation.to_target), to_colour, attrs=[])
@@ -176,24 +178,103 @@ def degradation_between_profiles(baseline_profile, target_profile):
         baseline_profile = profiles.load_profile_from_file(baseline_profile.realpath, False)
     if type(target_profile) is not dict:
         target_profile = profiles.load_profile_from_file(target_profile.realpath, False)
-    degradation_method = get_strategy_for_configuration(baseline_profile)
-    return utils.dynamic_module_function_call(
-        'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
-    )
+
+    # We run all of the degradation methods suitable for the given configuration of profile
+    for degradation_method in get_strategies_for_configuration(baseline_profile):
+        print("|     > applying '{}' method)".format(degradation_method))
+        yield from utils.dynamic_module_function_call(
+            'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
+        )
 
 
-def get_strategy_for_configuration(profile):
+def is_rule_applicable_for(rule, configuration):
+    """Helper function for testing, whether the rule is applicable for the given profile
+
+    Profiles are w.r.t specification (:ref:`profile-spec`), the rule is as a dictionary, where
+    keys correspond to the keys of the profile header, e.g.
+
+    .. code-block:: json
+
+        {
+            'type': 'memory',
+            'collector': 'cachegrind'
+        }
+
+    :param dict rule: dictionary with rule containing keys and values for which the rule is
+        applicable
+    :param dict configuration: dictionary with profile
+    :return: true if the rule is applicable for given profile
+    """
+    for key, value in rule.items():
+        if key == 'method':
+            continue
+        if key == 'postprocessor':
+            postprocessors = [post['name'] for post in configuration['postprocessors']]
+            if value not in postprocessors:
+                return False
+        elif key == 'collector' and configuration['collector_info']['name'] != value:
+                return False
+        elif configuration['header'].get(key, None) != value:
+            return False
+    return True
+
+
+def get_strategies_for_configuration(profile):
     """Retrieves the best strategy for the given profile configuration
 
     :param ProfileInfo profile: Profile information with configuration tuple
     :return: method to be used for checking degradation between profiles of
         the same configuration type
     """
-    return "best_model_order_equality"
+    # Retrieve the application strategy
+    try:
+        application_strategy = config.lookup_key_recursively('degradation.apply')
+    except exceptions.MissingConfigSectionException:
+        log.error("'degradation.apply' could not be found in any configuration\n"
+                  "Run either 'perun config --local edit' or 'perun config --shared edit' and set "
+                  " the 'degradation.apply' to suitable value (either 'first' or 'all').")
+
+    # Retrieve all of the strategies from configuration
+    strategies = config.gather_key_recursively('degradation.strategies')
+    already_applied_strategies = []
+    first_applied = False
+    for strategy in strategies:
+        if (application_strategy == 'all' or not first_applied) \
+                and is_rule_applicable_for(strategy, profile)\
+                and 'method' in strategy.keys()\
+                and strategy['method'] not in already_applied_strategies:
+            first_applied = True
+            method = strategy['method']
+            already_applied_strategies.append(method)
+            yield method
 
 
 class DegradationInfo(object):
+    """Structure for string results for detecting the degradation between profiles
+
+    The object is returned by the concrete algorithms for detected the degradation.
+    """
+
     def __init__(self, res, t, loc, fb, tt, ct="no", cr=0):
+        """Each degradation consists of its results, the location, where the change has happened
+        (this is e.g. the unique id of the resource, like function or concrete line), then the pair
+        of best models for baseline and target, and the information about confidence.
+
+        E.g. for models we can use coefficient of determination as some kind of confidence, e.g. the
+        higher the confidence the more likely we predicted successfully the degradation or
+        optimization.
+
+        :param PerformanceChange res: result of the performance change, either can be optimization,
+            degradation, no change, or certain type of unknown
+        :param str t: string representing the type of the degradation, e.g. "order" degradation
+        :param str loc: location, where the degradation has happened
+        :param str fb: value or model representing the baseline, i.e. from which the new version was
+            optimized or degraded
+        :param str tt: value or model representing the target, i.e. to which the new version was
+            optimized or degraded
+        :param str ct: type of the confidence we have in the detected degradation, e.g. r^2
+        :param int cr: value of the confidence we have in the detected degradation
+        """
         self.result = res
         self.type = t
         self.location = loc
@@ -202,9 +283,10 @@ class DegradationInfo(object):
         self.confidence_type = ct
         self.confidence_rate = cr
 
+
 PerformanceChange = Enum(
     'PerformanceChange', 'Degradation MaybeDegradation ' +
-    'Unknown NoChange MaybeOptimization Optimization'
+                         'Unknown NoChange MaybeOptimization Optimization'
 )
 
 CHANGE_STRINGS = {

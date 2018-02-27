@@ -10,6 +10,7 @@ import os
 import git
 import pytest
 
+import perun.utils.decorators as decorators
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.logic.commands as commands
@@ -50,10 +51,14 @@ def test_log_on_no_vcs(pcs_without_vcs):
 def test_log_short_error(pcs_full, capsys, monkeypatch):
     cfg = config.Config('shared', '', {'format': {'shortlog': '%checksum:6% -> %notexist%'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    decorators.func_args_cache['lookup_key_recursively'].pop(
+        tuple(["format.shortlog"]), None)
 
     with pytest.raises(SystemExit):
         commands.log(None, short=True)
 
+    decorators.func_args_cache['lookup_key_recursively'].pop(
+        tuple(["format.shortlog"]), None)
     out, err = capsys.readouterr()
     assert len(err) != 0
     assert "object does not contain 'notexist' attribute" in err

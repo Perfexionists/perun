@@ -41,5 +41,5 @@ def average_amount_threshold(baseline_profile, target_profile):
 
             yield check.DegradationInfo(
                 change, "value", target_uid,
-                "{}".format(baseline_average), "{}".format(target_average)
+                "{}".format(baseline_average.round(2)), "{}".format(target_average.round(2))
             )

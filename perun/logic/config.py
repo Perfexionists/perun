@@ -12,6 +12,7 @@ import re
 import sys
 
 from ruamel.yaml import YAML, scanner
+import ruamel.yaml.comments as comments
 
 
 import perun.logic.store as store
@@ -74,6 +75,12 @@ class Config(object):
         :param str key: list of sections separated by dots
         :param object value: value we are writing to the key at config
         """
+        # Remove the key from the caching
+        # ! Note that this is mainly used for the testing, but might be triggered during the future
+        # as well.
+        decorators.func_args_cache['lookup_key_recursively'].pop(tuple([key]), None)
+        decorators.func_args_cache['gather_key_recursively'].pop(tuple([key]), None)
+
         *sections, last_section = key.split('.')
         _locate_section_from_query(self.data, sections)[last_section] = value
         if self.path:
@@ -160,6 +167,11 @@ format:
     shortlog: "%checksum:6% (%stats%) %desc%"
     output_profile_template: "%collector%-%cmd%-%args%-%workload%-%date%"
     output_show_template: "%collector%-%cmd%-%args%-%workload%-%date%"
+
+degradation:
+    apply: all
+    strategies:
+      - method: average_amount_threshold
     """)
 
     write_config_to(path, shared_config)
@@ -384,6 +396,7 @@ def get_hierarchy():
     yield shared()
 
 
+@decorators.singleton_with_args
 def lookup_key_recursively(key):
     """Recursively looks up the key first in the local config and then in the global.
 
@@ -400,3 +413,26 @@ def lookup_key_recursively(key):
         except exceptions.MissingConfigSectionException:
             continue
     raise exceptions.MissingConfigSectionException
+
+
+@decorators.singleton_with_args
+def gather_key_recursively(key):
+    """Recursively gathers the key, first in the temporary config, etc. up to the global config.
+
+    Gathered keys are ordered in list. If no key is found, an empty list is returned.
+
+    :param str key: key we are looking up
+    :returns: list of keys
+    """
+    gathered_values = []
+    for config_instance in get_hierarchy():
+        try:
+            value = config_instance.get(key)
+            if type(value) is list or type(value) is comments.CommentedSeq:
+                gathered_values.extend(value)
+            else:
+                gathered_values.append(value)
+        except exceptions.MissingConfigSectionException:
+            continue
+    return gathered_values
+
