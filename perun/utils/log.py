@@ -25,6 +25,15 @@ SUPPRESS_PAGING = True
 logging.basicConfig(filename='perun.log', level=logging.DEBUG)
 
 
+def is_verbosity_below(value):
+    """Helper function for checking if the value is above the value
+
+    :param int value: value of the verbosity we are testing against
+    :returns: true if the value is smaller than current level of verbosity
+    """
+    return VERBOSITY < value
+
+
 def page_function_if(func, paging_switch):
     """Adds paging of the output to standard stream
 
