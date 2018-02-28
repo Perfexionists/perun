@@ -39,81 +39,95 @@
     "time": "0.00023s",
     "resources": [
       {
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 0,
-        "amount": 0
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 1,
-        "amount": 1
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 2,
-        "amount": 4
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 3,
-        "amount": 9
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 4,
-        "amount": 16
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 5,
-        "amount": 25
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 6,
-        "amount": 36
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 7,
-        "amount": 49
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 8,
-        "amount": 64
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
-        "structure-unit-size": 9,
-        "amount": 81
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "quad::test1",
         "structure-unit-size": 10,
-        "amount": 100
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 115.6,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 15,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 157.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 20,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 189.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 24,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 220.8,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 30,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 253.8,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 34,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 269.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 40,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 284.8,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 45,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 285.0,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 48,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 277.4,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 50,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 269.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 58,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 244.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 60,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 231.4,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 64,
+        "uid": "quad::test1",
+        "type": "mixed",
+        "amount": 180.4,
+        "subtype": "time delta"
       }
     ]
   },

@@ -43,18 +43,19 @@ def compare_results(expected, actual, eps=0.0001):
     assert abs(abs(expected) - abs(actual)) < eps
 
 
-def generate_models_by_uid(profile, uid_sequence):
+def generate_models_by_uid(profile, model, uid_sequence):
     """Provides computed models results for each uid in the specified uid sequence.
 
     Arguments:
         profile(dict): the whole profile with 'models' results
+        model(str): the model specification
         uid_sequence(list of str): list of uid values to search for
     Returns:
         generator: stream of lists with models dictionaries according to uid sequence
     """
     models = profile['profile']['global']['models']
     for uid in uid_sequence:
-        yield [m for m in models if m['uid'] == uid]
+        yield [m for m in models if m['uid'] == uid and m['model'] == model]
 
 
 def test_const_model(postprocess_profiles):
@@ -74,28 +75,28 @@ def test_const_model(postprocess_profiles):
     code, _, profile = postprocess(
         const_model, method='full', regression_models=['const'], steps=1)
     assert code.value == 0
-    models = generate_models_by_uid(profile, ['const::test1', 'const::test2'])
+    models = generate_models_by_uid(profile, 'constant', ['const::test1', 'const::test2'])
 
     # Example no. 1:
     # constant line: y = 3
     # expected results:
     #   a = b0 = 3.0
     #   b = b1 = 0.0
-    #   r^2    = 0.0 - coefficient computation is currently unavailable
+    #   r^2    = 1.0 - linear regression model is not matching
     model = next(models)[0]
-    compare_results(model['r_square'], 0.0)
+    compare_results(model['r_square'], 1.0)
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b0'][0], 3.0)
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 0.0)
 
     # Example no. 2:
-    # constant line: y = 2.5
+    # linear line: x
     # expected results:
-    #   a = b0 = 2.5
+    #   a = b0 = 5.5
     #   b = b1 = 0.0
-    #   r^2    = 0.0 - coefficient computation is currently unavailable
+    #   r^2    = 0.0 - linear regression model is perfect match
     model = next(models)[0]
     compare_results(model['r_square'], 0.0)
-    compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b0'][0], 2.5)
+    compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b0'][0], 5.5)
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 0.0)
 
 
@@ -114,7 +115,7 @@ def test_linear_model(postprocess_profiles):
     code, _, profile = postprocess(
         linear_model, method='full', regression_models=['linear'], steps=1)
     assert code.value == 0
-    models = generate_models_by_uid(profile, ['linear::test1', 'linear::test2'])
+    models = generate_models_by_uid(profile, 'linear', ['linear::test1', 'linear::test2'])
 
     # Example no. 1:
     # source: Probability and Statistics for Engineering and the Sciences, 8th ed., example 12.4
@@ -140,9 +141,9 @@ def test_linear_model(postprocess_profiles):
 
 
 def test_quad_model_using_power(postprocess_profiles):
-    """Test the quadratic model computation which is done using the power model method.
+    """Test the quadratic model computation.
 
-    Contains only one created example.
+    Contains only one sourced example.
 
     Expects to pass all assertions.
     """
@@ -150,22 +151,23 @@ def test_quad_model_using_power(postprocess_profiles):
     quad_model = profile_filter(postprocess_profiles, 'quad_model')
     assert quad_model is not None
 
-    # Perform the analysis of quadratic-expected models using the power analysis, which should
-    # produce correct quadratic-like results
-    code, _, profile = postprocess(quad_model, method='full', regression_models=['power'], steps=1)
+    # Perform the analysis of quadratic-expected models
+    code, _, profile = postprocess(quad_model, method='full', regression_models=['quad'], steps=1)
     assert code.value == 0
-    models = generate_models_by_uid(profile, ['quad::test1'])
+    models = generate_models_by_uid(profile, 'quadratic', ['quad::test1'])
 
     # Example no. 1:
-    # quadratic curve: x^2
+    # source: https://mathbits.com/MathBits/TISection/Statistics2/quadratic.html
     # expected results:
-    #   a = b0 = 1.0
-    #   b = b1 = 2.0
-    #   r^2    = 1.0
+    #   a = b0 = -21.897744
+    #   b = b1 = 14.521171
+    #   c = b2 = -0.173714
+    #   r^2    = 0.981224
     model = next(models)[0]
-    compare_results(model['r_square'], 1.0)
-    compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b0'][0], 1.0)
-    compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 2.0)
+    compare_results(model['r_square'], 0.981224)
+    compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b0'][0], -21.897744)
+    compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 14.521171)
+    compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b2'][0], -0.173714)
 
 
 def test_log_model(postprocess_profiles):
@@ -182,7 +184,7 @@ def test_log_model(postprocess_profiles):
     # Perform the analysis
     code, _, profile = postprocess(pow_model, method='full', regression_models=['log'], steps=1)
     assert code.value == 0
-    models = generate_models_by_uid(profile, ['log::test1', 'log::test2'])
+    models = generate_models_by_uid(profile, 'logarithmic', ['log::test1', 'log::test2'])
 
     # Example no. 1:
     # link: 'https://mathbits.com/MathBits/TISection/Statistics2/logarithmic.htm'
@@ -221,7 +223,7 @@ def test_power_model(postprocess_profiles):
     # Perform the analysis
     code, _, profile = postprocess(pow_model, method='full', regression_models=['power'], steps=1)
     assert code.value == 0
-    models = generate_models_by_uid(profile, ['pow::test1', 'pow::test2', 'pow::test3'])
+    models = generate_models_by_uid(profile, 'power', ['pow::test1', 'pow::test2', 'pow::test3'])
 
     # Example no. 1:
     # link: 'http://www.real-statistics.com/regression/power-regression/'
@@ -271,7 +273,8 @@ def test_exp_model(postprocess_profiles):
     # Perform the analysis
     code, _, profile = postprocess(exp_model, method='full', regression_models=['exp'], steps=1)
     assert code.value == 0
-    models = generate_models_by_uid(profile, ['exp::test1', 'exp::test2', 'exp::test3'])
+    models = generate_models_by_uid(profile, 'exponential',
+                                    ['exp::test1', 'exp::test2', 'exp::test3'])
 
     # Example no. 1:
     # link: 'https://www.youtube.com/watch?v=aw-GluLZIWA'
