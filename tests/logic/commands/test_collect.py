@@ -83,7 +83,6 @@ def test_collect_time(helpers, pcs_full, capsys):
     profiles = os.listdir(os.path.join(pcs_full.path, 'jobs'))
     new_profile = profiles[0]
     assert len(profiles) == 1
-    assert new_profile.startswith("echo-time-hello")
     assert new_profile.endswith(".perf")
 
     # Fixme: Add check that the profile was correctly generated

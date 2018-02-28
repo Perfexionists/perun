@@ -127,35 +127,35 @@
         "type": "mixed",
         "uid": "const::test2",
         "structure-unit-size": 1,
-        "amount": 3
+        "amount": 4
       },
 			{
         "subtype": "time delta",
         "type": "mixed",
         "uid": "const::test2",
         "structure-unit-size": 2,
-        "amount": 3
+        "amount": 5
       },
 			{
         "subtype": "time delta",
         "type": "mixed",
         "uid": "const::test2",
         "structure-unit-size": 3,
-        "amount": 2
+        "amount": 6
       },
 			{
         "subtype": "time delta",
         "type": "mixed",
         "uid": "const::test2",
         "structure-unit-size": 4,
-        "amount": 2
+        "amount": 7
       },
 			{
         "subtype": "time delta",
         "type": "mixed",
         "uid": "const::test2",
         "structure-unit-size": 5,
-        "amount": 2
+        "amount": 8
       }
     ]
   },

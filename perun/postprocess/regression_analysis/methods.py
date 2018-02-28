@@ -26,7 +26,7 @@ def compute(data_gen, method, models, **kwargs):
     Arguments:
         data_gen(iter): the generator object with collected data (data provider generators)
         method(str): the _METHODS key value indicating requested computation method
-        models(list of str): list of requested regression models to compute
+        models(tuple of str): tuple of requested regression models to compute
         kwargs: various additional configuration arguments for specific models
     Raises:
         GenericRegressionExceptionBase: derived versions which are used in the computation functions
@@ -36,11 +36,12 @@ def compute(data_gen, method, models, **kwargs):
         list of dict: the computation results
 
     """
-    # Initialize the resulting dictionary
+    # Split the models into derived and standard ones
+    derived, models = mod.filter_derived(models)
     analysis = []
-
     for chunk in data_gen:
         try:
+            # First compute all the standard models
             for result in _METHODS[method](chunk[0], chunk[1], models, **kwargs):
                 result['uid'] = chunk[2]
                 result['method'] = method
@@ -48,7 +49,28 @@ def compute(data_gen, method, models, **kwargs):
         except exceptions.GenericRegressionExceptionBase as e:
             print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
             print("  - " + str(e))
-    return analysis
+    # Compute the derived models
+    for der in compute_derived(derived, analysis, **kwargs):
+        analysis.append(der)
+    # Create output dictionaries
+    return list(map(_transform_to_output_data, analysis))
+
+
+def compute_derived(derived_models, analysis, **kwargs):
+    """The computation wrapper for derived models.
+
+    Arguments:
+        derived_models(tuple of str): collection of derived models to compute
+        analysis(list of dict): the already computed standard regression models
+        kwargs: additional optional parameters
+    Returns:
+        iterable: generator object which produces results one by one
+
+    """
+    if derived_models:
+        for der in mod.map_keys_to_models(derived_models):
+            for result in der['derived'](analysis, der, **kwargs):
+                yield result
 
 
 def full_computation(x_pts, y_pts, computation_models, **_):
@@ -76,7 +98,7 @@ def full_computation(x_pts, y_pts, computation_models, **_):
         model = _build_uniform_regression_data_format(x_pts, y_pts, model)
         # Compute each model
         for result in model['computation'](**model):
-            yield _transform_to_output_data(result)
+            yield result
 
 
 def iterative_computation(x_pts, y_pts, computation_models, steps, **_):
@@ -114,7 +136,7 @@ def iterative_computation(x_pts, y_pts, computation_models, steps, **_):
             results[best_fit] = next(model_generators[best_fit])
         except StopIteration:
             # The best fitting model finished the computation, end of computation
-            yield _transform_to_output_data(results[best_fit])
+            yield results[best_fit]
             break
 
 
@@ -154,7 +176,7 @@ def interval_computation(x_pts, y_pts, computation_models, steps, **_):
 
         # Find the best model for the given interval
         best_fit = _find_best_fitting_model(results)
-        yield _transform_to_output_data(results[best_fit])
+        yield results[best_fit]
 
 
 def initial_guess_computation(x_pts, y_pts, computation_models, steps, **_):
@@ -192,7 +214,7 @@ def initial_guess_computation(x_pts, y_pts, computation_models, steps, **_):
             results[best_fit] = next(model_generators[best_fit])
         except StopIteration:
             # The best fitting model finished the computation, end of computation
-            yield _transform_to_output_data(results[best_fit])
+            yield results[best_fit]
             break
 
 
@@ -222,7 +244,7 @@ def bisection_computation(x_pts, y_pts, computation_models, **_):
 
     # Do bisection and try to find different model for the new sections
     for sub_model in _bisection_step(x_pts, y_pts, computation_models, init_model):
-        yield _transform_to_output_data(sub_model)
+        yield sub_model
 
 
 def _compute_bisection_model(x_pts, y_pts, computation_models, **kwargs):
@@ -399,7 +421,7 @@ def _transform_to_output_data(data, extra_keys=None):
         data, ['model', 'coeffs', 'r_square', 'x_interval_start', 'x_interval_end'], [])
 
     # Specify the keys which should be directly mapped
-    transform_keys = ['model', 'r_square', 'x_interval_start', 'x_interval_end']
+    transform_keys = ['model', 'r_square', 'x_interval_start', 'x_interval_end', 'method', 'uid']
     if extra_keys is not None:
         transform_keys += extra_keys
     transformed = {key: data[key] for key in transform_keys if key in data}

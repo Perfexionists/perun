@@ -29,5 +29,11 @@ int main(){
 	*n = 5;
 	free(n);
 
+	for (int i = 0; i < 1000000; ++i);
+
+	m = (int*)malloc(sizeof(int));
+	*m = 5;
+	free(m);
+
 	return 0;
 }

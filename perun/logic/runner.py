@@ -283,7 +283,7 @@ def store_generated_profile(pcs, prof, job):
         job(Job): job with additional information about generated profiles
     """
     full_profile = profile.finalize_profile_for_job(pcs, prof, job)
-    full_profile_name = profile.generate_profile_name(job)
+    full_profile_name = profile.generate_profile_name(full_profile)
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     profile.store_profile_at(full_profile, full_profile_path)

@@ -9,6 +9,8 @@ the sections of _MODELS dictionary representing the model properties.
 import math
 
 import perun.postprocess.regression_analysis.generic as generic
+import perun.postprocess.regression_analysis.specific as specific
+import perun.postprocess.regression_analysis.derived as derived
 import perun.postprocess.regression_analysis.extensions.plot_models as plot
 import perun.utils.exceptions as exceptions
 
@@ -22,7 +24,7 @@ def get_supported_models():
         list of str: the names of all supported models and 'all' specifier
     """
     # Disable quadratic model, but allow to process already existing profiles with quad model
-    return [key for key in sorted(_MODELS.keys()) if key != 'quad']
+    return [key for key in sorted(_MODELS.keys())]
 
 
 def get_supported_transformations(model_key):
@@ -110,6 +112,42 @@ def map_model_to_key(model):
     return None
 
 
+def filter_derived(regression_models_keys):
+    """Filtering of the selected models to standard and derived models.
+
+    Arguments:
+        regression_models_keys(tuple of str): the models to be computed
+    Returns:
+        tuple, tuple: the derived models and standard models in separated tuples
+    """
+    # Convert single value to list
+    if not isinstance(regression_models_keys, tuple):
+        regression_models_keys = tuple(regression_models_keys)
+
+    # Get all models
+    if not regression_models_keys or 'all' in regression_models_keys:
+        regression_models_keys = list(filter(lambda m: m != 'all', _MODELS.keys()))
+
+    # Split the models into derived and non-derived
+    der, normal = [], []
+    for model in regression_models_keys:
+        if model not in _MODELS.keys():
+            raise exceptions.InvalidModelException(model)
+        if 'derived' in _MODELS[model]:
+            der.append(model)
+        else:
+            normal.append(model)
+
+    # Add models that are required by derived models if not already present
+    for model in der:
+        if 'required' in _MODELS[model] and _MODELS[model]['required'] not in normal:
+            # Check if the model exists
+            if _MODELS[model]['required'] not in _MODELS.keys():
+                raise exceptions.InvalidModelException(model)
+            normal.append(_MODELS[model]['required'])
+    return tuple(der), tuple(normal)
+
+
 # Supported models properties
 # Each model record contains the parameters required by the computational functions,
 # the data generator and list of functions.
@@ -135,16 +173,9 @@ _MODELS = {
     'all': {},  # key representing all models
     'const': {
         'model': 'constant',
-        'f_x': lambda x: 0,
-        'f_y': lambda y: y,
-        'f_a': lambda a: a,
-        'f_b': lambda b: b,
-        'data_gen': generic.generic_regression_data,
-        'computation': generic.generic_compute_regression,
-        'func_list': [
-            generic.generic_regression_coefficients,
-            generic.generic_regression_error
-        ],
+        'derived': derived.derived_const,
+        'required': 'linear',
+        'b1_threshold': 0.001,
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
@@ -200,23 +231,18 @@ _MODELS = {
     # Should not be used for new profiles, the quadratic model can be achieved using the power model
     'quad': {
         'model': 'quadratic',
-        'f_x': lambda x: x ** 2,
-        'f_y': lambda y: y,
-        'f_a': lambda a: a,
-        'f_b': lambda b: b,
-        'data_gen': generic.generic_regression_data,
+        'data_gen': specific.specific_quad_data,
         'computation': generic.generic_compute_regression,
         'func_list': [
-            generic.generic_regression_coefficients,
-            generic.generic_regression_error
+            specific.specific_quad_coefficients,
+            specific.specific_quad_error
         ],
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
                 'model_x': plot.generic_plot_x_pts,
-                'model_y': plot.generic_plot_y_pts,
-                'm_fx': lambda p: p ** 2,
-                'formula': lambda b0, b1, x: b0 + b1 * x
+                'model_y': plot.quad_plot_y_pts,
+                'formula': lambda b0, b1, b2, x: b0 + b1 * x + b2 * (x ** 2)
             }
         }
     },

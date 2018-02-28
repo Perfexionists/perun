@@ -280,18 +280,22 @@
         "x_interval_start": 0,
         "coeffs": [
           {
-            "value": 1.7075098814229246,
+            "value": 2.5090909090909093,
             "name": "b0"
           },
           {
-            "value": -0.007281048470979812,
+            "value": -0.5121212121212121,
             "name": "b1"
+          },
+          {
+            "value": 0.045454545454545456,
+            "name": "b2"
           }
         ],
         "uid": "SLList_insert(SLList*, int)",
         "x_interval_end": 9,
         "method": "full",
-        "r_square": 0.08494556549476436,
+        "r_square": 0.4370370370370382,
         "model": "quadratic"
       },
       {
@@ -388,18 +392,22 @@
         "x_interval_start": 0,
         "coeffs": [
           {
-            "value": 1.8861660079051379,
+            "value": 2.1090909090909093,
             "name": "b0"
           },
           {
-            "value": 0.0004854032313986704,
+            "value": -0.14242424242424243,
             "name": "b1"
+          },
+          {
+            "value": 0.015151515151515152,
+            "name": "b2"
           }
         ],
         "uid": "SLListcls::Insert(int)",
         "x_interval_end": 9,
         "method": "full",
-        "r_square": 0.0018876792332171008,
+        "r_square": 0.13804713804714297,
         "model": "quadratic"
       }
     ],

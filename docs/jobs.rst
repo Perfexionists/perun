@@ -16,12 +16,13 @@ following name of the template::
    command-collector-workload-Y-m-d-H-M-S.perf
 
 Where ``command`` corresponds to the name of the application (or script), for which we collected
-the data using ``collector`` on ``workload`` at given specified date. New profiles are annotated
-with the :preg:`origin` set to the current ``HEAD`` of the wrapped repository. `origin` serves as a
-check during registering profiles in the indexes of minor versions. Profile with `origin` different
-from the target minor version will not be assigned, as it would violate the correctness of the
-performance history of the project.
-    
+the data using ``collector`` on ``workload`` at given specified date. You can change the template
+for profile name generation by setting :ckey:`format.output_profile_template`. New profiles are
+annotated with the :preg:`origin` set to the current ``HEAD`` of the wrapped repository. `origin`
+serves as a check during registering profiles in the indexes of minor versions. Profile with
+`origin` different from the target minor version will not be assigned, as it would violate the
+correctness of the performance history of the project.
+
 .. image:: /../figs/perun-jobs-flow.*
     :align: center
     :width: 100%
@@ -82,7 +83,7 @@ One configuration of application can be partitioned into three parts (two being 
       command can be e.g. the ``perun`` itself, ``ls`` or ``./my_binary``.
 
    2. Set of **arguments** for command (`optional`), i.e. set of parameters or arguments, that are
-      supplied to the profiled command. The intuition behind arguments is to allow setting 
+      supplied to the profiled command. The intuition behind arguments is to allow setting
       various optimization levels or profile different configurations of one program. An example of
       argument (or parameter) can be e.g. ``log``, ``-al`` or ``-O2 -v``.
 
@@ -145,7 +146,7 @@ In order to maximize the automation of running jobs you can specify in Perun con
 specification of commands, arguments, workloads, collectors and postprocessors (and their internal
 configurations) as specified in the :ref:`jobs-overview`. `Job matrixes` are meant for a regular
 profiling jobs and should reduce the profiling to a single ``perun run matrix`` command. Both the
-config and the specification of job matrix is based on Yaml_ format. 
+config and the specification of job matrix is based on Yaml_ format.
 
 Full example of one job matrix is as follows:
 
@@ -183,7 +184,7 @@ Run the following to configure the job matrix of the current project::
 
     perun config --edit
 
-This will open the local configuration in editor specified by :ckey:`global.editor` and lets you
+This will open the local configuration in editor specified by :ckey:`general.editor` and lets you
 specify configuration for your application and set of collectors and postprocessors. Unless the
 source configuration file was not modified, it should contain a helper comments. The following keys
 can be set in the configuration:
@@ -240,7 +241,7 @@ can be set in the configuration:
    .. code-block:: yaml
 
            collectors:
-              - name: memory 
+              - name: memory
                 params:
                     - sampling: 1
               - name: time

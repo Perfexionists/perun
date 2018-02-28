@@ -14,7 +14,7 @@ numbers, configurations of profiling run, etc.
 The format of outputs of both ``log`` and ``status`` can be customized by setting the formatting
 strings c.f. :ref:`logs-log` and :ref:`logs-status`. Moreover, outputs are paged (currently using
 the ``less -R`` command) by default. To turn off the paging, run the ``perun`` with ``--no-pager``
-option (see :doc:`cli`) or set :ckey:`global.paging`.
+option (see :doc:`cli`) or set :ckey:`general.paging`.
 
 .. _logs-status:
 
@@ -22,14 +22,14 @@ Customizing Statuses
 --------------------
 
 The output of ``perun status`` is defined w.r.t. formatting string specified in configuration in
-:ckey:`global.profile_info_fmt` key (looked up recursively in the nearest local configuration, or
+:ckey:`format.status` key (looked up recursively in the nearest local configuration, or
 in global configuration). The formatting string consists of raw delimiters and special tags, which
 serves as templates to output specific informations about concrete profiles, such as the profiling
 configuration, type of profile, creating timestamps, etc.
 
 E.g. the following formatting string::
 
-     ┃ [type] ┃ [cmd] ┃ [workload] ┃ [collector]  ┃ ([time]) ┃
+     ┃ %type% ┃ %cmd% ┃ %workload% ┃ %collector%  ┃ (%time%) ┃
 
 will yield the following status when running ``perun status`` (both for stored and pending
 profiles)::
@@ -47,36 +47,36 @@ the given, which can be used in ``add``, ``rm``, ``show`` and ``postprocessby`` 
 wildcard for concrete profiles, e.g. ``perun add 0@p`` would register the first profile stored in
 the pending ``.perun/jobs`` directory to the index of current head. Tags are always in form of
 ``i@p`` (for pending profiles) and ``i@i`` for profiles registered in index, where ``i`` stands for
-position in the corresponding storage, index from zero. 
+position in the corresponding storage, index from zero.
 
 The specification of the formatting string can contain the following special tags:
 
-``[type]``:
+``%type%``:
     Lists the most generic type of the profile according to the collected resources serving as
     quick tagging of similar profiles. Currently Perun supports `memory`, `time`, `mixed`.
 
-``[cmd]``:
+``%cmd%``:
     Lists the command for which the data was collected, this e.g. corresponds to the binary or
     script that was executed and profiled using collector/profiler. Refer to :ref:`jobs-overview`
     for more information about profiling jobs and commands.
 
-``[args]``:
+``%args%``:
     Lists the arguments (or parameters) which were passed to the profiled command. Refer to
     :ref:`jobs-overview` for more information about profiling jobs and command arguments.
 
-``[workload]``:
+``%workload%``:
     List input workload which was passed to the profiled command, i.e. some inputs of the profiled
     program, script or binary. Refer to :ref:`jobs-overview` for more information about profiling
     jobs and command workloads.
 
-``[collector]``:
+``%collector%``:
     Lists the collector which was used to obtain the given profile. Refer to :doc:`collectors` for
     list of supported collectors and more information about collection of profiles.
 
-``[time]``:
+``%time%``:
     Timestamp when the profile was last modified in format `YEAR-MONTH-DAY HOURS:MINUTES:SECONDS`.
 
-``[id]``:
+``%id%``:
     Original identification of the profile. This corresponds to the name of the generated profile
     and the original path.
 
@@ -85,18 +85,15 @@ The specification of the formatting string can contain the following special tag
 Customizing Logs
 ----------------
 
-.. todo:: 
-    FFS, this is not even currently working in Perun. ^\(-_-)/^
-
 The output of ``perun log --short`` is defined w.r.t. formatting string specified in configuration
-in :ckey:`global.minor_version_info_fmt` key (looked up recursively in the nearest local
+in :ckey:`format.log` key (looked up recursively in the nearest local
 configuration, or in global configuration). The formatting string can contain both raw characters
 (such as delimiters, etc.) and special tags, which serves as templates to output information for
 concrete minor version such as minor version description, number of assigned profiles, etc.
 
 E.g. the following formatting string::
 
-    '[id:6] ([stats]) [desc]'
+    '%checksum:6% (%stats%) %desc%'
 
 will yield the following output when running ``perun log --short``::
 
@@ -108,28 +105,29 @@ will yield the following output when running ``perun log --short``::
 
 The specification of the formatting string can contain the following special tags:
 
-``[id:num]``:
-    Identification of the minor version (should be hash preferably). If we take ``git`` as an
-    example ``id`` will correspond to the SHA of one commit. Specifying ``num`` in the template
-    will shorten the displayed identification to ``num`` characters.
+``%checksum:num%``: Identification of the minor version (should be hash preferably). If we take
+    ``git`` as an example ``checksum`` will correspond to the SHA of one commit.
 
-``[stats]``:
+``%stats%``:
     Lists short summary of overall number of profiles (``a``) and number of memory (``m``), mixed
     (``x``) and time (``t``) profiles assinged to given minor version.
 
-``[desc]``:
-    Lists short description of the minor version. If we take ``git`` as an example this will
-    correspond to the short commit message.
+``%desc:num%``: Lists short description of the minor version, limiting to the first sentence of the
+    description. If we take ``git`` as an example this will correspond to the short commit message.
 
-``[date]``:
+``%date:num%``:
     Lists the date the minor version was commited (in the wrapped vcs).
 
-``[author]``:
+``%author:num%``:
     Lists the author of the minor version (not commiter).
 
-``[email]``:
+``%email:num%``:
     Lists the email of the author of the minor version.
 
-``[parents]``:
+``%parents:num%``:
     Lists the parents of the given minor version. Note that one minor version can have potentially
     several parents, e.g. in git, when the merge of two commits happens.
+
+Specifying ``num`` in the selected tags will shorten the displayed identification to ``num``
+characters only. In case the specified ``num`` is smaller then the length of the attribute name,
+then the shortening will be limited to the lenght of the attribute name.
