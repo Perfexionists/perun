@@ -67,9 +67,10 @@ def compute_derived(derived_models, analysis, **kwargs):
         iterable: generator object which produces results one by one
 
     """
-    for der in mod.map_keys_to_models(derived_models):
-        for result in der['derived'](analysis, der, **kwargs):
-            yield result
+    if derived_models:
+        for der in mod.map_keys_to_models(derived_models):
+            for result in der['derived'](analysis, der, **kwargs):
+                yield result
 
 
 def full_computation(x_pts, y_pts, computation_models, **_):
@@ -420,8 +421,7 @@ def _transform_to_output_data(data, extra_keys=None):
         data, ['model', 'coeffs', 'r_square', 'x_interval_start', 'x_interval_end'], [])
 
     # Specify the keys which should be directly mapped
-    transform_keys = ['model', 'r_square', 'x_interval_start', 'x_interval_end', 'sse', 'rss',
-                      'tss', 'method', 'uid']
+    transform_keys = ['model', 'r_square', 'x_interval_start', 'x_interval_end', 'method', 'uid']
     if extra_keys is not None:
         transform_keys += extra_keys
     transformed = {key: data[key] for key in transform_keys if key in data}
