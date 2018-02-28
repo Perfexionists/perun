@@ -6,10 +6,12 @@ allows both effective definition of new commands and finer parsing of the
 command line arguments. The intefrace can be broken into several groups:
 
     1. **Core commands**: namely ``init``, ``config``, ``add``, ``rm``,
-    ``status``, ``log`` and ``run`` commands (which consists of commands ``run
-    job`` and ``run matrix``). These commands automate the creation of
-    performance profiles and are used for management of the Perun repository.
-    Refer to :ref:`cli-main-ref` for details about commands.
+    ``status``, ``log``, ``run`` commands (which consists of commands ``run
+    job`` and ``run matrix``) and ``check`` commands (which consists of commands
+    ``check all`` and ``check head``). These commands automate the creation of
+    performance profiles, detection of performance degradation and are used
+    for management of the Perun repository. Refer to :ref:`cli-main-ref`
+    for details about commands.
 
     2. **Collect commands**: group of ``collect COLLECTOR`` commands, where
     ``COLLECTOR`` stands for one of the collector of :ref:`collectors-list`.
