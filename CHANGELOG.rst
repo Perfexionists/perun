@@ -6,8 +6,26 @@ HEAD
 
 **To be included in next release**
 
+0.11.1 (2018-02-28)
+-------------------
+
+**Enhance the regression model suite**
+
+  - fix issues when reading configuration with error
+  - enhance the regression model suite by improving quadratic and constant models
+  - rename the tags to different format (%tag%)
+  - add support for shortlog formatting string
+  - fix issue with postprocessing information being lost
+  - add options for changing filename template
+  - remodel automatic generation of profile names (now templatable; see :ckey:`format.output_profile_template`)
+  - add runtime config
+  - break config command to three (get, set, edit)
+  - rename some configuration options
+  - fix issue with missing header parts in profiles
+  - fix issue with incorrect parameter
   - add global.paging option (see :ckey:`general.paging`)
   - improve bokeh outputs (with click policy, and better lines)
+  - other various fixes
 
 0.11 (2017-11-27)
 -----------------
