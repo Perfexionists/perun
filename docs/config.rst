@@ -29,11 +29,13 @@ contains options shared by all of the Perun instances found on the host and the 
 corresponds to concrete wrapped repositories (which can, obviously, be of different type, with
 different projects and different profiling information). Both global and local configurations have
 several options restricted only to their type (which is emphasized in the description of individual
-option). The rest of the options can then be looked up recursively (i.e. first we check the nearest
-local perun instance, until we find the searched option or eventually end up in the global
-configuration). Options are specified by configuration sections, subsections and then concrete
-options delimited by ``.``, e.g.  ``local.general.editor`` corresponds to the ``editor`` option in
-the ``general`` section in ``local`` configuration.
+option). The rest of the options can then be looked up either recursively (i.e. first we check the
+nearest local perun instance, and traverse to higher instances until we find the searched option or
+eventually end up in the global configuration) or gathered from all of the configurations from the
+whole configuration hierarchy (ordered by the depth of the hierarchy, i.e. options found in global
+configuration will be on the bottom of the list). Options are specified by configuration sections,
+subsections and then concrete options delimited by ``.``, e.g.  ``local.general.editor``
+corresponds to the ``editor`` option in the ``general`` section in ``local`` configuration.
 
 The location of global configuration differs according to the host system. In UNIX systems, the
 **global** configuration can be found at::
@@ -218,6 +220,35 @@ List of Supported Options
 .. confkey:: postprocessors
 
     ``[local-only]`` Refer to :munit:`postprocessors`
+
+.. confunit:: degradation
+
+    Section, which contains options and specifications potentially shared by more Perun instances.
+    This section contains e.g. underlying text editor for editing, or paging strategy etc.
+
+.. confkey:: degradation.apply
+
+    ``[recursive]`` 
+
+.. confkey:: degradation.strategies
+
+    ``[gathered]`` Specifies the rules for application of the performance degradation methods for
+    profiles with corresponding profile configurations (e.g. with concrete profile type, specified
+    collector, etc.). Refer to :ref:`degradation-config` for more details about application of
+    strategies.
+
+    The following configuration will apply the :ref:`degradation-method-bmoe` method for all of the
+    `mixed` types of the profiles, which were postprocessed using the
+    :ref:`postprocessors-regression-analysis` and :ref:`degradation-method-aat` otherwise.
+
+    .. code-block:: yaml
+
+        degradation:
+          strategies:
+            - type: mixed
+              postprocessor: regression_analysis
+              method: bmoe
+            - method: aat
 
 .. _config-cli:
 
