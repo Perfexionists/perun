@@ -1,3 +1,5 @@
+import os
+
 from enum import Enum
 
 import perun.utils.exceptions as exceptions
@@ -5,10 +7,11 @@ import perun.profile.factory as profiles
 import perun.utils.log as log
 import perun.logic.commands as commands
 import perun.logic.config as config
+import perun.logic.store as store
 import perun.utils as utils
 import perun.vcs as vcs
 
-from perun.logic.pcs import pass_pcs
+from perun.logic.pcs import PCS
 
 __author__ = 'Tomas Fiedor'
 
@@ -141,14 +144,13 @@ def print_degradation_results(deg_info):
         print('')
 
 
-@pass_pcs
-def degradation_in_minor(pcs, minor_version=""):
+def degradation_in_minor(minor_version):
     """Checks for degradation according to the profiles stored for the given minor version.
 
     :param str minor_version: representation of head point of degradation checking
-    :param PCS pcs: passed pcs
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
+    pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     target_profile_queue = profiles_to_queue(pcs, minor_version)
     minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
     baseline_version_queue = minor_version_info.parents
@@ -187,14 +189,13 @@ def degradation_in_minor(pcs, minor_version=""):
         print('|')
 
 
-@pass_pcs
-def degradation_in_history(pcs, head=""):
+def degradation_in_history(head):
     """Walks through the minor version starting from the given head, checking for degradation.
 
     :param str head: starting point of the checked history for degradation.
-    :param PCS pcs: wrapped repository
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
+    pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
         degradation_in_minor(minor_version.checksum)
 
