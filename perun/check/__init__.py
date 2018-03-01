@@ -69,17 +69,17 @@ def print_minor_version(minor_version):
     ))
 
 
-def print_configuration(config):
+def print_configuration(configuration):
     """Helper function for printing information about configuration of given profile
 
-    :param tuple config: configuration tuple (collector, cmd, args, workload, postprocessors)
+    :param tuple configuration: configuration tuple (collector, cmd, args, workload, postprocessors)
     """
     print("  > collected by ", end='')
-    log.cprint("{}".format(config[0]), 'magenta', attrs=['bold'])
-    if config[4]:
+    log.cprint("{}".format(configuration[0]), 'magenta', attrs=['bold'])
+    if configuration[4]:
         print("+", end='')
-        log.cprint("{}".format(config[4]), 'magenta', attrs=['bold'])
-    print(" for cmd: '$ {}'".format(" ".join(config[1:4])))
+        log.cprint("{}".format(configuration[4]), 'magenta', attrs=['bold'])
+    print(" for cmd: '$ {}'".format(" ".join(configuration[1:4])))
 
 
 def get_degradation_change_colours(degradation_result):
@@ -142,10 +142,11 @@ def print_degradation_results(deg_info):
 
 
 @pass_pcs
-def degradation_in_minor(pcs, minor_version):
+def degradation_in_minor(pcs, minor_version=""):
     """Checks for degradation according to the profiles stored for the given minor version.
 
     :param str minor_version: representation of head point of degradation checking
+    :param PCS pcs: passed pcs
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     target_profile_queue = profiles_to_queue(pcs, minor_version)
@@ -187,10 +188,11 @@ def degradation_in_minor(pcs, minor_version):
 
 
 @pass_pcs
-def degradation_in_history(pcs, head):
+def degradation_in_history(pcs, head=""):
     """Walks through the minor version starting from the given head, checking for degradation.
 
-    :param head: starting point of the checked history for degradation.
+    :param str head: starting point of the checked history for degradation.
+    :param PCS pcs: wrapped repository
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
@@ -207,9 +209,9 @@ def degradation_between_profiles(baseline_profile, target_profile):
     :param ProfileInfo target_profile: profile corresponding to the checked minor version
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    if type(baseline_profile) is not dict:
+    if not isinstance(baseline_profile, dict):
         baseline_profile = profiles.load_profile_from_file(baseline_profile.realpath, False)
-    if type(target_profile) is not dict:
+    if not isinstance(target_profile, dict):
         target_profile = profiles.load_profile_from_file(target_profile.realpath, False)
 
     # We run all of the degradation methods suitable for the given configuration of profile

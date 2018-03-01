@@ -428,7 +428,7 @@ def gather_key_recursively(key):
     for config_instance in get_hierarchy():
         try:
             value = config_instance.get(key)
-            if type(value) is list or type(value) is comments.CommentedSeq:
+            if isinstance(value, list) or isinstance(value, comments.CommentedSeq):
                 gathered_values.extend(value)
             else:
                 gathered_values.append(value)
