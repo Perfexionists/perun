@@ -1109,7 +1109,7 @@ def check_group(**_):
 @check_group.command('head')
 @click.argument('head_minor', required=False, metavar='<hash>', nargs=1,
                 callback=minor_version_lookup_callback, default='HEAD')
-def check_head(head_minor):
+def check_head(head_minor='HEAD'):
     """Checks the degradation between current head and its predecessors.
 
     This check iterates over all registered profiles of current head, and tries to find
@@ -1123,7 +1123,7 @@ def check_head(head_minor):
 @check_group.command('all')
 @click.argument('minor_head', required=False, metavar='<hash>', nargs=1,
                 callback=minor_version_lookup_callback, default='HEAD')
-def check_all(minor_head):
+def check_all(minor_head='HEAD'):
     """Checks the degradation between all points of history.
 
     This subsequently checks the all points of history with their predecessors. Optionally one
