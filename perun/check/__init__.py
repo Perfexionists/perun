@@ -196,6 +196,7 @@ def degradation_in_history(head):
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+    print("Running the degradation checks on all history. This might take a while!")
     for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
         degradation_in_minor(minor_version.checksum)
 
