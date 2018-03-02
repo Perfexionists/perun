@@ -305,9 +305,18 @@ def get_strategies_for_configuration(profile):
 
 
 class DegradationInfo(object):
-    """Structure for string results for detecting the degradation between profiles
+    """The returned results for performance check methods
 
-    The object is returned by the concrete algorithms for detected the degradation.
+    :ivar PerformanceChange result: result of the performance change, either can be optimization,
+        degradation, no change, or certain type of unknown
+    :ivar str type: string representing the type of the degradation, e.g. "order" degradation
+    :ivar str location: location, where the degradation has happened
+    :ivar str from_baseline: value or model representing the baseline, i.e. from which the new
+        version was optimized or degraded
+    :ivar str to_target: value or model representing the target, i.e. to which the new version was
+        optimized or degraded
+    :ivar str confidence_type: type of the confidence we have in the detected degradation, e.g. r^2
+    :ivar int confidence_rate: value of the confidence we have in the detected degradation
     """
 
     def __init__(self, res, t, loc, fb, tt, ct="no", cr=0):

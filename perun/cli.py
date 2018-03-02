@@ -1098,11 +1098,43 @@ def job(**kwargs):
               help='whenever there are missing profiles in the given point of history'
               ' the matrix will be rerun and new generated profiles assigned.')
 def check_group(**_):
-    """Checks for possible degradation within the project history.
+    """Applies for the points of version history checks for possible performance changes.
 
-    This either runs the degradation check on the current head of the project, i.e. only between
-    head and its nearest predecessors with corresponding profiles or crawls the whole repository
-    checkouting the older versions, rebuilding the stuff and running the degradation checks.
+    This command group either runs the checks for one point of history (``perun check head``) or for
+    the whole history (``perun check all``). For each minor version (called the `target`) we iterate
+    over all of the registered profiles and try to find a predecessor minor version (called the
+    `baseline`) with profile of the same configuration (by configuration we mean the tuple of
+    collector, postprocessors, command, arguments and workloads) and run the checks according to the
+    rules set in the configurations.
+
+    The rules are specified as an ordered list in the configuration by
+    :ckey:`degradation.strategies`, where the keys correspond to the configuration (or the type) and
+    key `method` specifies the actual method used for checking for performance changes. The applied
+    methods can then be either specified by the full name or by its short string consisting of all
+    first letter of the function name.
+
+    The example of configuration snippet that sets rules and strategies for one project can be as
+    follows:
+
+      .. code-block:: yaml
+
+      \b
+          degradation:
+            apply: first
+            strategies:
+              - type: mixed
+                postprocessor: regression_analysis
+                method: bmoe
+              - cmd: mybin
+                type: memory
+                method: bmoe
+              - method: aat
+
+    Currently we support the following methods:
+
+      \b
+      1. Best Model Order Equality (BMOE)
+      2. Average Amount Threshold (AAT)
     """
 
 
@@ -1110,12 +1142,16 @@ def check_group(**_):
 @click.argument('head_minor', required=False, metavar='<hash>', nargs=1,
                 callback=minor_version_lookup_callback, default='HEAD')
 def check_head(head_minor='HEAD'):
-    """Checks the degradation between current head and its predecessors.
+    """Checks for changes in performance between between specified minor version (or current `head`)
+    and its predecessor minor versions.
 
-    This check iterates over all registered profiles of current head, and tries to find
-    nearest predecessor minor version, where the profile with the same configuration exists.
-    When it finds such a pair, it runs the degradation check w.r.t strategy set in configuration
-    and reports the results.
+    The command iterates over all of the registered profiles of the specified `minor version`
+    (`target`; e.g. the `head`), and tries to find the nearest predecessor minor version
+    (`baseline`), where the profile with the same configuration as the tested target profile exists.
+    When it finds such a pair, it runs the check according to the strategies set in the
+    configuration (see :ref:`degradation-config` or :doc:`config`).
+
+    By default the ``hash`` corresponds to the `head` of the current project.
     """
     check.degradation_in_minor(head_minor)
 
@@ -1124,10 +1160,13 @@ def check_head(head_minor='HEAD'):
 @click.argument('minor_head', required=False, metavar='<hash>', nargs=1,
                 callback=minor_version_lookup_callback, default='HEAD')
 def check_all(minor_head='HEAD'):
-    """Checks the degradation between all points of history.
+    """Checks for changes in performance for the specified interval of version history.
 
-    This subsequently checks the all points of history with their predecessors. Optionally one
-    can rebuild the project and recompute the missing profiles.
+    The commands crawls through the whole history of project versions starting from the specified
+    ``<hash>`` and for all of the registered profiles (corresponding to some `target` minor version)
+    tries to find a suitable predecessor profile (corresponding to some `baseline` minor version)
+    and runs the performance check according to the set of strategies set in the configuration
+    (see :ref:`degradation-config` or :doc:`config`).
     """
     check.degradation_in_history(minor_head)
 

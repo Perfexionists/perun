@@ -7,6 +7,7 @@ collectors.rst
 postprocessors.rst
 views.rst
 jobs.rst
+degradation.rst
 config.rst
 logs.rst
 internals.rst
