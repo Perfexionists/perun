@@ -6,8 +6,8 @@ HEAD
 
 **To be included in next release**
 
-0.11.1 (2018-03-05)
--------------------
+0.12 (2018-03-05)
+-----------------
 
 `commit: 7ac008e0a7be32d5ddfceb3cbe7042036323f82d`
 
