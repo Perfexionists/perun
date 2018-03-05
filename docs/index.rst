@@ -17,6 +17,7 @@ Welcome to Perun's documentation!
    postprocessors
    views
    jobs
+   degradation
    config
    logs
    internals

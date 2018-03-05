@@ -78,16 +78,17 @@ def singleton_with_args(func):
     Returns:
         func: decorated function that will be run only once for give parameters
     """
-    func.cache = {}
+    func_args_cache[func.__name__] = {}
 
     def wrapper(*args, **kwargs):
         """Wrapper function of the @p func"""
         key = arguments_to_key(func, *args, **kwargs)
-        if key not in func.cache.keys():
-            func.cache[key] = func(*args, **kwargs)
-        return func.cache[key]
+        if key not in func_args_cache[func.__name__].keys():
+            func_args_cache[func.__name__][key] = func(*args, **kwargs)
+        return func_args_cache[func.__name__][key]
 
     return wrapper
+func_args_cache = {}
 
 
 def validate_arguments(validated_args, validate, *args, **kwargs):

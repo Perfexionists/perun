@@ -6,8 +6,29 @@ HEAD
 
 **To be included in next release**
 
+0.12 (2018-03-05)
+-----------------
+
+`commit: 7ac008e0a7be32d5ddfceb3cbe7042036323f82d`
+
+**Add basic testing of performance changes between profiles**
+
+  - add command for checking performance changes between two isolate profiles
+  - add command for checking performance changes in given minor version
+  - add command for checking performance changes within the project history
+  - add two basic methods of checking performance changes
+  - add two options to config (see :ckey:`degradation.strategies` and :ckey:`degradation.apply`)
+    to customize performance checking
+  - add caching to recursive config lookup
+  - add recursive gathering of options from config
+  - fix nondeterministic tests
+  - define structure for representing the result of performance change
+  - add basic implementation of performance change detectors
+
 0.11.1 (2018-02-28)
 -------------------
+
+`commit: 8a6b1ac90c4cfca6f11546d0d3c4aa4fbe2000c3`
 
 **Enhance the regression model suite**
 
