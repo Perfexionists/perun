@@ -74,8 +74,8 @@ particular, it has the following advantages over databases and sole Version Cont
      has a Command Line Interface consisting of commands similar to git (such as e.g. add,
      status, log). Interactive Graphical User Interface is currently in development.
 
-.. image:: /figs/perun-flow.*
-:align: center
+.. image:: /figs/perun-flow.svg
+   :align: center
    :width: 100%
 
     Perun is meant to be used in two ways: (1) for a single developer (or a small team) as a complete
