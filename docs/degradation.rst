@@ -286,8 +286,8 @@ You can register your new performance change checker as follows:
         make test
         make install
 
-    5. At this point you can start using your check using ``perun check head`` or ``perun check
-       all``.
+    5. At this point you can start using your check using ``perun check head``, ``perun check
+       all`` or ``perun check profiles``.
 
     6. If you think your collector could help others, please, consider making `Pull Request`_.
 
@@ -304,10 +304,14 @@ and ``perun check all`` for iterative application of the degradation check for a
 of the project. The first command is mostly meant to run as a hook after each new commit (obviously
 after successfull run o f``perun run matrix`` generating the new batch of profiles), while the
 latter is meant to be used for new projects, after crawling through the whole history of the
-project and collecting the profiles.
+project and collecting the profiles. Additionally ``perun check profiles`` can be used for an
+isolate comparison of two standalone profiles (either registered in index or as a standalone file).
 
 .. click:: perun.cli:check_head
    :prog: perun check head
 
 .. click:: perun.cli:check_all
    :prog: perun check all
+
+.. click:: perun.cli:check_profiles
+   :prog: perun check profiles

@@ -23,7 +23,6 @@ import perun.logic.config as config
 import perun.logic.store as store
 import perun.profile.query as query
 import perun.utils.log as perun_log
-import perun.utils.decorators as decorators
 from perun.utils import get_module
 from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException
 from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
