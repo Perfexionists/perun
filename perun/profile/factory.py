@@ -315,11 +315,8 @@ def to_string(profile):
     return json.dumps(profile)
 
 
-@decorators.singleton_with_args
 def to_config_tuple(profile):
     """Converts the profile to the tuple representing its configuration
-
-    Note: Maybe unneeded.
 
     :param dict profile: profile we are converting to configuration tuple
     :returns: tuple of (collector.name, cmd, args, workload, [postprocessors])
@@ -327,9 +324,9 @@ def to_config_tuple(profile):
     profile_header = profile['header']
     return (
         profile['collector_info']['name'],
-        profile_header['cmd'],
-        profile_header['args'],
-        profile_header['workload'],
+        profile_header.get('cmd', ''),
+        profile_header.get('args', ''),
+        profile_header.get('workload', ''),
         [postprocessor['name'] for postprocessor in profile['postprocessors']]
     )
 

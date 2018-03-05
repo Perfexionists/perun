@@ -109,15 +109,17 @@ def get_degradation_change_colours(degradation_result):
         return 'yellow', 'yellow'
 
 
-def print_degradation_results(deg_info):
+def print_degradation_results(deg_info, left_border="| ", indent=4):
     """Helper function for printing results of degradation detection
 
     :param DegradationInfo deg_info: results of degradation detected in given profile
+    :param str left_border: string which is outputed on the left border of the screen
+    :param int indent: indent of the output
     """
     # We do not print the information about no change, if the verbosity is not at least info level
     if log.is_verbosity_below(log.VERBOSE_INFO) and deg_info.result == PerformanceChange.NoChange:
         return
-    print('|       - ', end='')
+    print(left_border + ' '*indent + '  - ', end='')
     # Print the actual result
     log.cprint(
         '{}'.format(CHANGE_STRINGS[deg_info.result]).ljust(20),
@@ -129,7 +131,7 @@ def print_degradation_results(deg_info):
     # Print the exact rate of degradation and the confidence (if there is any
     if deg_info.result != PerformanceChange.NoChange:
         from_colour, to_colour = get_degradation_change_colours(deg_info.result)
-        print('|           from: ', end='')
+        print(left_border + ' '*indent + '      from: ', end='')
         log.cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
         print(' -> to: ', end='')
         log.cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
@@ -142,6 +144,34 @@ def print_degradation_results(deg_info):
             )
             print(')', end='')
         print('')
+
+
+def process_profile_pair(baseline_profile, target_profile, profile_config, left_border="| ", indent=4):
+    """Helper function for processing pair of baseline and target profile.
+
+    The function wraps the actual check for the found degradation, printing of the results and
+    of some initial information (the configuration of profiles).
+
+    :param object baseline_profile: either dictionary or ProfileInfo object, representing the
+        baseline profile, i.e. the predecessor we are testing against
+    :param target_profile: either dictionary or ProfileInfo object, representing the target,
+        i.e. the profile where we are checking for performance changes
+    :param tuple profile_config: profile configuration (should be the same for both profiles)
+    :param str left_border: symbols printed on the left border of the report
+    :param int indent: indent of the rest of the information
+    :return:
+    """
+    print(left_border, end='')
+    print_configuration(profile_config)
+    found_change = False
+    for degradation in degradation_between_profiles(baseline_profile, target_profile, left_border):
+        found_change = found_change or degradation.result != PerformanceChange.NoChange
+        print_degradation_results(degradation, left_border, indent)
+    if not found_change and log.is_verbosity_below(log.VERBOSE_INFO):
+        print(left_border + ' '*indent + '  - ', end='')
+        log.cprint(CHANGE_STRINGS[PerformanceChange.NoChange],
+                   CHANGE_COLOURS[PerformanceChange.NoChange], attrs=['bold'])
+        print(' detected')
 
 
 def degradation_in_minor(minor_version):
@@ -174,17 +204,7 @@ def degradation_in_minor(minor_version):
             target_profile = target_profile_queue.get(baseline_config)
             if target_profile:
                 # Print information about configuration
-                print("| ", end='')
-                print_configuration(baseline_config)
-                found_change = False
-                for degradation in degradation_between_profiles(baseline_profile, target_profile):
-                    found_change = found_change or degradation.result != PerformanceChange.NoChange
-                    print_degradation_results(degradation)
-                if not found_change and log.is_verbosity_below(log.VERBOSE_INFO):
-                    print('|       - ', end='')
-                    log.cprint(CHANGE_STRINGS[PerformanceChange.NoChange],
-                               CHANGE_COLOURS[PerformanceChange.NoChange], attrs=['bold'])
-                    print(' detected')
+                process_profile_pair(baseline_profile, target_profile, baseline_config)
                 del target_profile_queue[target_profile.config_tuple]
         print('|')
 
@@ -201,7 +221,7 @@ def degradation_in_history(head):
         degradation_in_minor(minor_version.checksum)
 
 
-def degradation_between_profiles(baseline_profile, target_profile):
+def degradation_between_profiles(baseline_profile, target_profile, left_border="| "):
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     We first find the suitable strategy for the profile configuration and then call the appropriate
@@ -209,6 +229,7 @@ def degradation_between_profiles(baseline_profile, target_profile):
 
     :param ProfileInfo baseline_profile: baseline against which we are checking the degradation
     :param ProfileInfo target_profile: profile corresponding to the checked minor version
+    :param str left_border: left border of the output
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     if not isinstance(baseline_profile, dict):
@@ -218,10 +239,27 @@ def degradation_between_profiles(baseline_profile, target_profile):
 
     # We run all of the degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for_configuration(baseline_profile):
-        print("|     > applying '{}' method".format(degradation_method))
+        print(left_border + "    > applying '{}' method".format(degradation_method))
         yield from utils.dynamic_module_function_call(
             'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
         )
+
+
+def degradation_between_files(baseline_file, target_file):
+    """Checks between pair of files (baseline, target) whether there are any changes in performance.
+
+    :param dict baseline_file: baseline profile we are checking against
+    :param dict target_file: target profile we are testing
+    """
+    # First check if the configurations are compatible
+    baseline_config = profiles.to_config_tuple(baseline_file)
+    target_config = profiles.to_config_tuple(target_file)
+    if baseline_config != target_config:
+        log.error("incompatible configurations '{}' and '{}'".format(
+            baseline_config, target_config
+        ) + "\n\nPerformance check does not make sense for profiles collected in different ways!")
+
+    process_profile_pair(baseline_file, target_file, baseline_config, left_border='', indent=4)
 
 
 def is_rule_applicable_for(rule, configuration):

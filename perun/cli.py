@@ -1171,6 +1171,43 @@ def check_all(minor_head='HEAD'):
     check.degradation_in_history(minor_head)
 
 
+@check_group.command('profiles')
+@click.argument('baseline_profile', required=True, metavar='<baseline>', nargs=1,
+                callback=profile_lookup_callback)
+@click.argument('target_profile', required=True, metavar='<target>', nargs=1,
+                callback=profile_lookup_callback)
+@click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
+              callback=minor_version_lookup_callback, metavar='<hash>',
+              help='Will check the index of different minor version <hash>'
+                   ' during the profile lookup.')
+def check_profiles(baseline_profile, target_profile, **_):
+    """Checks for changes in performance between two profiles.
+
+    The commands checks for the changes between two isolate profiles, that can be stored in pending
+    profiles, registered in index, or be simply stored in filesystem. Then for the pair of profiles
+    <baseline> and <target> the command runs the performance chekc according to the set of
+    strategies set in the configuration (see :ref:`degradation-config` or :doc:`config`).
+
+    <baseline> and <target> profiles will be looked up in the following steps:
+
+        1. If profile is in form ``i@i`` (i.e, an `index tag`), then `ith`
+           record registered in the minor version <hash> index will be used.
+
+        2. If profile is in form ``i@p`` (i.e., an `pending tag`), then
+           `ith` profile stored in ``.perun/jobs`` will be used.
+
+        3. Profile is looked-up within the minor version <hash> index for a
+           match. In case the <profile> is registered there, it will be used.
+
+        4. Profile is looked-up within the ``.perun/jobs`` directory. In case
+           there is a match, the found profile will be used.
+
+        5. Otherwise, the directory is walked for any match. Each found match
+           is asked for confirmation by user.
+    """
+    check.degradation_between_files(baseline_profile, target_profile)
+
+
 # Initialization of other stuff
 init_unit_commands()
 

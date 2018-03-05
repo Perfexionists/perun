@@ -565,6 +565,22 @@ def test_config(pcs_full):
     assert "invalid format" in result.output
 
 
+def test_check_profiles(helpers, pcs_with_degradations):
+    """Tests checking degradation between two profiles"""
+    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    profiles = [
+        os.path.join(pool_path, 'linear_base.perf'),
+        os.path.join(pool_path, 'linear_base_degradated.perf'),
+        os.path.join(pool_path, 'quad_base.perf')
+    ]
+    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.path, profiles)
+
+    runner = CliRunner()
+    for tag in ("0@p", "1@p", "2@p"):
+        result = runner.invoke(cli.check_profiles, ["0@i", tag])
+        assert result.exit_code == 0
+
+
 def test_check_head(pcs_with_degradations):
     """Test checking degradation for one point of history
 
