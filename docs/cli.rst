@@ -49,6 +49,18 @@ Perun Commands
 .. click:: perun.cli:matrix
    :prog: perun run matrix
 
+.. click:: perun.cli:check_group
+   :prog: perun check
+
+.. click:: perun.cli:check_head
+   :prog: perun check head
+
+.. click:: perun.cli:check_all
+   :prog: perun check all
+
+.. click:: perun.cli:check_profiles
+   :prog: perun check profiles
+
 .. _cli-collect-ref:
 
 Collect Commands

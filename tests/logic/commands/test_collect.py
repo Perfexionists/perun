@@ -46,7 +46,6 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     runner.run_single_job(cmd, args, ["hello"], colls, posts, **{'no_func': 'fun', 'sampling': 0.1})
 
     profiles = os.listdir(os.path.join(pcs_full.path, 'jobs'))
-    print(profiles)
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
     assert len(profiles) == 2
     assert new_smaller_profile.endswith(".perf")

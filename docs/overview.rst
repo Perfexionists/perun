@@ -214,13 +214,14 @@ In the following, we list the foremost features and advantages of Perun:
     This way, Perun can be used, e.g. together with ``python`` and ``pandas``, as interactive
     interpret with support of statistical analysis. 
 
-Currently we are working on several extensions of Perun, that could be integrated in near future.
-Namely, in we are exploring the following possible features into Perun:
-
   * **Automatic Detection of Performance Degradation**---we are currently exploring effective
     heuristics for automatic detection of performance degradation between two project versions (e.g.
     between two commits). Our methodology is based on statistical methods and outputs of
-    :ref:`postprocessors-regression-analysis`.
+    :ref:`postprocessors-regression-analysis`. More details about degradation detection can be
+    found at :doc:`degradation`
+
+Currently we are working on several extensions of Perun, that could be integrated in near future.
+Namely, in we are exploring the following possible features into Perun:
 
   * **Regular Expression Driven Collector**---one planned collectors should be based on parsing the
     standard text output for a custom specified metrics, specified by regular expressions. We

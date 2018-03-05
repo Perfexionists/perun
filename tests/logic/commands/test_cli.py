@@ -11,6 +11,7 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.utils.decorators as decorators
 import perun.logic.config as config
 
 __author__ = 'Tomas Fiedor'
@@ -374,6 +375,8 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
         'complexity'
     ] + files + rules + samplings)
     del config.runtime().data['format']
+    decorators.func_args_cache['lookup_key_recursively'].pop(
+        tuple(["format.output_profile_template"]), None)
     assert result.exit_code == 0
     assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
 
@@ -560,3 +563,41 @@ def test_config(pcs_full):
     result = runner.invoke(cli.config, ['--local', 'get', 'wrong,key'])
     assert result.exit_code == 2
     assert "invalid format" in result.output
+
+
+def test_check_profiles(helpers, pcs_with_degradations):
+    """Tests checking degradation between two profiles"""
+    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    profiles = [
+        os.path.join(pool_path, 'linear_base.perf'),
+        os.path.join(pool_path, 'linear_base_degradated.perf'),
+        os.path.join(pool_path, 'quad_base.perf')
+    ]
+    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.path, profiles)
+
+    runner = CliRunner()
+    for tag in ("0@p", "1@p", "2@p"):
+        result = runner.invoke(cli.check_profiles, ["0@i", tag])
+        assert result.exit_code == 0
+
+
+def test_check_head(pcs_with_degradations):
+    """Test checking degradation for one point of history
+
+    Expecting correct behaviours
+    """
+    runner = CliRunner()
+
+    result = runner.invoke(cli.check_head, [])
+    assert result.exit_code == 0
+
+
+def test_check_all(pcs_with_degradations):
+    """Test checking degradation for whole history
+
+    Expecting correct behaviours
+    """
+    runner = CliRunner()
+
+    result = runner.invoke(cli.check_all, [])
+    assert result.exit_code == 0

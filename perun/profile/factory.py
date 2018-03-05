@@ -314,6 +314,22 @@ def to_string(profile):
     return json.dumps(profile)
 
 
+def to_config_tuple(profile):
+    """Converts the profile to the tuple representing its configuration
+
+    :param dict profile: profile we are converting to configuration tuple
+    :returns: tuple of (collector.name, cmd, args, workload, [postprocessors])
+    """
+    profile_header = profile['header']
+    return (
+        profile['collector_info']['name'],
+        profile_header.get('cmd', ''),
+        profile_header.get('args', ''),
+        profile_header.get('workload', ''),
+        [postprocessor['name'] for postprocessor in profile['postprocessors']]
+    )
+
+
 def extract_job_from_profile(profile):
     """Extracts information from profile about job, that was done to generate the profile.
 
@@ -378,7 +394,7 @@ def is_key_aggregatable_by(profile, func, key, keyname):
 class ProfileInfo(object):
     """Structure for storing information about profiles.
 
-    This is mainly used for formated output of the profile list using
+    This is mainly used for formatted output of the profile list using
     the command line interface
     """
     def __init__(self, path, real_path, mtime, is_raw_profile=False):
@@ -402,7 +418,14 @@ class ProfileInfo(object):
         self.args = loaded_profile['header']['params']
         self.workload = loaded_profile['header']['workload']
         self.collector = loaded_profile['collector_info']['name']
+        self.postprocessors = [
+            postprocessor['name'] for postprocessor in loaded_profile['postprocessors']
+        ]
         self.checksum = None
+        self.config_tuple = (
+            self.collector, self.cmd, self.args, self.workload,
+            ",".join(self.postprocessors)
+        )
 
     valid_attributes = [
         "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "origin"
