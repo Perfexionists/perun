@@ -6,7 +6,9 @@ Perun: Lightweight Performance Version System
 [![Maintainability](https://api.codeclimate.com/v1/badges/233e3e1a434815fee154/maintainability)](https://codeclimate.com/github/tfiedor/perun/maintainability)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4002ae488f54aabb77920a0cc90b6f5)](https://www.codacy.com/app/tfiedor/perun?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tfiedor/perun&amp;utm_campaign=Badge_Grade)
 
+<span style="display:block;text-align:center">
 ![image](./figs/perun-logo.png)
+</span>
 
 Have you ever encountered a sudden performance degradation and could not figure out, when and
 where the degradation was introduced?
@@ -76,7 +78,9 @@ and sole Version Control Systems:
       as e.g. add, status, log). Interactive Graphical User Interface is
       currently in development.
 
-![image](./figs/perun-flow.svg)
+<span style="display:block;text-align:center">
+    ![image](./figs/perun-flow.svg)
+</span>
 
 Getting started
 ---------------
