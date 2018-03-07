@@ -218,6 +218,15 @@ Links
        :   <TomasFiedor@gmail.com> directly instead of using issue tracker. We
            value your effort to improve the security and privacy of
            this project!
+   -   Project documentation:
+       - Online: <https://tfiedor.github.io/perun/>
+       - Latest Typeset: <https://github.com/tfiedor/perun/blob/master/docs/pdf/perun.pdf>
+     
+Unrelated links:
+
+   -   Check out our research group focusing on program analysis, static and dynamic analysis,
+   formal methods, verification and many more:
+   <http://www.fit.vutbr.cz/research/groups/verifit/index.php.en>
 
 Licensing
 ---------
