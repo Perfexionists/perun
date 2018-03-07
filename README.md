@@ -6,7 +6,9 @@ Perun: Lightweight Performance Version System
 [![Maintainability](https://api.codeclimate.com/v1/badges/233e3e1a434815fee154/maintainability)](https://codeclimate.com/github/tfiedor/perun/maintainability)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4002ae488f54aabb77920a0cc90b6f5)](https://www.codacy.com/app/tfiedor/perun?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tfiedor/perun&amp;utm_campaign=Badge_Grade)
 
-![image](./figs/perun-logo.png)
+<p align="center">
+  <img width="460" height="300" src="figs/perun-logo.png">
+</p>
 
 Perun is an open source light-weight Performance Version System, which 
 which works as a wrapper over existing Version Control Systems and manages 
@@ -15,7 +17,9 @@ it offers a tool suite allowing one to automate the performance
 regression test runs, postprocess existing profiles or interpret the
 results. 
 
-![image](./figs/perun-vs-vcs.svg)
+<p align="center">
+  <img width="460" height="300" src="figs/perun-vs-vcs.svg">
+</p>
 
 In particular, it has the following advantages over using 
 databases or sole Version Control Systems:
@@ -35,7 +39,9 @@ databases or sole Version Control Systems:
   4.  **Is Easy to use**---the workflow, interface and storage of Perun is
       heavily inspired by the git systems aiming at natural use. 
 
-![image](./figs/perun-flow.svg)
+<p align="center">
+  <img width="460" height="300" src="figs/perun-flow.svg">
+</p>
 
 Perun can be used in two ways: (1) for a single developer (or a small team) as a complete
 solution for automating, storing and interpreting performance of ones project or (2) as a dedicated
@@ -79,7 +85,7 @@ It is advised to verify that Perun is running correctly in your environment as f
     make test
     
 If you are interested in contributing to Perun project, please refer to
-[contributing](Contributing.md) section. If you think your results could help others, please [send us
+[contributing](CONTRIBUTING) section. If you think your results could help others, please [send us
 PR](https://github.com/tfiedor/perun/pull/new/develop), we will review the code and in case it is
 suitable for wider audience, we will include it in our [upstream](https://github.com/tfiedor/perun).
 
