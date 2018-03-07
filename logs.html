@@ -1,0 +1,218 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Customize Logs and Statuses &#8212; Perun 0.12 documentation</title>
+    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Perun Internals" href="internals.html" />
+    <link rel="prev" title="Perun Configuration files" href="config.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="customize-logs-and-statuses">
+<span id="logs-overview"></span><h1>Customize Logs and Statuses<a class="headerlink" href="#customize-logs-and-statuses" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal"><span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">status</span></code> commands print information about wrapped repository annotated by performance
+profiles. <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code> command lists the minor versions history for a major version (currently the
+checked out), along with the information about registered profiles, such as e.g. the minor version
+description, authors, statistics of profiles, etc. <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> commands shows the overview of
+given minor version of current major head and lists profiles associated to profiles and in pending
+directory (i.e. the <code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory. List of profiles contains the types of profiles,
+numbers, configurations of profiling run, etc.</p>
+<p>The format of outputs of both <code class="docutils literal"><span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">status</span></code> can be customized by setting the formatting
+strings c.f. <a class="reference internal" href="#logs-log"><span class="std std-ref">Customizing Logs</span></a> and <a class="reference internal" href="#logs-status"><span class="std std-ref">Customizing Statuses</span></a>. Moreover, outputs are paged (currently using
+the <code class="docutils literal"><span class="pre">less</span> <span class="pre">-R</span></code> command) by default. To turn off the paging, run the <code class="docutils literal"><span class="pre">perun</span></code> with <code class="docutils literal"><span class="pre">--no-pager</span></code>
+option (see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a>) or set <a class="reference internal" href="config.html#confkey-general.paging"><code class="xref std std-ckey docutils literal"><span class="pre">general.paging</span></code></a>.</p>
+<div class="section" id="customizing-statuses">
+<span id="logs-status"></span><h2>Customizing Statuses<a class="headerlink" href="#customizing-statuses" title="Permalink to this headline">¶</a></h2>
+<p>The output of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> is defined w.r.t. formatting string specified in configuration in
+<a class="reference internal" href="config.html#confkey-format.status"><code class="xref std std-ckey docutils literal"><span class="pre">format.status</span></code></a> key (looked up recursively in the nearest local configuration, or
+in global configuration). The formatting string consists of raw delimiters and special tags, which
+serves as templates to output specific informations about concrete profiles, such as the profiling
+configuration, type of profile, creating timestamps, etc.</p>
+<p>E.g. the following formatting string:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>┃ %type% ┃ %cmd% ┃ %workload% ┃ %collector%  ┃ (%time%) ┃
+</pre></div>
+</div>
+<p>will yield the following status when running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> (both for stored and pending
+profiles):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════════════════════▣
+  id ┃   type  ┃  cmd   ┃ workload ┃  args  ┃ collector  ┃         time        ┃
+═══════════════════════════════════════════════════════════════════════════════▣
+ 0@p ┃ [mixed] ┃ target ┃ hello    ┃        ┃ complexity ┃ 2017-09-07 14:41:49 ┃
+ 1@p ┃ [time ] ┃ perun  ┃          ┃ status ┃ time       ┃ 2017-10-19 12:30:29 ┃
+ 2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
+═══════════════════════════════════════════════════════════════════════════════▣
+</pre></div>
+</div>
+<p>The first column of the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> output, <code class="docutils literal"><span class="pre">id</span></code>, has a fixed position and defines a tag for
+the given, which can be used in <code class="docutils literal"><span class="pre">add</span></code>, <code class="docutils literal"><span class="pre">rm</span></code>, <code class="docutils literal"><span class="pre">show</span></code> and <code class="docutils literal"><span class="pre">postprocessby</span></code> commands as a quick
+wildcard for concrete profiles, e.g. <code class="docutils literal"><span class="pre">perun</span> <span class="pre">add</span> <span class="pre">0&#64;p</span></code> would register the first profile stored in
+the pending <code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory to the index of current head. Tags are always in form of
+<code class="docutils literal"><span class="pre">i&#64;p</span></code> (for pending profiles) and <code class="docutils literal"><span class="pre">i&#64;i</span></code> for profiles registered in index, where <code class="docutils literal"><span class="pre">i</span></code> stands for
+position in the corresponding storage, index from zero.</p>
+<p>The specification of the formatting string can contain the following special tags:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">%type%</span></code>:</dt>
+<dd>Lists the most generic type of the profile according to the collected resources serving as
+quick tagging of similar profiles. Currently Perun supports <cite>memory</cite>, <cite>time</cite>, <cite>mixed</cite>.</dd>
+<dt><code class="docutils literal"><span class="pre">%cmd%</span></code>:</dt>
+<dd>Lists the command for which the data was collected, this e.g. corresponds to the binary or
+script that was executed and profiled using collector/profiler. Refer to <a class="reference internal" href="jobs.html#jobs-overview"><span class="std std-ref">Overview of Jobs</span></a>
+for more information about profiling jobs and commands.</dd>
+<dt><code class="docutils literal"><span class="pre">%args%</span></code>:</dt>
+<dd>Lists the arguments (or parameters) which were passed to the profiled command. Refer to
+<a class="reference internal" href="jobs.html#jobs-overview"><span class="std std-ref">Overview of Jobs</span></a> for more information about profiling jobs and command arguments.</dd>
+<dt><code class="docutils literal"><span class="pre">%workload%</span></code>:</dt>
+<dd>List input workload which was passed to the profiled command, i.e. some inputs of the profiled
+program, script or binary. Refer to <a class="reference internal" href="jobs.html#jobs-overview"><span class="std std-ref">Overview of Jobs</span></a> for more information about profiling
+jobs and command workloads.</dd>
+<dt><code class="docutils literal"><span class="pre">%collector%</span></code>:</dt>
+<dd>Lists the collector which was used to obtain the given profile. Refer to <a class="reference internal" href="collectors.html"><span class="doc">Collectors Overview</span></a> for
+list of supported collectors and more information about collection of profiles.</dd>
+<dt><code class="docutils literal"><span class="pre">%time%</span></code>:</dt>
+<dd>Timestamp when the profile was last modified in format <cite>YEAR-MONTH-DAY HOURS:MINUTES:SECONDS</cite>.</dd>
+<dt><code class="docutils literal"><span class="pre">%id%</span></code>:</dt>
+<dd>Original identification of the profile. This corresponds to the name of the generated profile
+and the original path.</dd>
+</dl>
+</div>
+<div class="section" id="customizing-logs">
+<span id="logs-log"></span><h2>Customizing Logs<a class="headerlink" href="#customizing-logs" title="Permalink to this headline">¶</a></h2>
+<p>The output of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code> is defined w.r.t. formatting string specified in configuration
+in <a class="reference internal" href="config.html#confkey-format.log"><code class="xref std std-ckey docutils literal"><span class="pre">format.log</span></code></a> key (looked up recursively in the nearest local
+configuration, or in global configuration). The formatting string can contain both raw characters
+(such as delimiters, etc.) and special tags, which serves as templates to output information for
+concrete minor version such as minor version description, number of assigned profiles, etc.</p>
+<p>E.g. the following formatting string:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;</span><span class="si">%c</span><span class="s1">hecksum:6% (</span><span class="si">%s</span><span class="s1">tats%) </span><span class="si">%d</span><span class="s1">esc%&#39;</span>
+</pre></div>
+</div>
+<p>will yield the following output when running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">minor</span>   <span class="p">(</span><span class="n">a</span><span class="o">|</span><span class="n">m</span><span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">t</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">info</span>
+<span class="mi">53</span><span class="n">d35c</span>  <span class="p">(</span><span class="mi">2</span><span class="o">|</span><span class="mi">0</span><span class="o">|</span><span class="mi">2</span><span class="o">|</span><span class="mi">0</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">Add</span> <span class="n">deleted</span> <span class="n">jobs</span> <span class="n">directory</span>
+<span class="mi">07</span><span class="n">f2b4</span>  <span class="p">(</span><span class="mi">1</span><span class="o">|</span><span class="mi">0</span><span class="o">|</span><span class="mi">1</span><span class="o">|</span><span class="mi">0</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">Add</span> <span class="n">necessary</span> <span class="n">files</span> <span class="k">for</span> <span class="n">perun</span> <span class="n">to</span> <span class="n">work</span> <span class="n">on</span> <span class="n">this</span> <span class="n">repo</span><span class="o">.</span>
+<span class="n">bd3dc3</span>  <span class="o">---</span><span class="n">no</span><span class="o">--</span><span class="n">profiles</span><span class="o">---</span> <span class="n">root</span>
+</pre></div>
+</div>
+<p>The specification of the formatting string can contain the following special tags:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">%checksum:num%</span></code>: Identification of the minor version (should be hash preferably). If we take</dt>
+<dd><code class="docutils literal"><span class="pre">git</span></code> as an example <code class="docutils literal"><span class="pre">checksum</span></code> will correspond to the SHA of one commit.</dd>
+<dt><code class="docutils literal"><span class="pre">%stats%</span></code>:</dt>
+<dd>Lists short summary of overall number of profiles (<code class="docutils literal"><span class="pre">a</span></code>) and number of memory (<code class="docutils literal"><span class="pre">m</span></code>), mixed
+(<code class="docutils literal"><span class="pre">x</span></code>) and time (<code class="docutils literal"><span class="pre">t</span></code>) profiles assinged to given minor version.</dd>
+<dt><code class="docutils literal"><span class="pre">%desc:num%</span></code>: Lists short description of the minor version, limiting to the first sentence of the</dt>
+<dd>description. If we take <code class="docutils literal"><span class="pre">git</span></code> as an example this will correspond to the short commit message.</dd>
+<dt><code class="docutils literal"><span class="pre">%date:num%</span></code>:</dt>
+<dd>Lists the date the minor version was commited (in the wrapped vcs).</dd>
+<dt><code class="docutils literal"><span class="pre">%author:num%</span></code>:</dt>
+<dd>Lists the author of the minor version (not commiter).</dd>
+<dt><code class="docutils literal"><span class="pre">%email:num%</span></code>:</dt>
+<dd>Lists the email of the author of the minor version.</dd>
+<dt><code class="docutils literal"><span class="pre">%parents:num%</span></code>:</dt>
+<dd>Lists the parents of the given minor version. Note that one minor version can have potentially
+several parents, e.g. in git, when the merge of two commits happens.</dd>
+</dl>
+<p>Specifying <code class="docutils literal"><span class="pre">num</span></code> in the selected tags will shorten the displayed identification to <code class="docutils literal"><span class="pre">num</span></code>
+characters only. In case the specified <code class="docutils literal"><span class="pre">num</span></code> is smaller then the length of the attribute name,
+then the shortening will be limited to the lenght of the attribute name.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="index.html">
+    <h3>Perun</h3>
+  </a>
+</p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Customize Logs and Statuses</a><ul>
+<li><a class="reference internal" href="#customizing-statuses">Customizing Statuses</a></li>
+<li><a class="reference internal" href="#customizing-logs">Customizing Logs</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="config.html" title="previous chapter">Perun Configuration files</a></li>
+      <li>Next: <a href="internals.html" title="next chapter">Perun Internals</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/logs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/logs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

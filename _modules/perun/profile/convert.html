@@ -1,0 +1,636 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>perun.profile.convert &#8212; Perun 0.12 documentation</title>
+    <link rel="stylesheet" href="../../../_static/perun.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.profile.convert</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;``perun.profile.convert`` is a module which specifies interface for</span>
+<span class="sd">conversion of profiles from :ref:`profile-spec` to other formats.</span>
+
+<span class="sd">.. _pandas: https://pandas.pydata.org/</span>
+
+<span class="sd">Run the following in the Python interpreter to extend the capabilities of</span>
+<span class="sd">Python to different formats of profiles::</span>
+
+<span class="sd">    import perun.profile.convert</span>
+
+<span class="sd">Combined with ``perun.profile.factory``, ``perun.profile.query`` and e.g.</span>
+<span class="sd">`pandas`_ library one can obtain efficient interpreter for executing more</span>
+<span class="sd">complex queries and statistical tests over the profiles.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">perun.profile.query</span> <span class="k">as</span> <span class="nn">query</span>
+<span class="kn">import</span> <span class="nn">perun.postprocess.regression_analysis.transform</span> <span class="k">as</span> <span class="nn">transform</span>
+
+<span class="kn">import</span> <span class="nn">demandimport</span>
+<span class="k">with</span> <span class="n">demandimport</span><span class="o">.</span><span class="n">enabled</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">numpy</span>
+    <span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Radim Podola&#39;</span>
+<span class="n">__coauthors__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Tomas Fiedor&#39;</span><span class="p">,</span> <span class="s1">&#39;Jirka Pavela&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="resources_to_pandas_dataframe"><a class="viewcode-back" href="../../../profile.html#perun.profile.convert.resources_to_pandas_dataframe">[docs]</a><span class="k">def</span> <span class="nf">resources_to_pandas_dataframe</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts the profile (w.r.t :ref:`profile-spec`) to format supported by</span>
+<span class="sd">    `pandas`_ library.</span>
+
+<span class="sd">    Queries through all of the resources in the `profile`, and flattens each</span>
+<span class="sd">    key and value to the tabular representation. Refer to `pandas`_ libray for</span>
+<span class="sd">    more possibilities how to work with the tabular representation of collected</span>
+<span class="sd">    resources.</span>
+
+<span class="sd">    E.g. given `time` and `memory` profiles ``tprof`` and ``mprof``</span>
+<span class="sd">    respectively, one can obtain the following formats::</span>
+
+<span class="sd">        &gt;&gt;&gt; convert.resources_to_pandas_dataframe(tprof)</span>
+<span class="sd">           amount  snapshots   uid</span>
+<span class="sd">        0  0.616s          0  real</span>
+<span class="sd">        1  0.500s          0  user</span>
+<span class="sd">        2  0.125s          0   sys</span>
+
+<span class="sd">        &gt;&gt;&gt; convert.resources_to_pandas_dataframe(mmprof)</span>
+<span class="sd">            address  amount  snapshots subtype                   trace    type</span>
+<span class="sd">        0  19284560       4          0  malloc  malloc:unreachabl...  memory</span>
+<span class="sd">        1  19284560       0          0    free  free:unreachable:...  memory</span>
+
+<span class="sd">                          uid uid:function  uid:line                 uid:source</span>
+<span class="sd">        0  main:../memo...:22         main        22   ../memory_collect_test.c</span>
+<span class="sd">        1  main:../memo...:27         main        27   ../memory_collect_test.c</span>
+
+<span class="sd">    :param dict profile: dictionary with profile w.r.t. :ref:`profile-spec`</span>
+<span class="sd">    :returns: converted profile to ``pandas.DataFramelist`` with resources</span>
+<span class="sd">        flattened as a pandas dataframe</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resource_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_resource_fields_of</span><span class="p">(</span><span class="n">profile</span><span class="p">))</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">resource_keys</span><span class="p">}</span>
+    <span class="n">values</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">snapshot</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span> <span class="ow">in</span> <span class="n">query</span><span class="o">.</span><span class="n">all_resources_of</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+        <span class="n">values</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+        <span class="n">flattened_resource</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">all_items_of</span><span class="p">(</span><span class="n">resource</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">rk</span> <span class="ow">in</span> <span class="n">resource_keys</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">rk</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flattened_resource</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rk</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_heap_map_format"><a class="viewcode-back" href="../../../profile.html#perun.profile.convert.to_heap_map_format">[docs]</a><span class="k">def</span> <span class="nf">to_heap_map_format</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simplifies the profile (w.r.t. :ref:`profile-spec`) to a representation</span>
+<span class="sd">    more suitable for interpretation in the `heap map` format.</span>
+
+<span class="sd">    This format is used as an internal representation in the</span>
+<span class="sd">    :ref:`views-heapmap` visualization module. It specification is as follows:</span>
+
+<span class="sd">    .. code-block:: json</span>
+
+<span class="sd">        {</span>
+<span class="sd">            &quot;type&quot;: &quot;type of representation (heap/heat)&quot;,</span>
+<span class="sd">            &quot;unit&quot;: &quot;used memory unit (string)&quot;,</span>
+<span class="sd">            &quot;stats&quot;: {},</span>
+<span class="sd">            &quot;info&quot;: [{</span>
+<span class="sd">                &quot;line&quot;: &quot;(int)&quot;,</span>
+<span class="sd">                &quot;function&quot;: &quot;(string)&quot;,</span>
+<span class="sd">                &quot;source&quot;: &quot;(string)&quot;</span>
+<span class="sd">             }],</span>
+<span class="sd">            &quot;snapshots&quot;: [{</span>
+<span class="sd">                &quot;time&quot;: &quot;time of the snapshot (string)&quot;,</span>
+<span class="sd">                &quot;max_amount&quot;: &quot;maximum allocated memory in snapshot (int)&quot;,</span>
+<span class="sd">                &quot;min_amount&quot;: &quot;minimum allocated memory in snapshot (int)&quot;,</span>
+<span class="sd">                &quot;sum_amount&quot;: &quot;sum of allocated memory in snapshot (int)&quot;,</span>
+<span class="sd">                &quot;max_address&quot;: &quot;maximal address where we allocated (int)&quot;,</span>
+<span class="sd">                &quot;min_address&quot;: &quot;minimal address where we allocated (int)&quot;,</span>
+<span class="sd">                &quot;map&quot;: [{</span>
+<span class="sd">                    &quot;address&quot;: &quot;starting address of the allocation (int)&quot;,</span>
+<span class="sd">                    &quot;amount&quot;: &quot;amount of the allocated memory (int)&quot;,</span>
+<span class="sd">                    &quot;uid&quot;: &quot;index to info list with uid info (int)&quot;,</span>
+<span class="sd">                    &quot;subtype&quot;: &quot;allocator (string)&quot;</span>
+<span class="sd">                }]</span>
+<span class="sd">            }]</span>
+<span class="sd">        }</span>
+
+<span class="sd">    `Type` specifies either the heap or heat representation of the data. For</span>
+<span class="sd">    each `snapshot`, we have a one `map` of addresses to allocated chunks of</span>
+<span class="sd">    different subtypes of allocators and `uid`. Moreover, both `snapshot` and</span>
+<span class="sd">    `stats` contains several aggregated data (e.g. min, or max address) for</span>
+<span class="sd">    visualization of the memory.</span>
+
+<span class="sd">    The usage of :ref:`views-heapmap` is for visualization of address space</span>
+<span class="sd">    regarding the allocations during different time&#39;s of the program (i.e.</span>
+<span class="sd">    snapshots) and is meant for detecting inefficient allocations or</span>
+<span class="sd">    fragmentations of memory space.</span>
+
+<span class="sd">    :param dict profile: profile w.r.t. :ref:`profile-spec` of **memory**</span>
+<span class="sd">        `type`</span>
+<span class="sd">    :returns: dictionary containing heap map representation usable for</span>
+<span class="sd">        :ref:`views-heapmap` visualization module.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">snapshots</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]]</span>
+
+    <span class="c1"># modifying the memory profile to heap map representation</span>
+    <span class="k">for</span> <span class="n">snap</span> <span class="ow">in</span> <span class="n">snapshots</span><span class="p">:</span>
+        <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_heap_map</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;resources&#39;</span><span class="p">])</span>
+        <span class="k">del</span> <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;resources&#39;</span><span class="p">]</span>
+
+    <span class="c1"># calculating existing allocations for each snapshot</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="n">calculate_heap_map</span><span class="p">(</span><span class="n">snapshots</span><span class="p">)</span>
+    <span class="c1"># adding statistics about each snapshot</span>
+    <span class="n">glob_stats</span> <span class="o">=</span> <span class="n">add_stats</span><span class="p">(</span><span class="n">snapshots</span><span class="p">)</span>
+
+    <span class="c1"># approximation for extreme cases</span>
+    <span class="k">if</span> <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;max_address&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;min_address&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">:</span>
+        <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;max_address&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;min_address&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">500</span>
+    <span class="k">elif</span> <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;max_address&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;min_address&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1000000</span><span class="p">:</span>
+        <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;max_address&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">glob_stats</span><span class="p">[</span><span class="s1">&#39;min_address&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1000000</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;heap&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;snapshots&#39;</span><span class="p">:</span> <span class="n">snapshots</span><span class="p">,</span>
+            <span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="n">chunks</span><span class="p">,</span>
+            <span class="s1">&#39;stats&#39;</span><span class="p">:</span> <span class="n">glob_stats</span><span class="p">,</span>
+            <span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">][</span><span class="s1">&#39;memory&#39;</span><span class="p">]}</span></div>
+
+
+<div class="viewcode-block" id="to_heat_map_format"><a class="viewcode-back" href="../../../profile.html#perun.profile.convert.to_heat_map_format">[docs]</a><span class="k">def</span> <span class="nf">to_heat_map_format</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simplifies the profile (w.r.t. :ref:`profile-spec`) to a representation</span>
+<span class="sd">    more suitable for interpretation in the `heat map` format.</span>
+
+<span class="sd">    This format is used as an internal aggregation of the allocations through</span>
+<span class="sd">    all of the snapshots in the :ref:`views-heapmap` visualization module.</span>
+<span class="sd">    The specification is similar to :func:`to_heap_map_format` as follows:</span>
+
+<span class="sd">    .. code-block:: json</span>
+
+<span class="sd">        {</span>
+<span class="sd">            &quot;type&quot;: &quot;type of representation (heap/heat)&quot;,</span>
+<span class="sd">            &quot;unit&quot;: &quot;used memory unit (string)&quot;,</span>
+<span class="sd">            &quot;stats&quot;: {</span>
+<span class="sd">                &quot;max_address&quot;: &quot;maximal address in snapshot (int)&quot;,</span>
+<span class="sd">                &quot;min_address&quot;: &quot;minimal address in snapshot (int)&quot;</span>
+<span class="sd">            },</span>
+<span class="sd">            &quot;map&quot;: [ ]</span>
+<span class="sd">        }</span>
+
+<span class="sd">    The main difference is in the `map`, where the data are aggregated over the</span>
+<span class="sd">    snapshots represented by value representing the colours. The `warmer` the</span>
+<span class="sd">    colour the more it was allocated on the concrete address.</span>
+
+<span class="sd">    :param dict profile: profile w.r.t. :ref:`profile-spec` of **memory**</span>
+<span class="sd">        `type`</span>
+<span class="sd">    :returns: dictionary containing heat map representation usable for</span>
+<span class="sd">        :ref:`views-heapmap` visualization module.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resources</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">snap</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]:</span>
+        <span class="n">resources</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;resources&#39;</span><span class="p">])</span>
+
+    <span class="c1"># adding statistics</span>
+    <span class="n">max_address</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                      <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resources</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">min_address</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resources</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># approximation for extreme cases</span>
+    <span class="k">if</span> <span class="n">max_address</span> <span class="o">-</span> <span class="n">min_address</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">:</span>
+        <span class="n">max_address</span> <span class="o">=</span> <span class="n">min_address</span> <span class="o">+</span> <span class="mi">500</span>
+    <span class="k">elif</span> <span class="n">max_address</span> <span class="o">-</span> <span class="n">min_address</span> <span class="o">&gt;</span> <span class="mi">1000000</span><span class="p">:</span>
+        <span class="n">max_address</span> <span class="o">=</span> <span class="n">min_address</span> <span class="o">+</span> <span class="mi">1000000</span>
+
+    <span class="c1"># transform the memory profile to heat map representation</span>
+    <span class="n">heat_map</span> <span class="o">=</span> <span class="n">get_heat_map</span><span class="p">(</span><span class="n">resources</span><span class="p">,</span> <span class="n">min_address</span><span class="p">,</span> <span class="n">max_address</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s1">&#39;heat&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;stats&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;max_address&#39;</span><span class="p">:</span> <span class="n">max_address</span><span class="p">,</span> <span class="s1">&#39;min_address&#39;</span><span class="p">:</span> <span class="n">min_address</span><span class="p">,</span> <span class="p">},</span>
+            <span class="s2">&quot;map&quot;</span><span class="p">:</span> <span class="n">heat_map</span><span class="p">,</span>
+            <span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">][</span><span class="s1">&#39;memory&#39;</span><span class="p">]}</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_heat_map</span><span class="p">(</span><span class="n">resources</span><span class="p">,</span> <span class="n">min_add</span><span class="p">,</span> <span class="n">max_add</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parse resources from the memory profile to HEAT map representation</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        resources(list): list of the resources from the memory profile</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: list of the number of access to address</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">address_count</span> <span class="o">=</span> <span class="n">max_add</span> <span class="o">-</span> <span class="n">min_add</span>
+    <span class="n">add_map</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">address_count</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max_add</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">address</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span>
+        <span class="n">amount</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">add</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">amount</span><span class="p">):</span>
+            <span class="n">add_map</span><span class="p">[</span><span class="n">address</span> <span class="o">+</span> <span class="n">add</span> <span class="o">-</span> <span class="n">min_add</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">add_map</span>
+
+
+<span class="k">def</span> <span class="nf">get_heap_map</span><span class="p">(</span><span class="n">resources</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parse resources from the memory profile to simpler representation</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        resources(list): list of the resources from the memory profile</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: list of the simple allocations records</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO maybe needed approximation inc ase of really different sizes</span>
+    <span class="c1"># of the amount, when smaller sizes could be set to zero and other sizes&#39;s</span>
+    <span class="c1"># units change to bigger ones (B &gt; MB)</span>
+    <span class="n">simple_map</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+        <span class="n">map_item</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">map_item</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span>
+        <span class="n">map_item</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">]</span>
+        <span class="n">map_item</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]:</span>
+            <span class="k">continue</span>
+        <span class="n">map_item</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;free&#39;</span><span class="p">:</span>
+            <span class="n">map_item</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;free&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">map_item</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;allocation&#39;</span>
+
+        <span class="n">simple_map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">map_item</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">simple_map</span>
+
+
+<span class="k">def</span> <span class="nf">calculate_heap_map</span><span class="p">(</span><span class="n">snapshots</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Will calculate existing allocations for each snapshot</span>
+
+<span class="sd">        Result is in the form of modified input argument.</span>
+<span class="sd">        Allocations which are not freed within snapshot are spread to next</span>
+<span class="sd">        following snapshots till they are freed</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        snapshots(list): list of snapshots</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: chunk of the all used UIDs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">alloc_chunks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">new_allocations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">existing_allocations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">snap</span> <span class="ow">in</span> <span class="n">snapshots</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">allocation</span> <span class="ow">in</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">allocation</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;free&#39;</span><span class="p">:</span>
+                <span class="n">alloc</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">new_allocations</span>
+                              <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">allocation</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]),</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">alloc</span><span class="p">:</span>
+                    <span class="n">new_allocations</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">alloc</span><span class="p">)</span>
+
+                <span class="c1"># removing free record</span>
+                <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">allocation</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">allocation</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                <span class="n">new_allocations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">allocation</span><span class="p">)</span>
+
+        <span class="c1"># extending existing allocations from previous to the current snapshot</span>
+        <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">existing_allocations</span><span class="p">)</span>
+        <span class="n">existing_allocations</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_allocations</span><span class="p">)</span>
+
+        <span class="c1"># change absolute UID to chunk reference</span>
+        <span class="k">for</span> <span class="n">allocation</span> <span class="ow">in</span> <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">]:</span>
+            <span class="n">allocation</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">__set_chunks</span><span class="p">(</span><span class="n">alloc_chunks</span><span class="p">,</span> <span class="n">allocation</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">alloc_chunks</span>
+
+
+<span class="k">def</span> <span class="nf">__set_chunks</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">uid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Sets UID reference to chunk list</span>
+
+<span class="sd">        Check if UID is in the chunk list, if so index is returned.</span>
+<span class="sd">        If not, UID is added to the chunk list.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        chunks(list): chunk list</span>
+<span class="sd">        uid(dict): UID structure</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: index to chunk list referencing UID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># UID is already referencing</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">uid</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
+        <span class="n">func_cond</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">uid</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">]</span>
+        <span class="n">line_cond</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">uid</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">]</span>
+        <span class="n">source_cond</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">uid</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>
+        <span class="c1"># UID found in chunk</span>
+        <span class="k">if</span> <span class="n">func_cond</span> <span class="ow">and</span> <span class="n">line_cond</span> <span class="ow">and</span> <span class="n">source_cond</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">i</span>
+
+    <span class="c1"># UID add to chunk</span>
+    <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">resource_iterator</span><span class="p">(</span><span class="n">snapshot</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        snapshot(list): list of resources</span>
+<span class="sd">        field(str): field we are iterating over in the list of resources</span>
+<span class="sd">        initial_value(object): neutral value, that is returned as first</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">found_value</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">found_value</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">yield</span> <span class="n">item</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">found_value</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">initial_value</span>
+
+
+<span class="k">def</span> <span class="nf">add_stats</span><span class="p">(</span><span class="n">snapshots</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Add statistic about each snapshot and global view</span>
+
+<span class="sd">        Maximum amount of the allocated memory,</span>
+<span class="sd">        minimum amount of the allocated memory,</span>
+<span class="sd">        summary of the amount of the allocated memory,</span>
+<span class="sd">        maximal address of the allocated memory</span>
+<span class="sd">        (counted as start address + amount),</span>
+<span class="sd">        minimal address of the allocated memory.</span>
+
+<span class="sd">        Result is in the form of modified input argument.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        snapshots(list): list of snapshots</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        dict: calculated global statistics over all the snapshots</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">glob_max_address</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">glob_min_address</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">glob_max_sum_amount</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">glob_max_amount</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">glob_min_amount</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">snap</span> <span class="ow">in</span> <span class="n">snapshots</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">]):</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;max_address&#39;</span><span class="p">]</span> \
+                <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">])</span>
+            <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;min_address&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">resource_iterator</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">],</span> <span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;sum_amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">resource_iterator</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">],</span> <span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;max_amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">resource_iterator</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">],</span> <span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;min_amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">resource_iterator</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">],</span> <span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">glob_max_address</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;max_address&#39;</span><span class="p">])</span>
+        <span class="n">glob_min_address</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;min_address&#39;</span><span class="p">])</span>
+        <span class="n">glob_max_sum_amount</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;sum_amount&#39;</span><span class="p">])</span>
+        <span class="n">glob_max_amount</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;max_amount&#39;</span><span class="p">])</span>
+        <span class="n">glob_min_amount</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">snap</span><span class="p">[</span><span class="s1">&#39;min_amount&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;max_address&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">glob_max_address</span><span class="p">),</span>
+            <span class="s1">&#39;min_address&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">glob_min_address</span><span class="p">),</span>
+            <span class="s1">&#39;max_sum_amount&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">glob_max_sum_amount</span><span class="p">),</span>
+            <span class="s1">&#39;max_amount&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">glob_max_amount</span><span class="p">),</span>
+            <span class="s1">&#39;min_amount&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">glob_min_amount</span><span class="p">)</span>
+           <span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">to_allocations_table</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create the allocations table</span>
+
+<span class="sd">    Fixme: Where exactly is this used?</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        profile(dict): the memory profile</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: the allocations table</span>
+
+<span class="sd">    Format of the allocations table is following:</span>
+<span class="sd">        {&quot;snapshots&quot;: [(int)]</span>
+<span class="sd">         &quot;amount&quot;: [(int)]</span>
+<span class="sd">         &quot;uid&quot;: [(str)]</span>
+<span class="sd">         &quot;subtype&quot;: [(str)]</span>
+<span class="sd">         &quot;address&quot;: [(int)]</span>
+<span class="sd">        }</span>
+<span class="sd">    uid object is serialized into: function()~source~line</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;snapshots&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;amount&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;uid&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;subtype&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">snap</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">profile</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">alloc</span> <span class="ow">in</span> <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;resources&#39;</span><span class="p">]:</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_string_line</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]))</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">])</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">table</span>
+
+
+<span class="k">def</span> <span class="nf">to_flow_table</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create the heap map table</span>
+
+<span class="sd">    Fixme: Where exactly is this used</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        profile(dict): the memory profile</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: the heap map table</span>
+
+<span class="sd">    Format of the allocations table is following:</span>
+<span class="sd">        {&quot;snapshots&quot;: [(int)]</span>
+<span class="sd">         &quot;amount&quot;: [(int)]</span>
+<span class="sd">         &quot;uid&quot;: [(str)]</span>
+<span class="sd">         &quot;subtype&quot;: [(str)]</span>
+<span class="sd">         &quot;address&quot;: [(int)]</span>
+<span class="sd">        }</span>
+<span class="sd">    uid object is serialized into: function()~source~line</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">heap</span> <span class="o">=</span> <span class="n">to_heap_map_format</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;snapshots&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;amount&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;uid&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;subtype&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">snap</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">heap</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]):</span>
+
+        <span class="k">for</span> <span class="n">alloc</span> <span class="ow">in</span> <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;map&#39;</span><span class="p">]:</span>
+            <span class="n">uid_chunk</span> <span class="o">=</span> <span class="n">heap</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]]</span>
+
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;uid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_string_line</span><span class="p">(</span><span class="n">uid_chunk</span><span class="p">))</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">])</span>
+            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">table</span>
+
+
+<div class="viewcode-block" id="to_flame_graph_format"><a class="viewcode-back" href="../../../profile.html#perun.profile.convert.to_flame_graph_format">[docs]</a><span class="k">def</span> <span class="nf">to_flame_graph_format</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the</span>
+<span class="sd">    format supported by perl script of Brendan Gregg.</span>
+
+<span class="sd">    .. _Brendan Gregg&#39;s homepage: http://www.brendangregg.com/index.html</span>
+
+<span class="sd">    :ref:`views-flame-graph` can be used to visualize the inclusive consumption</span>
+<span class="sd">    of resources w.r.t. the call trace of the resource. It is useful for fast</span>
+<span class="sd">    detection, which point at the trace is the hotspot (or bottleneck) in the</span>
+<span class="sd">    computation. Refer to :ref:`views-flame-graph` for full capabilities of our</span>
+<span class="sd">    Wrapper. For more information about flame graphs itself, please check</span>
+<span class="sd">    `Brendan Gregg&#39;s homepage`_.</span>
+
+<span class="sd">    Example of format is as follows::</span>
+
+<span class="sd">        &gt;&gt;&gt; print(&#39;&#39;.join(convert.to_flame_graph_format(memprof)))</span>
+<span class="sd">        malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4</span>
+<span class="sd">        valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0;_start()~unreachable~0 8</span>
+<span class="sd">        main()~/home/user/dev/test02.c~79 156</span>
+
+<span class="sd">    Each line corresponds to some collected resource (in this case amount of</span>
+<span class="sd">    allocated memory) preceeded by its trace (i.e. functions or other unique</span>
+<span class="sd">    identifiers joined using ``;`` character.</span>
+
+<span class="sd">    :param dict profile: the memory profile</span>
+<span class="sd">    :returns: list of lines, each representing one allocation call stack</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stacks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">snap</span> <span class="ow">in</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;snapshots&#39;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">alloc</span> <span class="ow">in</span> <span class="n">snap</span><span class="p">[</span><span class="s1">&#39;resources&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;subtype&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;free&#39;</span><span class="p">:</span>
+                <span class="n">stack_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">to_string_line</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+                    <span class="n">stack_str</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s1">&#39;;&#39;</span>
+                <span class="k">if</span> <span class="n">stack_str</span> <span class="ow">and</span> <span class="n">stack_str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">):</span>
+                    <span class="n">final</span> <span class="o">=</span> <span class="n">stack_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">final</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">alloc</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="n">stacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">stacks</span></div>
+
+
+<span class="k">def</span> <span class="nf">to_string_line</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create string representing call stack&#39;s frame</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        frame(dict): call stack&#39;s frame</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: line representing call stack&#39;s frame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">()~</span><span class="si">{}</span><span class="s2">~</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">],</span> <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span> <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="plot_data_from_coefficients_of"><a class="viewcode-back" href="../../../profile.html#perun.profile.convert.plot_data_from_coefficients_of">[docs]</a><span class="k">def</span> <span class="nf">plot_data_from_coefficients_of</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transform coefficients computed by</span>
+<span class="sd">    :ref:`postprocessors-regression-analysis` into dictionary of points,</span>
+<span class="sd">    plotable as a function or curve. This function serves as a public wrapper</span>
+<span class="sd">    over regression analysis transformation function.</span>
+
+<span class="sd">    :param dict model: the models dictionary from profile (refer to</span>
+<span class="sd">        :pkey:`models`)</span>
+<span class="sd">    :returns dict: updated models dictionary extended with `plot_x` and</span>
+<span class="sd">        `plot_y` lists</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">coefficients_to_points</span><span class="p">(</span><span class="o">**</span><span class="n">model</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

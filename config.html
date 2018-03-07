@@ -1,0 +1,543 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Perun Configuration files &#8212; Perun 0.12 documentation</title>
+    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Customize Logs and Statuses" href="logs.html" />
+    <link rel="prev" title="Detecting Performance Changes" href="degradation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="perun-configuration-files">
+<span id="config-file"></span><h1>Perun Configuration files<a class="headerlink" href="#perun-configuration-files" title="Permalink to this headline">¶</a></h1>
+<p>Perun stores its configuration in <a class="reference external" href="http://yaml.org/">Yaml</a> format, either locally for each wrapped repository, or
+globally for the whole system (see <a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a>). Most of the configuration options is
+recursively looked up in the hierarchy, created by local and global configurations, until the
+option is found in the nearest configuration. Refer to <a class="reference internal" href="#config-options"><span class="std std-ref">List of Supported Options</span></a> for description
+of options, such as formatting strings for status and log outputs, specification of job matrix (in
+more details described in <a class="reference internal" href="jobs.html#jobs-matrix"><span class="std std-ref">Job Matrix Format</span></a>) or information about wrapped repository.</p>
+<p>In order to configure your local instance of Perun run the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">config</span> <span class="o">--</span><span class="n">edit</span>
+</pre></div>
+</div>
+<p>This will open the nearest local configuration in text editor (by default in <code class="docutils literal"><span class="pre">vim</span></code>) and lets you
+modify the options w.r.t. <a class="reference external" href="http://yaml.org/">Yaml</a> format.</p>
+<div class="section" id="configuration-types">
+<span id="config-types"></span><h2>Configuration types<a class="headerlink" href="#configuration-types" title="Permalink to this headline">¶</a></h2>
+<p>Perun uses two types of configurations: <strong>global</strong>  and <strong>local</strong>. The global configuration
+contains options shared by all of the Perun instances found on the host and the local configuration
+corresponds to concrete wrapped repositories (which can, obviously, be of different type, with
+different projects and different profiling information). Both global and local configurations have
+several options restricted only to their type (which is emphasized in the description of individual
+option). The rest of the options can then be looked up either recursively (i.e. first we check the
+nearest local perun instance, and traverse to higher instances until we find the searched option or
+eventually end up in the global configuration) or gathered from all of the configurations from the
+whole configuration hierarchy (ordered by the depth of the hierarchy, i.e. options found in global
+configuration will be on the bottom of the list). Options are specified by configuration sections,
+subsections and then concrete options delimited by <code class="docutils literal"><span class="pre">.</span></code>, e.g.  <code class="docutils literal"><span class="pre">local.general.editor</span></code>
+corresponds to the <code class="docutils literal"><span class="pre">editor</span></code> option in the <code class="docutils literal"><span class="pre">general</span></code> section in <code class="docutils literal"><span class="pre">local</span></code> configuration.</p>
+<p>The location of global configuration differs according to the host system. In UNIX systems, the
+<strong>global</strong> configuration can be found at:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$HOME/.config/perun
+</pre></div>
+</div>
+<p>In Windows systems it is located in user storage:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">USERPROFILE</span><span class="o">%</span>\<span class="n">AppData</span>\<span class="n">Local</span>\<span class="n">perun</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="list-of-supported-options">
+<span id="config-options"></span><h2>List of Supported Options<a class="headerlink" href="#list-of-supported-options" title="Permalink to this headline">¶</a></h2>
+<dl class="confunit">
+<dt id="confunit-vcs">
+<code class="descname">vcs</code><a class="headerlink" href="#confunit-vcs" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Section, which contains options corresponding to the version control system
+that is wrapped by instance of Perun. Specifies e.g. the type (in order to call corresponding
+auxiliary functions), the location in the filesystem or wrapper specific options (e.g. the
+lightweight custom <code class="docutils literal"><span class="pre">tagit</span></code> vcs constains additional options).</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-vcs.type">
+<code class="descname">vcs.type</code><a class="headerlink" href="#confkey-vcs.type" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Specifies the type of the wrapped version control system, in order to call
+corresponding auxiliary functions. Currently <code class="docutils literal"><span class="pre">git</span></code> is supported, with custom lightweight vcs
+<code class="docutils literal"><span class="pre">tagit</span></code> in development.</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-vcs.url">
+<code class="descname">vcs.url</code><a class="headerlink" href="#confkey-vcs.url" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Specifies path to the wrapped version control system, either as an absolute or
+a relative path that leads to the directory, where the root of the wrapped repository is (e.g.
+where <code class="docutils literal"><span class="pre">.git</span></code> is).</p>
+</dd></dl>
+
+<dl class="confunit">
+<dt id="confunit-general">
+<code class="descname">general</code><a class="headerlink" href="#confunit-general" title="Permalink to this definition">¶</a></dt>
+<dd><p>Section, which contains options and specifications potentially shared by more Perun instances.
+This section contains e.g. underlying text editor for editing, or paging strategy etc.</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-general.paging">
+<code class="descname">general.paging</code><a class="headerlink" href="#confkey-general.paging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the paging for <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>. Paging can be currently set to the
+following four options: <code class="docutils literal"><span class="pre">always</span></code> (both <code class="docutils literal"><span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">status</span></code> will be paged), <code class="docutils literal"><span class="pre">only-log</span></code>
+(only output of <code class="docutils literal"><span class="pre">log</span></code> will be paged), <code class="docutils literal"><span class="pre">only-status</span></code> (only output of <code class="docutils literal"><span class="pre">status</span></code> will be
+paged and <code class="docutils literal"><span class="pre">never</span></code>. By default <code class="docutils literal"><span class="pre">only-log</span></code> is used in the configuration. The behaviour of
+paging can be overwritten by option <code class="docutils literal"><span class="pre">--no-pager</span></code> (see <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a>).</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-general.editor">
+<code class="descname">general.editor</code><a class="headerlink" href="#confkey-general.editor" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Sets user choice of text editor, that is e.g. used for manual text-editing of
+configuration files of Perun. Specified editor needs to be executable, has to take the filename
+as an argument and will be called as <code class="docutils literal"><span class="pre">general.editor</span> <span class="pre">config.yml</span></code>. By default <code class="xref std std-ckey docutils literal"><span class="pre">editor</span></code> is
+set to <code class="docutils literal"><span class="pre">vim</span></code>.</p>
+</dd></dl>
+
+<dl class="confunit">
+<dt id="confunit-format">
+<code class="descname">format</code><a class="headerlink" href="#confunit-format" title="Permalink to this definition">¶</a></dt>
+<dd><p>This section contains various formatting specifications e.g. formatting specifications for
+<code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code> and <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-format.status">
+<code class="descname">format.status</code><a class="headerlink" href="#confkey-format.status" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies the formatting string for the output of the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> command.
+The formatting string can contain raw delimiters and special tags, which are used to output
+concrete information about each profile, like e.g. command it corresponds to, type of the
+profile, time of creation, etc. Refer to <a class="reference internal" href="logs.html#logs-status"><span class="std std-ref">Customizing Statuses</span></a> for more information regarding the
+formatting strings for <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
+<p>E.g. the following formatting string:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>┃ %type% ┃ %cmd% ┃ %workload% ┃ %collector%  ┃ (%time%) ┃
+</pre></div>
+</div>
+<p>will yield the following status when running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> (both for stored and pending
+profiles):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════════════════════▣
+  id ┃   type  ┃  cmd   ┃ workload ┃  args  ┃ collector  ┃         time        ┃
+═══════════════════════════════════════════════════════════════════════════════▣
+ 0@p ┃ [mixed] ┃ target ┃ hello    ┃        ┃ complexity ┃ 2017-09-07 14:41:49 ┃
+ 1@p ┃ [time ] ┃ perun  ┃          ┃ status ┃ time       ┃ 2017-10-19 12:30:29 ┃
+ 2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
+═══════════════════════════════════════════════════════════════════════════════▣
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-format.log">
+<code class="descname">format.log</code><a class="headerlink" href="#confkey-format.log" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies the formatting string for the output of the short format of <code class="docutils literal"><span class="pre">perun</span>
+<span class="pre">log</span></code> command. The formatting string can contain raw characters (delimiters, etc.) and special
+tags, which are used to output information about concrete minor version (e.g. minor version
+description, number of assigned profiles, etc.). Refer to <a class="reference internal" href="logs.html#logs-log"><span class="std std-ref">Customizing Logs</span></a> for more information
+regarding the formatting strings for <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code>.</p>
+<p>E.g. the following formatting string:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">d:6% (</span><span class="si">%s</span><span class="s1">tats%) </span><span class="si">%d</span><span class="s1">esc%&#39;</span>
+</pre></div>
+</div>
+<p>will yield the following output when running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">minor</span>   <span class="p">(</span><span class="n">a</span><span class="o">|</span><span class="n">m</span><span class="o">|</span><span class="n">x</span><span class="o">|</span><span class="n">t</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">info</span>
+<span class="mi">53</span><span class="n">d35c</span>  <span class="p">(</span><span class="mi">2</span><span class="o">|</span><span class="mi">0</span><span class="o">|</span><span class="mi">2</span><span class="o">|</span><span class="mi">0</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">Add</span> <span class="n">deleted</span> <span class="n">jobs</span> <span class="n">directory</span>
+<span class="mi">07</span><span class="n">f2b4</span>  <span class="p">(</span><span class="mi">1</span><span class="o">|</span><span class="mi">0</span><span class="o">|</span><span class="mi">1</span><span class="o">|</span><span class="mi">0</span> <span class="n">profiles</span><span class="p">)</span> <span class="n">Add</span> <span class="n">necessary</span> <span class="n">files</span> <span class="k">for</span> <span class="n">perun</span> <span class="n">to</span> <span class="n">work</span> <span class="n">on</span> <span class="n">this</span> <span class="n">repo</span><span class="o">.</span>
+<span class="n">bd3dc3</span>  <span class="o">---</span><span class="n">no</span><span class="o">--</span><span class="n">profiles</span><span class="o">---</span> <span class="n">root</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-format.output_profile_template">
+<code class="descname">format.output_profile_template</code><a class="headerlink" href="#confkey-format.output_profile_template" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> Specifies the format for automatic generation of profile files (e.g. when
+running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span></code>, <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>, <code class="docutils literal"><span class="pre">perun</span> <span class="pre">collect</span></code> or <code class="docutils literal"><span class="pre">perun</span> <span class="pre">postprocessby</span></code>.
+The formatting string consists either of raw characters or special tags, that output
+information according to the resulting profile. By default the following formatting string is
+set in the global configuration:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">ollector</span><span class="si">%-%</span><span class="s2">cmd</span><span class="si">%-%</span><span class="s2">args</span><span class="si">%-%</span><span class="s2">workload</span><span class="si">%-%</span><span class="s2">date%&quot;</span>
+</pre></div>
+</div>
+<p>The supported tags are as follows:</p>
+<p><code class="docutils literal"><span class="pre">%collector%</span></code>:</p>
+<blockquote>
+<div>Placeholder for the collection unit that collected the profiling data of the given profile.
+Refer to <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a> for full list of supported collectors.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%postprocessors%</span></code>:</p>
+<blockquote>
+<div>Placeholder for list of postprocessors that were used on the given profile. The resulting
+string consists of postprocessor names joined by <code class="docutils literal"><span class="pre">-and-</span></code> string, i.e. for example this will
+output string <code class="docutils literal"><span class="pre">normalizer-and-filter</span></code>.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%&lt;unit&gt;.&lt;param&gt;%</span></code>:</p>
+<blockquote>
+<div>Placeholder for concrete value of <code class="docutils literal"><span class="pre">&lt;param&gt;</span></code> of one unit <code class="docutils literal"><span class="pre">&lt;unit&gt;</span></code> (either collector or
+postprocessor)</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%cmd%</span></code>:</p>
+<blockquote>
+<div>Placeholder for the command that was profiled, i.e. some binary, script or command (refer
+to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="xref std std-munit docutils literal"><span class="pre">cmds</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%args%</span></code>:</p>
+<blockquote>
+<div>Placeholder for arguments that were supplied to the profiled command (refer to
+<a class="reference internal" href="jobs.html#matrixunit-args"><code class="xref std std-munit docutils literal"><span class="pre">args</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%workload%</span></code>:</p>
+<blockquote>
+<div>Placeholder for workload that was supplied to the profiled command (refer to
+<a class="reference internal" href="jobs.html#matrixunit-workloads"><code class="xref std std-munit docutils literal"><span class="pre">workloads</span></code></a> or <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for more details).</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%type%</span></code>:</p>
+<blockquote>
+<div>Placeholder for global type of the resources of the profile, i.e. <cite>memory</cite>, <cite>time</cite>,
+<cite>mixed</cite>, etc.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%date%</span></code>:</p>
+<blockquote>
+<div>Placeholder for the time and date that the profile was generated in form of
+<code class="docutils literal"><span class="pre">YEAR-MONTH-DAY-HOUR-MINUTES-SECONDS</span></code>.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%origin%</span></code>:</p>
+<blockquote>
+<div>Placeholder for the origin of the profile, i.e. the minor version identification for which
+the profiles was generated and the profiling data was collected.</div></blockquote>
+<p><code class="docutils literal"><span class="pre">%counter%</span></code>:</p>
+<blockquote>
+<div>Placeholder for increasing counter (counting from 0) for one run of perun. Note that this
+may rewrite existing profiles and is mostly meant to distinguish between profiles during
+one batch run of profile generation (e.g. when <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> is executed).</div></blockquote>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-cmds">
+<code class="descname">cmds</code><a class="headerlink" href="#confkey-cmds" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-cmds"><code class="xref std std-munit docutils literal"><span class="pre">cmds</span></code></a>.</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-args">
+<code class="descname">args</code><a class="headerlink" href="#confkey-args" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-args"><code class="xref std std-munit docutils literal"><span class="pre">args</span></code></a>.</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-workloads">
+<code class="descname">workloads</code><a class="headerlink" href="#confkey-workloads" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-workloads"><code class="xref std std-munit docutils literal"><span class="pre">workloads</span></code></a></p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-collectors">
+<code class="descname">collectors</code><a class="headerlink" href="#confkey-collectors" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-collectors"><code class="xref std std-munit docutils literal"><span class="pre">collectors</span></code></a></p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-postprocessors">
+<code class="descname">postprocessors</code><a class="headerlink" href="#confkey-postprocessors" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[local-only]</span></code> Refer to <a class="reference internal" href="jobs.html#matrixunit-postprocessors"><code class="xref std std-munit docutils literal"><span class="pre">postprocessors</span></code></a></p>
+</dd></dl>
+
+<dl class="confunit">
+<dt id="confunit-degradation">
+<code class="descname">degradation</code><a class="headerlink" href="#confunit-degradation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Section, which contains options and specifications potentially shared by more Perun instances.
+This section contains e.g. underlying text editor for editing, or paging strategy etc.</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-degradation.apply">
+<code class="descname">degradation.apply</code><a class="headerlink" href="#confkey-degradation.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code></p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-degradation.strategies">
+<code class="descname">degradation.strategies</code><a class="headerlink" href="#confkey-degradation.strategies" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[gathered]</span></code> Specifies the rules for application of the performance degradation methods for
+profiles with corresponding profile configurations (e.g. with concrete profile type, specified
+collector, etc.). Refer to <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> for more details about application of
+strategies.</p>
+<p>The following configuration will apply the <a class="reference internal" href="degradation.html#degradation-method-bmoe"><span class="std std-ref">Best Model Order Equality</span></a> method for all of the
+<cite>mixed</cite> types of the profiles, which were postprocessed using the
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> and <a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a> otherwise.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">degradation</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">strategies</span><span class="p p-Indicator">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mixed</span>
+      <span class="l l-Scalar l-Scalar-Plain">postprocessor</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
+      <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">aat</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="command-line-interface">
+<span id="config-cli"></span><h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
+<p>We advise to manipulate with configurations using the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--edit</span></code> command. In order to
+change the nearest local (resp. global) configuration run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--local</span> <span class="pre">--edit</span></code> (resp.
+<code class="docutils literal"><span class="pre">perun</span> <span class="pre">config</span> <span class="pre">--shared</span> <span class="pre">--edit</span></code>).</p>
+<div class="section" id="perun-config">
+<h3>perun config<a class="headerlink" href="#perun-config" title="Permalink to this headline">¶</a></h3>
+<p>Manages the stored local and shared configuration.</p>
+<p>Perun supports two external configurations:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">local.yml</span></code>: the local configuration stored in <code class="docutils literal"><span class="pre">.perun</span></code>
+directory, containing the keys such as specification of wrapped
+repository or job matrix used for quick generation of profiles (run
+<code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for information
+how to construct the job matrix).</li>
+<li><code class="docutils literal"><span class="pre">shared.yml</span></code>:  the global configuration shared by all perun
+instances, containing shared keys, such as text editor, formatting
+string, etc.</li>
+</ol>
+</div></blockquote>
+<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in most operations consists of section
+separated by dots, e.g. <code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code>
+section. The lookup of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes,
+<code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and <code class="docutils literal"><span class="pre">--nearest</span></code>, locating or setting the
+<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration respectively (e.g. when
+one is trying to get some key, there may be nested perun instances that do
+not contain the given key). By default, perun operates in the nearest
+config mode.</p>
+<p>Refer to <a class="reference internal" href="#"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<p>E.g. using the following one can retrieve the type of the nearest perun
+instance wrapper:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vsc.type
+vcs.type: git
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-config-l">
+<code class="descname">-l</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--local</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will lookup or set in the local config i.e. <code class="docutils literal"><span class="pre">.perun/local.yml</span></code>.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-config-h">
+<code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--shared</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will lookup or set in the shared config i.e. <code class="docutils literal"><span class="pre">shared.yml.</span></code></p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-config-n">
+<code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--nearest</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will recursively discover the nearest suitable config. The lookup strategy can differ for <code class="docutils literal"><span class="pre">set</span></code> and <code class="docutils literal"><span class="pre">get</span></code>/<code class="docutils literal"><span class="pre">edit</span></code>.</p>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">edit</code></dt>
+<dd><p>Edits the configuration file in the external…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">get</code></dt>
+<dd><p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">set</code></dt>
+<dd><p>Sets the value of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> to the given…</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-config-get">
+<h3>perun config get<a class="headerlink" href="#perun-config-get" title="Permalink to this headline">¶</a></h3>
+<p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the configuration hierarchy and returns
+the stored value.</p>
+<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> consists of section separated by dots, e.g.
+<code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code> section. The lookup of the
+<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes, <code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and
+<code class="docutils literal"><span class="pre">--nearest</span></code>, locating the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest
+configuration respectively (e.g. when one is trying to get some key, there
+may be nested perun instances that do not contain the given key). By
+default, perun operates in the nearest config mode.</p>
+<p>Refer to <a class="reference internal" href="#"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<p>E.g. using the following can retrieve the type of the nearest perun
+wrapper:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vsc.type
+vcs.type: git
+
+$ perun config --shared get general.editor
+general.editor: vim
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config get <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;key&gt;
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-config-get-arg-key">
+<code class="descname">&lt;key&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-get-arg-key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-config-set">
+<h3>perun config set<a class="headerlink" href="#perun-config-set" title="Permalink to this headline">¶</a></h3>
+<p>Sets the value of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> to the given <code class="docutils literal"><span class="pre">&lt;value&gt;</span></code> in the target
+configuration file.</p>
+<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> corresponds of section separated by dots, e.g.
+<code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code> section. Perun sets the
+<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in three modes, <code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and <code class="docutils literal"><span class="pre">--nearest</span></code>,
+which sets the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration
+respectively (e.g.  when one is trying to get some key, there may be nested
+perun instances that do not contain the given key). By default, perun will
+operate in the nearest config mode.</p>
+<p>The <code class="docutils literal"><span class="pre">&lt;value&gt;</span></code> is arbitrary depending on the key.</p>
+<p>Refer to <a class="reference internal" href="#"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options and their
+values.</p>
+<p>E.g. using the following can set the log format for nearest perun instance
+wrapper:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config <span class="nb">set</span> format.shortlog <span class="s2">&quot;| %origin% | %collector% |&quot;</span>
+format.shortlog: <span class="p">|</span> %origin% <span class="p">|</span> %collector% <span class="p">|</span>
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config <span class="nb">set</span> <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;key&gt; &lt;value&gt;
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-config-set-arg-key">
+<code class="descname">&lt;key&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-set-arg-key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-config-set-arg-value">
+<code class="descname">&lt;value&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-set-arg-value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-config-edit">
+<h3>perun config edit<a class="headerlink" href="#perun-config-edit" title="Permalink to this headline">¶</a></h3>
+<p>Edits the configuration file in the external editor.</p>
+<p>The used editor is specified by the <a class="reference internal" href="#confkey-general.editor"><code class="xref std std-ckey docutils literal"><span class="pre">general.editor</span></code></a> option,
+specified in the nearest perun configuration..</p>
+<p>Refer to <a class="reference internal" href="#"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config edit <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="index.html">
+    <h3>Perun</h3>
+  </a>
+</p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Perun Configuration files</a><ul>
+<li><a class="reference internal" href="#configuration-types">Configuration types</a></li>
+<li><a class="reference internal" href="#list-of-supported-options">List of Supported Options</a></li>
+<li><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
+<li><a class="reference internal" href="#perun-config">perun config</a></li>
+<li><a class="reference internal" href="#perun-config-get">perun config get</a></li>
+<li><a class="reference internal" href="#perun-config-set">perun config set</a></li>
+<li><a class="reference internal" href="#perun-config-edit">perun config edit</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="degradation.html" title="previous chapter">Detecting Performance Changes</a></li>
+      <li>Next: <a href="logs.html" title="next chapter">Customize Logs and Statuses</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/config.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/config.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

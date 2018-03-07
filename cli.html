@@ -1,0 +1,2056 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Command Line Interface &#8212; Perun 0.12 documentation</title>
+    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Collectors Overview" href="collectors.html" />
+    <link rel="prev" title="Perun’s Profile Format" href="profile.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-perun.cli">
+<span id="command-line-interface"></span><span id="cli-overview"></span><h1>Command Line Interface<a class="headerlink" href="#module-perun.cli" title="Permalink to this headline">¶</a></h1>
+<p>Perun can be run from the command line (if correctly installed) using the
+command interface inspired by git.</p>
+<p>The Command Line Interface is implemented using the <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library, which
+allows both effective definition of new commands and finer parsing of the
+command line arguments. The intefrace can be broken into several groups:</p>
+<blockquote>
+<div><p>1. <strong>Core commands</strong>: namely <code class="docutils literal"><span class="pre">init</span></code>, <code class="docutils literal"><span class="pre">config</span></code>, <code class="docutils literal"><span class="pre">add</span></code>, <code class="docutils literal"><span class="pre">rm</span></code>,
+<code class="docutils literal"><span class="pre">status</span></code>, <code class="docutils literal"><span class="pre">log</span></code>, <code class="docutils literal"><span class="pre">run</span></code> commands (which consists of commands <code class="docutils literal"><span class="pre">run</span>
+<span class="pre">job</span></code> and <code class="docutils literal"><span class="pre">run</span> <span class="pre">matrix</span></code>) and <code class="docutils literal"><span class="pre">check</span></code> commands (which consists of
+commands <code class="docutils literal"><span class="pre">check</span> <span class="pre">all</span></code>, <code class="docutils literal"><span class="pre">check</span> <span class="pre">head</span></code> and <code class="docutils literal"><span class="pre">check</span> <span class="pre">profiles</span></code>).
+These commands automate the creation of performance profiles, detection
+of performance degradation and are used for management of the Perun
+repository. Refer to <a class="reference internal" href="#cli-main-ref"><span class="std std-ref">Perun Commands</span></a> for details about commands.</p>
+<p>2. <strong>Collect commands</strong>: group of <code class="docutils literal"><span class="pre">collect</span> <span class="pre">COLLECTOR</span></code> commands, where
+<code class="docutils literal"><span class="pre">COLLECTOR</span></code> stands for one of the collector of <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a>.
+Each <code class="docutils literal"><span class="pre">COLLECTOR</span></code> has its own API, refer to <a class="reference internal" href="#cli-collect-units-ref"><span class="std std-ref">Collect units</span></a>
+for thorough description of API of individual collectors.</p>
+<p>3. <strong>Postprocessby commands</strong>: group of <code class="docutils literal"><span class="pre">postprocessby</span> <span class="pre">POSTPROCESSOR</span></code>
+commands, where <code class="docutils literal"><span class="pre">POSTPROCESSOR</span></code> stands for one of the postprocessor of
+<a class="reference internal" href="postprocessors.html#postprocessors-list"><span class="std std-ref">Supported Postprocessors</span></a>. Each <code class="docutils literal"><span class="pre">POSTPROCESSOR</span></code> has its own API, refer
+to <a class="reference internal" href="#cli-postprocess-units-ref"><span class="std std-ref">Postprocess units</span></a> for thorough description of API of
+individual postprocessors.</p>
+<p>4. <strong>View commands</strong>: group of <code class="docutils literal"><span class="pre">view</span> <span class="pre">VISUALIZATION</span></code> commands, where
+<code class="docutils literal"><span class="pre">VISUALIZATION</span></code> stands for one of the visualizer of <a class="reference internal" href="views.html#views-list"><span class="std std-ref">Supported Visualizations</span></a>.
+Each <code class="docutils literal"><span class="pre">VISUALIZATION</span></code> has its own API, refer to <a class="reference internal" href="#cli-views-units-ref"><span class="std std-ref">Show units</span></a>
+for thorough description of API of individual views.</p>
+</div></blockquote>
+<p>Graphical User Interface is currently in development and hopefully will extend
+the flexibility of Perun’s usage.</p>
+<div class="section" id="perun">
+<h2>perun<a class="headerlink" href="#perun" title="Permalink to this headline">¶</a></h2>
+<p>Perun is an open source light-weight Performance Versioning System.</p>
+<p>In order to initialize Perun in current directory run the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">init</span>
+</pre></div>
+</div>
+<p>This initializes basic structure in <code class="docutils literal"><span class="pre">.perun</span></code> directory, together with
+possible reinitialization of git repository in current directory. In order
+to set basic configuration and define jobs for your project run the
+following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">config</span> <span class="o">--</span><span class="n">edit</span>
+</pre></div>
+</div>
+<p>This opens editor and allows you to specify configuration of your project
+and choose set of collectors for capturing resources. See <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> and
+<a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for more details.</p>
+<p>In order to generate first set of profiles for your current <code class="docutils literal"><span class="pre">HEAD</span></code> run the
+following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">run</span> <span class="n">matrix</span>
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-no-pager">
+<code class="descname">--no-pager</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-no-pager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable paging of the long standard output (currently affects only <code class="docutils literal"><span class="pre">status</span></code> and <code class="docutils literal"><span class="pre">log</span></code> outputs). See <code class="xref std std-ckey docutils literal"><span class="pre">paging</span></code> to change the default paging strategy.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-v">
+<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--verbose</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increase the verbosity of the standard output. Verbosity is incremental, and each level increases the extent of output.</p>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">add</code></dt>
+<dd><p>Links profile to concrete minor version…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">check</code></dt>
+<dd><p>Applies for the points of version history…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">collect</code></dt>
+<dd><p>Generates performance profile using selected…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">config</code></dt>
+<dd><p>Manages the stored local and shared…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">init</code></dt>
+<dd><p>Initializes performance versioning system at…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">log</code></dt>
+<dd><p>Shows history of versions and associated…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">postprocessby</code></dt>
+<dd><p>Postprocesses the given stored or pending…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">rm</code></dt>
+<dd><p>Unlinks the profile from the given minor…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">run</code></dt>
+<dd><p>Generates batch of profiles w.r.t.</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">show</code></dt>
+<dd><p>Interprets the given profile using the…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">status</code></dt>
+<dd><p>Shows the status of vcs, associated profiles…</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-commands">
+<span id="cli-main-ref"></span><h2>Perun Commands<a class="headerlink" href="#perun-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="perun-init">
+<h3>perun init<a class="headerlink" href="#perun-init" title="Permalink to this headline">¶</a></h3>
+<p>Initializes performance versioning system at the destination path.</p>
+<p><code class="docutils literal"><span class="pre">perun</span> <span class="pre">init</span></code> command initializes the perun’s infrastructure with basic
+file and directory structure inside the <code class="docutils literal"><span class="pre">.perun</span></code> directory. Refer to
+<a class="reference internal" href="internals.html#internals-overview"><span class="std std-ref">Perun Internals</span></a> for more details about storage of Perun. By
+default following directories are created:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">.perun/jobs</span></code>: storage of performance profiles not yet assigned to
+concrete minor versions.</li>
+<li><code class="docutils literal"><span class="pre">.perun/objects</span></code>: storage of packed contents of performance
+profiles and additional informations about minor version of wrapped
+vcs system.</li>
+<li><code class="docutils literal"><span class="pre">.perun/cache</span></code>: fast access cache of selected latest unpacked
+profiles</li>
+<li><code class="docutils literal"><span class="pre">.perun/local.yml</span></code>: local configuration, storing specification of
+wrapped repository, jobs configuration, etc. Refer to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>
+for more details.</li>
+</ol>
+</div></blockquote>
+<p>The infrastructure is initialized at &lt;path&gt;. If no &lt;path&gt; is given, then
+current working directory is used instead. In case there already exists a
+performance versioning system, the infrastructure is only reinitialized.</p>
+<p>By default, a control system is initialized as well. This can be changed by
+by setting the <code class="docutils literal"><span class="pre">--vcs-type</span></code> parameter (currently we support <code class="docutils literal"><span class="pre">git</span></code> and
+<code class="docutils literal"><span class="pre">tagit</span></code>—a lightweight git-based wrapped based on tags). Additional
+parameters can be passed to the wrapped control system initialization using
+the <code class="docutils literal"><span class="pre">--vcs-params</span></code>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun init <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;path&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-init-vcs-type">
+<code class="descname">--vcs-type</code><code class="descclassname"> &lt;vcs_type&gt;</code><a class="headerlink" href="#cmdoption-perun-init-vcs-type" title="Permalink to this definition">¶</a></dt>
+<dd><p>In parallel to initialization of Perun, initialize the vcs of &lt;type&gt; as well (by default <code class="docutils literal"><span class="pre">git</span></code>).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-init-vcs-path">
+<code class="descname">--vcs-path</code><code class="descclassname"> &lt;vcs_path&gt;</code><a class="headerlink" href="#cmdoption-perun-init-vcs-path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the destination of wrapped vcs initialization at &lt;path&gt;.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-init-vcs-param">
+<code class="descname">--vcs-param</code><code class="descclassname"> &lt;vcs_param&gt;</code><a class="headerlink" href="#cmdoption-perun-init-vcs-param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes additional (key, value) parameter to initialization of version control system, e.g. <code class="docutils literal"><span class="pre">separate-git-dir</span> <span class="pre">dir</span></code>.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-init-vcs-flag">
+<code class="descname">--vcs-flag</code><code class="descclassname"> &lt;vcs_flag&gt;</code><a class="headerlink" href="#cmdoption-perun-init-vcs-flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes additional flag to a initialization of version control system, e.g. <code class="docutils literal"><span class="pre">bare</span></code>.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-init-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--configure</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-init-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>After successful initialization of both systems, opens the local configuration using the <code class="xref std std-ckey docutils literal"><span class="pre">editor</span></code> set in shared config.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-init-arg-path">
+<code class="descname">&lt;path&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-init-arg-path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-config">
+<h3>perun config<a class="headerlink" href="#perun-config" title="Permalink to this headline">¶</a></h3>
+<p>Manages the stored local and shared configuration.</p>
+<p>Perun supports two external configurations:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">local.yml</span></code>: the local configuration stored in <code class="docutils literal"><span class="pre">.perun</span></code>
+directory, containing the keys such as specification of wrapped
+repository or job matrix used for quick generation of profiles (run
+<code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> for information
+how to construct the job matrix).</li>
+<li><code class="docutils literal"><span class="pre">shared.yml</span></code>:  the global configuration shared by all perun
+instances, containing shared keys, such as text editor, formatting
+string, etc.</li>
+</ol>
+</div></blockquote>
+<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in most operations consists of section
+separated by dots, e.g. <code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code>
+section. The lookup of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes,
+<code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and <code class="docutils literal"><span class="pre">--nearest</span></code>, locating or setting the
+<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration respectively (e.g. when
+one is trying to get some key, there may be nested perun instances that do
+not contain the given key). By default, perun operates in the nearest
+config mode.</p>
+<p>Refer to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="config.html#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<p>E.g. using the following one can retrieve the type of the nearest perun
+instance wrapper:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vsc.type
+vcs.type: git
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-config-l">
+<code class="descname">-l</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--local</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will lookup or set in the local config i.e. <code class="docutils literal"><span class="pre">.perun/local.yml</span></code>.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-config-h">
+<code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--shared</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will lookup or set in the shared config i.e. <code class="docutils literal"><span class="pre">shared.yml.</span></code></p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-config-n">
+<code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--nearest</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will recursively discover the nearest suitable config. The lookup strategy can differ for <code class="docutils literal"><span class="pre">set</span></code> and <code class="docutils literal"><span class="pre">get</span></code>/<code class="docutils literal"><span class="pre">edit</span></code>.</p>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">edit</code></dt>
+<dd><p>Edits the configuration file in the external…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">get</code></dt>
+<dd><p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">set</code></dt>
+<dd><p>Sets the value of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> to the given…</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-config-get">
+<h3>perun config get<a class="headerlink" href="#perun-config-get" title="Permalink to this headline">¶</a></h3>
+<p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the configuration hierarchy and returns
+the stored value.</p>
+<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> consists of section separated by dots, e.g.
+<code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code> section. The lookup of the
+<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be performed in three modes, <code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and
+<code class="docutils literal"><span class="pre">--nearest</span></code>, locating the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest
+configuration respectively (e.g. when one is trying to get some key, there
+may be nested perun instances that do not contain the given key). By
+default, perun operates in the nearest config mode.</p>
+<p>Refer to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="config.html#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<p>E.g. using the following can retrieve the type of the nearest perun
+wrapper:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vsc.type
+vcs.type: git
+
+$ perun config --shared get general.editor
+general.editor: vim
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config get <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;key&gt;
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-config-get-arg-key">
+<code class="descname">&lt;key&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-get-arg-key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-config-set">
+<h3>perun config set<a class="headerlink" href="#perun-config-set" title="Permalink to this headline">¶</a></h3>
+<p>Sets the value of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> to the given <code class="docutils literal"><span class="pre">&lt;value&gt;</span></code> in the target
+configuration file.</p>
+<p>The syntax of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> corresponds of section separated by dots, e.g.
+<code class="docutils literal"><span class="pre">vcs.type</span></code> specifies <code class="docutils literal"><span class="pre">type</span></code> key in <code class="docutils literal"><span class="pre">vcs</span></code> section. Perun sets the
+<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in three modes, <code class="docutils literal"><span class="pre">--local</span></code>, <code class="docutils literal"><span class="pre">--shared</span></code> and <code class="docutils literal"><span class="pre">--nearest</span></code>,
+which sets the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> in local, shared or nearest configuration
+respectively (e.g.  when one is trying to get some key, there may be nested
+perun instances that do not contain the given key). By default, perun will
+operate in the nearest config mode.</p>
+<p>The <code class="docutils literal"><span class="pre">&lt;value&gt;</span></code> is arbitrary depending on the key.</p>
+<p>Refer to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="config.html#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options and their
+values.</p>
+<p>E.g. using the following can set the log format for nearest perun instance
+wrapper:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config <span class="nb">set</span> format.shortlog <span class="s2">&quot;| %origin% | %collector% |&quot;</span>
+format.shortlog: <span class="p">|</span> %origin% <span class="p">|</span> %collector% <span class="p">|</span>
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config <span class="nb">set</span> <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;key&gt; &lt;value&gt;
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-config-set-arg-key">
+<code class="descname">&lt;key&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-set-arg-key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-config-set-arg-value">
+<code class="descname">&lt;value&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-set-arg-value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-config-edit">
+<h3>perun config edit<a class="headerlink" href="#perun-config-edit" title="Permalink to this headline">¶</a></h3>
+<p>Edits the configuration file in the external editor.</p>
+<p>The used editor is specified by the <a class="reference internal" href="config.html#confkey-general.editor"><code class="xref std std-ckey docutils literal"><span class="pre">general.editor</span></code></a> option,
+specified in the nearest perun configuration..</p>
+<p>Refer to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for full description of configurations and
+<a class="reference internal" href="config.html#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun config edit <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="perun-add">
+<h3>perun add<a class="headerlink" href="#perun-add" title="Permalink to this headline">¶</a></h3>
+<p>Links profile to concrete minor version storing its content in the
+<code class="docutils literal"><span class="pre">.perun</span></code> dir and registering the profile in internal minor version index.</p>
+<p>In order to link &lt;profile&gt; to given minor version &lt;hash&gt; the following
+steps are executed:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>We check in &lt;profile&gt; that its <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> key corresponds to
+&lt;hash&gt;. This serves as a check, that we do not assign profiles to
+different minor versions.</li>
+<li>The <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> is removed and contents of &lt;profile&gt; are
+compresed using <cite>zlib</cite> compression method.</li>
+<li>Binary header for the profile is constructed.</li>
+<li>Compressed contents are appended to header, and this blob is stored
+in <code class="docutils literal"><span class="pre">.perun/objects</span></code> directory.</li>
+<li>New blob is registered in &lt;hash&gt; minor version’s index.</li>
+<li>Unless <code class="docutils literal"><span class="pre">--keep-profile</span></code> is set. The original profile is deleted.</li>
+</ol>
+</div></blockquote>
+<p>If no <cite>&lt;hash&gt;</cite> is specified, then current <code class="docutils literal"><span class="pre">HEAD</span></code> of the wrapped version
+control system is used instead. Massaging of &lt;hash&gt; is taken care of by
+underlying version control system (e.g. git uses <code class="docutils literal"><span class="pre">git</span> <span class="pre">rev-parse</span></code>).</p>
+<p>&lt;profile&gt; can either be a <code class="docutils literal"><span class="pre">pending</span> <span class="pre">tag</span></code> or a fullpath. <code class="docutils literal"><span class="pre">Pending</span> <span class="pre">tags</span></code>
+are in form of <code class="docutils literal"><span class="pre">i&#64;p</span></code>, where <code class="docutils literal"><span class="pre">i</span></code> stands for an index in the pending
+profile directory (i.e. <code class="docutils literal"><span class="pre">.perun/jobs</span></code>) and <code class="docutils literal"><span class="pre">&#64;p</span></code> is literal suffix.
+Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> to see the <cite>tag</cite> anotation of pending profiles.</p>
+<p>Example of adding profiles:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun add mybin-memory-input.txt-2017-03-01-16-11-04.perf
+</pre></div>
+</div>
+<p>This command adds the profile collected by <cite>memory</cite> collector during
+profiling <code class="docutils literal"><span class="pre">mybin</span></code> command with <code class="docutils literal"><span class="pre">input.txt</span></code> workload on 1st March at
+16:11 to the current <code class="docutils literal"><span class="pre">HEAD</span></code>.</p>
+<p>An error is raised if the command is executed outside of range of any
+perun, if &lt;profile&gt; points to incorrect profile (i.e. not w.r.t.
+<a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>) or &lt;hash&gt; does not point to valid minor version ref.</p>
+<p>See <a class="reference internal" href="internals.html"><span class="doc">Perun Internals</span></a> for information how perun handles profiles internally.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun add <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;profile&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-add-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor</code><code class="descclassname"> &lt;minor&gt;</code><a class="headerlink" href="#cmdoption-perun-add-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>&lt;profile&gt; will be stored at this minor version (default is HEAD).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-add-keep-profile">
+<code class="descname">--keep-profile</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-add-keep-profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keeps the profile in filesystem after registering it in Perun storage. Otherwise it is deleted.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-add-arg-profile">
+<code class="descname">&lt;profile&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-add-arg-profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument(s)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-rm">
+<h3>perun rm<a class="headerlink" href="#perun-rm" title="Permalink to this headline">¶</a></h3>
+<p>Unlinks the profile from the given minor version, keeping the contents
+stored in <code class="docutils literal"><span class="pre">.perun</span></code> directory.</p>
+<p>&lt;profile&gt; is unlinked in the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>&lt;profile&gt; is looked up in the &lt;hash&gt; minor version’s internal index.</li>
+<li>In case &lt;profile&gt; is not found. An error is raised.</li>
+<li>Otherwise, the record corresponding to &lt;hash&gt; is erased. However,
+the original blob is kept in <code class="docutils literal"><span class="pre">.perun/objects</span></code>.</li>
+</ol>
+</div></blockquote>
+<p>If no <cite>&lt;hash&gt;</cite> is specified, then current <code class="docutils literal"><span class="pre">HEAD</span></code> of the wrapped version
+control system is used instead. Massaging of &lt;hash&gt; is taken care of by
+underlying version control system (e.g. git uses <code class="docutils literal"><span class="pre">git</span> <span class="pre">rev-parse</span></code>).</p>
+<p>&lt;profile&gt; can either be a <code class="docutils literal"><span class="pre">index</span> <span class="pre">tag</span></code> or a path specifying the profile.
+<code class="docutils literal"><span class="pre">Index</span> <span class="pre">tags</span></code> are in form of <code class="docutils literal"><span class="pre">i&#64;i</span></code>, where <code class="docutils literal"><span class="pre">i</span></code> stands for an index in
+the minor version’s index and <code class="docutils literal"><span class="pre">&#64;i</span></code> is literal suffix. Run <code class="docutils literal"><span class="pre">perun</span>
+<span class="pre">status</span></code> to see the <cite>tags</cite> of current <code class="docutils literal"><span class="pre">HEAD</span></code>’s index.</p>
+<p>Examples of removing profiles:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun rm <span class="m">2</span>@i
+</pre></div>
+</div>
+<p>This commands removes the third (we index from zero) profile in the index
+of registered profiles of current <code class="docutils literal"><span class="pre">HEAD</span></code>.</p>
+<p>An error is raised if the command is executed outside of range of any
+Perun or if &lt;profile&gt; is not found inside the &lt;hash&gt; index.</p>
+<p>See <a class="reference internal" href="internals.html"><span class="doc">Perun Internals</span></a> for information how perun handles profiles internally.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun rm <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;profile&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-rm-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor</code><code class="descclassname"> &lt;minor&gt;</code><a class="headerlink" href="#cmdoption-perun-rm-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>&lt;profile&gt; will be stored at this minor version (default is HEAD).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-rm-a">
+<code class="descname">-A</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--remove-all</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-rm-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all occurrences of &lt;profile&gt; from the &lt;hash&gt; index.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-rm-arg-profile">
+<code class="descname">&lt;profile&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-rm-arg-profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument(s)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-status">
+<h3>perun status<a class="headerlink" href="#perun-status" title="Permalink to this headline">¶</a></h3>
+<p>Shows the status of vcs, associated profiles and perun.</p>
+<p>Shows the status of both the nearest perun and wrapped version control
+system. For vcs this outputs e.g. the current minor version <code class="docutils literal"><span class="pre">HEAD</span></code>,
+current major version and description of the <code class="docutils literal"><span class="pre">HEAD</span></code>.  Moreover <code class="docutils literal"><span class="pre">status</span></code>
+prints the lists of tracked and pending (found in <code class="docutils literal"><span class="pre">.perun/jobs</span></code>) profiles
+lexicographically sorted along with additional information such as their
+types and creation times.</p>
+<p>Unless <code class="docutils literal"><span class="pre">perun</span> <span class="pre">--no-pager</span> <span class="pre">status</span></code> is issued as command, or appropriate
+<code class="xref std std-ckey docutils literal"><span class="pre">paging</span></code> option is set, the outputs of status will be paged (by
+default using <code class="docutils literal"><span class="pre">less</span></code>.</p>
+<p>An error is raised if the command is executed outside of range of any
+perun, or configuration misses certain configuration keys
+(namely <code class="docutils literal"><span class="pre">format.status</span></code>).</p>
+<p>Refer to <a class="reference internal" href="logs.html#logs-status"><span class="std std-ref">Customizing Statuses</span></a> for information how to customize the outputs of
+<code class="docutils literal"><span class="pre">status</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.status"><code class="xref std std-ckey docutils literal"><span class="pre">format.status</span></code></a> in nearest
+configuration.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun status <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-status-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--short</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-status-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortens the output of <code class="docutils literal"><span class="pre">status</span></code> to include only most necessary informations.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-log">
+<h3>perun log<a class="headerlink" href="#perun-log" title="Permalink to this headline">¶</a></h3>
+<p>Shows history of versions and associated profiles.</p>
+<p>Shows the history of the wrapped version control system and all of the
+associated profiles starting from the &lt;hash&gt; point, outputing the
+information about number of profiles, about descriptions ofconcrete minor
+versions, their parents, parents etc.</p>
+<p>If <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code> is issued, the shorter version of the <code class="docutils literal"><span class="pre">log</span></code> is
+outputted.</p>
+<p>In no &lt;hash&gt; is given, then HEAD of the version control system is used as a starting point.</p>
+<p>Unless <code class="docutils literal"><span class="pre">perun</span> <span class="pre">--no-pager</span> <span class="pre">log</span></code> is issued as command, or appropriate
+<code class="xref std std-ckey docutils literal"><span class="pre">paging</span></code> option is set, the outputs of log will be paged (by
+default using <code class="docutils literal"><span class="pre">less</span></code>.</p>
+<p>Refer to <a class="reference internal" href="logs.html#logs-log"><span class="std std-ref">Customizing Logs</span></a> for information how to customize the outputs of
+<code class="docutils literal"><span class="pre">log</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.log"><code class="xref std std-ckey docutils literal"><span class="pre">format.log</span></code></a> in nearest
+configuration.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun log <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;hash&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-log-count-only">
+<code class="descname">--count-only</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-count-only" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows only aggregated data without minor version history description</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-log-show-aggregate">
+<code class="descname">--show-aggregate</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-show-aggregate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Includes the aggregated values for each minor version.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-log-last">
+<code class="descname">--last</code><code class="descclassname"> &lt;last&gt;</code><a class="headerlink" href="#cmdoption-perun-log-last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limits the output of log to last &lt;int&gt; entries.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-log-no-merged">
+<code class="descname">--no-merged</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-no-merged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Skips merges during the iteration of the project history.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-log-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--short</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shortens the output of <code class="docutils literal"><span class="pre">log</span></code> to include only most necessary information.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-log-arg-hash">
+<code class="descname">&lt;hash&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-arg-hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-run">
+<h3>perun run<a class="headerlink" href="#perun-run" title="Permalink to this headline">¶</a></h3>
+<p>Generates batch of profiles w.r.t. specification of list of jobs.</p>
+<p>Either runs the job matrix stored in local.yml configuration or lets the
+user construct the job run using the set of parameters.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun run <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-run-ot">
+<code class="descname">-ot</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output-filename-template</code><code class="descclassname"> &lt;output_filename_template&gt;</code><a class="headerlink" href="#cmdoption-perun-run-ot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the template for automatic generation of output filename This way the file with collected data will have a resulting filename w.r.t  to this parameter. Refer to <a class="reference internal" href="config.html#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal"><span class="pre">format.output_profile_template</span></code></a> for more details about the format of the template.</p>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">job</code></dt>
+<dd><p>Run specified batch of perun jobs to generate…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">matrix</code></dt>
+<dd><p>Runs the jobs matrix specified in the…</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-run-job">
+<h3>perun run job<a class="headerlink" href="#perun-run-job" title="Permalink to this headline">¶</a></h3>
+<p>Run specified batch of perun jobs to generate profiles.</p>
+<p>This command correspond to running one isolated batch of profiling jobs,
+outside of regular profilings. Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>, after specifying
+job matrix in local configuration to automate regular profilings of your
+project. After the batch is generated, each profile is taged with
+<a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> set to current <code class="docutils literal"><span class="pre">HEAD</span></code>. This serves as check to not assing
+such profiles to different minor versions.</p>
+<p>By default the profiles computed by this batch job are stored inside the
+<code class="docutils literal"><span class="pre">.perun/jobs/</span></code> directory as a files in form of:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
+</pre></div>
+</div>
+<p>In order to store generated profiles run the following, with <code class="docutils literal"><span class="pre">i&#64;p</span></code>
+corresponding to <cite>pending tag</cite>, which can be obtained by running <code class="docutils literal"><span class="pre">perun</span>
+<span class="pre">status</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">add</span> <span class="n">i</span><span class="nd">@p</span>
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>perun run job -c <span class="nb">time</span> -b ./mybin -w file.in -w file2.in -p normalizer
+</pre></div>
+</div>
+<p>This command profiles two commands <code class="docutils literal"><span class="pre">./mybin</span> <span class="pre">file.in</span></code> and <code class="docutils literal"><span class="pre">./mybin</span>
+<span class="pre">file2.in</span></code> and collects the profiling data using the
+<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>. The profiles are afterwards normalized with the
+<a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>perun run job -c complexity -b ./mybin -w sll.cpp -cp complexity <span class="nv">targetdir</span><span class="o">=</span>./src
+</pre></div>
+</div>
+<p>This commands runs one job ‘./mybin sll.cpp’ using the
+<a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a>, which uses custom binaries targeted at
+<code class="docutils literal"><span class="pre">./src</span></code> directory.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p regression_analysis
+</pre></div>
+</div>
+<p>This commands runs two jobs <code class="docutils literal"><span class="pre">./mybin</span> <span class="pre">input.txt</span></code> and <code class="docutils literal"><span class="pre">./otherbin</span>
+<span class="pre">input.txt</span></code> and collects the profiles using the <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.
+The profiles are afterwards postprocessed, first using the
+<a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> and then with
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
+<p>Refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> and <a class="reference internal" href="profile.html"><span class="doc">Perun’s Profile Format</span></a> for more details about automation
+and lifetimes of profiles. For list of available collectors and
+postprocessors refer to <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a> and
+<a class="reference internal" href="postprocessors.html#postprocessors-list"><span class="std std-ref">Supported Postprocessors</span></a> respectively.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun run job <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-run-job-b">
+<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cmd</code><code class="descclassname"> &lt;cmd&gt;</code><a class="headerlink" href="#cmdoption-perun-run-job-b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command that is being profiled. Either corresponds to some script, binary or command, e.g. <code class="docutils literal"><span class="pre">./mybin</span></code> or <code class="docutils literal"><span class="pre">perun</span></code>.  [required]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-job-a">
+<code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--args</code><code class="descclassname"> &lt;args&gt;</code><a class="headerlink" href="#cmdoption-perun-run-job-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameters for &lt;cmd&gt;. E.g. <code class="docutils literal"><span class="pre">status</span></code> or <code class="docutils literal"><span class="pre">-al</span></code> is command parameter.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-job-w">
+<code class="descname">-w</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--workload</code><code class="descclassname"> &lt;workload&gt;</code><a class="headerlink" href="#cmdoption-perun-run-job-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inputs for &lt;cmd&gt;. E.g. <code class="docutils literal"><span class="pre">./subdir</span></code> is possible workloadfor <code class="docutils literal"><span class="pre">ls</span></code> command.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-job-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--collector</code><code class="descclassname"> &lt;collector&gt;</code><a class="headerlink" href="#cmdoption-perun-run-job-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Profiler used for collection of profiling data for the given &lt;cmd&gt;  [required]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-job-cp">
+<code class="descname">-cp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--collector-params</code><code class="descclassname"> &lt;collector_params&gt;</code><a class="headerlink" href="#cmdoption-perun-run-job-cp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameters for the &lt;collector&gt; read from the file in YAML format</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-job-p">
+<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--postprocessor</code><code class="descclassname"> &lt;postprocessor&gt;</code><a class="headerlink" href="#cmdoption-perun-run-job-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>After each collection of data will run &lt;postprocessor&gt; to postprocess the collected resources.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-job-pp">
+<code class="descname">-pp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--postprocessor-params</code><code class="descclassname"> &lt;postprocessor_params&gt;</code><a class="headerlink" href="#cmdoption-perun-run-job-pp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameters for the &lt;postprocessor&gt; read from the file in YAML format</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-run-matrix">
+<h3>perun run matrix<a class="headerlink" href="#perun-run-matrix" title="Permalink to this headline">¶</a></h3>
+<p>Runs the jobs matrix specified in the local.yml configuration.</p>
+<p>This commands loads the jobs configuration from local configuration, builds
+the <cite>job matrix</cite> and subsequently runs the jobs collecting list of
+profiles. Each profile is then stored in <code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory and
+moreover is annotated using by setting <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> key to current
+<code class="docutils literal"><span class="pre">HEAD</span></code>. This serves as check to not assing such profiles to different
+minor versions.</p>
+<p>The job matrix is defined in the yaml format and consists of specification
+of binaries with corresponding arguments, workloads, supported collectors
+of profiling data and postprocessors that alter the collected profiles.</p>
+<p>Refer to <a class="reference internal" href="jobs.html"><span class="doc">Automating Runs</span></a> and <a class="reference internal" href="jobs.html#jobs-matrix"><span class="std std-ref">Job Matrix Format</span></a> for more details how to specify
+the job matrix inside local configuration and to <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> how to work
+with Perun’s configuration files.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun run matrix <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="perun-check">
+<h3>perun check<a class="headerlink" href="#perun-check" title="Permalink to this headline">¶</a></h3>
+<p>Applies for the points of version history checks for possible performance changes.</p>
+<p>This command group either runs the checks for one point of history (<code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">head</span></code>) or for
+the whole history (<code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span> <span class="pre">all</span></code>). For each minor version (called the <cite>target</cite>) we iterate
+over all of the registered profiles and try to find a predecessor minor version (called the
+<cite>baseline</cite>) with profile of the same configuration (by configuration we mean the tuple of
+collector, postprocessors, command, arguments and workloads) and run the checks according to the
+rules set in the configurations.</p>
+<p>The rules are specified as an ordered list in the configuration by
+<a class="reference internal" href="config.html#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.strategies</span></code></a>, where the keys correspond to the configuration (or the type) and
+key <cite>method</cite> specifies the actual method used for checking for performance changes. The applied
+methods can then be either specified by the full name or by its short string consisting of all
+first letter of the function name.</p>
+<p>The example of configuration snippet that sets rules and strategies for one project can be as
+follows:</p>
+<blockquote>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt></dt>
+<dd><dl class="first last docutils">
+<dt>degradation:</dt>
+<dd><p class="first">apply: first
+strategies:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>type: mixed
+postprocessor: regression_analysis
+method: bmoe</li>
+<li>cmd: mybin
+type: memory
+method: bmoe</li>
+<li>method: aat</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>Currently we support the following methods:</p>
+<blockquote>
+<div>1. Best Model Order Equality (BMOE)
+2. Average Amount Threshold (AAT)</div></blockquote>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun check <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-check-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--compute-missing</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>whenever there are missing profiles in the given point of history the matrix will be rerun and new generated profiles assigned.</p>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">all</code></dt>
+<dd><p>Checks for changes in performance for the…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">head</code></dt>
+<dd><p>Checks for changes in performance between…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">profiles</code></dt>
+<dd><p>Checks for changes in performance between two…</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-check-head">
+<h3>perun check head<a class="headerlink" href="#perun-check-head" title="Permalink to this headline">¶</a></h3>
+<p>Checks for changes in performance between between specified minor version (or current <cite>head</cite>)
+and its predecessor minor versions.</p>
+<p>The command iterates over all of the registered profiles of the specified <cite>minor version</cite>
+(<cite>target</cite>; e.g. the <cite>head</cite>), and tries to find the nearest predecessor minor version
+(<cite>baseline</cite>), where the profile with the same configuration as the tested target profile exists.
+When it finds such a pair, it runs the check according to the strategies set in the
+configuration (see <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
+<p>By default the <code class="docutils literal"><span class="pre">hash</span></code> corresponds to the <cite>head</cite> of the current project.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun check head <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;hash&gt;
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-check-head-arg-hash">
+<code class="descname">&lt;hash&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-head-arg-hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-check-all">
+<h3>perun check all<a class="headerlink" href="#perun-check-all" title="Permalink to this headline">¶</a></h3>
+<p>Checks for changes in performance for the specified interval of version history.</p>
+<p>The commands crawls through the whole history of project versions starting from the specified
+<code class="docutils literal"><span class="pre">&lt;hash&gt;</span></code> and for all of the registered profiles (corresponding to some <cite>target</cite> minor version)
+tries to find a suitable predecessor profile (corresponding to some <cite>baseline</cite> minor version)
+and runs the performance check according to the set of strategies set in the configuration
+(see <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun check all <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;hash&gt;
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-check-all-arg-hash">
+<code class="descname">&lt;hash&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-all-arg-hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-check-profiles">
+<h3>perun check profiles<a class="headerlink" href="#perun-check-profiles" title="Permalink to this headline">¶</a></h3>
+<p>Checks for changes in performance between two profiles.</p>
+<p>The commands checks for the changes between two isolate profiles, that can be stored in pending
+profiles, registered in index, or be simply stored in filesystem. Then for the pair of profiles
+&lt;baseline&gt; and &lt;target&gt; the command runs the performance chekc according to the set of
+strategies set in the configuration (see <a class="reference internal" href="degradation.html#degradation-config"><span class="std std-ref">Configuring Degradation Detection</span></a> or <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a>).</p>
+<p>&lt;baseline&gt; and &lt;target&gt; profiles will be looked up in the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>If profile is in form <code class="docutils literal"><span class="pre">i&#64;i</span></code> (i.e, an <cite>index tag</cite>), then <cite>ith</cite>
+record registered in the minor version &lt;hash&gt; index will be used.</li>
+<li>If profile is in form <code class="docutils literal"><span class="pre">i&#64;p</span></code> (i.e., an <cite>pending tag</cite>), then
+<cite>ith</cite> profile stored in <code class="docutils literal"><span class="pre">.perun/jobs</span></code> will be used.</li>
+<li>Profile is looked-up within the minor version &lt;hash&gt; index for a
+match. In case the &lt;profile&gt; is registered there, it will be used.</li>
+<li>Profile is looked-up within the <code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory. In case
+there is a match, the found profile will be used.</li>
+<li>Otherwise, the directory is walked for any match. Each found match
+is asked for confirmation by user.</li>
+</ol>
+</div></blockquote>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun check profiles <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;baseline&gt; &lt;target&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-check-profiles-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor</code><code class="descclassname"> &lt;minor&gt;</code><a class="headerlink" href="#cmdoption-perun-check-profiles-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will check the index of different minor version &lt;hash&gt; during the profile lookup.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-check-profiles-arg-baseline">
+<code class="descname">&lt;baseline&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-profiles-arg-baseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-check-profiles-arg-target">
+<code class="descname">&lt;target&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-check-profiles-arg-target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="collect-commands">
+<span id="cli-collect-ref"></span><h2>Collect Commands<a class="headerlink" href="#collect-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="perun-collect">
+<h3>perun collect<a class="headerlink" href="#perun-collect" title="Permalink to this headline">¶</a></h3>
+<p>Generates performance profile using selected collector.</p>
+<p>Runs the single collector unit (registered in Perun) on given profiled
+command (optionaly with given arguments and workloads) and generates
+performance profile. The generated profile is then stored in
+<code class="docutils literal"><span class="pre">.perun/jobs/</span></code> directory as a file, by default with filename in form of:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
+</pre></div>
+</div>
+<p>Generated profiles will not be postprocessed in any way. Consult <code class="docutils literal"><span class="pre">perun</span>
+<span class="pre">postprocessby</span> <span class="pre">--help</span></code> in order to postprocess the resulting profile.</p>
+<p>The configuration of collector can be specified in external YAML file given
+by the <code class="docutils literal"><span class="pre">-p</span></code>/<code class="docutils literal"><span class="pre">--params</span></code> argument.</p>
+<p>For a thorough list and description of supported collectors refer to
+<a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a>. For a more subtle running of profiling jobs and
+more complex configuration consult either <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or
+<code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span> <span class="pre">--help</span></code>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun collect <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-collect-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cmd</code><code class="descclassname"> &lt;cmd&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command that is being profiled. Either corresponds to some script, binary or command, e.g. <code class="docutils literal"><span class="pre">./mybin</span></code> or <code class="docutils literal"><span class="pre">perun</span></code>.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-a">
+<code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--args</code><code class="descclassname"> &lt;args&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameters for &lt;cmd&gt;. E.g. <code class="docutils literal"><span class="pre">status</span></code> or <code class="docutils literal"><span class="pre">-al</span></code> is command parameter.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-w">
+<code class="descname">-w</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--workload</code><code class="descclassname"> &lt;workload&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inputs for &lt;cmd&gt;. E.g. <code class="docutils literal"><span class="pre">./subdir</span></code> is possible workloadfor <code class="docutils literal"><span class="pre">ls</span></code> command.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-p">
+<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--params</code><code class="descclassname"> &lt;params&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameters for called collector read from file in YAML format.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-ot">
+<code class="descname">-ot</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output-filename-template</code><code class="descclassname"> &lt;output_filename_template&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-ot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the template for automatic generation of output filename This way the file with collected data will have a resulting filename w.r.t  to this parameter. Refer to <a class="reference internal" href="config.html#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal"><span class="pre">format.output_profile_template</span></code></a> for more details about the format of the template.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="collect-units">
+<span id="cli-collect-units-ref"></span><h3>Collect units<a class="headerlink" href="#collect-units" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="perun-collect-complexity">
+<h4>perun collect complexity<a class="headerlink" href="#perun-collect-complexity" title="Permalink to this headline">¶</a></h4>
+<p>Generates <cite>complexity</cite> performance profile, capturing running times of
+function depending on underlying structural sizes.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: C/C++ binaries</li>
+<li><strong>Metric</strong>: <cite>mixed</cite> (captures both <cite>time</cite> and <cite>size</cite> consumption)</li>
+<li><strong>Dependencies</strong>: <code class="docutils literal"><span class="pre">libprofile.so</span></code> and <code class="docutils literal"><span class="pre">libprofapi.so</span></code></li>
+<li><strong>Default units</strong>: <cite>ms</cite> for <cite>time</cite>, <cite>element number</cite> for <cite>size</cite></li>
+</ul>
+</dd>
+</dl>
+<p>Example of collected resources is as follows:</p>
+<pre class="literal-block">
+{
+    &quot;amount&quot;: 11,
+    &quot;subtype&quot;: &quot;time delta&quot;,
+    &quot;type&quot;: &quot;mixed&quot;,
+    &quot;uid&quot;: &quot;SLList_init(SLList*)&quot;,
+    &quot;structure-unit-size&quot;: 0
+}
+</pre>
+<p>Complexity profiles are suitable for postprocessing by
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> since they capture depedency of
+time consumption depending on the size of the structure. This allows one to
+model the estimation of complexity of individual functions.</p>
+<p>Scatter plots are suitable visualization for profiles collected by
+<cite>complexity</cite> collector, which plots individual points along with regression
+models (if the profile was postprocessed by regression analysis). Run
+<code class="docutils literal"><span class="pre">perun</span> <span class="pre">show</span> <span class="pre">scatter</span> <span class="pre">--help</span></code> or refer to <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> for more
+information about <cite>scatter plots</cite>.</p>
+<p>Refer to <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a> for more thorough description and
+examples of <cite>complexity</cite> collector.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun collect complexity <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-t">
+<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--target-dir</code><code class="descclassname"> &lt;target_dir&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Target directory path for customly compiled binary and temporary build data.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--files</code><code class="descclassname"> &lt;files&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of C/C++ source files that will be used to build the custom binary with injected profiling commands. Must be valid resolvable path</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-r">
+<code class="descname">-r</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--rules</code><code class="descclassname"> &lt;rules&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Marks the function for profiling.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-if">
+<code class="descname">-if</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-data-filename</code><code class="descclassname"> &lt;internal_data_filename&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-if" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the different path for internal output filename for storing temporary profiling data file name.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-is">
+<code class="descname">-is</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-storage-size</code><code class="descclassname"> &lt;internal_storage_size&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-is" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increases the size of internal profiling data storage.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-id">
+<code class="descname">-id</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-direct-output</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-complexity-id" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set, profiling data will be stored into the internal log file directly instead of being saved into data structure and printed later.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--sampling</code><code class="descclassname"> &lt;sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the sampling of the given function to every &lt;int&gt; call.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-collect-memory">
+<h4>perun collect memory<a class="headerlink" href="#perun-collect-memory" title="Permalink to this headline">¶</a></h4>
+<p>Generates <cite>memory</cite> performance profiel, capturing memory allocations of
+different types along with target address and full call trace.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: C/C++ binaries</li>
+<li><strong>Metric</strong>: <cite>memory</cite></li>
+<li><strong>Dependencies</strong>: <code class="docutils literal"><span class="pre">libunwind.so</span></code> and custom <code class="docutils literal"><span class="pre">libmalloc.so</span></code></li>
+<li><strong>Default units</strong>: <cite>B</cite> for <cite>memory</cite></li>
+</ul>
+</dd>
+</dl>
+<p>The following snippet shows the example of resources collected by <cite>memory</cite>
+profiler. It captures allocations done by functions with more detailed
+description, such as the type of allocation, trace, etc.</p>
+<pre class="literal-block">
+{
+    &quot;type&quot;: &quot;memory&quot;,
+    &quot;subtype&quot;: &quot;malloc&quot;,
+    &quot;address&quot;: 19284560,
+    &quot;amount&quot;: 4,
+    &quot;trace&quot;: [
+        {
+            &quot;source&quot;: &quot;../memory_collect_test.c&quot;,
+            &quot;function&quot;: &quot;main&quot;,
+            &quot;line&quot;: 22
+        },
+    ],
+    &quot;uid&quot;: {
+        &quot;source&quot;: &quot;../memory_collect_test.c&quot;,
+        &quot;function&quot;: &quot;main&quot;,
+        &quot;line&quot;: 22
+    }
+},
+</pre>
+<p><cite>Memory</cite> profiles can be efficiently interpreted using <a class="reference internal" href="views.html#views-heapmap"><span class="std std-ref">Heap Map</span></a>
+technique (together with its <cite>heat</cite> mode), which shows memory allocations
+(by functions) in memory address map.</p>
+<p>Refer to <a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a> for more thorough description and
+examples of <cite>memory</cite> collector.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun collect memory <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-collect-memory-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--sampling</code><code class="descclassname"> &lt;sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-memory-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the sampling interval for profiling the allocations. I.e. memory snapshots will be collected each &lt;sampling&gt; seconds.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-memory-no-source">
+<code class="descname">--no-source</code><code class="descclassname"> &lt;no_source&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-memory-no-source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will exclude allocations done from &lt;no_source&gt; file during the profiling.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-memory-no-func">
+<code class="descname">--no-func</code><code class="descclassname"> &lt;no_func&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-memory-no-func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will exclude allocations done by &lt;no func&gt; function during the profiling.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-memory-a">
+<code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--all</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-memory-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will record the full trace for each allocation, i.e. it will include all allocators and even unreachable records.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-collect-time">
+<h4>perun collect time<a class="headerlink" href="#perun-collect-time" title="Permalink to this headline">¶</a></h4>
+<p>Generates <cite>time</cite> performance profile, capturing overall running times of
+the profiled command.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite></li>
+<li><strong>Metric</strong>: running <cite>time</cite></li>
+<li><strong>Dependencies</strong>: <cite>none</cite></li>
+<li><strong>Default units</strong>: <cite>s</cite></li>
+</ul>
+</dd>
+</dl>
+<p>This is a wrapper over the <code class="docutils literal"><span class="pre">time</span></code> linux unitility and captures resources
+in the following form:</p>
+<pre class="literal-block">
+{
+    &quot;amount&quot;: 0.59,
+    &quot;type&quot;: &quot;time&quot;,
+    &quot;uid&quot;: &quot;sys&quot;
+}
+</pre>
+<p>Refer to <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> for more thorough description and examples
+of <cite>complexity</cite> collector.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun collect <span class="nb">time</span> <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="postprocess-commands">
+<span id="cli-postprocess-ref"></span><h2>Postprocess Commands<a class="headerlink" href="#postprocess-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="perun-postprocessby">
+<h3>perun postprocessby<a class="headerlink" href="#perun-postprocessby" title="Permalink to this headline">¶</a></h3>
+<p>Postprocesses the given stored or pending profile using selected
+postprocessor.</p>
+<p>Runs the single postprocessor unit on given looked-up profile. The
+postprocessed file will be then stored in <code class="docutils literal"><span class="pre">.perun/jobs/</span></code> directory as a
+file, by default with filanem in form of:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">bin</span><span class="o">-</span><span class="n">collector</span><span class="o">-</span><span class="n">workload</span><span class="o">-</span><span class="n">timestamp</span><span class="o">.</span><span class="n">perf</span>
+</pre></div>
+</div>
+<p>The postprocessed &lt;profile&gt; will be looked up in the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>If &lt;profile&gt; is in form <code class="docutils literal"><span class="pre">i&#64;i</span></code> (i.e, an <cite>index tag</cite>), then <cite>ith</cite>
+record registered in the minor version &lt;hash&gt; index will be
+postprocessed.</li>
+<li>If &lt;profile&gt; is in form <code class="docutils literal"><span class="pre">i&#64;p</span></code> (i.e., an <cite>pending tag</cite>), then
+<cite>ith</cite> profile stored in <code class="docutils literal"><span class="pre">.perun/jobs</span></code> will be postprocessed.</li>
+<li>&lt;profile&gt; is looked-up within the minor version &lt;hash&gt; index for a
+match. In case the &lt;profile&gt; is registered there, it will be
+postprocessed.</li>
+<li>&lt;profile&gt; is looked-up within the <code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory. In case
+there is a match, the found profile will be postprocessed.</li>
+<li>Otherwise, the directory is walked for any match. Each found match
+is asked for confirmation by user.</li>
+</ol>
+</div></blockquote>
+<p>For checking the associated <cite>tags</cite> to profiles run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
+<p>Example 1. The following command will postprocess the given profile
+stored at given path by normalizer, i.e. for each snapshot, the resources
+will be normalized to the interval &lt;0, 1&gt;:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">postprocessby</span> <span class="o">./</span><span class="n">echo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">hello</span><span class="o">-</span><span class="mi">2017</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">34</span><span class="o">-</span><span class="mf">12.</span><span class="n">perf</span> <span class="n">normalizer</span>
+</pre></div>
+</div>
+<p>Example 2. The following command will postprocess the second profile stored
+in index of commit preceeding the current head using interval regression
+analysis:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">postprocessby</span> <span class="o">-</span><span class="n">m</span> <span class="n">HEAD</span><span class="o">~</span><span class="mi">1</span> <span class="mi">1</span><span class="nd">@i</span> <span class="n">regression_analysis</span> <span class="o">--</span><span class="n">method</span><span class="o">=</span><span class="n">interval</span>
+</pre></div>
+</div>
+<p>For a thorough list and description of supported postprocessors refer to
+<a class="reference internal" href="postprocessors.html#postprocessors-list"><span class="std std-ref">Supported Postprocessors</span></a>. For a more subtle running of profiling jobs and
+more complex configuration consult either <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span> <span class="pre">--help</span></code> or
+<code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">job</span> <span class="pre">--help</span></code>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;profile&gt; COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-ot">
+<code class="descname">-ot</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output-filename-template</code><code class="descclassname"> &lt;output_filename_template&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-ot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the template for automatic generation of output filename This way the postprocessed file will have a resulting filename w.r.t to this parameter. Refer to <a class="reference internal" href="config.html#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal"><span class="pre">format.output_profile_template</span></code></a> for more details about the format of the template.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor</code><code class="descclassname"> &lt;minor&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will check the index of different minor version &lt;hash&gt; during the profile lookup</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-arg-profile">
+<code class="descname">&lt;profile&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-arg-profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="postprocess-units">
+<span id="cli-postprocess-units-ref"></span><h3>Postprocess units<a class="headerlink" href="#postprocess-units" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="perun-postprocessby-normalizer">
+<span id="cli-views-ref"></span><h4>perun postprocessby normalizer<a class="headerlink" href="#perun-postprocessby-normalizer" title="Permalink to this headline">¶</a></h4>
+<p>Normalizes performance profile into flat interval.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite></li>
+<li><strong>Dependencies</strong>: <cite>none</cite></li>
+</ul>
+</dd>
+</dl>
+<p>Normalizer is a postprocessor, which iterates through all of the snapshots
+and normalizes the resources of same type to interval <code class="docutils literal"><span class="pre">(0,</span> <span class="pre">1)</span></code>, where
+<code class="docutils literal"><span class="pre">1</span></code> corresponds to the maximal value of the given type.</p>
+<p>Consider the following list of resources for one snapshot generated by
+<a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a>:</p>
+<pre class="literal-block">
+[
+    {
+        'amount': 0.59,
+        'uid': 'sys'
+    }, {
+        'amount': 0.32,
+        'uid': 'user'
+    }, {
+        'amount': 2.32,
+        'uid': 'real'
+    }
+]
+</pre>
+<p>Normalizer yields the following set of resources:</p>
+<pre class="literal-block">
+[
+    {
+        'amount': 0.2543103448275862,
+        'uid': 'sys'
+    }, {
+        'amount': 0.13793103448275865,
+        'uid': 'user'
+    }, {
+        'amount': 1.0,
+        'uid': 'real'
+    }
+]
+</pre>
+<p>Refer to <a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> for more thorough description and
+examples of <cite>normalizer</cite> postprocessor.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby normalizer <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="perun-postprocessby-regression-analysis">
+<h4>perun postprocessby regression_analysis<a class="headerlink" href="#perun-postprocessby-regression-analysis" title="Permalink to this headline">¶</a></h4>
+<p>Finds fitting regression models to estimate models of profiled resources.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: Currently limited to models of <cite>amount</cite> depending on
+<cite>structural-unit-size</cite></li>
+<li><strong>Dependencies</strong>: <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a></li>
+</ul>
+</dd>
+</dl>
+<p>Regression analyzer tries to find a fitting model to estimate the <cite>amount</cite>
+of resources depending on <cite>structural-unit-size</cite>.</p>
+<p>The following strategies are currently available:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><strong>Full Computation</strong> uses all of the data points to obtain the best
+fitting model for each type of model from the database (unless
+<code class="docutils literal"><span class="pre">--regression_models</span></code>/<code class="docutils literal"><span class="pre">-r</span></code> restrict the set of models)</li>
+<li><strong>Iterative Computation</strong> uses a percentage of data points to obtain
+some preliminary models together with their errors or fitness. The
+most fitting model is then expanded, until it is fully computed or
+some other model becomes more fitting.</li>
+<li><strong>Full Computation with initial estimate</strong> first uses some percent
+of data to estimate which model would be best fitting. Given model
+is then fully computed.</li>
+<li><strong>Interval Analysis</strong> uses more finer set of intervals of data and
+estimates models for each interval providing more precise modeling
+of the profile.</li>
+<li><strong>Bisection Analysis</strong> fully computes the models for full interval.
+Then it does a split of the interval and computes new models for
+them. If the best fitting models changed for sub intervals, then we
+continue with the splitting.</li>
+</ol>
+</div></blockquote>
+<p>Currently we support <strong>linear</strong>, <strong>quadratic</strong>, <strong>power</strong>, <strong>logaritmic</strong>
+and <strong>constant</strong> models and use the <cite>coeficient of determination</cite>
+(<span class="math">\(R^2\)</span>) to measure the fitness of model. The models are stored as
+follows:</p>
+<pre class="literal-block">
+{
+    &quot;uid&quot;: &quot;SLList_insert(SLList*, int)&quot;,
+    &quot;r_square&quot;: 0.0017560012128507133,
+    &quot;coeffs&quot;: [
+        {
+            &quot;value&quot;: 0.505375215875552,
+            &quot;name&quot;: &quot;b0&quot;
+        },
+        {
+            &quot;value&quot;: 9.935159839322705e-06,
+            &quot;name&quot;: &quot;b1&quot;
+        }
+    ],
+    &quot;x_interval_start&quot;: 0,
+    &quot;x_interval_end&quot;: 11892,
+    &quot;model&quot;: &quot;linear&quot;,
+    &quot;method&quot;: &quot;full&quot;,
+}
+</pre>
+<p>For more details about regression analysis refer to
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. For more details how to collect
+suitable resources refer to <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby regression_analysis <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regression-analysis-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--method</code><code class="descclassname"> &lt;method&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regression-analysis-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will use the &lt;method&gt; to find the best fitting models for the given profile.  [required]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regression-analysis-r">
+<code class="descname">-r</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--regression_models</code><code class="descclassname"> &lt;regression_models&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regression-analysis-r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restricts the list of regression models used by the specified &lt;method&gt; to fit the data. If omitted, all regression models will be used in the computation.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regression-analysis-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--steps</code><code class="descclassname"> &lt;steps&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regression-analysis-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restricts the number of number of steps / data parts used by the iterative, interval and initial guess methods</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+<div class="section" id="show-commands">
+<h2>Show Commands<a class="headerlink" href="#show-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="perun-show">
+<h3>perun show<a class="headerlink" href="#perun-show" title="Permalink to this headline">¶</a></h3>
+<p>Interprets the given profile using the selected visualization technique.</p>
+<p>Looks up the given profile and interprets it using the selected
+visualization technique. Some of the techniques outputs either to
+terminal (using <code class="docutils literal"><span class="pre">ncurses</span></code>) or generates HTML files, which can be
+browseable in the web browser (using <code class="docutils literal"><span class="pre">bokeh</span></code> library). Refer to concrete
+techniques for concrete options and limitations.</p>
+<p>The shown &lt;profile&gt; will be looked up in the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>If &lt;profile&gt; is in form <code class="docutils literal"><span class="pre">i&#64;i</span></code> (i.e, an <cite>index tag</cite>), then <cite>ith</cite>
+record registered in the minor version &lt;hash&gt; index will be shown.</li>
+<li>If &lt;profile&gt; is in form <code class="docutils literal"><span class="pre">i&#64;p</span></code> (i.e., an <cite>pending tag</cite>), then
+<cite>ith</cite> profile stored in <code class="docutils literal"><span class="pre">.perun/jobs</span></code> will be shown.</li>
+<li>&lt;profile&gt; is looked-up within the minor version &lt;hash&gt; index for a
+match. In case the &lt;profile&gt; is registered there, it will be shown.</li>
+<li>&lt;profile&gt; is looked-up within the <code class="docutils literal"><span class="pre">.perun/jobs</span></code> directory. In case
+there is a match, the found profile will be shown.</li>
+<li>Otherwise, the directory is walked for any match. Each found match
+is asked for confirmation by user.</li>
+</ol>
+</div></blockquote>
+<p>Example 1. The following command will show the first profile registered at
+index of <code class="docutils literal"><span class="pre">HEAD~1</span></code> commit. The resulting graph will contain bars
+representing sum of amounts per each subtype of resources and will be shown
+in the browser:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="o">-</span><span class="n">m</span> <span class="n">HEAD</span><span class="o">~</span><span class="mi">1</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">-</span><span class="n">v</span>
+</pre></div>
+</div>
+<p>Example 2. The following command will show the profile at the absolute path
+using in raw JSON format:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="o">./</span><span class="n">echo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">hello</span><span class="o">-</span><span class="mi">2017</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">13</span><span class="o">-</span><span class="mi">34</span><span class="o">-</span><span class="mf">12.</span><span class="n">perf</span> <span class="n">raw</span>
+</pre></div>
+</div>
+<p>For a thorough list and description of supported visualization techniques
+refer to <a class="reference internal" href="views.html#views-list"><span class="std std-ref">Supported Visualizations</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;profile&gt; COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor</code><code class="descclassname"> &lt;minor&gt;</code><a class="headerlink" href="#cmdoption-perun-show-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will check the index of different minor version &lt;hash&gt; during the profile lookup</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-arg-profile">
+<code class="descname">&lt;profile&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-arg-profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="show-units">
+<span id="cli-views-units-ref"></span><h3>Show units<a class="headerlink" href="#show-units" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="perun-show-alloclist">
+<h4>perun show alloclist<a class="headerlink" href="#perun-show-alloclist" title="Permalink to this headline">¶</a></h4>
+<p>Alloclist is a specific query interface for profiles collected by
+<cite>memory</cite> collector.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>memory</cite> profiles generated by
+<a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</li>
+<li><strong>Interpretation style</strong>: textual</li>
+<li><strong>Visualization backend</strong>: terminal</li>
+</ul>
+</dd>
+</dl>
+<p>Memstat contains several predefined functions for aggregated basic
+information about allocations within the profile—list of allocations,
+tops, sums, etc.—and serves as a base for future extension.
+Currently the following modes are supported:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">most</span></code> lists trace records sorted by the frequency of allocations
+of memory they made.</li>
+<li><code class="docutils literal"><span class="pre">sum</span></code> lists trace records sorted by the overall amount of
+allocated memory they made.</li>
+<li><code class="docutils literal"><span class="pre">func</span></code> lists allocation records w.r.t. to the specified functions.</li>
+<li><code class="docutils literal"><span class="pre">all</span></code> lists all allocation records in specified time interval
+sorted by timestamp.</li>
+<li><code class="docutils literal"><span class="pre">top</span></code> lists trace records sorted by amount of allocated memory.</li>
+</ol>
+</div></blockquote>
+<p>The example of output of <cite>alloclist</cite> is as follows:</p>
+<pre class="literal-block">
+#1 malloc: 100B at 0x31341343
+  └ malloc  in  /dir/subdir/file.c:32
+    └ main  in /dir/subdir/file.c:12
+
+#2 calloc: 12B at 0x31411341
+  └ malloc in /dir/subdir/file.c:1
+</pre>
+<p>Note: alloclist is an old prototype and is expected to be replaced by more
+sophisticated queries in near future.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show alloclist <span class="o">[</span>OPTIONS<span class="o">]</span> MODE
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-alloclist-t">
+<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--limit-to</code><code class="descclassname"> &lt;limit_to&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>The displayed list of records will be limited to &lt;int&gt; records.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-alloclist-from-time">
+<code class="descname">--from-time</code><code class="descclassname"> &lt;from_time&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-from-time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of records will start from the &lt;timestamp&gt; (in seconds).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-alloclist-to-time">
+<code class="descname">--to-time</code><code class="descclassname"> &lt;to_time&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-to-time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of records will be displayed until the &lt;timestamp&gt; (in seconds).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-alloclist-function">
+<code class="descname">--function</code><code class="descclassname"> &lt;function&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the name of the function for the <code class="docutils literal"><span class="pre">func</span></code> mode.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-alloclist-a">
+<code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--all-occurrences</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-alloclist-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Includes all of the occurrences of the function (even the partial participationin the call traces) in the list of allocations.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-alloclist-arg-mode">
+<code class="descname">MODE</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-alloclist-arg-mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-show-bars">
+<h4>perun show bars<a class="headerlink" href="#perun-show-bars" title="Permalink to this headline">¶</a></h4>
+<p>Customizable interpretation of resources using the bar format.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite>.</li>
+<li><strong>Interpretation style</strong>: graphical</li>
+<li><strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a></li>
+</ul>
+</dd>
+</dl>
+<p><cite>Bars</cite> graph shows the aggregation (e.g. sum, count, etc.) of resources of
+given types (or keys). Each bar shows <code class="docutils literal"><span class="pre">&lt;func&gt;</span></code> of resources from <code class="docutils literal"><span class="pre">&lt;of&gt;</span></code>
+key (e.g. sum of amounts, average of amounts, count of types, etc.) per
+each <code class="docutils literal"><span class="pre">&lt;per&gt;</span></code> key (e.g. per each snapshot, or per each type).  Moreover,
+the graphs can either be (i) stacked, where the different values of
+<code class="docutils literal"><span class="pre">&lt;by&gt;</span></code> key are shown above each other, or (ii) grouped, where the
+different values of <code class="docutils literal"><span class="pre">&lt;by&gt;</span></code> key are shown next to each other. Refer to
+<a class="reference internal" href="profile.html#perfkey-resources"><em class="xref std std-pkey">resources</em></a> for examples of keys that can be used as <code class="docutils literal"><span class="pre">&lt;of&gt;</span></code>,
+<code class="docutils literal"><span class="pre">&lt;key&gt;</span></code>, <code class="docutils literal"><span class="pre">&lt;per&gt;</span></code> or <code class="docutils literal"><span class="pre">&lt;by&gt;</span></code>.</p>
+<p><a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library is the current interpretation backend, which generates HTML
+files, that can be opened directly in the browser. Resulting graphs can be
+further customized by adding custom labels for axes, custom graph title or
+different graph width.</p>
+<p>Example 1. The following will display the sum of sum of amounts of all
+resources of given for each subtype, stacked by uid (e.g. the locations in
+the program):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">bars</span> <span class="nb">sum</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;subtype&#39;</span> <span class="o">--</span><span class="n">stacked</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
+</pre></div>
+</div>
+<p>The example output of the bars is as follows:</p>
+<pre class="literal-block">
+                                &lt;graph_title&gt;
+                        `
+                        -         .::.                ````````
+                        `         :&amp;&amp;:                ` # \  `
+                        -   .::.  ::::        .::.    ` &#64;  }-&gt;  &lt;by&gt;
+                        `   :##:  :##:        :&amp;&amp;:    ` &amp; /  `
+        &lt;func&gt;(&lt;of&gt;)    -   :##:  :##:  .::.  :&amp;&amp;:    ````````
+                        `   ::::  :##:  :&amp;&amp;:  ::::
+                        -   :&#64;&#64;:  ::::  ::::  :##:
+                        `   :&#64;&#64;:  :&#64;&#64;:  :##:  :##:
+                        +````||````||````||````||````
+
+                                    &lt;per&gt;
+</pre>
+<p>Refer to <a class="reference internal" href="views.html#views-bars"><span class="std std-ref">Bars Plot</span></a> for more thorough description and example of
+<cite>bars</cite> interpretation possibilities.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show bars <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;aggregation_function&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key that is source of the data for the bars, i.e. what will be displayed on Y axis.  [required]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-p">
+<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key that is source of values displayed on X axis of the bar graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-b">
+<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--by</code><code class="descclassname"> &lt;by_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used either for stacking or grouping of values</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--stacked</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will stack the values by &lt;resource_key&gt; specified by option –by.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-g">
+<code class="descname">-g</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--grouped</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will stack the values by &lt;resource_key&gt; specified by option –by.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the outputs for the graph to the file.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-xl">
+<code class="descname">-xl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--x-axis-label</code><code class="descclassname"> &lt;x_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-xl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the custom label on the X axis of the bar graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-yl">
+<code class="descname">-yl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--y-axis-label</code><code class="descclassname"> &lt;y_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-yl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the custom label on the Y axis of the bar graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-gt">
+<code class="descname">-gt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-title</code><code class="descclassname"> &lt;graph_title&gt;</code><a class="headerlink" href="#cmdoption-perun-show-bars-gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the custom title of the bars graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-v">
+<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--view-in-browser</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>The generated graph will be immediately opened in the browser (firefox will be used).</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-bars-arg-aggregation-function">
+<code class="descname">&lt;aggregation_function&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-bars-arg-aggregation-function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-show-flamegraph">
+<h4>perun show flamegraph<a class="headerlink" href="#perun-show-flamegraph" title="Permalink to this headline">¶</a></h4>
+<p>Flame graph interprets the relative and inclusive presence of the
+resources according to the stack depth of the origin of resources.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>memory</cite> profiles generated by
+<a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</li>
+<li><strong>Interpretation style</strong>: graphical</li>
+<li><strong>Visualization backend</strong>: HTML</li>
+</ul>
+</dd>
+</dl>
+<p>Flame graph intends to quickly identify hotspots, that are the source of
+the resource consumption complexity. On X axis, a relative consumption of
+the data is depicted, while on Y axis a stack depth is displayed. The wider
+the bars are on the X axis are, the more the function consumed resources
+relative to others.</p>
+<p><strong>Acknowledgements</strong>: Big thanks to Brendan Gregg for creating the original
+perl script for creating flame graphs w.r.t simple format. If you like this
+visualization technique, please check out this guy’s site
+(<a class="reference external" href="http://brendangregg.com">http://brendangregg.com</a>) for more information about performance, profiling
+and useful talks and visualization techniques!</p>
+<p>The example output of the flamegraph is more or less as follows:</p>
+<pre class="literal-block">
+                    `
+                    -                         .
+                    `                         |
+                    -              ..         |     .
+                    `              ||         |     |
+                    -              ||        ||    ||
+                    `            |%%|       |--|  |!|
+                    -     |## g() ##|     |#g()#|***|
+                    ` |&amp;&amp;&amp;&amp; f() &amp;&amp;&amp;&amp;|===== h() =====|
+                    +````||````||````||````||````||````
+</pre>
+<p>Refer to <a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a> for more thorough description and
+examples of the interpretation technique. Refer to
+<a class="reference internal" href="profile.html#perun.profile.convert.to_flame_graph_format" title="perun.profile.convert.to_flame_graph_format"><code class="xref py py-func docutils literal"><span class="pre">perun.profile.convert.to_flame_graph_format()</span></code></a> for more details how
+the profiles are converted to the flame graph format.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show flamegraph <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-flamegraph-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flamegraph-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the output file of the resulting flame graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flamegraph-h">
+<code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-height</code><code class="descclassname"> &lt;graph_height&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flamegraph-h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increases the width of the resulting flame graph.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-show-flow">
+<h4>perun show flow<a class="headerlink" href="#perun-show-flow" title="Permalink to this headline">¶</a></h4>
+<p>Customizable interpretation of resources using the flow format.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite>.</li>
+<li><strong>Interpretation style</strong>: graphical, textual</li>
+<li><strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a>, ncurses</li>
+</ul>
+</dd>
+</dl>
+<p><cite>Flow</cite> graph shows the values resources depending on the independent
+variable as basic graph. For each group of resources identified by unique
+value of <code class="docutils literal"><span class="pre">&lt;by&gt;</span></code> key, one graph shows the dependency of <code class="docutils literal"><span class="pre">&lt;of&gt;</span></code> values
+aggregated by <code class="docutils literal"><span class="pre">&lt;func&gt;</span></code> depending on the <code class="docutils literal"><span class="pre">&lt;through&gt;</span></code> key. Moreover, the
+values can either be accumulated (this way when displaying the value of ‘n’
+on x axis, we accumulate the sum of all values for all m &lt; n) or stacked,
+where the graphs are output on each other and then one can see the overall
+trend through all the groups and proportions between each of the group.</p>
+<p><a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library is the current interpretation backend, which generates HTML
+files, that can be opened directly in the browser. Resulting graphs can be
+further customized by adding custom labels for axes, custom graph title or
+different graph width.</p>
+<p>Example 1. The following will show the average amount (in this case
+the function running time) of each function depending on the size of the
+structure over which the given function operated:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">show</span> <span class="mi">0</span><span class="nd">@i</span> <span class="n">flow</span> <span class="n">mean</span> <span class="o">--</span><span class="n">of</span> <span class="s1">&#39;amount&#39;</span> <span class="o">--</span><span class="n">per</span> <span class="s1">&#39;structure-unit-size&#39;</span>
+    <span class="o">--</span><span class="n">acumulated</span> <span class="o">--</span><span class="n">by</span> <span class="s1">&#39;uid&#39;</span>
+</pre></div>
+</div>
+<p>The example output of the bars is as follows:</p>
+<pre class="literal-block">
+                                &lt;graph_title&gt;
+                        `
+                        -                      ______    ````````
+                        `                _____/          ` # \  `
+                        -               /          __    ` &#64;  }-&gt;  &lt;by&gt;
+                        `          ____/      ____/      ` &amp; /  `
+        &lt;func&gt;(&lt;of&gt;)    -      ___/       ___/           ````````
+                        `  ___/    ______/       ____
+                        -/  ______/        _____/
+                        `__/______________/
+                        +````||````||````||````||````
+
+                                  &lt;through&gt;
+</pre>
+<p>Refer to <a class="reference internal" href="views.html#views-flow"><span class="std std-ref">Flow Plot</span></a> for more thorough description and example of
+<cite>flow</cite> interpretation possibilities.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show flow <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;aggregation_function&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key that is source of the data for the flow, i.e. what will be displayed on Y axis, e.g. the amount of resources.  [required]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-t">
+<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--through</code><code class="descclassname"> &lt;through_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key that is source of the data value, i.e. the independent variable, like e.g. snapshots or size of the structure.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-b">
+<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--by</code><code class="descclassname"> &lt;by_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-b" title="Permalink to this definition">¶</a></dt>
+<dd><p>For each &lt;by_resource_key&gt; one graph will be output, e.g. for each subtype or for each location of resource.  [required]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--stacked</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will stack the y axis values for different &lt;by&gt; keys on top of each other. Additionaly shows the sum of the values.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-accumulate">
+<code class="descname">--accumulate</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-accumulate</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-accumulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will accumulate the values for all previous values of X axis.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-ut">
+<code class="descname">-ut</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--use-terminal</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-ut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows flow graph in the terminal using ncurses library.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the outputs for the graph to the file.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-xl">
+<code class="descname">-xl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--x-axis-label</code><code class="descclassname"> &lt;x_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-xl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the custom label on the X axis of the flow graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-yl">
+<code class="descname">-yl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--y-axis-label</code><code class="descclassname"> &lt;y_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-yl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the custom label on the Y axis of the flow graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-gt">
+<code class="descname">-gt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-title</code><code class="descclassname"> &lt;graph_title&gt;</code><a class="headerlink" href="#cmdoption-perun-show-flow-gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the custom title of the flow graph.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-v">
+<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--view-in-browser</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>The generated graph will be immediately opened in the browser (firefox will be used).</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-flow-arg-aggregation-function">
+<code class="descname">&lt;aggregation_function&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-flow-arg-aggregation-function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-show-heapmap">
+<h4>perun show heapmap<a class="headerlink" href="#perun-show-heapmap" title="Permalink to this headline">¶</a></h4>
+<p>Shows interactive map of memory allocations to concrete memories for
+each function.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>memory</cite> profiles generated by
+<a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</li>
+<li><strong>Interpretation style</strong>: textual</li>
+<li><strong>Visualization backend</strong>: ncurses</li>
+</ul>
+</dd>
+</dl>
+<p>Heap map shows the underlying memory map, and links the concrete
+allocations to allocated addresses for each snapshot. The map is
+interactive, one can either play the full animation of the allocations
+through snapshots or move and explore the details of the map.</p>
+<p>Moreover, the heap map contains <cite>heat map</cite> mode, which accumulates the
+allocations into the heat representation—the hotter the colour displayed
+at given memory cell, the more time it was allocated there.</p>
+<p>The heap map aims at showing the fragmentation of the memory and possible
+differences between different allocation strategies. On the other hand, the
+heat mode aims at showing the bottlenecks of allocations.</p>
+<p>Refer to <a class="reference internal" href="views.html#views-heapmap"><span class="std std-ref">Heap Map</span></a> for more thorough description and example of
+<cite>heapmap</cite> interpretation possibilities.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show heapmap <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="perun-show-scatter">
+<h4>perun show scatter<a class="headerlink" href="#perun-show-scatter" title="Permalink to this headline">¶</a></h4>
+<p>Interactive visualization of resources and models in scatter plot format.</p>
+<p>Scatter plot shows resources as points according to the given parameters.
+The plot interprets &lt;per&gt; and &lt;of&gt; as x, y coordinates for the points. The
+scatter plot also displays models located in the profile as a curves/lines.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite>.</li>
+<li><strong>Interpretation style</strong>: graphical</li>
+<li><strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a></li>
+</ul>
+</dd>
+</dl>
+<p>Features in progress:</p>
+<blockquote>
+<div><ul class="simple">
+<li>uid filters</li>
+<li>models filters</li>
+<li>multiple graphs interpretation</li>
+</ul>
+</div></blockquote>
+<p>Graphs are displayed using the <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library and can be further customized
+by adding custom labels for axis, custom graph title and different graph
+width.</p>
+<p>The example output of the scatter is as follows:</p>
+<pre class="literal-block">
+                          &lt;graph_title&gt;
+                  `                         o
+                  -                        /
+                  `                       /o       ```````````````````
+                  -                     _/         `  o o = &lt;points&gt; `
+                  `                   _- o         `    _             `
+    &lt;of&gt;          -               __--o            `  _-  = &lt;models&gt; `
+                  `    _______--o- o               `                 `
+                  -    o  o  o                     ```````````````````
+                  `
+                  +````||````||````||````||````
+
+                              &lt;per&gt;
+</pre>
+<p>Refer to <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> for more thorough description and example of
+<cite>scatter</cite> interpretation possibilities. For more thorough explanation of
+regression analysis and models refer to
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show scatter <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data source for the scatter plot, i.e. what will be displayed on Y axis.  [default: amount]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-p">
+<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keys that will be displayed on X axis of the scatter plot.  [default: structure-unit-size]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs the graph to the file specified by filename.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-xl">
+<code class="descname">-xl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--x-axis-label</code><code class="descclassname"> &lt;x_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-xl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label on the X axis of the scatter plot.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-yl">
+<code class="descname">-yl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--y-axis-label</code><code class="descclassname"> &lt;y_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-yl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label on the Y axis of the scatter plot.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-gt">
+<code class="descname">-gt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-title</code><code class="descclassname"> &lt;graph_title&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Title of the scatter plot.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-v">
+<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--view-in-browser</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-scatter-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will show the graph in browser.</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="index.html">
+    <h3>Perun</h3>
+  </a>
+</p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Command Line Interface</a><ul>
+<li><a class="reference internal" href="#perun">perun</a></li>
+<li><a class="reference internal" href="#perun-commands">Perun Commands</a><ul>
+<li><a class="reference internal" href="#perun-init">perun init</a></li>
+<li><a class="reference internal" href="#perun-config">perun config</a></li>
+<li><a class="reference internal" href="#perun-config-get">perun config get</a></li>
+<li><a class="reference internal" href="#perun-config-set">perun config set</a></li>
+<li><a class="reference internal" href="#perun-config-edit">perun config edit</a></li>
+<li><a class="reference internal" href="#perun-add">perun add</a></li>
+<li><a class="reference internal" href="#perun-rm">perun rm</a></li>
+<li><a class="reference internal" href="#perun-status">perun status</a></li>
+<li><a class="reference internal" href="#perun-log">perun log</a></li>
+<li><a class="reference internal" href="#perun-run">perun run</a></li>
+<li><a class="reference internal" href="#perun-run-job">perun run job</a></li>
+<li><a class="reference internal" href="#perun-run-matrix">perun run matrix</a></li>
+<li><a class="reference internal" href="#perun-check">perun check</a></li>
+<li><a class="reference internal" href="#perun-check-head">perun check head</a></li>
+<li><a class="reference internal" href="#perun-check-all">perun check all</a></li>
+<li><a class="reference internal" href="#perun-check-profiles">perun check profiles</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#collect-commands">Collect Commands</a><ul>
+<li><a class="reference internal" href="#perun-collect">perun collect</a></li>
+<li><a class="reference internal" href="#collect-units">Collect units</a><ul>
+<li><a class="reference internal" href="#perun-collect-complexity">perun collect complexity</a></li>
+<li><a class="reference internal" href="#perun-collect-memory">perun collect memory</a></li>
+<li><a class="reference internal" href="#perun-collect-time">perun collect time</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#postprocess-commands">Postprocess Commands</a><ul>
+<li><a class="reference internal" href="#perun-postprocessby">perun postprocessby</a></li>
+<li><a class="reference internal" href="#postprocess-units">Postprocess units</a><ul>
+<li><a class="reference internal" href="#perun-postprocessby-normalizer">perun postprocessby normalizer</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-regression-analysis">perun postprocessby regression_analysis</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#show-commands">Show Commands</a><ul>
+<li><a class="reference internal" href="#perun-show">perun show</a></li>
+<li><a class="reference internal" href="#show-units">Show units</a><ul>
+<li><a class="reference internal" href="#perun-show-alloclist">perun show alloclist</a></li>
+<li><a class="reference internal" href="#perun-show-bars">perun show bars</a></li>
+<li><a class="reference internal" href="#perun-show-flamegraph">perun show flamegraph</a></li>
+<li><a class="reference internal" href="#perun-show-flow">perun show flow</a></li>
+<li><a class="reference internal" href="#perun-show-heapmap">perun show heapmap</a></li>
+<li><a class="reference internal" href="#perun-show-scatter">perun show scatter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="profile.html" title="previous chapter">Perun’s Profile Format</a></li>
+      <li>Next: <a href="collectors.html" title="next chapter">Collectors Overview</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cli.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/cli.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

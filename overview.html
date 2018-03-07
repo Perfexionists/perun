@@ -1,0 +1,432 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Perun: Performance Under Control &#8212; Perun 0.12 documentation</title>
+    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Perun’s Profile Format" href="profile.html" />
+    <link rel="prev" title="Welcome to Perun’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="perun-performance-under-control">
+<h1>Perun: Performance Under Control<a class="headerlink" href="#perun-performance-under-control" title="Permalink to this headline">¶</a></h1>
+<img alt="_images/perun-logo.png" class="align-center" src="_images/perun-logo.png" />
+<div class="section" id="what-is-perun">
+<h2>What is Perun?<a class="headerlink" href="#what-is-perun" title="Permalink to this headline">¶</a></h2>
+<p><cite>Have you ever encountered a sudden performance degradation and could not figure out, when and
+where the degradation was introduced?</cite></p>
+<p><cite>Do you think that you have no idea whether the overall performance of your application is getting
+better or not over the time?</cite></p>
+<p><cite>Is it hard for you to set performance regression testing everytime you create a new project?</cite></p>
+<p><cite>Do you ever feel that you completely loose the control of the performance of your projects?</cite></p>
+<p>There exists solutions for managing changes of ones project—Version Control Systems (VCS)—but
+precise managing of performance is harder. This calls for solutions tuned to support performance
+management—Performance Versioning Systems.</p>
+<p>Perun is an open source light-weight Performance Version System. While revision (or version)
+control systems track how your code base is changing, what features were added and keeps snapshots
+of versions of projects, they are mostly generic in order to satisfy needs of broad range of
+project types. And actually you can run all of the performance regressions tests manually and then
+use, e.g. git, to store the actual profiles for each minor version (e.g.  commits) of your project.
+However, you are forced to do all of the profiling, annotations with tags and basic informations
+about collected resources, and many more by yourself, otherwise you lose the precise history of the
+performance your application. Or you can use database, but lose the flexibility and easy usage of
+the versioning systems and you have to design and implement some user interface yourself.</p>
+<p>Perun is in summary a wrapper over existing Version Systems and takes care of managing profiles for
+different versions of projects. Moreover, it offers a tool suite allowing one to automate the
+performance regression test runs, postprocess existing profiles or interpret the results. In
+particular, it has the following advantages over databases and sole Version Control Systems:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><strong>Context</strong>—each performance profile is assigned to a concrete minor version adding the
+missing context to your profiles—what was changed in the code base, when it was changed,
+who made the changes, etc. The profiles themselves contains collected data and addition
+information about the performance regression run or application configurations.</li>
+<li><strong>Automation</strong>—Perun allows one to easily automate the process of profile collection,
+eventually reducing the whole process to a single command and can be hence hooked, e.g. when
+one commits new changes, in supported version control system to make sure one never misses
+to generate new profiles for each new minor or major version of project. The specification
+of jobs is inspired by continuous integration systems, and is designed as YAML file, which
+serves as a natural format for specifying the automated jobs.</li>
+<li><strong>Genericity</strong>—supported format of the performance profiles is based on <a class="reference external" href="https://www.json.org/">JSON</a> notation and
+has just a minor requirements and restrictions. Perun tool suite contains a basic set of
+generic (and several specific) visualizations, postprocessing and collection modules which
+can be used as building blocks for automating jobs and interpreting results. Perun itself
+poses only a minor requirements for creating and registering new modules, e.g. when one
+wants to register new profiling data collectors, data postprocessors, customized
+visualiations or different version control systems.</li>
+<li><strong>Easy to use</strong>—the workflow, interface and storage of Perun is heavily inspired by the git
+systems aiming at natural use (at least for majority of potential users). Current version
+has a Command Line Interface consisting of commands similar to git (such as e.g. add,
+status, log). Interactive Graphical User Interface is currently in development.</li>
+</ol>
+</div></blockquote>
+<a class="reference internal image-reference" href="_images/perun-flow.svg"><div align="center" class="align-center"><img alt="_images/perun-flow.svg" src="_images/perun-flow.svg" width="100%" /></div>
+</a>
+<p>Perun is meant to be used in two ways: (1) for a single developer (or a small team) as a complete
+solution for automating, storing and interpreting performance of ones project or (2) as a dedicated
+store for a bigger projects and teams. Its git-like design aims at easy distribution and simple
+interface makes it a simple store of profiles along with the context.</p>
+<p>Currently we are considering making a storage layer abstracting the storing of the profile either
+in filesystem (in git) or in database. This is currently in discussion in case the filesystem
+storage will not scale enough.</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>You can install Perun as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">init</span>
+<span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>These commands installs Perun to your system as a python package. You can then run perun safely
+from the command line using the <code class="docutils literal"><span class="pre">perun</span></code> command. Run either <code class="docutils literal"><span class="pre">perun</span> <span class="pre">--help</span></code> or see the
+<a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> documentation for more information about running Perun commands from command line.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Depending on your OS and the location of Python libraries, you might require root permissions
+to install Perun.</p>
+</div>
+<p>Alternatively you can install Perun in development mode:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">init</span>
+<span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>This method of installation allows you to make a changes to the code, which will be then reflected
+by the installation.</p>
+<p>In order to partially verify that Perun runs correctly in your environment, run the automated tests
+as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">test</span>
+</pre></div>
+</div>
+<p>In case you run in some unexpected behaviour, error or anything suspicious, either contact us
+directly through mail or <a class="reference external" href="https://github.com/tfiedor/perun/issues/new">create a new Issue</a>.</p>
+</div>
+<div class="section" id="lifetime-of-a-profile">
+<h2>Lifetime of a profile<a class="headerlink" href="#lifetime-of-a-profile" title="Permalink to this headline">¶</a></h2>
+<p>Format of performance profiles is based on <a class="reference external" href="https://www.json.org/">JSON</a> format. It tries to unify various performance
+metrics and methods for collecting and postprocessing of profiling data. Profiles themselves are
+stored in a storage (parallel to vcs storage; currently in filesystem), compressed using the <cite>zlib</cite>
+compression method along with the additional information, such as how the profile was collected,
+how profiling resources were postprocessed, which metric units are used, etc. For learning how the
+profiles are stored in the storage and the internals of Perun refer to <a class="reference internal" href="internals.html"><span class="doc">Perun Internals</span></a>. For exact
+format of the supported profile refer to <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</p>
+<a class="reference internal image-reference" href="_images/lifetime-of-profile.svg"><div align="center" class="align-center"><img alt="_images/lifetime-of-profile.svg" src="_images/lifetime-of-profile.svg" width="70%" /></div>
+</a>
+<p>The Figure above shows the lifetime of one profile. Profiles can be generated by set of collectors
+(such as <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a> which collects time durations depending on sizes of data
+structures, or simple <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> for basic timing) and can be further refined and
+transformed by sequence of postprocessing steps (like e.g.
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> for estimating regression models of dependent variables
+based on independent variables, or <a class="reference internal" href="postprocessors.html#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a>, etc.).</p>
+<p>Stored profiles then can be interpreted by set of visualization techniques like e.g.
+<a class="reference internal" href="views.html#views-flame-graph"><span class="std std-ref">Flame Graph</span></a>, <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a>, or generic <a class="reference internal" href="views.html#views-bars"><span class="std std-ref">Bars Plot</span></a> and <a class="reference internal" href="views.html#views-flow"><span class="std std-ref">Flow Plot</span></a>.
+Refer to <a class="reference internal" href="views.html"><span class="doc">Visualizations Overview</span></a> for more concise list and documentation of interpretation capabilities of
+Perun’s tool suite.</p>
+</div>
+<div class="section" id="perun-architecture">
+<h2>Perun architecture<a class="headerlink" href="#perun-architecture" title="Permalink to this headline">¶</a></h2>
+<p>Internal architecture of Perun can be divided into several units—logic (commands, jobs, runners,
+store), data (vcs and profile), and the tool suite (collectors, postprocessors and visualizers).
+Data includes the core of the Perun—the profile manipulation and supported wrappers (currently
+git and simple custom vcs) over the existing version control systems. The logic is in charge of
+automation, higher-logic manipulations and takes care of actual generation of the profiles.
+Moreover, the whole Perun suite contains set of collectors for generation of profiles, set of
+postprocessors for transformation and various visualization techniques and wrappers for graphical
+and command line interface.</p>
+<a class="reference internal image-reference" href="_images/perun-architecture-less-trans.svg"><div align="center" class="align-center"><img alt="_images/perun-architecture-less-trans.svg" src="_images/perun-architecture-less-trans.svg" width="100%" /></div>
+</a>
+<p>The scheme above shows the basic decomposition of Perun suite into sole units. Architecture of
+Perun was designed to allow simple extension of both internals and tool suite. In order to register
+new profiling data collector, profile postprocessor, or new visual interpretation of results refer
+to <a class="reference internal" href="collectors.html#collectors-custom"><span class="std std-ref">Creating your own Collector</span></a>, <a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Examples</span></a> and <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a> respectively.</p>
+</div>
+<div class="section" id="list-of-features">
+<h2>List of Features<a class="headerlink" href="#list-of-features" title="Permalink to this headline">¶</a></h2>
+<p>In the following, we list the foremost features and advantages of Perun:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Unified format</strong>—we base our format on <a class="reference external" href="https://www.json.org/">JSON</a> with several minor limitations, e.g. one needs
+to specify header region or set of resources under fixed keys. This allows us to reuse existing
+postprocessors and visualisers to achieve great flexibility and easily design new methods. For
+full specification of our format refer to <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</li>
+<li><strong>Natural specification of Profiling Runs</strong>—we base the specification of profiling jobs in
+<a class="reference external" href="http://yaml.org/">Yaml</a> format. In project configuration we let the user choose the set of collectors, set of
+postprocessors and configure runnable applications along with different parameter combinations
+and input workloads. Based on this specification we build a job matrix, which is then
+sequentially run and generates list of performance profiles. After the functional changes to
+project one then just needs to run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code> to genereate new batch of performance
+profiles for latest (or currently checked-out) minor version of project.</li>
+<li><strong>Git-inspired Interface</strong>—the <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> is inspired by git version control systems and
+specifies commands like e.g. <code class="docutils literal"><span class="pre">add</span></code>, <code class="docutils literal"><span class="pre">remove</span></code>, <code class="docutils literal"><span class="pre">status</span></code>, or <code class="docutils literal"><span class="pre">log</span></code>, well-known to basic
+git users. Moreover, the interface is built using the <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library providing flexible option
+and argument handling. The overall interface was designed to have a natural feeling when
+executing the commands.</li>
+<li><strong>Efficient storage</strong>—performance profiles are stored compressed in the storage in parallel
+to versions of the profiled project. Each stored object is then identified by its hash
+indentificator allowing quick lookup and reusing of object blobs. Storage in this form is
+rather packed and allows easy distribution.</li>
+<li><strong>Multiplatform-support</strong>—Perun is implemented in Python 3 and its implementation is supported
+both by Windows and Unix-like platforms. However, several visualizations currently requires
+support for <code class="docutils literal"><span class="pre">ncurses</span></code> library (e.g. <a class="reference internal" href="views.html#views-heapmap"><span class="std std-ref">Heap Map</span></a>).</li>
+<li><strong>Regression Analysis</strong>—Perun’s suite contains a postprocessing module for
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>, which supports several different strategies for
+finding the best model for given data (such as linear, quadratic, or constant model). Moreover,
+it contains switch for a more fine analysis of the data e.g. by performing regression analysis
+on smaller intervals, or using bisective method on whole data interval. Such analyses allows
+one to effectively interpret trends in data (e.g. that the duration of list search is lineary
+dependent on the size of the list) and help with detecting performance regressions.</li>
+<li><strong>Interactive Visualizations</strong>—Perun’s tool suite includes several visualization modules,
+some of them based on <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> visualization library, which provides nice and interactive plots,
+in exchange of scalability (note that we are currently exploring libraries that can scale better)
+—in browser, resizable and manipulable.</li>
+<li><strong>Useful API for profile manipulation</strong>—helper modules are provided for working with our
+profiles in external applications (besides loading and basic usage)—we have API for executing
+simple queries over the resources or other parts of the profiles, or convert and transform the
+profiles to different representations (e.g. pandas data frame, or flame-graph format).
+This way, Perun can be used, e.g. together with <code class="docutils literal"><span class="pre">python</span></code> and <code class="docutils literal"><span class="pre">pandas</span></code>, as interactive
+interpret with support of statistical analysis.</li>
+<li><strong>Automatic Detection of Performance Degradation</strong>—we are currently exploring effective
+heuristics for automatic detection of performance degradation between two project versions (e.g.
+between two commits). Our methodology is based on statistical methods and outputs of
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. More details about degradation detection can be
+found at <a class="reference internal" href="degradation.html"><span class="doc">Detecting Performance Changes</span></a></li>
+</ul>
+</div></blockquote>
+<p>Currently we are working on several extensions of Perun, that could be integrated in near future.
+Namely, in we are exploring the following possible features into Perun:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Regular Expression Driven Collector</strong>—one planned collectors should be based on parsing the
+standard text output for a custom specified metrics, specified by regular expressions. We
+believe this could allow generic and quick usage to generate the performance profiles without
+the need of creating new specific collectors.</li>
+<li><strong>Fuzzing Collector</strong>—other planned collector should be based on method of fuzz
+testing—i.e. modifying inputs in order to force error or, in our case, a performance change.
+We believe that this collector could generate interesting profiles and lead to a better
+understanding of ones applications.</li>
+<li><strong>Clustering Postprocessor</strong>—we are exploring now how to make any profile usable for
+regression analysis. The notion of clustering is based on assumption, that there exists an
+independent variable (but unknown to us) that can be used to model the dependent variable (in
+our case the amount of resources). This postprocessor should try to find the optimal clustering
+of the dependent values in order to be usable by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</li>
+<li><strong>Automatic Hooks</strong>—in near future, we want to include the initially planned feature of
+Perun, namely the automatic hooks, that will allow to automate the runs of job matrix,
+automatic detection of degradation and efficient storage. Hooks would then trigger the profile
+collection e.g. <cite>on_commit</cite>, <cite>on_push</cite>, etc.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="overview-of-customization">
+<h2>Overview of Customization<a class="headerlink" href="#overview-of-customization" title="Permalink to this headline">¶</a></h2>
+<p>In order to extend the tool suite with custom modules (collectors, postprocessors and
+visualizations) one needs to implement <code class="docutils literal"><span class="pre">run.py</span></code> module inside the custom package stored in
+appropriate subdirectory (<code class="docutils literal"><span class="pre">perun.collect</span></code>, <code class="docutils literal"><span class="pre">perun.postprocess</span></code> and <code class="docutils literal"><span class="pre">perun.view</span></code>
+respectively). For more information about registering new profiling data collector, profile
+postprocessor, or new visual interpretation of results refer to <a class="reference internal" href="collectors.html#collectors-custom"><span class="std std-ref">Creating your own Collector</span></a>,
+<a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Examples</span></a> and <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a> respectively.</p>
+<p>If you think your custom module could help others, please <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">send us PR</a>, we will review the code
+and in case it is suitable for wider audience, we will include it in our <a class="reference external" href="https://github.com/tfiedor/perun">upstream</a>.</p>
+<div class="section" id="custom-collector">
+<h3>Custom Collector<a class="headerlink" href="#custom-collector" title="Permalink to this headline">¶</a></h3>
+<p>Collectors serves as a unit for generating profiles containing captured resources.
+In general the collection process can be broken into three phases:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><strong>Before</strong>—optional phase before the actual collection of profiling data, which is meant to
+prepare the profiled project for the actual collection. This phases corresponds to various
+initializations, custom compilations, etc.</li>
+<li><strong>Collect</strong>—the actual collection of profiling data, which should capture the profiled
+resources and ideally generate the profile w.r.t. <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a>.</li>
+<li><strong>After</strong>—last and optional phase after resources has been successfully collected (either in
+raw or supported format). This phase includes e.g. corresponds filters or transformation of
+the profile.</li>
+</ol>
+</div></blockquote>
+<p>Each collector should be registered in <code class="docutils literal"><span class="pre">perun.collect</span></code> package and needs to implement the
+proposed interfaced inside the <code class="docutils literal"><span class="pre">run.py</span></code> module. In order to register and use a new collector one
+needs to implement the following api in the <code class="docutils literal"><span class="pre">run.py</span></code> module:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(optional) Phase before execution of collector&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
+
+<span class="k">def</span> <span class="nf">collect</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Collection of the profile---returned profile is in kwargs[&#39;profile&#39;]&quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">collector</span><span class="o">.</span><span class="n">do_collection</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
+
+<span class="k">def</span> <span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(optional) Final postprocessing of the generated profile&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
+</pre></div>
+</div>
+<p>For full explanation how to register and create a new collector module refer to
+<a class="reference internal" href="collectors.html#collectors-custom"><span class="std std-ref">Creating your own Collector</span></a>.</p>
+</div>
+<div class="section" id="custom-postprocessor">
+<h3>Custom Postprocessor<a class="headerlink" href="#custom-postprocessor" title="Permalink to this headline">¶</a></h3>
+<p>Postprocessors in general work the same as collectors and can be broken to three phases as well.
+The required API to be implemented has a similar requirements and one needs to implement the
+following in the <code class="docutils literal"><span class="pre">run.py</span></code> module:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">before</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(optional) Phase before execution of postprocessor&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
+
+<span class="k">def</span> <span class="nf">postprocess</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Postprocessing of the profile---returned profile is in kwargs[&#39;profile&#39;]&quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">postprocessor</span><span class="o">.</span><span class="n">do_postprocessing</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
+
+<span class="k">def</span> <span class="nf">after</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(optional) Final postprocessing of the generated profile&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">status_msg</span><span class="p">,</span> <span class="n">kwargs</span>
+</pre></div>
+</div>
+<p>For full explanation how to register and create a new postprocessor module refer to
+<a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Examples</span></a>.</p>
+</div>
+<div class="section" id="custom-visualization">
+<h3>Custom Visualization<a class="headerlink" href="#custom-visualization" title="Permalink to this headline">¶</a></h3>
+<p>New visualizations have to be based on the <a class="reference internal" href="profile.html#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> (or its supported conversions, see
+<a class="reference internal" href="profile.html#profile-conversion-api"><span class="std std-ref">Profile Conversions API</span></a>) and has to just implement the following in the <code class="docutils literal"><span class="pre">run.py</span></code> module:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">perun.utils.helpers</span> <span class="k">as</span> <span class="nn">helpers</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@helpers</span><span class="o">.</span><span class="n">pass_profile</span>
+<span class="k">def</span> <span class="nf">visualization_name</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Display the profile in custom format&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>The <a class="reference external" href="http://click.pocoo.org/5/">Click</a> library is used for command line interface. For full explanation how to register and
+create a new collector module refer to <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a>.</p>
+</div>
+</div>
+<div class="section" id="acknowledgements">
+<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<p>We thank for the support received from <a class="reference external" href="https://www.redhat.com/en/global/czech-republic">Red Hat</a> (especially branch of Brno), Brno University of
+Technology (<a class="reference external" href="https://www.fit.vutbr.cz/">BUT FIT</a>) and H2020 ECSEL project <a class="reference external" href="https://aquas-project.eu/">Aquas</a>.</p>
+<p>Further we would like to thank the following individuals (in the alphabetic order) for their
+(sometimes even just a little) contributions:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Jan Fiedor</strong> (Honeywell)—for feedback, and technical discussions;</li>
+<li><strong>Martin Hruska</strong> (BUT FIT)—for feedback, and technical discussions;</li>
+<li><strong>Petr Müller</strong> (SAP)—for nice discussion about the project;</li>
+<li><strong>Michal Kotoun</strong> (BUT FIT)—for feedback, and having faith in this repo;</li>
+<li><strong>Hanka Pluhackova</strong> (BUT FIT)—for awesome logo, theoretical discussions about statistics, feedback, and lots of ideas;</li>
+<li><strong>Adam Rogalewicz</strong> (BUT FIT)—for support, theoretical discussions, feedback;</li>
+<li><strong>Tomas Vojnar</strong> (BUT FIT)—for support, theoretical discussions, feedback;</li>
+<li><strong>Jan Zeleny</strong> (Red Hat)—for awesome support, and feedback.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="index.html">
+    <h3>Perun</h3>
+  </a>
+</p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Perun: Performance Under Control</a><ul>
+<li><a class="reference internal" href="#what-is-perun">What is Perun?</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#lifetime-of-a-profile">Lifetime of a profile</a></li>
+<li><a class="reference internal" href="#perun-architecture">Perun architecture</a></li>
+<li><a class="reference internal" href="#list-of-features">List of Features</a></li>
+<li><a class="reference internal" href="#overview-of-customization">Overview of Customization</a><ul>
+<li><a class="reference internal" href="#custom-collector">Custom Collector</a></li>
+<li><a class="reference internal" href="#custom-postprocessor">Custom Postprocessor</a></li>
+<li><a class="reference internal" href="#custom-visualization">Custom Visualization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Perun’s documentation!</a></li>
+      <li>Next: <a href="profile.html" title="next chapter">Perun’s Profile Format</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/overview.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/overview.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

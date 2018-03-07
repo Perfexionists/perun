@@ -1,1 +1,172 @@
-Hello world!
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to Perun’s documentation! &#8212; Perun 0.12 documentation</title>
+    <link rel="stylesheet" href="_static/perun.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Perun: Performance Under Control" href="overview.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-perun-s-documentation">
+<h1>Welcome to Perun’s documentation!<a class="headerlink" href="#welcome-to-perun-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Perun: Performance Under Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-perun">What is Perun?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#lifetime-of-a-profile">Lifetime of a profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#perun-architecture">Perun architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#list-of-features">List of Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#overview-of-customization">Overview of Customization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#acknowledgements">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="profile.html">Perun’s Profile Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="profile.html#specification-of-profile-format">Specification of Profile Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="profile.html#module-perun.profile.factory">Profile API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="profile.html#module-perun.profile.convert">Profile Conversions API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="profile.html#module-perun.profile.query">Profile Query API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#perun">perun</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#perun-commands">Perun Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#collect-commands">Collect Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#postprocess-commands">Postprocess Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#show-commands">Show Commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="collectors.html">Collectors Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="collectors.html#supported-collectors">Supported Collectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collectors.html#creating-your-own-collector">Creating your own Collector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="postprocessors.html">Postprocessors Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="postprocessors.html#supported-postprocessors">Supported Postprocessors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postprocessors.html#creating-your-own-postprocessor">Creating your own Postprocessor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="views.html">Visualizations Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="views.html#supported-visualizations">Supported Visualizations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="views.html#creating-your-own-visualization">Creating your own Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jobs.html">Automating Runs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jobs.html#runner-cli">Runner CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jobs.html#overview-of-jobs">Overview of Jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jobs.html#job-matrix-format">Job Matrix Format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="degradation.html">Detecting Performance Changes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="degradation.html#results-of-detection">Results of Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degradation.html#detection-methods">Detection Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degradation.html#configuring-degradation-detection">Configuring Degradation Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degradation.html#create-your-own-degradation-checker">Create Your Own Degradation Checker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degradation.html#degradation-cli">Degradation CLI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Perun Configuration files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config.html#configuration-types">Configuration types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html#list-of-supported-options">List of Supported Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html#command-line-interface">Command Line Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="logs.html">Customize Logs and Statuses</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="logs.html#customizing-statuses">Customizing Statuses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logs.html#customizing-logs">Customizing Logs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="internals.html">Perun Internals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="internals.html#version-control-systems">Version Control Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="internals.html#perun-storage">Perun Storage</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>About Perun</h3>
+<p>
+    Perun is an open source light-weight Performance Versioning System aiming
+    at performance regression test automation, preserving performance history
+    and managing profiling data.
+</p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
