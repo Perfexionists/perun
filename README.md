@@ -7,7 +7,7 @@ Perun: Lightweight Performance Version System
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4002ae488f54aabb77920a0cc90b6f5)](https://www.codacy.com/app/tfiedor/perun?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tfiedor/perun&amp;utm_campaign=Badge_Grade)
 
 <p align="center">
-  <img width="460" height="300" src="figs/perun-logo.png">
+  <img src="figs/perun-logo.png">
 </p>
 
 Perun is an open source light-weight Performance Version System, which 
@@ -40,7 +40,7 @@ databases or sole Version Control Systems:
       heavily inspired by the git systems aiming at natural use. 
 
 <p align="center">
-  <img width="460" height="300" src="figs/perun-flow.svg">
+  <img src="figs/perun-flow.svg">
 </p>
 
 Perun can be used in two ways: (1) for a single developer (or a small team) as a complete
