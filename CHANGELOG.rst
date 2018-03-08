@@ -6,6 +6,17 @@ HEAD
 
 **To be included in next release**
 
+0.12.1 (2018-03-08)
+-------------------
+
+`commit: 96ef4443244568260e5dd25fa4cde5230eba8a36`
+
+**Update project readme**
+
+  - update the project readme
+  - add compiled documentation
+  -
+
 0.12 (2018-03-05)
 -----------------
 

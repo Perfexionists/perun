@@ -3,8 +3,10 @@ Perun: Lightweight Performance Version System
 
 ![image](https://travis-ci.org/tfiedor/perun.svg?branch=master)
 [![codecov](https://codecov.io/gh/tfiedor/perun/branch/master/graph/badge.svg)](https://codecov.io/gh/tfiedor/perun)
-[![Maintainability](https://api.codeclimate.com/v1/badges/233e3e1a434815fee154/maintainability)](https://codeclimate.com/github/tfiedor/perun/maintainability)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4002ae488f54aabb77920a0cc90b6f5)](https://www.codacy.com/app/tfiedor/perun?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tfiedor/perun&amp;utm_campaign=Badge_Grade)
+[![Maintainability](https://api.codeclimate.com/v1/badges/233e3e1a434815fee154/maintainability)](https://codeclimate.com/github/tfiedor/perun/maintainability)
+[![GitHub tag](https://img.shields.io/github/tag/tfiedor/perun.svg)](https://github.com/tfiedor/perun)
+
 
 <p align="center">
   <img src="figs/perun-logo.png">
