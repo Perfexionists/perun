@@ -6,21 +6,21 @@ Perun: Performance Under Control
 
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
 .. _Click: http://click.pocoo.org/5/
-.. _JSON: https://www.json.org/ 
+.. _JSON: https://www.json.org/
 .. _Yaml: http://yaml.org/
 
 What is Perun?
 --------------
 
 `Have you ever encountered a sudden performance degradation and could not figure out, when and
-where the degradation was introduced?`  
+where the degradation was introduced?`
 
 `Do you think that you have no idea whether the overall performance of your application is getting
-better or not over the time?` 
+better or not over the time?`
 
 `Is it hard for you to set performance regression testing everytime you create a new project?`
 
-`Do you ever feel that you completely loose the control of the performance of your projects?`  
+`Do you ever feel that you completely loose the control of the performance of your projects?`
 
 There exists solutions for managing changes of ones project---Version Control Systems (VCS)---but
 precise managing of performance is harder. This calls for solutions tuned to support performance
@@ -98,7 +98,7 @@ from the command line using the ``perun`` command. Run either ``perun --help`` o
 Alternatively you can install Perun in development mode::
 
     make init
-    make install
+    make dev
 
 This method of installation allows you to make a changes to the code, which will be then reflected
 by the installation.
@@ -212,7 +212,7 @@ In the following, we list the foremost features and advantages of Perun:
     simple queries over the resources or other parts of the profiles, or convert and transform the
     profiles to different representations (e.g. pandas data frame, or flame-graph format).
     This way, Perun can be used, e.g. together with ``python`` and ``pandas``, as interactive
-    interpret with support of statistical analysis. 
+    interpret with support of statistical analysis.
 
   * **Automatic Detection of Performance Degradation**---we are currently exploring effective
     heuristics for automatic detection of performance degradation between two project versions (e.g.
