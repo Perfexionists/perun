@@ -18,7 +18,7 @@ import perun.collect.complexity.run as complexity
 __author__ = 'Tomas Fiedor'
 
 
-def _mocked_stap(stap, **kwargs):
+def _mocked_stap(**kwargs):
     """System tap mock, provide OK code and pre-fabricated collection output"""
     return 0, os.path.join(os.path.dirname(__file__), 'collect_complexity', 'tst_stap_record.txt')
 

@@ -76,16 +76,12 @@ def collect(**kwargs):
     print('Running the collector, progress output stored in <cmd>_stap.log.\n'
           'This may take a while... ', end='')
     try:
-        # Resolve the system tap path
-        stap = shutil.which('stap')
-        if stap is None:
-            print('Failed.\n')
-            return 2, _COLLECTOR_STATUS_MSG[2], dict(kwargs)
-
         # Call the system tap
-        code, kwargs['output'] = _call_stap(stap, **kwargs)
-
-        print('Done.\n')
+        code, kwargs['output'] = _call_stap(**kwargs)
+        if code == 0:
+            print('Done.\n')
+        else:
+            print('Failed.\n')
         return code, _COLLECTOR_STATUS_MSG[code], dict(kwargs)
     except (OSError, subprocess.CalledProcessError) as exception:
         print('Failed.\n')
@@ -160,14 +156,23 @@ def _get_path_dir_file(target):
     return path, path_dir, os.path.basename(path)
 
 
-def _call_stap(stap_path, **kwargs):
+def _call_stap(**kwargs):
+    """Wrapper for SystemTap call and execution
+
+    :param dict kwargs: complexity collector configuration parameters
+    :returns: tuple (int code value - nonzero for errors, path to the SystemTap output)
+    """
+    # Resolve the system tap path
+    stap = shutil.which('stap')
+    if stap is None:
+        return 2, ''
 
     script_path, script_dir, _ = _get_path_dir_file(kwargs['script'])
     # Create the output file and collection log
     output = script_dir + kwargs['cmd_base'] + '_stap_record.txt'
     with open(script_dir + kwargs['cmd_base'] + '_stap.log', 'w') as log:
         # Start the collector
-        stap_runner = subprocess.Popen(('sudo', stap_path, '-v', script_path, '-o',
+        stap_runner = subprocess.Popen(('sudo', stap, '-v', script_path, '-o',
                                         output, '-c', kwargs['cmd']),
                                        cwd=script_dir, stderr=log, shell=False)
         stap_runner.communicate()
