@@ -177,11 +177,15 @@ a cli API for Click_.
 
 You can register your new collector as follows:
 
-    1. Create a new module in ``perun/collect`` directory with the following structure::
+    1. Run ``perun utils create collect mycollector`` to generate a new modules in
+       ``perun/collect`` directory with the following structure. The command takes a predefined
+       templates for new collectors and creates ``__init__.py`` and ``run.py`` according to the
+       supplied command line arguments (see :ref:`cli-utils-ref` for more information about
+       interface of ``perun utils create`` command)::
 
         /perun
         |-- /collect
-            |-- /new_module
+            |-- /mycollector
                 |-- __init__.py
                 |-- run.py
             |-- /complexity
@@ -191,7 +195,7 @@ You can register your new collector as follows:
 
     2. First, implement the ``__init__.py`` file, including the module docstring with brief
        collector descriptions and definitions of constants that are used for automatic setting of
-       profiles (namely the :preg:`collector-info`) as follows:
+       profiles (namely the :preg:`collector-info`) which has the following structure:
 
     .. literalinclude:: /_static/templates/collectors_init.py
         :language: python

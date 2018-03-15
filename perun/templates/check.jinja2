@@ -1,0 +1,16 @@
+"""TODO: Write short docstring of the new degradation check
+
+TODO: Write long dosctring of the new degradation check
+"""
+
+import perun.check as check
+
+
+def {{ unit_name }}(baseline_profile, target_profile):
+    """
+
+    :param dict baseline_profile: baseline against which we are checking the degradation
+    :param dict target_profile: profile corresponding to the checked minor version
+    :returns: tuple (degradation result, degradation location, degradation rate)
+    """
+    yield check.DegradationInfo("TODO: Implement this")

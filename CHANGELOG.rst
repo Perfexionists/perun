@@ -6,6 +6,9 @@ HEAD
 
 **To be included in next release**
 
+  - add ``perun utils create`` command (see :ref:`cli-utils-ref` for more details) for creating new modules according to stored templates
+  - fix issue with getting config hierarchy, when outside of any perun scope
+
 0.12.1 (2018-03-08)
 -------------------
 
@@ -15,7 +18,6 @@ HEAD
 
   - update the project readme
   - add compiled documentation
-  -
 
 0.12 (2018-03-05)
 -----------------
