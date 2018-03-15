@@ -13,8 +13,14 @@ from click.testing import CliRunner
 import perun.cli as cli
 import perun.utils.decorators as decorators
 import perun.logic.config as config
+import perun.collect.complexity.run as complexity
 
 __author__ = 'Tomas Fiedor'
+
+
+def _mocked_stap(stap, **kwargs):
+    """System tap mock, provide OK code and pre-fabricated collection output"""
+    return 0, os.path.join(os.path.dirname(__file__), 'collect_complexity', 'tst_stap_record.txt')
 
 
 def test_reg_analysis_incorrect(pcs_full):
@@ -321,11 +327,13 @@ def test_collect_correct(pcs_full):
     assert result.exit_code == 0
 
 
-def test_collect_complexity(pcs_full, complexity_collect_job):
+def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     """Test running the complexity collector from the CLI with parameter handling
 
     Expecting no errors
     """
+    monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
+
     script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity')
     target = os.path.join(script_dir, 'tst')
     job_params = complexity_collect_job[5]['collector_params']['complexity']

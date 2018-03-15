@@ -9,6 +9,7 @@ import collections
 import os
 import sys
 import subprocess
+import shutil
 
 import click
 
@@ -22,7 +23,9 @@ _ProfileRecord = collections.namedtuple('record', ['offset', 'func', 'timestamp'
 # The collect phase status messages
 _COLLECTOR_STATUS_MSG = {
     0:  'OK',
-    1:  'SystemTap related issue, see the corresponding <cmd>_stap.log file.'
+    1:  'SystemTap related issue, see the corresponding <cmd>_stap.log file.',
+    2:  'SystemTap dependency missing.',
+    3:  'c++filt dependency missing'
 }
 
 # The collector subtypes
@@ -72,20 +75,15 @@ def collect(**kwargs):
     """
     print('Running the collector, progress output stored in <cmd>_stap.log.\n'
           'This may take a while... ', end='')
-    script_path, script_dir, _ = _get_path_dir_file(kwargs['script'])
     try:
-        # Create the output file and collection log
-        kwargs['output'] = script_dir + kwargs['cmd_base'] + '_stap_record.txt'
-        with open(script_dir + kwargs['cmd_base'] + '_stap.log', 'w') as log:
-            # Start the collector
-            stap_runner = subprocess.Popen(('sudo', 'stap', '-v', script_path, '-o',
-                                            kwargs['output'], '-c', kwargs['cmd']),
-                                           cwd=script_dir, stderr=log)
-            stap_runner.communicate()
-            if stap_runner.returncode != 0:
-                code = 1
-            else:
-                code = 0
+        # Resolve the system tap path
+        stap = shutil.which('stap')
+        if stap is None:
+            print('Failed.\n')
+            return 2, _COLLECTOR_STATUS_MSG[2], dict(kwargs)
+
+        # Call the system tap
+        code, kwargs['output'] = _call_stap(stap, **kwargs)
 
         print('Done.\n')
         return code, _COLLECTOR_STATUS_MSG[code], dict(kwargs)
@@ -108,37 +106,45 @@ def after(**kwargs):
     func_map = dict()
 
     # Get the trace log path
-    with open(kwargs['output'], 'r') as profile:
+    try:
+        with open(kwargs['output'], 'r') as profile:
 
-        # Create demangled counterparts of the function names
-        demangle = subprocess.check_output('c++filt', stdin=profile)
-        profile = demangle.decode(sys.stdout.encoding)
-
-        for line in profile.splitlines(True):
-            # Split the line into action, function name, timestamp and size
-            record = _parse_record(line)
-
-            # Process the record
-            if _process_file_record(record, call_stack, resources, func_map) != 0:
-                # Stack error
-                err_msg = 'Call stack error, record: ' + record.func
-                if not call_stack:
-                    err_msg += ', stack top: empty'
-                else:
-                    err_msg += ', stack top: ' + call_stack[-1].func
-
+            # Create demangled counterparts of the function names
+            demangler = shutil.which('c++filt')
+            if demangler is None:
                 print('Failed.\n')
-                return 1, err_msg, kwargs
+                return 3, _COLLECTOR_STATUS_MSG[3], dict(kwargs)
+            demangle = subprocess.check_output(demangler, stdin=profile, shell=False)
+            profile = demangle.decode(sys.stdout.encoding)
 
-    # Update the profile dictionary
-    kwargs['profile'] = {
-        'global': {
-            'time': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
-            'resources': resources
+            for line in profile.splitlines(True):
+                # Split the line into action, function name, timestamp and size
+                record = _parse_record(line)
+
+                # Process the record
+                if _process_file_record(record, call_stack, resources, func_map) != 0:
+                    # Stack error
+                    err_msg = 'Call stack error, record: ' + record.func
+                    if not call_stack:
+                        err_msg += ', stack top: empty'
+                    else:
+                        err_msg += ', stack top: ' + call_stack[-1].func
+
+                    print('Failed.\n')
+                    return 1, err_msg, kwargs
+
+        # Update the profile dictionary
+        kwargs['profile'] = {
+            'global': {
+                'time': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
+                'resources': resources
+            }
         }
-    }
-    print('Done.\n')
-    return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+        print('Done.\n')
+        return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+    except (OSError, subprocess.CalledProcessError) as exception:
+        print('Failed.\n')
+        return 1, str(exception), kwargs
 
 
 def _get_path_dir_file(target):
@@ -152,6 +158,24 @@ def _get_path_dir_file(target):
     if path_dir and path_dir[-1] != '/':
         path_dir += '/'
     return path, path_dir, os.path.basename(path)
+
+
+def _call_stap(stap_path, **kwargs):
+
+    script_path, script_dir, _ = _get_path_dir_file(kwargs['script'])
+    # Create the output file and collection log
+    output = script_dir + kwargs['cmd_base'] + '_stap_record.txt'
+    with open(script_dir + kwargs['cmd_base'] + '_stap.log', 'w') as log:
+        # Start the collector
+        stap_runner = subprocess.Popen(('sudo', stap_path, '-v', script_path, '-o',
+                                        output, '-c', kwargs['cmd']),
+                                       cwd=script_dir, stderr=log, shell=False)
+        stap_runner.communicate()
+        if stap_runner.returncode != 0:
+            code = 1
+        else:
+            code = 0
+    return code, output
 
 
 def _process_file_record(record, call_stack, resources, sequences):

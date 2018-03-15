@@ -3,12 +3,20 @@
 import os
 
 import perun.logic.runner as runner
+import perun.collect.complexity.run as complexity
 
 __author__ = 'Tomas Fiedor'
 
 
-def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
+def _mocked_stap(stap, **kwargs):
+    """System tap mock, provide OK code and pre-fabricated collection output"""
+    return 0, os.path.join(os.path.dirname(__file__), 'collect_complexity', 'tst_stap_record.txt')
+
+
+def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
+    monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
+
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
 
     cmd, args, work, collectors, posts, config = complexity_collect_job

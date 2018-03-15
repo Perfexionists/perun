@@ -59,11 +59,6 @@ class EntryNotFoundException(Exception):
         return "Entry satisfying '{}' predicate not found".format(self.entry)
 
 
-class UnexpectedPrototypeSyntaxError(Exception):
-    """Raised when the function prototype syntax is somehow different than expected"""
-    pass
-
-
 class VersionControlSystemException(Exception):
     """Raised when there is an issue with wrapped version control system.
 

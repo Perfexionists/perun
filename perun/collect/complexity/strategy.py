@@ -66,7 +66,7 @@ def custom_strategy(rules, sampling, cmd, global_sampling, **_):
     # Assembly the script
     script = ''
     # Add sampling counters
-    for func, sample in samples.items():
+    for _, sample in samples.items():
         script += 'global samp_{0} = {1}\n'.format(str(sample[1]), sample[0] - 1)
     script += '\n'
 
