@@ -14,6 +14,7 @@ import perun.cli as cli
 import perun.utils.decorators as decorators
 import perun.logic.config as config
 import perun.collect.complexity.run as complexity
+import perun.utils.exceptions as exceptions
 
 __author__ = 'Tomas Fiedor'
 
@@ -607,3 +608,66 @@ def test_check_all(pcs_with_degradations):
 
     result = runner.invoke(cli.check_all, [])
     assert result.exit_code == 0
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_utils_create(monkeypatch, tmpdir):
+    """Tests creating stuff in the perun"""
+    # Prepare different directory
+    monkeypatch.setattr('perun.utils.script_helpers.__file__', os.path.join(str(tmpdir), "utils", "script_helpers.py"))
+    monkeypatch.chdir(str(tmpdir))
+
+    runner = CliRunner()
+    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    assert result.exit_code == 1
+    assert "cannot use" in result.output and "as target developer directory" in result.output
+
+    # Now correctly initialize the directory structure
+    tmpdir.mkdir('collect')
+    tmpdir.mkdir('postprocess')
+    tmpdir.mkdir('view')
+    tmpdir.mkdir('check')
+
+    # Try to successfully create the new postprocessor
+    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'postprocess', 'mypostprocessor')
+    created_files = os.listdir(target_dir)
+    assert '__init__.py' in created_files
+    assert 'run.py' in created_files
+
+    # Try to successfully create the new collector
+    result = runner.invoke(cli.create, ['collect', 'mycollector', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'collect', 'mycollector')
+    created_files = os.listdir(target_dir)
+    assert '__init__.py' in created_files
+    assert 'run.py' in created_files
+
+    # Try to successfully create the new collector
+    result = runner.invoke(cli.create, ['view', 'myview', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'view', 'myview')
+    created_files = os.listdir(target_dir)
+    assert '__init__.py' in created_files
+    assert 'run.py' in created_files
+
+    # Try to successfully create the new collector
+    result = runner.invoke(cli.create, ['check', 'mycheck', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'check')
+    created_files = os.listdir(target_dir)
+    assert 'mycheck.py' in created_files
+
+    # Try to run the monkey-patched editor
+    def donothing(*_):
+        pass
+    monkeypatch.setattr('perun.utils.run_external_command', donothing)
+    result = runner.invoke(cli.create, ['check', 'mydifferentcheck'])
+    assert result.exit_code == 0
+
+    def raiseexc(*_):
+        raise exceptions.ExternalEditorErrorException
+    monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
+    result = runner.invoke(cli.create, ['check', 'mythirdcheck'])
+    assert result.exit_code == 1

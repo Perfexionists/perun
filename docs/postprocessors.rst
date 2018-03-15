@@ -103,11 +103,15 @@ three function and, moreover, a CLI function for Click_ framework.
 
 You can register your new postprocessor as follows:
 
-    1. Create a new module in ``perun/postprocess`` directory with the following structure::
+    1. Run ``perun utils create postprocess mypostprocessor`` to generate a new modules in
+       ``perun/postprocess`` directory with the following structure. The command takes a predefined
+       templates for new postprocessors and creates ``__init__.py`` and ``run.py`` according to the
+       supplied command line arguments (see :ref:`cli-utils-ref` for more information about
+       interface of ``perun utils create`` command)::
 
         /perun
         |-- /postprocess
-            |-- /new_module
+            |-- /mypostprocessor
                 |-- __init__.py
                 |-- run.py
             |-- /normalizer
@@ -115,8 +119,8 @@ You can register your new postprocessor as follows:
             |-- __init__.py
 
     2. First, implement the ``__init__py`` file, including the module docstring with brief
-       postprocessor description and definitions of constants that are used for initernal
-       checks as follows:
+       postprocessor description and definitions of constants that are used for internal 
+       checks which has the following structure:
 
     .. literalinclude:: /_static/templates/postprocess_init.py
         :language: python
