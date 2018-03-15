@@ -255,3 +255,19 @@ class InvalidTransformationException(GenericRegressionExceptionBase):
         self.msg = ("Invalid or unsupported transformation: {0} for model: {1}."
                     .format(str(self.transformation), str(self.model)))
         return self.msg
+
+
+class StrategyNotImplemented(Exception):
+    """Raised when requested computation method/strategy is not implemented"""
+    def __init__(self, strategy):
+        """
+        Arguments:
+            strategy(str): the requested strategy
+        """
+        super().__init__("")
+        self.strategy = strategy
+
+    def __str__(self):
+        self.msg = ("Requested computation method '{0}' is currently not implemented."
+                    .format(self.strategy))
+        return self.msg
