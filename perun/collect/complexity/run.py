@@ -200,7 +200,7 @@ def _process_file_record(record, call_stack, resources, sequences):
         else:
             sequences[record.func] = 0
         return 0
-    elif record.offset == call_stack[-1].offset - 1:
+    elif call_stack and record.offset == call_stack[-1].offset - 1:
         # Function exit, match with the function enter to create resources record
         matching_record = call_stack.pop()
         resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),

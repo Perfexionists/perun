@@ -149,22 +149,22 @@ class DictionaryKeysValidationFailed(Exception):
         self.dictionary = dictionary
         self.missing_keys = missing_keys
         self.excess_keys = excess_keys
-
-    def __str__(self):
         if not isinstance(self.dictionary, dict):
-            msg = "Validated object '{0}' is not a dictionary.".format(self.dictionary)
+            self.msg = "Validated object '{0}' is not a dictionary.".format(self.dictionary)
         elif not self.missing_keys:
-            msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
+            self.msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
                 self.dictionary, ', '.join(self.excess_keys))
         elif not self.excess_keys:
-            msg = "Validated dictionary '{0}' is missing required keys: '{1}'.".format(
+            self.msg = "Validated dictionary '{0}' is missing required keys: '{1}'.".format(
                 self.dictionary, ', '.join(self.missing_keys))
         else:
-            msg = ("Validated dictionary '{0}' has excess forbidden keys: '{1}' and is "
-                   "missing required keys: '{2}'.".format(self.dictionary,
-                                                          ', '.join(self.excess_keys),
-                                                          ', '.join(self.missing_keys)))
-        return msg
+            self.msg = ("Validated dictionary '{0}' has excess forbidden keys: '{1}' and is "
+                        "missing required keys: '{2}'.".format(self.dictionary,
+                                                               ', '.join(self.excess_keys),
+                                                               ', '.join(self.missing_keys)))
+
+    def __str__(self):
+        return self.msg
 
 
 # Regression analysis exception hierarchy
@@ -192,14 +192,14 @@ class InvalidPointsException(GenericRegressionExceptionBase):
         self.x_len = x_len
         self.y_len = y_len
         self.threshold = threshold
-
-    def __str__(self):
         if self.x_len != self.y_len:
             self.msg = ("Points coordinates x and y have different lengths - x:{0}, "
                         "y:{1}.".format(self.x_len, self.y_len))
         elif self.x_len < self.threshold or self.y_len < self.threshold:
             self.msg = ("Too few points coordinates to perform regression - x:{0}, "
                         "y:{1}.".format(self.x_len, self.y_len))
+
+    def __str__(self):
         return self.msg
 
 
@@ -209,10 +209,10 @@ class InvalidSequenceSplitException(GenericRegressionExceptionBase):
         super().__init__("")
         self.parts = parts
         self.ratio = ratio
-
-    def __str__(self):
         self.msg = ("Too few points would be produced by splitting the data into {0} "
                     "parts (resulting ratio: {1}).".format(self.parts, self.ratio))
+
+    def __str__(self):
         return self.msg
 
 
@@ -221,10 +221,10 @@ class InvalidCoeffsException(GenericRegressionExceptionBase):
     def __init__(self, coeffs_count):
         super().__init__("")
         self.coeffs_count = coeffs_count
-
-    def __str__(self):
         self.msg = ("Missing coefficients list or their count different from: {0}.".format(
             str(self.coeffs_count)))
+
+    def __str__(self):
         return self.msg
 
 
@@ -233,9 +233,9 @@ class InvalidModelException(GenericRegressionExceptionBase):
     def __init__(self, model):
         super().__init__("")
         self.model = model
+        self.msg = "Invalid or unsupported regression model: {0}.".format(str(self.model))
 
     def __str__(self):
-        self.msg = "Invalid or unsupported regression model: {0}.".format(str(self.model))
         return self.msg
 
 
@@ -245,10 +245,10 @@ class InvalidTransformationException(GenericRegressionExceptionBase):
         super().__init__("")
         self.model = model
         self.transformation = transformation
-
-    def __str__(self):
         self.msg = ("Invalid or unsupported transformation: {0} for model: {1}."
                     .format(str(self.transformation), str(self.model)))
+
+    def __str__(self):
         return self.msg
 
 
@@ -261,8 +261,8 @@ class StrategyNotImplemented(Exception):
         """
         super().__init__("")
         self.strategy = strategy
-
-    def __str__(self):
         self.msg = ("Requested computation method '{0}' is currently not implemented."
                     .format(self.strategy))
+
+    def __str__(self):
         return self.msg
