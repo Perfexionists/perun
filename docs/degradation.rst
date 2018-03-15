@@ -257,7 +257,11 @@ just small requirements and have to `yield` the reports about degradation as a i
 
 You can register your new performance change checker as follows:
 
-    1. Create a new module (e.g. called ``my_degradation_checker``) in ``perun/check`` directory::
+    1. Run ``perun utils create check my_degradation_checker`` to generate a new modules in
+       ``perun/check`` directory with the following structure. The command takes a predefined
+       templates for new degradation checkers and creates ``my_degradation_checker.py`` according
+       to the supplied command line arguments (see :ref:`cli-utils-ref` for more information about
+       interface of ``perun utils create`` command)::
 
         /perun
         |-- /check
@@ -266,7 +270,7 @@ You can register your new performance change checker as follows:
             |-- my_degradation_checker.py
 
     2. Implement the ``my_degradation_checker.py`` file, including the module docstring with brief
-       description of the change check as follows:
+       description of the change check with the following structure:
 
       .. literalinclude:: /_static/templates/degradation_api.py
           :language: python

@@ -133,3 +133,13 @@ Show units
 .. click:: perun.view.scatter.run:scatter
    :prog: perun show scatter
 
+.. _cli-utils-ref:
+
+Utility Commands
+----------------
+
+.. click:: perun.cli:utils
+   :prog: perun utils
+
+.. click:: perun.cli:create
+   :prog: perun utils create

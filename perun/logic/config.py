@@ -392,7 +392,11 @@ def get_hierarchy():
     :returns: iterable stream of configurations in the priority order
     """
     yield runtime()
-    yield local(os.path.join(store.locate_perun_dir_on(os.getcwd()), ".perun"))
+    try:
+        yield local(os.path.join(store.locate_perun_dir_on(os.getcwd()), ".perun"))
+    except exceptions.NotPerunRepositoryException:
+        # We skip if we are not within any perun repository
+        pass
     yield shared()
 
 

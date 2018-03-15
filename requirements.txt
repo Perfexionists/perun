@@ -7,3 +7,4 @@ bokeh==0.12.6
 demandimport==0.3.4
 Sphinx==1.6.4
 sphinx-click==1.0.3
+Jinja2==2.9.6
