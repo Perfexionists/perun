@@ -23,7 +23,7 @@ import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
-from perun.utils.helpers import MAXIMAL_LINE_WIDTH, \
+from perun.utils.helpers import \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
@@ -59,7 +59,6 @@ def lookup_minor_version(func):
     """
     # the position of minor_version is one less, because of needed pcs parameter
     f_args, _, _, _, *_ = inspect.getfullargspec(func)
-    assert 'pcs' in f_args
     minor_version_position = f_args.index('minor_version') - 1
 
     def wrapper(pcs, *args, **kwargs):
@@ -221,7 +220,6 @@ def add(pcs, profile_names, minor_version, keep_profile=False):
         # Load profile content
         # Unpack to JSON representation
         unpacked_profile = profile.load_profile_from_file(profile_name, True)
-        assert 'type' in unpacked_profile['header'].keys()
 
         if unpacked_profile['origin'] != minor_version:
             error_msg = "cannot add profile '{}' to minor index of '{}':".format(
@@ -280,8 +278,6 @@ def remove(pcs, profile_name, minor_version, **kwargs):
     Raises:
         EntryNotFoundException: when the given profile_name points to non-tracked profile
     """
-    assert minor_version is not None and "Missing minor version specification"
-
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     object_directory = pcs.get_object_directory()
@@ -554,9 +550,9 @@ def calculate_maximal_lengths_for_object_list(object_list, valid_attributes):
     max_lengths = collections.defaultdict(int)
     for object_info in object_list:
         for attr in valid_attributes:
-            assert hasattr(object_info, attr)
-            max_lengths[attr] \
-                = max(len(attr), max_lengths[attr], len(str(getattr(object_info, attr))))
+            if hasattr(object_info, attr):
+                max_lengths[attr] \
+                    = max(len(attr), max_lengths[attr], len(str(getattr(object_info, attr))))
     return max_lengths
 
 

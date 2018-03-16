@@ -81,7 +81,6 @@ def _get_minor_head(git_repo):
     """
     # Read contents of head through the subprocess and git rev-parse HEAD
     git_head = str(git_repo.head.commit)
-    assert store.is_sha1(git_head)
     return str(git_head)
 
 
@@ -156,8 +155,6 @@ def _get_minor_version_info(git_repo, minor_version):
     Returns:
         MinorVersion: namedtuple of minor version (date author email checksum desc parents)
     """
-    assert store.is_sha1(minor_version)
-
     minor_version_commit = git_repo.commit(minor_version)
     if not minor_version_commit:
         perun_log.error("{} does not represent valid commit object".format(minor_version))

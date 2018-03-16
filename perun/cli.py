@@ -383,7 +383,6 @@ def init(dst, configure, **kwargs):
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error(str(unsup_module_exp))
     except PermissionError as perm_exp:
-        assert 'shared.yml' in str(perm_exp)
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except MissingConfigSectionException:
         perun_log.error("cannot launch default editor for configuration.\n"
@@ -1213,15 +1212,15 @@ def check_profiles(baseline_profile, target_profile, **_):
     check.degradation_between_files(baseline_profile, target_profile)
 
 
-@cli.group()
-def utils():
+@cli.group('utils')
+def utils_group():
     """Contains set of developer commands, wrappers over helper scripts and other functions that are
     not the part of the main perun suite.
     """
     pass
 
 
-@utils.command()
+@utils_group.command()
 @click.argument('template_type', metavar='<template>', required=True,
                 type=click.Choice(['collect', 'postprocess', 'view', 'check']))
 @click.argument('unit_name', metavar='<unit>')

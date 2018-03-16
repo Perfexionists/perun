@@ -282,8 +282,6 @@ def finalize_profile_for_job(pcs, collected_data, job):
     Returns:
         dict: valid profile JSON file
     """
-    assert 'global' in collected_data.keys() or 'snapshots' in collected_data.keys()
-
     profile = {'origin': pcs.get_head()}
     profile.update(collected_data)
     profile.update({'header': generate_header_for_profile(job)})
@@ -340,16 +338,13 @@ def extract_job_from_profile(profile):
     Returns:
         Job: job according to the profile informations
     """
-    assert 'collector_info' in profile.keys()
     collector_record = profile['collector_info']
     collector = Unit(collector_record['name'], collector_record['params'])
 
-    assert 'postprocessors' in profile.keys()
     posts = []
     for postprocessor in profile['postprocessors']:
         posts.append(Unit(postprocessor['name'], postprocessor['params']))
 
-    assert 'header' in profile.keys()
     cmd = profile['header']['cmd']
     params = profile['header']['params']
     workload = profile['header']['workload']

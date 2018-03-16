@@ -45,6 +45,19 @@ class ExternalEditorErrorException(Exception):
         )
 
 
+class MalformedIndexFileException(Exception):
+    """Raised when the read index is malformed"""
+    def __init__(self, reason):
+        """
+        :param str reason: the reason that the index is considered to be malformed
+        """
+        super().__init__("")
+        self.reason = reason
+
+    def __str__(self):
+        return "working with malformed index file: {}".format(self.reason)
+
+
 class EntryNotFoundException(Exception):
     """Raised when the looked up entry is not within the index"""
     def __init__(self, entry):

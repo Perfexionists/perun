@@ -154,7 +154,6 @@ def run_all_phases_for(runner, runner_type, runner_params):
         runner_type(str): string type of the runner (either collector or postprocessor)
         runner_params(dict): dictionary of arguments for runner
     """
-    assert runner_type in ['collector', 'postprocessor']
     ok_status = CollectStatus.OK if runner_type == 'collector' else PostprocessStatus.OK
     error_status = CollectStatus.ERROR if runner_type == 'collector' else PostprocessStatus.ERROR
     runner_verb = runner_type[:-2]

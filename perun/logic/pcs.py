@@ -27,7 +27,6 @@ class PCS(object):
         Arguments:
             fullpath(str): path to the performance control system
         """
-        assert os.path.isdir(fullpath)
         self.path = os.path.join(fullpath, '.perun')
         self.vcs_type = config.local(self.path).get('vcs.type')
         self.vcs_path = os.path.abspath(os.path.join(
