@@ -90,7 +90,7 @@ def process_unsupported_option(_, param, value):
 @click.option('--verbose', '-v', count=True, default=0,
               help='Increase the verbosity of the standard output. Verbosity '
               'is incremental, and each level increases the extent of output.')
-def cli(verbose, no_pager):
+def cli(verbose=0, no_pager=False):
     """Perun is an open source light-weight Performance Versioning System.
 
     In order to initialize Perun in current directory run the following::
@@ -281,16 +281,13 @@ def config_edit(ctx):
 def configure_local_perun(perun_path):
     """Configures the local perun repository with the interactive help of the user
 
-    Arguments:
-        perun_path(str): destination path of the perun repository
+    :param str perun_path: destination path of the perun repository
+    :raises: ExternalEditorErrorException: when underlying editor makes any mistake
     """
     pcs = PCS(perun_path)
     editor = perun_config.lookup_key_recursively('general.editor')
     local_config_file = pcs.get_config_file('local')
-    try:
-        utils.run_external_command([editor, local_config_file])
-    except ValueError as v_exception:
-        perun_log.error("could not invoke '{}' editor: {}".format(editor, str(v_exception)))
+    utils.run_external_command([editor, local_config_file])
 
 
 def parse_vcs_parameter(ctx, param, value):
@@ -382,9 +379,9 @@ def init(dst, configure, **kwargs):
                                  + (" "*4) + ".perun/local.yml\n")
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error(str(unsup_module_exp))
-    except PermissionError as perm_exp:
+    except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
-    except MissingConfigSectionException:
+    except (ExternalEditorErrorException, MissingConfigSectionException):
         perun_log.error("cannot launch default editor for configuration.\n"
                         "Please set 'general.editor' key to a valid text editor (e.g. vim).")
 

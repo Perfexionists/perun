@@ -102,7 +102,7 @@ class Helpers(object):
             origin(str): origin minor version for the given profile
         """
         # Copy to jobs and prepare origin for the current version
-        dest_dir = perun.get_job_directory()
+        dest_dir = perun.get_job_directory() if isinstance(perun, pcs.PCS) else perun
         shutil.copy2(profile, dest_dir)
 
         # Prepare origin for the current version

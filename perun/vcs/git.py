@@ -9,7 +9,6 @@ import os
 import git
 import git.exc
 
-import perun.logic.store as store
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps
 from perun.utils.exceptions import VersionControlSystemException
