@@ -545,3 +545,33 @@ def plot_data_from_coefficients_of(model):
     """
     model.update(transform.coefficients_to_points(**model))
     return model
+
+
+def flatten(flattened_value):
+    """Converts the value to something that can be used as one value.
+
+    Flattens the value to single level, lists are processed to comma separated representation and
+    rest is left as it is.
+    TODO: Add caching
+
+    :param object flattened_value: value that is flattened
+    :returns: either decimal, string, or something else
+    """
+    # Dictionary is processed recursively according to the all items that are nested
+    if isinstance(flattened_value, dict):
+        nested_values = []
+        for key, value in query.all_items_of(flattened_value):
+            # Add one level of hierarchy with ':'
+            nested_values.append(value)
+        # Return the overall key as joined values of its nested stuff,
+        # only if root is not a list (i.e. root key is not int = index)!
+        return ":".join(map(str, nested_values))
+    # Lists are merged as comma separated keys
+    elif isinstance(flattened_value, list):
+        return ','.join(
+            ":".join(str(nested_value[1]) for nested_value in query.flattened_values(i, lv))
+            for (i, lv) in enumerate(flattened_value)
+        )
+    # Rest of the values are left as they are
+    else:
+        return flattened_value

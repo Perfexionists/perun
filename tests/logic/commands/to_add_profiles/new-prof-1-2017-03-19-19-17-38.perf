@@ -26,15 +26,18 @@
     "resources": [
       {
         "amount": 1.0,
-        "uid": "sys"
+        "uid": "sys",
+        "type": "time"
       },
       {
         "amount": 1.0,
-        "uid": "real"
+        "uid": "real",
+        "type": "time"
       },
       {
         "amount": 1.0,
-        "uid": "user"
+        "uid": "user",
+        "type": "time"
       }
     ],
     "timestamp": "0.00"
