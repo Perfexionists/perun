@@ -14,7 +14,7 @@ import operator
 import itertools
 import click
 
-import perun.postprocess.clusterizer as clusterizer
+import perun.postprocess.clusterizer as clustering
 import perun.profile.query as query
 import perun.profile.convert as convert
 import perun.utils as utils
@@ -62,7 +62,7 @@ def postprocess(profile, strategy, **kwargs):
 
     :param dict profile: performance profile that will be clusterized
     :param str strategy: name of the used strategy
-        (one of clusterizer.SUPPORTED_STRATEGIES
+        (one of clustering.SUPPORTED_STRATEGIES
     :param kwargs:
     :return:
     """
@@ -91,8 +91,8 @@ def postprocess(profile, strategy, **kwargs):
 
 
 @click.command()
-@click.option('--strategy', '-s', default=clusterizer.DEFAULT_STRATEGY,
-              type=click.Choice(clusterizer.SUPPORTED_STRATEGIES),
+@click.option('--strategy', '-s', default=clustering.DEFAULT_STRATEGY,
+              type=click.Choice(clustering.SUPPORTED_STRATEGIES),
               help="Specifies the clustering strategy, that will be applied for the profile")
 @click.option('--window-height', '-wh', default=0.01,
               type=click.FLOAT, required=False,

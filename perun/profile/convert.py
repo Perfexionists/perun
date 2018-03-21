@@ -560,7 +560,7 @@ def flatten(flattened_value):
     # Dictionary is processed recursively according to the all items that are nested
     if isinstance(flattened_value, dict):
         nested_values = []
-        for key, value in query.all_items_of(flattened_value):
+        for _, value in query.all_items_of(flattened_value):
             # Add one level of hierarchy with ':'
             nested_values.append(value)
         # Return the overall key as joined values of its nested stuff,
