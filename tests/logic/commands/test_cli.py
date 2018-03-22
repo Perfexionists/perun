@@ -453,15 +453,6 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
                                          'complexity'] + rules + samplings)
     assert result.exit_code == 0
 
-    # Try missing parameter -c
-    # Fixme: before fails but still produces 0?
-    result = runner.invoke(cli.collect, ['complexity'])
-    assert result.exit_code == 0
-
-    # Try invalid parameter --method
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-minvalid'])
-    assert result.exit_code == 2
-
     # Try different template
     result = runner.invoke(cli.collect, [
         '-ot', '%collector%-profile',
@@ -474,6 +465,23 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
         tuple(["format.output_profile_template"]), None)
     assert result.exit_code == 0
     assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
+
+    # Test negative global sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-g -2'])
+    assert result.exit_code == 0
+
+    # Try missing parameter -c
+    # Fixme: before fails but still produces 0?
+    result = runner.invoke(cli.collect, ['complexity'])
+    assert result.exit_code == 0
+
+    # Try using not implemented method 'all'
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-mall'])
+    assert result.exit_code == 0
+
+    # Try invalid parameter --method
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-minvalid'])
+    assert result.exit_code == 2
 
 
 def test_show_help(pcs_full):

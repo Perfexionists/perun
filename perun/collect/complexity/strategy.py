@@ -20,7 +20,7 @@ def get_supported_strategies():
 
     :returns: list -- the names of supported strategies
     """
-    return [key for key in _STRATEGIES.keys()]
+    return list(_STRATEGIES.keys())
 
 
 def get_default_strategy():
@@ -117,7 +117,7 @@ def _build_samples(sampling, rules, global_sampling):
                enumerate(sampling) if samp['sample'] > 1}
 
     # Create samples for all remaining rules if needed
-    if global_sampling is not None and global_sampling > 1:
+    if global_sampling:
         samples_all = {rule: (global_sampling, idx) for idx, rule in enumerate(rules)}
         for k, v in samples.items():
             # Change the sampling value and keep the sampling index

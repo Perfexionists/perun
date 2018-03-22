@@ -10,22 +10,35 @@ import os
 import sys
 import subprocess
 import shutil
+import shlex
+from enum import IntEnum
 
 import click
 
 import perun.collect.complexity.strategy as strategy
 import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
+from perun.utils.helpers import CollectStatus
 
 # The profiling record template
 _ProfileRecord = collections.namedtuple('record', ['offset', 'func', 'timestamp'])
 
-# The collect phase status messages
-_COLLECTOR_STATUS_MSG = {
-    0:  'OK',
-    1:  'SystemTap related issue, see the corresponding <cmd>_stap.log file.',
-    2:  'SystemTap dependency missing.',
-    3:  'c++filt dependency missing'
+
+# Collection statuses
+class _Status(IntEnum):
+    OK = 0
+    STAP = 1
+    STAP_DEP = 2
+    EXCEPT = 3
+
+
+# The converter for collector statuses
+_COLLECTOR_STATUS = {
+    _Status.OK: (CollectStatus.OK, 'Ok'),
+    _Status.STAP: (CollectStatus.ERROR,
+                   'SystemTap related issue, see the corresponding <cmd>_stap.log file.'),
+    _Status.STAP_DEP: (CollectStatus.ERROR, 'SystemTap dependency missing.'),
+    _Status.EXCEPT: (CollectStatus.ERROR, '')  # The msg should be set by the exception
 }
 
 # The collector subtypes
@@ -49,7 +62,7 @@ def before(**kwargs):
         print('Starting the pre-processing phase... ', end='')
 
         # Check the command (must be file)
-        if not os.path.isfile(kwargs['cmd']):
+        if not os.path.isfile(shlex.quote(kwargs['cmd'])):
             raise ValueError('The command argument (-c) is not a file.')
 
         # Assemble script according to the parameters
@@ -57,12 +70,12 @@ def before(**kwargs):
         kwargs['script'] = strategy.assemble_script(**kwargs)
 
         print('Done.\n')
-        return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+        return _COLLECTOR_STATUS[_Status.OK][0], _COLLECTOR_STATUS[_Status.OK][1], dict(kwargs)
     # The "expected" exception types
     except (OSError, ValueError, subprocess.CalledProcessError,
             UnicodeError, exceptions.StrategyNotImplemented) as exception:
         print('Failed.\n')
-        return 1, str(exception), kwargs
+        return _COLLECTOR_STATUS[_Status.EXCEPT][0], str(exception), dict(kwargs)
 
 
 def collect(**kwargs):
@@ -78,14 +91,14 @@ def collect(**kwargs):
     try:
         # Call the system tap
         code, kwargs['output'] = _call_stap(**kwargs)
-        if code == 0:
+        if code == _Status.OK:
             print('Done.\n')
         else:
             print('Failed.\n')
-        return code, _COLLECTOR_STATUS_MSG[code], dict(kwargs)
+        return _COLLECTOR_STATUS[code][0], _COLLECTOR_STATUS[code][1], dict(kwargs)
     except (OSError, subprocess.CalledProcessError) as exception:
         print('Failed.\n')
-        return 1, str(exception), kwargs
+        return CollectStatus.ERROR, str(exception), dict(kwargs)
 
 
 def after(**kwargs):
@@ -107,11 +120,10 @@ def after(**kwargs):
 
             # Create demangled counterparts of the function names
             demangler = shutil.which('c++filt')
-            if demangler is None:
-                print('Failed.\n')
-                return 3, _COLLECTOR_STATUS_MSG[3], dict(kwargs)
-            demangle = subprocess.check_output(demangler, stdin=profile, shell=False)
-            profile = demangle.decode(sys.stdout.encoding)
+            if demangler:
+                demangler = shlex.split(shlex.quote(demangler))
+                demangle = subprocess.check_output(demangler, stdin=profile, shell=False)
+                profile = demangle.decode(sys.stdout.encoding)
 
             for line in profile.splitlines(True):
                 # Split the line into action, function name, timestamp and size
@@ -127,7 +139,7 @@ def after(**kwargs):
                         err_msg += ', stack top: ' + call_stack[-1].func
 
                     print('Failed.\n')
-                    return 1, err_msg, kwargs
+                    return _COLLECTOR_STATUS[_Status.EXCEPT][0], err_msg, dict(kwargs)
 
         # Update the profile dictionary
         kwargs['profile'] = {
@@ -137,10 +149,10 @@ def after(**kwargs):
             }
         }
         print('Done.\n')
-        return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+        return _COLLECTOR_STATUS[_Status.OK][0], _COLLECTOR_STATUS[_Status.OK][1], dict(kwargs)
     except (OSError, subprocess.CalledProcessError) as exception:
         print('Failed.\n')
-        return 1, str(exception), kwargs
+        return _COLLECTOR_STATUS[_Status.EXCEPT], str(exception), dict(kwargs)
 
 
 def _get_path_dir_file(target):
@@ -164,23 +176,20 @@ def _call_stap(**kwargs):
     """
     # Resolve the system tap path
     stap = shutil.which('stap')
-    if stap is None:
-        return 2, ''
+    if not stap:
+        return _Status.STAP_DEP, ''
 
     script_path, script_dir, _ = _get_path_dir_file(kwargs['script'])
     # Create the output file and collection log
     output = script_dir + kwargs['cmd_base'] + '_stap_record.txt'
     with open(script_dir + kwargs['cmd_base'] + '_stap.log', 'w') as log:
         # Start the collector
-        stap_runner = subprocess.Popen(('sudo', stap, '-v', script_path, '-o',
-                                        output, '-c', kwargs['cmd']),
-                                       cwd=script_dir, stderr=log, shell=False)
+        stap = shlex.split(
+            'sudo {0} -v {1} -o {2} -c {3}'.format(shlex.quote(stap), shlex.quote(script_path),
+                                                   shlex.quote(output), shlex.quote(kwargs['cmd'])))
+        stap_runner = subprocess.Popen(stap, cwd=script_dir, stderr=log, shell=False)
         stap_runner.communicate()
-        if stap_runner.returncode != 0:
-            code = 1
-        else:
-            code = 0
-    return code, output
+    return _Status(int(stap_runner.returncode != 0)), output  # code 0 = False = .OK
 
 
 def _process_file_record(record, call_stack, resources, sequences):
@@ -239,16 +248,31 @@ def sampling_to_dictionary(ctx, param, value):
     :param list value: the list of sampling values
     :returns: list of dict -- list of sampling dictionaries
     """
-    if value is not None:
+    sampling_list = []
+    if value:
         # Initialize
-        sampling_list = []
+
         # Transform the tuple to more human readable dictionary
         for sample in value:
             sampling_list.append({
                 "func": sample[0],
                 "sample": sample[1]
             })
-        return sampling_list
+    return sampling_list
+
+
+def validate_gsamp(ctx, param, value):
+    """Global sampling cli option converter callback. Checks the global sampling value.
+
+    :param dict ctx: click context
+    :param object param: the parameter object
+    :param int value: the global sampling value
+    :returns: the checked global sampling value or None
+    """
+    if value and value <= 1:
+        return None
+    else:
+        return value
 
 
 @click.command()
@@ -260,7 +284,7 @@ def sampling_to_dictionary(ctx, param, value):
               help='Set the probe points for profiling.')
 @click.option('--sampling', '-s', type=(str, int), multiple=True, callback=sampling_to_dictionary,
               help='Set the runtime sampling of the given probe points.')
-@click.option('--global_sampling', '-g', type=int,
+@click.option('--global_sampling', '-g', type=int, callback=validate_gsamp,
               help='Set the global sample for all probes, --sampling parameter for specific'
                    ' rules have higher priority.')
 @click.pass_context
