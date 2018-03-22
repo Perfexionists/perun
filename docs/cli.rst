@@ -138,7 +138,7 @@ Show units
 Utility Commands
 ----------------
 
-.. click:: perun.cli:utils
+.. click:: perun.cli:utils_group
    :prog: perun utils
 
 .. click:: perun.cli:create

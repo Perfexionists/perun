@@ -125,27 +125,6 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
     return inner_decorator
 
 
-def assume_version(version_spec, actual_version):
-    """
-    Arguments:
-        version_spec(int): specification of the version that is checked
-        actual_version(int): actual version that the given version supports/expects
-
-    Returns:
-        func: decorated function for which the version will be checked
-    """
-    def inner_wrapper(func):
-        """Inner wrapper of the function"""
-        def wrapper(*args, **kwargs):
-            """Wrapper function of the @p func"""
-            assert version_spec == actual_version and "function {} expects format of v{}".format(
-                func.__name__, version_spec
-            )
-            return func(*args, **kwargs)
-        return wrapper
-    return inner_wrapper
-
-
 def static_variables(**kwargs):
     """
     Arguments:

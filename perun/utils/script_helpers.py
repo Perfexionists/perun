@@ -47,7 +47,8 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
 
     # Initialize the jinja2 environment and load all of the templates for template_type set
     env = jinja2.Environment(
-        loader=jinja2.PackageLoader('perun', 'templates')
+        loader=jinja2.PackageLoader('perun', 'templates'),
+        autoescape=True
     )
     list_of_templates = env.list_templates(filter_func=template_name_filter)
 

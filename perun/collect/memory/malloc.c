@@ -45,14 +45,14 @@ Prepare the log file to use it for logging
 void init_log_file(){
 
    profiling = true;
-   
+
    if(!logFile)
       logFile = fopen(LOG_FILE_NAME, "w");
       if(logFile == NULL){
          fprintf(stderr, "error: fopen()\n");
          exit(EXIT_FAILURE);
       }
-   
+
    profiling = false;
 }
 
@@ -64,9 +64,9 @@ void ad_log(char *allocator, size_t size, void *ptr){
    profiling = true;
 
    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-   fprintf(logFile, "%s %luB %li\n", allocator, size, (long int)ptr);
+   fprintf(logFile, "%s %luB %li\n", allocator, (unsigned long) size, (long int)ptr);
    backtrace(logFile, CALLS_TO_SKIP);
-   fprintf(logFile, "\n");   
+   fprintf(logFile, "\n");
 
    profiling = false;
 }
@@ -87,7 +87,7 @@ void *malloc(size_t size){
    void *ptr = real_malloc(size);
 
    if(!profiling && ptr != NULL){
-      
+
       ad_log("malloc", size, ptr);
    }
 
@@ -107,7 +107,7 @@ void free(void *ptr){
    }
 
    real_free(ptr);
-  
+
    if(!profiling){
 
       ad_log("free", 0, ptr);
@@ -130,7 +130,7 @@ void *realloc(void *ptr, size_t size){
    void *nptr = real_realloc(ptr, size);
 
    if(!profiling && nptr != NULL){
-      
+
       ad_log("realloc", size, nptr);
 
       ad_log("free", 0, old_ptr);
@@ -168,7 +168,7 @@ void *memalign(size_t alignment, size_t size){
       real_memalign = dlsym(RTLD_NEXT, "memalign");
       if(real_memalign == NULL){
          fprintf(stderr, "error: dlsym() memalign\n");
-         exit(EXIT_FAILURE);      
+         exit(EXIT_FAILURE);
       }
       init_log_file();
    }

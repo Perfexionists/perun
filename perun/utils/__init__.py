@@ -58,8 +58,8 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
     Returns:
         ?: whatever the wrapped function returns
     """
+    function_location_path = ".".join([package_name, module_name])
     try:
-        function_location_path = ".".join([package_name, module_name])
         module = get_module(function_location_path)
         module_function = getattr(module, fun_name)
         return module_function(*args, **kwargs)
