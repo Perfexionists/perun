@@ -80,7 +80,7 @@ def postprocess(profile, strategy, **kwargs):
             group[0], "({})".format(group[1]) if group[1] else "", group[2]
         ))
         utils.dynamic_module_function_call(
-            'perun.postprocess.clusterizer', strategy, 'clusterize', members
+            'perun.postprocess.clusterizer', strategy, 'clusterize', list(members), **kwargs
         )
 
     # For debug purposes, print the results
@@ -97,16 +97,25 @@ def postprocess(profile, strategy, **kwargs):
 @click.option('--window-height', '-wh', default=0.01,
               type=click.FLOAT, required=False,
               help="Specifies the height of the window (either fixed or proportional)")
-@click.option('--relative-window-height/--fixed-window-height', '-rh/-fh', is_flag=True,
-              default=True, required=False,
-              help="Specifies whether the height of the window is relative to the point or absolute")
+@click.option('--relative-window-height', '-rwh', 'height_measure',
+              default=True, required=False, flag_value='relative',
+              help="Specifies that the height of the window is relative to the point")
+@click.option('--fixed-window-height', '-fwh', 'height_measure',
+              required=False, flag_value='absolute',
+              help="Specifies that the height of the window is absolute to the point")
 @click.option('--window-width', '-ww', default=0.01,
               type=click.FLOAT, required=False,
               help="Specifies the width of the window"
                    ", i.e. how many values will be taken by window.")
-@click.option('--weightened-window-width/--fixed-window-width', '-ww/-fw', is_flag=True,
-              default=True, required=False,
-              help="Specifies whether the witht of the window is weightened or fixed")
+@click.option('--relative-window-width', '-rww', 'width_measure',
+              default=True, required=False, flag_value='relative',
+              help="Specifies whether the width of the window is weighted or fixed")
+@click.option('--fixed-window-width', '-fww', 'width_measure',
+              required=False, flag_value='absolute',
+              help="Specifies whether the width of the window is weighted or fixed")
+@click.option('--weighted-window-width', '-www', 'width_measure',
+              required=False, flag_value='weighted',
+              help="Specifies whether the width of the window is weighted or fixed")
 @pass_profile
 def clusterizer(profile, **kwargs):
     """Clusters each resource to an appropriate cluster in order to be postprocessable
@@ -122,7 +131,7 @@ def clusterizer(profile, **kwargs):
 
     The sliding window can be further adjusted by setting its width (i.e. how many near values on
     the x axis will we take to a cluster) and its height (i.e. how large is the window in regards
-    of the size of amount). Both width and height can be further augmented. Width can be weightened
+    of the size of amount). Both width and height can be further augmented. Width can be weighted
     by the frequency of the given value (i.e. the more values of certain amounts we have, the less
     we take). Similarly the height can be set to be relative, i.e. instead of having clusters of
     absolute size, we have a clusters of relative size (i.e. percentage of the amount).
