@@ -114,6 +114,10 @@ def regression_analysis(profile, **kwargs):
             "method": "full",
         }
 
+    Note that if your data are not suitable for regression analysis, check out
+    :ref:`postprocessors-clusterizer` to postprocess your profile to be
+    analysable by this analysis.
+
     For more details about regression analysis refer to
     :ref:`postprocessors-regression-analysis`. For more details how to collect
     suitable resources refer to :ref:`collectors-complexity`.
