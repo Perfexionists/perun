@@ -1,7 +1,7 @@
 #ifndef CPP_BASIC_SLLIST_H
 #define CPP_BASIC_SLLIST_H
 
-#include "../profile_api.h"
+#include <string.h>
 
 struct SLLelem {
     int key;
