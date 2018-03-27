@@ -1,0 +1,39 @@
+{
+  "snapshots": [
+    {
+      "time": "5.000000",
+      "resources": [
+        {
+          "amount": 0,
+          "trace": [
+            {
+              "line": 0,
+              "function": "malloc",
+              "source": "unreachable"
+            },
+            {
+              "line": 21,
+              "function": "main",
+              "source": "../memory_collect_test.c"
+            },
+            {
+              "line": 0,
+              "function": "__libc_start_main",
+              "source": "unreachable"
+            },
+            {
+              "line": 0,
+              "function": "_start",
+              "source": "unreachable"
+            }
+          ],
+          "address": 31584848,
+          "uid": "../memory_collect_test.c:main#22",
+          "cluster": 1,
+          "type": "memory",
+          "subtype": "malloc"
+        },
+      ]
+    }
+  ]
+}
