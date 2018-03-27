@@ -682,7 +682,7 @@ def log(head, **kwargs):
     default using ``less``.
 
     Refer to :ref:`logs-log` for information how to customize the outputs of
-    ``log`` or how to set :ckey:`format.log` in nearest
+    ``log`` or how to set :ckey:`format.shortlog` in nearest
     configuration.
     """
     try:

@@ -118,7 +118,7 @@ List of Supported Options
          2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
         ═══════════════════════════════════════════════════════════════════════════════▣
 
-.. confkey:: format.log
+.. confkey:: format.shortlog
 
     ``[recursive]`` Specifies the formatting string for the output of the short format of ``perun
     log`` command. The formatting string can contain raw characters (delimiters, etc.) and special
@@ -228,7 +228,7 @@ List of Supported Options
 
 .. confkey:: degradation.apply
 
-    ``[recursive]`` 
+    ``[recursive]``
 
 .. confkey:: degradation.strategies
 

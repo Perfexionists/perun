@@ -86,7 +86,7 @@ Customizing Logs
 ----------------
 
 The output of ``perun log --short`` is defined w.r.t. formatting string specified in configuration
-in :ckey:`format.log` key (looked up recursively in the nearest local
+in :ckey:`format.shortlog` key (looked up recursively in the nearest local
 configuration, or in global configuration). The formatting string can contain both raw characters
 (such as delimiters, etc.) and special tags, which serves as templates to output information for
 concrete minor version such as minor version description, number of assigned profiles, etc.
