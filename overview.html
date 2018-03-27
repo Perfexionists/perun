@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun: Performance Under Control &#8212; Perun 0.12 documentation</title>
+    <title>Perun: Performance Under Control &#8212; Perun 0.14 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12',
+        VERSION:     '0.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -120,7 +120,7 @@ to install Perun.</p>
 </div>
 <p>Alternatively you can install Perun in development mode:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">init</span>
-<span class="n">make</span> <span class="n">install</span>
+<span class="n">make</span> <span class="n">dev</span>
 </pre></div>
 </div>
 <p>This method of installation allows you to make a changes to the code, which will be then reflected
@@ -170,7 +170,7 @@ and command line interface.</p>
 <p>The scheme above shows the basic decomposition of Perun suite into sole units. Architecture of
 Perun was designed to allow simple extension of both internals and tool suite. In order to register
 new profiling data collector, profile postprocessor, or new visual interpretation of results refer
-to <a class="reference internal" href="collectors.html#collectors-custom"><span class="std std-ref">Creating your own Collector</span></a>, <a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Examples</span></a> and <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a> respectively.</p>
+to <a class="reference internal" href="collectors.html#collectors-custom"><span class="std std-ref">Creating your own Collector</span></a>, <a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Creating your own Postprocessor</span></a> and <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a> respectively.</p>
 </div>
 <div class="section" id="list-of-features">
 <h2>List of Features<a class="headerlink" href="#list-of-features" title="Permalink to this headline">¶</a></h2>
@@ -255,7 +255,7 @@ visualizations) one needs to implement <code class="docutils literal"><span clas
 appropriate subdirectory (<code class="docutils literal"><span class="pre">perun.collect</span></code>, <code class="docutils literal"><span class="pre">perun.postprocess</span></code> and <code class="docutils literal"><span class="pre">perun.view</span></code>
 respectively). For more information about registering new profiling data collector, profile
 postprocessor, or new visual interpretation of results refer to <a class="reference internal" href="collectors.html#collectors-custom"><span class="std std-ref">Creating your own Collector</span></a>,
-<a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Examples</span></a> and <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a> respectively.</p>
+<a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Creating your own Postprocessor</span></a> and <a class="reference internal" href="views.html#views-custom"><span class="std std-ref">Creating your own Visualization</span></a> respectively.</p>
 <p>If you think your custom module could help others, please <a class="reference external" href="https://github.com/tfiedor/perun/pull/new/develop">send us PR</a>, we will review the code
 and in case it is suitable for wider audience, we will include it in our <a class="reference external" href="https://github.com/tfiedor/perun">upstream</a>.</p>
 <div class="section" id="custom-collector">
@@ -314,7 +314,7 @@ following in the <code class="docutils literal"><span class="pre">run.py</span><
 </pre></div>
 </div>
 <p>For full explanation how to register and create a new postprocessor module refer to
-<a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Examples</span></a>.</p>
+<a class="reference internal" href="postprocessors.html#postprocessors-custom"><span class="std std-ref">Creating your own Postprocessor</span></a>.</p>
 </div>
 <div class="section" id="custom-visualization">
 <h3>Custom Visualization<a class="headerlink" href="#custom-visualization" title="Permalink to this headline">¶</a></h3>

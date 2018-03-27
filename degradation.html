@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Detecting Performance Changes &#8212; Perun 0.12 documentation</title>
+    <title>Detecting Performance Changes &#8212; Perun 0.14 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12',
+        VERSION:     '0.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -302,7 +302,11 @@ optimized or degraded</li>
 <p>You can register your new performance change checker as follows:</p>
 <blockquote>
 <div><ol class="arabic">
-<li><p class="first">Create a new module (e.g. called <code class="docutils literal"><span class="pre">my_degradation_checker</span></code>) in <code class="docutils literal"><span class="pre">perun/check</span></code> directory:</p>
+<li><p class="first">Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span> <span class="pre">check</span> <span class="pre">my_degradation_checker</span></code> to generate a new modules in
+<code class="docutils literal"><span class="pre">perun/check</span></code> directory with the following structure. The command takes a predefined
+templates for new degradation checkers and creates <code class="docutils literal"><span class="pre">my_degradation_checker.py</span></code> according
+to the supplied command line arguments (see <a class="reference internal" href="cli.html#cli-utils-ref"><span class="std std-ref">Utility Commands</span></a> for more information about
+interface of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">perun</span>
 <span class="o">|--</span> <span class="o">/</span><span class="n">check</span>
     <span class="o">|--</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
@@ -312,7 +316,7 @@ optimized or degraded</li>
 </div>
 </li>
 <li><p class="first">Implement the <code class="docutils literal"><span class="pre">my_degradation_checker.py</span></code> file, including the module docstring with brief
-description of the change check as follows:</p>
+description of the change check with the following structure:</p>
 </li>
 </ol>
 <blockquote>
@@ -351,8 +355,8 @@ follows:</li>
 10
 11
 12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/perun-clone/docs/_static/templates/degradation_init.py</span>
-<span class="gi">+++ /mnt/f/phdwork/perun/perun-clone/docs/_static/templates/degradation_init_new_check.py</span>
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/degradation_init.py</span>
+<span class="gi">+++ /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/degradation_init_new_check.py</span>
 <span class="gu">@@ -3,8 +3,10 @@</span>
      short_strings = {
          &#39;aat&#39;: &#39;average_amount_threshold&#39;,

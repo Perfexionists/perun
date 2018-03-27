@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.12 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.14 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12',
+        VERSION:     '0.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -69,6 +69,9 @@ individual postprocessors.</p>
 <code class="docutils literal"><span class="pre">VISUALIZATION</span></code> stands for one of the visualizer of <a class="reference internal" href="views.html#views-list"><span class="std std-ref">Supported Visualizations</span></a>.
 Each <code class="docutils literal"><span class="pre">VISUALIZATION</span></code> has its own API, refer to <a class="reference internal" href="#cli-views-units-ref"><span class="std std-ref">Show units</span></a>
 for thorough description of API of individual views.</p>
+<p>5. <strong>Utility commands</strong>: group of commands used for developing Perun
+or for maintenance of the Perun instances. Currently this group contains
+<code class="docutils literal"><span class="pre">create</span></code> command for faster creation of new modules.</p>
 </div></blockquote>
 <p>Graphical User Interface is currently in development and hopefully will extend
 the flexibility of Perun’s usage.</p>
@@ -175,6 +178,12 @@ following:</p>
 <dt>
 <code class="descname">status</code></dt>
 <dd><p>Shows the status of vcs, associated profiles…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">utils</code></dt>
+<dd><p>Contains set of developer commands, wrappers…</p>
 </dd></dl>
 
 </div>
@@ -978,8 +987,8 @@ function depending on underlying structural sizes.</p>
 <dd><ul class="first last simple">
 <li><strong>Limitations</strong>: C/C++ binaries</li>
 <li><strong>Metric</strong>: <cite>mixed</cite> (captures both <cite>time</cite> and <cite>size</cite> consumption)</li>
-<li><strong>Dependencies</strong>: <code class="docutils literal"><span class="pre">libprofile.so</span></code> and <code class="docutils literal"><span class="pre">libprofapi.so</span></code></li>
-<li><strong>Default units</strong>: <cite>ms</cite> for <cite>time</cite>, <cite>element number</cite> for <cite>size</cite></li>
+<li><strong>Dependencies</strong>: <code class="docutils literal"><span class="pre">SystemTap</span></code> (+ corresponding requirements e.g. kernel -dbgsym version)</li>
+<li><strong>Default units</strong>: <cite>us</cite> for <cite>time</cite>, <cite>element number</cite> for <cite>size</cite></li>
 </ul>
 </dd>
 </dl>
@@ -993,8 +1002,31 @@ function depending on underlying structural sizes.</p>
     &quot;structure-unit-size&quot;: 0
 }
 </pre>
+<p>Complexity collector provides various collection <em>strategies</em> which are supposed to provide
+sensible default settings for collection. This allows the user to choose suitable
+collection method without the need of detailed rules / sampling specification. Currently
+supported strategies are:</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first simple">
+<li><strong>userspace</strong>: This strategy traces all userspace functions / code blocks without</li>
+</ul>
+<p class="last">the use of sampling. Note that this strategy might be resource-intensive.
+* <strong>all</strong>: This strategy traces all userspace + library + kernel functions / code blocks
+that are present in the traced binary without the use of sampling. Note that this strategy
+might be very resource-intensive.
+* <strong>u_sampled</strong>: Sampled version of the <strong>userspace</strong> strategy. This method uses sampling
+to reduce the overhead and resources consumption.
+* <strong>a_sampled</strong>: Sampled version of the <strong>all</strong> strategy. Its goal is to reduce the
+overhead and resources consumption of the <strong>all</strong> method.
+* <strong>custom</strong>: User-specified strategy. Requires the user to specify rules and sampling
+manually.</p>
+</dd>
+</dl>
+<p>Note that manually specified parameters have higher priority than strategy specification
+and it is thus possible to override concrete rules / sampling by the user.</p>
 <p>Complexity profiles are suitable for postprocessing by
-<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> since they capture depedency of
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> since they capture dependency of
 time consumption depending on the size of the structure. This allows one to
 model the estimation of complexity of individual functions.</p>
 <p>Scatter plots are suitable visualization for profiles collected by
@@ -1009,45 +1041,27 @@ examples of <cite>complexity</cite> collector.</p>
 </div>
 <p class="rubric">Options</p>
 <dl class="option">
-<dt id="cmdoption-perun-collect-complexity-t">
-<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--target-dir</code><code class="descclassname"> &lt;target_dir&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-t" title="Permalink to this definition">¶</a></dt>
-<dd><p>Target directory path for customly compiled binary and temporary build data.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-f">
-<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--files</code><code class="descclassname"> &lt;files&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-f" title="Permalink to this definition">¶</a></dt>
-<dd><p>List of C/C++ source files that will be used to build the custom binary with injected profiling commands. Must be valid resolvable path</p>
+<dt id="cmdoption-perun-collect-complexity-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--method</code><code class="descclassname"> &lt;method&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select strategy for probing the binary. See documentation for detailed explanation for each strategy.  [required]</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-collect-complexity-r">
 <code class="descname">-r</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--rules</code><code class="descclassname"> &lt;rules&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-r" title="Permalink to this definition">¶</a></dt>
-<dd><p>Marks the function for profiling.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-if">
-<code class="descname">-if</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-data-filename</code><code class="descclassname"> &lt;internal_data_filename&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-if" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the different path for internal output filename for storing temporary profiling data file name.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-is">
-<code class="descname">-is</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-storage-size</code><code class="descclassname"> &lt;internal_storage_size&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-is" title="Permalink to this definition">¶</a></dt>
-<dd><p>Increases the size of internal profiling data storage.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-id">
-<code class="descname">-id</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-direct-output</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-complexity-id" title="Permalink to this definition">¶</a></dt>
-<dd><p>If set, profiling data will be stored into the internal log file directly instead of being saved into data structure and printed later.</p>
+<dd><p>Set the probe points for profiling.</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-collect-complexity-s">
 <code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--sampling</code><code class="descclassname"> &lt;sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-s" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the sampling of the given function to every &lt;int&gt; call.</p>
+<dd><p>Set the runtime sampling of the given probe points.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-g">
+<code class="descname">-g</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--global_sampling</code><code class="descclassname"> &lt;global_sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the global sample for all probes, –sampling parameter for specific rules have higher priority.</p>
 </dd></dl>
 
 </div>
@@ -1336,6 +1350,9 @@ follows:</p>
     &quot;method&quot;: &quot;full&quot;,
 }
 </pre>
+<p>Note that if your data are not suitable for regression analysis, check out
+<a class="reference internal" href="postprocessors.html#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a> to postprocess your profile to be
+analysable by this analysis.</p>
 <p>For more details about regression analysis refer to
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. For more details how to collect
 suitable resources refer to <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a>.</p>
@@ -1359,6 +1376,86 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 <dt id="cmdoption-perun-postprocessby-regression-analysis-s">
 <code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--steps</code><code class="descclassname"> &lt;steps&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regression-analysis-s" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restricts the number of number of steps / data parts used by the iterative, interval and initial guess methods</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-clusterizer">
+<h4>perun postprocessby clusterizer<a class="headerlink" href="#perun-postprocessby-clusterizer" title="Permalink to this headline">¶</a></h4>
+<p>Clusters each resource to an appropriate cluster in order to be postprocessable
+by regression analysis.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite></li>
+<li><strong>Dependencies</strong>: <cite>none</cite></li>
+</ul>
+</dd>
+</dl>
+<p>Clusterizer tries to find a suitable cluster for each resource in the profile. The clusters
+are either computed w.r.t the sort order of the resource amounts, or are computed according
+to the sliding window.</p>
+<p>The sliding window can be further adjusted by setting its <strong>width</strong> (i.e. how many near values
+on the x axis will we fit to a cluster) and its <strong>height</strong> (i.e. how big of an interval of
+resource amounts will be consider for one cluster). Both <strong>width</strong> and <strong>height</strong> can be further
+augmented. <strong>Width</strong> can either be <cite>absolute</cite>, where we take in maximum the absolute number of
+resources, <cite>relative</cite>, where we take in maximum the percentage of number of resources for each
+cluster, or <cite>weighted</cite>, where we take the number of resource depending on the frequency of their
+occurrences. Similarly, the <strong>height</strong> can either be <cite>absolute</cite>, where we set the interval of
+amounts to an absolute size, or <cite>relative</cite>, where we set the interval of amounts relative to the
+to the first resource amount in the cluster (so e.g. if we have window of height 0.1 and the
+first resource in the cluster has amount of 100, we will cluster every resources in interval 100
+to 110 to this cluster).</p>
+<p>For more details about regression analysis refer to <a class="reference internal" href="postprocessors.html#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby clusterizer <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-s">
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--strategy</code><code class="descclassname"> &lt;strategy&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the clustering strategy, that will be applied for the profile</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-wh">
+<code class="descname">-wh</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--window-height</code><code class="descclassname"> &lt;window_height&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-wh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the height of the window (either fixed or proportional)</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-rwh">
+<code class="descname">-rwh</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--relative-window-height</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-rwh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies that the height of the window is relative to the point</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-fwh">
+<code class="descname">-fwh</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--fixed-window-height</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-fwh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies that the height of the window is absolute to the point</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-ww">
+<code class="descname">-ww</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--window-width</code><code class="descclassname"> &lt;window_width&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-ww" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the width of the window, i.e. how many values will be taken by window.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-rww">
+<code class="descname">-rww</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--relative-window-width</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-rww" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies whether the width of the window is weighted or fixed</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-fww">
+<code class="descname">-fww</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--fixed-window-width</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-fww" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies whether the width of the window is weighted or fixed</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-clusterizer-www">
+<code class="descname">-www</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--weighted-window-width</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-clusterizer-www" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies whether the width of the window is weighted or fixed</p>
 </dd></dl>
 
 </div>
@@ -1937,6 +2034,81 @@ regression analysis and models refer to
 </div>
 </div>
 </div>
+<div class="section" id="utility-commands">
+<span id="cli-utils-ref"></span><h2>Utility Commands<a class="headerlink" href="#utility-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="perun-utils">
+<h3>perun utils<a class="headerlink" href="#perun-utils" title="Permalink to this headline">¶</a></h3>
+<p>Contains set of developer commands, wrappers over helper scripts and other functions that are
+not the part of the main perun suite.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun utils <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">create</code></dt>
+<dd><p>According to the given &lt;template&gt; constructs…</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-utils-create">
+<h3>perun utils create<a class="headerlink" href="#perun-utils-create" title="Permalink to this headline">¶</a></h3>
+<p>According to the given &lt;template&gt; constructs a new modules in Perun for &lt;unit&gt;.</p>
+<p>Currently this supports creating new modules for the tool suite (namely <code class="docutils literal"><span class="pre">collect</span></code>,
+<code class="docutils literal"><span class="pre">postprocess</span></code>, <code class="docutils literal"><span class="pre">view</span></code>) or new algorithms for checking degradation (check). The command uses
+templates stored in <cite>..perun       emplates</cite> directory and uses _jinja as a template handler. The
+templates can be parametrized by the following by options (if not specified ‘none’ is used).</p>
+<p>Unless <code class="docutils literal"><span class="pre">--no-edit</span></code> is set, after the successful creation of the files, an external editor,
+which is specified by <a class="reference internal" href="config.html#confkey-general.editor"><code class="xref std std-ckey docutils literal"><span class="pre">general.editor</span></code></a> configuration key.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun utils create <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;template&gt; &lt;unit&gt;
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-utils-create-nb">
+<code class="descname">-nb</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-before-phase</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-utils-create-nb" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to true, the unit will not have before() function defined.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-utils-create-na">
+<code class="descname">-na</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-after-phase</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-utils-create-na" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to true, the unit will not have after() function defined.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-utils-create-author">
+<code class="descname">--author</code><code class="descclassname"> &lt;author&gt;</code><a class="headerlink" href="#cmdoption-perun-utils-create-author" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the author of the unit</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-utils-create-ne">
+<code class="descname">-ne</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-edit</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-utils-create-ne" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will open the newly created files in the editor specified by <a class="reference internal" href="config.html#confkey-general.editor"><code class="xref std std-ckey docutils literal"><span class="pre">general.editor</span></code></a> configuration key.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-utils-create-st">
+<code class="descname">-st</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--supported-type</code><code class="descclassname"> &lt;supported_types&gt;</code><a class="headerlink" href="#cmdoption-perun-utils-create-st" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the supported types of the unit (i.e. profile types).</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="option">
+<dt id="cmdoption-perun-utils-create-arg-template">
+<code class="descname">&lt;template&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-utils-create-arg-template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-utils-create-arg-unit">
+<code class="descname">&lt;unit&gt;</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-utils-create-arg-unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+</div>
 </div>
 
 
@@ -1987,6 +2159,7 @@ regression analysis and models refer to
 <li><a class="reference internal" href="#postprocess-units">Postprocess units</a><ul>
 <li><a class="reference internal" href="#perun-postprocessby-normalizer">perun postprocessby normalizer</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-regression-analysis">perun postprocessby regression_analysis</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-clusterizer">perun postprocessby clusterizer</a></li>
 </ul>
 </li>
 </ul>
@@ -2002,6 +2175,11 @@ regression analysis and models refer to
 <li><a class="reference internal" href="#perun-show-scatter">perun show scatter</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utility-commands">Utility Commands</a><ul>
+<li><a class="reference internal" href="#perun-utils">perun utils</a></li>
+<li><a class="reference internal" href="#perun-utils-create">perun utils create</a></li>
 </ul>
 </li>
 </ul>

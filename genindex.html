@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.12 documentation</title>
+    <title>Index &#8212; Perun 0.14 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12',
+        VERSION:     '0.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -72,6 +72,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-show-flow-accumulate">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-accumulate">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    --author &lt;author&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-author">perun-utils-create command line option</a>
 </li>
       </ul></li>
       <li>
@@ -274,10 +281,24 @@
 </li>
       </ul></li>
       <li>
-    -f, --files &lt;files&gt;
+    -fwh, --fixed-window-height
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-f">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-f">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-fwh">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-fwh">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -fww, --fixed-window-width
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-fww">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-fww">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -g, --global_sampling &lt;global_sampling&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-g">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-g">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -313,27 +334,6 @@
 </li>
       </ul></li>
       <li>
-    -id, --internal-direct-output
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-id">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-id">[1]</a>
-</li>
-      </ul></li>
-      <li>
-    -if, --internal-data-filename &lt;internal_data_filename&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-if">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-if">[1]</a>
-</li>
-      </ul></li>
-      <li>
-    -is, --internal-storage-size &lt;internal_storage_size&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-is">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-is">[1]</a>
-</li>
-      </ul></li>
-      <li>
     -l, --local
 
       <ul>
@@ -344,6 +344,8 @@
     -m, --method &lt;method&gt;
 
       <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-m">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-m">[1]</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-m">perun-postprocessby-regression_analysis command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-m">[1]</a>
 </li>
       </ul></li>
@@ -362,8 +364,6 @@
         <li><a href="cli.html#cmdoption-perun-show-m">perun-show command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -n, --nearest
 
@@ -371,6 +371,29 @@
         <li><a href="cli.html#cmdoption-perun-config-n">perun-config command line option</a>, <a href="config.html#cmdoption-perun-config-n">[1]</a>
 </li>
       </ul></li>
+      <li>
+    -na, --no-after-phase
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-na">perun-utils-create command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -nb, --no-before-phase
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-nb">perun-utils-create command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -ne, --no-edit
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-ne">perun-utils-create command line option</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -o, --of &lt;of_key&gt;
 
@@ -438,6 +461,20 @@
 </li>
       </ul></li>
       <li>
+    -rwh, --relative-window-height
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-rwh">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-rwh">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -rww, --relative-window-width
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-rww">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-rww">[1]</a>
+</li>
+      </ul></li>
+      <li>
     -s, --sampling &lt;sampling&gt;
 
       <ul>
@@ -472,17 +509,24 @@
 </li>
       </ul></li>
       <li>
+    -s, --strategy &lt;strategy&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-s">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-s">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -st, --supported-type &lt;supported_types&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-st">perun-utils-create command line option</a>
+</li>
+      </ul></li>
+      <li>
     -t, --limit-to &lt;limit_to&gt;
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-show-alloclist-t">perun-show-alloclist command line option</a>
-</li>
-      </ul></li>
-      <li>
-    -t, --target-dir &lt;target_dir&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-t">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-t">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -524,6 +568,27 @@
         <li><a href="cli.html#cmdoption-perun-collect-w">perun-collect command line option</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-run-job-w">perun-run-job command line option</a>, <a href="jobs.html#cmdoption-perun-run-job-w">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -wh, --window-height &lt;window_height&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-wh">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-wh">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -ww, --window-width &lt;window_width&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-ww">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-ww">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -www, --weighted-window-width
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-www">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-www">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -609,6 +674,20 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-check-profiles-arg-target">perun-check-profiles command line option</a>, <a href="degradation.html#cmdoption-perun-check-profiles-arg-target">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    &lt;template&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-arg-template">perun-utils-create command line option</a>
+</li>
+      </ul></li>
+      <li>
+    &lt;unit&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-arg-unit">perun-utils-create command line option</a>
 </li>
       </ul></li>
       <li>
@@ -1065,19 +1144,13 @@
     perun-collect-complexity command line option
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-f">-f, --files &lt;files&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-f">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-g">-g, --global_sampling &lt;global_sampling&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-g">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-id">-id, --internal-direct-output</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-id">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-if">-if, --internal-data-filename &lt;internal_data_filename&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-if">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-is">-is, --internal-storage-size &lt;internal_storage_size&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-is">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-m">-m, --method &lt;method&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-m">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-complexity-r">-r, --rules &lt;rules&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-r">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-complexity-s">-s, --sampling &lt;sampling&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-s">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-t">-t, --target-dir &lt;target_dir&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-t">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -1163,6 +1236,27 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-ot">-ot, --output-filename-template &lt;output_filename_template&gt;</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-arg-profile">&lt;profile&gt;</a>
+</li>
+      </ul></li>
+      <li>
+    perun-postprocessby-clusterizer command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-fwh">-fwh, --fixed-window-height</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-fwh">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-fww">-fww, --fixed-window-width</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-fww">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-rwh">-rwh, --relative-window-height</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-rwh">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-rww">-rww, --relative-window-width</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-rww">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-s">-s, --strategy &lt;strategy&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-s">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-wh">-wh, --window-height &lt;window_height&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-wh">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-ww">-ww, --window-width &lt;window_width&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-ww">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-www">-www, --weighted-window-width</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-www">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -1332,6 +1426,25 @@
         <li><a href="cli.html#cmdoption-perun-status-s">-s, --short</a>
 </li>
       </ul></li>
+      <li>
+    perun-utils-create command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-utils-create-author">--author &lt;author&gt;</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-utils-create-na">-na, --no-after-phase</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-utils-create-nb">-nb, --no-before-phase</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-utils-create-ne">-ne, --no-edit</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-utils-create-st">-st, --supported-type &lt;supported_types&gt;</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-utils-create-arg-template">&lt;template&gt;</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-utils-create-arg-unit">&lt;unit&gt;</a>
+</li>
+      </ul></li>
       <li><a href="cli.html#module-perun.cli">perun.cli (module)</a>
 </li>
       <li><a href="collectors.html#module-perun.collect">perun.collect (module)</a>
@@ -1343,6 +1456,8 @@
       <li><a href="collectors.html#module-perun.collect.time">perun.collect.time (module)</a>
 </li>
       <li><a href="postprocessors.html#module-perun.postprocess">perun.postprocess (module)</a>
+</li>
+      <li><a href="postprocessors.html#module-perun.postprocess.clusterizer">perun.postprocess.clusterizer (module)</a>
 </li>
       <li><a href="postprocessors.html#module-perun.postprocess.normalizer">perun.postprocess.normalizer (module)</a>
 </li>

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>perun.profile.convert &#8212; Perun 0.12 documentation</title>
+    <title>perun.profile.convert &#8212; Perun 0.14 documentation</title>
     <link rel="stylesheet" href="../../../_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.12',
+        VERSION:     '0.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -587,6 +587,36 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">coefficients_to_points</span><span class="p">(</span><span class="o">**</span><span class="n">model</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">model</span></div>
+
+
+<span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">flattened_value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts the value to something that can be used as one value.</span>
+
+<span class="sd">    Flattens the value to single level, lists are processed to comma separated representation and</span>
+<span class="sd">    rest is left as it is.</span>
+<span class="sd">    TODO: Add caching</span>
+
+<span class="sd">    :param object flattened_value: value that is flattened</span>
+<span class="sd">    :returns: either decimal, string, or something else</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Dictionary is processed recursively according to the all items that are nested</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">flattened_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">nested_values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">query</span><span class="o">.</span><span class="n">all_items_of</span><span class="p">(</span><span class="n">flattened_value</span><span class="p">):</span>
+            <span class="c1"># Add one level of hierarchy with &#39;:&#39;</span>
+            <span class="n">nested_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="c1"># Return the overall key as joined values of its nested stuff,</span>
+        <span class="c1"># only if root is not a list (i.e. root key is not int = index)!</span>
+        <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">nested_values</span><span class="p">))</span>
+    <span class="c1"># Lists are merged as comma separated keys</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">flattened_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nested_value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">nested_value</span> <span class="ow">in</span> <span class="n">query</span><span class="o">.</span><span class="n">flattened_values</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lv</span><span class="p">))</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lv</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flattened_value</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="c1"># Rest of the values are left as they are</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">flattened_value</span>
 </pre></div>
 
           </div>

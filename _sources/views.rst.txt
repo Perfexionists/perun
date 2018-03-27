@@ -212,7 +212,11 @@ methods has the least requirements and only needs to work over the profiles w.r.
 
 You can register your new visualization as follows:
 
-    1. Create a new module in ``perun/view`` directory with the following structure::
+    1. Run ``perun utils create view myview`` to generate a new modules in
+       ``perun/view`` directory with the following structure. The command takes a predefined
+       templates for new visualization techniques and creates ``__init__.py`` and ``run.py``
+       according to the supplied command line arguments (see :ref:`cli-utils-ref` for more
+       information about interface of ``perun utils create`` command)::
 
         /perun
         |-- /view
@@ -226,7 +230,8 @@ You can register your new visualization as follows:
             |-- /scatter
 
     2. First, implement the ``__init__.py`` file, including the module docstring with brief
-       description of the visualization technique and definition of constants as follows:
+       description of the visualization technique and definition of constants which has the
+       following structure:
 
     .. literalinclude:: /_static/templates/views_init.py
         :language: python

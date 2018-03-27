@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Collectors Overview &#8212; Perun 0.12 documentation</title>
+    <title>Collectors Overview &#8212; Perun 0.14 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.12',
+        VERSION:     '0.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -118,8 +118,8 @@ function depending on underlying structural sizes.</p>
 <dd><ul class="first last simple">
 <li><strong>Limitations</strong>: C/C++ binaries</li>
 <li><strong>Metric</strong>: <cite>mixed</cite> (captures both <cite>time</cite> and <cite>size</cite> consumption)</li>
-<li><strong>Dependencies</strong>: <code class="docutils literal"><span class="pre">libprofile.so</span></code> and <code class="docutils literal"><span class="pre">libprofapi.so</span></code></li>
-<li><strong>Default units</strong>: <cite>ms</cite> for <cite>time</cite>, <cite>element number</cite> for <cite>size</cite></li>
+<li><strong>Dependencies</strong>: <code class="docutils literal"><span class="pre">SystemTap</span></code> (+ corresponding requirements e.g. kernel -dbgsym version)</li>
+<li><strong>Default units</strong>: <cite>us</cite> for <cite>time</cite>, <cite>element number</cite> for <cite>size</cite></li>
 </ul>
 </dd>
 </dl>
@@ -133,8 +133,31 @@ function depending on underlying structural sizes.</p>
     &quot;structure-unit-size&quot;: 0
 }
 </pre>
+<p>Complexity collector provides various collection <em>strategies</em> which are supposed to provide
+sensible default settings for collection. This allows the user to choose suitable
+collection method without the need of detailed rules / sampling specification. Currently
+supported strategies are:</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first simple">
+<li><strong>userspace</strong>: This strategy traces all userspace functions / code blocks without</li>
+</ul>
+<p class="last">the use of sampling. Note that this strategy might be resource-intensive.
+* <strong>all</strong>: This strategy traces all userspace + library + kernel functions / code blocks
+that are present in the traced binary without the use of sampling. Note that this strategy
+might be very resource-intensive.
+* <strong>u_sampled</strong>: Sampled version of the <strong>userspace</strong> strategy. This method uses sampling
+to reduce the overhead and resources consumption.
+* <strong>a_sampled</strong>: Sampled version of the <strong>all</strong> strategy. Its goal is to reduce the
+overhead and resources consumption of the <strong>all</strong> method.
+* <strong>custom</strong>: User-specified strategy. Requires the user to specify rules and sampling
+manually.</p>
+</dd>
+</dl>
+<p>Note that manually specified parameters have higher priority than strategy specification
+and it is thus possible to override concrete rules / sampling by the user.</p>
 <p>Complexity profiles are suitable for postprocessing by
-<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> since they capture depedency of
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> since they capture dependency of
 time consumption depending on the size of the structure. This allows one to
 model the estimation of complexity of individual functions.</p>
 <p>Scatter plots are suitable visualization for profiles collected by
@@ -149,45 +172,27 @@ examples of <cite>complexity</cite> collector.</p>
 </div>
 <p class="rubric">Options</p>
 <dl class="option">
-<dt id="cmdoption-perun-collect-complexity-t">
-<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--target-dir</code><code class="descclassname"> &lt;target_dir&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-t" title="Permalink to this definition">¶</a></dt>
-<dd><p>Target directory path for customly compiled binary and temporary build data.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-f">
-<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--files</code><code class="descclassname"> &lt;files&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-f" title="Permalink to this definition">¶</a></dt>
-<dd><p>List of C/C++ source files that will be used to build the custom binary with injected profiling commands. Must be valid resolvable path</p>
+<dt id="cmdoption-perun-collect-complexity-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--method</code><code class="descclassname"> &lt;method&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select strategy for probing the binary. See documentation for detailed explanation for each strategy.  [required]</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-collect-complexity-r">
 <code class="descname">-r</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--rules</code><code class="descclassname"> &lt;rules&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-r" title="Permalink to this definition">¶</a></dt>
-<dd><p>Marks the function for profiling.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-if">
-<code class="descname">-if</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-data-filename</code><code class="descclassname"> &lt;internal_data_filename&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-if" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the different path for internal output filename for storing temporary profiling data file name.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-is">
-<code class="descname">-is</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-storage-size</code><code class="descclassname"> &lt;internal_storage_size&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-is" title="Permalink to this definition">¶</a></dt>
-<dd><p>Increases the size of internal profiling data storage.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-collect-complexity-id">
-<code class="descname">-id</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--internal-direct-output</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-complexity-id" title="Permalink to this definition">¶</a></dt>
-<dd><p>If set, profiling data will be stored into the internal log file directly instead of being saved into data structure and printed later.</p>
+<dd><p>Set the probe points for profiling.</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-collect-complexity-s">
 <code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--sampling</code><code class="descclassname"> &lt;sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-s" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the sampling of the given function to every &lt;int&gt; call.</p>
+<dd><p>Set the runtime sampling of the given probe points.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-g">
+<code class="descname">-g</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--global_sampling</code><code class="descclassname"> &lt;global_sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the global sample for all probes, –sampling parameter for specific rules have higher priority.</p>
 </dd></dl>
 
 </div>
@@ -283,20 +288,13 @@ examples of <cite>complexity</cite> collector.</p>
 87
 88
 89
-90
-91
-92
-93
-94
-95
-96
-97</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">{</span>
+90</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="hll">  <span class="nt">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;f7f3dcea69b97f2b03c421a223a770917149cfae&quot;</span><span class="p">,</span>
 </span>  <span class="nt">&quot;header&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;../stap-collector/tst&quot;</span><span class="p">,</span>
     <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
     <span class="nt">&quot;units&quot;</span><span class="p">:</span> <span class="p">{</span>
-<span class="hll">      <span class="nt">&quot;mixed(time delta)&quot;</span><span class="p">:</span> <span class="s2">&quot;ms&quot;</span>
+<span class="hll">      <span class="nt">&quot;mixed(time delta)&quot;</span><span class="p">:</span> <span class="s2">&quot;us&quot;</span>
 </span>    <span class="p">},</span>
     <span class="nt">&quot;workload&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="nt">&quot;params&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
@@ -304,13 +302,6 @@ examples of <cite>complexity</cite> collector.</p>
 <span class="hll">  <span class="nt">&quot;collector_info&quot;</span><span class="p">:</span> <span class="p">{</span>
 </span>    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;complexity&quot;</span><span class="p">,</span>
     <span class="nt">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;internal_data_filename&quot;</span><span class="p">:</span> <span class="s2">&quot;trace.log&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;target_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;./target&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;files&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;../example_sources/simple_sll_cpp/main.cpp&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;../example_sources/simple_sll_cpp/SLList.h&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;../example_sources/simple_sll_cpp/SLListcls.h&quot;</span>
-      <span class="p">],</span>
       <span class="nt">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;SLList_init&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SLList_insert&quot;</span><span class="p">,</span>
@@ -327,28 +318,28 @@ examples of <cite>complexity</cite> collector.</p>
           <span class="nt">&quot;sample&quot;</span><span class="p">:</span> <span class="mi">1</span>
         <span class="p">}</span>
       <span class="p">],</span>
-      <span class="nt">&quot;internal_direct_output&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-      <span class="nt">&quot;internal_storage_size&quot;</span><span class="p">:</span> <span class="mi">20000</span>
+      <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;global_sampling&quot;</span><span class="p">:</span> <span class="kc">null</span>
     <span class="p">}</span>
   <span class="p">},</span>
   <span class="nt">&quot;postprocessors&quot;</span><span class="p">:</span> <span class="p">[],</span>
-<span class="hll">  <span class="nt">&quot;global&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span>    <span class="nt">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;global&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;6.8e-05s&quot;</span><span class="p">,</span>
     <span class="nt">&quot;resources&quot;</span><span class="p">:</span> <span class="p">[</span>
       <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;amount&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="nt">&quot;subtype&quot;</span><span class="p">:</span> <span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
+<span class="hll">        <span class="nt">&quot;uid&quot;</span><span class="p">:</span> <span class="s2">&quot;SLList_init(SLList*)&quot;</span><span class="p">,</span>
+</span>        <span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span> <span class="mi">0</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
 <span class="hll">        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
-</span><span class="hll">        <span class="nt">&quot;amount&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+</span><span class="hll">        <span class="nt">&quot;amount&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
 </span><span class="hll">        <span class="nt">&quot;subtype&quot;</span><span class="p">:</span> <span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-</span><span class="hll">        <span class="nt">&quot;uid&quot;</span><span class="p">:</span> <span class="s2">&quot;SLList_init(SLList*)&quot;</span><span class="p">,</span>
+</span><span class="hll">        <span class="nt">&quot;uid&quot;</span><span class="p">:</span> <span class="s2">&quot;SLList_search(SLList*, int)&quot;</span><span class="p">,</span>
 </span><span class="hll">        <span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span> <span class="mi">0</span>
 </span>      <span class="p">},</span>
-      <span class="p">{</span>
-        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;amount&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="nt">&quot;subtype&quot;</span><span class="p">:</span> <span class="s2">&quot;time delta&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;uid&quot;</span><span class="p">:</span> <span class="s2">&quot;SLList_search(SLList*, int)&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;structure-unit-size&quot;</span><span class="p">:</span> <span class="mi">0</span>
-      <span class="p">},</span>
       <span class="p">{</span>
         <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;mixed&quot;</span><span class="p">,</span>
         <span class="nt">&quot;amount&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -826,10 +817,14 @@ a cli API for <a class="reference external" href="http://click.pocoo.org/5/">Cli
 <p>You can register your new collector as follows:</p>
 <blockquote>
 <div><ol class="arabic">
-<li><p class="first">Create a new module in <code class="docutils literal"><span class="pre">perun/collect</span></code> directory with the following structure:</p>
+<li><p class="first">Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span> <span class="pre">collect</span> <span class="pre">mycollector</span></code> to generate a new modules in
+<code class="docutils literal"><span class="pre">perun/collect</span></code> directory with the following structure. The command takes a predefined
+templates for new collectors and creates <code class="docutils literal"><span class="pre">__init__.py</span></code> and <code class="docutils literal"><span class="pre">run.py</span></code> according to the
+supplied command line arguments (see <a class="reference internal" href="cli.html#cli-utils-ref"><span class="std std-ref">Utility Commands</span></a> for more information about
+interface of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">perun</span>
 <span class="o">|--</span> <span class="o">/</span><span class="n">collect</span>
-    <span class="o">|--</span> <span class="o">/</span><span class="n">new_module</span>
+    <span class="o">|--</span> <span class="o">/</span><span class="n">mycollector</span>
         <span class="o">|--</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
         <span class="o">|--</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">complexity</span>
@@ -841,7 +836,7 @@ a cli API for <a class="reference external" href="http://click.pocoo.org/5/">Cli
 </li>
 <li><p class="first">First, implement the <code class="docutils literal"><span class="pre">__init__.py</span></code> file, including the module docstring with brief
 collector descriptions and definitions of constants that are used for automatic setting of
-profiles (namely the <code class="xref std std-preg docutils literal"><span class="pre">collector-info</span></code>) as follows:</p>
+profiles (namely the <code class="xref std std-preg docutils literal"><span class="pre">collector-info</span></code>) which has the following structure:</p>
 </li>
 </ol>
 <div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
@@ -921,8 +916,8 @@ your collector. This function will is called from command line as <code class="d
 19
 20
 21
-22</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/perun-clone/docs/_static/templates/collectors_run.py</span>
-<span class="gi">+++ /mnt/f/phdwork/perun/perun-clone/docs/_static/templates/collectors_run_api.py</span>
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/collectors_run.py</span>
+<span class="gi">+++ /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/collectors_run_api.py</span>
 <span class="gu">@@ -1,3 +1,8 @@</span>
 <span class="gi">+import click</span>
 <span class="gi">+</span>
@@ -959,8 +954,8 @@ your collector. This function will is called from command line as <code class="d
  8
  9
 10
-11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/perun-clone/docs/_static/templates/supported_module_names.py</span>
-<span class="gi">+++ /mnt/f/phdwork/perun/perun-clone/docs/_static/templates/supported_module_names_collectors.py</span>
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="gd">--- /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/supported_module_names.py</span>
+<span class="gi">+++ /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/supported_module_names_collectors.py</span>
 <span class="gu">@@ -6,7 +6,7 @@</span>
          ))
      return {
