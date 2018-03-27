@@ -126,17 +126,21 @@ def clusterizer(profile, **kwargs):
       * **Dependencies**: `none`
 
     Clusterizer tries to find a suitable cluster for each resource in the profile. The clusters
-    are either computed w.r.t the sort order of the amounts, or are computed according to the
-    sliding window.
+    are either computed w.r.t the sort order of the resource amounts, or are computed according
+    to the sliding window.
 
-    The sliding window can be further adjusted by setting its width (i.e. how many near values on
-    the x axis will we take to a cluster) and its height (i.e. how large is the window in regards
-    of the size of amount). Both width and height can be further augmented. Width can be weighted
-    by the frequency of the given value (i.e. the more values of certain amounts we have, the less
-    we take). Similarly the height can be set to be relative, i.e. instead of having clusters of
-    absolute size, we have a clusters of relative size (i.e. percentage of the amount).
+    The sliding window can be further adjusted by setting its **width** (i.e. how many near values
+    on the x axis will we fit to a cluster) and its **height** (i.e. how big of an interval of
+    resource amounts will be consider for one cluster). Both **width** and **height** can be further
+    augmented. **Width** can either be `absolute`, where we take in maximum the absolute number of
+    resources, `relative`, where we take in maximum the percentage of number of resources for each
+    cluster, or `weighted`, where we take the number of resource depending on the frequency of their
+    occurrences. Similarly, the **height** can either be `absolute`, where we set the interval of
+    amounts to an absolute size, or `relative`, where we set the interval of amounts relative to the
+    to the first resource amount in the cluster (so e.g. if we have window of height 0.1 and the
+    first resource in the cluster has amount of 100, we will cluster every resources in interval 100
+    to 110 to this cluster).
 
-    For more details about regression analysis refer to
-    :ref:`postprocessors-clusterization`.
+    For more details about regression analysis refer to :ref:`postprocessors-clusterizer`.
     """
     runner.run_postprocessor_on_profile(profile, 'clusterizer', kwargs)
