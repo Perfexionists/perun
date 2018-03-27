@@ -6,6 +6,14 @@ HEAD
 
 **To be included in next release**
 
+0.13 (2018-03-27)
+-----------------
+
+`commit: 9642c1dcd7ba39b91ef791039690f5be79312dd2`
+
+**Add SystemTap based complexity collector**
+
+  - add SystemTap based complexity collector
   - add ``perun utils create`` command (see :ref:`cli-utils-ref` for more details) for creating new modules according to stored templates
   - fix issue with getting config hierarchy, when outside of any perun scope
 
