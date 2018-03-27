@@ -1,10 +1,10 @@
 {
   "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae",
   "header": {
-    "cmd": "",
+    "cmd": "../stap-collector/tst",
     "type": "mixed",
     "units": {
-      "mixed(time delta)": "ms"
+      "mixed(time delta)": "us"
     },
     "workload": "",
     "params": ""
@@ -12,13 +12,6 @@
   "collector_info": {
     "name": "complexity",
     "params": {
-      "internal_data_filename": "trace.log",
-      "target_dir": "./target",
-      "files": [
-        "../example_sources/simple_sll_cpp/main.cpp",
-        "../example_sources/simple_sll_cpp/SLList.h",
-        "../example_sources/simple_sll_cpp/SLListcls.h"
-      ],
       "rules": [
         "SLList_init",
         "SLList_insert",
@@ -35,8 +28,8 @@
           "sample": 1
         }
       ],
-      "internal_direct_output": false,
-      "internal_storage_size": 20000
+      "method": "custom",
+      "global_sampling": null
     }
   },
   "postprocessors": [],

@@ -102,7 +102,7 @@ class Helpers(object):
             origin(str): origin minor version for the given profile
         """
         # Copy to jobs and prepare origin for the current version
-        dest_dir = perun.get_job_directory()
+        dest_dir = perun.get_job_directory() if isinstance(perun, pcs.PCS) else perun
         shutil.copy2(profile, dest_dir)
 
         # Prepare origin for the current version
@@ -212,20 +212,16 @@ def complexity_collect_job():
 
 
     Returns:
-        tuple: 'bin', '', [''], 'memory', [], {}
+        tuple: 'bin', '', [''], 'complexity', [], {}
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
     source_dir = os.path.join(script_dir, 'collect_complexity')
-    target_dir = os.path.join(source_dir, 'target')
+    target_dir = source_dir
     job_config_file = os.path.join(source_dir, 'job.yml')
     job_config = streams.safely_load_yaml_from_file(job_config_file)
 
-    # Change the target dir to this location
-    assert 'target_dir' in job_config.keys()
-    job_config['target_dir'] = target_dir
-
-    return [target_dir], '', [''], ['complexity'], [], {'collector_params': {
+    return [target_dir + '/tst'], '', [''], ['complexity'], [], {'collector_params': {
         'complexity': job_config
     }}
 

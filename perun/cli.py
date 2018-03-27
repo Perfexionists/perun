@@ -29,6 +29,10 @@ command line arguments. The intefrace can be broken into several groups:
     Each ``VISUALIZATION`` has its own API, refer to :ref:`cli-views-units-ref`
     for thorough description of API of individual views.
 
+    5. **Utility commands**: group of commands used for developing Perun
+    or for maintenance of the Perun instances. Currently this group contains
+    ``create`` command for faster creation of new modules.
+
 Graphical User Interface is currently in development and hopefully will extend
 the flexibility of Perun's usage.
 
@@ -52,6 +56,7 @@ import perun.logic.config as perun_config
 import perun.postprocess
 import perun.profile.factory as profiles
 import perun.utils as utils
+import perun.utils.script_helpers as scripts
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
 import perun.vcs as vcs
@@ -85,7 +90,7 @@ def process_unsupported_option(_, param, value):
 @click.option('--verbose', '-v', count=True, default=0,
               help='Increase the verbosity of the standard output. Verbosity '
               'is incremental, and each level increases the extent of output.')
-def cli(verbose, no_pager):
+def cli(verbose=0, no_pager=False):
     """Perun is an open source light-weight Performance Versioning System.
 
     In order to initialize Perun in current directory run the following::
@@ -276,16 +281,13 @@ def config_edit(ctx):
 def configure_local_perun(perun_path):
     """Configures the local perun repository with the interactive help of the user
 
-    Arguments:
-        perun_path(str): destination path of the perun repository
+    :param str perun_path: destination path of the perun repository
+    :raises: ExternalEditorErrorException: when underlying editor makes any mistake
     """
     pcs = PCS(perun_path)
     editor = perun_config.lookup_key_recursively('general.editor')
     local_config_file = pcs.get_config_file('local')
-    try:
-        utils.run_external_command([editor, local_config_file])
-    except ValueError as v_exception:
-        perun_log.error("could not invoke '{}' editor: {}".format(editor, str(v_exception)))
+    utils.run_external_command([editor, local_config_file])
 
 
 def parse_vcs_parameter(ctx, param, value):
@@ -377,10 +379,9 @@ def init(dst, configure, **kwargs):
                                  + (" "*4) + ".perun/local.yml\n")
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error(str(unsup_module_exp))
-    except PermissionError as perm_exp:
-        assert 'shared.yml' in str(perm_exp)
+    except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
-    except MissingConfigSectionException:
+    except (ExternalEditorErrorException, MissingConfigSectionException):
         perun_log.error("cannot launch default editor for configuration.\n"
                         "Please set 'general.editor' key to a valid text editor (e.g. vim).")
 
@@ -1206,6 +1207,48 @@ def check_profiles(baseline_profile, target_profile, **_):
            is asked for confirmation by user.
     """
     check.degradation_between_files(baseline_profile, target_profile)
+
+
+@cli.group('utils')
+def utils_group():
+    """Contains set of developer commands, wrappers over helper scripts and other functions that are
+    not the part of the main perun suite.
+    """
+    pass
+
+
+@utils_group.command()
+@click.argument('template_type', metavar='<template>', required=True,
+                type=click.Choice(['collect', 'postprocess', 'view', 'check']))
+@click.argument('unit_name', metavar='<unit>')
+@click.option('--no-before-phase', '-nb', default=False, is_flag=True,
+              help='If set to true, the unit will not have before() function defined.')
+@click.option('--no-after-phase', '-na', default=False, is_flag=True,
+              help='If set to true, the unit will not have after() function defined.')
+@click.option('--author', nargs=1,
+              help='Specifies the author of the unit')
+@click.option('--no-edit', '-ne', default=False, is_flag=True,
+              help='Will open the newly created files in the editor specified by '
+                   ':ckey:`general.editor` configuration key.')
+@click.option('--supported-type', '-st', 'supported_types', nargs=1, multiple=True,
+              help="Sets the supported types of the unit (i.e. profile types).")
+def create(template_type, **kwargs):
+    """According to the given <template> constructs a new modules in Perun for <unit>.
+
+    Currently this supports creating new modules for the tool suite (namely ``collect``,
+    ``postprocess``, ``view``) or new algorithms for checking degradation (check). The command uses
+    templates stored in `..\perun\templates` directory and uses _jinja as a template handler. The
+    templates can be parametrized by the following by options (if not specified 'none' is used).
+
+    Unless ``--no-edit`` is set, after the successful creation of the files, an external editor,
+    which is specified by :ckey:`general.editor` configuration key.
+
+    .. _jinja: http://jinja2.pocoo.org/
+    """
+    try:
+        scripts.create_unit_from_template(template_type, **kwargs)
+    except ExternalEditorErrorException as editor_exception:
+        perun_log.error("while invoking external editor: {}".format(str(editor_exception)))
 
 
 # Initialization of other stuff

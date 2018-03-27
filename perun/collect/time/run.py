@@ -13,8 +13,6 @@ TIME_TYPES = ('real', 'user', 'sys')
 
 def collect(**kwargs):
     """Phase for collection of the profile data"""
-    assert {'cmd', 'workload'}.issubset(kwargs.keys())
-
     command = " ".join([
         'time -p', kwargs['cmd'], kwargs.get('args', ''), kwargs['workload']
     ]).split(' ')
@@ -40,7 +38,7 @@ def collect(**kwargs):
 def time(ctx):
     """Generates `time` performance profile, capturing overall running times of
     the profiled command.
-    
+
     \b
       * **Limitations**: `none`
       * **Metric**: running `time`

@@ -1,0 +1,32 @@
+"""TODO: Write short docstring of the new postprocessor
+
+TODO: Write long docstring of the new postprocessor
+"""
+
+import click
+
+import perun.logic.runner as runner
+from perun.utils.helpers import PostprocessStatus, pass_profile
+
+{% if not no_before_phase %}
+def before(**kwargs):
+    """TODO: Write docstring of the before postprocessing phase"""
+    return PostprocessStatus.OK, "status_message", dict(kwargs)
+
+{% endif %}
+def postprocess(profile, **kwargs):
+    """TODO: Write docstring of the postprocessing phase"""
+    return PostprocessStatus.OK, "status message", dict(kwargs)
+
+{%  if not no_after_phase %}
+def after(**kwargs):
+    """TODO: Write docstring of the after postprocessing phase"""
+    return PostprocessStatus.OK, "status message", dict(kwargs)
+
+{% endif %}
+@click.command()
+@pass_profile
+def {{ unit_name }}(profile, **kwargs):
+    """TODO: Write documentation of the CLI"""
+    runner.run_postprocessor_on_profile(profile, '{{ unit_name }}', kwargs)
+

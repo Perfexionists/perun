@@ -12,13 +12,12 @@ import struct
 import zlib
 
 import perun.utils.timestamps as timestamps
-import perun.utils.decorators as decorators
 import perun.utils.log as perun_log
+import perun.utils.helpers as helpers
 
-from perun.utils.helpers import IndexEntry, INDEX_VERSION, INDEX_MAGIC_PREFIX, \
-    INDEX_NUMBER_OF_ENTRIES_OFFSET, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
-    READ_CHUNK_SIZE
-from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException
+from perun.utils.helpers import IndexEntry
+from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException, \
+    MalformedIndexFileException
 
 import demandimport
 with demandimport.enabled():
@@ -106,8 +105,7 @@ def locate_perun_dir_on(path):
     lookup_paths = path_to_subpaths(path)[::-1]
 
     for tested_path in lookup_paths:
-        assert os.path.isdir(tested_path)
-        if '.perun' in os.listdir(tested_path):
+        if os.path.isdir(tested_path) and '.perun' in os.listdir(tested_path):
             return tested_path
     raise NotPerunRepositoryException(path)
 
@@ -161,12 +159,12 @@ def peek_profile_type(profile_name):
         str: type of the profile
     """
     with open(profile_name, 'rb') as profile_handle:
-        profile_chunk = read_and_deflate_chunk(profile_handle, READ_CHUNK_SIZE)
+        profile_chunk = read_and_deflate_chunk(profile_handle, helpers.READ_CHUNK_SIZE)
         prefix, profile_type, *_ = profile_chunk.split(" ")
 
         # Return that the stored profile is malformed
-        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES:
-            return PROFILE_MALFORMED
+        if prefix != 'profile' or profile_type not in helpers.SUPPORTED_PROFILE_TYPES:
+            return helpers.PROFILE_MALFORMED
         else:
             return profile_type
 
@@ -225,26 +223,6 @@ def add_loose_object_to_dir(base_dir, object_name, object_content):
             object_handle.write(object_content)
 
 
-def remove_loose_object_from_dir(base_dir, object_name):
-    """
-    Arguments:
-        base_dir(path): path to the base directory
-        object_name(str): sha-1 string representing the object base_dir (possibly with extension)
-    """
-    # Break the sha1 representation to base dir (first byte) and rest of the file
-    object_dir_full_path, object_file_full_path = split_object_name(base_dir, object_name)
-
-    # Remove file form the tracking
-    if os.path.exists(object_file_full_path):
-        os.remove(object_file_full_path)
-    else:
-        perun_log.warn("{} does not exist within .perun".format(object_file_full_path))
-
-    # Remove directory from tracking
-    if not os.listdir(object_dir_full_path):
-        os.rmdir(object_dir_full_path)
-
-
 def read_int_from_handle(file_handle):
     """Helper function for reading one integer from handle
 
@@ -284,7 +262,6 @@ def read_number_of_entries_from_handle(index_handle):
     return number_of_entries
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def walk_index(index_handle):
     """Iterator through index entries
 
@@ -305,10 +282,14 @@ def walk_index(index_handle):
     # Move to the begging of the handle
     index_handle.seek(0)
     magic_bytes = index_handle.read(4)
-    assert magic_bytes == INDEX_MAGIC_PREFIX
+    if magic_bytes != helpers.INDEX_MAGIC_PREFIX:
+        raise MalformedIndexFileException("read blob is not an index file")
 
     index_version = read_int_from_handle(index_handle)
-    assert index_version == INDEX_VERSION
+    if index_version != helpers.INDEX_VERSION:
+        raise MalformedIndexFileException("read index file is in format of different index version"
+                                          " (read index file = {}".format(index_version) +
+                                          ", supported = {})".format(helpers.INDEX_VERSION))
 
     number_of_objects = read_int_from_handle(index_handle)
     loaded_objects = 0
@@ -341,7 +322,6 @@ def walk_index(index_handle):
         perun_log.error("fatal: malformed index file")
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def print_index(index_file):
     """Helper function for printing the contents of the index
 
@@ -352,7 +332,6 @@ def print_index(index_file):
         print_index_from_handle(index_handle)
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def print_index_from_handle(index_handle):
     """Helper funciton for printing the contents of index inside the handle.
     Arguments:
@@ -407,13 +386,13 @@ def get_profile_number_for_minor(base_dir, minor_version):
 
     if os.path.exists(minor_index_file):
         profile_numbers_per_type = {
-            profile_type: 0 for profile_type in SUPPORTED_PROFILE_TYPES
+            profile_type: 0 for profile_type in helpers.SUPPORTED_PROFILE_TYPES
         }
 
         # Fixme: Maybe this could be done more efficiently?
         with open(minor_index_file, 'rb') as index_handle:
             # Read the overall
-            index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
+            index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
             profile_numbers_per_type['all'] = read_int_from_handle(index_handle)
 
             # Check the types of the entry
@@ -426,7 +405,6 @@ def get_profile_number_for_minor(base_dir, minor_version):
         return {'all': 0}
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def touch_index(index_path):
     """Initializes and creates the index if it does not exists
 
@@ -448,12 +426,11 @@ def touch_index(index_path):
 
         # create the index
         with open(index_path, 'wb') as index_handle:
-            index_handle.write(INDEX_MAGIC_PREFIX)
-            index_handle.write(struct.pack('i', INDEX_VERSION))
+            index_handle.write(helpers.INDEX_MAGIC_PREFIX)
+            index_handle.write(struct.pack('i', helpers.INDEX_VERSION))
             index_handle.write(struct.pack('i', 0))
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def modify_number_of_entries_in_index(index_handle, modify):
     """Helper function of inplace modification of number of entries in index
 
@@ -461,9 +438,9 @@ def modify_number_of_entries_in_index(index_handle, modify):
         index_handle(file): handle of the opened index
         modify(function): function that will modify the value of number of entries
     """
-    index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
+    index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
     number_of_entries = read_int_from_handle(index_handle)
-    index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
+    index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
     index_handle.write(struct.pack('i', modify(number_of_entries)))
 
 
@@ -474,14 +451,12 @@ def write_entry(index_handle, file_entry):
         index_handle(file): file handle of the index
         file_entry(IndexEntry): entry to be written at current position
     """
-    assert isinstance(file_entry.time, str)
     timestamps.write_timestamp(index_handle, timestamps.str_to_timestamp(file_entry.time))
     index_handle.write(bytearray.fromhex(file_entry.checksum))
     index_handle.write(bytes(file_entry.path, 'utf-8'))
     index_handle.write(struct.pack('B', 0))
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def write_entry_to_index(index_file, file_entry):
     """Writes the file_entry to its appropriate position within the index.
 
@@ -573,7 +548,6 @@ def lookup_all_entries_within_index(index_handle, predicate):
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum):
     """Registers file in the index corresponding to the minor_version
 
@@ -600,7 +574,6 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
 
 
-@decorators.assume_version(INDEX_VERSION, 1)
 def remove_from_index(base_dir, minor_version, removed_file_generator, remove_all=False):
     """Removes stream of removed files from the index.
 
@@ -643,7 +616,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
                 removed_entries.extend([lookup_entry_within_index(index_handle, lookup_function)])
 
         # Update number of entries
-        index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
+        index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
         index_handle.write(struct.pack('i', len(all_entries) - len(removed_entries)))
 
         # For each entry remove from the index, starting from the greatest offset

@@ -3,12 +3,26 @@
 import os
 
 import perun.logic.runner as runner
+import perun.collect.complexity.run as complexity
 
 __author__ = 'Tomas Fiedor'
 
 
-def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
+_mocked_stap_code = 0
+_mocked_stap_file = 'tst_stap_record.txt'
+
+
+def _mocked_stap(**kwargs):
+    """System tap mock, provide OK code and pre-fabricated collection output"""
+    code = _mocked_stap_code
+    file = os.path.join(os.path.dirname(__file__), 'collect_complexity', _mocked_stap_file)
+    return code, file
+
+
+def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
+    monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
+
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
@@ -24,6 +38,41 @@ def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
     assert new_profile.endswith(".perf")
 
     # Fixme: Add check that the profile was correctly generated
+
+
+def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_collect_job):
+    """Test failed collecting using complexity collector"""
+    global _mocked_stap_code
+    global _mocked_stap_file
+
+    monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
+
+    before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+
+    # Test malformed file that ends in unexpected way
+    _mocked_stap_file = 'record_malformed.txt'
+    cmd, args, work, collectors, posts, config = complexity_collect_job
+    runner.run_single_job(cmd, args, work, collectors, posts, **config)
+
+    # Assert that nothing was added
+    after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+    assert before_object_count == after_object_count
+
+    # Test malformed file that ends in another unexpected way
+    _mocked_stap_file = 'record_malformed2.txt'
+    runner.run_single_job(cmd, args, work, collectors, posts, **config)
+
+    # Assert that nothing was added
+    after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+    assert before_object_count == after_object_count
+
+    # Simulate the failure of the systemTap
+    _mocked_stap_code = 1
+    runner.run_single_job(cmd, args, work, collectors, posts, **config)
+
+    # Assert that nothing was added
+    after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+    assert before_object_count == after_object_count
 
 
 def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_collect_no_debug_job):

@@ -6,15 +6,37 @@ this is done in appropriate test files, only the API is tested."""
 import os
 import git
 import re
+import shutil
 
 import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.logic.config as config
+import perun.collect.complexity.run as complexity
+import perun.utils.exceptions as exceptions
 
 __author__ = 'Tomas Fiedor'
+
+
+def _mocked_stap(**kwargs):
+    """System tap mock, provide OK code and pre-fabricated collection output"""
+    return 0, os.path.join(os.path.dirname(__file__), 'collect_complexity', 'tst_stap_record.txt')
+
+
+def test_cli(pcs_full):
+    """Generic tests for cli, such as testing verbosity setting etc."""
+    runner = CliRunner()
+
+    log.VERBOSITY = log.VERBOSE_RELEASE
+    runner.invoke(cli.cli, ['-v', '-v', 'log'])
+    assert log.VERBOSITY == log.VERBOSE_DEBUG
+
+    # Restore the verbosity
+    log.VERBOSITY = log.VERBOSE_RELEASE
+    log.SUPPRESS_PAGING = True
 
 
 def test_reg_analysis_incorrect(pcs_full):
@@ -239,6 +261,59 @@ def test_init_correct():
 
 
 @pytest.mark.usefixtures('cleandir')
+def test_init_correct_with_edit(monkeypatch):
+    """Test running init from cli, without any problems
+
+    Expecting no exceptions, no errors, zero status.
+    """
+    runner = CliRunner()
+    dst = str(os.getcwd())
+
+    def donothing(*_):
+        pass
+
+    monkeypatch.setattr('perun.utils.run_external_command', donothing)
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--configure'])
+    assert result.exit_code == 0
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_init_correct_with_incorrect_edit(monkeypatch):
+    """Test running init from cli, without any problems
+
+    Expecting no exceptions, no errors, zero status.
+    """
+    runner = CliRunner()
+    dst = str(os.getcwd())
+
+    def raiseexc(*_):
+        raise exceptions.ExternalEditorErrorException("", "")
+    monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--configure'])
+    assert result.exit_code == 1
+    monkeypatch.undo()
+
+    for stuff in os.listdir(dst):
+        shutil.rmtree(stuff)
+
+    def raiseexc(*_):
+        raise PermissionError('')
+    monkeypatch.setattr('perun.logic.config.write_config_to', raiseexc)
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
+    assert result.exit_code == 1
+    monkeypatch.undo()
+
+    for stuff in os.listdir(dst):
+        shutil.rmtree(stuff)
+
+    def raiseexc(*_):
+        raise exceptions.UnsupportedModuleFunctionException('git', 'shit')
+    monkeypatch.setattr('perun.vcs.git._init', raiseexc)
+    result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
+    assert result.exit_code == 1
+
+
+@pytest.mark.usefixtures('cleandir')
 def test_init_correct_with_params():
     """Test running init from cli with parameters for git, without any problems
 
@@ -286,6 +361,26 @@ def test_add_correct(helpers, pcs_full, valid_profile_pool):
     assert os.path.exists(added_profile)
 
 
+@pytest.mark.usefixtures('cleandir')
+def test_cli_outside_pcs(helpers, valid_profile_pool):
+    """Test running add from cli, with problems"""
+    # Calling add outside of the perun repo
+    runner = CliRunner()
+    dst_dir = os.getcwd()
+    added_profile = helpers.prepare_profile(dst_dir, valid_profile_pool[0], "")
+    result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added_profile)])
+    assert result.exit_code == 1
+
+    result = runner.invoke(cli.rm, ['{}'.format(added_profile)])
+    assert result.exit_code == 1
+
+    result = runner.invoke(cli.log, [])
+    assert result.exit_code == 1
+
+    result = runner.invoke(cli.status, [])
+    assert result.exit_code == 1
+
+
 def test_rm_correct(helpers, pcs_full, stored_profile_pool):
     """Test running rm from cli, without any problems
 
@@ -321,18 +416,17 @@ def test_collect_correct(pcs_full):
     assert result.exit_code == 0
 
 
-def test_collect_complexity(pcs_full, complexity_collect_job):
+def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     """Test running the complexity collector from the CLI with parameter handling
 
     Expecting no errors
     """
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
+
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity')
+    target = os.path.join(script_dir, 'tst')
     job_params = complexity_collect_job[5]['collector_params']['complexity']
 
-    files = [
-        '-f{}'.format(os.path.abspath(os.path.join(script_dir, file)))
-        for file in job_params['files']
-    ]
     rules = [
         '-r{}'.format(rule) for rule in job_params['rules']
     ]
@@ -340,10 +434,9 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
         ['-s {}'.format(sample['func']), sample['sample']] for sample in job_params['sampling']
     ], [])
     runner = CliRunner()
-    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+    result = runner.invoke(cli.collect, ['-c{}'.format(target),
                                          'complexity',
-                                         '-t{}'.format(job_params['target_dir']),
-                                         ] + files + rules + samplings)
+                                         ] + rules + samplings)
 
     assert result.exit_code == 0
 
@@ -351,34 +444,44 @@ def test_collect_complexity(pcs_full, complexity_collect_job):
     script_dir = os.path.split(__file__)[0]
     source_dir = os.path.join(script_dir, 'collect_complexity')
     job_config_file = os.path.join(source_dir, 'job.yml')
-    result = runner.invoke(cli.collect, ['-p{}'.format(job_config_file), 'complexity'])
+    result = runner.invoke(cli.collect, ['-c{} -p{}'.format(target, job_config_file), 'complexity'])
     assert result.exit_code == 0
 
     # Test running the job from the params using the yaml string
-    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
-                                         '-p\"target_dir: {}\"'.format(job_params['target_dir']),
-                                         'complexity'] + files + rules + samplings)
+    result = runner.invoke(cli.collect, ['-c{}'.format(target),
+                                         '-p\"global_sampling: 2\"',
+                                         'complexity'] + rules + samplings)
     assert result.exit_code == 0
-
-    # Try missing parameters --target-dir and --files
-    result = runner.invoke(cli.collect, ['complexity'])
-    assert result.exit_code == 2
-
-    result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
-    assert result.exit_code == 2
 
     # Try different template
     result = runner.invoke(cli.collect, [
         '-ot', '%collector%-profile',
-        '-c{}'.format(job_params['target_dir']),
-        '-p\"target_dir: {}\"'.format(job_params['target_dir']),
+        '-c{}'.format(target),
+        '-p\"method: custom\"',
         'complexity'
-    ] + files + rules + samplings)
+    ] + rules + samplings)
     del config.runtime().data['format']
     decorators.func_args_cache['lookup_key_recursively'].pop(
         tuple(["format.output_profile_template"]), None)
     assert result.exit_code == 0
     assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
+
+    # Test negative global sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-g -2'])
+    assert result.exit_code == 0
+
+    # Try missing parameter -c
+    # Fixme: before fails but still produces 0?
+    result = runner.invoke(cli.collect, ['complexity'])
+    assert result.exit_code == 0
+
+    # Try using not implemented method 'all'
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-mall'])
+    assert result.exit_code == 0
+
+    # Try invalid parameter --method
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-minvalid'])
+    assert result.exit_code == 2
 
 
 def test_show_help(pcs_full):
@@ -501,7 +604,7 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     assert result.exit_code == 0
 
 
-def test_show_tag(helpers, pcs_full, valid_profile_pool):
+def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
     """Test running show with several valid and invalid tags
 
     Expecting no errors (or caught errors), everythig shown as it should be
@@ -535,8 +638,22 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool):
     result = runner.invoke(cli.show, [first_in_jobs, 'raw'])
     assert result.exit_code == 0
 
+    # Try iterating through files
+    monkeypatch.setattr('click.confirm', lambda *_: True)
+    result = runner.invoke(cli.show, ['prof', 'raw'])
+    assert result.exit_code == 0
 
-def test_config(pcs_full):
+    # Try iterating through files, but none is confirmed to be true
+    monkeypatch.setattr('click.confirm', lambda *_: False)
+    result = runner.invoke(cli.show, ['prof', 'raw'])
+    assert result.exit_code == 1
+
+    # Try getting something from index
+    result = runner.invoke(cli.show, ['prof-2-2017-03-20-21-40-42.perf', 'raw'])
+    assert result.exit_code == 0
+
+
+def test_config(pcs_full, monkeypatch):
     """Test running config
 
     Expecting no errors, everything shown as it should be
@@ -563,6 +680,19 @@ def test_config(pcs_full):
     result = runner.invoke(cli.config, ['--local', 'get', 'wrong,key'])
     assert result.exit_code == 2
     assert "invalid format" in result.output
+
+    # Try to run the monkey-patched editor
+    def donothing(*_):
+        pass
+    monkeypatch.setattr('perun.utils.run_external_command', donothing)
+    result = runner.invoke(cli.config, ['--local', 'edit'])
+    assert result.exit_code == 0
+
+    def raiseexc(*_):
+        raise exceptions.ExternalEditorErrorException
+    monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
+    result = runner.invoke(cli.config, ['--local', 'edit'])
+    assert result.exit_code == 1
 
 
 def test_check_profiles(helpers, pcs_with_degradations):
@@ -591,6 +721,10 @@ def test_check_head(pcs_with_degradations):
     result = runner.invoke(cli.check_head, [])
     assert result.exit_code == 0
 
+    result = runner.invoke(cli.check_group, ['-c', 'head'])
+    assert result.exit_code == 1
+    assert "is unsupported" in result.output
+
 
 def test_check_all(pcs_with_degradations):
     """Test checking degradation for whole history
@@ -598,6 +732,107 @@ def test_check_all(pcs_with_degradations):
     Expecting correct behaviours
     """
     runner = CliRunner()
+    result = runner.invoke(cli.check_group, [])
+    assert result.exit_code == 0
 
     result = runner.invoke(cli.check_all, [])
     assert result.exit_code == 0
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_utils_create(monkeypatch, tmpdir):
+    """Tests creating stuff in the perun"""
+    # Prepare different directory
+    monkeypatch.setattr('perun.utils.script_helpers.__file__', os.path.join(str(tmpdir), "utils", "script_helpers.py"))
+    monkeypatch.chdir(str(tmpdir))
+
+    runner = CliRunner()
+    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    assert result.exit_code == 1
+    assert "cannot use" in result.output and "as target developer directory" in result.output
+
+    # Now correctly initialize the directory structure
+    tmpdir.mkdir('collect')
+    tmpdir.mkdir('postprocess')
+    tmpdir.mkdir('view')
+    tmpdir.mkdir('check')
+
+    # Try to successfully create the new postprocessor
+    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'postprocess', 'mypostprocessor')
+    created_files = os.listdir(target_dir)
+    assert '__init__.py' in created_files
+    assert 'run.py' in created_files
+
+    # Try to successfully create the new collector
+    result = runner.invoke(cli.create, ['collect', 'mycollector', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'collect', 'mycollector')
+    created_files = os.listdir(target_dir)
+    assert '__init__.py' in created_files
+    assert 'run.py' in created_files
+
+    # Try to successfully create the new collector
+    result = runner.invoke(cli.create, ['view', 'myview', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'view', 'myview')
+    created_files = os.listdir(target_dir)
+    assert '__init__.py' in created_files
+    assert 'run.py' in created_files
+
+    # Try to successfully create the new collector
+    result = runner.invoke(cli.create, ['check', 'mycheck', '--no-edit'])
+    assert result.exit_code == 0
+    target_dir = os.path.join(str(tmpdir), 'check')
+    created_files = os.listdir(target_dir)
+    assert 'mycheck.py' in created_files
+
+    # Try to run the monkey-patched editor
+    def donothing(*_):
+        pass
+    monkeypatch.setattr('perun.utils.run_external_command', donothing)
+    result = runner.invoke(cli.create, ['check', 'mydifferentcheck'])
+    assert result.exit_code == 0
+
+    def raiseexc(*_):
+        raise exceptions.ExternalEditorErrorException
+    monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
+    result = runner.invoke(cli.create, ['check', 'mythirdcheck'])
+    assert result.exit_code == 1
+
+
+def test_run(pcs_full, monkeypatch):
+    matrix = config.Config('local', '', {
+        'vcs': {'type': 'git', 'url': '../'},
+        'cmds': ['perun'],
+        'args': ['-v', '-v -v'],
+        'workloads': ['--help'],
+        'collectors': [
+            {'name': 'time', 'params': {}}
+        ],
+        'postprocessors': []
+    })
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+    runner = CliRunner()
+    result = runner.invoke(cli.matrix, [])
+    assert result.exit_code == 0
+
+    job_dir = pcs_full.get_job_directory()
+    job_profiles = os.listdir(job_dir)
+    assert len(job_profiles) == 2
+
+    script_dir = os.path.split(__file__)[0]
+    source_dir = os.path.join(script_dir, 'collect_complexity')
+    job_config_file = os.path.join(source_dir, 'job.yml')
+    result = runner.invoke(cli.job, [
+        '--cmd', 'perun',
+        '--args', '-vvv',
+        '--workload', '--help',
+        '--collector', 'time',
+        '--collector-params', 'time', 'param: key',
+        '--collector-params', 'time', '{}'.format(job_config_file)
+    ])
+    assert result.exit_code == 0
+    job_profiles = os.listdir(job_dir)
+    assert len(job_profiles) == 3

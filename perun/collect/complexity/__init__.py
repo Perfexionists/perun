@@ -6,7 +6,7 @@ visualization by scatter plots.
 
 COLLECTOR_TYPE = "mixed"
 COLLECTOR_DEFAULT_UNITS = {
-    'mixed(time delta)': 'ms'
+    'mixed(time delta)': 'us'
 }
 
 __author__ = 'Jiri Pavela'
