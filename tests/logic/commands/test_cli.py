@@ -116,8 +116,8 @@ def test_reg_analysis_incorrect(pcs_full):
     assert '0.5 is not a valid integer' in result.output
 
     # Test multiple method specification resulting in extra argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
-                                               'iterative'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-dp', 'snapshots',
+                                               '-m', 'full', 'iterative'])
     assert result.exit_code == 2
     assert 'Got unexpected extra argument (iterative)' in result.output
 

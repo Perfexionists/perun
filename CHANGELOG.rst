@@ -6,6 +6,10 @@ HEAD
 
 **To be included in next release**
 
+  - add two new options to regression analysis module (see :ref:`postprocessors-regression-analysis` for more details)
+  - fix minor issues in regression analysis and scatter plot module
+  - fix issue with non-deterministic ordering in flattening the values by convert
+
 0.14 (2018-03-27)
 -----------------
 

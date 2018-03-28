@@ -5,6 +5,7 @@ import click
 import perun.logic.runner as runner
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
+import perun.utils.cli_helpers as cli_helpers
 from perun.utils.helpers import PostprocessStatus, pass_profile
 from perun.postprocess.regression_analysis.methods import get_supported_methods, compute
 from perun.postprocess.regression_analysis.regression_models import get_supported_models
@@ -25,8 +26,9 @@ def postprocess(profile, **configuration):
     tools.validate_dictionary_keys(configuration, ['method', 'regression_models', 'steps'], [])
 
     # Perform the regression analysis
-    analysis = compute(data_provider.data_provider_mapper(profile), configuration['method'],
-                       configuration['regression_models'], steps=configuration['steps'])
+    analysis = compute(data_provider.data_provider_mapper(profile, **configuration),
+                       configuration['method'], configuration['regression_models'],
+                       steps=configuration['steps'])
 
     # Store the results
     if 'models' not in profile['global']:
@@ -51,6 +53,12 @@ def postprocess(profile, **configuration):
               required=False, default=_DEFAULT_STEPS,
               help=('Restricts the number of number of steps / data parts used'
                     ' by the iterative, interval and initial guess methods'))
+@click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size', nargs=1, metavar='<depending_on>',
+              callback=cli_helpers.process_resource_key_param,
+              help="Sets the key that will be used as a source of independent variable.")
+@click.option('--of', '-o', 'of_key', nargs=1, metavar="<of_resource_key>",
+              default='amount', callback=cli_helpers.process_resource_key_param,
+              help="Sets key for which we are finding the model.")
 @pass_profile
 def regression_analysis(profile, **kwargs):
     """Finds fitting regression models to estimate models of profiled resources.

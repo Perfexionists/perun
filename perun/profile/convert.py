@@ -13,6 +13,7 @@ Combined with ``perun.profile.factory``, ``perun.profile.query`` and e.g.
 complex queries and statistical tests over the profiles.
 """
 import copy
+import operator
 
 import perun.profile.query as query
 import perun.postprocess.regression_analysis.transform as transform
@@ -560,12 +561,13 @@ def flatten(flattened_value):
     # Dictionary is processed recursively according to the all items that are nested
     if isinstance(flattened_value, dict):
         nested_values = []
-        for _, value in query.all_items_of(flattened_value):
+        for key, value in query.all_items_of(flattened_value):
             # Add one level of hierarchy with ':'
-            nested_values.append(value)
+            nested_values.append((key, value))
         # Return the overall key as joined values of its nested stuff,
         # only if root is not a list (i.e. root key is not int = index)!
-        return ":".join(map(str, nested_values))
+        sorted(nested_values, key=operator.itemgetter(0))
+        return ":".join(map(str, map(operator.itemgetter(1), nested_values)))
     # Lists are merged as comma separated keys
     elif isinstance(flattened_value, list):
         return ','.join(
