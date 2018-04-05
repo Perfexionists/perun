@@ -80,6 +80,11 @@ The specification of the formatting string can contain the following special tag
     Original identification of the profile. This corresponds to the name of the generated profile
     and the original path.
 
+By default the profiles are sorted according to the timestamp. The sort order can be modified by
+setting either the :ckey:`format.sort_profiles_by` or the :doc:`cli` option ``--sort-by`` to a
+valid profile information attribute. Setting the command line option ``--sort-by`` has higher
+priority than the key set in the :ckey:`format.sort_profiles_by`.
+
 .. _logs-log:
 
 Customizing Logs

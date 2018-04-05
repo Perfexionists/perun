@@ -247,6 +247,9 @@ def test_status_correct(pcs_full):
     assert short_result.exit_code == 0
     assert len(short_result.output.split("\n")) == 4
 
+    short_result = runner.invoke(cli.status, ['--short', '--sort-by', 'origin'])
+    assert short_result.exit_code == 0
+
 
 @pytest.mark.usefixtures('cleandir')
 def test_init_correct():

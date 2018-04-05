@@ -18,19 +18,22 @@ import json
 import os
 import time
 import re
+import operator
 
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.profile.query as query
 import perun.utils.log as perun_log
 from perun.utils import get_module
-from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException
+from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException, \
+    MissingConfigSectionException
 from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
 
 __author__ = 'Tomas Fiedor'
 
 
 PROFILE_COUNTER = 0
+DEFAULT_SORT_KEY = 'time'
 
 
 def lookup_value(container, key, missing):
@@ -384,6 +387,36 @@ def is_key_aggregatable_by(profile, func, key, keyname):
         )
         raise InvalidParameterException(keyname, key, choices)
     return True
+
+
+def sort_profiles(profile_list, reverse_profiles=True):
+    """Sorts the profiles according to the key set in either configuration.
+
+    The key can either be specified in temporary configuration, or in any of the local or global
+    configs as the key :ckey:`format.sort_profiles_by` attributes. Be default, profiles are sorted
+    by time. In case of any errors (invalid sort key or missing key) the profiles will be sorted by
+    default key as well.
+
+    :param list profile_list: list of ProfileInfo object
+    :param true reverse_profiles: true if the order of the sorting should be reversed
+    """
+    sort_order = DEFAULT_SORT_KEY
+    try:
+        sort_order = config.lookup_key_recursively('format.sort_profiles_by')
+        # If the stored key is invalid, we use the default time as well
+        if sort_order not in ProfileInfo.valid_attributes:
+            perun_log.warn("invalid sort key '{}'".format(sort_order) +
+                           " Profiles will be sorted by '{}'\n\n".format(sort_order) +
+                           "Please set sort key in config or cli to one"
+                           " of ({}".format(", ".join(ProfileInfo.valid_attributes)) + ")")
+            sort_order = DEFAULT_SORT_KEY
+    except MissingConfigSectionException:
+        perun_log.warn("missing set option 'format.sort_profiles_by'!"
+                       " Profiles will be sorted by '{}'\n\n".format(sort_order) +
+                       "Please run 'perun config edit' and set 'format.sort_profiles_by' to one"
+                       " of ({}".format(", ".join(ProfileInfo.valid_attributes)) + ")")
+
+    profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)
 
 
 class ProfileInfo(object):

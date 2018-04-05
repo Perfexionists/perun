@@ -201,34 +201,46 @@ List of Supported Options
         may rewrite existing profiles and is mostly meant to distinguish between profiles during
         one batch run of profile generation (e.g. when ``perun run matrix`` is executed).
 
-.. confkey:: cmds
+.. confkey:: format.sort_profiles_by
+
+    ``[recursive]`` Specifies which key of the profile will be used for sorting the output of the
+    ``perun status`` commands. Can be one of the following attributes specified by the class
+    attribute ``ProfileInfo.valid_attributes``:
+
+.. currentmodule:: perun.profile.factory
+.. autoattribute:: ProfileInfo.valid_attributes
+
+.. confunit:: cmds
 
     ``[local-only]`` Refer to :munit:`cmds`.
 
-.. confkey:: args
+.. confunit:: args
 
     ``[local-only]`` Refer to :munit:`args`.
 
-.. confkey:: workloads
+.. confunit:: workloads
 
     ``[local-only]`` Refer to :munit:`workloads`
 
-.. confkey:: collectors
+.. confunit:: collectors
 
     ``[local-only]`` Refer to :munit:`collectors`
 
-.. confkey:: postprocessors
+.. confunit:: postprocessors
 
     ``[local-only]`` Refer to :munit:`postprocessors`
 
 .. confunit:: degradation
 
-    Section, which contains options and specifications potentially shared by more Perun instances.
-    This section contains e.g. underlying text editor for editing, or paging strategy etc.
+   Speficies the list of strategies and how they are applied when checked for degradation in
+   methods.
 
 .. confkey:: degradation.apply
 
-    ``[recursive]``
+    ``[recursive]`` Specifies which strategies are picked for application, if more than one
+    strategy satisfies the specified constraints. If the key is set to ``first``, then first
+    strategy from the ordered list of :ckey:`degradation.strategies` is applied; otherwise if the
+    key is set to ``all``, then all of the strategies from the ordered list are applied.
 
 .. confkey:: degradation.strategies
 

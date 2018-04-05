@@ -57,6 +57,7 @@ import perun.postprocess
 import perun.profile.factory as profiles
 import perun.utils as utils
 import perun.utils.script_helpers as scripts
+import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
 import perun.vcs as vcs
@@ -652,15 +653,15 @@ def profile_lookup_callback(ctx, _, value):
 
 @cli.command()
 @click.argument('head', required=False, default=None, metavar='<hash>')
-@click.option('--count-only', is_flag=True, default=False,
-              help="Shows only aggregated data without minor version history"
-              " description")
-@click.option('--show-aggregate', is_flag=True, default=False,
-              help="Includes the aggregated values for each minor version.")
-@click.option('--last', default=1, metavar='<int>',
-              help="Limits the output of log to last <int> entries.")
-@click.option('--no-merged', is_flag=True, default=False,
-              help="Skips merges during the iteration of the project history.")
+# @click.option('--count-only', is_flag=True, default=False,
+#               help="Shows only aggregated data without minor version history"
+#               " description")
+# @click.option('--show-aggregate', is_flag=True, default=False,
+#               help="Includes the aggregated values for each minor version.")
+# @click.option('--last', default=1, metavar='<int>',
+#               help="Limits the output of log to last <int> entries.")
+# @click.option('--no-merged', is_flag=True, default=False,
+#               help="Skips merges during the iteration of the project history.")
 @click.option('--short', '-s', is_flag=True, default=False,
               help="Shortens the output of ``log`` to include only most "
               "necessary information.")
@@ -694,7 +695,11 @@ def log(head, **kwargs):
 @cli.command()
 @click.option('--short', '-s', required=False, default=False, is_flag=True,
               help="Shortens the output of ``status`` to include only most"
-              " necessary informations.")
+              " necessary information.")
+@click.option('--sort-by', '-sb', 'format__sort_profiles_by', nargs=1,
+              type=click.Choice(profiles.ProfileInfo.valid_attributes),
+              callback=cli_helpers.process_config_option,
+              help="The stored and pending profiles will be sorted by <key>.")
 def status(**kwargs):
     """Shows the status of vcs, associated profiles and perun.
 

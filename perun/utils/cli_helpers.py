@@ -6,10 +6,25 @@ and returning default values.
 
 import click
 
+import perun.logic.config as config
 import perun.profile.query as query
 import perun.utils.log as log
 
 __author__ = 'Tomas Fiedor'
+
+
+def process_config_option(_, param, value):
+    """Processes the value of the param and stores it in the temporary config
+
+    :param click.Context _: unused click context
+    :param click.Option param: click option, that is being processed
+    :param object value: value we are setting
+    :return: set value
+    """
+    option_name = param.human_readable_name.replace("__", ".")
+    if value:
+        config.runtime().set(option_name, value)
+    return value
 
 
 def process_bokeh_axis_title(ctx, param, value):

@@ -9,6 +9,12 @@ HEAD
   - add two new options to regression analysis module (see :ref:`postprocessors-regression-analysis` for more details)
   - fix minor issues in regression analysis and scatter plot module
   - fix issue with non-deterministic ordering in flattening the values by convert
+  - add different ordering to perun status profiles (now they are ordered by time)
+  - add more boxes to the output of the perun status profiles (bundled per five profiles)
+  - add :ckey:`format.sort_profiles_by` configuration key to allow sorting of profiles in ``perun status`` by different keys
+  - add ``--sort-by`` option to ``perun status`` to allow sorting of profiles in ``perun status``
+  - fix minor things in documentation
+  - add few helper function for CLI and profiles
 
 0.14 (2018-03-27)
 -----------------
