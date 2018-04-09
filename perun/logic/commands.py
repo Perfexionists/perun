@@ -7,7 +7,6 @@ possible to be run in isolation.
 
 import collections
 import inspect
-import operator
 import os
 import re
 
