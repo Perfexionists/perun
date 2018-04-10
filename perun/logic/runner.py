@@ -2,7 +2,10 @@
 
 import os
 
+import distutils.util as dutils
+import perun.logic.config as config
 import perun.logic.store as store
+import perun.logic.commands as commands
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as log
@@ -276,10 +279,9 @@ def run_postprocessor(postprocessor, job, prof):
 def store_generated_profile(pcs, prof, job):
     """Stores the generated profile in the pending jobs directory.
 
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        prof(dict): profile that we are storing in the repository
-        job(Job): job with additional information about generated profiles
+    :param PCS pcs: object with performance control system wrapper
+    :param dict prof: profile that we are storing in the repository
+    :param Job job: job with additional information about generated profiles
     """
     full_profile = profile.finalize_profile_for_job(pcs, prof, job)
     full_profile_name = profile.generate_profile_name(full_profile)
@@ -287,6 +289,8 @@ def store_generated_profile(pcs, prof, job):
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     profile.store_profile_at(full_profile, full_profile_path)
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
+    if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
+        commands.add([full_profile_path], prof['origin'], keep_profile=False)
 
 
 def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params):

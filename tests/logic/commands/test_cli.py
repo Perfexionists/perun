@@ -464,8 +464,7 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
         'complexity'
     ] + rules + samplings)
     del config.runtime().data['format']
-    decorators.func_args_cache['lookup_key_recursively'].pop(
-        tuple(["format.output_profile_template"]), None)
+    decorators.remove_from_function_args_cache("lookup_key_recursively")
     assert result.exit_code == 0
     assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
 
@@ -824,6 +823,15 @@ def test_run(pcs_full, monkeypatch):
     job_dir = pcs_full.get_job_directory()
     job_profiles = os.listdir(job_dir)
     assert len(job_profiles) == 2
+
+    config.runtime().set('profiles.register_after_run', 'true')
+    # Try to store the generated crap not in jobs
+    jobs_before = len(os.listdir(job_dir))
+    result = runner.invoke(cli.matrix, [])
+    jobs_after = len(os.listdir(job_dir))
+    assert result.exit_code == 0
+    assert jobs_before == jobs_after
+    config.runtime().set('profiles.register_after_run', 'false')
 
     script_dir = os.path.split(__file__)[0]
     source_dir = os.path.join(script_dir, 'collect_complexity')

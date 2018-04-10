@@ -322,8 +322,7 @@ def test_status_sort(monkeypatch, helpers, pcs_full, capsys, valid_profile_pool)
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
     helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
-    decorators.func_args_cache['lookup_key_recursively'].pop(
-        tuple(["format.sort_profiles_by"]), None)
+    decorators.remove_from_function_args_cache("lookup_key_recursively")
 
     # Try what happens if we screw the stored profile keys ;)
     cfg = config.Config('shared', '', {
@@ -331,7 +330,7 @@ def test_status_sort(monkeypatch, helpers, pcs_full, capsys, valid_profile_pool)
         'format': {
             'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503'
         }
-        })
+    })
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     commands.status()
 

@@ -78,8 +78,8 @@ class Config(object):
         # Remove the key from the caching
         # ! Note that this is mainly used for the testing, but might be triggered during the future
         # as well.
-        decorators.func_args_cache['lookup_key_recursively'].pop(tuple([key]), None)
-        decorators.func_args_cache['gather_key_recursively'].pop(tuple([key]), None)
+        decorators.remove_from_function_args_cache('lookup_key_recursively')
+        decorators.remove_from_function_args_cache('gather_key_recursively')
 
         *sections, last_section = key.split('.')
         _locate_section_from_query(self.data, sections)[last_section] = value
@@ -402,7 +402,7 @@ def get_hierarchy():
 
 
 @decorators.singleton_with_args
-def lookup_key_recursively(key):
+def lookup_key_recursively(key, default=None):
     """Recursively looks up the key first in the local config and then in the global.
 
     This is used e.g. for formatting strings or editors, where first we have our local configs,
@@ -410,6 +410,7 @@ def lookup_key_recursively(key):
     global config.
 
     :param str key: key we are looking up
+    :param str default: default value, if key is not located in the hierarchy
     """
     # Fixme: this should contain recursive lookup for other instances and also the temporary config
     for config_instance in get_hierarchy():
@@ -417,6 +418,9 @@ def lookup_key_recursively(key):
             return config_instance.get(key)
         except exceptions.MissingConfigSectionException:
             continue
+    # If we have provided default value of the key return this, otherwise we raise an exception
+    if default:
+        return default
     raise exceptions.MissingConfigSectionException
 
 

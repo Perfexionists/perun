@@ -230,6 +230,17 @@ List of Supported Options
 
     ``[local-only]`` Refer to :munit:`postprocessors`
 
+.. confunit:: profiles
+
+   Groups various option specific for profiles, such as strategies for adding or generating
+   profiles:w
+   
+.. confkey:: profiles.register_after_run:
+
+   If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
+   profile (e.g. by running ``perun run matrix``) is automatically registered in the appropriate
+   minor version index.
+
 .. confunit:: degradation
 
    Speficies the list of strategies and how they are applied when checked for degradation in

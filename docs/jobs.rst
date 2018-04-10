@@ -21,7 +21,9 @@ for profile name generation by setting :ckey:`format.output_profile_template`. N
 annotated with the :preg:`origin` set to the current ``HEAD`` of the wrapped repository. `origin`
 serves as a check during registering profiles in the indexes of minor versions. Profile with
 `origin` different from the target minor version will not be assigned, as it would violate the
-correctness of the performance history of the project.
+correctness of the performance history of the project. If you want to automatically register the
+newly generated profile into the corresponding minor version index, then set
+:ckey:`profiles.register_after_run` key to a true value.
 
 .. image:: /../figs/perun-jobs-flow.*
     :align: center

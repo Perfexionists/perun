@@ -20,6 +20,7 @@ HEAD
   - remake walk major version to return MajorVersion object, with head and major version name
   - add helper function for loading the profile out of profile info
   - extend the api of the vcs (with storing/restoring the state, checkout and dirty-testing)
+  - add :ckey:`profiles.register_after_run` configuration key to automatically register profiles after collection
 
 0.14 (2018-03-27)
 -----------------
