@@ -21,6 +21,8 @@ HEAD
   - add helper function for loading the profile out of profile info
   - extend the api of the vcs (with storing/restoring the state, checkout and dirty-testing)
   - add :ckey:`profiles.register_after_run` configuration key to automatically register profiles after collection
+  - add :ckey:`execute.pre_run` config key for running commands before execution of matrix
+  - add helper function for safely getting config key
 
 0.14 (2018-03-27)
 -----------------

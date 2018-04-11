@@ -1,6 +1,7 @@
 """Collection of functions for running collectors and postprocessors"""
 
 import os
+import subprocess
 
 import distutils.util as dutils
 import perun.logic.config as config
@@ -319,6 +320,34 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params)
     return p_status
 
 
+@pass_pcs
+def run_prephase_commands(pcs, phase, phase_colour='white'):
+    """Runs the phase before the actual collection of the methods
+
+    This command first retrieves the phase from the configuration, and runs
+    safely all of the commands specified in the list.
+
+    The phase is specified in :doc:`config` by keys specified in section
+    :cunit:`execute`.
+
+    :param PCS pcs: performance control system
+    :param str phase: name of the phase commands
+    """
+    phase_key = ".".join(["execute", phase]) if not phase.startswith('execute') else phase
+    cmds = pcs.local_config().safe_get(phase_key, [])
+    if cmds:
+        log.cprint("Running '{}' phase\n".format(phase), phase_colour)
+        try:
+            utils.run_safely_list_of_commands(cmds)
+        except subprocess.CalledProcessError as e:
+            error_command = str(e.cmd)
+            error_code = e.returncode
+            error_output = e.output
+            log.error("error in {} phase while running '{}' exited with: {} ({})".format(
+                phase, error_command, error_code, error_output
+            ))
+
+
 def run_jobs(pcs, job_matrix, number_of_jobs):
     """
     Arguments:
@@ -326,6 +355,7 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
         job_matrix(dict): dictionary with jobs that will be run
         number_of_jobs(int): number of jobs that will be run
     """
+    run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
     for job_cmd, workloads_per_cmd in job_matrix.items():
         log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
         for workload, jobs_per_workload in workloads_per_cmd.items():

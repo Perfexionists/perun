@@ -5,6 +5,7 @@ are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 """
 
 import importlib
+import shlex
 import subprocess
 
 from .log import msg_to_stdout, error
@@ -24,6 +25,65 @@ def run_external_command(cmd_args):
     process = subprocess.Popen(cmd_args)
     process.wait()
     return process.returncode
+
+
+def run_safely_external_command(cmd):
+    """Safely runs the piped command, without executing of the shell
+
+    Courtesy of: https://blog.avinetworks.com/tech/python-best-practices
+
+    :param str cmd: string with command that we are executing
+    :return: returned standard output and error
+    :raises subprocess.CalledProcessError: when any of the piped commands fails
+    """
+    # Split
+    unpiped_commands = list(map(str.strip, cmd.split("|")))
+    cmd_no = len(unpiped_commands)
+
+    # Run the command through pipes
+    objects = []
+    for i in range(cmd_no):
+        executed_command = shlex.split(unpiped_commands[i])
+
+        # set streams
+        stdin = None if i == 0 else objects[i-1].stdout
+        stderr = subprocess.STDOUT if i < (cmd_no - 1) else subprocess.PIPE
+
+        # run the piped command and close the previous one
+        piped_command = subprocess.Popen(executed_command, shell=False,
+                                         stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
+        if i != 0:
+            objects[i-1].stdout.close()
+        objects.append(piped_command)
+
+    # communicate with the last piped object
+    cmdout, cmderr = objects[-1].communicate()
+
+    for i in range(len(objects) - 1):
+        objects[i].wait()
+
+    # collect the return codes
+    for i in range(cmd_no):
+        if objects[i].returncode:
+            raise subprocess.CalledProcessError(
+                objects[i].returncode, unpiped_commands[i]
+            )
+
+    return cmdout, cmderr
+
+
+def run_safely_list_of_commands(cmd_list):
+    """Runs safely list of commands
+
+    :param list cmd_list: list of external commands
+    """
+    for cmd in cmd_list:
+        print(">", cmd)
+        out, err = run_safely_external_command(cmd)
+        if out:
+            print(out.decode('utf-8'))
+        if err:
+            log.cprint(err.decode('utf-8'), 'red')
 
 
 def get_stdout_from_external_command(command):

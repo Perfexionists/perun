@@ -132,6 +132,10 @@ Note that each phase should return the following tripple: (``status code``, ``st
 ``kwargs``). The ``status code`` is used for checking the success of the called phases and in case
 of error prints the ``status message``.
 
+Before this overall process, one can run a custom set of commands by stating the key
+:ckey:`execute.pre_run` key. This is mostly meant for compiling of new version or preparing other
+necessary requirements before actual collection.
+
 .. image:: /../figs/lifetime-of-profile.*
    :width: 70%
    :align: center

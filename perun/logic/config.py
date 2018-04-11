@@ -104,6 +104,18 @@ class Config(object):
         if self.path:
             write_config_to(self.path, self.data)
 
+    def safe_get(self, key, default):
+        """Safely returns the value of the key; i.e. in case it is missing default is used
+
+        :param str key: key we are looking up
+        :param object default: default value of the key, which is used if we did not find the value
+        :return: value of the key in the config or default
+        """
+        try:
+            return self.get(key)
+        except exceptions.MissingConfigSectionException:
+            return default
+
     @decorators.validate_arguments(['key'], is_valid_key)
     def get(self, key):
         """Returns the value of the key stored in the config.
