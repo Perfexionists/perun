@@ -329,7 +329,7 @@ def test_status_sort(monkeypatch, helpers, pcs_full, capsys, valid_profile_pool)
     cfg = config.Config('shared', '', {
         'general': {'paging': 'never'},
         'format': {
-            'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %origin% \u2503'
+            'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503'
         }
         })
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
@@ -341,7 +341,7 @@ def test_status_sort(monkeypatch, helpers, pcs_full, capsys, valid_profile_pool)
     cfg = config.Config('shared', '', {
         'general': {'paging': 'never'},
         'format': {
-            'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %origin% \u2503',
+            'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503',
             'sort_profiles_by': 'bogus'
         }
     })

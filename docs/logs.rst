@@ -76,8 +76,8 @@ The specification of the formatting string can contain the following special tag
 ``%time%``:
     Timestamp when the profile was last modified in format `YEAR-MONTH-DAY HOURS:MINUTES:SECONDS`.
 
-``%id%``:
-    Original identification of the profile. This corresponds to the name of the generated profile
+``%source%``:
+    Original source of the profile. This corresponds to the name of the generated profile
     and the original path.
 
 By default the profiles are sorted according to the timestamp. The sort order can be modified by

@@ -92,7 +92,7 @@ def walk_major_versions(vcs_type, vcs_path):
 
     :param str vcs_type: type of the underlying wrapped version control system
     :param str vcs_path: source path of the wrapped vcs
-    :returns: interable stream of major version representation
+    :returns: iterable stream of major version representation
     """
     perun_log.msg_to_stdout("Walking major versions of type {}".format(
         vcs_type

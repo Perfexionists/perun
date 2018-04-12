@@ -438,7 +438,8 @@ class ProfileInfo(object):
         # Load the data from JSON, which contains additional information about profile
         loaded_profile = load_profile_from_file(real_path, is_raw_profile)
 
-        self.origin = path
+        self._is_raw_profile = is_raw_profile
+        self.source = path
         self.realpath = os.path.relpath(real_path, os.getcwd())
         self.type = loaded_profile['header']['type']
         self.time = mtime
@@ -455,6 +456,16 @@ class ProfileInfo(object):
             ",".join(self.postprocessors)
         )
 
+    def load(self):
+        """Loads the profile from given file
+
+        This is basically a wrapper that loads the profile, whether it is raw (i.e. in pending)
+        or not raw and stored in index
+
+        :return: loaded profile in dictionary format, w.r.t :ref:`profile-spec`
+        """
+        return load_profile_from_file(self.realpath, self._is_raw_profile)
+
     valid_attributes = [
-        "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "origin"
+        "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "source"
     ]

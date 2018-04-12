@@ -188,7 +188,7 @@ def config(ctx, **kwargs):
 
     .. code-block:: bash
 
-        $ perun config get vsc.type
+        $ perun config get vcs.type
         vcs.type: git
     """
     ctx.obj = kwargs
@@ -217,7 +217,7 @@ def config_get(ctx, key):
 
     .. code-block:: bash
 
-        $ perun config get vsc.type
+        $ perun config get vcs.type
         vcs.type: git
 
         $ perun config --shared get general.editor
@@ -256,8 +256,8 @@ def config_set(ctx, key, value):
 
     .. code-block:: bash
 
-        $ perun config set format.shortlog "| %origin% | %collector% |"
-        format.shortlog: | %origin% | %collector% |
+        $ perun config set format.shortlog "| %source% | %collector% |"
+        format.shortlog: | %source% | %collector% |
     """
     commands.config_set(ctx.obj['store_type'], key, value)
 

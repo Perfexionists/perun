@@ -15,6 +15,10 @@ HEAD
   - add ``--sort-by`` option to ``perun status`` to allow sorting of profiles in ``perun status``
   - fix minor things in documentation
   - add few helper function for CLI and profiles
+  - rename origin in ProfileInfo to source (class of names)
+  - fix typos in documentation
+  - remake walk major version to return MajorVersion object, with head and major version name
+  - add helper function for loading the profile out of profile info
 
 0.14 (2018-03-27)
 -----------------

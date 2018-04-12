@@ -212,7 +212,7 @@ The command will first check if there is not existing pcs and otherwise
 creates a new ``.perun`` directory initialized with bare structure.
 
 If the user wants to wrap the perun over existing vcs, the parameter ``--type=VCS``
-has to be given. The command first checks if there exists the vsc of
+has to be given. The command first checks if there exists the vcs of
 given type, then inits the perun the same way as bare init and
 moreover install hooks for the given type of VCS.
 

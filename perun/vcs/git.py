@@ -12,7 +12,7 @@ import git.exc
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps
 from perun.utils.exceptions import VersionControlSystemException
-from perun.utils.helpers import MinorVersion
+from perun.utils.helpers import MinorVersion, MajorVersion
 
 __author__ = "Tomas Fiedor"
 
@@ -41,7 +41,10 @@ def create_repo_from_path(func):
     """
     def wrapper(repo_path, *args, **kwargs):
         """Wrapper function for the decorator"""
-        return func(git.Repo(repo_path), *args, **kwargs)
+        if isinstance(repo_path, git.Repo):
+            return func(repo_path, *args, **kwargs)
+        else:
+            return func(git.Repo(repo_path), *args, **kwargs)
     return wrapper
 
 
@@ -109,13 +112,12 @@ def _walk_minor_versions(git_repo, head):
 @create_repo_from_path
 def _walk_major_versions(git_repo):
     """
-    Arguments:
-        git_repo(git.Repo): wrapped git repository object
-    Returns:
-        MajorVersion: yields stream of major versions
+    :param git.Repo git_repo: wrapped git repository object
+    :returns MajorVersion: yields stream of major versions
+    :raises VersionControlSystemException: when the master head cannot be massaged
     """
-    for branch in git_repo.branches():
-        yield str(branch)
+    for branch in git_repo.branches:
+        yield MajorVersion(branch.name, _massage_parameter(git_repo, branch.name))
 
 
 def _parse_commit(commit):
