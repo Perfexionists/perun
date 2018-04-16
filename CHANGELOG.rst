@@ -19,6 +19,7 @@ HEAD
   - fix typos in documentation
   - remake walk major version to return MajorVersion object, with head and major version name
   - add helper function for loading the profile out of profile info
+  - extend the api of the vcs (with storing/restoring the state, checkout and dirty-testing)
 
 0.14 (2018-03-27)
 -----------------
