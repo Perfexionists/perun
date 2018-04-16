@@ -230,3 +230,37 @@ def _massage_parameter(git_repo, parameter, parameter_type=None):
         raise VersionControlSystemException("parameter '{}' represents invalid reflog: {}".format(
             parameter, str(ie_exception)
         ))
+
+
+@create_repo_from_path
+def _is_dirty(git_repo):
+    """Returns true, if the repository is dirty, i.e. there are some uncommited changes either in
+    index or working dir.
+
+    :param git.Repo git_repo: wrapped git repository
+    :return: true if the repo is dirty, i.e. there are some changes
+    """
+    return git_repo.is_dirty()
+
+
+@create_repo_from_path
+def _save_state(git_repo):
+    """
+
+    :param git.Repo git_repo:
+    """
+    git_repo.git.stash('save')
+
+
+@create_repo_from_path
+def _restore_state(git_repo):
+    """
+
+    :param git_repo:
+    """
+    git_repo.git.stash('pop')
+
+
+@create_repo_from_path
+def _checkout(git_repo, minor_version):
+    git_repo.git.checkout(minor_version)
