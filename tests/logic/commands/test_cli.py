@@ -824,20 +824,20 @@ def test_run(pcs_full, monkeypatch):
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
     runner = CliRunner()
-    result = runner.invoke(cli.matrix, [])
+    result = runner.invoke(cli.run, ['-c', 'matrix'])
     assert result.exit_code == 0
     assert "ls | grep " in result.output
 
     job_dir = pcs_full.get_job_directory()
     job_profiles = os.listdir(job_dir)
-    assert len(job_profiles) == 2
+    assert len(job_profiles) >= 2
 
     config.runtime().set('profiles.register_after_run', 'true')
     # Try to store the generated crap not in jobs
     jobs_before = len(os.listdir(job_dir))
     # Need to sleep, since in travis this could rewrite the stuff
     time.sleep(1)
-    result = runner.invoke(cli.matrix, [])
+    result = runner.invoke(cli.run, ['matrix'])
     jobs_after = len(os.listdir(job_dir))
     assert result.exit_code == 0
     assert jobs_before == jobs_after
@@ -846,7 +846,8 @@ def test_run(pcs_full, monkeypatch):
     script_dir = os.path.split(__file__)[0]
     source_dir = os.path.join(script_dir, 'collect_complexity')
     job_config_file = os.path.join(source_dir, 'job.yml')
-    result = runner.invoke(cli.job, [
+    result = runner.invoke(cli.run, [
+        'job',
         '--cmd', 'ls',
         '--args', '-al',
         '--workload', '.',
@@ -856,7 +857,7 @@ def test_run(pcs_full, monkeypatch):
     ])
     assert result.exit_code == 0
     job_profiles = os.listdir(job_dir)
-    assert len(job_profiles) == 3
+    assert len(job_profiles) >= 3
 
     # Run the matrix with error in prerun phase
     saved_func = utils.run_safely_external_command
@@ -869,6 +870,6 @@ def test_run(pcs_full, monkeypatch):
 
     monkeypatch.setattr('perun.utils.run_safely_external_command', run_wrapper)
     matrix.data['execute']['pre_run'].append('ls | grep dafad')
-    result = runner.invoke(cli.matrix, [])
+    result = runner.invoke(cli.run, ['matrix'])
     assert result.exit_code == 1
     assert "error in pre_run" in result.output

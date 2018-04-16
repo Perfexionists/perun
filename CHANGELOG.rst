@@ -23,6 +23,9 @@ HEAD
   - add :ckey:`profiles.register_after_run` configuration key to automatically register profiles after collection
   - add :ckey:`execute.pre_run` config key for running commands before execution of matrix
   - add helper function for safely getting config key
+  - add ``--minor-version`` parameter to ``perun collect`` and ``perun run`` to run the collection over different minor version
+  - add ``--crawl-parents`` parameter to allow ``perun collect`` and ``perun run`` to collect the data for both minor version and its predecessors
+  - add checking out of the minor version, and saving the state, to collection of profiles
 
 0.14 (2018-03-27)
 -----------------

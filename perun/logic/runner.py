@@ -4,6 +4,8 @@ import os
 import subprocess
 
 import distutils.util as dutils
+import perun.vcs as vcs
+import perun.check as check
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.logic.commands as commands
@@ -232,8 +234,9 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
     """
     try:
         cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
+        minor_versions = ctx.obj['minor_version_list']
         collector_params.update(ctx.obj['params'])
-        run_single_job(cmd, args, workload, [collector_name], [], **{
+        run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **{
             'collector_params': {collector_name: collector_params}
         })
     except KeyError as collector_exception:
@@ -348,14 +351,16 @@ def run_prephase_commands(pcs, phase, phase_colour='white'):
             ))
 
 
-def run_jobs(pcs, job_matrix, number_of_jobs):
+def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
+    """Runs the batch of jobs on current state of the VCS.
+
+    This function expects no changes not commited in the repo, it excepts correct version
+    checked out and just runs the matrix.
+
+    :param PCS pcs: object with performance control system wrapper
+    :param dict job_matrix: dictionary with jobs that will be run
+    :param int number_of_jobs: number of jobs that will be run
     """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        job_matrix(dict): dictionary with jobs that will be run
-        number_of_jobs(int): number of jobs that will be run
-    """
-    run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
     for job_cmd, workloads_per_cmd in job_matrix.items():
         log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
         for workload, jobs_per_workload in workloads_per_cmd.items():
@@ -383,28 +388,43 @@ def run_jobs(pcs, job_matrix, number_of_jobs):
                 store_generated_profile(pcs, prof, job)
 
 
-@pass_pcs
-def run_single_job(pcs, cmd, args, workload, collector, postprocessor, **kwargs):
+def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
     """
     Arguments:
-        pcs(PCS): object with performance control system wrapper
-        cmd(str): cmdary that will be run
-        args(str): lists of additional arguments to the job
-        workload(list): list of workloads
-        collector(list): list of collectors
-        postprocessor(list): list of postprocessors
-        kwargs(dict): dictionary of additional params for postprocessor and collector
+    :param PCS pcs: object with performance control system wrapper
+    :param list minor_version_list: list of MinorVersion info
+    :param dict job_matrix: dictionary with jobs that will be run
+    :param int number_of_jobs: number of jobs that will be run
+    """
+    with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
+        for minor_version in minor_version_list:
+            check.print_minor_version(minor_version)
+            vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
+            run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
+            run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
+
+@pass_pcs
+def run_single_job(pcs, cmd, args, workload, collector, postprocessor, minor_version_list, **kwargs):
+    """
+    :param PCS pcs: object with performance control system wrapper
+    :param str cmd: cmdary that will be run
+    :param str args: lists of additional arguments to the job
+    :param list workload: list of workloads
+    :param list collector: list of collectors
+    :param list postprocessor: list of postprocessors
+    :param list minor_version_list: list of MinorVersion info
+    :param dict kwargs: dictionary of additional params for postprocessor and collector
     """
     job_matrix, number_of_jobs = \
         construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
-    run_jobs(pcs, job_matrix, number_of_jobs)
+    run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs)
 
 
 @pass_pcs
-def run_matrix_job(pcs):
+def run_matrix_job(pcs, minor_version_list):
     """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
+    :param PCS pcs: object with performance control system wrapper
+    :param list minor_version_list: list of MinorVersion info
     """
     job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config(pcs))
-    run_jobs(pcs, job_matrix, number_of_jobs)
+    run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs)
