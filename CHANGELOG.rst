@@ -26,6 +26,7 @@ HEAD
   - add ``--minor-version`` parameter to ``perun collect`` and ``perun run`` to run the collection over different minor version
   - add ``--crawl-parents`` parameter to allow ``perun collect`` and ``perun run`` to collect the data for both minor version and its predecessors
   - add checking out of the minor version, and saving the state, to collection of profiles
+  - add :ckey:`degradation.collect_before_check` configuration key for automatically collect profiles before running degradation check
 
 0.14 (2018-03-27)
 -----------------

@@ -5,7 +5,6 @@ import subprocess
 
 import distutils.util as dutils
 import perun.vcs as vcs
-import perun.check as check
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.logic.commands as commands
@@ -398,10 +397,11 @@ def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
     """
     with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
         for minor_version in minor_version_list:
-            check.print_minor_version(minor_version)
+            log.print_minor_version(minor_version)
             vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
             run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
             run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
+
 
 @pass_pcs
 def run_single_job(pcs, cmd, args, workload, collector, postprocessor, minor_version_list, **kwargs):

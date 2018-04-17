@@ -3,12 +3,49 @@
 import os
 import git
 
+import perun.logic.config as config
 import perun.profile.factory as factory
 import perun.check as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
 
 __author__ = 'Tomas Fiedor'
+
+
+def test_degradation_precollect(monkeypatch, pcs_full, capsys):
+    """Set of basic tests for testing degradation in concrete minor version point
+
+    Expects correct behaviour
+    """
+    matrix = config.Config('local', '', {
+        'vcs': {'type': 'git', 'url': '../'},
+        'cmds': ['ls'],
+        'args': ['-al'],
+        'workloads': ['.', '..'],
+        'collectors': [
+            {'name': 'time', 'params': {}}
+        ],
+        'postprocessors': [],
+        'execute': {
+            'pre_run': [
+                'ls | grep "."',
+            ]
+        },
+        'degradation': {
+            'collect_before_check': 'true',
+            'apply': 'first',
+            'strategies': [{
+                'method': 'aat'
+            }]
+        }
+    })
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+    git_repo = git.Repo(pcs_full.vcs_path)
+    head = str(git_repo.head.commit)
+
+    check.degradation_in_minor(head)
+    out, err = capsys.readouterr()
+    assert err == ""
 
 
 def test_degradation_in_minor(pcs_with_degradations, capsys):

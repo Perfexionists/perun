@@ -272,6 +272,11 @@ List of Supported Options
    Speficies the list of strategies and how they are applied when checked for degradation in
    methods.
 
+.. confkey:: degradation.collect_before_check
+
+    ``[recursive]`` If set to true, then before checking profiles of two minor versions, we run the
+    collection for job matrix to collect fresh or unexisting profiles.
+
 .. confkey:: degradation.apply
 
     ``[recursive]`` Specifies which strategies are picked for application, if more than one

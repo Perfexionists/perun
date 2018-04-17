@@ -1,14 +1,17 @@
 import os
 
+import distutils.util as dutils
 from enum import Enum
 
 import perun.utils.exceptions as exceptions
 import perun.profile.factory as profiles
 import perun.utils.log as log
+import perun.logic.runner as runner
 import perun.logic.commands as commands
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.utils as utils
+import perun.utils.decorators as decorators
 import perun.vcs as vcs
 
 from perun.logic.pcs import PCS
@@ -52,24 +55,6 @@ def profiles_to_queue(pcs, minor_version):
     return {
         profile.config_tuple: profile for profile in minor_version_profiles
     }
-
-
-def print_minor_version(minor_version):
-    """Helper function for printing minor version to the degradation output
-
-    Currently printed in form of:
-
-    * sha[:6]: desc
-
-    :param MinorVersion minor_version: informations about minor version
-    """
-    print("* ", end='')
-    log.cprint("{}".format(
-        minor_version.checksum[:6]
-    ), 'yellow', attrs=[])
-    print(": {}".format(
-        minor_version.desc.split("\n")[0].strip()
-    ))
 
 
 def print_configuration(configuration):
@@ -174,6 +159,28 @@ def process_profile_pair(baseline_profile, target_profile, profile_config, left_
         print(' detected')
 
 
+@decorators.static_variables(minor_version_cache=set())
+def pre_collect_profiles(minor_version):
+    """For given minor version, collects performance profiles according to the job matrix
+
+    This is applied if the profiles were not already collected by this function for the given minor,
+    and if the key :ckey:`degradation.collect_before_check` is set to true value.
+
+    TODO: What if error happens during run matrix? This should be caught and solved
+
+    :param MinorVersion minor_version: minor version for which we are collecting the data
+    """
+    should_precollect = dutils.strtobool(str(
+        config.lookup_key_recursively('degradation.collect_before_check', 'false')
+    ))
+    if should_precollect and minor_version.checksum not in pre_collect_profiles.minor_version_cache:
+        # Set the registering after run to true for this run
+        config.runtime().set('profiles.register_after_run', 'true')
+        # Actually collect the resources
+        runner.run_matrix_job([minor_version])
+        pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
+
+
 def degradation_in_minor(minor_version):
     """Checks for degradation according to the profiles stored for the given minor version.
 
@@ -181,10 +188,11 @@ def degradation_in_minor(minor_version):
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
-    target_profile_queue = profiles_to_queue(pcs, minor_version)
     minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
     baseline_version_queue = minor_version_info.parents
-    print_minor_version(minor_version_info)
+    log.print_minor_version(minor_version_info)
+    pre_collect_profiles(minor_version_info)
+    target_profile_queue = profiles_to_queue(pcs, minor_version)
     while target_profile_queue and baseline_version_queue:
         # Pop the nearest baseline
         baseline = baseline_version_queue.pop(0)
@@ -193,11 +201,14 @@ def degradation_in_minor(minor_version):
         baseline_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, baseline)
         baseline_version_queue.extend(baseline_info.parents)
 
+        # Precollect profiles if this is set
+        pre_collect_profiles(baseline_info)
+
         # Print header if there is at least some profile to check against
         baseline_profiles = profiles_to_queue(pcs, baseline)
         if baseline_profiles:
             print("|\\\n| ", end='')
-            print_minor_version(baseline_info)
+            log.print_minor_version(baseline_info)
 
         # Iterate through the profiles and check degradation between those of same configuration
         for baseline_config, baseline_profile in baseline_profiles.items():
