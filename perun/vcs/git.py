@@ -245,22 +245,48 @@ def _is_dirty(git_repo):
 
 @create_repo_from_path
 def _save_state(git_repo):
-    """
+    """Saves stashed changes and previous head
 
-    :param git.Repo git_repo:
+    This returns either the real detached head commit, or the previous reference. This is to ensure
+    that we are kept at the head branch and not at detached head state.
+
+    :param git.Repo git_repo: git repository
+    :returns: (bool, str) the tuple of indication that some changes were stashed and the state of
+        previous head.
     """
-    git_repo.git.stash('save')
+    saved_stashed_changes = False
+    if _is_dirty(git_repo):
+        git_repo.git.stash('save')
+        saved_stashed_changes = True
+
+    # If we are in state of detached head, we return the commit, otherwise we return the ref
+    if git_repo.head.is_detached:
+        return saved_stashed_changes, str(git_repo.head.commit)
+    else:
+        return saved_stashed_changes, str(git_repo.head.ref)
 
 
 @create_repo_from_path
-def _restore_state(git_repo):
-    """
+def _restore_state(git_repo, has_saved_stashed_changes, previous_state):
+    """Restores the previous state of the repository by restoring the stashed changes and checking
+    out the previous head.
 
-    :param git_repo:
+    Warning! This should be used in pair with save state!
+
+    :param git.Repo git_repo: git repository
+    :param bool has_saved_stashed_changes: if true, then we have stashed some changes
+    :param str previous_state: previous head of the repo
     """
-    git_repo.git.stash('pop')
+    _checkout(git_repo, previous_state)
+    if has_saved_stashed_changes:
+        git_repo.git.stash('pop')
 
 
 @create_repo_from_path
 def _checkout(git_repo, minor_version):
+    """
+
+    :param git.Repo git_repo: git repository
+    :param str minor_version: newly checkout state
+    """
     git_repo.git.checkout(minor_version)

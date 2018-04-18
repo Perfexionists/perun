@@ -65,4 +65,9 @@ def test_saved_states(pcs_full):
     # Test that the head was not changed and kept unchanged by CleanState
     assert vcs.get_minor_head(vcs_type, vcs_path) == head
     # Assert that save state is not used if the dir is not dirty:w
-    assert not vcs.is_dirty(vcs_type, vcs_path) and not vcs.save_state(vcs_type, vcs_path)
+    assert not vcs.is_dirty(vcs_type, vcs_path) and not vcs.save_state(vcs_type, vcs_path)[0]
+
+    # Test saving detached head state
+    vcs.checkout(vcs_type, vcs_path, minor_versions[1])
+    saved, _ = vcs.save_state(vcs_type, vcs_path)
+    assert not saved

@@ -230,8 +230,7 @@ class CleanState:
         We save the uncommited/unsaved changes (e.g. to stash) and also we remeber the previous
         head, which will be restored at the end.
         """
-        self.last_head = get_minor_head(self.type, self.path)
-        self.saved_state = save_state(self.type, self.path)
+        self.saved_state, self.last_head = save_state(self.type, self.path)
 
     def __exit__(self, *_):
         """When exiting, restores the state of the repository
@@ -240,10 +239,7 @@ class CleanState:
 
         :param _: not used params of exit handler
         """
-        if self.last_head != get_minor_head(self.type, self.path):
-            checkout(self.type, self.path, self.last_head)
-        if self.saved_state:
-            restore_state(self.type, self.path)
+        restore_state(self.type, self.path, self.saved_state, self.last_head)
 
 
 def save_state(vcs_type, vcs_path):
@@ -257,17 +253,13 @@ def save_state(vcs_type, vcs_path):
     :param str vcs_path: source path of the wrapped vcs
     :return:
     """
-    if is_dirty(vcs_type, vcs_path):
-        # Todo: Check the vcs.fail_when_dirty and log error in the case
-        # Actually save the state
-        dynamic_module_function_call(
-            'perun.vcs', vcs_type, '_save_state', vcs_path
-        )
-        return True
-    return False
+    # Todo: Check the vcs.fail_when_dirty and log error in the case
+    return dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_save_state', vcs_path
+    )
 
 
-def restore_state(vcs_type, vcs_path):
+def restore_state(vcs_type, vcs_path, saved, state):
     """Restores the previous state of the the repository
 
     When restoring the state of the repository one should pop the stored changes from the stash
@@ -276,10 +268,11 @@ def restore_state(vcs_type, vcs_path):
 
     :param str vcs_type: type of the underlying wrapped version control system
     :param str vcs_path: source path of the wrapped vcs
-    :return:
+    :param bool saved: whether the stashed was something
+    :param str state: the previous state of the repository
     """
     dynamic_module_function_call(
-        'perun.vcs', vcs_type, '_restore_state', vcs_path
+        'perun.vcs', vcs_type, '_restore_state', vcs_path, saved, state
     )
 
 
