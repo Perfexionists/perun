@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Automating Runs &#8212; Perun 0.14 documentation</title>
+    <title>Automating Runs &#8212; Perun 0.14.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14',
+        VERSION:     '0.14.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -60,7 +60,9 @@ for profile name generation by setting <a class="reference internal" href="confi
 annotated with the <a class="reference internal" href="profile.html#perfreg-origin"><code class="xref std std-preg docutils literal"><span class="pre">origin</span></code></a> set to the current <code class="docutils literal"><span class="pre">HEAD</span></code> of the wrapped repository. <cite>origin</cite>
 serves as a check during registering profiles in the indexes of minor versions. Profile with
 <cite>origin</cite> different from the target minor version will not be assigned, as it would violate the
-correctness of the performance history of the project.</p>
+correctness of the performance history of the project. If you want to automatically register the
+newly generated profile into the corresponding minor version index, then set
+<code class="xref std std-ckey docutils literal"><span class="pre">profiles.register_after_run</span></code> key to a true value.</p>
 <a class="reference internal image-reference" href="_images/perun-jobs-flow.svg"><div align="center" class="align-center"><img alt="_images/perun-jobs-flow.svg" src="_images/perun-jobs-flow.svg" width="100%" /></div>
 </a>
 <p>The figure above show the overview of the jobs flow in Perun. The runner module is initialized form
@@ -258,6 +260,9 @@ profile w.r.t. <a class="reference internal" href="profile.html#profile-spec"><s
 <p>Note that each phase should return the following tripple: (<code class="docutils literal"><span class="pre">status</span> <span class="pre">code</span></code>, <code class="docutils literal"><span class="pre">status</span> <span class="pre">message</span></code>,
 <code class="docutils literal"><span class="pre">kwargs</span></code>). The <code class="docutils literal"><span class="pre">status</span> <span class="pre">code</span></code> is used for checking the success of the called phases and in case
 of error prints the <code class="docutils literal"><span class="pre">status</span> <span class="pre">message</span></code>.</p>
+<p>Before this overall process, one can run a custom set of commands by stating the key
+<a class="reference internal" href="config.html#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal"><span class="pre">execute.pre_run</span></code></a> key. This is mostly meant for compiling of new version or preparing other
+necessary requirements before actual collection.</p>
 <a class="reference internal image-reference" href="_images/lifetime-of-profile.svg"><div align="center" class="align-center"><img alt="_images/lifetime-of-profile.svg" src="_images/lifetime-of-profile.svg" width="70%" /></div>
 </a>
 <p>For specification and details about collectors, postprocessors and internal storage of Perun refer

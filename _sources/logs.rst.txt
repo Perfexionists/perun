@@ -76,9 +76,14 @@ The specification of the formatting string can contain the following special tag
 ``%time%``:
     Timestamp when the profile was last modified in format `YEAR-MONTH-DAY HOURS:MINUTES:SECONDS`.
 
-``%id%``:
-    Original identification of the profile. This corresponds to the name of the generated profile
+``%source%``:
+    Original source of the profile. This corresponds to the name of the generated profile
     and the original path.
+
+By default the profiles are sorted according to the timestamp. The sort order can be modified by
+setting either the :ckey:`format.sort_profiles_by` or the :doc:`cli` option ``--sort-by`` to a
+valid profile information attribute. Setting the command line option ``--sort-by`` has higher
+priority than the key set in the :ckey:`format.sort_profiles_by`.
 
 .. _logs-log:
 
@@ -86,7 +91,7 @@ Customizing Logs
 ----------------
 
 The output of ``perun log --short`` is defined w.r.t. formatting string specified in configuration
-in :ckey:`format.log` key (looked up recursively in the nearest local
+in :ckey:`format.shortlog` key (looked up recursively in the nearest local
 configuration, or in global configuration). The formatting string can contain both raw characters
 (such as delimiters, etc.) and special tags, which serves as templates to output information for
 concrete minor version such as minor version description, number of assigned profiles, etc.

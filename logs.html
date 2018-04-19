@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Customize Logs and Statuses &#8212; Perun 0.14 documentation</title>
+    <title>Customize Logs and Statuses &#8212; Perun 0.14.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14',
+        VERSION:     '0.14.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -103,15 +103,19 @@ jobs and command workloads.</dd>
 list of supported collectors and more information about collection of profiles.</dd>
 <dt><code class="docutils literal"><span class="pre">%time%</span></code>:</dt>
 <dd>Timestamp when the profile was last modified in format <cite>YEAR-MONTH-DAY HOURS:MINUTES:SECONDS</cite>.</dd>
-<dt><code class="docutils literal"><span class="pre">%id%</span></code>:</dt>
-<dd>Original identification of the profile. This corresponds to the name of the generated profile
+<dt><code class="docutils literal"><span class="pre">%source%</span></code>:</dt>
+<dd>Original source of the profile. This corresponds to the name of the generated profile
 and the original path.</dd>
 </dl>
+<p>By default the profiles are sorted according to the timestamp. The sort order can be modified by
+setting either the <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a> or the <a class="reference internal" href="cli.html"><span class="doc">Command Line Interface</span></a> option <code class="docutils literal"><span class="pre">--sort-by</span></code> to a
+valid profile information attribute. Setting the command line option <code class="docutils literal"><span class="pre">--sort-by</span></code> has higher
+priority than the key set in the <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
 </div>
 <div class="section" id="customizing-logs">
 <span id="logs-log"></span><h2>Customizing Logs<a class="headerlink" href="#customizing-logs" title="Permalink to this headline">¶</a></h2>
 <p>The output of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span> <span class="pre">--short</span></code> is defined w.r.t. formatting string specified in configuration
-in <a class="reference internal" href="config.html#confkey-format.log"><code class="xref std std-ckey docutils literal"><span class="pre">format.log</span></code></a> key (looked up recursively in the nearest local
+in <a class="reference internal" href="config.html#confkey-format.shortlog"><code class="xref std std-ckey docutils literal"><span class="pre">format.shortlog</span></code></a> key (looked up recursively in the nearest local
 configuration, or in global configuration). The formatting string can contain both raw characters
 (such as delimiters, etc.) and special tags, which serves as templates to output information for
 concrete minor version such as minor version description, number of assigned profiles, etc.</p>

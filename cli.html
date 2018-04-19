@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.14 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.14.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14',
+        VERSION:     '0.14.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -288,7 +288,7 @@ config mode.</p>
 <a class="reference internal" href="config.html#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
 <p>E.g. using the following one can retrieve the type of the nearest perun
 instance wrapper:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vsc.type
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vcs.type
 vcs.type: git
 </pre></div>
 </div>
@@ -349,7 +349,7 @@ default, perun operates in the nearest config mode.</p>
 <a class="reference internal" href="config.html#config-types"><span class="std std-ref">Configuration types</span></a> for full list of configuration options.</p>
 <p>E.g. using the following can retrieve the type of the nearest perun
 wrapper:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vsc.type
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config get vcs.type
 vcs.type: git
 
 $ perun config --shared get general.editor
@@ -384,8 +384,8 @@ operate in the nearest config mode.</p>
 values.</p>
 <p>E.g. using the following can set the log format for nearest perun instance
 wrapper:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config <span class="nb">set</span> format.shortlog <span class="s2">&quot;| %origin% | %collector% |&quot;</span>
-format.shortlog: <span class="p">|</span> %origin% <span class="p">|</span> %collector% <span class="p">|</span>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun config <span class="nb">set</span> format.shortlog <span class="s2">&quot;| %source% | %collector% |&quot;</span>
+format.shortlog: <span class="p">|</span> %source% <span class="p">|</span> %collector% <span class="p">|</span>
 </pre></div>
 </div>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>perun config <span class="nb">set</span> <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;key&gt; &lt;value&gt;
@@ -556,7 +556,13 @@ configuration.</p>
 <dl class="option">
 <dt id="cmdoption-perun-status-s">
 <code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--short</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-status-s" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shortens the output of <code class="docutils literal"><span class="pre">status</span></code> to include only most necessary informations.</p>
+<dd><p>Shortens the output of <code class="docutils literal"><span class="pre">status</span></code> to include only most necessary information.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-status-sb">
+<code class="descname">-sb</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--sort-by</code><code class="descclassname"> &lt;format__sort_profiles_by&gt;</code><a class="headerlink" href="#cmdoption-perun-status-sb" title="Permalink to this definition">¶</a></dt>
+<dd><p>The stored and pending profiles will be sorted by &lt;key&gt;.</p>
 </dd></dl>
 
 </div>
@@ -574,36 +580,12 @@ outputted.</p>
 <code class="xref std std-ckey docutils literal"><span class="pre">paging</span></code> option is set, the outputs of log will be paged (by
 default using <code class="docutils literal"><span class="pre">less</span></code>.</p>
 <p>Refer to <a class="reference internal" href="logs.html#logs-log"><span class="std std-ref">Customizing Logs</span></a> for information how to customize the outputs of
-<code class="docutils literal"><span class="pre">log</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.log"><code class="xref std std-ckey docutils literal"><span class="pre">format.log</span></code></a> in nearest
+<code class="docutils literal"><span class="pre">log</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.shortlog"><code class="xref std std-ckey docutils literal"><span class="pre">format.shortlog</span></code></a> in nearest
 configuration.</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>perun log <span class="o">[</span>OPTIONS<span class="o">]</span> &lt;hash&gt;
 </pre></div>
 </div>
 <p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-log-count-only">
-<code class="descname">--count-only</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-count-only" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shows only aggregated data without minor version history description</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-log-show-aggregate">
-<code class="descname">--show-aggregate</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-show-aggregate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Includes the aggregated values for each minor version.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-log-last">
-<code class="descname">--last</code><code class="descclassname"> &lt;last&gt;</code><a class="headerlink" href="#cmdoption-perun-log-last" title="Permalink to this definition">¶</a></dt>
-<dd><p>Limits the output of log to last &lt;int&gt; entries.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-log-no-merged">
-<code class="descname">--no-merged</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-no-merged" title="Permalink to this definition">¶</a></dt>
-<dd><p>Skips merges during the iteration of the project history.</p>
-</dd></dl>
-
 <dl class="option">
 <dt id="cmdoption-perun-log-s">
 <code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--short</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-log-s" title="Permalink to this definition">¶</a></dt>
@@ -631,6 +613,18 @@ user construct the job run using the set of parameters.</p>
 <dt id="cmdoption-perun-run-ot">
 <code class="descname">-ot</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--output-filename-template</code><code class="descclassname"> &lt;output_filename_template&gt;</code><a class="headerlink" href="#cmdoption-perun-run-ot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specifies the template for automatic generation of output filename This way the file with collected data will have a resulting filename w.r.t  to this parameter. Refer to <a class="reference internal" href="config.html#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal"><span class="pre">format.output_profile_template</span></code></a> for more details about the format of the template.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor-version</code><code class="descclassname"> &lt;minor_version_list&gt;</code><a class="headerlink" href="#cmdoption-perun-run-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the head minor version, for which the profiles will be collected.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crawl-parents</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-run-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to true, then for each specified minor versions, profiles for parents will be collected as well</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
@@ -946,8 +940,20 @@ more complex configuration consult either <code class="docutils literal"><span c
 </div>
 <p class="rubric">Options</p>
 <dl class="option">
+<dt id="cmdoption-perun-collect-m">
+<code class="descname">-m</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--minor-version</code><code class="descclassname"> &lt;minor_version_list&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the head minor version, for which the profiles will be collected.</p>
+</dd></dl>
+
+<dl class="option">
 <dt id="cmdoption-perun-collect-c">
-<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cmd</code><code class="descclassname"> &lt;cmd&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-c" title="Permalink to this definition">¶</a></dt>
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crawl-parents</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to true, then for each specified minor versions, profiles for parents will be collected as well</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-cmd">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cmd</code><code class="descclassname"> &lt;cmd&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-cmd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Command that is being profiled. Either corresponds to some script, binary or command, e.g. <code class="docutils literal"><span class="pre">./mybin</span></code> or <code class="docutils literal"><span class="pre">perun</span></code>.</p>
 </dd></dl>
 
@@ -1376,6 +1382,18 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 <dt id="cmdoption-perun-postprocessby-regression-analysis-s">
 <code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--steps</code><code class="descclassname"> &lt;steps&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regression-analysis-s" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restricts the number of number of steps / data parts used by the iterative, interval and initial guess methods</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regression-analysis-dp">
+<code class="descname">-dp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--depending-on</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regression-analysis-dp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source of independent variable.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regression-analysis-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regression-analysis-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model.</p>
 </dd></dl>
 
 </div>

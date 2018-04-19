@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Internals &#8212; Perun 0.14 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.14.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14',
+        VERSION:     '0.14.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -146,7 +146,7 @@ of the walk.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">interable stream of major version representation</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">iterable stream of major version representation</p>
 </td>
 </tr>
 </tbody>
@@ -287,6 +287,101 @@ which will be massaged, i.e. transformed to unified representation</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">string representation of parameter</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="perun.vcs.is_dirty">
+<code class="descclassname">perun.vcs.</code><code class="descname">is_dirty</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#is_dirty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.is_dirty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests whether the wrapped repository is dirty.</p>
+<p>By dirty repository we mean a repository that has either a submitted changes to its index (i.e.
+we are in the middle of commit) or any unsubmitted changes to tracked files in the current
+working directory.</p>
+<p>Note that this is crucial for performance testing, as any uncommited changes may skew
+the profiled data and hence the resulting profiles would not correctly represent the performance
+of minor versions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
+<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">whether the given repository is dirty or not</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="perun.vcs.save_state">
+<code class="descclassname">perun.vcs.</code><code class="descname">save_state</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#save_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.save_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the state of the repository in case it is dirty.</p>
+<p>When saving the state of the repository one should store all of the uncommited changes to
+the working directory and index. Any issues while this process happens should be handled by
+user itself, hence no workarounds and mending should take place in this function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
+<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="perun.vcs.restore_state">
+<code class="descclassname">perun.vcs.</code><code class="descname">restore_state</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>saved</em>, <em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#restore_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.restore_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores the previous state of the the repository</p>
+<p>When restoring the state of the repository one should pop the stored changes from the stash
+and reapply them on the current directory. This make sure, that after the performance testing,
+the project is in the previous state and developer can continue with his work.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
+<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
+<li><strong>saved</strong> (<em>bool</em>) – whether the stashed was something</li>
+<li><strong>state</strong> (<em>str</em>) – the previous state of the repository</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="perun.vcs.checkout">
+<code class="descclassname">perun.vcs.</code><code class="descname">checkout</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#checkout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.checkout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks out the new working directory corresponding to the given minor version.</p>
+<p>According to the supplied minor version, this command should remake the working directory
+so it corresponds to the state defined by the minor version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
+<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
+<li><strong>minor_version</strong> (<em>str</em>) – minor version that will be checked out</li>
+</ul>
 </td>
 </tr>
 </tbody>

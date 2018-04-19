@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.14 documentation</title>
+    <title>Index &#8212; Perun 0.14.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14',
+        VERSION:     '0.14.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -48,6 +48,7 @@
  | <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
@@ -82,13 +83,6 @@
 </li>
       </ul></li>
       <li>
-    --count-only
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-log-count-only">perun-log command line option</a>
-</li>
-      </ul></li>
-      <li>
     --from-time &lt;from_time&gt;
 
       <ul>
@@ -110,24 +104,10 @@
 </li>
       </ul></li>
       <li>
-    --last &lt;last&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-log-last">perun-log command line option</a>
-</li>
-      </ul></li>
-      <li>
     --no-func &lt;no_func&gt;
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-memory-no-func">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-no-func">[1]</a>
-</li>
-      </ul></li>
-      <li>
-    --no-merged
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-log-no-merged">perun-log command line option</a>
 </li>
       </ul></li>
       <li>
@@ -142,13 +122,6 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-memory-no-source">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-no-source">[1]</a>
-</li>
-      </ul></li>
-      <li>
-    --show-aggregate
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-log-show-aggregate">perun-log command line option</a>
 </li>
       </ul></li>
       <li>
@@ -236,7 +209,7 @@
     -c, --cmd &lt;cmd&gt;
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-c">perun-collect command line option</a>
+        <li><a href="cli.html#cmdoption-perun-collect-cmd">perun-collect command line option</a>
 </li>
       </ul></li>
       <li>
@@ -261,10 +234,26 @@
 </li>
       </ul></li>
       <li>
+    -c, --crawl-parents
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-c">perun-collect command line option</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-run-c">perun-run command line option</a>
+</li>
+      </ul></li>
+      <li>
     -cp, --collector-params &lt;collector_params&gt;
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-run-job-cp">perun-run-job command line option</a>, <a href="jobs.html#cmdoption-perun-run-job-cp">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -dp, --depending-on &lt;per_key&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-dp">perun-postprocessby-regression_analysis command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-dp">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -365,6 +354,15 @@
 </li>
       </ul></li>
       <li>
+    -m, --minor-version &lt;minor_version_list&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-m">perun-collect command line option</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-run-m">perun-run command line option</a>
+</li>
+      </ul></li>
+      <li>
     -n, --nearest
 
       <ul>
@@ -398,6 +396,8 @@
     -o, --of &lt;of_key&gt;
 
       <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-o">perun-postprocessby-regression_analysis command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-o">[1]</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-show-bars-o">perun-show-bars command line option</a>, <a href="views.html#cmdoption-perun-show-bars-o">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-o">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-o">[1]</a>
@@ -513,6 +513,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-postprocessby-clusterizer-s">perun-postprocessby-clusterizer command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-clusterizer-s">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -sb, --sort-by &lt;format__sort_profiles_by&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-status-sb">perun-status command line option</a>
 </li>
       </ul></li>
       <li>
@@ -721,7 +728,7 @@
     args
 
       <ul>
-        <li><a href="config.html#confkey-args">configuration key</a>
+        <li><a href="config.html#confunit-args">configuration unit</a>
 </li>
         <li><a href="jobs.html#matrixunit-args">matrix format unit</a>
 </li>
@@ -733,6 +740,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="internals.html#perun.vcs.check_minor_version_validity">check_minor_version_validity() (in module perun.vcs)</a>
+</li>
+      <li><a href="internals.html#perun.vcs.checkout">checkout() (in module perun.vcs)</a>
 </li>
       <li>
     chunks
@@ -752,7 +761,7 @@
     cmds
 
       <ul>
-        <li><a href="config.html#confkey-cmds">configuration key</a>
+        <li><a href="config.html#confunit-cmds">configuration unit</a>
 </li>
         <li><a href="jobs.html#matrixunit-cmds">matrix format unit</a>
 </li>
@@ -782,7 +791,7 @@
     collectors
 
       <ul>
-        <li><a href="config.html#confkey-collectors">configuration key</a>
+        <li><a href="config.html#confunit-collectors">configuration unit</a>
 </li>
         <li><a href="jobs.html#matrixunit-collectors">matrix format unit</a>
 </li>
@@ -791,19 +800,19 @@
     configuration key
 
       <ul>
-        <li><a href="config.html#confkey-args">args</a>
-</li>
-        <li><a href="config.html#confkey-cmds">cmds</a>
-</li>
-        <li><a href="config.html#confkey-collectors">collectors</a>
-</li>
         <li><a href="config.html#confkey-degradation.apply">degradation.apply</a>
+</li>
+        <li><a href="config.html#confkey-degradation.collect_before_check">degradation.collect_before_check</a>
 </li>
         <li><a href="config.html#confkey-degradation.strategies">degradation.strategies</a>
 </li>
-        <li><a href="config.html#confkey-format.log">format.log</a>
+        <li><a href="config.html#confkey-execute.pre_run">execute.pre_run</a>
 </li>
         <li><a href="config.html#confkey-format.output_profile_template">format.output_profile_template</a>
+</li>
+        <li><a href="config.html#confkey-format.shortlog">format.shortlog</a>
+</li>
+        <li><a href="config.html#confkey-format.sort_profiles_by">format.sort_profiles_by</a>
 </li>
         <li><a href="config.html#confkey-format.status">format.status</a>
 </li>
@@ -811,13 +820,11 @@
 </li>
         <li><a href="config.html#confkey-general.paging">general.paging</a>
 </li>
-        <li><a href="config.html#confkey-postprocessors">postprocessors</a>
+        <li><a href="config.html#confkey-profiles.register_after_run:">profiles.register_after_run:</a>
 </li>
         <li><a href="config.html#confkey-vcs.type">vcs.type</a>
 </li>
         <li><a href="config.html#confkey-vcs.url">vcs.url</a>
-</li>
-        <li><a href="config.html#confkey-workloads">workloads</a>
 </li>
       </ul></li>
   </ul></td>
@@ -826,13 +833,27 @@
     configuration unit
 
       <ul>
+        <li><a href="config.html#confunit-args">args</a>
+</li>
+        <li><a href="config.html#confunit-cmds">cmds</a>
+</li>
+        <li><a href="config.html#confunit-collectors">collectors</a>
+</li>
         <li><a href="config.html#confunit-degradation">degradation</a>
+</li>
+        <li><a href="config.html#confunit-execute">execute</a>
 </li>
         <li><a href="config.html#confunit-format">format</a>
 </li>
         <li><a href="config.html#confunit-general">general</a>
 </li>
+        <li><a href="config.html#confunit-postprocessors">postprocessors</a>
+</li>
+        <li><a href="config.html#confunit-profiles">profiles</a>
+</li>
         <li><a href="config.html#confunit-vcs">vcs</a>
+</li>
+        <li><a href="config.html#confunit-workloads">workloads</a>
 </li>
       </ul></li>
   </ul></td>
@@ -858,6 +879,13 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
+    degradation.collect_before_check
+
+      <ul>
+        <li><a href="config.html#confkey-degradation.collect_before_check">configuration key</a>
+</li>
+      </ul></li>
+      <li>
     degradation.strategies
 
       <ul>
@@ -866,6 +894,28 @@
       </ul></li>
       <li><a href="degradation.html#perun.check.DegradationInfo">DegradationInfo (class in perun.check)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    execute
+
+      <ul>
+        <li><a href="config.html#confunit-execute">configuration unit</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    execute.pre_run
+
+      <ul>
+        <li><a href="config.html#confkey-execute.pre_run">configuration key</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -880,19 +930,26 @@
 </li>
       </ul></li>
       <li>
-    format.log
+    format.output_profile_template
 
       <ul>
-        <li><a href="config.html#confkey-format.log">configuration key</a>
+        <li><a href="config.html#confkey-format.output_profile_template">configuration key</a>
+</li>
+      </ul></li>
+      <li>
+    format.shortlog
+
+      <ul>
+        <li><a href="config.html#confkey-format.shortlog">configuration key</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    format.output_profile_template
+    format.sort_profiles_by
 
       <ul>
-        <li><a href="config.html#confkey-format.output_profile_template">configuration key</a>
+        <li><a href="config.html#confkey-format.sort_profiles_by">configuration key</a>
 </li>
       </ul></li>
       <li>
@@ -957,6 +1014,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="internals.html#perun.vcs.init">init() (in module perun.vcs)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="internals.html#perun.vcs.is_dirty">is_dirty() (in module perun.vcs)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1131,7 +1192,11 @@
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-a">-a, --args &lt;args&gt;</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-c">-c, --cmd &lt;cmd&gt;</a>
+        <li><a href="cli.html#cmdoption-perun-collect-cmd">-c, --cmd &lt;cmd&gt;</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-c">-c, --crawl-parents</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-m">-m, --minor-version &lt;minor_version_list&gt;</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-ot">-ot, --output-filename-template &lt;output_filename_template&gt;</a>
 </li>
@@ -1214,14 +1279,6 @@
     perun-log command line option
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-log-count-only">--count-only</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-log-last">--last &lt;last&gt;</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-log-no-merged">--no-merged</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-log-show-aggregate">--show-aggregate</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-log-s">-s, --short</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-log-arg-hash">&lt;hash&gt;</a>
@@ -1263,15 +1320,17 @@
     perun-postprocessby-regression_analysis command line option
 
       <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-dp">-dp, --depending-on &lt;per_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-dp">[1]</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-m">-m, --method &lt;method&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-m">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-o">-o, --of &lt;of_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-o">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-r">-r, --regression_models &lt;regression_models&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-r">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-s">-s, --steps &lt;steps&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-s">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-rm command line option
 
@@ -1283,10 +1342,16 @@
         <li><a href="cli.html#cmdoption-perun-rm-arg-profile">&lt;profile&gt;</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-run command line option
 
       <ul>
+        <li><a href="cli.html#cmdoption-perun-run-c">-c, --crawl-parents</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-run-m">-m, --minor-version &lt;minor_version_list&gt;</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-run-ot">-ot, --output-filename-template &lt;output_filename_template&gt;</a>
 </li>
       </ul></li>
@@ -1425,6 +1490,8 @@
       <ul>
         <li><a href="cli.html#cmdoption-perun-status-s">-s, --short</a>
 </li>
+        <li><a href="cli.html#cmdoption-perun-status-sb">-sb, --sort-by &lt;format__sort_profiles_by&gt;</a>
+</li>
       </ul></li>
       <li>
     perun-utils-create command line option
@@ -1489,11 +1556,25 @@
     postprocessors
 
       <ul>
-        <li><a href="config.html#confkey-postprocessors">configuration key</a>
+        <li><a href="config.html#confunit-postprocessors">configuration unit</a>
 </li>
         <li><a href="jobs.html#matrixunit-postprocessors">matrix format unit</a>
 </li>
         <li><a href="profile.html#perfreg-postprocessors">perf format region</a>
+</li>
+      </ul></li>
+      <li>
+    profiles
+
+      <ul>
+        <li><a href="config.html#confunit-profiles">configuration unit</a>
+</li>
+      </ul></li>
+      <li>
+    profiles.register_after_run:
+
+      <ul>
+        <li><a href="config.html#confkey-profiles.register_after_run:">configuration key</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1513,12 +1594,16 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="profile.html#perun.profile.convert.resources_to_pandas_dataframe">resources_to_pandas_dataframe() (in module perun.profile.convert)</a>
 </li>
+      <li><a href="internals.html#perun.vcs.restore_state">restore_state() (in module perun.vcs)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="internals.html#perun.vcs.save_state">save_state() (in module perun.vcs)</a>
+</li>
       <li>
     snapshots
 
@@ -1583,6 +1668,8 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="config.html#perun.profile.factory.ProfileInfo.valid_attributes">valid_attributes (perun.profile.factory.ProfileInfo attribute)</a>
+</li>
       <li>
     vcs
 
@@ -1590,6 +1677,8 @@
         <li><a href="config.html#confunit-vcs">configuration unit</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     vcs.type
 
@@ -1597,8 +1686,6 @@
         <li><a href="config.html#confkey-vcs.type">configuration key</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     vcs.url
 
@@ -1629,7 +1716,7 @@
     workloads
 
       <ul>
-        <li><a href="config.html#confkey-workloads">configuration key</a>
+        <li><a href="config.html#confunit-workloads">configuration unit</a>
 </li>
         <li><a href="jobs.html#matrixunit-workloads">matrix format unit</a>
 </li>

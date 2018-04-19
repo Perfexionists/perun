@@ -118,7 +118,7 @@ List of Supported Options
          2@p ┃ [time ] ┃ perun  ┃          ┃ --help ┃ time       ┃ 2017-10-19 12:30:31 ┃
         ═══════════════════════════════════════════════════════════════════════════════▣
 
-.. confkey:: format.log
+.. confkey:: format.shortlog
 
     ``[recursive]`` Specifies the formatting string for the output of the short format of ``perun
     log`` command. The formatting string can contain raw characters (delimiters, etc.) and special
@@ -201,34 +201,88 @@ List of Supported Options
         may rewrite existing profiles and is mostly meant to distinguish between profiles during
         one batch run of profile generation (e.g. when ``perun run matrix`` is executed).
 
-.. confkey:: cmds
+.. confkey:: format.sort_profiles_by
+
+    ``[recursive]`` Specifies which key of the profile will be used for sorting the output of the
+    ``perun status`` commands. Can be one of the following attributes specified by the class
+    attribute ``ProfileInfo.valid_attributes``:
+
+.. currentmodule:: perun.profile.factory
+.. autoattribute:: ProfileInfo.valid_attributes
+
+.. confunit:: execute
+
+   Groups various list of commands, that can be executed before specific phases. Currently this
+   contains only ``pre_run`` phase, which is executed before any collection of the data. This is
+   mainly meant to execute compiling of the binaries and other stuff to ease the development. Note
+   that these commands are executed without shell, but any risks of commands executed by these
+   commands fall entirely into the user hands and we have no responsibility for them.
+
+   All of these list are as follows:
+
+   .. code-block:: yaml
+
+           execute:
+             pre_run:
+               - echo "Running the code again"
+               - make
+               - make install
+
+   The list of commands above first outputs some text into the standard output, then it runs the
+   makefile to compile the collected binary and then installs it.
+
+.. confkey:: execute.pre_run
+
+   ``[local-only]]`` Runs the code before the collection of the data. This is meant to prepare the
+   binaries and other settings for the actual collection of the new data.
+
+.. confunit:: cmds
 
     ``[local-only]`` Refer to :munit:`cmds`.
 
-.. confkey:: args
+.. confunit:: args
 
     ``[local-only]`` Refer to :munit:`args`.
 
-.. confkey:: workloads
+.. confunit:: workloads
 
     ``[local-only]`` Refer to :munit:`workloads`
 
-.. confkey:: collectors
+.. confunit:: collectors
 
     ``[local-only]`` Refer to :munit:`collectors`
 
-.. confkey:: postprocessors
+.. confunit:: postprocessors
 
     ``[local-only]`` Refer to :munit:`postprocessors`
 
+.. confunit:: profiles
+
+   Groups various option specific for profiles, such as strategies for adding or generating
+   profiles:w
+   
+.. confkey:: profiles.register_after_run:
+
+   If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
+   profile (e.g. by running ``perun run matrix``) is automatically registered in the appropriate
+   minor version index.
+
 .. confunit:: degradation
 
-    Section, which contains options and specifications potentially shared by more Perun instances.
-    This section contains e.g. underlying text editor for editing, or paging strategy etc.
+   Speficies the list of strategies and how they are applied when checked for degradation in
+   methods.
+
+.. confkey:: degradation.collect_before_check
+
+    ``[recursive]`` If set to true, then before checking profiles of two minor versions, we run the
+    collection for job matrix to collect fresh or unexisting profiles.
 
 .. confkey:: degradation.apply
 
-    ``[recursive]`` 
+    ``[recursive]`` Specifies which strategies are picked for application, if more than one
+    strategy satisfies the specified constraints. If the key is set to ``first``, then first
+    strategy from the ordered list of :ckey:`degradation.strategies` is applied; otherwise if the
+    key is set to ``all``, then all of the strategies from the ordered list are applied.
 
 .. confkey:: degradation.strategies
 
