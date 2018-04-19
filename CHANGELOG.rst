@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.14.1 (2018-04-19)
+-------------------
+
+`commit: b7922d7c1bbe7ea89fe735c93cf1e6c8a7604765`
+
+**Extend the automation**
+
   - add two new options to regression analysis module (see :ref:`postprocessors-regression-analysis` for more details)
   - fix minor issues in regression analysis and scatter plot module
   - fix issue with non-deterministic ordering in flattening the values by convert
