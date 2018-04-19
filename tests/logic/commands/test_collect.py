@@ -2,6 +2,7 @@
 
 import os
 
+import perun.vcs as vcs
 import perun.logic.runner as runner
 import perun.collect.complexity.run as complexity
 
@@ -21,12 +22,15 @@ def _mocked_stap(**kwargs):
 
 def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
+    head = vcs.get_minor_version_info(pcs_full.vcs_type, pcs_full.vcs_path,
+        vcs.get_minor_head(pcs_full.vcs_type, pcs_full.vcs_path)
+    )
     monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
 
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
-    runner.run_single_job(cmd, args, work, collectors, posts, **config)
+    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -44,6 +48,9 @@ def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_coll
     """Test failed collecting using complexity collector"""
     global _mocked_stap_code
     global _mocked_stap_file
+    head = vcs.get_minor_version_info(pcs_full.vcs_type, pcs_full.vcs_path,
+        vcs.get_minor_head(pcs_full.vcs_type, pcs_full.vcs_path)
+    )
 
     monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
 
@@ -52,7 +59,7 @@ def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_coll
     # Test malformed file that ends in unexpected way
     _mocked_stap_file = 'record_malformed.txt'
     cmd, args, work, collectors, posts, config = complexity_collect_job
-    runner.run_single_job(cmd, args, work, collectors, posts, **config)
+    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
 
     # Assert that nothing was added
     after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -60,7 +67,7 @@ def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_coll
 
     # Test malformed file that ends in another unexpected way
     _mocked_stap_file = 'record_malformed2.txt'
-    runner.run_single_job(cmd, args, work, collectors, posts, **config)
+    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
 
     # Assert that nothing was added
     after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -68,7 +75,7 @@ def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_coll
 
     # Simulate the failure of the systemTap
     _mocked_stap_code = 1
-    runner.run_single_job(cmd, args, work, collectors, posts, **config)
+    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
 
     # Assert that nothing was added
     after_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -79,6 +86,10 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+    head = vcs.get_minor_version_info(pcs_full.vcs_type, pcs_full.vcs_path,
+        vcs.get_minor_head(pcs_full.vcs_type, pcs_full.vcs_path)
+    )
+    memory_collect_job += ([head], )
 
     runner.run_single_job(*memory_collect_job)
 
@@ -91,8 +102,8 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
 
-    cmd, args, _, colls, posts = memory_collect_job
-    runner.run_single_job(cmd, args, ["hello"], colls, posts, **{'no_func': 'fun', 'sampling': 0.1})
+    cmd, args, _, colls, posts, _ = memory_collect_job
+    runner.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
 
     profiles = os.listdir(os.path.join(pcs_full.path, 'jobs'))
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
@@ -105,6 +116,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
 
     # Fixme: Add check that the profile was correctly generated
 
+    memory_collect_no_debug_job += ([head], )
     runner.run_single_job(*memory_collect_no_debug_job)
     last_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
     _, err = capsys.readouterr()
@@ -112,12 +124,15 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     assert 'debug info' in err
 
 
-def test_collect_time(helpers, pcs_full, capsys):
+def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
+    head = vcs.get_minor_version_info(pcs_full.vcs_type, pcs_full.vcs_path,
+        vcs.get_minor_head(pcs_full.vcs_type, pcs_full.vcs_path)
+    )
 
-    runner.run_single_job(["echo"], "", ["hello"], ["time"], [])
+    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
 
     # Assert outputs
     out, err = capsys.readouterr()
@@ -133,4 +148,13 @@ def test_collect_time(helpers, pcs_full, capsys):
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
 
-    # Fixme: Add check that the profile was correctly generated
+    # Test running time with error
+    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+
+    def collect_raising_exception(**kwargs):
+        raise Exception("Something happened lol!")
+
+    monkeypatch.setattr("perun.collect.time.run.collect", collect_raising_exception)
+    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    _, err = capsys.readouterr()
+    assert 'Something happened lol!' in err

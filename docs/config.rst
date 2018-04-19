@@ -210,6 +210,32 @@ List of Supported Options
 .. currentmodule:: perun.profile.factory
 .. autoattribute:: ProfileInfo.valid_attributes
 
+.. confunit:: execute
+
+   Groups various list of commands, that can be executed before specific phases. Currently this
+   contains only ``pre_run`` phase, which is executed before any collection of the data. This is
+   mainly meant to execute compiling of the binaries and other stuff to ease the development. Note
+   that these commands are executed without shell, but any risks of commands executed by these
+   commands fall entirely into the user hands and we have no responsibility for them.
+
+   All of these list are as follows:
+
+   .. code-block:: yaml
+
+           execute:
+             pre_run:
+               - echo "Running the code again"
+               - make
+               - make install
+
+   The list of commands above first outputs some text into the standard output, then it runs the
+   makefile to compile the collected binary and then installs it.
+
+.. confkey:: execute.pre_run
+
+   ``[local-only]]`` Runs the code before the collection of the data. This is meant to prepare the
+   binaries and other settings for the actual collection of the new data.
+
 .. confunit:: cmds
 
     ``[local-only]`` Refer to :munit:`cmds`.
@@ -230,10 +256,26 @@ List of Supported Options
 
     ``[local-only]`` Refer to :munit:`postprocessors`
 
+.. confunit:: profiles
+
+   Groups various option specific for profiles, such as strategies for adding or generating
+   profiles:w
+   
+.. confkey:: profiles.register_after_run:
+
+   If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
+   profile (e.g. by running ``perun run matrix``) is automatically registered in the appropriate
+   minor version index.
+
 .. confunit:: degradation
 
    Speficies the list of strategies and how they are applied when checked for degradation in
    methods.
+
+.. confkey:: degradation.collect_before_check
+
+    ``[recursive]`` If set to true, then before checking profiles of two minor versions, we run the
+    collection for job matrix to collect fresh or unexisting profiles.
 
 .. confkey:: degradation.apply
 
