@@ -2,50 +2,60 @@
 
 from operator import itemgetter
 
+import perun.profile.query as query
+import perun.profile.convert as convert
 
-def data_provider_mapper(profile):
+
+def data_provider_mapper(profile, **kwargs):
     """Unified data provider for various profile types.
 
-    Arguments:
-        profile(dict): the loaded profile dictionary
-
-    Returns:
-        generator: generator object created by specific provider function
+    :param dict profile: the loaded profile dictionary
+    :param dict kwargs: additional parameters for data provider
+    :returns generator: generator object created by specific provider function
     """
     profile_type = profile['header']['type']
-    return _PROFILE_MAPPER[profile_type](profile)
+    return _PROFILE_MAPPER.get(profile_type, generic_profile_provider)(profile, **kwargs)
 
 
-def complexity_profile_provider(profile):
+def resource_sort_key(resource):
+    """Extracts the key from resource used for sorting
+
+    :param dict resource: profiling resource
+    :return: key used for sorting
+    """
+    return convert.flatten(resource['uid'])
+
+
+def generic_profile_provider(profile, of_key, per_key, **_):
     """Data provider for complexity collector profiling output.
 
-    Arguments:
-        profile(dict): the complexity profile dictionary
-
-    Returns:
-        generator: each subsequent call returns tuple: x points list, y points list, function name
+    :param dict profile: the complexity profile dictionary
+    :param str of_key: key for which we are finding the model
+    :param str per_key: key of the independent variable
+    :param dict _: rest of the key arguments
+    :returns generator: each subsequent call returns tuple: x points list, y points list, function name
     """
     # Get the file resources contents
-    resources = profile['global']['resources']
+    resources = list(map(itemgetter(1), query.all_resources_of(profile)))
 
     # Sort the dictionaries by function name for easier traversing
-    resources = sorted(resources, key=itemgetter('uid'))
+    resources = sorted(resources, key=resource_sort_key)
     x_points_list = []
     y_points_list = []
-    function_name = resources[0]['uid']
+    function_name = convert.flatten(resources[0]['uid'])
     # Store all the points until the function name changes
     for resource in resources:
-        if resource['uid'] != function_name:
+        if convert.flatten(resource['uid']) != function_name:
             if x_points_list:
                 # Function name changed, yield the list of data points
                 yield x_points_list, y_points_list, function_name
-                x_points_list = [resource['structure-unit-size']]
-                y_points_list = [resource['amount']]
-                function_name = resource['uid']
+                x_points_list = [resource[per_key]]
+                y_points_list = [resource[of_key]]
+                function_name = convert.flatten(resource['uid'])
         else:
             # Add the data points
-            x_points_list.append(resource['structure-unit-size'])
-            y_points_list.append(resource['amount'])
+            x_points_list.append(resource[per_key])
+            y_points_list.append(resource[of_key])
     # End of resources, yield the current lists
     if x_points_list:
         yield x_points_list, y_points_list, function_name
@@ -55,5 +65,5 @@ def complexity_profile_provider(profile):
 #  - return value: generator object that produces required profile data
 #  - parameter: profile dictionary
 _PROFILE_MAPPER = {
-    'mixed': complexity_profile_provider
+    'default': generic_profile_provider
 }

@@ -91,6 +91,16 @@ def singleton_with_args(func):
 func_args_cache = {}
 
 
+def remove_from_function_args_cache(funcname):
+    """Helper function for clearing the key from func args cache
+
+    :param str funcname: function name that we are removing from the cache
+    :return:
+    """
+    if funcname in func_args_cache.keys():
+        func_args_cache[funcname].clear()
+
+
 def validate_arguments(validated_args, validate, *args, **kwargs):
     """
     Validates the arguments stated by validated_args with validate function.

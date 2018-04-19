@@ -379,7 +379,7 @@ def pcs_with_degradations():
     repo.index.add([file2])
     middle_head = repo.index.commit("second commit")
 
-    # Create second commit
+    # Create third commit
     file3 = os.path.join(pcs_path, "file3")
     store.touch_file(file3)
     repo.index.add([file3])

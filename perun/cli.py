@@ -57,6 +57,7 @@ import perun.postprocess
 import perun.profile.factory as profiles
 import perun.utils as utils
 import perun.utils.script_helpers as scripts
+import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
 import perun.vcs as vcs
@@ -187,7 +188,7 @@ def config(ctx, **kwargs):
 
     .. code-block:: bash
 
-        $ perun config get vsc.type
+        $ perun config get vcs.type
         vcs.type: git
     """
     ctx.obj = kwargs
@@ -216,7 +217,7 @@ def config_get(ctx, key):
 
     .. code-block:: bash
 
-        $ perun config get vsc.type
+        $ perun config get vcs.type
         vcs.type: git
 
         $ perun config --shared get general.editor
@@ -255,8 +256,8 @@ def config_set(ctx, key, value):
 
     .. code-block:: bash
 
-        $ perun config set format.shortlog "| %origin% | %collector% |"
-        format.shortlog: | %origin% | %collector% |
+        $ perun config set format.shortlog "| %source% | %collector% |"
+        format.shortlog: | %source% | %collector% |
     """
     commands.config_set(ctx.obj['store_type'], key, value)
 
@@ -652,15 +653,15 @@ def profile_lookup_callback(ctx, _, value):
 
 @cli.command()
 @click.argument('head', required=False, default=None, metavar='<hash>')
-@click.option('--count-only', is_flag=True, default=False,
-              help="Shows only aggregated data without minor version history"
-              " description")
-@click.option('--show-aggregate', is_flag=True, default=False,
-              help="Includes the aggregated values for each minor version.")
-@click.option('--last', default=1, metavar='<int>',
-              help="Limits the output of log to last <int> entries.")
-@click.option('--no-merged', is_flag=True, default=False,
-              help="Skips merges during the iteration of the project history.")
+# @click.option('--count-only', is_flag=True, default=False,
+#               help="Shows only aggregated data without minor version history"
+#               " description")
+# @click.option('--show-aggregate', is_flag=True, default=False,
+#               help="Includes the aggregated values for each minor version.")
+# @click.option('--last', default=1, metavar='<int>',
+#               help="Limits the output of log to last <int> entries.")
+# @click.option('--no-merged', is_flag=True, default=False,
+#               help="Skips merges during the iteration of the project history.")
 @click.option('--short', '-s', is_flag=True, default=False,
               help="Shortens the output of ``log`` to include only most "
               "necessary information.")
@@ -682,7 +683,7 @@ def log(head, **kwargs):
     default using ``less``.
 
     Refer to :ref:`logs-log` for information how to customize the outputs of
-    ``log`` or how to set :ckey:`format.log` in nearest
+    ``log`` or how to set :ckey:`format.shortlog` in nearest
     configuration.
     """
     try:
@@ -694,7 +695,11 @@ def log(head, **kwargs):
 @cli.command()
 @click.option('--short', '-s', required=False, default=False, is_flag=True,
               help="Shortens the output of ``status`` to include only most"
-              " necessary informations.")
+              " necessary information.")
+@click.option('--sort-by', '-sb', 'format__sort_profiles_by', nargs=1,
+              type=click.Choice(profiles.ProfileInfo.valid_attributes),
+              callback=cli_helpers.process_config_option,
+              help="The stored and pending profiles will be sorted by <key>.")
 def status(**kwargs):
     """Shows the status of vcs, associated profiles and perun.
 
@@ -878,7 +883,39 @@ def parse_yaml_single_param(ctx, param, value):
     return unit_to_params
 
 
+def parse_minor_version(ctx, _, value):
+    """Callback function for parsing the minor version list for running the automation
+
+    :param Context ctx: context of the called command
+    :param click.Option _: parameter that is being parsed and read from commandline
+    :param str value: value that is being read from the commandline
+    :returns list: list of MinorVersion objects
+    """
+    minors = []
+    if value:
+        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+        for minor_version in value:
+            massaged_version = vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, minor_version)
+            # If we should crawl all of the parents, we collect them
+            if ctx.params['crawl_parents']:
+                minors.extend(vcs.walk_minor_versions(
+                    pcs.vcs_type, pcs.vcs_path, massaged_version
+                ))
+            # Otherwise we retrieve the minor version info for the param
+            else:
+                minors.append(vcs.get_minor_version_info(
+                    pcs.vcs_type, pcs.vcs_path, massaged_version
+                ))
+    return minors
+
+
 @cli.group()
+@click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
+              callback=parse_minor_version, default=['HEAD'],
+              help='Specifies the head minor version, for which the profiles will be collected.')
+@click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
+              help='If set to true, then for each specified minor versions, profiles for parents'
+                   ' will be collected as well')
 @click.option('--cmd', '-c', nargs=1, required=False, multiple=True, default=[''],
               help='Command that is being profiled. Either corresponds to some'
               ' script, binary or command, e.g. ``./mybin`` or ``perun``.')
@@ -960,16 +997,25 @@ def init_unit_commands(lazy_init=True):
                    ' This way the file with collected data will have a resulting filename w.r.t '
                    ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
                    ' details about the format of the template.')
-def run(**kwargs):
+@click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
+              callback=parse_minor_version, default=['HEAD'],
+              help='Specifies the head minor version, for which the profiles will be collected.')
+@click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
+              help='If set to true, then for each specified minor versions, profiles for parents'
+                   ' will be collected as well')
+@click.pass_context
+def run(ctx, **kwargs):
     """Generates batch of profiles w.r.t. specification of list of jobs.
 
     Either runs the job matrix stored in local.yml configuration or lets the
     user construct the job run using the set of parameters.
     """
+    ctx.obj = kwargs
 
 
 @run.command()
-def matrix(**kwargs):
+@click.pass_context
+def matrix(ctx, **kwargs):
     """Runs the jobs matrix specified in the local.yml configuration.
 
     This commands loads the jobs configuration from local configuration, builds
@@ -987,6 +1033,7 @@ def matrix(**kwargs):
     the job matrix inside local configuration and to :doc:`config` how to work
     with Perun's configuration files.
     """
+    kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
     runner.run_matrix_job(**kwargs)
 
 
@@ -1037,7 +1084,8 @@ def parse_yaml_param(ctx, param, value):
               callback=parse_yaml_param,
               help='Additional parameters for the <postprocessor> read from the'
               ' file in YAML format')
-def job(**kwargs):
+@click.pass_context
+def job(ctx, **kwargs):
     """Run specified batch of perun jobs to generate profiles.
 
     This command correspond to running one isolated batch of profiling jobs,
@@ -1090,6 +1138,7 @@ def job(**kwargs):
     postprocessors refer to :ref:`collectors-list` and
     :ref:`postprocessors-list` respectively.
     """
+    kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
     runner.run_single_job(**kwargs)
 
 

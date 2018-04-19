@@ -49,7 +49,7 @@ class Config(object):
                 'editor': 'vim'
             },
             'format': {
-                'status': '%type% > %origin%',
+                'status': '%type% > %source%',
                 'log': '%checksum:6%: %desc%'
             }
         }
@@ -78,8 +78,8 @@ class Config(object):
         # Remove the key from the caching
         # ! Note that this is mainly used for the testing, but might be triggered during the future
         # as well.
-        decorators.func_args_cache['lookup_key_recursively'].pop(tuple([key]), None)
-        decorators.func_args_cache['gather_key_recursively'].pop(tuple([key]), None)
+        decorators.remove_from_function_args_cache('lookup_key_recursively')
+        decorators.remove_from_function_args_cache('gather_key_recursively')
 
         *sections, last_section = key.split('.')
         _locate_section_from_query(self.data, sections)[last_section] = value
@@ -103,6 +103,18 @@ class Config(object):
         section_location[last_section].append(value)
         if self.path:
             write_config_to(self.path, self.data)
+
+    def safe_get(self, key, default):
+        """Safely returns the value of the key; i.e. in case it is missing default is used
+
+        :param str key: key we are looking up
+        :param object default: default value of the key, which is used if we did not find the value
+        :return: value of the key in the config or default
+        """
+        try:
+            return self.get(key)
+        except exceptions.MissingConfigSectionException:
+            return default
 
     @decorators.validate_arguments(['key'], is_valid_key)
     def get(self, key):
@@ -163,10 +175,11 @@ general:
     paging: only-log
 
 format:
-    status: "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %origin% \u2503"
+    status: "\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503"
     shortlog: "%checksum:6% (%stats%) %desc%"
     output_profile_template: "%collector%-%cmd%-%args%-%workload%-%date%"
     output_show_template: "%collector%-%cmd%-%args%-%workload%-%date%"
+    sort_profiles_by: time
 
 degradation:
     apply: all
@@ -401,7 +414,7 @@ def get_hierarchy():
 
 
 @decorators.singleton_with_args
-def lookup_key_recursively(key):
+def lookup_key_recursively(key, default=None):
     """Recursively looks up the key first in the local config and then in the global.
 
     This is used e.g. for formatting strings or editors, where first we have our local configs,
@@ -409,6 +422,7 @@ def lookup_key_recursively(key):
     global config.
 
     :param str key: key we are looking up
+    :param str default: default value, if key is not located in the hierarchy
     """
     # Fixme: this should contain recursive lookup for other instances and also the temporary config
     for config_instance in get_hierarchy():
@@ -416,6 +430,9 @@ def lookup_key_recursively(key):
             return config_instance.get(key)
         except exceptions.MissingConfigSectionException:
             continue
+    # If we have provided default value of the key return this, otherwise we raise an exception
+    if default:
+        return default
     raise exceptions.MissingConfigSectionException
 
 

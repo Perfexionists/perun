@@ -92,7 +92,7 @@ def walk_major_versions(vcs_type, vcs_path):
 
     :param str vcs_type: type of the underlying wrapped version control system
     :param str vcs_path: source path of the wrapped vcs
-    :returns: interable stream of major version representation
+    :returns: iterable stream of major version representation
     """
     perun_log.msg_to_stdout("Walking major versions of type {}".format(
         vcs_type
@@ -183,4 +183,110 @@ def massage_parameter(vcs_type, vcs_path, parameter, parameter_type=None):
     """
     return dynamic_module_function_call(
         'perun.vcs', vcs_type, '_massage_parameter', vcs_path, parameter, parameter_type
+    )
+
+
+def is_dirty(vcs_type, vcs_path):
+    """Tests whether the wrapped repository is dirty.
+
+    By dirty repository we mean a repository that has either a submitted changes to its index (i.e.
+    we are in the middle of commit) or any unsubmitted changes to tracked files in the current
+    working directory.
+
+    Note that this is crucial for performance testing, as any uncommited changes may skew
+    the profiled data and hence the resulting profiles would not correctly represent the performance
+    of minor versions.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param str vcs_path: source path of the wrapped vcs
+    :return: whether the given repository is dirty or not
+    """
+    return dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_is_dirty', vcs_path
+    )
+
+
+class CleanState:
+    """Helper with wrapper, which is used to execute instances of commands with clean state of VCS.
+
+    This is needed e.g. when we are collecting new data, and the repository is dirty with changes,
+    then we use this CleanState to keep those changes, have a clean state (or maybe even checkout
+    different version) and then collect correctly the data. The previous state is then restored
+    """
+    def __init__(self, vcs_type, vcs_path):
+        """Creates a with wrapper for a corresponding VCS
+
+        :param str vcs_type: type of the underlying wrapped version control system
+        :param str vcs_path: source path of the wrapped vcs
+        """
+        self.type = vcs_type
+        self.path = vcs_path
+        self.saved_state = False
+        self.last_head = None
+
+    def __enter__(self):
+        """When entering saves the state of the repository
+
+        We save the uncommited/unsaved changes (e.g. to stash) and also we remeber the previous
+        head, which will be restored at the end.
+        """
+        self.saved_state, self.last_head = save_state(self.type, self.path)
+
+    def __exit__(self, *_):
+        """When exiting, restores the state of the repository
+
+        Restores the previous commit and unstashes the changes made to working directory and index.
+
+        :param _: not used params of exit handler
+        """
+        restore_state(self.type, self.path, self.saved_state, self.last_head)
+
+
+def save_state(vcs_type, vcs_path):
+    """Saves the state of the repository in case it is dirty.
+
+    When saving the state of the repository one should store all of the uncommited changes to
+    the working directory and index. Any issues while this process happens should be handled by
+    user itself, hence no workarounds and mending should take place in this function.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param str vcs_path: source path of the wrapped vcs
+    :return:
+    """
+    # Todo: Check the vcs.fail_when_dirty and log error in the case
+    return dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_save_state', vcs_path
+    )
+
+
+def restore_state(vcs_type, vcs_path, saved, state):
+    """Restores the previous state of the the repository
+
+    When restoring the state of the repository one should pop the stored changes from the stash
+    and reapply them on the current directory. This make sure, that after the performance testing,
+    the project is in the previous state and developer can continue with his work.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param str vcs_path: source path of the wrapped vcs
+    :param bool saved: whether the stashed was something
+    :param str state: the previous state of the repository
+    """
+    dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_restore_state', vcs_path, saved, state
+    )
+
+
+def checkout(vcs_type, vcs_path, minor_version):
+    """Checks out the new working directory corresponding to the given minor version.
+
+    According to the supplied minor version, this command should remake the working directory
+    so it corresponds to the state defined by the minor version.
+
+    :param str vcs_type: type of the underlying wrapped version control system
+    :param str vcs_path: source path of the wrapped vcs
+    :param str minor_version: minor version that will be checked out
+    """
+    massaged_minor_version = massage_parameter(vcs_type, vcs_path, minor_version)
+    dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_checkout', vcs_path, massaged_minor_version
     )

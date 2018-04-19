@@ -14,8 +14,10 @@ import git
 import perun.logic.store as store
 import pytest
 
+import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.utils.timestamps as timestamps
+import perun.utils.decorators as decorators
 from perun.utils.exceptions import NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
@@ -152,6 +154,9 @@ def assert_info(out, git_repo, stored_profiles, untracked_profiles):
     joined_output = "\n".join(out)
     assert_head_info(out[0], git_repo)
 
+    for no, line in enumerate(out):
+        print(no, line)
+
     # Assert the commit message was correctly displayed
     head_commit = git_repo.head.commit
     head_msg = str(head_commit.message)
@@ -172,8 +177,9 @@ def assert_info(out, git_repo, stored_profiles, untracked_profiles):
         profile_info = set(profile_pool_to_info(stored_profiles))
         while out[i].startswith(' '):
             assert_printed_profiles(profile_info, out[i])
+            # We have to consider, that there are the boxes every 5 and after first profile
+            i += 2 if count % 5 == 0 else 1
             count += 1
-            i += 1
         # Skip horizontal line
         i += 1
         assert count == len(stored_profiles)
@@ -186,8 +192,9 @@ def assert_info(out, git_repo, stored_profiles, untracked_profiles):
         profile_info = set(profile_pool_to_info(untracked_profiles))
         while out[i].startswith(' '):
             assert_printed_profiles(profile_info, out[i])
+            # We have to consider, that there are the boxes every 5 and after first profile
+            i += 2 if count % 5 == 0 else 1
             count += 1
-            i += 1
         assert count == len(untracked_profiles)
 
 
@@ -305,3 +312,41 @@ def test_status_short(helpers, pcs_full, capsys, stored_profile_pool, valid_prof
     raw_out, _ = capsys.readouterr()
     out = raw_out.split('\n')
     assert_short_info(out, git_repo, stored_profile_pool[1:], valid_profile_pool)
+
+
+def test_status_sort(monkeypatch, helpers, pcs_full, capsys, valid_profile_pool):
+    """Test calling 'perun status' with expected behaviour
+
+    TODO: Testing that the profiles are really sorted
+
+    Expecting no errors and long display of the current status of the perun, with all profiles.
+    """
+    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    decorators.remove_from_function_args_cache("lookup_key_recursively")
+
+    # Try what happens if we screw the stored profile keys ;)
+    cfg = config.Config('shared', '', {
+        'general': {'paging': 'never'},
+        'format': {
+            'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503'
+        }
+    })
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    commands.status()
+
+    out, _ = capsys.readouterr()
+    assert "missing set option" in out
+
+    cfg = config.Config('shared', '', {
+        'general': {'paging': 'never'},
+        'format': {
+            'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503',
+            'sort_profiles_by': 'bogus'
+        }
+    })
+    monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
+    commands.status()
+
+    out, _ = capsys.readouterr()
+    assert "invalid sort key" in out
+    monkeypatch.undo()

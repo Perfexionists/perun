@@ -7,11 +7,13 @@ import os
 import git
 import re
 import shutil
+import time
 
 import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.utils as utils
 import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.logic.config as config
@@ -116,8 +118,8 @@ def test_reg_analysis_incorrect(pcs_full):
     assert '0.5 is not a valid integer' in result.output
 
     # Test multiple method specification resulting in extra argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
-                                               'iterative'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-dp', 'snapshots',
+                                               '-m', 'full', 'iterative'])
     assert result.exit_code == 2
     assert 'Got unexpected extra argument (iterative)' in result.output
 
@@ -246,6 +248,9 @@ def test_status_correct(pcs_full):
     short_result = runner.invoke(cli.status, ['--short'])
     assert short_result.exit_code == 0
     assert len(short_result.output.split("\n")) == 4
+
+    short_result = runner.invoke(cli.status, ['--short', '--sort-by', 'source'])
+    assert short_result.exit_code == 0
 
 
 @pytest.mark.usefixtures('cleandir')
@@ -461,8 +466,7 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
         'complexity'
     ] + rules + samplings)
     del config.runtime().data['format']
-    decorators.func_args_cache['lookup_key_recursively'].pop(
-        tuple(["format.output_profile_template"]), None)
+    decorators.remove_from_function_args_cache("lookup_key_recursively")
     assert result.exit_code == 0
     assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
 
@@ -805,34 +809,67 @@ def test_utils_create(monkeypatch, tmpdir):
 def test_run(pcs_full, monkeypatch):
     matrix = config.Config('local', '', {
         'vcs': {'type': 'git', 'url': '../'},
-        'cmds': ['perun'],
-        'args': ['-v', '-v -v'],
-        'workloads': ['--help'],
+        'cmds': ['ls'],
+        'args': ['-al'],
+        'workloads': ['.', '..'],
         'collectors': [
             {'name': 'time', 'params': {}}
         ],
-        'postprocessors': []
+        'postprocessors': [],
+        'execute': {
+            'pre_run': [
+                'ls | grep "."',
+            ]
+        }
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
     runner = CliRunner()
-    result = runner.invoke(cli.matrix, [])
+    result = runner.invoke(cli.run, ['-c', 'matrix'])
     assert result.exit_code == 0
+    assert "ls | grep " in result.output
 
     job_dir = pcs_full.get_job_directory()
     job_profiles = os.listdir(job_dir)
-    assert len(job_profiles) == 2
+    assert len(job_profiles) >= 2
+
+    config.runtime().set('profiles.register_after_run', 'true')
+    # Try to store the generated crap not in jobs
+    jobs_before = len(os.listdir(job_dir))
+    # Need to sleep, since in travis this could rewrite the stuff
+    time.sleep(1)
+    result = runner.invoke(cli.run, ['matrix'])
+    jobs_after = len(os.listdir(job_dir))
+    assert result.exit_code == 0
+    assert jobs_before == jobs_after
+    config.runtime().set('profiles.register_after_run', 'false')
 
     script_dir = os.path.split(__file__)[0]
     source_dir = os.path.join(script_dir, 'collect_complexity')
     job_config_file = os.path.join(source_dir, 'job.yml')
-    result = runner.invoke(cli.job, [
-        '--cmd', 'perun',
-        '--args', '-vvv',
-        '--workload', '--help',
+    result = runner.invoke(cli.run, [
+        'job',
+        '--cmd', 'ls',
+        '--args', '-al',
+        '--workload', '.',
         '--collector', 'time',
         '--collector-params', 'time', 'param: key',
         '--collector-params', 'time', '{}'.format(job_config_file)
     ])
     assert result.exit_code == 0
     job_profiles = os.listdir(job_dir)
-    assert len(job_profiles) == 3
+    assert len(job_profiles) >= 3
+
+    # Run the matrix with error in prerun phase
+    saved_func = utils.run_safely_external_command
+
+    def run_wrapper(cmd):
+        if cmd == 'ls | grep "."':
+            return b"hello", b"world"
+        else:
+            return saved_func(cmd)
+
+    monkeypatch.setattr('perun.utils.run_safely_external_command', run_wrapper)
+    matrix.data['execute']['pre_run'].append('ls | grep dafad')
+    result = runner.invoke(cli.run, ['matrix'])
+    assert result.exit_code == 1
+    assert "error in pre_run" in result.output

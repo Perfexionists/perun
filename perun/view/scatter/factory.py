@@ -21,7 +21,7 @@ def slice_resources_by_uid(resources, models, uids):
     Arguments:
         resources(pandas.DataFrame): the data table from resources
         models(list of dict): the list of models from profile
-        uids(list): the list of unique uids from profile
+        uids(map): the list of unique uids from profile
 
     Returns:
         generator: resources and models slices of unique uid as pair
@@ -75,7 +75,7 @@ def generate_plot_data_slices(profile):
     resource_table = convert.resources_to_pandas_dataframe(profile)
     models = list(map(itemgetter(1), query.all_models_of(profile)))
     # Get unique uids from profile, each uid (and optionally interval) will have separate graph
-    uids = query.unique_resource_values_of(profile, 'uid')
+    uids = map(convert.flatten, query.unique_resource_values_of(profile, 'uid'))
 
     # Process each uid data
     for uid_slice, uid_models in slice_resources_by_uid(resource_table, models, uids):

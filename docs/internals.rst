@@ -3,7 +3,7 @@
 Perun Internals
 ===============
 
-.. _JSON: https://www.json.org/ 
+.. _JSON: https://www.json.org/
 
 Conceptually one Perun instances serves as a wrapper around the existing version control system
 (e.g. some repository). Perun takes specializes on storing the performance profiles and manages the
@@ -69,6 +69,14 @@ Version Control System API
 
 .. autofunction:: massage_parameter
 
+.. autofunction:: is_dirty
+
+.. autofunction:: save_state
+
+.. autofunction:: restore_state
+
+.. autofunction:: checkout
+
 .. _internals-vcs-custom:
 
 Creating Support for Custom VCS
@@ -93,11 +101,11 @@ You can register support for your own version control system as follows:
 
         make test
         make install
-    
+
     4. If you think your wrapper could help others, please, consider making `Pull Request`_.
 
 .. _Pull Request: https://github.com/tfiedor/perun/pull/new/develop
-.. _pytest: https://docs.pytest.org/en/latest/ 
+.. _pytest: https://docs.pytest.org/en/latest/
 
 .. _internals-store:
 
@@ -220,7 +228,7 @@ object is compressed using zlib method and stored in the ``.perun/objects`` comp
     Integer count of the non-header data followed after the zero byte in bytes.
 
 `Content` [`variable length`]:
-    Contents of the performance profile w.r.t. :ref:`profile-spec`. 
+    Contents of the performance profile w.r.t. :ref:`profile-spec`.
 
 The Lifetime of profile: Internals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -269,7 +277,7 @@ profile in ``HEAD`` minor version index, the following steps are executed:
 .. image:: /../figs/register-profile.*
     :align: center
     :width: 100%
-    
+
 
 Removing profile from index
 """""""""""""""""""""""""""
@@ -299,7 +307,7 @@ index. Priorities during the lookup are usually as follows:
        `pending` tags respectively), then ``i`` th profile registered in index or stored in
        pending jobs directory (``.perun/jobs``) is used.
 
-    2. Index of corresponding minor version is searched. 
+    2. Index of corresponding minor version is searched.
 
     3. Absolute path in filesystem is checked.
 

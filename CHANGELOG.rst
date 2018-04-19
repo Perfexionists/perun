@@ -6,6 +6,35 @@ HEAD
 
 **To be included in next release**
 
+0.14.1 (2018-04-19)
+-------------------
+
+`commit: b7922d7c1bbe7ea89fe735c93cf1e6c8a7604765`
+
+**Extend the automation**
+
+  - add two new options to regression analysis module (see :ref:`postprocessors-regression-analysis` for more details)
+  - fix minor issues in regression analysis and scatter plot module
+  - fix issue with non-deterministic ordering in flattening the values by convert
+  - add different ordering to perun status profiles (now they are ordered by time)
+  - add more boxes to the output of the perun status profiles (bundled per five profiles)
+  - add :ckey:`format.sort_profiles_by` configuration key to allow sorting of profiles in ``perun status`` by different keys
+  - add ``--sort-by`` option to ``perun status`` to allow sorting of profiles in ``perun status``
+  - fix minor things in documentation
+  - add few helper function for CLI and profiles
+  - rename origin in ProfileInfo to source (class of names)
+  - fix typos in documentation
+  - remake walk major version to return MajorVersion object, with head and major version name
+  - add helper function for loading the profile out of profile info
+  - extend the api of the vcs (with storing/restoring the state, checkout and dirty-testing)
+  - add :ckey:`profiles.register_after_run` configuration key to automatically register profiles after collection
+  - add :ckey:`execute.pre_run` config key for running commands before execution of matrix
+  - add helper function for safely getting config key
+  - add ``--minor-version`` parameter to ``perun collect`` and ``perun run`` to run the collection over different minor version
+  - add ``--crawl-parents`` parameter to allow ``perun collect`` and ``perun run`` to collect the data for both minor version and its predecessors
+  - add checking out of the minor version, and saving the state, to collection of profiles
+  - add :ckey:`degradation.collect_before_check` configuration key for automatically collect profiles before running degradation check
+
 0.14 (2018-03-27)
 -----------------
 

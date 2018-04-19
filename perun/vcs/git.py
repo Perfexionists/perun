@@ -12,7 +12,7 @@ import git.exc
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps
 from perun.utils.exceptions import VersionControlSystemException
-from perun.utils.helpers import MinorVersion
+from perun.utils.helpers import MinorVersion, MajorVersion
 
 __author__ = "Tomas Fiedor"
 
@@ -41,7 +41,10 @@ def create_repo_from_path(func):
     """
     def wrapper(repo_path, *args, **kwargs):
         """Wrapper function for the decorator"""
-        return func(git.Repo(repo_path), *args, **kwargs)
+        if isinstance(repo_path, git.Repo):
+            return func(repo_path, *args, **kwargs)
+        else:
+            return func(git.Repo(repo_path), *args, **kwargs)
     return wrapper
 
 
@@ -109,13 +112,12 @@ def _walk_minor_versions(git_repo, head):
 @create_repo_from_path
 def _walk_major_versions(git_repo):
     """
-    Arguments:
-        git_repo(git.Repo): wrapped git repository object
-    Returns:
-        MajorVersion: yields stream of major versions
+    :param git.Repo git_repo: wrapped git repository object
+    :returns MajorVersion: yields stream of major versions
+    :raises VersionControlSystemException: when the master head cannot be massaged
     """
-    for branch in git_repo.branches():
-        yield str(branch)
+    for branch in git_repo.branches:
+        yield MajorVersion(branch.name, _massage_parameter(git_repo, branch.name))
 
 
 def _parse_commit(commit):
@@ -228,3 +230,63 @@ def _massage_parameter(git_repo, parameter, parameter_type=None):
         raise VersionControlSystemException("parameter '{}' represents invalid reflog: {}".format(
             parameter, str(ie_exception)
         ))
+
+
+@create_repo_from_path
+def _is_dirty(git_repo):
+    """Returns true, if the repository is dirty, i.e. there are some uncommited changes either in
+    index or working dir.
+
+    :param git.Repo git_repo: wrapped git repository
+    :return: true if the repo is dirty, i.e. there are some changes
+    """
+    return git_repo.is_dirty()
+
+
+@create_repo_from_path
+def _save_state(git_repo):
+    """Saves stashed changes and previous head
+
+    This returns either the real detached head commit, or the previous reference. This is to ensure
+    that we are kept at the head branch and not at detached head state.
+
+    :param git.Repo git_repo: git repository
+    :returns: (bool, str) the tuple of indication that some changes were stashed and the state of
+        previous head.
+    """
+    saved_stashed_changes = False
+    if _is_dirty(git_repo):
+        git_repo.git.stash('save')
+        saved_stashed_changes = True
+
+    # If we are in state of detached head, we return the commit, otherwise we return the ref
+    if git_repo.head.is_detached:
+        return saved_stashed_changes, str(git_repo.head.commit)
+    else:
+        return saved_stashed_changes, str(git_repo.head.ref)
+
+
+@create_repo_from_path
+def _restore_state(git_repo, has_saved_stashed_changes, previous_state):
+    """Restores the previous state of the repository by restoring the stashed changes and checking
+    out the previous head.
+
+    Warning! This should be used in pair with save state!
+
+    :param git.Repo git_repo: git repository
+    :param bool has_saved_stashed_changes: if true, then we have stashed some changes
+    :param str previous_state: previous head of the repo
+    """
+    _checkout(git_repo, previous_state)
+    if has_saved_stashed_changes:
+        git_repo.git.stash('pop')
+
+
+@create_repo_from_path
+def _checkout(git_repo, minor_version):
+    """
+
+    :param git.Repo git_repo: git repository
+    :param str minor_version: newly checkout state
+    """
+    git_repo.git.checkout(minor_version)

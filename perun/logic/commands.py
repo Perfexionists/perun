@@ -556,7 +556,7 @@ def calculate_maximal_lengths_for_object_list(object_list, valid_attributes):
     return max_lengths
 
 
-def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tracked'):
+def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked'):
     """Prints list of profiles and counts per type of tracked/untracked profiles.
 
     Prints the list of profiles, trims the sizes of each information according to the
@@ -564,12 +564,14 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
     just the information about counts. Tracked and untracked differs in colours.
 
     Arguments:
-        pcs(PCS): wrapped perun repository
         profile_list(list): list of profiles of ProfileInfo objects
         max_lengths(dict): dictionary with maximal sizes for the output of profiles
         short(bool): true if the output should be short
         list_type(str): type of the profile list (either untracked or tracked)
     """
+    # Sort the profiles w.r.t time of creation
+    profile.sort_profiles(profile_list)
+
     # Print with padding
     profile_output_colour = 'white' if list_type == 'tracked' else 'red'
     index_id_char = 'i' if list_type == 'tracked' else 'p'
@@ -629,7 +631,8 @@ def print_profile_info_list(pcs, profile_list, max_lengths, short, list_type='tr
             else:
                 cprint(token, profile_output_colour)
         print("")
-    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
+        if profile_no % 5 == 0 or profile_no == profile_list_len - 1:
+            cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
 
 
 @pass_pcs
@@ -700,7 +703,7 @@ def get_untracked_profiles(pcs):
 
 @perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('status'))
 @pass_pcs
-def status(pcs, short=False):
+def status(pcs, short=False, **_):
     """Prints the status of performance control system
 
     Arguments:
@@ -733,10 +736,10 @@ def status(pcs, short=False):
     maxs = calculate_maximal_lengths_for_object_list(
         minor_version_profiles + untracked_profiles, profile.ProfileInfo.valid_attributes
     )
-    print_profile_info_list(pcs, minor_version_profiles, maxs, short)
+    print_profile_info_list(minor_version_profiles, maxs, short)
     if not short:
         print("")
-    print_profile_info_list(pcs, untracked_profiles, maxs, short, 'untracked')
+    print_profile_info_list(untracked_profiles, maxs, short, 'untracked')
 
 
 @pass_pcs
