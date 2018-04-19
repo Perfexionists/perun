@@ -124,7 +124,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     assert 'debug info' in err
 
 
-def test_collect_time(helpers, pcs_full, capsys):
+def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job
     before_object_count = helpers.count_contents_on_path(pcs_full.path)[0]
@@ -148,4 +148,13 @@ def test_collect_time(helpers, pcs_full, capsys):
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
 
-    # Fixme: Add check that the profile was correctly generated
+    # Test running time with error
+    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+
+    def collect_raising_exception(**kwargs):
+        raise Exception("Something happened lol!")
+
+    monkeypatch.setattr("perun.collect.time.run.collect", collect_raising_exception)
+    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    _, err = capsys.readouterr()
+    assert 'Something happened lol!' in err

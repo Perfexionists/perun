@@ -166,7 +166,11 @@ def run_all_phases_for(runner, runner_type, runner_params):
     for phase in ['before', runner_verb, 'after']:
         phase_function = getattr(runner, phase, None)
         if phase_function:
-            ret_val, ret_msg, updated_params = phase_function(**runner_params)
+            try:
+                ret_val, ret_msg, updated_params = phase_function(**runner_params)
+            # We safely catch all of the exceptions
+            except Exception as exc:
+                ret_val, ret_msg, updated_params = error_status, str(exc), {}
             runner_params.update(updated_params or {})
             if not is_status_ok(ret_val, ok_status):
                 return error_status, "error while {}{} phase: {}".format(
