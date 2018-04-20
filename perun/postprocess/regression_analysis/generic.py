@@ -218,7 +218,7 @@ def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
     try:
         tss = y_sq_sum - ((y_sum / num_sqrt) ** 2)
     except ZeroDivisionError:
-        tss = y_sq_sum - ((y_sum / tools.APPROX_ZERO) ** 2)   
+        tss = y_sq_sum - ((y_sum / tools.APPROX_ZERO) ** 2)
     # Compute the RSS
     try:
         rss = (s_xy / sqrt(s_xx)) ** 2

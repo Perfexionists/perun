@@ -13,19 +13,19 @@ import perun.logic.runner as runner
 import perun.check.general_detection as detect
 
 def fast_check(baseline_profile, target_profile):
-    """Temporary function, which call the general function and subsequently returns the 
+    """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
     :param dict baseline_profile: baseline against which we are checking the degradation
-    :param dict target_profile: profile corresponding to the checked minor version    
+    :param dict target_profile: profile corresponding to the checked minor version
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
-    
+
     return detect.general_detection(baseline_profile, target_profile, 2)
 
 def exec_fast_check(baseline_profile, baseline_x_pts, abs_error):
-    """The function executes the classification of performance change between two profiles with 
-    using regression analysis. The type of the best model from the regressed profile, which 
+    """The function executes the classification of performance change between two profiles with
+    using regression analysis. The type of the best model from the regressed profile, which
     contains the value absolute error, computed from the best models of both profile, is returned
     such as the degree of the changes.
 
@@ -37,7 +37,7 @@ def exec_fast_check(baseline_profile, baseline_x_pts, abs_error):
 
     # creating the new profile
     std_err_profile = copy.deepcopy(baseline_profile)
-    del std_err_profile['global']['models']    
+    del std_err_profile['global']['models']
 
     # executing the regression analysis
     i = 0
