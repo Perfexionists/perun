@@ -144,7 +144,6 @@ def print_degradation_results(deg_info, left_border="| ", indent=4):
             )
             print(')', end='')
         print('')
-    
 
 def print_rate_result(deg_info, left_border="| ", indent=4):
     """Helper function for printing results of degradation detection
@@ -337,7 +336,7 @@ def parse_strategy(strategy):
         'bmoe': 'best_model_order_equality',
         'preg': 'polynomial_regression',
         'lreg': 'linear_regression',
-        'fast': 'fast_check'  
+        'fast': 'fast_check'
     }
     if strategy in short_strings.keys():
         return short_strings[strategy]
@@ -407,7 +406,7 @@ class DegradationInfo(object):
             optimized or degraded
         :param str tt: value or model representing the target, i.e. to which the new version was
             optimized or degraded
-        :param int rd: average value of relative error, i.e. rate of degradation 
+        :param int rd: average value of relative error, i.e. rate of degradation
         :param str ct: type of the confidence we have in the detected degradation, e.g. r^2
         :param int cr: value of the confidence we have in the detected degradation
         """
