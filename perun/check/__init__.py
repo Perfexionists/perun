@@ -144,6 +144,35 @@ def print_degradation_results(deg_info, left_border="| ", indent=4):
             )
             print(')', end='')
         print('')
+    
+
+def print_rate_result(deg_info, left_border="| ", indent=4):
+    """Helper function for printing results of degradation detection
+
+    :param DegradationInfo deg_info: results of degradation detected in given profile
+    :param str left_border: string which is outputed on the left border of the screen
+    :param int indent: indent of the output
+    """
+    
+    if deg_info.result in (
+            PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
+    ):
+        print(left_border + ' '*indent + '      -> Average rate = ', end='')
+        log.cprint("{0:.0f} %\n".format(deg_info.rate_degradation), 'green', attrs=[])
+        print(left_border + ' '*indent + '      -> Assumption -> ', end='')
+        log.cprint('{}'.format(deg_info.type), 'green', attrs=[])
+    elif deg_info.result in (
+            PerformanceChange.Degradation, PerformanceChange.MaybeDegradation
+    ):
+        print(left_border + ' '*indent + '      -> Average rate = ', end='')
+        log.cprint('{0:.0f} %\n'.format(deg_info.rate_degradation), 'red', attrs=[])
+        print(left_border + ' '*indent + '      -> Assumption -> ', end='')
+        log.cprint('{}'.format(deg_info.type), 'red', attrs=[])
+    
+    if deg_info.result not in (
+            PerformanceChange.NoChange, PerformanceChange.NoChange
+    ):
+        print('')
 
 
 def process_profile_pair(baseline_profile, target_profile, profile_config, left_border="| ", indent=4):
@@ -167,12 +196,12 @@ def process_profile_pair(baseline_profile, target_profile, profile_config, left_
     for degradation in degradation_between_profiles(baseline_profile, target_profile, left_border):
         found_change = found_change or degradation.result != PerformanceChange.NoChange
         print_degradation_results(degradation, left_border, indent)
+        print_rate_result(degradation, left_border, indent)
     if not found_change and log.is_verbosity_below(log.VERBOSE_INFO):
         print(left_border + ' '*indent + '  - ', end='')
         log.cprint(CHANGE_STRINGS[PerformanceChange.NoChange],
                    CHANGE_COLOURS[PerformanceChange.NoChange], attrs=['bold'])
         print(' detected')
-
 
 def degradation_in_minor(minor_version):
     """Checks for degradation according to the profiles stored for the given minor version.
@@ -305,7 +334,10 @@ def parse_strategy(strategy):
     """
     short_strings = {
         'aat': 'average_amount_threshold',
-        'bmoe': 'best_model_order_equality'
+        'bmoe': 'best_model_order_equality',
+        'preg': 'polynomial_regression',
+        'lreg': 'linear_regression',
+        'fast': 'fast_check'  
     }
     if strategy in short_strings.keys():
         return short_strings[strategy]
@@ -358,7 +390,7 @@ class DegradationInfo(object):
     :ivar int confidence_rate: value of the confidence we have in the detected degradation
     """
 
-    def __init__(self, res, t, loc, fb, tt, ct="no", cr=0):
+    def __init__(self, res, t, loc, fb, tt, rd=0, ct="no", cr=0):
         """Each degradation consists of its results, the location, where the change has happened
         (this is e.g. the unique id of the resource, like function or concrete line), then the pair
         of best models for baseline and target, and the information about confidence.
@@ -375,6 +407,7 @@ class DegradationInfo(object):
             optimized or degraded
         :param str tt: value or model representing the target, i.e. to which the new version was
             optimized or degraded
+        :param int rd: average value of relative error, i.e. rate of degradation 
         :param str ct: type of the confidence we have in the detected degradation, e.g. r^2
         :param int cr: value of the confidence we have in the detected degradation
         """
@@ -383,5 +416,6 @@ class DegradationInfo(object):
         self.location = loc
         self.from_baseline = fb
         self.to_target = tt
+        self.rate_degradation = rd
         self.confidence_type = ct
         self.confidence_rate = cr
