@@ -152,7 +152,7 @@ def print_rate_result(deg_info, left_border="| ", indent=4):
     :param str left_border: string which is outputed on the left border of the screen
     :param int indent: indent of the output
     """
-    
+
     if deg_info.result in (
             PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
     ):
