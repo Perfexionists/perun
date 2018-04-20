@@ -237,7 +237,7 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
         log.error("missing parameter: {}".format(collector_exception))
 
 
-def run_postprocessor(postprocessor, job, prof):
+def run_postprocessor(postprocessor, job, prof, info=True):
     """Run the job of postprocess of the given name.
 
     Tries to look up the module containing the postprocessor specified by the
@@ -252,9 +252,10 @@ def run_postprocessor(postprocessor, job, prof):
     Returns:
         (int, dict): status of the collection, postprocessed profile
     """
-    log.print_current_phase(
-        "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
-    )
+    if info:
+        log.print_current_phase(
+            "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
+        )
 
     try:
         postprocessor_module = get_module('perun.postprocess.{0}.run'.format(postprocessor.name))
@@ -268,7 +269,7 @@ def run_postprocessor(postprocessor, job, prof):
 
     if post_status != PostprocessStatus.OK:
         log.error(post_msg)
-    else:
+    elif info:
         print("Successfully postprocessed data by {}".format(postprocessor.name))
 
     return post_status, prof
@@ -290,7 +291,7 @@ def store_generated_profile(pcs, prof, job):
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
 
 
-def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params):
+def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params, return_prof=False):
     """Run the job of the postprocessor according to the given profile.
 
     First extracts the information from the profile in order to construct the job,
@@ -310,10 +311,16 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params)
     postprocessor_unit = Unit(postprocessor_name, postprocessor_params)
     profile_job.postprocessors.append(postprocessor_unit)
 
-    p_status, processed_profile = run_postprocessor(postprocessor_unit, profile_job, prof)
+    if return_prof:
+        p_status, processed_profile = run_postprocessor(postprocessor_unit, profile_job, prof, False)
+    else:
+        p_status, processed_profile = run_postprocessor(postprocessor_unit, profile_job, prof)
     if p_status == PostprocessStatus.OK and prof:
-        store_generated_profile(pcs, processed_profile, profile_job)
-    return p_status
+        if not return_prof:
+            store_generated_profile(pcs, processed_profile, profile_job)
+            return p_status
+        else:
+            return processed_profile
 
 
 def run_jobs(pcs, job_matrix, number_of_jobs):
