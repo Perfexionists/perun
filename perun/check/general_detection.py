@@ -138,7 +138,7 @@ def general_detection(baseline_profile, target_profile, mode=0):
             elif mode == 2: # classification based on the regression analysis
                 change_type = check.fast_check.exec_fast_check(baseline_profile, baseline_x_pts, abs_error)
                 change_type = change_type[baseline_model[0]][0].upper() + ' '
-        
+
         # check the relevant degree of changes and its type (negative or positive)
         if change != check.PerformanceChange.NoChange:
             if (sum_abs_err > 0):
