@@ -5,7 +5,6 @@
 import perun.postprocess.regression_analysis.tools as tools
 import numpy as np
 
-
 # Default model curve smoothness specified as number of points generated from x interval
 # The higher the value, the smoother the curves, the longer the computation tho.
 # Default value is an empirically chosen compromise between speed and smoothness
@@ -40,7 +39,7 @@ def model_plot_computation(model_x, model_y, **data):
     return plot_data
 
 
-def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOOTHNESS, **_):
+def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOOTHNESS, return_dict=True, **_):
     """Generic version of model x points computation.
 
     Splits the x interval of model into number of points.
@@ -53,10 +52,12 @@ def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOO
     """
     # Produce number of points from the interval
     plot_x = tools.split_model_interval(x_interval_start, x_interval_end, smoothness)
-    return dict(plot_x=plot_x)
+    if return_dict == True:
+        return dict(plot_x=plot_x)
+    return plot_x
 
 
-def linear_plot_x_pts(x_interval_start, x_interval_end, **_):
+def linear_plot_x_pts(x_interval_start, x_interval_end, return_dict=True, **_):
     """Specific version of model x points computation.
 
     Creates array with only the interval border values (i.e. [interval_start, interval_end])
@@ -68,10 +69,12 @@ def linear_plot_x_pts(x_interval_start, x_interval_end, **_):
     """
     # Create simple two-value array
     plot_x = np.array([x_interval_start, x_interval_end])
-    return dict(plot_x=plot_x)
+    if return_dict == True:
+        return dict(plot_x=plot_x)
+    return plot_x
 
 
-def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, **_):
+def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, return_dict=True, **_):
     """ The generic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.
@@ -96,10 +99,12 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, **_):
     # Apply the computation formula
     plot_y = np.array(formula(b0, b1, plot_x))
 
-    return dict(plot_y=plot_y)
+    if return_dict:
+        return dict(plot_y=plot_y)
+    return plot_y
 
 
-def quad_plot_y_pts(plot_x, b0, b1, b2, formula, **_):
+def quad_plot_y_pts(plot_x, b0, b1, b2, formula, return_dict=True, **_):
     """ The quadratic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.
@@ -120,4 +125,6 @@ def quad_plot_y_pts(plot_x, b0, b1, b2, formula, **_):
     # Apply the computation formula
     plot_y = np.array(formula(b0, b1, b2, plot_x))
 
-    return dict(plot_y=plot_y)
+    if return_dict:
+        return dict(plot_y=plot_y)
+    return plot_y
