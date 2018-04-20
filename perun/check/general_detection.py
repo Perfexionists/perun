@@ -153,7 +153,7 @@ def general_detection(baseline_profile, target_profile, mode=0):
                 else:
                     change = check.PerformanceChange.MaybeOptimization
                 change_type += 'IMPROVEMENT'
-        
+   
         best_corresponding_linear_model = best_baseline_models.get(
             baseline_linear_model[0])
         best_corresponding_baseline_model = best_baseline_models.get(
