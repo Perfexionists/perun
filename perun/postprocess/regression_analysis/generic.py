@@ -160,13 +160,25 @@ def generic_regression_coefficients(
     :returns dict: data dictionary with coefficients and intermediate results
     """
     # Compute the coefficients
-    s_xy = xy_sum - (x_sum / num_sqrt) * (y_sum / num_sqrt)
-    s_xx = x_sq_sum - ((x_sum / num_sqrt) ** 2)
+    try:
+        s_xy = xy_sum - (x_sum / num_sqrt) * (y_sum / num_sqrt)
+    except ZeroDivisionError:
+        s_xy = xy_sum - (x_sum / tools.APPROX_ZERO) * (y_sum / tools.APPROX_ZERO)
+
+    try:
+        s_xx = x_sq_sum - ((x_sum / num_sqrt) ** 2)
+    except ZeroDivisionError:
+        s_xx = x_sq_sum - ((x_sum / tools.APPROX_ZERO) ** 2)
+
     try:
         b1 = s_xy / s_xx
     except ZeroDivisionError:
         b1 = s_xy / tools.APPROX_ZERO
-    b0 = (y_sum - b1 * x_sum) / pts_num
+
+    try:
+        b0 = (y_sum - b1 * x_sum) / pts_num
+    except ZeroDivisionError:
+        b0 = (y_sum - b1 * x_sum) / tools.APPROX_ZERO
 
     # Apply the modification functions on the coefficients and save them
     data = dict(coeffs=[f_a(b0), f_b(b1)], s_xy=s_xy, s_xx=s_xx)
@@ -203,7 +215,10 @@ def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
     :returns dict: data dictionary with error value, tss and rss results
     """
     # Compute the TSS
-    tss = y_sq_sum - ((y_sum / num_sqrt) ** 2)
+    try:
+        tss = y_sq_sum - ((y_sum / num_sqrt) ** 2)
+    except ZeroDivisionError:
+        tss = y_sq_sum - ((y_sum / tools.APPROX_ZERO) ** 2)   
     # Compute the RSS
     try:
         rss = (s_xy / sqrt(s_xx)) ** 2
