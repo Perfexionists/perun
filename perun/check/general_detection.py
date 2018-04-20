@@ -20,6 +20,8 @@ import perun.logic.runner as runner
 
 __author__ = 'Simon Stupinsky'
 
+SAMPLES = 1000
+
 def get_best_models_of(profile, model_type=None):
     """Obtains the models from the given profile. In the first case the method obtains the
     best fitting models, it means, that it obtains the models which have the higher values
@@ -71,12 +73,8 @@ def get_function_values(model):
     :returns: np_array (x-coordinates, y-coordinates)
     """
 
-    if model[1][0] == 'linear':
-        array_x_pts = regression_models._MODELS[model[1][0]
-        ]['transformations']['plot_model']['model_x'](model[1][4], model[1][5], 1000, False)
-    else:
-        array_x_pts = regression_models._MODELS[model[1][0]
-        ]['transformations']['plot_model']['model_x'](model[1][4], model[1][5], 1000, False)
+    array_x_pts = regression_models._MODELS[model[1][0]
+        ]['transformations']['plot_model']['model_x'](model[1][4], model[1][5], SAMPLES, False)
 
     if model[1][0] == 'quadratic':
         array_y_pts = regression_models._MODELS[model[1][0]]['transformations']['plot_model']['model_y'](
