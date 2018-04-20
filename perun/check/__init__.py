@@ -167,7 +167,7 @@ def print_rate_result(deg_info, left_border="| ", indent=4):
         log.cprint('{0:.0f} %\n'.format(deg_info.rate_degradation), 'red', attrs=[])
         print(left_border + ' '*indent + '      -> Assumption -> ', end='')
         log.cprint('{}'.format(deg_info.type), 'red', attrs=[])
-    
+
     if deg_info.result not in (
             PerformanceChange.NoChange, PerformanceChange.NoChange
     ):
