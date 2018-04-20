@@ -73,7 +73,7 @@ def test_const_model(postprocess_profiles):
 
     # Perform the analysis
     code, _, profile = postprocess(
-        const_model, method='full', regression_models=['const'], steps=1)
+        const_model, method='full', regression_models=['constant'], steps=1)
     assert code.value == 0
     models = generate_models_by_uid(profile, 'constant', ['const::test1', 'const::test2'])
 
@@ -152,7 +152,7 @@ def test_quad_model_using_power(postprocess_profiles):
     assert quad_model is not None
 
     # Perform the analysis of quadratic-expected models
-    code, _, profile = postprocess(quad_model, method='full', regression_models=['quad'], steps=1)
+    code, _, profile = postprocess(quad_model, method='full', regression_models=['quadratic'], steps=1)
     assert code.value == 0
     models = generate_models_by_uid(profile, 'quadratic', ['quad::test1'])
 
@@ -182,7 +182,7 @@ def test_log_model(postprocess_profiles):
     assert pow_model is not None
 
     # Perform the analysis
-    code, _, profile = postprocess(pow_model, method='full', regression_models=['log'], steps=1)
+    code, _, profile = postprocess(pow_model, method='full', regression_models=['logarithmic'], steps=1)
     assert code.value == 0
     models = generate_models_by_uid(profile, 'logarithmic', ['log::test1', 'log::test2'])
 
@@ -271,7 +271,7 @@ def test_exp_model(postprocess_profiles):
     assert exp_model is not None
 
     # Perform the analysis
-    code, _, profile = postprocess(exp_model, method='full', regression_models=['exp'], steps=1)
+    code, _, profile = postprocess(exp_model, method='full', regression_models=['exponential'], steps=1)
     assert code.value == 0
     models = generate_models_by_uid(profile, 'exponential',
                                     ['exp::test1', 'exp::test2', 'exp::test3'])

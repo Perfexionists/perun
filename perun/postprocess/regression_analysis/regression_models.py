@@ -171,15 +171,16 @@ def filter_derived(regression_models_keys):
 # -- formula: function with formula for y coordinates computation
 _MODELS = {
     'all': {},  # key representing all models
-    'const': {
+    'constant': {
         'model': 'constant',
+        'f_x': 0,
         'derived': derived.derived_const,
         'required': 'linear',
         'b1_threshold': 0.001,
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
-                'model_x': plot.linear_plot_x_pts,
+                'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.generic_plot_y_pts,
                 'formula': lambda b0, b1, x: b0 + b1 * x
             }
@@ -200,13 +201,13 @@ _MODELS = {
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,
-                'model_x': plot.linear_plot_x_pts,
+                'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.generic_plot_y_pts,
                 'formula': lambda b0, b1, x: b0 + b1 * x
             }
         }
     },
-    'log': {
+    'logarithmic': {
         'model': 'logarithmic',
         'f_x': math.log,
         'f_y': lambda y: y,
@@ -229,7 +230,7 @@ _MODELS = {
         }
     },
     # Should not be used for new profiles, the quadratic model can be achieved using the power model
-    'quad': {
+    'quadratic': {
         'model': 'quadratic',
         'data_gen': specific.specific_quad_data,
         'computation': generic.generic_compute_regression,
@@ -267,7 +268,7 @@ _MODELS = {
             }
         }
     },
-    'exp': {
+    'exponential': {
         'model': 'exponential',
         'f_x': lambda x: x,
         'f_y': math.log10,
