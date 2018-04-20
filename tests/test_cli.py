@@ -133,7 +133,7 @@ def test_reg_analysis_correct(pcs_full):
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
 
-    # Instantiate the runner fist
+    # Instantiate the runner first
     runner = CliRunner()
 
     result = runner.invoke(cli.status, [])
@@ -186,21 +186,21 @@ def test_reg_analysis_correct(pcs_full):
 
     # Test explicit models specification for multiple models
     result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
-                                               '-r', 'linear', '-r', 'log', '-r', 'exp'])
+                                               '-r', 'linear', '-r', 'logarithmic', '-r', 'exponential'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification for all models
     result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
-                                               '-r', 'linear', '-r', 'log', '-r', 'power',
-                                               '-r', 'exp'])
+                                               '-r', 'linear', '-r', 'logarithmic', '-r', 'power',
+                                               '-r', 'exponential'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification for all models values (also with 'all' value)
     result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
-                                               '-r', 'linear', '-r', 'log', '-r', 'power', '-r',
-                                               'exp', '-r', 'all'])
+                                               '-r', 'linear', '-r', 'logarithmic', '-r', 'power', '-r',
+                                               'exponential', '-r', 'all'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
