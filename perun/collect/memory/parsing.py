@@ -1,8 +1,10 @@
 """This module provides methods for parsing raw memory data"""
 
+import collections
 import re
 
 from decimal import Decimal
+import perun.profile.convert as convert
 import perun.collect.memory.syscalls as syscalls
 
 __author__ = "Radim Podola"
@@ -11,6 +13,7 @@ PATTERN_WORD = re.compile(r"(\w+|[?])")
 PATTERN_TIME = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 PATTERN_INT = re.compile(r"\d+")
+UID_RESOURCE_MAP = collections.defaultdict(int)
 
 
 def parse_stack(stack):
@@ -111,6 +114,11 @@ def parse_resources(allocation):
     # parsing call trace to get first user call
     # to allocation function
     data.update({'uid': parse_allocation_location(trace)})
+
+    # update the resource number
+    flattened_uid = convert.flatten(data['uid'])
+    UID_RESOURCE_MAP[flattened_uid] += 1
+    data.update({'allocation_order': UID_RESOURCE_MAP[flattened_uid]})
 
     return data
 

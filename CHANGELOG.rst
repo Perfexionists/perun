@@ -6,6 +6,10 @@ HEAD
 
 **To be included in next release**
 
+  - fix issue with pending tags not being sorted ;)
+  - fix the issue with incorrectly flattened values in query
+  - extend the memory collector to include the allocation order as resource
+
 0.14.1 (2018-04-19)
 -------------------
 

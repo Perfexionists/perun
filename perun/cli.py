@@ -396,6 +396,7 @@ def lookup_nth_pending_filename(position):
         str: pending profile at given position
     """
     pending = commands.get_untracked_profiles(PCS(store.locate_perun_dir_on(os.getcwd())))
+    profiles.sort_profiles(pending)
     if 0 <= position < len(pending):
         return pending[position].realpath
     else:

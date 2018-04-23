@@ -566,7 +566,7 @@ def flatten(flattened_value):
             nested_values.append((key, value))
         # Return the overall key as joined values of its nested stuff,
         # only if root is not a list (i.e. root key is not int = index)!
-        sorted(nested_values, key=operator.itemgetter(0))
+        nested_values.sort(key=operator.itemgetter(0))
         return ":".join(map(str, map(operator.itemgetter(1), nested_values)))
     # Lists are merged as comma separated keys
     elif isinstance(flattened_value, list):
