@@ -187,20 +187,18 @@ def read_and_deflate_chunk(file_handle, chunk_size=-1):
     return decompressor.decompress(packed_content).decode('utf-8')
 
 
-def split_object_name(base_dir, object_name):
+def split_object_name(base_dir, object_name, object_ext=""):
     """
-    Arguments:
-        base_dir(str): base directory for the object_name
-        object_name(str): sha-1 string representing the object (possibly with extension)
-
-    Returns:
-        (str, str): full path for directory and full path for file
+    :param str base_dir: base directory for the object_name
+    :param str object_name: sha-1 string representing the object (possibly with extension)
+    :param str object_ext: additional extension of the created file
+    :returns (str, str): full path for directory and full path for file
     """
     object_dir, object_file = object_name[:2], object_name[2:]
     object_dir_full_path = os.path.join(base_dir, object_dir)
     object_file_full_path = os.path.join(object_dir_full_path, object_file)
 
-    return object_dir_full_path, object_file_full_path
+    return object_dir_full_path, object_file_full_path + object_ext
 
 
 def add_loose_object_to_dir(base_dir, object_name, object_content):

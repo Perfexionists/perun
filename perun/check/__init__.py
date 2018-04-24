@@ -1,4 +1,5 @@
 import os
+import re
 
 import distutils.util as dutils
 from enum import Enum
@@ -40,6 +41,96 @@ CHANGE_COLOURS = {
     PerformanceChange.MaybeOptimization: 'cyan',
     PerformanceChange.Optimization: 'blue'
 }
+LINE_PARSING_REGEX = re.compile(
+    r"(?P<location>.+)\s"
+    r"PerformanceChange[.](?P<result>[A-Za-z]+)\s"
+    r"(?P<type>\S+)\s"
+    r"(?P<from>\S+)\s"
+    r"(?P<to>\S+)\s"
+    r"(?P<ctype>\S+)\s"
+    r"(?P<crate>\S+)\s"
+    r"(?P<minor>\S+)\s"
+    r"(?P<cmdstr>.+)"
+)
+
+
+def save_degradation_list_for(base_dir, minor_version, degradation_list):
+    """Saves the given degradation list to a minor version storage
+
+    This converts the list of degradation records to a storage-able format. Moreover,
+    this loads all of the already stored degradations. For each tuple of the change
+    location and change type, this saves only one change record.
+
+    :param str base_dir: base directory, where the degradations will be stored
+    :param str minor_version: minor version for which we are storing the degradations
+    :param degradation_list:
+    :return:
+    """
+    already_saved_changes = load_degradation_list_for(base_dir, minor_version)
+
+    list_of_registered_changes = dict()
+    degradation_list.extend(already_saved_changes)
+    for deg_info, cmdstr, source in degradation_list[::-1]:
+        info_string = " ".join([
+            deg_info.to_storage_record(),
+            source,
+            cmdstr
+        ])
+        uid = (deg_info.location, deg_info.type)
+        list_of_registered_changes[uid] = info_string
+
+    # Sort the changes
+    to_be_stored_changes = sorted(list(list_of_registered_changes.values()))
+
+    # Store the changes in the file
+    minor_dir, minor_storage_file = store.split_object_name(base_dir, minor_version, ".changes")
+    store.touch_dir(minor_dir)
+    store.touch_file(minor_storage_file)
+    with open(minor_storage_file, 'w') as write_handle:
+        write_handle.write("\n".join(to_be_stored_changes))
+
+
+def parse_changelog_line(line):
+    """Parses one changelog record into the triple of degradation info, command string and minor.
+
+    :param str line: input line from one change log
+    :return: triple (degradation info, command string, minor version)
+    """
+    tokens = LINE_PARSING_REGEX.match(line)
+    deg_info = DegradationInfo(
+        PerformanceChange[tokens.group('result')],
+        tokens.group('type'),
+        tokens.group('location'),
+        tokens.group('from'),
+        tokens.group('to'),
+        tokens.group('ctype'),
+        float(tokens.group('crate'))
+    )
+    return deg_info, tokens.group('cmdstr'), tokens.group('minor')
+
+
+def load_degradation_list_for(base_dir, minor_version):
+    """Loads a list of degradations stored for the minor version.
+
+    This opens a file in the .perun/objects directory in the minor version subdirectory with the
+    extension ".changes". The file is basically a log of degradation records separated by
+    white spaces in ascii coding.
+
+    :param str base_dir: directory to the storage of the objects
+    :param str minor_version:
+    :return: list of triples (DegradationInfo, command string, minor version source)
+    """
+    minor_dir, minor_storage_file = store.split_object_name(base_dir, minor_version, ".changes")
+    store.touch_dir(minor_dir)
+    store.touch_file(minor_storage_file)
+    with open(minor_storage_file, 'r') as read_handle:
+        lines = read_handle.readlines()
+
+    degradation_list = []
+    for line in lines:
+        parsed_triple = parse_changelog_line(line.strip())
+        degradation_list.append(parsed_triple)
+    return degradation_list
 
 
 def profiles_to_queue(pcs, minor_version):
@@ -67,7 +158,7 @@ def print_configuration(configuration):
     if configuration[4]:
         print("+", end='')
         log.cprint("{}".format(configuration[4]), 'magenta', attrs=['bold'])
-    print(" for cmd: '$ {}'".format(" ".join(configuration[1:4])))
+    print(" for cmd: '$ {}'".format(profiles.config_tuple_to_cmdstr(configuration)))
 
 
 def get_degradation_change_colours(degradation_result):
@@ -144,7 +235,7 @@ def process_profile_pair(baseline_profile, target_profile, profile_config, left_
     :param tuple profile_config: profile configuration (should be the same for both profiles)
     :param str left_border: symbols printed on the left border of the report
     :param int indent: indent of the rest of the information
-    :return:
+    :return: iterable stream of degradation propagated from profiles
     """
     print(left_border, end='')
     print_configuration(profile_config)
@@ -152,6 +243,7 @@ def process_profile_pair(baseline_profile, target_profile, profile_config, left_
     for degradation in degradation_between_profiles(baseline_profile, target_profile, left_border):
         found_change = found_change or degradation.result != PerformanceChange.NoChange
         print_degradation_results(degradation, left_border, indent)
+        yield degradation
     if not found_change and log.is_verbosity_below(log.VERBOSE_INFO):
         print(left_border + ' '*indent + '  - ', end='')
         log.cprint(CHANGE_STRINGS[PerformanceChange.NoChange],
@@ -193,6 +285,7 @@ def degradation_in_minor(minor_version):
     log.print_minor_version(minor_version_info)
     pre_collect_profiles(minor_version_info)
     target_profile_queue = profiles_to_queue(pcs, minor_version)
+    detected_changes = []
     while target_profile_queue and baseline_version_queue:
         # Pop the nearest baseline
         baseline = baseline_version_queue.pop(0)
@@ -213,11 +306,21 @@ def degradation_in_minor(minor_version):
         # Iterate through the profiles and check degradation between those of same configuration
         for baseline_config, baseline_profile in baseline_profiles.items():
             target_profile = target_profile_queue.get(baseline_config)
+            cmdstr = profiles.config_tuple_to_cmdstr(baseline_config)
             if target_profile:
                 # Print information about configuration
-                process_profile_pair(baseline_profile, target_profile, baseline_config)
+                # and extend the list of the detected changes including the configuration
+                # and source minor version.
+                detected_changes.extend([
+                    (deg, cmdstr, baseline_info.checksum) for deg in
+                    process_profile_pair(baseline_profile, target_profile, baseline_config)
+                    if deg.result != PerformanceChange.NoChange
+                ])
                 del target_profile_queue[target_profile.config_tuple]
         print('|')
+
+        # Store the detected degradation
+        save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
 
 
 def degradation_in_history(head):
@@ -256,21 +359,31 @@ def degradation_between_profiles(baseline_profile, target_profile, left_border="
         )
 
 
-def degradation_between_files(baseline_file, target_file):
+def degradation_between_files(baseline_file, target_file, minor_version):
     """Checks between pair of files (baseline, target) whether there are any changes in performance.
 
     :param dict baseline_file: baseline profile we are checking against
     :param dict target_file: target profile we are testing
+    :param str minor_version: target minor_version
     """
     # First check if the configurations are compatible
     baseline_config = profiles.to_config_tuple(baseline_file)
     target_config = profiles.to_config_tuple(target_file)
+    target_minor_version = target_file.get('origin', minor_version)
     if baseline_config != target_config:
         log.error("incompatible configurations '{}' and '{}'".format(
             baseline_config, target_config
         ) + "\n\nPerformance check does not make sense for profiles collected in different ways!")
 
-    process_profile_pair(baseline_file, target_file, baseline_config, left_border='', indent=4)
+    detected_changes = [
+        (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version) for deg in
+        process_profile_pair(baseline_file, target_file, baseline_config, left_border='', indent=4)
+        if deg.result != PerformanceChange.NoChange
+    ]
+
+    # Store the detected changes for given minor version
+    pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+    save_degradation_list_for(pcs.get_object_directory(), target_minor_version, detected_changes)
 
 
 def is_rule_applicable_for(rule, configuration):
@@ -366,10 +479,10 @@ class DegradationInfo(object):
     :ivar str to_target: value or model representing the target, i.e. to which the new version was
         optimized or degraded
     :ivar str confidence_type: type of the confidence we have in the detected degradation, e.g. r^2
-    :ivar int confidence_rate: value of the confidence we have in the detected degradation
+    :ivar float confidence_rate: value of the confidence we have in the detected degradation
     """
 
-    def __init__(self, res, t, loc, fb, tt, ct="no", cr=0):
+    def __init__(self, res, t, loc, fb, tt, ct="no", cr=0.0):
         """Each degradation consists of its results, the location, where the change has happened
         (this is e.g. the unique id of the resource, like function or concrete line), then the pair
         of best models for baseline and target, and the information about confidence.
@@ -387,7 +500,7 @@ class DegradationInfo(object):
         :param str tt: value or model representing the target, i.e. to which the new version was
             optimized or degraded
         :param str ct: type of the confidence we have in the detected degradation, e.g. r^2
-        :param int cr: value of the confidence we have in the detected degradation
+        :param float cr: value of the confidence we have in the detected degradation
         """
         self.result = res
         self.type = t
@@ -396,3 +509,18 @@ class DegradationInfo(object):
         self.to_target = tt
         self.confidence_type = ct
         self.confidence_rate = cr
+
+    def to_storage_record(self):
+        """Transforms the degradation info to a storage_record
+
+        :return: string representation of the degradation as a stored record in the file
+        """
+        return "{} {} {} {} {} {} {}".format(
+            self.location,
+            self.result,
+            self.type,
+            self.from_baseline,
+            self.to_target,
+            self.confidence_type,
+            self.confidence_rate
+        )

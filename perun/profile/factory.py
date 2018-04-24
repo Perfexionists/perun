@@ -331,6 +331,15 @@ def to_config_tuple(profile):
     )
 
 
+def config_tuple_to_cmdstr(config_tuple):
+    """Converts tuple to command string
+
+    :param tuple config_tuple: tuple of (collector, cmd, args, workload, postprocessors)
+    :return: string representing the executed command
+    """
+    return " ".join(filter(lambda x: x, config_tuple[1:4]))
+
+
 def extract_job_from_profile(profile):
     """Extracts information from profile about job, that was done to generate the profile.
 

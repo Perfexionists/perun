@@ -1231,7 +1231,7 @@ def check_all(minor_head='HEAD'):
               callback=minor_version_lookup_callback, metavar='<hash>',
               help='Will check the index of different minor version <hash>'
                    ' during the profile lookup.')
-def check_profiles(baseline_profile, target_profile, **_):
+def check_profiles(baseline_profile, target_profile, minor, **_):
     """Checks for changes in performance between two profiles.
 
     The commands checks for the changes between two isolate profiles, that can be stored in pending
@@ -1256,7 +1256,7 @@ def check_profiles(baseline_profile, target_profile, **_):
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
     """
-    check.degradation_between_files(baseline_profile, target_profile)
+    check.degradation_between_files(baseline_profile, target_profile, minor)
 
 
 @cli.group('utils')
