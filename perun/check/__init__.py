@@ -1,4 +1,6 @@
+import collections
 import os
+import operator
 import re
 
 import distutils.util as dutils
@@ -69,8 +71,8 @@ def save_degradation_list_for(base_dir, minor_version, degradation_list):
     already_saved_changes = load_degradation_list_for(base_dir, minor_version)
 
     list_of_registered_changes = dict()
-    degradation_list.extend(already_saved_changes)
-    for deg_info, cmdstr, source in degradation_list[::-1]:
+    already_saved_changes.extend(degradation_list)
+    for deg_info, cmdstr, source in already_saved_changes:
         info_string = " ".join([
             deg_info.to_storage_record(),
             source,
@@ -131,6 +133,20 @@ def load_degradation_list_for(base_dir, minor_version):
         parsed_triple = parse_changelog_line(line.strip())
         degradation_list.append(parsed_triple)
     return degradation_list
+
+
+def count_degradations_per_group(degradation_list):
+    """Counts the number of optimizations and degradations
+
+    :param list degradation_list: list of tuples of (degradation info, cmdstr, minor version)
+    :return: dictionary mapping change strings to its counts
+    """
+    # Get only degradation results
+    changes = map(operator.attrgetter('result'), map(operator.itemgetter(0), degradation_list))
+    # Transform the enum into a string
+    changes = list(map(operator.attrgetter('name'), changes))
+    counts = dict(collections.Counter(changes))
+    return counts
 
 
 def profiles_to_queue(pcs, minor_version):
@@ -273,11 +289,23 @@ def pre_collect_profiles(minor_version):
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
 
+def print_changes_report(degradation_list):
+    """Prints the short report of found degradations
+
+    :param list degradation_list: list of found changes
+    """
+    counts = count_degradations_per_group(degradation_list)
+    if counts:
+        print("Found: ", ", ".join(
+            "{} {}{}".format(count, res, "s" if count > 1 else "") for res, count in counts.items()
+        ))
+
+
 def degradation_in_minor(minor_version):
     """Checks for degradation according to the profiles stored for the given minor version.
 
     :param str minor_version: representation of head point of degradation checking
-    :returns: tuple (degradation result, degradation location, degradation rate)
+    :returns: list of found changes
     """
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
@@ -320,7 +348,9 @@ def degradation_in_minor(minor_version):
         print('|')
 
         # Store the detected degradation
+        print_changes_report(detected_changes)
         save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
+    return detected_changes
 
 
 def degradation_in_history(head):
@@ -331,8 +361,10 @@ def degradation_in_history(head):
     """
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     print("Running the degradation checks on all history. This might take a while!")
+    detected_changes = []
     for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
-        degradation_in_minor(minor_version.checksum)
+        detected_changes.extend(degradation_in_minor(minor_version.checksum))
+    print_changes_report(detected_changes)
 
 
 def degradation_between_profiles(baseline_profile, target_profile, left_border="| "):
@@ -383,6 +415,7 @@ def degradation_between_files(baseline_file, target_file, minor_version):
 
     # Store the detected changes for given minor version
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+    print_changes_report(detected_changes)
     save_degradation_list_for(pcs.get_object_directory(), target_minor_version, detected_changes)
 
 
