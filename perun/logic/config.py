@@ -207,6 +207,10 @@ vcs:
   type: {0}
   url: {1}
 
+## Uncomment this to automatically register newly collected profiles for current minor version
+# profiles:
+#   register_after_run: true
+
 ## To collect profiling data from the binary using the set of collectors,
 ## uncomment and edit the following region:
 # cmds:
@@ -236,6 +240,23 @@ vcs:
 #     params: --remove-zero
 #   - name: filter
 ## Try '$ perun postprocessby --help' to obtain list of supported collectors!
+
+## To run detection of degradation for this repository, uncomment the following:
+# degradation:
+## Setting this option to true value will make Perun collect new profiles,
+## before checking for degradations
+#   collect_before_check: true
+## Setting this to first (resp. all) will apply the first (resp. all) found check methods
+## for corresponding configurations
+#   apply: first
+## Specification of list of rules for applying degradation checks
+#   strategy:
+#     - method: average_amount_threshold
+
+## To run your custom steps before any collection uncomment the following region:
+# execute:
+#   pre_run:
+#     - make
     """.format(wrapped_vcs['vcs']['type'], wrapped_vcs['vcs']['url']))
 
     write_config_to(path, local_config)

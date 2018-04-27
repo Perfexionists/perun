@@ -11,6 +11,8 @@ HEAD
   - extend the memory collector to include the allocation order as resource
   - add loading and storing of performance change records
   - add short printed results for found degradations
+  - update the default generated config
+  - remake the output of time collector
 
 0.14.1 (2018-04-19)
 -------------------
