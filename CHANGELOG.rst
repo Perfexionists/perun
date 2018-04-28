@@ -13,6 +13,9 @@ HEAD
   - add short printed results for found degradations
   - update the default generated config
   - remake the output of time collector
+  - fix issue with integer workloads
+  - fix issue with non-sorted index profiles
+  - fix issue with memory collector not removing the unreachable allocations
 
 0.14.1 (2018-04-19)
 -------------------
@@ -93,9 +96,6 @@ HEAD
   - fix nondeterministic tests
   - define structure for representing the result of performance change
   - add basic implementation of performance change detectors
-  - fix issue with integer workloads
-  - fix issue with non-sorted index profiles
-  - fix issue with memory collector not removing the unreachable allocations
 
 0.11.1 (2018-02-28)
 -------------------
