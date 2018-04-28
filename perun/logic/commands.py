@@ -646,6 +646,7 @@ def get_nth_profile_of(pcs, position, minor_version):
         minor_version(str): looked up minor version for the wrapped vcs
     """
     registered_profiles = get_minor_version_profiles(pcs, minor_version)
+    profile.sort_profiles(registered_profiles)
     if 0 <= position < len(registered_profiles):
         return registered_profiles[position].realpath
     else:

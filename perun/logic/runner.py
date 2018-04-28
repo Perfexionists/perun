@@ -75,9 +75,10 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
 
     # Construct the actual job matrix
     matrix = {
-        b: {
-            w: [
-                Job(c, postprocessors, b, w, a) for c in collector_pairs for a in args or ['']
+        str(b): {
+            str(w): [
+                Job(c, postprocessors, str(b), str(w), str(a))
+                    for c in collector_pairs for a in args or ['']
                 ] for w in workload
             } for b in cmd
         }
