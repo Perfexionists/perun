@@ -374,16 +374,16 @@ def pcs_with_degradations():
     root = repo.index.commit("root")
 
     # Create second commit
+    repo.git.checkout('-b', 'develop')
     file2 = os.path.join(pcs_path, "file2")
     store.touch_file(file2)
     repo.index.add([file2])
     middle_head = repo.index.commit("second commit")
 
     # Create third commit
-    file3 = os.path.join(pcs_path, "file3")
-    store.touch_file(file3)
-    repo.index.add([file3])
-    current_head = repo.index.commit("third commit")
+    repo.git.checkout('master')
+    repo.git.merge('--no-ff', 'develop')
+    current_head = str(repo.head.commit)
 
     # Populate PCS with profiles
     root_profile = Helpers.prepare_profile(pcs_obj, profiles[0], str(root))

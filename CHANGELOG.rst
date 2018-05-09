@@ -16,6 +16,9 @@ HEAD
   - fix issue with integer workloads
   - fix issue with non-sorted index profiles
   - fix issue with memory collector not removing the unreachable allocations
+  - add vcs history tree to log (prints the context of the vcs tree)
+  - remodel the output of the degradation checks
+  - switch the colour of optimizations to green (instead of blue)
 
 0.14.1 (2018-04-19)
 -------------------

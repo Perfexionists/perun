@@ -1,4 +1,5 @@
 import collections
+import itertools
 import os
 import operator
 import re
@@ -41,8 +42,10 @@ CHANGE_COLOURS = {
     PerformanceChange.NoChange: 'white',
     PerformanceChange.Unknown: 'grey',
     PerformanceChange.MaybeOptimization: 'cyan',
-    PerformanceChange.Optimization: 'blue'
+    PerformanceChange.Optimization: 'green'
 }
+DEGRADATION_ICON = '-'
+OPTIMIZATION_ICON = '+'
 LINE_PARSING_REGEX = re.compile(
     r"(?P<location>.+)\s"
     r"PerformanceChange[.](?P<result>[A-Za-z]+)\s"
@@ -164,19 +167,6 @@ def profiles_to_queue(pcs, minor_version):
     }
 
 
-def print_configuration(configuration):
-    """Helper function for printing information about configuration of given profile
-
-    :param tuple configuration: configuration tuple (collector, cmd, args, workload, postprocessors)
-    """
-    print("  > collected by ", end='')
-    log.cprint("{}".format(configuration[0]), 'magenta', attrs=['bold'])
-    if configuration[4]:
-        print("+", end='')
-        log.cprint("{}".format(configuration[4]), 'magenta', attrs=['bold'])
-    print(" for cmd: '$ {}'".format(profiles.config_tuple_to_cmdstr(configuration)))
-
-
 def get_degradation_change_colours(degradation_result):
     """Returns the tuple of two colours w.r.t degradation results.
 
@@ -201,70 +191,95 @@ def get_degradation_change_colours(degradation_result):
         return 'yellow', 'yellow'
 
 
-def print_degradation_results(deg_info, left_border="| ", indent=4):
-    """Helper function for printing results of degradation detection
+def print_short_summary_of_degradations(degradation_list):
+    """Prints a short string representing the summary of the found changes.
 
-    :param DegradationInfo deg_info: results of degradation detected in given profile
-    :param str left_border: string which is outputed on the left border of the screen
-    :param int indent: indent of the output
+    This prints a short statistic of found degradations and short summary string.
+
+    :param list degradation_list:
+        list of tuples (degradation info, command string, source minor version)
     """
-    # We do not print the information about no change, if the verbosity is not at least info level
-    if log.is_verbosity_below(log.VERBOSE_INFO) and deg_info.result == PerformanceChange.NoChange:
-        return
-    print(left_border + ' '*indent + '  - ', end='')
-    # Print the actual result
+    counts = count_degradations_per_group(degradation_list)
+
+    print("")
+    print_short_change_string(counts)
+    print("\n {} optimizations({}), {} degradations({})".format(
+        counts.get('Optimization', 0), OPTIMIZATION_ICON,
+        counts.get('Degradation', 0), DEGRADATION_ICON
+    ))
+
+
+def print_short_change_string(counts):
+    """Prints short string representing a summary of the given degradation list.
+
+    This prints a short string of form representing a summary of found optimizations (+) and
+    degradations (-) in the given degradation list. Uncertain optimizations and degradations
+    are omitted. The string can e.g. look as follows:
+
+    ++++-----
+
+    :param dict counts: dictionary mapping found string changes into their counts
+    """
     log.cprint(
-        '{}'.format(CHANGE_STRINGS[deg_info.result]).ljust(20),
-        CHANGE_COLOURS[deg_info.result], attrs=['bold']
+        OPTIMIZATION_ICON*counts.get('Optimization', 0),
+        CHANGE_COLOURS[PerformanceChange.Optimization],
+        attrs=['bold']
     )
-    # Print the location of the degradation
-    print(' at ', end='')
-    log.cprintln('{}'.format(deg_info.location), 'white', attrs=['bold'])
-    # Print the exact rate of degradation and the confidence (if there is any
-    if deg_info.result != PerformanceChange.NoChange:
-        from_colour, to_colour = get_degradation_change_colours(deg_info.result)
-        print(left_border + ' '*indent + '      from: ', end='')
-        log.cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
-        print(' -> to: ', end='')
-        log.cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
-        if deg_info.confidence_type != 'no':
-            print(' (with confidence ', end='')
-            log.cprint(
-                '{} = {}'.format(
-                    deg_info.confidence_type, deg_info.confidence_rate),
-                'white', attrs=['bold']
-            )
-            print(')', end='')
-        print('')
+    log.cprint(
+        DEGRADATION_ICON*counts.get('Degradation', 0),
+        CHANGE_COLOURS[PerformanceChange.Degradation],
+        attrs=['bold']
+    )
 
 
-def process_profile_pair(baseline_profile, target_profile, profile_config, left_border="| ", indent=4):
-    """Helper function for processing pair of baseline and target profile.
+def print_list_of_degradations(degradation_list):
+    """Prints list of found degradations grouped by location
 
-    The function wraps the actual check for the found degradation, printing of the results and
-    of some initial information (the configuration of profiles).
+    Currently this is hardcoded and prints the list of degradations as follows:
 
-    :param object baseline_profile: either dictionary or ProfileInfo object, representing the
-        baseline profile, i.e. the predecessor we are testing against
-    :param target_profile: either dictionary or ProfileInfo object, representing the target,
-        i.e. the profile where we are checking for performance changes
-    :param tuple profile_config: profile configuration (should be the same for both profiles)
-    :param str left_border: symbols printed on the left border of the report
-    :param int indent: indent of the rest of the information
-    :return: iterable stream of degradation propagated from profiles
+    at {loc}:
+      {result} from {from} -> to {to}
+
+    :param list degradation_list: list of found degradations
     """
-    print(left_border, end='')
-    print_configuration(profile_config)
-    found_change = False
-    for degradation in degradation_between_profiles(baseline_profile, target_profile, left_border):
-        found_change = found_change or degradation.result != PerformanceChange.NoChange
-        print_degradation_results(degradation, left_border, indent)
-        yield degradation
-    if not found_change and log.is_verbosity_below(log.VERBOSE_INFO):
-        print(left_border + ' '*indent + '  - ', end='')
-        log.cprint(CHANGE_STRINGS[PerformanceChange.NoChange],
-                   CHANGE_COLOURS[PerformanceChange.NoChange], attrs=['bold'])
-        print(' detected')
+    def keygetter(item):
+        """Returns the location of the degradation from the tuple
+
+        :param tuple item: tuple of (degradation result, cmd string, source minor version)
+        :return: location of the degradation used for grouping
+        """
+        return item[0].location
+
+    # Group by location
+    degradation_list.sort(key=keygetter)
+    for location, changes in itertools.groupby(degradation_list, keygetter):
+        # Print the location
+        print("at", end='')
+        log.cprint(' {}'.format(location), 'white', attrs=['bold'])
+        print(":")
+        # Iterate and print all of the infos
+        for deg_info, _, __ in changes:
+            log.cprint(
+                '  {}'.format(CHANGE_STRINGS[deg_info.result]),
+                CHANGE_COLOURS[deg_info.result], attrs=['bold']
+            )
+            if deg_info.result != PerformanceChange.NoChange:
+                from_colour, to_colour = get_degradation_change_colours(deg_info.result)
+                print(' from: ', end='')
+                log.cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
+                print(' -> to: ', end='')
+                log.cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
+                if deg_info.confidence_type != 'no':
+                    print(' (with confidence ', end='')
+                    log.cprint(
+                        '{} = {}'.format(
+                            deg_info.confidence_type, deg_info.confidence_rate),
+                        'white', attrs=['bold']
+                    )
+                    print(')', end='')
+            print('')
+    else:
+        print("")
 
 
 @decorators.static_variables(minor_version_cache=set())
@@ -289,18 +304,6 @@ def pre_collect_profiles(minor_version):
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
 
-def print_changes_report(degradation_list):
-    """Prints the short report of found degradations
-
-    :param list degradation_list: list of found changes
-    """
-    counts = count_degradations_per_group(degradation_list)
-    if counts:
-        print("Found: ", ", ".join(
-            "{} {}{}".format(count, res, "s" if count > 1 else "") for res, count in counts.items()
-        ))
-
-
 def degradation_in_minor(minor_version):
     """Checks for degradation according to the profiles stored for the given minor version.
 
@@ -310,7 +313,6 @@ def degradation_in_minor(minor_version):
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
     baseline_version_queue = minor_version_info.parents
-    log.print_minor_version(minor_version_info)
     pre_collect_profiles(minor_version_info)
     target_profile_queue = profiles_to_queue(pcs, minor_version)
     detected_changes = []
@@ -327,9 +329,6 @@ def degradation_in_minor(minor_version):
 
         # Print header if there is at least some profile to check against
         baseline_profiles = profiles_to_queue(pcs, baseline)
-        if baseline_profiles:
-            print("|\\\n| ", end='')
-            log.print_minor_version(baseline_info)
 
         # Iterate through the profiles and check degradation between those of same configuration
         for baseline_config, baseline_profile in baseline_profiles.items():
@@ -341,15 +340,14 @@ def degradation_in_minor(minor_version):
                 # and source minor version.
                 detected_changes.extend([
                     (deg, cmdstr, baseline_info.checksum) for deg in
-                    process_profile_pair(baseline_profile, target_profile, baseline_config)
+                    degradation_between_profiles(baseline_profile, target_profile)
                     if deg.result != PerformanceChange.NoChange
                 ])
                 del target_profile_queue[target_profile.config_tuple]
-        print('|')
 
         # Store the detected degradation
-        print_changes_report(detected_changes)
         save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
+    print_list_of_degradations(detected_changes)
     return detected_changes
 
 
@@ -362,12 +360,17 @@ def degradation_in_history(head):
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     print("Running the degradation checks on all history. This might take a while!")
     detected_changes = []
-    for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
-        detected_changes.extend(degradation_in_minor(minor_version.checksum))
-    print_changes_report(detected_changes)
+    with log.History(head) as history:
+        for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
+            history.progress_to_next_minor_version(minor_version)
+            newly_detected_changes = degradation_in_minor(minor_version.checksum)
+            history.taint_parents(newly_detected_changes)
+            detected_changes.extend(newly_detected_changes)
+    print_short_summary_of_degradations(detected_changes)
+    return detected_changes
 
 
-def degradation_between_profiles(baseline_profile, target_profile, left_border="| "):
+def degradation_between_profiles(baseline_profile, target_profile):
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     We first find the suitable strategy for the profile configuration and then call the appropriate
@@ -375,7 +378,6 @@ def degradation_between_profiles(baseline_profile, target_profile, left_border="
 
     :param ProfileInfo baseline_profile: baseline against which we are checking the degradation
     :param ProfileInfo target_profile: profile corresponding to the checked minor version
-    :param str left_border: left border of the output
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     if not isinstance(baseline_profile, dict):
@@ -385,7 +387,6 @@ def degradation_between_profiles(baseline_profile, target_profile, left_border="
 
     # We run all of the degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for_configuration(baseline_profile):
-        print(left_border + "    > applying '{}' method".format(degradation_method))
         yield from utils.dynamic_module_function_call(
             'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
         )
@@ -409,14 +410,14 @@ def degradation_between_files(baseline_file, target_file, minor_version):
 
     detected_changes = [
         (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version) for deg in
-        process_profile_pair(baseline_file, target_file, baseline_config, left_border='', indent=4)
+        degradation_between_profiles(baseline_file, target_file)
         if deg.result != PerformanceChange.NoChange
     ]
 
     # Store the detected changes for given minor version
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
-    print_changes_report(detected_changes)
     save_degradation_list_for(pcs.get_object_directory(), target_minor_version, detected_changes)
+    print_short_summary_of_degradations(detected_changes)
 
 
 def is_rule_applicable_for(rule, configuration):
