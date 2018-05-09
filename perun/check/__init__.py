@@ -278,8 +278,7 @@ def print_list_of_degradations(degradation_list):
                     )
                     print(')', end='')
             print('')
-    else:
-        print("")
+    print("")
 
 
 @decorators.static_variables(minor_version_cache=set())

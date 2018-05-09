@@ -409,8 +409,8 @@ class History:
         parent_num = len(merged_parents)
         rightmost_branches_num = len(self.unresolved_parents) - merged_at - 1
         for _ in range(1, parent_num):
-            merged_at += 1
             print("| "*merged_at + "|\\" + "\\ " * rightmost_branches_num)
+            merged_at += 1
 
     def _process_fork_point(self, fork_point):
         """Updates the printed tree after we forked from the given sha.
