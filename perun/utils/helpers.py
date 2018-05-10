@@ -1,5 +1,6 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
+import operator
 import collections
 from enum import Enum
 
@@ -86,3 +87,16 @@ class PostprocessStatus(Enum):
     """Simple enumeration for statuses of the postprocessors"""
     OK = 0
     ERROR = 1
+
+
+def first_index_of_attr(l, attr, value):
+    """Helper function for getting the first index of value in list of tuples
+
+    :param list l: list of tuples
+    :param str attr: name of the attribute we are getting
+    :param value: lookedup value
+    :return: index of the tuple or exception
+    :raises: ValueError when there is no object/tuple with attribute with given value
+    """
+    list_of_attributes = list(map(operator.attrgetter(attr), l))
+    return list_of_attributes.index(value)

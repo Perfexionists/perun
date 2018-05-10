@@ -203,7 +203,7 @@ def print_short_summary_of_degradations(degradation_list):
 
     print("")
     print_short_change_string(counts)
-    print("\n {} optimizations({}), {} degradations({})".format(
+    print(" {} optimizations({}), {} degradations({})".format(
         counts.get('Optimization', 0), OPTIMIZATION_ICON,
         counts.get('Degradation', 0), DEGRADATION_ICON
     ))
@@ -220,16 +220,23 @@ def print_short_change_string(counts):
 
     :param dict counts: dictionary mapping found string changes into their counts
     """
-    log.cprint(
-        OPTIMIZATION_ICON*counts.get('Optimization', 0),
-        CHANGE_COLOURS[PerformanceChange.Optimization],
-        attrs=['bold']
-    )
-    log.cprint(
-        DEGRADATION_ICON*counts.get('Degradation', 0),
-        CHANGE_COLOURS[PerformanceChange.Degradation],
-        attrs=['bold']
-    )
+    overall_changes = sum(counts.values())
+    print("{} change{}".format(
+        overall_changes, "s" if overall_changes != 1 else ""
+    ), end='')
+    if overall_changes > 0:
+        print(" | ", end='')
+        log.cprint(
+            OPTIMIZATION_ICON*counts.get('Optimization', 0),
+            CHANGE_COLOURS[PerformanceChange.Optimization],
+            attrs=['bold']
+        )
+        log.cprint(
+            DEGRADATION_ICON*counts.get('Degradation', 0),
+            CHANGE_COLOURS[PerformanceChange.Degradation],
+            attrs=['bold']
+        )
+    print("")
 
 
 def print_list_of_degradations(degradation_list):
@@ -303,10 +310,11 @@ def pre_collect_profiles(minor_version):
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
 
-def degradation_in_minor(minor_version):
+def degradation_in_minor(minor_version, quiet=False):
     """Checks for degradation according to the profiles stored for the given minor version.
 
     :param str minor_version: representation of head point of degradation checking
+    :param bool quiet: if set to true then nothing will be printed
     :returns: list of found changes
     """
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
@@ -346,7 +354,8 @@ def degradation_in_minor(minor_version):
 
         # Store the detected degradation
         save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
-    print_list_of_degradations(detected_changes)
+    if not quiet:
+        print_list_of_degradations(detected_changes)
     return detected_changes
 
 
@@ -362,9 +371,12 @@ def degradation_in_history(head):
     with log.History(head) as history:
         for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
             history.progress_to_next_minor_version(minor_version)
-            newly_detected_changes = degradation_in_minor(minor_version.checksum)
-            history.taint_parents(newly_detected_changes)
+            newly_detected_changes = degradation_in_minor(minor_version.checksum, True)
+            print_short_change_string(count_degradations_per_group(newly_detected_changes))
+            history.finish_minor_version(minor_version, newly_detected_changes)
+            print_list_of_degradations(newly_detected_changes)
             detected_changes.extend(newly_detected_changes)
+            history.flush(with_border=True)
     print_short_summary_of_degradations(detected_changes)
     return detected_changes
 

@@ -7,6 +7,7 @@ import io
 import pydoc
 import functools
 
+from perun.utils.helpers import first_index_of_attr
 from perun.utils.decorators import static_variables
 from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
 
@@ -239,26 +240,47 @@ def print_minor_version(minor_version):
     ))
 
 
-class History:
+class History(object):
     """Helper with wrapper, which is used when one wants to visualize the version control history
     of the project, printing specific stuff corresponding to a git history
 
-    :ivar list unresolved_parents: list of parents that needs to be resolved in the vcs graph,
+    :ivar list unresolved_edges: list of parents that needs to be resolved in the vcs graph,
         for each such parent, we keep one column.
-    :ivar list tainted_branches: list of branches that were tainted, i.e. we found degradation in
-        their child
-    :ivar list fixed_branches: list of branches that were fixed, i.e. we found optimization in
-        their child
     """
+    class Edge(object):
+        """Represents one edge of the history
+
+        :ivar str next: the parent of the edge, i.e. the previously processed sha
+        :ivar str colour: colour of the edge (red for deg, yellow for deg+opt, green for opt)
+        :ivar str prev: the child of the edge, i.e. the not yet processed sha
+        """
+        def __init__(self, n, colour='white', prev=None):
+            """Initiates one edge of the history
+
+            :param str n: the next sha that will be processed
+            :param str colour: colour of the edge
+            :param str prev: the "parent" of the n
+            """
+            self.next = n
+            self.colour = colour
+            self.prev = prev
+
+        def to_ascii(self, char):
+            """Converts the edge to ascii representation
+
+            :param str char: string that represents the edge
+            :return: string representing the edge in ascii
+            """
+            return char if self.colour == 'white' \
+                else termcolor.colored(char, self.colour, attrs=['bold'])
+
     def __init__(self, head):
         """Creates a with wrapper, which keeps and prints the context of the current vcs
         starting at head
 
         :param str head: head minor version
         """
-        self.unresolved_parents = [head]
-        self.tainted_branches = []
-        self.fixed_branches = []
+        self.unresolved_edges = [History.Edge(head)]
 
     def __enter__(self):
         """When entering, we create a new string io object to catch standard output
@@ -288,7 +310,7 @@ class History:
 
         :return: string representing the columns of the unresolved branches
         """
-        return " ".join("|" for _ in self.unresolved_parents) + "  "
+        return " ".join(edge.to_ascii("|") for edge in self.unresolved_edges) + "  "
 
     def _merge_parents(self, merged_parent):
         """Removes the duplicate instances of the merge parent.
@@ -307,11 +329,13 @@ class History:
         :param str merged_parent: sha of the parent that is going to be merged in the unresolved
         """
         filtered_unresolved = []
-        for parent in self.unresolved_parents:
-            if parent == merged_parent and parent in filtered_unresolved:
+        already_found_parent = False
+        for parent in self.unresolved_edges:
+            if parent.next == merged_parent and already_found_parent:
                 continue
+            already_found_parent = already_found_parent or parent.next == merged_parent
             filtered_unresolved.append(parent)
-        self.unresolved_parents = filtered_unresolved
+        self.unresolved_edges = filtered_unresolved
 
     def _print_minor_version(self, minor_version_info):
         """Prints the information about minor version.
@@ -326,15 +350,16 @@ class History:
         :param MinorVersion minor_version_info: printed minor version
         """
         minor_str = " ".join(
-            "*" if p == minor_version_info.checksum else "|" for p in self.unresolved_parents
+            "*" if p.next == minor_version_info.checksum else p.to_ascii("|")
+            for p in self.unresolved_edges
         )
         print(minor_str, end='')
         cprint(" {}".format(
             minor_version_info.checksum[:6]
         ), 'yellow', attrs=[])
-        print(": {}".format(
+        print(": {} | ".format(
             minor_version_info.desc.split("\n")[0].strip()
-        ))
+        ), end='')
 
     def progress_to_next_minor_version(self, minor_version_info):
         """Progresses the history of the VCS to next minor version
@@ -352,20 +377,26 @@ class History:
 
         :param MinorVersion minor_version_info: information about minor version
         """
-        self._flush(with_border=True)
-        self._process_fork_point(minor_version_info.checksum)
-        self._merge_parents(minor_version_info.checksum)
+        minor_sha = minor_version_info.checksum
+        self.flush(with_border=True)
+        self._process_fork_point(minor_sha)
+        self._merge_parents(minor_sha)
         self._print_minor_version(minor_version_info)
 
+    def finish_minor_version(self, minor_version_info, degradation_list):
         # Update the unresolved parents
-        version_index = self.unresolved_parents.index(minor_version_info.checksum)
+        minor_sha = minor_version_info.checksum
+        version_index = first_index_of_attr(self.unresolved_edges, 'next', minor_sha)
         self._process_merge_point(version_index, minor_version_info.parents)
-        self.unresolved_parents[version_index:version_index+1] = minor_version_info.parents
+        self.unresolved_edges[version_index:version_index+1] = [
+            History.Edge(p, 'white', minor_sha) for p in minor_version_info.parents
+        ]
+        self._taint_parents(minor_sha, degradation_list)
 
         # Flush the history
-        self._flush()
+        self.flush()
 
-    def _flush(self, with_border=False):
+    def flush(self, with_border=False):
         """Flushes the stdout optionally with left border of unresolved parent columns
 
         :param bool with_border: if true, then every line is printed with the border of unresolved
@@ -381,15 +412,36 @@ class History:
         # create new stringio
         sys.stdout = io.StringIO()
 
-    def taint_parents(self, degradation_list):
+    def _taint_parents(self, target, degradation_list):
         """According to the given list of degradation, sets the parents either as tainted
         or fixed.
 
         Tainted parents are output with red colour, while fixed parents with green colour.
 
+        :param str target: target minor version
         :param list degradation_list: list of found degradations
         """
-        pass
+        # First we process all of the degradations and optimization
+        taints = set()
+        fixes = set()
+        for deg, _, baseline in degradation_list:
+            if deg.result.name == "Degradation":
+                taints.add(baseline)
+            elif deg.result.name == "Optimization":
+                fixes.add(baseline)
+
+        # At last we colour the edges; edges that contain both optimizations and degradations
+        # are coloured yellow
+        for edge in self.unresolved_edges:
+            if edge.prev == target:
+                tainted = edge.next in taints
+                fixed = edge.next in fixes
+                if tainted and fixed:
+                    edge.colour = 'yellow'
+                elif tainted:
+                    edge.colour = 'red'
+                elif fixed:
+                    edge.colour = 'green'
 
     def _process_merge_point(self, merged_at, merged_parents):
         """Updates the printed tree after we merged list of parents in the given merge_at index.
@@ -407,7 +459,7 @@ class History:
         :param list merged_parents: list of merged parents
         """
         parent_num = len(merged_parents)
-        rightmost_branches_num = len(self.unresolved_parents) - merged_at - 1
+        rightmost_branches_num = len(self.unresolved_edges) - merged_at - 1
         for _ in range(1, parent_num):
             print("| "*merged_at + "|\\" + "\\ " * rightmost_branches_num)
             merged_at += 1
@@ -423,11 +475,11 @@ class History:
 
         :param str fork_point: sha of the point, where we are forking
         """
-        ulen = len(self.unresolved_parents)
-        forked_index = self.unresolved_parents.index(fork_point)
+        ulen = len(self.unresolved_edges)
+        forked_index = first_index_of_attr(self.unresolved_edges, 'next', fork_point)
         src_index_map = list(range(0, ulen))
         tgt_index_map = [
-            forked_index if self.unresolved_parents[i] == fork_point else i for i in range(0, ulen)
+            forked_index if self.unresolved_edges[i].next == fork_point else i for i in range(0, ulen)
         ]
 
         while src_index_map != tgt_index_map:
