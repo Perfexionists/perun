@@ -387,11 +387,11 @@ class History(object):
         # Update the unresolved parents
         minor_sha = minor_version_info.checksum
         version_index = first_index_of_attr(self.unresolved_edges, 'next', minor_sha)
-        self._process_merge_point(version_index, minor_version_info.parents)
         self.unresolved_edges[version_index:version_index+1] = [
             History.Edge(p, 'white', minor_sha) for p in minor_version_info.parents
         ]
         self._taint_parents(minor_sha, degradation_list)
+        self._process_merge_point(version_index, minor_version_info.parents)
 
         # Flush the history
         self.flush()
@@ -451,18 +451,30 @@ class History(object):
 
         Prints the following:
 
-        | | | * \ \ sha: desc
+        | | | * | | sha: desc
+        | | | | \ \
         | | | |\ \ \
-        | | | | | | |
+        | | | | | \ \
+        | | | | |\ \ \
+        | | | | | | \ \
+        | | | | | |\ \ \
+        | | | | | | | | |
 
         :param int merged_at: index, where the merged has happened
         :param list merged_parents: list of merged parents
         """
         parent_num = len(merged_parents)
-        rightmost_branches_num = len(self.unresolved_edges) - merged_at - 1
+        rightmost_branches_num = len(self.unresolved_edges) - merged_at - parent_num
         for _ in range(1, parent_num):
-            print("| "*merged_at + "|\\" + "\\ " * rightmost_branches_num)
             merged_at += 1
+            left_str = " ".join(
+                e.to_ascii("|") for e in self.unresolved_edges[:merged_at]
+            )
+            right_str = " ".join(
+                e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
+            ) if rightmost_branches_num else ""
+            print(left_str + right_str)
+            print(left_str + " ".join([self.unresolved_edges[merged_at].to_ascii('\\'), right_str]))
 
     def _process_fork_point(self, fork_point):
         """Updates the printed tree after we forked from the given sha.
@@ -484,12 +496,13 @@ class History(object):
 
         while src_index_map != tgt_index_map:
             line = list(" "*(max(src_index_map)+1)*2)
-            for i, (lhs, rhs) in enumerate(zip(src_index_map, tgt_index_map)):
+            triple_zip = zip(src_index_map, self.unresolved_edges, tgt_index_map)
+            for i, (lhs, origin, rhs) in enumerate(triple_zip):
                 # for this index we are moving to the left
                 diff = -1 if rhs - lhs else 0
                 if diff == 0:
-                    line[2*lhs] = '|'
+                    line[2*lhs] = origin.to_ascii('|')
                 else:
-                    line[2*lhs-1] = '/'
+                    line[2*lhs-1] = origin.to_ascii('/')
                 src_index_map[i] += diff
             print("".join(line))
