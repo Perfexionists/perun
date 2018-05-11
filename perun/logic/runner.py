@@ -339,11 +339,13 @@ def run_prephase_commands(pcs, phase, phase_colour='white'):
 
     :param PCS pcs: performance control system
     :param str phase: name of the phase commands
+    :param str phase_colour: colour for the printed phase
     """
     phase_key = ".".join(["execute", phase]) if not phase.startswith('execute') else phase
     cmds = pcs.local_config().safe_get(phase_key, [])
     if cmds:
-        log.cprint("Running '{}' phase\n".format(phase), phase_colour)
+        log.cprint("Running '{}' phase".format(phase), phase_colour)
+        print("")
         try:
             utils.run_safely_list_of_commands(cmds)
         except subprocess.CalledProcessError as e:
@@ -365,6 +367,7 @@ def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
+    log.print_job_progress.current_job = 1
     for job_cmd, workloads_per_cmd in job_matrix.items():
         log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
         for workload, jobs_per_workload in workloads_per_cmd.items():

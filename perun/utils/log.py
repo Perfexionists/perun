@@ -288,6 +288,7 @@ class History(object):
         :return: the history object
         """
         # We will get the original standard output with string buffer and handle writing ourselves
+        self.original_stdout = sys.stdout
         sys.stdout = io.StringIO()
         return self
 
@@ -297,7 +298,7 @@ class History(object):
         :param list _: list of unused parameters
         """
         # Restore the stdout
-        sys.stdout = sys.__stdout__
+        sys.stdout = sys.stdout
 
     def get_left_border(self):
         """Returns the string representing the currently unresolved branches.
@@ -406,8 +407,8 @@ class History(object):
         sys.stdout.seek(0)
         for line in sys.stdout.readlines():
             if with_border:
-                sys.__stdout__.write(self.get_left_border())
-            sys.__stdout__.write(line)
+                self.original_stdout.write(self.get_left_border())
+            self.original_stdout.write(line)
 
         # create new stringio
         sys.stdout = io.StringIO()
@@ -465,16 +466,22 @@ class History(object):
         """
         parent_num = len(merged_parents)
         rightmost_branches_num = len(self.unresolved_edges) - merged_at - parent_num
-        for _ in range(1, parent_num):
-            merged_at += 1
-            left_str = " ".join(
-                e.to_ascii("|") for e in self.unresolved_edges[:merged_at]
-            )
-            right_str = " ".join(
-                e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
-            ) if rightmost_branches_num else ""
-            print(left_str + right_str)
-            print(left_str + " ".join([self.unresolved_edges[merged_at].to_ascii('\\'), right_str]))
+
+        # We output one additional line for better readability; if we process some merges,
+        # then we will have plenty of space left, so no need to do the newline
+        if parent_num == 1:
+            print(self.get_left_border())
+        else:
+            for _ in range(1, parent_num):
+                merged_at += 1
+                left_str = " ".join(
+                    e.to_ascii("|") for e in self.unresolved_edges[:merged_at]
+                )
+                right_str = " ".join(
+                    e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
+                ) if rightmost_branches_num else ""
+                print(left_str + right_str)
+                print(left_str + " ".join([self.unresolved_edges[merged_at].to_ascii('\\'), right_str]))
 
     def _process_fork_point(self, fork_point):
         """Updates the printed tree after we forked from the given sha.
