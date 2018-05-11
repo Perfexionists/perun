@@ -20,6 +20,7 @@ complex queries and statistical tests over the profiles.
 import operator
 import numbers
 import perun.utils.exceptions as exceptions
+import perun.utils.helpers as helpers
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = "Jiri Pavela"
@@ -88,7 +89,7 @@ def flattened_values(root_key, root_value):
         # Additionally return the overall key as joined values of its nested stuff,
         # only if root is not a list (i.e. root key is not int = index)!
         if isinstance(root_key, str):
-            nested_values.sort(key=operator.itemgetter(0))
+            nested_values.sort(key=helpers.uid_getter)
             yield root_key, ":".join(map(str, map(operator.itemgetter(1), nested_values)))
     # Lists are merged as comma separated keys
     elif isinstance(root_value, list):

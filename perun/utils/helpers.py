@@ -100,3 +100,32 @@ def first_index_of_attr(l, attr, value):
     """
     list_of_attributes = list(map(operator.attrgetter(attr), l))
     return list_of_attributes.index(value)
+
+
+def uid_getter(uid):
+    """Helper function for getting the order priority of the uid
+
+    By default the highest priority is the executed binary or command,
+    then file and package structure, then modules, objects, concrete functions
+    or methods, on lines up to instruction. If we encounter unknown key, then we
+    use some kind of lexicographic sorting
+
+    :param tuple uid: the part of the uid
+    :return: the rank of the uid in the ordering
+    """
+    uid_priority = {
+        'bin': 0,
+        'file': 1, 'source': 1, 'package': 1,
+        'module': 2,
+        'class': 3, 'struct': 3, 'structure': 3,
+        'function': 4, 'func': 4, 'method': 4, 'procedure': 4,
+        'line': 5,
+        'instruction': 6
+    }
+    max_value = max(uid_priority.values())
+    return uid_priority.get(
+        uid[0],
+        int("".join(map(str, map(lambda x: x+max_value, map(ord, uid[0])))))
+    )
+
+
