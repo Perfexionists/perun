@@ -468,7 +468,8 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     del config.runtime().data['format']
     decorators.remove_from_function_args_cache("lookup_key_recursively")
     assert result.exit_code == 0
-    assert "info: stored profile at: .perun/jobs/complexity-profile.perf" in result.output
+    pending_profiles = os.listdir(os.path.join(os.getcwd(), ".perun", "jobs"))
+    assert "complexity-profile.perf" in pending_profiles
 
     # Test negative global sampling
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-g -2'])
@@ -826,7 +827,6 @@ def test_run(pcs_full, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(cli.run, ['-c', 'matrix'])
     assert result.exit_code == 0
-    assert "ls | grep " in result.output
 
     job_dir = pcs_full.get_job_directory()
     job_profiles = os.listdir(job_dir)
@@ -872,4 +872,3 @@ def test_run(pcs_full, monkeypatch):
     matrix.data['execute']['pre_run'].append('ls | grep dafad')
     result = runner.invoke(cli.run, ['matrix'])
     assert result.exit_code == 1
-    assert "error in pre_run" in result.output

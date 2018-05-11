@@ -22,6 +22,7 @@ HEAD
   - colour tainted (containing degradation) and fixed (containing optimization) branches in vcs history
   - add short summary of degradations to each minor version in graph
   - add semantic ordering of uids (used in outputs)
+  - add vcs history to output of perun run matrix
 
 0.14.1 (2018-04-19)
 -------------------

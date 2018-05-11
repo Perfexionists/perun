@@ -222,24 +222,6 @@ def failed(ending='\n'):
     print(']', end=ending)
 
 
-def print_minor_version(minor_version):
-    """Helper function for printing minor version to the degradation output
-
-    Currently printed in form of:
-
-    * sha[:6]: desc
-
-    :param MinorVersion minor_version: informations about minor version
-    """
-    print("* ", end='')
-    cprint("{}".format(
-        minor_version.checksum[:6]
-    ), 'yellow', attrs=[])
-    print(": {}".format(
-        minor_version.desc.split("\n")[0].strip()
-    ))
-
-
 class History(object):
     """Helper with wrapper, which is used when one wants to visualize the version control history
     of the project, printing specific stuff corresponding to a git history

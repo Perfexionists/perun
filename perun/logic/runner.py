@@ -403,12 +403,16 @@ def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
-    with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
-        for minor_version in minor_version_list:
-            log.print_minor_version(minor_version)
-            vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
-            run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
-            run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
+    with log.History(minor_version_list[0].checksum) as history:
+        with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
+            for minor_version in minor_version_list:
+                history.progress_to_next_minor_version(minor_version)
+                print("")
+                history.finish_minor_version(minor_version, [])
+                vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
+                run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
+                run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
+                history.flush(True)
 
 
 @pass_pcs
