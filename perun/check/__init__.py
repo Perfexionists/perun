@@ -1,4 +1,5 @@
 import collections
+import contextlib
 import itertools
 import os
 import operator
@@ -306,7 +307,9 @@ def pre_collect_profiles(minor_version):
         # Set the registering after run to true for this run
         config.runtime().set('profiles.register_after_run', 'true')
         # Actually collect the resources
-        runner.run_matrix_job([minor_version])
+        with open(os.devnull, 'w') as black_hole:
+            with contextlib.redirect_stdout(black_hole):
+                runner.run_matrix_job([minor_version])
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
 

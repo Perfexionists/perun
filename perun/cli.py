@@ -1035,6 +1035,7 @@ def matrix(ctx, **kwargs):
     with Perun's configuration files.
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
+    kwargs.update({'with_history': True})
     runner.run_matrix_job(**kwargs)
 
 
@@ -1140,6 +1141,7 @@ def job(ctx, **kwargs):
     :ref:`postprocessors-list` respectively.
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
+    kwargs.update({'with_history': True})
     runner.run_single_job(**kwargs)
 
 

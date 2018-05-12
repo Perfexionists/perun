@@ -23,6 +23,9 @@ HEAD
   - add short summary of degradations to each minor version in graph
   - add semantic ordering of uids (used in outputs)
   - add vcs history to output of perun run matrix
+  - make perun check precollect phase silent (until we figure out the better way?)
+  - add streaming to the history (so it is not output when everything is done)
+  - make two versions of run_jobs (one with history and one without)
 
 0.14.1 (2018-04-19)
 -------------------

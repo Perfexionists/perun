@@ -1,5 +1,6 @@
 """Set of helper function for logging and printing warnings or errors"""
 
+import builtins
 import logging
 import sys
 import termcolor
@@ -228,6 +229,8 @@ class History(object):
 
     :ivar list unresolved_edges: list of parents that needs to be resolved in the vcs graph,
         for each such parent, we keep one column.
+    :ivar bool auto_flush_with_border: specifies whether in auto-flushing the border should be
+        included in the output
     """
     class Edge(object):
         """Represents one edge of the history
@@ -263,6 +266,7 @@ class History(object):
         :param str head: head minor version
         """
         self.unresolved_edges = [History.Edge(head)]
+        self.auto_flush_with_border = False
 
     def __enter__(self):
         """When entering, we create a new string io object to catch standard output
@@ -272,6 +276,29 @@ class History(object):
         # We will get the original standard output with string buffer and handle writing ourselves
         self.original_stdout = sys.stdout
         sys.stdout = io.StringIO()
+        self._saved_print = builtins.print
+
+        def flushed_print(print_function, history):
+            """Decorates the print_function with automatic flushing of the output.
+
+            Whenever a newline is included in the output, the stream will be automatically flushed
+
+            :param function print_function: function that will include the flushing
+            :param History history: history object that takes care of flushing
+            :return: decorated flushed print
+            """
+            def wrapper(*args, **kwargs):
+                """Decorator function for flushed print
+
+                :param list args: list of positional arguments for print
+                :param dict kwargs: list of keyword arguments for print
+                """
+                print_function(*args, **kwargs)
+                end_specified = 'end' in kwargs.keys()
+                if not end_specified or kwargs['end'] == '\n':
+                    history.flush(history.auto_flush_with_border)
+            return wrapper
+        builtins.print = flushed_print(builtins.print, self)
         return self
 
     def __exit__(self, *_):
@@ -279,7 +306,8 @@ class History(object):
 
         :param list _: list of unused parameters
         """
-        # Restore the stdout
+        # Restore the stdout and printing function
+        builtins.print = self._saved_print
         sys.stdout = sys.stdout
 
     def get_left_border(self):
@@ -362,6 +390,7 @@ class History(object):
         """
         minor_sha = minor_version_info.checksum
         self.flush(with_border=True)
+        self.auto_flush_with_border = False
         self._process_fork_point(minor_sha)
         self._merge_parents(minor_sha)
         self._print_minor_version(minor_version_info)
@@ -378,22 +407,27 @@ class History(object):
 
         # Flush the history
         self.flush()
+        self.auto_flush_with_border = True
 
     def flush(self, with_border=False):
         """Flushes the stdout optionally with left border of unresolved parent columns
 
+        If the current stdout is not readable, the flushing is skipped
+
         :param bool with_border: if true, then every line is printed with the border of unresolved
             parents
         """
-        # flush the stdout
-        sys.stdout.seek(0)
-        for line in sys.stdout.readlines():
-            if with_border:
-                self.original_stdout.write(self.get_left_border())
-            self.original_stdout.write(line)
+        # Unreadable stdouts are skipped, since we are probably in silent mode
+        if sys.stdout.readable():
+            # flush the stdout
+            sys.stdout.seek(0)
+            for line in sys.stdout.readlines():
+                if with_border:
+                    self.original_stdout.write(self.get_left_border())
+                self.original_stdout.write(line)
 
-        # create new stringio
-        sys.stdout = io.StringIO()
+            # create new stringio
+            sys.stdout = io.StringIO()
 
     def _taint_parents(self, target, degradation_list):
         """According to the given list of degradation, sets the parents either as tainted

@@ -403,6 +403,21 @@ def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
+    with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
+        for minor_version in minor_version_list:
+            vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
+            run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
+            run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
+
+
+def run_jobs_with_history(pcs, minor_version_list, job_matrix, number_of_jobs):
+    """
+    Arguments:
+    :param PCS pcs: object with performance control system wrapper
+    :param list minor_version_list: list of MinorVersion info
+    :param dict job_matrix: dictionary with jobs that will be run
+    :param int number_of_jobs: number of jobs that will be run
+    """
     with log.History(minor_version_list[0].checksum) as history:
         with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
             for minor_version in minor_version_list:
@@ -412,11 +427,13 @@ def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
                 vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
                 run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
                 run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
-                history.flush(True)
+                print("")
+                history.flush(with_border=True)
 
 
 @pass_pcs
-def run_single_job(pcs, cmd, args, workload, collector, postprocessor, minor_version_list, **kwargs):
+def run_single_job(pcs, cmd, args, workload, collector, postprocessor, minor_version_list,
+                   with_history=False, **kwargs):
     """
     :param PCS pcs: object with performance control system wrapper
     :param str cmd: cmdary that will be run
@@ -425,18 +442,23 @@ def run_single_job(pcs, cmd, args, workload, collector, postprocessor, minor_ver
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
     :param list minor_version_list: list of MinorVersion info
+    :param bool with_history: if set to true, then we will print the history object
     :param dict kwargs: dictionary of additional params for postprocessor and collector
     """
     job_matrix, number_of_jobs = \
         construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
-    run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs)
+    runner_function = run_jobs_with_history if with_history else run_jobs
+    runner_function(pcs, minor_version_list, job_matrix, number_of_jobs)
 
 
 @pass_pcs
-def run_matrix_job(pcs, minor_version_list):
+def run_matrix_job(pcs, minor_version_list, with_history=False):
     """
     :param PCS pcs: object with performance control system wrapper
     :param list minor_version_list: list of MinorVersion info
+    :param bool with_history: if set to true, then we will print the history object
     """
     job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config(pcs))
-    run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs)
+    runner_function = run_jobs_with_history if with_history else run_jobs
+    runner_function(pcs, minor_version_list, job_matrix, number_of_jobs)
+
