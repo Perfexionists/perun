@@ -27,6 +27,7 @@ HEAD
   - add streaming to the history (so it is not output when everything is done)
   - make two versions of run_jobs (one with history and one without)
   - refactor some modules to remove unnecessary dependencies
+  - add information about degradations to perun status and log
 
 0.14.1 (2018-04-19)
 -------------------
