@@ -126,6 +126,7 @@ def degradation_in_history(head):
             log.print_list_of_degradations(newly_detected_changes)
             detected_changes.extend(newly_detected_changes)
             history.flush(with_border=True)
+    print("")
     log.print_short_summary_of_degradations(detected_changes)
     return detected_changes
 
@@ -177,6 +178,7 @@ def degradation_between_files(baseline_file, target_file, minor_version):
     # Store the detected changes for given minor version
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     store.save_degradation_list_for(pcs.get_object_directory(), target_minor_version, detected_changes)
+    print("")
     log.print_short_summary_of_degradations(detected_changes)
 
 

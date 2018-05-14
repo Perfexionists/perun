@@ -276,11 +276,12 @@ def print_short_summary_of_degradations(degradation_list):
     """
     counts = count_degradations_per_group(degradation_list)
 
-    print("")
     print_short_change_string(counts)
-    print(" {} optimizations({}), {} degradations({})".format(
-        counts.get('Optimization', 0), OPTIMIZATION_ICON,
-        counts.get('Degradation', 0), DEGRADATION_ICON
+    optimization_count = counts.get('Optimization', 0)
+    degradation_count = counts.get('Degradation', 0)
+    print("{} optimization{}({}), {} degradation{}({})".format(
+        optimization_count, "s" if optimization_count != 1 else "", OPTIMIZATION_ICON,
+        degradation_count, "s" if degradation_count != 1 else "", DEGRADATION_ICON
     ))
 
 

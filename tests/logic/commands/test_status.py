@@ -110,8 +110,8 @@ def assert_short_info(out, git_repo, stored_profiles, untracked_profiles):
         stored_profiles(list): list of stored profiles in current branch
         untracked_profiles(list): list of untracked profiles
     """
-    # Assert there is 1. header, 2. tracked info, 3. untracked info, 4. eof
-    assert len(out) == 4
+    # Assert there is 1. header, 2. tracked info, 3. untracked info, 4+5 is degradation info 6. eof
+    assert len(out) == 6
 
     # Check first the header, whether it contains the ref and header
     assert_head_info(out[0], git_repo)

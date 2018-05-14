@@ -247,7 +247,7 @@ def test_status_correct(pcs_full):
 
     short_result = runner.invoke(cli.status, ['--short'])
     assert short_result.exit_code == 0
-    assert len(short_result.output.split("\n")) == 4
+    assert len(short_result.output.split("\n")) == 6
 
     short_result = runner.invoke(cli.status, ['--short', '--sort-by', 'source'])
     assert short_result.exit_code == 0

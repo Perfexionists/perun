@@ -784,6 +784,17 @@ def status(pcs, short=False, **_):
         print("")
     print_profile_info_list(untracked_profiles, maxs, short, 'untracked')
 
+    # Print degradation info
+    degradation_list = store.load_degradation_list_for(
+        pcs.get_object_directory(), minor_head
+    )
+    if not short:
+        print("")
+    perun_log.print_short_summary_of_degradations(degradation_list)
+    if not short:
+        print("")
+        perun_log.print_list_of_degradations(degradation_list)
+
 
 @pass_pcs
 @lookup_minor_version
