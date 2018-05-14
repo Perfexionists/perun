@@ -12,15 +12,17 @@ import re
 
 import click
 import colorama
-import perun.logic.store as store
 import termcolor
 
 import perun.logic.config as perun_config
-from perun.logic.pcs import pass_pcs
+import perun.logic.store as store
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
+import perun.vcs as vcs
+
+from perun.logic.pcs import pass_pcs
 from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import \
@@ -29,7 +31,6 @@ from perun.utils.helpers import \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     PROFILE_DELIMITER, MinorVersion
 from perun.utils.log import cprint, cprintln
-import perun.vcs as vcs
 
 # Init colorama for multiplatform colours
 colorama.init()
@@ -394,8 +395,22 @@ def log(pcs, minor_version, short=False, **_):
                 pcs.get_object_directory(), mv.checksum
             )
 
+        def deg_count_retriever(mv):
+            """Helper function for picking stats of the degradation strings of form ++--
+
+            :param MinorVersion mv: minor version for which we are retrieving the stats
+            :return: dictionary with stats for minor version
+            """
+            counts = perun_log.count_degradations_per_group(
+                store.load_degradation_list_for(pcs.get_object_directory(), mv.checksum)
+            )
+            return {'changes': counts.get('Optimization', 0)*'+' + counts.get('Degradation', 0)*'-'}
+
         minor_version_maxima.update(
             calculate_maximal_lengths_for_stats(minor_versions, minor_stat_retriever)
+        )
+        minor_version_maxima.update(
+            calculate_maximal_lengths_for_stats(minor_versions, deg_count_retriever, " changes ")
         )
         print_short_minor_version_info_list(pcs, minor_versions, minor_version_maxima)
     else:
@@ -503,6 +518,15 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
                     else:
                         print(termcolor.colored(
                             '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+                elif attr_type == 'changes':
+                    degradations = store.load_degradation_list_for(
+                        pcs.get_object_directory(), minor_version.checksum
+                    )
+                    change_string = perun_log.change_counts_to_string(
+                        perun_log.count_degradations_per_group(degradations),
+                        width=max_lengths['changes']
+                    )
+                    print(change_string, end='')
                 else:
                     print_formating_token(minor_version_info_fmt, minor_version, attr_type, limit,
                                           default_color=minor_version_output_colour, value_fill=fill or ' ')
@@ -560,18 +584,19 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
         cprint(info_value, default_color)
 
 
-def calculate_maximal_lengths_for_stats(obj_list, stat_function):
+def calculate_maximal_lengths_for_stats(obj_list, stat_function, stat_header=""):
     """For given object lists and stat_function compute maximal lengths of the stats
 
     :param list obj_list: list of object, for which the stat function will be applied
     :param function stat_function: function returning the dictionary of keys
+    :param str stat_header: header of the stats
     :return: dictionary of maximal lenghts for various stats
     """
     maxima = collections.defaultdict(int)
     for obj in obj_list:
         object_stats = stat_function(obj)
         for key in object_stats.keys():
-            maxima[key] = max(maxima[key], len(str(object_stats[key])))
+            maxima[key] = max(len(stat_header), maxima[key], len(str(object_stats[key])))
     return maxima
 
 

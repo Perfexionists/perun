@@ -284,6 +284,27 @@ def print_short_summary_of_degradations(degradation_list):
     ))
 
 
+def change_counts_to_string(counts, width=0):
+    """Transforms the counts to a single coloured string
+
+    :param dict counts: dictionary with counts of degradations
+    :param int width: width of the string justified to left
+    :return: string representing the counts of found changes
+    """
+    width = max(width - counts.get('Optimization', 0) - counts.get('Degradation', 0), 0)
+    change_str = termcolor.colored(
+        str(OPTIMIZATION_ICON*counts.get('Optimization', 0)),
+        CHANGE_COLOURS[PerformanceChange.Optimization],
+        attrs=['bold']
+    )
+    change_str += termcolor.colored(
+        str(DEGRADATION_ICON*counts.get('Degradation', 0)),
+        CHANGE_COLOURS[PerformanceChange.Degradation],
+        attrs=['bold']
+    )
+    return change_str + width*' '
+
+
 def print_short_change_string(counts):
     """Prints short string representing a summary of the given degradation list.
 
@@ -300,17 +321,8 @@ def print_short_change_string(counts):
         overall_changes, "s" if overall_changes != 1 else ""
     ), end='')
     if overall_changes > 0:
-        print(" | ", end='')
-        cprint(
-            str(OPTIMIZATION_ICON*counts.get('Optimization', 0)),
-            CHANGE_COLOURS[PerformanceChange.Optimization],
-            attrs=['bold']
-        )
-        cprint(
-            str(DEGRADATION_ICON*counts.get('Degradation', 0)),
-            CHANGE_COLOURS[PerformanceChange.Degradation],
-            attrs=['bold']
-        )
+        change_string = change_counts_to_string(counts)
+        print(" | {}".format(change_string), end='')
     print("")
 
 
