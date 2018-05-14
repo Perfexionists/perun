@@ -3,6 +3,7 @@
 import os
 import git
 
+import perun.utils.log as log
 import perun.logic.config as config
 import perun.profile.factory as factory
 import perun.check.factory as check
@@ -108,7 +109,7 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     assert check.PerformanceChange.Optimization in [r.result for r in result]
     # Try that we printed confidence
     deg_list = [(res, "", "") for res in result]
-    check.print_list_of_degradations(deg_list)
+    log.print_list_of_degradations(deg_list)
     out, _ = capsys.readouterr()
     assert 'with confidence' in out
 

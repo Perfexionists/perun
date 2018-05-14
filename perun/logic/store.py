@@ -15,7 +15,8 @@ import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
 
-from perun.utils.helpers import IndexEntry
+from perun.utils.helpers import IndexEntry, LINE_PARSING_REGEX
+from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException, \
     MalformedIndexFileException
 
@@ -624,3 +625,82 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
             write_entry(index_handle, entry)
 
         index_handle.truncate()
+
+
+def save_degradation_list_for(base_dir, minor_version, degradation_list):
+    """Saves the given degradation list to a minor version storage
+
+    This converts the list of degradation records to a storage-able format. Moreover,
+    this loads all of the already stored degradations. For each tuple of the change
+    location and change type, this saves only one change record.
+
+    :param str base_dir: base directory, where the degradations will be stored
+    :param str minor_version: minor version for which we are storing the degradations
+    :param degradation_list:
+    :return:
+    """
+    already_saved_changes = load_degradation_list_for(base_dir, minor_version)
+
+    list_of_registered_changes = dict()
+    already_saved_changes.extend(degradation_list)
+    for deg_info, cmdstr, source in already_saved_changes:
+        info_string = " ".join([
+            deg_info.to_storage_record(),
+            source,
+            cmdstr
+        ])
+        uid = (deg_info.location, deg_info.type)
+        list_of_registered_changes[uid] = info_string
+
+    # Sort the changes
+    to_be_stored_changes = sorted(list(list_of_registered_changes.values()))
+
+    # Store the changes in the file
+    minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
+    touch_dir(minor_dir)
+    touch_file(minor_storage_file)
+    with open(minor_storage_file, 'w') as write_handle:
+        write_handle.write("\n".join(to_be_stored_changes))
+
+
+def parse_changelog_line(line):
+    """Parses one changelog record into the triple of degradation info, command string and minor.
+
+    :param str line: input line from one change log
+    :return: triple (degradation info, command string, minor version)
+    """
+    tokens = LINE_PARSING_REGEX.match(line)
+    deg_info = DegradationInfo(
+        PerformanceChange[tokens.group('result')],
+        tokens.group('type'),
+        tokens.group('location'),
+        tokens.group('from'),
+        tokens.group('to'),
+        tokens.group('ctype'),
+        float(tokens.group('crate'))
+    )
+    return deg_info, tokens.group('cmdstr'), tokens.group('minor')
+
+
+def load_degradation_list_for(base_dir, minor_version):
+    """Loads a list of degradations stored for the minor version.
+
+    This opens a file in the .perun/objects directory in the minor version subdirectory with the
+    extension ".changes". The file is basically a log of degradation records separated by
+    white spaces in ascii coding.
+
+    :param str base_dir: directory to the storage of the objects
+    :param str minor_version:
+    :return: list of triples (DegradationInfo, command string, minor version source)
+    """
+    minor_dir, minor_storage_file = split_object_name(base_dir, minor_version, ".changes")
+    touch_dir(minor_dir)
+    touch_file(minor_storage_file)
+    with open(minor_storage_file, 'r') as read_handle:
+        lines = read_handle.readlines()
+
+    degradation_list = []
+    for line in lines:
+        parsed_triple = parse_changelog_line(line.strip())
+        degradation_list.append(parsed_triple)
+    return degradation_list

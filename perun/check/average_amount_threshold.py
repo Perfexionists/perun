@@ -1,7 +1,9 @@
 import perun.profile.convert as convert
 import perun.check.factory as check
-__author__ = 'Tomas Fiedor'
 
+from perun.utils.structs import DegradationInfo
+
+__author__ = 'Tomas Fiedor'
 
 DEGRADATION_THRESHOLD = 2.0
 OPTIMIZATION_THRESHOLD = 0.5
@@ -43,7 +45,7 @@ def average_amount_threshold(baseline_profile, target_profile):
             else:
                 change = check.PerformanceChange.NoChange
 
-            yield check.DegradationInfo(
+            yield DegradationInfo(
                 change, "value", target_uid,
                 "{}{}".format(baseline_average.round(2), unit),
                 "{}{}".format(target_average.round(2), unit)

@@ -1,8 +1,10 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
+import re
 import operator
 import collections
 from enum import Enum
+from perun.utils.structs import PerformanceChange
 
 import click
 
@@ -75,6 +77,37 @@ COLLECT_PHASE_ATTRS_HIGH = []
 
 # Show specific
 pass_profile = click.make_pass_decorator(dict)
+
+# Degradation specific
+CHANGE_STRINGS = {
+    PerformanceChange.Degradation: 'Degradation',
+    PerformanceChange.MaybeDegradation: 'Maybe Degradation',
+    PerformanceChange.NoChange: 'No Change',
+    PerformanceChange.Unknown: 'Unknown',
+    PerformanceChange.MaybeOptimization: 'Maybe Optimization',
+    PerformanceChange.Optimization: 'Optimization'
+}
+CHANGE_COLOURS = {
+    PerformanceChange.Degradation: 'red',
+    PerformanceChange.MaybeDegradation: 'yellow',
+    PerformanceChange.NoChange: 'white',
+    PerformanceChange.Unknown: 'grey',
+    PerformanceChange.MaybeOptimization: 'cyan',
+    PerformanceChange.Optimization: 'green'
+}
+DEGRADATION_ICON = '-'
+OPTIMIZATION_ICON = '+'
+LINE_PARSING_REGEX = re.compile(
+    r"(?P<location>.+)\s"
+    r"PerformanceChange[.](?P<result>[A-Za-z]+)\s"
+    r"(?P<type>\S+)\s"
+    r"(?P<from>\S+)\s"
+    r"(?P<to>\S+)\s"
+    r"(?P<ctype>\S+)\s"
+    r"(?P<crate>\S+)\s"
+    r"(?P<minor>\S+)\s"
+    r"(?P<cmdstr>.+)"
+)
 
 
 class CollectStatus(Enum):

@@ -1,16 +1,21 @@
 """Set of helper function for logging and printing warnings or errors"""
 
 import builtins
+import collections
+import operator
 import logging
 import sys
 import termcolor
+import itertools
 import io
 import pydoc
 import functools
 
 from perun.utils.helpers import first_index_of_attr
 from perun.utils.decorators import static_variables
-from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
+from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH,CHANGE_COLOURS, \
+    CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON
+from perun.utils.structs import PerformanceChange
 
 __author__ = 'Tomas Fiedor'
 VERBOSITY = 0
@@ -221,6 +226,141 @@ def failed(ending='\n'):
     print('[', end='')
     cprint("FAILED", 'red', attrs=['bold'])
     print(']', end=ending)
+
+
+def count_degradations_per_group(degradation_list):
+    """Counts the number of optimizations and degradations
+
+    :param list degradation_list: list of tuples of (degradation info, cmdstr, minor version)
+    :return: dictionary mapping change strings to its counts
+    """
+    # Get only degradation results
+    changes = map(operator.attrgetter('result'), map(operator.itemgetter(0), degradation_list))
+    # Transform the enum into a string
+    changes = list(map(operator.attrgetter('name'), changes))
+    counts = dict(collections.Counter(changes))
+    return counts
+
+
+def get_degradation_change_colours(degradation_result):
+    """Returns the tuple of two colours w.r.t degradation results.
+
+    If the change was optimization (or possible optimization) then we print the first model as
+    red and the other by green (since we went from better to worse model). On the other hand if the
+    change was degradation, then we print the first one green (was better) and the other as red
+    (is now worse). Otherwise (for Unknown and no change) we keep the stuff yellow, though this
+    is not used at all
+
+    :param PerformanceChange degradation_result: change of the performance
+    :returns: tuple of (from model string colour, to model string colour)
+    """
+    if degradation_result in (
+            PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
+    ):
+        return 'red', 'green'
+    elif degradation_result in (
+            PerformanceChange.Degradation, PerformanceChange.MaybeDegradation
+    ):
+        return 'green', 'red'
+    else:
+        return 'yellow', 'yellow'
+
+
+def print_short_summary_of_degradations(degradation_list):
+    """Prints a short string representing the summary of the found changes.
+
+    This prints a short statistic of found degradations and short summary string.
+
+    :param list degradation_list:
+        list of tuples (degradation info, command string, source minor version)
+    """
+    counts = count_degradations_per_group(degradation_list)
+
+    print("")
+    print_short_change_string(counts)
+    print(" {} optimizations({}), {} degradations({})".format(
+        counts.get('Optimization', 0), OPTIMIZATION_ICON,
+        counts.get('Degradation', 0), DEGRADATION_ICON
+    ))
+
+
+def print_short_change_string(counts):
+    """Prints short string representing a summary of the given degradation list.
+
+    This prints a short string of form representing a summary of found optimizations (+) and
+    degradations (-) in the given degradation list. Uncertain optimizations and degradations
+    are omitted. The string can e.g. look as follows:
+
+    ++++-----
+
+    :param dict counts: dictionary mapping found string changes into their counts
+    """
+    overall_changes = sum(counts.values())
+    print("{} change{}".format(
+        overall_changes, "s" if overall_changes != 1 else ""
+    ), end='')
+    if overall_changes > 0:
+        print(" | ", end='')
+        cprint(
+            str(OPTIMIZATION_ICON*counts.get('Optimization', 0)),
+            CHANGE_COLOURS[PerformanceChange.Optimization],
+            attrs=['bold']
+        )
+        cprint(
+            str(DEGRADATION_ICON*counts.get('Degradation', 0)),
+            CHANGE_COLOURS[PerformanceChange.Degradation],
+            attrs=['bold']
+        )
+    print("")
+
+
+def print_list_of_degradations(degradation_list):
+    """Prints list of found degradations grouped by location
+
+    Currently this is hardcoded and prints the list of degradations as follows:
+
+    at {loc}:
+      {result} from {from} -> to {to}
+
+    :param list degradation_list: list of found degradations
+    """
+    def keygetter(item):
+        """Returns the location of the degradation from the tuple
+
+        :param tuple item: tuple of (degradation result, cmd string, source minor version)
+        :return: location of the degradation used for grouping
+        """
+        return item[0].location
+
+    # Group by location
+    degradation_list.sort(key=keygetter)
+    for location, changes in itertools.groupby(degradation_list, keygetter):
+        # Print the location
+        print("at", end='')
+        cprint(' {}'.format(location), 'white', attrs=['bold'])
+        print(":")
+        # Iterate and print all of the infos
+        for deg_info, _, __ in changes:
+            cprint(
+                '  {}'.format(CHANGE_STRINGS[deg_info.result]),
+                CHANGE_COLOURS[deg_info.result], attrs=['bold']
+            )
+            if deg_info.result != PerformanceChange.NoChange:
+                from_colour, to_colour = get_degradation_change_colours(deg_info.result)
+                print(' from: ', end='')
+                cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
+                print(' -> to: ', end='')
+                cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
+                if deg_info.confidence_type != 'no':
+                    print(' (with confidence ', end='')
+                    cprint(
+                        '{} = {}'.format(
+                            deg_info.confidence_type, deg_info.confidence_rate),
+                        'white', attrs=['bold']
+                    )
+                    print(')', end='')
+            print('')
+    print("")
 
 
 class History(object):

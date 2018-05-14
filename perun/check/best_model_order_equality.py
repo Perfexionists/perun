@@ -1,6 +1,8 @@
 import perun.profile.query as query
 import perun.check.factory as check
 
+from perun.utils.structs import DegradationInfo
+
 __author__ = 'Tomas Fiedor'
 
 CONFIDENCE_THRESHOLD = 0.9
@@ -59,7 +61,7 @@ def best_model_order_equality(baseline_profile, target_profile):
             else:
                 change = check.PerformanceChange.NoChange
 
-            yield check.DegradationInfo(
+            yield DegradationInfo(
                 change, "order", uid,
                 best_corresponding_baseline_model[0],
                 best_model[0],
