@@ -476,14 +476,14 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
             cprint(token, minor_version_output_colour, attrs=HEADER_ATTRS)
     print("")
     # Print profiles
-    for profile_info in minor_version_list:
+    for minor_version in minor_version_list:
         for (token_type, token) in fmt_tokens:
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
                 limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
                 if attr_type == 'stats':
                     tracked_profiles = store.get_profile_number_for_minor(
-                        pcs.get_object_directory(), profile_info.checksum
+                        pcs.get_object_directory(), minor_version.checksum
                     )
                     if tracked_profiles['all']:
                         print(termcolor.colored("{:{}}".format(
@@ -504,7 +504,7 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
                         print(termcolor.colored(
                             '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
                 else:
-                    print_formating_token(minor_version_info_fmt, profile_info, attr_type, limit,
+                    print_formating_token(minor_version_info_fmt, minor_version, attr_type, limit,
                                           default_color=minor_version_output_colour, value_fill=fill or ' ')
             else:
                 cprint(token, minor_version_output_colour)
@@ -545,7 +545,7 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
     """
     # Check if encountered incorrect token in the formating string
     if not hasattr(info_object, info_attr):
-        perun_log.error("invalid formatting string '{}':"
+        perun_log.error("invalid formatting string '{}': "
                         "object does not contain '{}' attribute".format(
                             fmt_string, info_attr))
 
@@ -684,7 +684,7 @@ def get_nth_profile_of(pcs, position, minor_version):
         position(int): position of the profile we are obtaining
         minor_version(str): looked up minor version for the wrapped vcs
     """
-    registered_profiles = get_minor_version_profiles(pcs, minor_version)
+    registered_profiles = profile.load_list_for_minor_version(pcs, minor_version)
     profile.sort_profiles(registered_profiles)
     if 0 <= position < len(registered_profiles):
         return registered_profiles[position].realpath
@@ -692,28 +692,6 @@ def get_nth_profile_of(pcs, position, minor_version):
         raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
             "{}@i".format(position), "0@i", "{}@i".format(len(registered_profiles)-1)
         ))
-
-
-def get_minor_version_profiles(pcs, minor_version):
-    """Returns profiles assigned to the given minor version.
-
-    Arguments:
-        pcs(PCS): performance control system
-        minor_version(str): identification of the commit (preferably sha1)
-
-    Returns:
-        list: list of ProfileInfo parsed from index of the given minor_version
-    """
-    # Compute the
-    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
-    profile_info_list = []
-    for index_entry in profiles:
-        _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
-        profile_info \
-            = profile.ProfileInfo(index_entry.path, profile_name, index_entry.time)
-        profile_info_list.append(profile_info)
-
-    return profile_info_list
 
 
 def get_untracked_profiles(pcs):
@@ -771,7 +749,7 @@ def status(pcs, short=False, **_):
         print_minor_version_info(minor_version)
 
     # Print profiles
-    minor_version_profiles = get_minor_version_profiles(pcs, minor_head)
+    minor_version_profiles = profile.load_list_for_minor_version(pcs, minor_head)
     untracked_profiles = get_untracked_profiles(pcs)
     maxs = calculate_maximal_lengths_for_object_list(
         minor_version_profiles + untracked_profiles, profile.ProfileInfo.valid_attributes

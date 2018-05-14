@@ -46,7 +46,7 @@ import sys
 
 import click
 import perun.logic.commands as commands
-import perun.check as check
+import perun.check.factory as check
 import perun.logic.runner as runner
 import perun.logic.store as store
 from perun.logic.pcs import PCS

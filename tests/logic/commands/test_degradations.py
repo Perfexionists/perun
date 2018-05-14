@@ -5,7 +5,7 @@ import git
 
 import perun.logic.config as config
 import perun.profile.factory as factory
-import perun.check as check
+import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
 

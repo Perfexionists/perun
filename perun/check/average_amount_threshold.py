@@ -1,5 +1,5 @@
 import perun.profile.convert as convert
-import perun.check as check
+import perun.check.factory as check
 __author__ = 'Tomas Fiedor'
 
 
