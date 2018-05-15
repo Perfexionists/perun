@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.14.2 (2018-05-15)
+-------------------
+
+`commit: 0faaa74097a159c4b441d65415dba504265c2059`
+
+**Rehaul the command line output**
+
   - fix issue with pending tags not being sorted ;)
   - fix the issue with incorrectly flattened values in query
   - extend the memory collector to include the allocation order as resource
