@@ -6,6 +6,36 @@ HEAD
 
 **To be included in next release**
 
+0.14.2 (2018-05-15)
+-------------------
+
+`commit: 0faaa74097a159c4b441d65415dba504265c2059`
+
+**Rehaul the command line output**
+
+  - fix issue with pending tags not being sorted ;)
+  - fix the issue with incorrectly flattened values in query
+  - extend the memory collector to include the allocation order as resource
+  - add loading and storing of performance change records
+  - add short printed results for found degradations
+  - update the default generated config
+  - remake the output of time collector
+  - fix issue with integer workloads
+  - fix issue with non-sorted index profiles
+  - fix issue with memory collector not removing the unreachable allocations
+  - add vcs history tree to log (prints the context of the vcs tree)
+  - remodel the output of the degradation checks
+  - switch the colour of optimizations to green (instead of blue)
+  - colour tainted (containing degradation) and fixed (containing optimization) branches in vcs history
+  - add short summary of degradations to each minor version in graph
+  - add semantic ordering of uids (used in outputs)
+  - add vcs history to output of perun run matrix
+  - make perun check precollect phase silent (until we figure out the better way?)
+  - add streaming to the history (so it is not output when everything is done)
+  - make two versions of run_jobs (one with history and one without)
+  - refactor some modules to remove unnecessary dependencies
+  - add information about degradations to perun status and log
+
 0.14.1 (2018-04-19)
 -------------------
 

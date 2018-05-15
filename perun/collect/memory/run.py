@@ -115,6 +115,7 @@ def after(cmd, sampling=DEFAULT_SAMPLING, **kwargs):
         log.failed()
         return CollectStatus.ERROR, 'Wrong format of log file: {}'.format(str(v_err)), {}
     log.done()
+    filters.set_global_region(profile)
 
     if not include_all:
         print("Filtering traces: ", end='')

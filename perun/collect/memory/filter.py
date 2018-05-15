@@ -12,13 +12,6 @@ def validate_profile(func):
             return {}
         if 'global' not in profile.keys():
             return {}
-        # check if there is smt to remove
-        try:
-            glob_res = profile['global']['resources']
-            if not glob_res:
-                return profile
-        except (IndexError, KeyError, TypeError):
-            return {}
 
         return func(profile, *args, **kwargs)
 
@@ -128,7 +121,6 @@ def remove_uidless_records_from(profile):
     snapshots = profile['snapshots']
     for snapshot in snapshots:
         snapshot['resources'] = [res for res in snapshot['resources'] if res['uid']]
-    set_global_region(profile)
 
     return profile
 

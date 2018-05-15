@@ -29,7 +29,8 @@ def collect(**kwargs):
             "resources": [
                 {
                     "amount": float(timing),
-                    "uid": key,
+                    "uid": kwargs['cmd'],
+                    "subtype": key,
                     "type": "time"
                 } for (key, timing) in times.items()
             ]

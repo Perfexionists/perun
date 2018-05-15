@@ -17,8 +17,10 @@ complex queries and statistical tests over the profiles.
 # TODO: Consider adding caching to ease some of the computations (in case it is
 # time consuming)
 
+import operator
 import numbers
 import perun.utils.exceptions as exceptions
+import perun.utils.helpers as helpers
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = "Jiri Pavela"
@@ -82,12 +84,13 @@ def flattened_values(root_key, root_value):
         nested_values = []
         for key, value in all_items_of(root_value):
             # Add one level of hierarchy with ':'
-            nested_values.append(value)
+            nested_values.append((key, value))
             yield str(root_key) + ":" + key, value
         # Additionally return the overall key as joined values of its nested stuff,
         # only if root is not a list (i.e. root key is not int = index)!
         if isinstance(root_key, str):
-            yield root_key, ":".join(map(str, nested_values))
+            nested_values.sort(key=helpers.uid_getter)
+            yield root_key, ":".join(map(str, map(operator.itemgetter(1), nested_values)))
     # Lists are merged as comma separated keys
     elif isinstance(root_value, list):
         yield root_key, ','.join(

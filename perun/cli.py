@@ -46,7 +46,7 @@ import sys
 
 import click
 import perun.logic.commands as commands
-import perun.check as check
+import perun.check.factory as check
 import perun.logic.runner as runner
 import perun.logic.store as store
 from perun.logic.pcs import PCS
@@ -396,6 +396,7 @@ def lookup_nth_pending_filename(position):
         str: pending profile at given position
     """
     pending = commands.get_untracked_profiles(PCS(store.locate_perun_dir_on(os.getcwd())))
+    profiles.sort_profiles(pending)
     if 0 <= position < len(pending):
         return pending[position].realpath
     else:
@@ -1034,6 +1035,7 @@ def matrix(ctx, **kwargs):
     with Perun's configuration files.
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
+    kwargs.update({'with_history': True})
     runner.run_matrix_job(**kwargs)
 
 
@@ -1139,6 +1141,7 @@ def job(ctx, **kwargs):
     :ref:`postprocessors-list` respectively.
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
+    kwargs.update({'with_history': True})
     runner.run_single_job(**kwargs)
 
 
@@ -1230,7 +1233,7 @@ def check_all(minor_head='HEAD'):
               callback=minor_version_lookup_callback, metavar='<hash>',
               help='Will check the index of different minor version <hash>'
                    ' during the profile lookup.')
-def check_profiles(baseline_profile, target_profile, **_):
+def check_profiles(baseline_profile, target_profile, minor, **_):
     """Checks for changes in performance between two profiles.
 
     The commands checks for the changes between two isolate profiles, that can be stored in pending
@@ -1255,7 +1258,7 @@ def check_profiles(baseline_profile, target_profile, **_):
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
     """
-    check.degradation_between_files(baseline_profile, target_profile)
+    check.degradation_between_files(baseline_profile, target_profile, minor)
 
 
 @cli.group('utils')

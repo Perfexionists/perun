@@ -12,15 +12,17 @@ import re
 
 import click
 import colorama
-import perun.logic.store as store
 import termcolor
 
 import perun.logic.config as perun_config
-from perun.logic.pcs import pass_pcs
+import perun.logic.store as store
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
+import perun.vcs as vcs
+
+from perun.logic.pcs import pass_pcs
 from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import \
@@ -29,7 +31,6 @@ from perun.utils.helpers import \
     HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
     PROFILE_DELIMITER, MinorVersion
 from perun.utils.log import cprint, cprintln
-import perun.vcs as vcs
 
 # Init colorama for multiplatform colours
 colorama.init()
@@ -383,9 +384,34 @@ def log(pcs, minor_version, short=False, **_):
         )
         # Update manually the maxima for the printed supported profile types, each requires two
         # characters and 9 stands for " profiles" string
-        minor_version_maxima.update({
-            'stats': 2*len(SUPPORTED_PROFILE_TYPES) + 9
-        })
+
+        def minor_stat_retriever(mv):
+            """Helper function for picking stats of the given minor version
+
+            :param MinorVersion mv: minor version for which we are retrieving the stats
+            :return: dictionary with stats for minor version
+            """
+            return store.get_profile_number_for_minor(
+                pcs.get_object_directory(), mv.checksum
+            )
+
+        def deg_count_retriever(mv):
+            """Helper function for picking stats of the degradation strings of form ++--
+
+            :param MinorVersion mv: minor version for which we are retrieving the stats
+            :return: dictionary with stats for minor version
+            """
+            counts = perun_log.count_degradations_per_group(
+                store.load_degradation_list_for(pcs.get_object_directory(), mv.checksum)
+            )
+            return {'changes': counts.get('Optimization', 0)*'+' + counts.get('Degradation', 0)*'-'}
+
+        minor_version_maxima.update(
+            calculate_maximal_lengths_for_stats(minor_versions, minor_stat_retriever)
+        )
+        minor_version_maxima.update(
+            calculate_maximal_lengths_for_stats(minor_versions, deg_count_retriever, " changes ")
+        )
         print_short_minor_version_info_list(pcs, minor_versions, minor_version_maxima)
     else:
         # Walk the minor versions and print them
@@ -425,6 +451,9 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
         max_lengths(dict): dictionary with maximal sizes for the output of profiles
     """
     # Load formating string for profile
+    stat_length = sum([
+        max_lengths['all'], max_lengths['time'], max_lengths['mixed'], max_lengths['memory']
+    ]) + 3 + len(" profiles")
     minor_version_output_colour = 'white'
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
     fmt_tokens, _ = FMT_SCANNER.scan(minor_version_info_fmt)
@@ -437,10 +466,19 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
                 slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
                 end_msg = termcolor.colored(' profiles', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
                 print(termcolor.colored("{0}{4}{1}{4}{2}{4}{3}{5}".format(
-                    termcolor.colored('a', HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS),
-                    termcolor.colored('m', PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS),
-                    termcolor.colored('x', PROFILE_TYPE_COLOURS['mixed'], attrs=HEADER_ATTRS),
-                    termcolor.colored('t', PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
+                    termcolor.colored(
+                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS
+                    ),
+                    termcolor.colored(
+                        'm'.rjust(max_lengths['memory']),
+                        PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS
+                    ),
+                    termcolor.colored(
+                        'x'.rjust(max_lengths['mixed']),
+                        PROFILE_TYPE_COLOURS['mixed'], attrs=HEADER_ATTRS),
+                    termcolor.colored(
+                        't'.rjust(max_lengths['time']),
+                        PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
                     slash,
                     end_msg
                 ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS), end='')
@@ -453,34 +491,44 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
             cprint(token, minor_version_output_colour, attrs=HEADER_ATTRS)
     print("")
     # Print profiles
-    for profile_info in minor_version_list:
+    for minor_version in minor_version_list:
         for (token_type, token) in fmt_tokens:
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
                 limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
                 if attr_type == 'stats':
                     tracked_profiles = store.get_profile_number_for_minor(
-                        pcs.get_object_directory(), profile_info.checksum
+                        pcs.get_object_directory(), minor_version.checksum
                     )
                     if tracked_profiles['all']:
-                        print(termcolor.colored("{}".format(
-                            tracked_profiles['all']
+                        print(termcolor.colored("{:{}}".format(
+                            tracked_profiles['all'], max_lengths['all']
                         ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
 
                         # Print the coloured numbers
                         for profile_type in SUPPORTED_PROFILE_TYPES:
                             print("{}{}".format(
                                 termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
-                                termcolor.colored("{}".format(
-                                    tracked_profiles[profile_type]
+                                termcolor.colored("{:{}}".format(
+                                    tracked_profiles[profile_type], max_lengths[profile_type]
                                 ), PROFILE_TYPE_COLOURS[profile_type])
                             ), end='')
 
                         print(termcolor.colored(" profiles", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
                     else:
-                        print(termcolor.colored('--no--profiles--', TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+                        print(termcolor.colored(
+                            '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+                elif attr_type == 'changes':
+                    degradations = store.load_degradation_list_for(
+                        pcs.get_object_directory(), minor_version.checksum
+                    )
+                    change_string = perun_log.change_counts_to_string(
+                        perun_log.count_degradations_per_group(degradations),
+                        width=max_lengths['changes']
+                    )
+                    print(change_string, end='')
                 else:
-                    print_formating_token(minor_version_info_fmt, profile_info, attr_type, limit,
+                    print_formating_token(minor_version_info_fmt, minor_version, attr_type, limit,
                                           default_color=minor_version_output_colour, value_fill=fill or ' ')
             else:
                 cprint(token, minor_version_output_colour)
@@ -521,7 +569,7 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
     """
     # Check if encountered incorrect token in the formating string
     if not hasattr(info_object, info_attr):
-        perun_log.error("invalid formatting string '{}':"
+        perun_log.error("invalid formatting string '{}': "
                         "object does not contain '{}' attribute".format(
                             fmt_string, info_attr))
 
@@ -534,6 +582,22 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
         cprint("[{}]".format(info_value), PROFILE_TYPE_COLOURS[raw_value])
     else:
         cprint(info_value, default_color)
+
+
+def calculate_maximal_lengths_for_stats(obj_list, stat_function, stat_header=""):
+    """For given object lists and stat_function compute maximal lengths of the stats
+
+    :param list obj_list: list of object, for which the stat function will be applied
+    :param function stat_function: function returning the dictionary of keys
+    :param str stat_header: header of the stats
+    :return: dictionary of maximal lenghts for various stats
+    """
+    maxima = collections.defaultdict(int)
+    for obj in obj_list:
+        object_stats = stat_function(obj)
+        for key in object_stats.keys():
+            maxima[key] = max(len(stat_header), maxima[key], len(str(object_stats[key])))
+    return maxima
 
 
 def calculate_maximal_lengths_for_object_list(object_list, valid_attributes):
@@ -645,35 +709,14 @@ def get_nth_profile_of(pcs, position, minor_version):
         position(int): position of the profile we are obtaining
         minor_version(str): looked up minor version for the wrapped vcs
     """
-    registered_profiles = get_minor_version_profiles(pcs, minor_version)
+    registered_profiles = profile.load_list_for_minor_version(pcs, minor_version)
+    profile.sort_profiles(registered_profiles)
     if 0 <= position < len(registered_profiles):
         return registered_profiles[position].realpath
     else:
         raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
             "{}@i".format(position), "0@i", "{}@i".format(len(registered_profiles)-1)
         ))
-
-
-def get_minor_version_profiles(pcs, minor_version):
-    """Returns profiles assigned to the given minor version.
-
-    Arguments:
-        pcs(PCS): performance control system
-        minor_version(str): identification of the commit (preferably sha1)
-
-    Returns:
-        list: list of ProfileInfo parsed from index of the given minor_version
-    """
-    # Compute the
-    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
-    profile_info_list = []
-    for index_entry in profiles:
-        _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
-        profile_info \
-            = profile.ProfileInfo(index_entry.path, profile_name, index_entry.time)
-        profile_info_list.append(profile_info)
-
-    return profile_info_list
 
 
 def get_untracked_profiles(pcs):
@@ -731,7 +774,7 @@ def status(pcs, short=False, **_):
         print_minor_version_info(minor_version)
 
     # Print profiles
-    minor_version_profiles = get_minor_version_profiles(pcs, minor_head)
+    minor_version_profiles = profile.load_list_for_minor_version(pcs, minor_head)
     untracked_profiles = get_untracked_profiles(pcs)
     maxs = calculate_maximal_lengths_for_object_list(
         minor_version_profiles + untracked_profiles, profile.ProfileInfo.valid_attributes
@@ -740,6 +783,17 @@ def status(pcs, short=False, **_):
     if not short:
         print("")
     print_profile_info_list(untracked_profiles, maxs, short, 'untracked')
+
+    # Print degradation info
+    degradation_list = store.load_degradation_list_for(
+        pcs.get_object_directory(), minor_head
+    )
+    if not short:
+        print("")
+    perun_log.print_short_summary_of_degradations(degradation_list)
+    if not short:
+        print("")
+        perun_log.print_list_of_degradations(degradation_list)
 
 
 @pass_pcs
