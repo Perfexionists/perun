@@ -273,32 +273,6 @@ e.g. <cite>BMOE</cite> stands for <a class="reference internal" href="#degradati
 <p>New performance change checkers can be registered within Perun in several steps. The checkers have
 just small requirements and have to <cite>yield</cite> the reports about degradation as a instances of
 <code class="xref py py-class docutils literal"><span class="pre">DegradationInfo</span></code> objects specified as follows:</p>
-<dl class="class">
-<dt id="perun.check.DegradationInfo">
-<em class="property">class </em><code class="descclassname">perun.check.</code><code class="descname">DegradationInfo</code><span class="sig-paren">(</span><em>res</em>, <em>t</em>, <em>loc</em>, <em>fb</em>, <em>tt</em>, <em>ct='no'</em>, <em>cr=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/check.html#DegradationInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.check.DegradationInfo" title="Permalink to this definition">¶</a></dt>
-<dd><p>The returned results for performance check methods</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>result</strong> (<em>PerformanceChange</em>) – result of the performance change, either can be optimization,
-degradation, no change, or certain type of unknown</li>
-<li><strong>type</strong> (<em>str</em>) – string representing the type of the degradation, e.g. “order” degradation</li>
-<li><strong>location</strong> (<em>str</em>) – location, where the degradation has happened</li>
-<li><strong>from_baseline</strong> (<em>str</em>) – value or model representing the baseline, i.e. from which the new
-version was optimized or degraded</li>
-<li><strong>to_target</strong> (<em>str</em>) – value or model representing the target, i.e. to which the new version was
-optimized or degraded</li>
-<li><strong>confidence_type</strong> (<em>str</em>) – type of the confidence we have in the detected degradation, e.g. r^2</li>
-<li><strong>confidence_rate</strong> (<em>int</em>) – value of the confidence we have in the detected degradation</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <p>You can register your new performance change checker as follows:</p>
 <blockquote>
 <div><ol class="arabic">
