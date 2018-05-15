@@ -117,6 +117,10 @@ The specification of the formatting string can contain the following special tag
     Lists short summary of overall number of profiles (``a``) and number of memory (``m``), mixed
     (``x``) and time (``t``) profiles assinged to given minor version.
 
+``%changes%``:
+    Lists a short string of overall found changes for a given minor version. Found degradations are
+    represented by red ``-``, while found optimizations are represented by green ``+``.
+
 ``%desc:num%``: Lists short description of the minor version, limiting to the first sentence of the
     description. If we take ``git`` as an example this will correspond to the short commit message.
 

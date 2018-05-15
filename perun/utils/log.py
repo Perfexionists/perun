@@ -1,14 +1,21 @@
 """Set of helper function for logging and printing warnings or errors"""
 
+import builtins
+import collections
+import operator
 import logging
 import sys
 import termcolor
+import itertools
 import io
 import pydoc
 import functools
 
+from perun.utils.helpers import first_index_of_attr
 from perun.utils.decorators import static_variables
-from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH
+from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH,CHANGE_COLOURS, \
+    CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON
+from perun.utils.structs import PerformanceChange
 
 __author__ = 'Tomas Fiedor'
 VERBOSITY = 0
@@ -23,15 +30,6 @@ SUPPRESS_PAGING = True
 
 # set the logging for the perun
 logging.basicConfig(filename='perun.log', level=logging.DEBUG)
-
-
-def is_verbosity_below(value):
-    """Helper function for checking if the value is above the value
-
-    :param int value: value of the verbosity we are testing against
-    :returns: true if the value is smaller than current level of verbosity
-    """
-    return VERBOSITY < value
 
 
 def page_function_if(func, paging_switch):
@@ -230,20 +228,457 @@ def failed(ending='\n'):
     print(']', end=ending)
 
 
-def print_minor_version(minor_version):
-    """Helper function for printing minor version to the degradation output
+def count_degradations_per_group(degradation_list):
+    """Counts the number of optimizations and degradations
 
-    Currently printed in form of:
-
-    * sha[:6]: desc
-
-    :param MinorVersion minor_version: informations about minor version
+    :param list degradation_list: list of tuples of (degradation info, cmdstr, minor version)
+    :return: dictionary mapping change strings to its counts
     """
-    print("* ", end='')
-    cprint("{}".format(
-        minor_version.checksum[:6]
-    ), 'yellow', attrs=[])
-    print(": {}".format(
-        minor_version.desc.split("\n")[0].strip()
+    # Get only degradation results
+    changes = map(operator.attrgetter('result'), map(operator.itemgetter(0), degradation_list))
+    # Transform the enum into a string
+    changes = list(map(operator.attrgetter('name'), changes))
+    counts = dict(collections.Counter(changes))
+    return counts
+
+
+def get_degradation_change_colours(degradation_result):
+    """Returns the tuple of two colours w.r.t degradation results.
+
+    If the change was optimization (or possible optimization) then we print the first model as
+    red and the other by green (since we went from better to worse model). On the other hand if the
+    change was degradation, then we print the first one green (was better) and the other as red
+    (is now worse). Otherwise (for Unknown and no change) we keep the stuff yellow, though this
+    is not used at all
+
+    :param PerformanceChange degradation_result: change of the performance
+    :returns: tuple of (from model string colour, to model string colour)
+    """
+    if degradation_result in (
+            PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
+    ):
+        return 'red', 'green'
+    elif degradation_result in (
+            PerformanceChange.Degradation, PerformanceChange.MaybeDegradation
+    ):
+        return 'green', 'red'
+    else:
+        return 'yellow', 'yellow'
+
+
+def print_short_summary_of_degradations(degradation_list):
+    """Prints a short string representing the summary of the found changes.
+
+    This prints a short statistic of found degradations and short summary string.
+
+    :param list degradation_list:
+        list of tuples (degradation info, command string, source minor version)
+    """
+    counts = count_degradations_per_group(degradation_list)
+
+    print_short_change_string(counts)
+    optimization_count = counts.get('Optimization', 0)
+    degradation_count = counts.get('Degradation', 0)
+    print("{} optimization{}({}), {} degradation{}({})".format(
+        optimization_count, "s" if optimization_count != 1 else "", OPTIMIZATION_ICON,
+        degradation_count, "s" if degradation_count != 1 else "", DEGRADATION_ICON
     ))
 
+
+def change_counts_to_string(counts, width=0):
+    """Transforms the counts to a single coloured string
+
+    :param dict counts: dictionary with counts of degradations
+    :param int width: width of the string justified to left
+    :return: string representing the counts of found changes
+    """
+    width = max(width - counts.get('Optimization', 0) - counts.get('Degradation', 0), 0)
+    change_str = termcolor.colored(
+        str(OPTIMIZATION_ICON*counts.get('Optimization', 0)),
+        CHANGE_COLOURS[PerformanceChange.Optimization],
+        attrs=['bold']
+    )
+    change_str += termcolor.colored(
+        str(DEGRADATION_ICON*counts.get('Degradation', 0)),
+        CHANGE_COLOURS[PerformanceChange.Degradation],
+        attrs=['bold']
+    )
+    return change_str + width*' '
+
+
+def print_short_change_string(counts):
+    """Prints short string representing a summary of the given degradation list.
+
+    This prints a short string of form representing a summary of found optimizations (+) and
+    degradations (-) in the given degradation list. Uncertain optimizations and degradations
+    are omitted. The string can e.g. look as follows:
+
+    ++++-----
+
+    :param dict counts: dictionary mapping found string changes into their counts
+    """
+    overall_changes = sum(counts.values())
+    print("{} change{}".format(
+        overall_changes, "s" if overall_changes != 1 else ""
+    ), end='')
+    if overall_changes > 0:
+        change_string = change_counts_to_string(counts)
+        print(" | {}".format(change_string), end='')
+    print("")
+
+
+def print_list_of_degradations(degradation_list):
+    """Prints list of found degradations grouped by location
+
+    Currently this is hardcoded and prints the list of degradations as follows:
+
+    at {loc}:
+      {result} from {from} -> to {to}
+
+    :param list degradation_list: list of found degradations
+    """
+    def keygetter(item):
+        """Returns the location of the degradation from the tuple
+
+        :param tuple item: tuple of (degradation result, cmd string, source minor version)
+        :return: location of the degradation used for grouping
+        """
+        return item[0].location
+
+    # Group by location
+    degradation_list.sort(key=keygetter)
+    for location, changes in itertools.groupby(degradation_list, keygetter):
+        # Print the location
+        print("at", end='')
+        cprint(' {}'.format(location), 'white', attrs=['bold'])
+        print(":")
+        # Iterate and print all of the infos
+        for deg_info, _, __ in changes:
+            cprint(
+                '  {}'.format(CHANGE_STRINGS[deg_info.result]),
+                CHANGE_COLOURS[deg_info.result], attrs=['bold']
+            )
+            if deg_info.result != PerformanceChange.NoChange:
+                from_colour, to_colour = get_degradation_change_colours(deg_info.result)
+                print(' from: ', end='')
+                cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
+                print(' -> to: ', end='')
+                cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
+                if deg_info.confidence_type != 'no':
+                    print(' (with confidence ', end='')
+                    cprint(
+                        '{} = {}'.format(
+                            deg_info.confidence_type, deg_info.confidence_rate),
+                        'white', attrs=['bold']
+                    )
+                    print(')', end='')
+            print('')
+    print("")
+
+
+class History(object):
+    """Helper with wrapper, which is used when one wants to visualize the version control history
+    of the project, printing specific stuff corresponding to a git history
+
+    :ivar list unresolved_edges: list of parents that needs to be resolved in the vcs graph,
+        for each such parent, we keep one column.
+    :ivar bool auto_flush_with_border: specifies whether in auto-flushing the border should be
+        included in the output
+    """
+    class Edge(object):
+        """Represents one edge of the history
+
+        :ivar str next: the parent of the edge, i.e. the previously processed sha
+        :ivar str colour: colour of the edge (red for deg, yellow for deg+opt, green for opt)
+        :ivar str prev: the child of the edge, i.e. the not yet processed sha
+        """
+        def __init__(self, n, colour='white', prev=None):
+            """Initiates one edge of the history
+
+            :param str n: the next sha that will be processed
+            :param str colour: colour of the edge
+            :param str prev: the "parent" of the n
+            """
+            self.next = n
+            self.colour = colour
+            self.prev = prev
+
+        def to_ascii(self, char):
+            """Converts the edge to ascii representation
+
+            :param str char: string that represents the edge
+            :return: string representing the edge in ascii
+            """
+            return char if self.colour == 'white' \
+                else termcolor.colored(char, self.colour, attrs=['bold'])
+
+    def __init__(self, head):
+        """Creates a with wrapper, which keeps and prints the context of the current vcs
+        starting at head
+
+        :param str head: head minor version
+        """
+        self.unresolved_edges = [History.Edge(head)]
+        self.auto_flush_with_border = False
+
+    def __enter__(self):
+        """When entering, we create a new string io object to catch standard output
+
+        :return: the history object
+        """
+        # We will get the original standard output with string buffer and handle writing ourselves
+        self.original_stdout = sys.stdout
+        sys.stdout = io.StringIO()
+        self._saved_print = builtins.print
+
+        def flushed_print(print_function, history):
+            """Decorates the print_function with automatic flushing of the output.
+
+            Whenever a newline is included in the output, the stream will be automatically flushed
+
+            :param function print_function: function that will include the flushing
+            :param History history: history object that takes care of flushing
+            :return: decorated flushed print
+            """
+            def wrapper(*args, **kwargs):
+                """Decorator function for flushed print
+
+                :param list args: list of positional arguments for print
+                :param dict kwargs: list of keyword arguments for print
+                """
+                print_function(*args, **kwargs)
+                end_specified = 'end' in kwargs.keys()
+                if not end_specified or kwargs['end'] == '\n':
+                    history.flush(history.auto_flush_with_border)
+            return wrapper
+        builtins.print = flushed_print(builtins.print, self)
+        return self
+
+    def __exit__(self, *_):
+        """Restores the stdout to the original state
+
+        :param list _: list of unused parameters
+        """
+        # Restore the stdout and printing function
+        builtins.print = self._saved_print
+        sys.stdout = sys.stdout
+
+    def get_left_border(self):
+        """Returns the string representing the currently unresolved branches.
+
+        Each unresolved branch is represented as a '|' characters
+
+        The left border can e.g. look as follows:
+
+        | | | | |
+
+        :return: string representing the columns of the unresolved branches
+        """
+        return " ".join(edge.to_ascii("|") for edge in self.unresolved_edges) + "  "
+
+    def _merge_parents(self, merged_parent):
+        """Removes the duplicate instances of the merge parent.
+
+        E.g. given the following parents:
+
+            [p1, p2, p3, p2, p4, p2]
+
+        End we merge the parent p2, the we will obtain the following:
+
+            [p1, p2, p3, p4]
+
+        This is used, when we are outputing the parent p2, and first we merged the branches, print
+        the information about p2 and then actualize the unresolved parents with parents of p2.
+
+        :param str merged_parent: sha of the parent that is going to be merged in the unresolved
+        """
+        filtered_unresolved = []
+        already_found_parent = False
+        for parent in self.unresolved_edges:
+            if parent.next == merged_parent and already_found_parent:
+                continue
+            already_found_parent = already_found_parent or parent.next == merged_parent
+            filtered_unresolved.append(parent)
+        self.unresolved_edges = filtered_unresolved
+
+    def _print_minor_version(self, minor_version_info):
+        """Prints the information about minor version.
+
+        The minor version is visualized as follows:
+
+         | * | {sha:6} {desc}
+
+        I.e. all of the unresolved parents are output as | and the printed parent is output as *.
+        The further we print first six character of minor version checksum and first line of desc
+
+        :param MinorVersion minor_version_info: printed minor version
+        """
+        minor_str = " ".join(
+            "*" if p.next == minor_version_info.checksum else p.to_ascii("|")
+            for p in self.unresolved_edges
+        )
+        print(minor_str, end='')
+        cprint(" {}".format(
+            minor_version_info.checksum[:6]
+        ), 'yellow', attrs=[])
+        print(": {} | ".format(
+            minor_version_info.desc.split("\n")[0].strip()
+        ), end='')
+
+    def progress_to_next_minor_version(self, minor_version_info):
+        """Progresses the history of the VCS to next minor version
+
+        This flushes the current caught buffer, resolves the fork points (i.e. when we forked the
+        history from the minor_version), prints the information about minor version and the resolves
+        the merges (i.e. when the minor_version is spawned from the merge). Finally this updates the
+        unresolved parents with parents of minor_version.
+
+        Prints the following:
+
+        | | | |/ / /
+        | | | * | | sha: desc
+        | | | |\ \ \
+
+        :param MinorVersion minor_version_info: information about minor version
+        """
+        minor_sha = minor_version_info.checksum
+        self.flush(with_border=True)
+        self.auto_flush_with_border = False
+        self._process_fork_point(minor_sha)
+        self._merge_parents(minor_sha)
+        self._print_minor_version(minor_version_info)
+
+    def finish_minor_version(self, minor_version_info, degradation_list):
+        # Update the unresolved parents
+        minor_sha = minor_version_info.checksum
+        version_index = first_index_of_attr(self.unresolved_edges, 'next', minor_sha)
+        self.unresolved_edges[version_index:version_index+1] = [
+            History.Edge(p, 'white', minor_sha) for p in minor_version_info.parents
+        ]
+        self._taint_parents(minor_sha, degradation_list)
+        self._process_merge_point(version_index, minor_version_info.parents)
+
+        # Flush the history
+        self.flush()
+        self.auto_flush_with_border = True
+
+    def flush(self, with_border=False):
+        """Flushes the stdout optionally with left border of unresolved parent columns
+
+        If the current stdout is not readable, the flushing is skipped
+
+        :param bool with_border: if true, then every line is printed with the border of unresolved
+            parents
+        """
+        # Unreadable stdouts are skipped, since we are probably in silent mode
+        if sys.stdout.readable():
+            # flush the stdout
+            sys.stdout.seek(0)
+            for line in sys.stdout.readlines():
+                if with_border:
+                    self.original_stdout.write(self.get_left_border())
+                self.original_stdout.write(line)
+
+            # create new stringio
+            sys.stdout = io.StringIO()
+
+    def _taint_parents(self, target, degradation_list):
+        """According to the given list of degradation, sets the parents either as tainted
+        or fixed.
+
+        Tainted parents are output with red colour, while fixed parents with green colour.
+
+        :param str target: target minor version
+        :param list degradation_list: list of found degradations
+        """
+        # First we process all of the degradations and optimization
+        taints = set()
+        fixes = set()
+        for deg, _, baseline in degradation_list:
+            if deg.result.name == "Degradation":
+                taints.add(baseline)
+            elif deg.result.name == "Optimization":
+                fixes.add(baseline)
+
+        # At last we colour the edges; edges that contain both optimizations and degradations
+        # are coloured yellow
+        for edge in self.unresolved_edges:
+            if edge.prev == target:
+                tainted = edge.next in taints
+                fixed = edge.next in fixes
+                if tainted and fixed:
+                    edge.colour = 'yellow'
+                elif tainted:
+                    edge.colour = 'red'
+                elif fixed:
+                    edge.colour = 'green'
+
+    def _process_merge_point(self, merged_at, merged_parents):
+        """Updates the printed tree after we merged list of parents in the given merge_at index.
+
+        This prints up to merged_at unresolved parents, and then creates a merge point (|\) that
+        branches of to the length of the merged_parents columns.
+
+        Prints the following:
+
+        | | | * | | sha: desc
+        | | | | \ \
+        | | | |\ \ \
+        | | | | | \ \
+        | | | | |\ \ \
+        | | | | | | \ \
+        | | | | | |\ \ \
+        | | | | | | | | |
+
+        :param int merged_at: index, where the merged has happened
+        :param list merged_parents: list of merged parents
+        """
+        parent_num = len(merged_parents)
+        rightmost_branches_num = len(self.unresolved_edges) - merged_at - parent_num
+
+        # We output one additional line for better readability; if we process some merges,
+        # then we will have plenty of space left, so no need to do the newline
+        if parent_num == 1:
+            print(self.get_left_border())
+        else:
+            for _ in range(1, parent_num):
+                merged_at += 1
+                left_str = " ".join(
+                    e.to_ascii("|") for e in self.unresolved_edges[:merged_at]
+                )
+                right_str = " ".join(
+                    e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
+                ) if rightmost_branches_num else ""
+                print(left_str + right_str)
+                print(left_str + " ".join([self.unresolved_edges[merged_at].to_ascii('\\'), right_str]))
+
+    def _process_fork_point(self, fork_point):
+        """Updates the printed tree after we forked from the given sha.
+
+        Prints the following:
+
+        | | | | | | |
+        | | | |/ / /
+        | | | * | |
+
+        :param str fork_point: sha of the point, where we are forking
+        """
+        ulen = len(self.unresolved_edges)
+        forked_index = first_index_of_attr(self.unresolved_edges, 'next', fork_point)
+        src_index_map = list(range(0, ulen))
+        tgt_index_map = [
+            forked_index if self.unresolved_edges[i].next == fork_point else i for i in range(0, ulen)
+        ]
+
+        while src_index_map != tgt_index_map:
+            line = list(" "*(max(src_index_map)+1)*2)
+            triple_zip = zip(src_index_map, self.unresolved_edges, tgt_index_map)
+            for i, (lhs, origin, rhs) in enumerate(triple_zip):
+                # for this index we are moving to the left
+                diff = -1 if rhs - lhs else 0
+                if diff == 0:
+                    line[2*lhs] = origin.to_ascii('|')
+                else:
+                    line[2*lhs-1] = origin.to_ascii('/')
+                src_index_map[i] += diff
+            print("".join(line))

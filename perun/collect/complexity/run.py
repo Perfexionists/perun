@@ -123,7 +123,7 @@ def after(**kwargs):
             if demangler:
                 demangler = shlex.split(shlex.quote(demangler))
                 demangle = subprocess.check_output(demangler, stdin=profile, shell=False)
-                profile = demangle.decode(sys.stdout.encoding)
+                profile = demangle.decode(sys.__stdout__.encoding)
 
             for line in profile.splitlines(True):
                 # Split the line into action, function name, timestamp and size

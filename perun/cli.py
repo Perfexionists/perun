@@ -46,7 +46,7 @@ import sys
 
 import click
 import perun.logic.commands as commands
-import perun.check as check
+import perun.check.factory as check
 import perun.logic.runner as runner
 import perun.logic.store as store
 from perun.logic.pcs import PCS
@@ -1035,6 +1035,7 @@ def matrix(ctx, **kwargs):
     with Perun's configuration files.
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
+    kwargs.update({'with_history': True})
     runner.run_matrix_job(**kwargs)
 
 
@@ -1140,6 +1141,7 @@ def job(ctx, **kwargs):
     :ref:`postprocessors-list` respectively.
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
+    kwargs.update({'with_history': True})
     runner.run_single_job(**kwargs)
 
 

@@ -16,6 +16,18 @@ HEAD
   - fix issue with integer workloads
   - fix issue with non-sorted index profiles
   - fix issue with memory collector not removing the unreachable allocations
+  - add vcs history tree to log (prints the context of the vcs tree)
+  - remodel the output of the degradation checks
+  - switch the colour of optimizations to green (instead of blue)
+  - colour tainted (containing degradation) and fixed (containing optimization) branches in vcs history
+  - add short summary of degradations to each minor version in graph
+  - add semantic ordering of uids (used in outputs)
+  - add vcs history to output of perun run matrix
+  - make perun check precollect phase silent (until we figure out the better way?)
+  - add streaming to the history (so it is not output when everything is done)
+  - make two versions of run_jobs (one with history and one without)
+  - refactor some modules to remove unnecessary dependencies
+  - add information about degradations to perun status and log
 
 0.14.1 (2018-04-19)
 -------------------

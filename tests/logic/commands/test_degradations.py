@@ -3,9 +3,10 @@
 import os
 import git
 
+import perun.utils.log as log
 import perun.logic.config as config
 import perun.profile.factory as factory
-import perun.check as check
+import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
 
@@ -62,7 +63,7 @@ def test_degradation_in_minor(pcs_with_degradations, capsys):
     assert err == ""
 
 
-def test_degradation_in_history(pcs_with_degradations, capsys):
+def test_degradation_in_history(pcs_with_degradations):
     """Set of basic tests for testing degradation in while history
 
     Expects correct behaviour
@@ -70,10 +71,8 @@ def test_degradation_in_history(pcs_with_degradations, capsys):
     git_repo = git.Repo(pcs_with_degradations.vcs_path)
     head = str(git_repo.head.commit)
 
-    check.degradation_in_history(head)
-    out, err = capsys.readouterr()
-    assert "Degradation" in out
-    assert err == ""
+    result = check.degradation_in_history(head)
+    assert check.PerformanceChange.Degradation in [r[0].result for r in result]
 
 
 def test_degradation_between_profiles(pcs_with_degradations, capsys):
@@ -95,29 +94,24 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     # Can detect degradation using BMOE strategy betwen these pairs of profiles
     result = list(bmoe.best_model_order_equality(profiles[1], profiles[2]))
     assert check.PerformanceChange.Degradation in [r.result for r in result]
-    for deg in result:
-        check.print_degradation_results(deg)
 
     result = list(bmoe.best_model_order_equality(profiles[0], profiles[2]))
     assert check.PerformanceChange.Degradation in [r.result for r in result]
-    for deg in result:
-        check.print_degradation_results(deg)
 
     result = list(aat.average_amount_threshold(profiles[1], profiles[2]))
     assert check.PerformanceChange.Degradation in [r.result for r in result]
-    for deg in result:
-        check.print_degradation_results(deg)
 
     # Can detect optimizations both using BMOE and AAT
     result = list(aat.average_amount_threshold(profiles[2], profiles[1]))
     assert check.PerformanceChange.Optimization in [r.result for r in result]
-    for deg in result:
-        check.print_degradation_results(deg)
 
     result = list(bmoe.best_model_order_equality(profiles[2], profiles[1]))
     assert check.PerformanceChange.Optimization in [r.result for r in result]
-    for deg in result:
-        check.print_degradation_results(deg)
+    # Try that we printed confidence
+    deg_list = [(res, "", "") for res in result]
+    log.print_list_of_degradations(deg_list)
+    out, _ = capsys.readouterr()
+    assert 'with confidence' in out
 
 
 def test_strategies():

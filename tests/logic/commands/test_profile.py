@@ -1,6 +1,7 @@
 import pytest
 import git
 
+import perun.profile.factory as profiles
 import perun.logic.commands as commands
 import perun.logic.config as config
 import perun.profile.factory as factory
@@ -24,7 +25,7 @@ def test_loading(helpers, pcs_full, valid_profile_pool):
     git_repo = git.Repo(pcs_full.vcs_path)
     head = str(git_repo.head.commit)
 
-    minor_version_profiles = commands.get_minor_version_profiles(pcs_full, head)
+    minor_version_profiles = profiles.load_list_for_minor_version(pcs_full, head)
     assert len(minor_version_profiles) != 0
     first_indexed = minor_version_profiles[0].load()
     assert isinstance(first_indexed, dict)

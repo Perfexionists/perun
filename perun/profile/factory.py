@@ -210,6 +210,25 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
         raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
 
 
+def load_list_for_minor_version(pcs, minor_version):
+    """Returns profiles assigned to the given minor version.
+
+    :param PCS pcs: performance control system
+    :param str minor_version: identification of the commit (preferably sha1)
+    :returns list: list of ProfileInfo parsed from index of the given minor_version
+    """
+    # Compute the
+    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
+    profile_info_list = []
+    for index_entry in profiles:
+        _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
+        profile_info \
+            = ProfileInfo(index_entry.path, profile_name, index_entry.time)
+        profile_info_list.append(profile_info)
+
+    return profile_info_list
+
+
 def generate_units(collector):
     """Generate information about units used by the collector.
 
