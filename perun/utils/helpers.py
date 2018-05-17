@@ -79,6 +79,7 @@ COLLECT_PHASE_ATTRS_HIGH = []
 pass_profile = click.make_pass_decorator(dict)
 
 # Degradation specific
+CHANGE_CMD_COLOUR = 'magenta'
 CHANGE_STRINGS = {
     PerformanceChange.Degradation: 'Degradation',
     PerformanceChange.MaybeDegradation: 'Maybe Degradation',
@@ -94,6 +95,11 @@ CHANGE_COLOURS = {
     PerformanceChange.Unknown: 'grey',
     PerformanceChange.MaybeOptimization: 'cyan',
     PerformanceChange.Optimization: 'green'
+}
+CHANGE_TYPE_COLOURS = {
+    'time': 'blue',
+    'mixed': 'cyan',
+    'memory': 'white',
 }
 DEGRADATION_ICON = '-'
 OPTIMIZATION_ICON = '+'

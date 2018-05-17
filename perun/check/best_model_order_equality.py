@@ -62,7 +62,7 @@ def best_model_order_equality(baseline_profile, target_profile):
                 change = check.PerformanceChange.NoChange
 
             yield DegradationInfo(
-                change, "order", uid,
+                change, "model", uid,
                 best_corresponding_baseline_model[0],
                 best_model[0],
                 "r_square", confidence

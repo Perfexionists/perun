@@ -32,8 +32,9 @@ def average_amount_threshold(baseline_profile, target_profile):
     baseline_averages = get_averages(baseline_profile)
     target_averages = get_averages(target_profile)
 
-    # Temporary solution ;)
+    # Fixme: Temporary solution ;)
     unit = list(baseline_profile['header']['units'].values())[0]
+    resource_type = baseline_profile['header']['type']
     for target_uid, target_average in target_averages.items():
         baseline_average = baseline_averages.get(target_uid, 0)
         if baseline_average:
@@ -46,7 +47,7 @@ def average_amount_threshold(baseline_profile, target_profile):
                 change = check.PerformanceChange.NoChange
 
             yield DegradationInfo(
-                change, "value", target_uid,
+                change, resource_type, target_uid,
                 "{}{}".format(baseline_average.round(2), unit),
                 "{}{}".format(target_average.round(2), unit)
             )

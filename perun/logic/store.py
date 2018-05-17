@@ -649,7 +649,7 @@ def save_degradation_list_for(base_dir, minor_version, degradation_list):
             source,
             cmdstr
         ])
-        uid = (deg_info.location, deg_info.type)
+        uid = (deg_info.location, deg_info.type, cmdstr)
         list_of_registered_changes[uid] = info_string
 
     # Sort the changes
