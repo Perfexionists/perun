@@ -108,6 +108,8 @@ def degradation_in_minor(minor_version, quiet=False):
     return detected_changes
 
 
+@decorators.print_elapsed_time
+@decorators.phase_function('check whole repository')
 def degradation_in_history(head):
     """Walks through the minor version starting from the given head, checking for degradation.
 
@@ -153,6 +155,8 @@ def degradation_between_profiles(baseline_profile, target_profile):
         )
 
 
+@decorators.print_elapsed_time
+@decorators.phase_function('check two profiles')
 def degradation_between_files(baseline_file, target_file, minor_version):
     """Checks between pair of files (baseline, target) whether there are any changes in performance.
 

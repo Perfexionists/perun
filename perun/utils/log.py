@@ -466,8 +466,9 @@ class History(object):
         :param list _: list of unused parameters
         """
         # Restore the stdout and printing function
+        self.flush(self.auto_flush_with_border)
         builtins.print = self._saved_print
-        sys.stdout = sys.stdout
+        sys.stdout = sys.__stdout__
 
     def get_left_border(self):
         """Returns the string representing the currently unresolved branches.

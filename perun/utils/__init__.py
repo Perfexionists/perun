@@ -81,7 +81,7 @@ def run_safely_list_of_commands(cmd_list):
         print(">", cmd)
         out, err = run_safely_external_command(cmd)
         if out:
-            print(out.decode('utf-8'))
+            print(out.decode('utf-8'), end='')
         if err:
             log.cprint(err.decode('utf-8'), 'red')
 
