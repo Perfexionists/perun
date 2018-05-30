@@ -144,6 +144,7 @@ def init_perun_at(perun_path, is_reinit, vcs_config):
     store.touch_dir(perun_full_path)
     store.touch_dir(os.path.join(perun_full_path, 'objects'))
     store.touch_dir(os.path.join(perun_full_path, 'jobs'))
+    store.touch_dir(os.path.join(perun_full_path, 'logs'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
     perun_config.init_local_config_at(perun_full_path, vcs_config)
 

@@ -53,7 +53,16 @@ def pre_collect_profiles(minor_version):
         # Set the registering after run to true for this run
         config.runtime().set('profiles.register_after_run', 'true')
         # Actually collect the resources
-        with open(os.devnull, 'w') as black_hole:
+        collect_to_log = dutils.strtobool(str(
+            config.lookup_key_recursively('degradation.log_collect', 'false')
+        ))
+        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+        log_file = os.path.join(
+            pcs.get_log_directory(),
+            "{}-precollect.log".format(minor_version.checksum)
+        )
+        out = log_file if collect_to_log else os.devnull
+        with open(out, 'w') as black_hole:
             with contextlib.redirect_stdout(black_hole):
                 runner.run_matrix_job([minor_version])
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
@@ -117,7 +126,6 @@ def degradation_in_history(head):
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
-    print("Running the degradation checks on all history. This might take a while!")
     detected_changes = []
     with log.History(head) as history:
         for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):

@@ -244,8 +244,9 @@ vcs:
 ## To run detection of degradation for this repository, uncomment the following:
 # degradation:
 ## Setting this option to true value will make Perun collect new profiles,
-## before checking for degradations
+## before checking for degradations and store them in logs at directory .perun/logs/
 #   collect_before_check: true
+#   log_collect: true
 ## Setting this to first (resp. all) will apply the first (resp. all) found check methods
 ## for corresponding configurations
 #   apply: first
@@ -434,7 +435,6 @@ def get_hierarchy():
     yield shared()
 
 
-@decorators.singleton_with_args
 def lookup_key_recursively(key, default=None):
     """Recursively looks up the key first in the local config and then in the global.
 
@@ -457,7 +457,6 @@ def lookup_key_recursively(key, default=None):
     raise exceptions.MissingConfigSectionException
 
 
-@decorators.singleton_with_args
 def gather_key_recursively(key):
     """Recursively gathers the key, first in the temporary config, etc. up to the global config.
 

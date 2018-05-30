@@ -6,6 +6,9 @@ HEAD
 
 **To be included in next release**
 
+  - print timing of various collection phases
+  - add :ckey:`degradation.log_collect` to store the output of precollect phase in isolated logs
+
 0.14.2 (2018-05-15)
 -------------------
 

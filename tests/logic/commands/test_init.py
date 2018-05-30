@@ -26,8 +26,9 @@ def assert_perun_successfully_init_at(path):
     assert 'cache' in perun_content
     assert 'objects' in perun_content
     assert 'jobs' in perun_content
+    assert 'logs' in perun_content
     assert os.path.exists(os.path.join(perun_dir, 'local.yml'))
-    assert len(perun_content) == 4
+    assert len(perun_content) == 5
 
 
 def assert_git_successfully_init_at(path, is_bare=False):

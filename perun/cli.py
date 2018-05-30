@@ -43,6 +43,8 @@ import os
 import pkgutil
 import re
 import sys
+import termcolor
+import distutils.util as dutils
 
 import click
 import perun.logic.commands as commands
@@ -1189,6 +1191,28 @@ def check_group(**_):
       1. Best Model Order Equality (BMOE)
       2. Average Amount Threshold (AAT)
     """
+    should_precollect = dutils.strtobool(str(
+        perun_config.lookup_key_recursively('degradation.collect_before_check', 'false')
+    ))
+    precollect_to_log = dutils.strtobool(str(
+        perun_config.lookup_key_recursively('degradation.log_collect', 'false')
+    ))
+    if should_precollect:
+        print("{} is set to {}. ".format(
+            termcolor.colored('degradation.collect_before_check', 'white', attrs=['bold']),
+            termcolor.colored('true', 'green', attrs=['bold'])
+        ), end='')
+        print("Missing profiles will be freshly collected with respect to the ", end='')
+        print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
+        if precollect_to_log:
+            pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+            print("The progress of the pre-collect phase will be stored in logs at {}.".format(
+                termcolor.colored(pcs.get_log_directory(), 'white', attrs=['bold'])
+            ))
+        else:
+            print("The progress of the pre-collect phase will be redirected to {}.".format(
+                termcolor.colored('black hole', 'white', attrs=['bold'])
+            ))
 
 
 @check_group.command('head')
@@ -1206,6 +1230,7 @@ def check_head(head_minor='HEAD'):
 
     By default the ``hash`` corresponds to the `head` of the current project.
     """
+    print("")
     check.degradation_in_minor(head_minor)
 
 
@@ -1221,6 +1246,7 @@ def check_all(minor_head='HEAD'):
     and runs the performance check according to the set of strategies set in the configuration
     (see :ref:`degradation-config` or :doc:`config`).
     """
+    print("[!] Running the degradation checks on the whole VCS history. This might take a while!\n")
     check.degradation_in_history(minor_head)
 
 
@@ -1258,6 +1284,7 @@ def check_profiles(baseline_profile, target_profile, minor, **_):
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
     """
+    print("")
     check.degradation_between_files(baseline_profile, target_profile, minor)
 
 

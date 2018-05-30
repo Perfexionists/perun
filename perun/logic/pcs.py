@@ -70,14 +70,25 @@ class PCS(object):
             directory: directory, where the objects are stored
         """
         object_directory = os.path.join(self.path, "objects")
+        store.touch_dir(object_directory)
         return object_directory
+
+    def get_log_directory(self):
+        """
+        :return: directory, where logs are stored
+        """
+        logs_directory = os.path.join(self.path, "logs")
+        store.touch_dir(logs_directory)
+        return logs_directory
 
     def get_job_directory(self):
         """
         Returns:
             directory: directory, where job outputs are stored
         """
-        return os.path.join(self.path, "jobs")
+        jobs_directory = os.path.join(self.path, "jobs")
+        store.touch_dir(jobs_directory)
+        return jobs_directory
 
     def get_config_file(self, config_type):
         """

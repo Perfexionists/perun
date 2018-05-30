@@ -17,6 +17,7 @@ import perun.utils as utils
 import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.logic.config as config
+import perun.logic.store as store
 import perun.collect.complexity.run as complexity
 import perun.utils.exceptions as exceptions
 
@@ -716,7 +717,7 @@ def test_check_profiles(helpers, pcs_with_degradations):
         assert result.exit_code == 0
 
 
-def test_check_head(pcs_with_degradations):
+def test_check_head(pcs_with_degradations, monkeypatch):
     """Test checking degradation for one point of history
 
     Expecting correct behaviours
@@ -729,6 +730,47 @@ def test_check_head(pcs_with_degradations):
     result = runner.invoke(cli.check_group, ['-c', 'head'])
     assert result.exit_code == 1
     assert "is unsupported" in result.output
+
+    # Try the precollect and various combinations of options
+    matrix = config.Config('local', '', {
+        'vcs': {'type': 'git', 'url': '../'},
+        'cmds': ['ls'],
+        'args': ['-al'],
+        'workloads': ['.', '..'],
+        'collectors': [
+            {'name': 'time', 'params': {}}
+        ],
+        'postprocessors': [],
+        'execute': {
+            'pre_run': [
+                'ls | grep "."',
+            ]
+        }
+    })
+    log_dir = pcs_with_degradations.get_log_directory()
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+    config.runtime().set('degradation', {})
+    config.runtime().set('degradation.collect_before_check', 'true')
+    config.runtime().set('degradation.log_collect', 'false')
+    result = runner.invoke(cli.cli, ['--no-pager', 'check', 'head'])
+    assert len(os.listdir(log_dir)) == 0
+    assert result.exit_code == 0
+
+    # First lets clear all the objects
+    object_dir = pcs_with_degradations.get_object_directory()
+    shutil.rmtree(object_dir)
+    store.touch_dir(object_dir)
+    assert len(os.listdir(object_dir)) == 0
+    # Collect for the head commit
+    result = runner.invoke(cli.run, ['matrix'])
+    assert result.exit_code == 0
+
+    # Try to sink it to black hole
+    config.runtime().set('degradation.log_collect', 'true')
+    result = runner.invoke(cli.cli, ['--no-pager', 'check', 'head'])
+    assert len(os.listdir(log_dir)) == 1
+    assert result.exit_code == 0
+    config.runtime().data.clear()
 
 
 def test_check_all(pcs_with_degradations):
