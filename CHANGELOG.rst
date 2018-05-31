@@ -8,6 +8,7 @@ HEAD
 
   - print timing of various collection phases
   - add :ckey:`degradation.log_collect` to store the output of precollect phase in isolated logs
+  - add working ``--compute-missing`` parameter to check group, which temporarily sets the precollection
 
 0.14.2 (2018-05-15)
 -------------------

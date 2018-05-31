@@ -1006,6 +1006,10 @@ def init_unit_commands(lazy_init=True):
 @click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
                    ' will be collected as well')
+@click.option('--force-dirty', '-f', is_flag=True, default=False,
+              callback=process_unsupported_option,
+              help='If set to true, then even if the repository is dirty, '
+                   'the changes will not be stashed')
 @click.pass_context
 def run(ctx, **kwargs):
     """Generates batch of profiles w.r.t. specification of list of jobs.
@@ -1148,7 +1152,9 @@ def job(ctx, **kwargs):
 
 
 @cli.group('check')
-@click.option('--compute-missing', '-c', callback=process_unsupported_option,
+@click.option('--compute-missing', '-c',
+              callback=cli_helpers.set_runtime_option_from_flag(
+                  'degradation.collect_before_check', True),
               is_flag=True, default=False,
               help='whenever there are missing profiles in the given point of history'
               ' the matrix will be rerun and new generated profiles assigned.')
