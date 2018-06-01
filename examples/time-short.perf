@@ -1,33 +1,66 @@
 {
-  "origin": "9524dd21a51ed5d462b802fd3bc7e070462cceac",
+  "origin": "8de6cd99e4dc36cd73a2af906cde12456e96d9f1",
   "header": {
-    "params": "status",
     "type": "time",
-    "cmd": "perun",
-    "workload": "--short",
+    "params": "",
     "units": {
       "time": "s"
-    }
+    },
+    "cmd": "./list_search",
+    "workload": "100000"
   },
   "collector_info": {
-    "params": {},
+    "params": {
+      "repeat": 2,
+      "warmup": 3
+    },
     "name": "time"
   },
   "postprocessors": [],
   "global": {
-    "timestamp": "2.32",
+    "timestamp": 0.565476655960083,
     "resources": [
       {
-        "amount": 0.59,
-        "uid": "sys"
+        "subtype": "real",
+        "uid": "./list_search",
+        "order": 1,
+        "type": "time",
+        "amount": 0.26
       },
       {
-        "amount": 0.32,
-        "uid": "user"
+        "subtype": "user",
+        "uid": "./list_search",
+        "order": 1,
+        "type": "time",
+        "amount": 0.25
       },
       {
-        "amount": 2.32,
-        "uid": "real"
+        "subtype": "sys",
+        "uid": "./list_search",
+        "order": 1,
+        "type": "time",
+        "amount": 0.0
+      },
+      {
+        "subtype": "real",
+        "uid": "./list_search",
+        "order": 2,
+        "type": "time",
+        "amount": 0.27
+      },
+      {
+        "subtype": "user",
+        "uid": "./list_search",
+        "order": 2,
+        "type": "time",
+        "amount": 0.28
+      },
+      {
+        "subtype": "sys",
+        "uid": "./list_search",
+        "order": 2,
+        "type": "time",
+        "amount": 0.0
       }
     ]
   },

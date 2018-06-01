@@ -157,10 +157,10 @@ Examples
 .. literalinclude:: /../examples/time-short.perf
     :language: json
     :linenos:
-    :emphasize-lines: 2,9,12,20-23
+    :emphasize-lines: 2,7,12-18,24-28
 
 The above is an example of profiled data using the `time` wrapper with important regions and keys
-highlighted.
+highlighted. The given command was profiled two times.
 
 .. _collectors-custom:
 
