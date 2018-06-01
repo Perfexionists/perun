@@ -303,7 +303,9 @@ def store_generated_profile(pcs, prof, job):
     profile.store_profile_at(full_profile, full_profile_path)
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
-        commands.add([full_profile_path], prof['origin'], keep_profile=False)
+        # We either store the profile according to the origin, or we use the current head
+        dst = prof.get('origin', vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path))
+        commands.add([full_profile_path], dst, keep_profile=False)
 
 
 def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params):
