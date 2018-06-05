@@ -190,21 +190,23 @@ degradation:
     write_config_to(path, shared_config)
 
 
-def init_local_config_at(path, wrapped_vcs):
+def init_local_config_at(path, wrapped_vcs, config_template='master'):
     """Creates the new local configuration at given path with sane defaults and helper comments
     for use in order to initialize the config matrix.
 
     :param str path: path where the empty shared config will be initialized
     :param dict wrapped_vcs: dictionary with wrapped vcs of type {'vcs': {'type', 'url'}}
+    :param str config_template: name of the template that will be used to initialize the local
     """
     if not path.endswith('local.yml') and not path.endswith('local.yaml'):
         path = os.path.join(path, 'local.yml')
     store.touch_file(path)
 
+    # Get configuration template
+    predefined_config = templates.get_predefined_configuration(config_template, wrapped_vcs)
+
     # Create a config for user to set up
-    local_config = streams.safely_load_yaml_from_stream(templates.CONFIG_FILE.render(
-        vcs=wrapped_vcs['vcs'])
-    )
+    local_config = streams.safely_load_yaml_from_stream(predefined_config)
 
     write_config_to(path, local_config)
 

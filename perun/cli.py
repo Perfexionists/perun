@@ -338,7 +338,11 @@ def parse_vcs_parameter(ctx, param, value):
               help='After successful initialization of both systems, opens '
               'the local configuration using the :ckey:`editor` set in shared '
               'config.')
-def init(dst, configure, **kwargs):
+@click.option('--config-template', '-t', type=click.STRING, default='user',
+              help='States the configuration template that will be used for initialization of local'
+                   ' configuration. See :ref:`config-templates` for more details about predefined '
+                   ' configurations.')
+def init(dst, configure, config_template, **kwargs):
     """Initializes performance versioning system at the destination path.
 
     ``perun init`` command initializes the perun's infrastructure with basic
@@ -371,7 +375,7 @@ def init(dst, configure, **kwargs):
     the ``--vcs-params``.
     """
     try:
-        commands.init(dst, **kwargs)
+        commands.init(dst, config_template, **kwargs)
 
         if configure:
             # Run the interactive configuration of the local perun repository (populating .yml)
