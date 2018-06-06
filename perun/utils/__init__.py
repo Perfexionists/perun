@@ -7,32 +7,145 @@ are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 import importlib
 import shlex
 import subprocess
+import os
+import magic
 
 from .log import msg_to_stdout, error
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 __author__ = 'Tomas Fiedor'
+__coauthor__ = 'Jiri Pavela'
+
+
+def get_build_directories(root='.', template=None):
+    """Search for build directories in project tree. The build directories can be specified as an argument
+    or default templates are used.
+
+    :param str root: directory tree root
+    :param list template: list of directory names to search for
+    :return: generator object of build directories
+    """
+    if template is None:
+        template = ['build', '_build', '__build']
+    # Find all build directories in directory tree
+    for current, subdirs, _ in os.walk(root):
+        # current directory without root section (to prevent nesting detection if root contains template directory)
+        relative = current[len(root):]
+        # Do not traverse hidden directories
+        subdirs[:] = [d for d in subdirs if not d[0] == '.']
+        for b in template:
+            # find directories conforming to the templates without nested ones
+            if b in subdirs and not _is_nested(relative, template):
+                yield current + b
+
+
+def _is_nested(path, template):
+    """Check if any element from template is contained within the path - resolve nested template directories
+
+    :param str path: path to be resolved
+    :param list template: list of directory names to search for
+    :return: bool value representing result
+    """
+    for t in template:
+        if t in path:
+            return True
+
+
+def get_directory_executables(root='.', with_debug=False):
+    """Get all executable files with or without debugging symbols from directory tree recursively.
+
+    :param str root: directory tree root
+    :param bool with_debug: flag indicating whether collect only files with debugging symbols or not
+    :return: generator object of executable binaries as file paths
+    """
+    for current, subdirs, files in os.walk(root):
+        # Ignore hidden directories and files
+        subdirs[:] = [d for d in subdirs if not d[0] == '.']
+        files = [f for f in files if f[0] != '.']
+        for file in files:
+            # Check if file is executable binary
+            filepath = os.path.join(current, file)
+            if is_executable(filepath, with_debug):
+                yield filepath
+
+
+def is_executable(file, with_debug=False):
+    """Check if file is executable ELF binary, optionally with debugging information
+
+    :param str file: the file path
+    :param bool with_debug: flag indicating whether also check debugging symbols or not
+    :return: bool value representing check result
+    """
+    # Determine file magic code, we are looking out for ELF files
+    file_magic = magic.from_file(file)
+    if file_magic.startswith('ELF') and ('executable' in file_magic or 'shared object' in file_magic):
+        if with_debug:
+            return 'with debug_info' in file_magic and 'not stripped' in file_magic
+        return True
+
+
+def get_project_executables(root='.', with_debug=False):
+    """Get all executable files with or without debugging symbols from project specified by root
+    The function searches for executable files in build directories - if there are any, otherwise
+    the whole project directory tree is traversed.
+
+    :param str root: directory tree root
+    :param bool with_debug: flag indicating whether collect only files with debugging symbols or not
+    :return: list of project executable binaries as file paths
+    """
+    # Get possible binaries in build directories
+    build = list(get_build_directories(root))
+
+    # No build directories, find all binaries instead
+    if not build:
+        build = [root]
+
+    # Gather binaries
+    bins = []
+    for b in build:
+        bins += list(get_directory_executables(b, with_debug))
+
+    return bins
 
 
 def run_external_command(cmd_args):
-    """
-    Arguments:
-        cmd_args(list): list of external command and its arguments to be run
+    """Runs external command with parameters.
 
-    Returns:
-        bool: return value of the external command that was run
+    :param list cmd_args: list of external command and its arguments to be run
+    :return: return value of the external command that was run
     """
     process = subprocess.Popen(cmd_args)
     process.wait()
     return process.returncode
 
 
-def run_safely_external_command(cmd):
+def start_nonblocking_process(cmd, **kwargs):
+    """Safely start non-blocking process using subprocess without shell
+
+    :param str cmd: string with command that should be executed
+    :param dict kwargs: additional arguments to the Popen subprocess
+    :return: Popen object representing the process
+
+    """
+    # Split process and arguments
+    parsed_cmd = shlex.split(cmd)
+
+    # Do not allow shell=True
+    if 'shell' in kwargs:
+        del kwargs['shell']
+
+    # Start the process and do not block it (user can tho)
+    proc = subprocess.Popen(parsed_cmd, shell=False, **kwargs)
+    return proc
+
+
+def run_safely_external_command(cmd, check_results=True):
     """Safely runs the piped command, without executing of the shell
 
     Courtesy of: https://blog.avinetworks.com/tech/python-best-practices
 
     :param str cmd: string with command that we are executing
+    :param bool check_results: check correct command exit code and raise exception in case of failure
     :return: returned standard output and error
     :raises subprocess.CalledProcessError: when any of the piped commands fails
     """
@@ -63,11 +176,12 @@ def run_safely_external_command(cmd):
         objects[i].wait()
 
     # collect the return codes
-    for i in range(cmd_no):
-        if objects[i].returncode:
-            raise subprocess.CalledProcessError(
-                objects[i].returncode, unpiped_commands[i]
-            )
+    if check_results:
+        for i in range(cmd_no):
+            if objects[i].returncode:
+                raise subprocess.CalledProcessError(
+                    objects[i].returncode, unpiped_commands[i]
+                )
 
     return cmdout, cmderr
 
@@ -87,12 +201,10 @@ def run_safely_list_of_commands(cmd_list):
 
 
 def get_stdout_from_external_command(command):
-    """
-    Arguments:
-        command(list): list of arguments for command
+    """Runs external command with parameters, checks its output and provides its output.
 
-    Returns:
-        str: string representation of output of command
+    :param list command: list of arguments for command
+    :return: string representation of output of command
     """
     output = subprocess.check_output([c for c in command if c is not ''], stderr=subprocess.STDOUT)
     return output.decode('utf-8')
@@ -108,15 +220,12 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
     In case the module or function is missing, error is returned and program ends
     TODO: Add dynamic checking for the possible malicious code
 
-    Arguments:
-        package_name(str): name of the package, where the function we are calling is
-        module_name(str): name of the module, to which the function corresponds
-        fun_name(str): name of the function we are dynamically calling
-        args(list): list of non-keyword arguments
-        kwargs(dict): dictionary of keyword arguments
-
-    Returns:
-        ?: whatever the wrapped function returns
+    :param str package_name: name of the package, where the function we are calling is
+    :param str module_name: name of the module, to which the function corresponds
+    :param str fun_name: name of the function we are dynamically calling
+    :param list args: list of non-keyword arguments
+    :param dict kwargs: dictionary of keyword arguments
+    :return: whatever the wrapped function returns
     """
     function_location_path = ".".join([package_name, module_name])
     try:
@@ -141,12 +250,10 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
 
 
 def get_module(module_name):
-    """
-    Arguments:
-        module_name(str): dynamically load a module (but first check the cache)
+    """Finds module by its name.
 
-    Returns:
-        module: loaded module
+    :param str module_name: dynamically load a module (but first check the cache)
+    :return: loaded module
     """
     if module_name not in get_module.cache.keys():
         get_module.cache[module_name] = importlib.import_module(module_name)
@@ -164,12 +271,9 @@ def get_supported_module_names(package):
     which was shown to be completely uselessly slow than this hardcoded table. Since I assume, that
     new modules will be registered very rarely, I think it is ok to have it implemented like this.
 
-    Arguments:
-        package(str): name of the package for which we want to obtain the supported modules
-          one of ('vcs', 'collect', 'postprocess')
-
-    Returns:
-        list: list of names of supported modules for the given package
+    :param str package: name of the package for which we want to obtain the supported modules
+                        one of ('vcs', 'collect', 'postprocess')
+    :return: list of names of supported modules for the given package
     """
     if package not in ('vcs', 'collect', 'postprocess', 'view'):
         error("trying to call get_supported_module_names with incorrect package '{}'".format(
@@ -186,12 +290,9 @@ def get_supported_module_names(package):
 def merge_dictionaries(lhs, rhs):
     """Helper function for merging two dictionaries to one to be used as oneliner.
 
-    Arguments:
-        lhs(dict): left operand of the dictionary merge
-        rhs(dict): right operand of the dictionary merge
-
-    Returns:
-        dict: merged dictionary of the lhs and rhs
+    :param dict lhs: left operand of the dictionary merge
+    :param dict rhs: right operand of the dictionary merge
+    :return: merged dictionary of the lhs and rhs
     """
     res = lhs.copy()
     res.update(rhs)
@@ -201,11 +302,8 @@ def merge_dictionaries(lhs, rhs):
 def merge_dict_range(*args):
     """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
 
-    Arguments:
-        args(dict): list of dictionaries
-
-    Returns:
-        dict: one merged dictionary
+    :param list args: list of dictionaries
+    :return: one merged dictionary
     """
     res = {}
     for dictionary in args:
