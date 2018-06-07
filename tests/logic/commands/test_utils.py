@@ -144,11 +144,13 @@ def test_binaries_lookup():
 
     # Find all executables in tree with build directories
     binaries = utils.get_project_elf_executables(testdir)
+    assert len(binaries) == 2
     assert binaries[0].endswith('utils_tree/build/quicksort')
     assert binaries[1].endswith('utils_tree/build/_build/quicksort')
 
     # Find all executables with debug symbols in a tree that has no build directories
-    testdir = os.path.join(testdir, 'testdir')
-    binaries = utils.get_project_elf_executables(testdir, True)
-    assert binaries[0].endswith('utils_tree/testdir/quicksort')
-    assert binaries[1].endswith('utils_tree/testdir/nobuild/quicksort')
+    testdir2 = os.path.join(testdir, 'testdir')
+    binaries2 = utils.get_project_elf_executables(testdir2, True)
+    assert len(binaries2) == 2
+    assert binaries2[0].endswith('utils_tree/testdir/quicksort')
+    assert binaries2[1].endswith('utils_tree/testdir/nobuild/quicksort')

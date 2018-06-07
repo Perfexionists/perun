@@ -52,11 +52,11 @@ def _is_nested(path, template):
             return True
 
 
-def get_directory_elf_executables(root='.', with_debug=False):
-    """Get all ELF executable files with or without debugging symbols from directory tree recursively.
+def get_directory_elf_executables(root='.', only_not_stripped=False):
+    """Get all ELF executable (stripped or not) from directory tree recursively.
 
     :param str root: directory tree root
-    :param bool with_debug: flag indicating whether collect only files with debugging symbols or not
+    :param bool only_not_stripped: flag indicating whether collect only binaries not stripped
     :return: generator object of executable binaries as file paths
     """
     root = os.path.join(root, '')
@@ -67,32 +67,32 @@ def get_directory_elf_executables(root='.', with_debug=False):
         for file in files:
             # Check if file is executable binary
             filepath = os.path.join(current, file)
-            if is_executable_elf(filepath, with_debug):
+            if is_executable_elf(filepath, only_not_stripped):
                 yield filepath
 
 
-def is_executable_elf(file, with_debug=False):
-    """Check if file is executable ELF binary, optionally with debugging information
+def is_executable_elf(file, only_not_stripped=False):
+    """Check if file is executable ELF binary.
 
     :param str file: the file path
-    :param bool with_debug: flag indicating whether also check debugging symbols or not
+    :param bool only_not_stripped: flag indicating whether also check stripped binaries or not
     :return: bool value representing check result
     """
     # Determine file magic code, we are looking out for ELF files
     file_magic = magic.from_file(file)
     if file_magic.startswith('ELF') and ('executable' in file_magic or 'shared object' in file_magic):
-        if with_debug:
-            return 'with debug_info' in file_magic and 'not stripped' in file_magic
+        if only_not_stripped:
+            return 'not stripped' in file_magic
         return True
 
 
-def get_project_elf_executables(root='.', with_debug=False):
-    """Get all ELF executable files with or without debugging symbols from project specified by root
+def get_project_elf_executables(root='.', only_not_stripped=False):
+    """Get all ELF executable files stripped or not from project specified by root
     The function searches for executable files in build directories - if there are any, otherwise
     the whole project directory tree is traversed.
 
     :param str root: directory tree root
-    :param bool with_debug: flag indicating whether collect only files with debugging symbols or not
+    :param bool only_not_stripped: flag indicating whether collect only binaries not stripped
     :return: list of project executable binaries as file paths
     """
     # Get possible binaries in build directories
@@ -106,7 +106,7 @@ def get_project_elf_executables(root='.', with_debug=False):
     # Gather binaries
     binaries = []
     for b in build:
-        binaries += list(get_directory_elf_executables(b, with_debug))
+        binaries += list(get_directory_elf_executables(b, only_not_stripped))
 
     return binaries
 
