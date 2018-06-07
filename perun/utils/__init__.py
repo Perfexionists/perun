@@ -76,6 +76,7 @@ def run_safely_list_of_commands(cmd_list):
     """Runs safely list of commands
 
     :param list cmd_list: list of external commands
+    :raise subprocess.CalledProcessError: when there is an error in any of the commands
     """
     for cmd in cmd_list:
         print(">", cmd)

@@ -11,6 +11,7 @@ HEAD
   - add working ``--compute-missing`` parameter to check group, which temporarily sets the precollection
   - add repetition of the time collector
   - add predefined configuration templates
+  - add automatic lookup of candidate executable and workloads for user configuration (see :ref:`config-templates`)
 
 0.14.2 (2018-05-15)
 -------------------

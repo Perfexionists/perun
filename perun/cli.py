@@ -338,7 +338,7 @@ def parse_vcs_parameter(ctx, param, value):
               help='After successful initialization of both systems, opens '
               'the local configuration using the :ckey:`editor` set in shared '
               'config.')
-@click.option('--config-template', '-t', type=click.STRING, default='user',
+@click.option('--config-template', '-t', type=click.STRING, default='master',
               help='States the configuration template that will be used for initialization of local'
                    ' configuration. See :ref:`config-templates` for more details about predefined '
                    ' configurations.')

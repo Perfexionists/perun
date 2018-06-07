@@ -43,12 +43,21 @@ The actually set options are specified in the following table. When the option i
 +-------------------------------------------+----------------------------------------+-------------------------------+------------+
 
 In **user** configuration, we try to lookup the actual commands and workloads for profiling purpose.
-This is, however, not implemented yet.
+Currently for candidate executables we look within a subfolders named ``build``, ``_build`` or
+``dist`` and check if we find any executables. Each found executable is then registered as profiled
+command. For workloads we look for any file (without restrictions), and we restrict ourselves to
+subfolders with names such as ``workload``, ``workloads``, ``examples`` or ``payloads``. Each
+compatible file is then registered as workload.
 
-Currently the templates are set ``-t`` option of ``perun init`` command (see :ref:`cli-main-ref` for
-details on ``perun init``). By default **user** configuration is used.
+Currently the templates are set by ``-t`` option of ``perun init`` command (see :ref:`cli-main-ref`
+for details on ``perun init``). By default **master** configuration is used.
 """
+import os
 import jinja2
+import subprocess
+
+import perun.utils.log as log
+import perun.utils as utils
 
 __author__ = 'Tomas Fiedor'
 
@@ -234,10 +243,10 @@ def get_predefined_configuration(name, kwargs):
     )
     template = env.from_string(CONFIG_FILE_STRING)
     options = {
-        'MasterConfiguration': MasterConfiguration(),
-        'DeveloperConfiguration': DeveloperConfiguration(),
-        'UserConfiguration': UserConfiguration()
-    }.get("{}Configuration".format(name.title()), "MasterConfiguration")
+        'MasterConfiguration': MasterConfiguration,
+        'DeveloperConfiguration': DeveloperConfiguration,
+        'UserConfiguration': UserConfiguration
+    }.get("{}Configuration".format(name.title()), "MasterConfiguration")()
     return template.render(dict(vars(options), **kwargs))
 
 
@@ -306,11 +315,65 @@ class UserConfiguration(DeveloperConfiguration):
     | :ckey:`format.output_profile_template`    | %collector%-of-%cmd%-%workload%-%date% |
     +-------------------------------------------+----------------------------------------+
     """
+    WORKLOAD_FOLDERS = {'workload', 'workloads', '_workload', '_workloads', 'examples',
+                        'payload', 'payloads', '_payloads', '_payload', '_examples'}
+    EXECUTABLE_FOLDERS = {'build', '_build', 'dist'}
+
+    @staticmethod
+    def _all_candidate_files(include_list):
+        """Helper function that yield the stream of files contained in non-hidden directories
+
+        :param set include_list: set of directory names that can contain looked-up files
+        :return: iterable stream of files
+        """
+        for root, dirs, files in os.walk(os.getcwd(), topdown=True):
+            # Skip all of the directories starting with .
+            # i.e. this will skip .git or .perun, etc.
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            if os.path.split(root)[1] in include_list:
+                for file in files:
+                    yield os.path.relpath(os.path.join(root, file), os.getcwd())
+
+    @staticmethod
+    def _locate_workload_candidates():
+        """Iterates through the filesystem tree under the current directory and tries to locate
+        candidate workloads.
+
+        The actual lookup is limited to subfolders such as 'workload', 'examples', 'payload' etc.
+
+        :return: list of candidate workloads
+        """
+        log.info("Looking up candidate workloads")
+        workload_candidates = []
+        for file in UserConfiguration._all_candidate_files(UserConfiguration.WORKLOAD_FOLDERS):
+            workload_candidates.append(file)
+        return workload_candidates
+
+    @staticmethod
+    def _locate_executable_candidates():
+        """Iterates through the filesystem tree under the current directory and tries to locate
+        candidate executables.
+
+        The actual lookup is limited to subfolders such as 'build', '_build', 'dist' etc.
+
+        :return: list of candidate executables
+        """
+        # Execute make before, in case there is nothing to make, then beat it
+        log.info("Looking up candidate executables")
+        log.info("Try to compile binaries for the project by running make")
+        try:
+            utils.run_safely_list_of_commands(['make'])
+        except subprocess.CalledProcessError:
+            log.info("Nothing to make...")
+        executable_candidates = []
+        for file in UserConfiguration._all_candidate_files(UserConfiguration.EXECUTABLE_FOLDERS):
+            if os.path.isfile(file) and os.access(file, os.X_OK):
+                executable_candidates.append(file)
+        return executable_candidates
+
     def __init__(self):
         """Initialization of keys used for jinja2 template"""
         super().__init__()
-        # TODO: Lookup executables
-        # TODO: Lookup workloads
         self.collectors = [
             {'name': 'time',
              'params': {
@@ -325,3 +388,11 @@ class UserConfiguration(DeveloperConfiguration):
             'register_after_run': 'true'
         }
 
+        # Lookup executables and workloads
+        executable_candidates = UserConfiguration._locate_executable_candidates()
+        if executable_candidates:
+            self.cmds = executable_candidates
+
+        workload_candidates = UserConfiguration._locate_workload_candidates()
+        if workload_candidates:
+            self.workloads = workload_candidates
