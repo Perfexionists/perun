@@ -1,6 +1,8 @@
 """Basic tests for utility package and sanity checks"""
 
 import pkgutil
+import os
+import subprocess
 
 import perun.utils as utils
 import perun.vcs as vcs
@@ -128,3 +130,25 @@ def test_paging_and_config(monkeypatch, capsys):
     assert commands.turn_off_paging_wrt_config('log')
     out, _ = capsys.readouterr()
     assert 'warn' in out and 'missing ``general.paging``' in out
+
+
+def test_binaries_lookup():
+    # Build test binaries using non-blocking make
+    script_dir = os.path.split(__file__)[0]
+    testdir = os.path.join(script_dir, 'utils_tree')
+    p = utils.start_nonblocking_process('make', cwd=testdir, shell=True, universal_newlines=True,
+                                        stdout=subprocess.PIPE)
+    # Verify if the call is non blocking
+    for _ in p.stdout:
+        pass
+
+    # Find all executables in tree with build directories
+    binaries = utils.get_project_elf_executables(testdir)
+    assert binaries[0].endswith('utils_tree/build/quicksort')
+    assert binaries[1].endswith('utils_tree/build/_build/quicksort')
+
+    # Find all executables with debug symbols in a tree that has no build directories
+    testdir = os.path.join(testdir, 'testdir')
+    binaries = utils.get_project_elf_executables(testdir, True)
+    assert binaries[0].endswith('utils_tree/testdir/quicksort')
+    assert binaries[1].endswith('utils_tree/testdir/nobuild/quicksort')

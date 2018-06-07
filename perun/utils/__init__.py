@@ -28,6 +28,7 @@ def get_build_directories(root='.', template=None):
     if template is None:
         template = ['build', '_build', '__build']
     # Find all build directories in directory tree
+    root = os.path.join(root, '')
     for current, subdirs, _ in os.walk(root):
         # current directory without root section (to prevent nesting detection if root contains template directory)
         relative = current[len(root):]
@@ -51,13 +52,14 @@ def _is_nested(path, template):
             return True
 
 
-def get_directory_executables(root='.', with_debug=False):
-    """Get all executable files with or without debugging symbols from directory tree recursively.
+def get_directory_elf_executables(root='.', with_debug=False):
+    """Get all ELF executable files with or without debugging symbols from directory tree recursively.
 
     :param str root: directory tree root
     :param bool with_debug: flag indicating whether collect only files with debugging symbols or not
     :return: generator object of executable binaries as file paths
     """
+    root = os.path.join(root, '')
     for current, subdirs, files in os.walk(root):
         # Ignore hidden directories and files
         subdirs[:] = [d for d in subdirs if not d[0] == '.']
@@ -65,11 +67,11 @@ def get_directory_executables(root='.', with_debug=False):
         for file in files:
             # Check if file is executable binary
             filepath = os.path.join(current, file)
-            if is_executable(filepath, with_debug):
+            if is_executable_elf(filepath, with_debug):
                 yield filepath
 
 
-def is_executable(file, with_debug=False):
+def is_executable_elf(file, with_debug=False):
     """Check if file is executable ELF binary, optionally with debugging information
 
     :param str file: the file path
@@ -84,8 +86,8 @@ def is_executable(file, with_debug=False):
         return True
 
 
-def get_project_executables(root='.', with_debug=False):
-    """Get all executable files with or without debugging symbols from project specified by root
+def get_project_elf_executables(root='.', with_debug=False):
+    """Get all ELF executable files with or without debugging symbols from project specified by root
     The function searches for executable files in build directories - if there are any, otherwise
     the whole project directory tree is traversed.
 
@@ -94,6 +96,7 @@ def get_project_executables(root='.', with_debug=False):
     :return: list of project executable binaries as file paths
     """
     # Get possible binaries in build directories
+    root = os.path.join(root, '')
     build = list(get_build_directories(root))
 
     # No build directories, find all binaries instead
@@ -101,11 +104,11 @@ def get_project_executables(root='.', with_debug=False):
         build = [root]
 
     # Gather binaries
-    bins = []
+    binaries = []
     for b in build:
-        bins += list(get_directory_executables(b, with_debug))
+        binaries += list(get_directory_elf_executables(b, with_debug))
 
-    return bins
+    return binaries
 
 
 def run_external_command(cmd_args):
@@ -123,7 +126,7 @@ def start_nonblocking_process(cmd, **kwargs):
     """Safely start non-blocking process using subprocess without shell
 
     :param str cmd: string with command that should be executed
-    :param dict kwargs: additional arguments to the Popen subprocess
+    :param kwargs: additional arguments to the Popen subprocess
     :return: Popen object representing the process
 
     """
