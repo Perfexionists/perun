@@ -72,7 +72,7 @@ vcs:
 ## Extend the following region with more executables to be profiled:
 cmds:
 // for cmd in cmds:
-  - {{ cmd }}}
+  - {{ cmd }}
 // endfor
 {% else %}
 ## Uncomment and edit the following region:
@@ -239,7 +239,8 @@ def get_predefined_configuration(name, kwargs):
     env = jinja2.Environment(
         lstrip_blocks=True,
         trim_blocks=True,
-        line_statement_prefix='//'
+        line_statement_prefix='//',
+        autoescape=True
     )
     template = env.from_string(CONFIG_FILE_STRING)
     options = {

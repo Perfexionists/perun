@@ -109,7 +109,7 @@ def test_no_params_exists_pcs_in_same_dir(capsys):
 
     # Check if user was warned, that at the given path, the perun pcs was reinitialized
     out, _ = capsys.readouterr()
-    assert out.strip() == "Reinitialized existing Perun repository in {}".format(pcs_path)
+    assert "Reinitialized existing Perun repository in {}".format(pcs_path) in out
 
 
 @pytest.mark.usefixtures('cleandir')
