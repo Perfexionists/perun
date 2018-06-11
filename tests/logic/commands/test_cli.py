@@ -702,6 +702,43 @@ def test_config(pcs_full, monkeypatch):
     assert result.exit_code == 1
 
 
+@pytest.mark.usefixtures('cleandir')
+def test_reset_outside_pcs(monkeypatch):
+    """Tests resetting of configuration outside of the perun scope
+
+    Excepts error when resetting local config, and no error when resetting global config
+    """
+    runner = CliRunner()
+    result = runner.invoke(cli.config, ['--local', 'reset'])
+    assert result.exit_code == 1
+    assert "could not reset" in result.output
+
+    monkeypatch.setattr('perun.logic.config.lookup_shared_config_dir', lambda: os.getcwd())
+    result = runner.invoke(cli.config, ['--shared', 'reset'])
+    assert result.exit_code == 0
+
+
+def test_reset(pcs_full):
+    """Tests resetting of configuration within the perun scope
+
+    Excepts no error at all
+    """
+    runner = CliRunner()
+    pcs_path = os.getcwd()
+    with open(os.path.join(pcs_path, '.perun', 'local.yml'), 'r') as local_config:
+        contents = "".join(local_config.readlines())
+        assert '#     - make' in contents
+        assert '#   collect_before_check' in contents
+
+    result = runner.invoke(cli.config, ['--local', 'reset', 'developer'])
+    assert result.exit_code == 0
+
+    with open(os.path.join(pcs_path, '.perun', 'local.yml'), 'r') as local_config:
+        contents = "".join(local_config.readlines())
+        assert 'make' in contents
+        assert 'collect_before_check' in contents
+
+
 def test_check_profiles(helpers, pcs_with_degradations):
     """Tests checking degradation between two profiles"""
     pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')

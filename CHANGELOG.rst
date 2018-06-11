@@ -12,6 +12,7 @@ HEAD
   - add repetition of the time collector
   - add predefined configuration templates
   - add automatic lookup of candidate executable and workloads for user configuration (see :ref:`config-templates`)
+  - add ``perun config reset`` command to allow resetting of configuration to different states
 
 0.14.2 (2018-05-15)
 -------------------

@@ -281,6 +281,39 @@ def config_edit(ctx):
         perun_log.error("could not invoke external editor: {}".format(str(editor_exception)))
 
 
+@config.command('reset')
+@click.argument('config_template', required=False, default='master',
+                 metavar='<template>')
+@click.pass_context
+def config_reset(ctx, config_template):
+    """Resets the configuration file to a sane default.
+
+    If we are resetting the local configuration file we can specify a <template> that
+    will be used to generate a predefined set of options. Currently we support the following:
+
+      1. **user** configuration is meant for beginner users, that have no experience with Perun and
+      have not read the documentation thoroughly. This contains a basic preconfiguration that should be
+      applicable for most of the projects---data are collected by :ref:`collectors-time` and are
+      automatically registered in the Perun after successful run. The performance is checked using
+      the :ref:`degradation-method-aat`. Missing profiling info will be looked up automatically.
+
+      2. **developer** configuration is meant for advanced users, that have some understanding of
+      profiling and/or Perun. Fair amount of options are up to the user, such as the collection of
+      the data and the commands that will be profiled.
+
+      3. **master** configuration is meant for experienced users. The configuration will be mostly
+      empty.
+
+    See :ref:`config-templates` to learn more about predefined configuration options.
+    """
+    try:
+        commands.config_reset(ctx.obj['store_type'], config_template)
+    except NotPerunRepositoryException as npre:
+        perun_log.error("could not reset the {} configuration: {}".format(
+            ctx.obj['store_type'], str(npre)
+        ))
+
+
 def configure_local_perun(perun_path):
     """Configures the local perun repository with the interactive help of the user
 

@@ -22,7 +22,7 @@ import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
 
-from perun.logic.pcs import pass_pcs
+from perun.logic.pcs import pass_pcs, PCS
 from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import \
@@ -127,6 +127,33 @@ def config_edit(pcs, store_type):
         utils.run_external_command([editor, config_file])
     except Exception as inner_exception:
         raise ExternalEditorErrorException(editor, str(inner_exception))
+
+
+def config_reset(store_type, config_template):
+    """Resets the given store_type to a default type (or to a selected configuration template)
+
+    For more information about configuration templates see :ref:`config-templates`.
+
+    :param str store_type: name of the store (local or global) which we are resetting
+    :param str config_template: name of the template that we are resetting to
+    :raises NotPerunRepositoryException: raised when we are outside of any perun scope
+    """
+    if store_type in ('shared', 'global'):
+        shared_location = perun_config.lookup_shared_config_dir()
+        perun_config.init_shared_config_at(shared_location)
+    else:
+        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+        vcs_config = {
+            'vcs': {
+                'url': pcs.vcs_path,
+                'type': pcs.vcs_type
+            }
+        }
+        perun_config.init_local_config_at(pcs.path, vcs_config, config_template)
+    perun_log.info("{} configuration reset{}".format(
+        'global' if store_type in ('shared', 'global') else 'local',
+        " to {}".format(config_template) if store not in ("shared", "global") else ""
+    ))
 
 
 def init_perun_at(perun_path, is_reinit, vcs_config, config_template='master'):
