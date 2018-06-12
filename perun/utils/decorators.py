@@ -4,7 +4,9 @@ Contains decorators for enforcing certain conditions, like e.g. singleton-like r
 the functions. Or various checker function, that checks given parameters of the functions.
 """
 
+import termcolor
 import inspect
+import time
 
 from perun.utils.exceptions import InvalidParameterException
 
@@ -148,4 +150,51 @@ def static_variables(**kwargs):
         for key, value in kwargs.items():
             setattr(func, key, value)
         return func
+    return inner_wrapper
+
+
+def phase_function(phase_name):
+    """Sets the phase name for the given function
+
+    The phase name is outputed when the elapsed time is printed.
+
+    :param str phase_name: name of the phase to which the given function corresponds
+    :return: decorated function with new phase name
+    """
+    def inner_wrapper(func):
+        """Inner wrapper of the decorated function
+
+        :param function func: function we are decorating with its phase name
+        :return: decorated function with new phase name
+        """
+        func.phase_name = phase_name
+        return func
+    return inner_wrapper
+
+
+def print_elapsed_time(func):
+    """Prints elapsed time after the execution of the wrapped function
+
+    Takes the timestamp before the execution of the function and after the execution and prints
+    the elapsed time to the standard output.
+
+    :param function func: wrapped function
+    :return: function for which we will print the elapsed time
+    """
+    def inner_wrapper(*args, **kwargs):
+        """Inner wrapper of the decorated function
+
+        :param list args: original arguments of the function
+        :param dict kwargs: original keyword arguments of the function
+        :return: results of the decorated function
+        """
+        before = time.time()
+        results = func(*args, **kwargs)
+        elapsed = time.time() - before
+        print("[\u231A] {} [{}] in {} [\u231A]".format(
+            (func.phase_name if hasattr(func, 'phase_name') else func.__name__).title(),
+            termcolor.colored("DONE", 'green', attrs=['bold']),
+            termcolor.colored("{:0.2f}s".format(elapsed), 'white', attrs=['bold'])
+        ))
+        return results
     return inner_wrapper

@@ -259,9 +259,9 @@ List of Supported Options
 .. confunit:: profiles
 
    Groups various option specific for profiles, such as strategies for adding or generating
-   profiles:w
-   
-.. confkey:: profiles.register_after_run:
+   profiles
+
+.. confkey:: profiles.register_after_run
 
    If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
    profile (e.g. by running ``perun run matrix``) is automatically registered in the appropriate
@@ -275,7 +275,16 @@ List of Supported Options
 .. confkey:: degradation.collect_before_check
 
     ``[recursive]`` If set to true, then before checking profiles of two minor versions, we run the
-    collection for job matrix to collect fresh or unexisting profiles.
+    collection for job matrix to collect fresh or unexisting profiles. By default, the output of
+    this phase is discarded into a ``devnull``. This behaviour can be changed by setting the
+    :ckey:`degradation.log_collect`.
+
+.. confkey:: degradation.log_collect
+
+    ``[recursive]`` If both :ckey:`degradation.log_collect` and
+    :ckey:`degradation.collect_before_check` are set to true, then the precollect phase will be
+    saved into a log of form ``%minor_version$-precollect.log``. Otherwise, the output will be
+    stashed into a black hole (i.e. ``devnull``).
 
 .. confkey:: degradation.apply
 
@@ -303,6 +312,13 @@ List of Supported Options
               postprocessor: regression_analysis
               method: bmoe
             - method: aat
+
+.. _config-templates:
+
+Predefined Configuration Templates
+----------------------------------
+
+.. automodule:: perun.logic.config_templates
 
 .. _config-cli:
 

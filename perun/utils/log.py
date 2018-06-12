@@ -14,7 +14,7 @@ import functools
 from perun.utils.helpers import first_index_of_attr
 from perun.utils.decorators import static_variables
 from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH,CHANGE_COLOURS, \
-    CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON
+    CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
 from perun.utils.structs import PerformanceChange
 
 __author__ = 'Tomas Fiedor'
@@ -353,9 +353,12 @@ def print_list_of_degradations(degradation_list):
         cprint(' {}'.format(location), 'white', attrs=['bold'])
         print(":")
         # Iterate and print all of the infos
-        for deg_info, _, __ in changes:
+        for deg_info, cmd, __ in changes:
+            print('\u2514 ', end='')
+            cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, 'white'), attrs=[])
+            print(' ', end='')
             cprint(
-                '  {}'.format(CHANGE_STRINGS[deg_info.result]),
+                '{}'.format(CHANGE_STRINGS[deg_info.result]),
                 CHANGE_COLOURS[deg_info.result], attrs=['bold']
             )
             if deg_info.result != PerformanceChange.NoChange:
@@ -372,7 +375,10 @@ def print_list_of_degradations(degradation_list):
                         'white', attrs=['bold']
                     )
                     print(')', end='')
-            print('')
+            # Print information about command that was executed
+            print(" (", end='')
+            cprint("$ {}".format(cmd), CHANGE_CMD_COLOUR, attrs=['bold'])
+            print(')')
     print("")
 
 
@@ -460,8 +466,9 @@ class History(object):
         :param list _: list of unused parameters
         """
         # Restore the stdout and printing function
+        self.flush(self.auto_flush_with_border)
         builtins.print = self._saved_print
-        sys.stdout = sys.stdout
+        sys.stdout = sys.__stdout__
 
     def get_left_border(self):
         """Returns the string representing the currently unresolved branches.

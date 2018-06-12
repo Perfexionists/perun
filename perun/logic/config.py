@@ -14,7 +14,7 @@ import sys
 from ruamel.yaml import YAML, scanner
 import ruamel.yaml.comments as comments
 
-
+import perun.logic.config_templates as templates
 import perun.logic.store as store
 import perun.utils.decorators as decorators
 import perun.utils.exceptions as exceptions
@@ -190,74 +190,23 @@ degradation:
     write_config_to(path, shared_config)
 
 
-def init_local_config_at(path, wrapped_vcs):
+def init_local_config_at(path, wrapped_vcs, config_template='master'):
     """Creates the new local configuration at given path with sane defaults and helper comments
     for use in order to initialize the config matrix.
 
     :param str path: path where the empty shared config will be initialized
     :param dict wrapped_vcs: dictionary with wrapped vcs of type {'vcs': {'type', 'url'}}
+    :param str config_template: name of the template that will be used to initialize the local
     """
     if not path.endswith('local.yml') and not path.endswith('local.yaml'):
         path = os.path.join(path, 'local.yml')
     store.touch_file(path)
 
+    # Get configuration template
+    predefined_config = templates.get_predefined_configuration(config_template, wrapped_vcs)
+
     # Create a config for user to set up
-    local_config = streams.safely_load_yaml_from_stream("""
-vcs:
-  type: {0}
-  url: {1}
-
-## Uncomment this to automatically register newly collected profiles for current minor version
-# profiles:
-#   register_after_run: true
-
-## To collect profiling data from the binary using the set of collectors,
-## uncomment and edit the following region:
-# cmds:
-#   - echo
-
-## To add set of parameters for the profiled command/binary,
-## uncomment and edit the following region:
-# args:
-#   - -e
-
-## To add workloads/inputs for the profiled command/binary,
-## uncomment and edit the following region:
-# workloads:
-#   - hello
-#   - world
-
-## To register a collector for generating profiling data,
-## uncomment and edit the following region:
-# collectors:
-#   - name: time
-## Try '$ perun collect --help' to obtain list of supported collectors!
-
-## To register a postprocessor for generated profiling data,
-## uncomment and edit the following region (!order matters!):
-# postprocessors:
-#   - name: normalizer
-#     params: --remove-zero
-#   - name: filter
-## Try '$ perun postprocessby --help' to obtain list of supported collectors!
-
-## To run detection of degradation for this repository, uncomment the following:
-# degradation:
-## Setting this option to true value will make Perun collect new profiles,
-## before checking for degradations
-#   collect_before_check: true
-## Setting this to first (resp. all) will apply the first (resp. all) found check methods
-## for corresponding configurations
-#   apply: first
-## Specification of list of rules for applying degradation checks
-#   strategy:
-#     - method: average_amount_threshold
-
-## To run your custom steps before any collection uncomment the following region:
-# execute:
-#   pre_run:
-#     - make
-    """.format(wrapped_vcs['vcs']['type'], wrapped_vcs['vcs']['url']))
+    local_config = streams.safely_load_yaml_from_stream(predefined_config)
 
     write_config_to(path, local_config)
 
@@ -434,7 +383,6 @@ def get_hierarchy():
     yield shared()
 
 
-@decorators.singleton_with_args
 def lookup_key_recursively(key, default=None):
     """Recursively looks up the key first in the local config and then in the global.
 
@@ -457,7 +405,6 @@ def lookup_key_recursively(key, default=None):
     raise exceptions.MissingConfigSectionException
 
 
-@decorators.singleton_with_args
 def gather_key_recursively(key):
     """Recursively gathers the key, first in the temporary config, etc. up to the global config.
 

@@ -64,7 +64,7 @@ the following details:
        confidence of this report, e.g. by the value of coefficient of determination (see
        :ref:`postprocessors-regression-analysis`), which quantifies how the prediction or
        regression models of both versions were fitting the data.
-       
+
 
      ``Maybe Degradation`` or ``Maybe Optimization``:
 
@@ -251,8 +251,8 @@ New performance change checkers can be registered within Perun in several steps.
 just small requirements and have to `yield` the reports about degradation as a instances of
 :class:`DegradationInfo` objects specified as follows:
 
-.. currentmodule: perun.check
-.. autoclass::  perun.check.DegradationInfo
+.. currentmodule: perun.utils.structs
+.. autoclass::  perun.utils.structs.DegradationInfo
    :members:
 
 You can register your new performance change checker as follows:
@@ -275,7 +275,7 @@ You can register your new performance change checker as follows:
       .. literalinclude:: /_static/templates/degradation_api.py
           :language: python
           :linenos:
-    
+
     3. Next, in the ``__init__.py`` module register the short string for your new method as
        follows:
 

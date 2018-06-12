@@ -6,6 +6,24 @@ HEAD
 
 **To be included in next release**
 
+0.14.3 (2018-06-12)
+-------------------
+
+`commit: a2820c0cb50cff5b758a3d01ca7b8e356af5d2cf`
+
+**Extend utils module**
+
+  - print timing of various collection phases
+  - add :ckey:`degradation.log_collect` to store the output of precollect phase in isolated logs
+  - add working ``--compute-missing`` parameter to check group, which temporarily sets the precollection
+  - add repetition of the time collector
+  - add predefined configuration templates
+  - add automatic lookup of candidate executable and workloads for user configuration (see :ref:`config-templates`)
+  - add ``perun config reset`` command to allow resetting of configuration to different states
+  - extend the utils module with ELF helper functions
+  - extend the utils with non-blocking subprocess calls
+  - extend the utils with binary files lookup
+
 0.14.2 (2018-05-15)
 -------------------
 

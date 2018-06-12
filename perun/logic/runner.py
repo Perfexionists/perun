@@ -11,6 +11,7 @@ import perun.logic.commands as commands
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as log
+import perun.utils.decorators as decorators
 from perun.logic.pcs import pass_pcs, PCS
 from perun.utils import get_module
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
@@ -190,6 +191,8 @@ def run_all_phases_for(runner, runner_type, runner_params):
     return ok_status, "", runner_params['profile']
 
 
+@decorators.print_elapsed_time
+@decorators.phase_function('collect')
 def run_collector(collector, job):
     """Run the job of collector of the given name.
 
@@ -247,6 +250,8 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
         log.error("missing parameter: {}".format(collector_exception))
 
 
+@decorators.print_elapsed_time
+@decorators.phase_function('postprocess')
 def run_postprocessor(postprocessor, job, prof):
     """Run the job of postprocess of the given name.
 
@@ -298,7 +303,9 @@ def store_generated_profile(pcs, prof, job):
     profile.store_profile_at(full_profile, full_profile_path)
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
-        commands.add([full_profile_path], prof['origin'], keep_profile=False)
+        # We either store the profile according to the origin, or we use the current head
+        dst = prof.get('origin', vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path))
+        commands.add([full_profile_path], dst, keep_profile=False)
 
 
 def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params):
@@ -328,6 +335,8 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params)
 
 
 @pass_pcs
+@decorators.print_elapsed_time
+@decorators.phase_function('prerun')
 def run_prephase_commands(pcs, phase, phase_colour='white'):
     """Runs the phase before the actual collection of the methods
 
@@ -357,6 +366,8 @@ def run_prephase_commands(pcs, phase, phase_colour='white'):
             ))
 
 
+@decorators.print_elapsed_time
+@decorators.phase_function('batch job run')
 def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
     """Runs the batch of jobs on current state of the VCS.
 
@@ -368,6 +379,7 @@ def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
     :param int number_of_jobs: number of jobs that will be run
     """
     log.print_job_progress.current_job = 1
+    print("")
     for job_cmd, workloads_per_cmd in job_matrix.items():
         log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
         for workload, jobs_per_workload in workloads_per_cmd.items():
@@ -395,6 +407,8 @@ def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
                 store_generated_profile(pcs, prof, job)
 
 
+@decorators.print_elapsed_time
+@decorators.phase_function('overall profiling')
 def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
     """
     Arguments:
@@ -410,6 +424,8 @@ def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
             run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
 
 
+@decorators.print_elapsed_time
+@decorators.phase_function('overall profiling')
 def run_jobs_with_history(pcs, minor_version_list, job_matrix, number_of_jobs):
     """
     Arguments:

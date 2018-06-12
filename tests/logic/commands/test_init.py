@@ -6,9 +6,11 @@ when working within wrong scopes, how does perun copes with existing perun direc
 
 import os
 
+import distutils.spawn as spawn
 import git
 import pytest
 
+import perun.logic.store as store
 import perun.logic.commands as commands
 from perun.utils.exceptions import UnsupportedModuleException
 
@@ -26,8 +28,9 @@ def assert_perun_successfully_init_at(path):
     assert 'cache' in perun_content
     assert 'objects' in perun_content
     assert 'jobs' in perun_content
+    assert 'logs' in perun_content
     assert os.path.exists(os.path.join(perun_dir, 'local.yml'))
-    assert len(perun_content) == 4
+    assert len(perun_content) == 5
 
 
 def assert_git_successfully_init_at(path, is_bare=False):
@@ -106,7 +109,7 @@ def test_no_params_exists_pcs_in_same_dir(capsys):
 
     # Check if user was warned, that at the given path, the perun pcs was reinitialized
     out, _ = capsys.readouterr()
-    assert out.strip() == "Reinitialized existing Perun repository in {}".format(pcs_path)
+    assert "Reinitialized existing Perun repository in {}".format(pcs_path) in out
 
 
 @pytest.mark.usefixtures('cleandir')
@@ -278,3 +281,83 @@ def test_unsupported_vcs():
 
     dir_content = os.listdir(pcs_path)
     assert '.git' not in dir_content
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_developer_config():
+    """ Test initialization of developer configuration """
+    pcs_path = os.getcwd()
+    git_path = os.path.join(pcs_path, 'repo')
+
+    # Init perun together with git on different path
+    commands.init(pcs_path, configuration_template='developer', **{
+        'vcs_type': 'git',
+        'vcs_path': git_path,
+        'vcs_params': {'bare': True}
+    })
+
+    # Assert everything was correctly created
+    assert_perun_successfully_init_at(pcs_path)
+    assert_git_successfully_init_at(git_path, is_bare=True)
+
+    # Assert that the directory is bare
+    assert git.Repo(git_path).bare
+
+    with open(os.path.join(pcs_path, '.perun', 'local.yml'), 'r') as local_config:
+        contents = "".join(local_config.readlines())
+        assert 'make' in contents
+        assert 'collect_before_check' in contents
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_user_config():
+    """ Test initialization of user configuration """
+    pcs_path = os.getcwd()
+    git_path = os.path.join(pcs_path, 'repo')
+
+    # Prepare the user config with some helper data
+    main_build = os.path.join(pcs_path, 'build')
+    main_workload = os.path.join(pcs_path, 'workload')
+    store.touch_dir(main_build)
+    store.touch_dir(main_workload)
+    os.symlink(spawn.find_executable('cat'), os.path.join(main_build, 'lecat'))
+    store.touch_file(os.path.join(main_workload, 'file1'))
+
+    subproject_path = os.path.join(pcs_path, 'subproject')
+    sub_build = os.path.join(subproject_path, '_build')
+    sub_workload = os.path.join(subproject_path, '_workload')
+    bogus_workload = os.path.join(subproject_path, "werklerd")
+    store.touch_dir(subproject_path)
+    store.touch_dir(sub_build)
+    store.touch_dir(sub_workload)
+    store.touch_dir(bogus_workload)
+    os.symlink(spawn.find_executable('wc'), os.path.join(sub_build, 'lewc'))
+    store.touch_file(os.path.join(sub_workload, 'file2'))
+    store.touch_file(os.path.join(bogus_workload, 'file3'))
+
+    # Init perun together with git on different path
+    commands.init(pcs_path, configuration_template='user', **{
+        'vcs_type': 'git',
+        'vcs_path': git_path,
+        'vcs_params': {'bare': True}
+    })
+
+    # Assert everything was correctly created
+    assert_perun_successfully_init_at(pcs_path)
+    assert_git_successfully_init_at(git_path, is_bare=True)
+
+    # Assert that the directory is bare
+    assert git.Repo(git_path).bare
+
+    with open(os.path.join(pcs_path, '.perun', 'local.yml'), 'r') as local_config:
+        contents = "".join(local_config.readlines())
+        assert 'make' in contents
+        assert 'collect_before_check' in contents
+        assert 'time' in contents
+        assert 'cmds' in contents
+        assert 'lewc' in contents
+        assert 'lecat' in contents
+        assert 'workloads' in contents
+        assert 'file1' in contents
+        assert 'file2' in contents
+        assert 'file3' not in contents

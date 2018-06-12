@@ -22,7 +22,7 @@ import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
 
-from perun.logic.pcs import pass_pcs
+from perun.logic.pcs import pass_pcs, PCS
 from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import \
@@ -129,38 +129,72 @@ def config_edit(pcs, store_type):
         raise ExternalEditorErrorException(editor, str(inner_exception))
 
 
-def init_perun_at(perun_path, is_reinit, vcs_config):
+def config_reset(store_type, config_template):
+    """Resets the given store_type to a default type (or to a selected configuration template)
+
+    For more information about configuration templates see :ref:`config-templates`.
+
+    :param str store_type: name of the store (local or global) which we are resetting
+    :param str config_template: name of the template that we are resetting to
+    :raises NotPerunRepositoryException: raised when we are outside of any perun scope
+    """
+    if store_type in ('shared', 'global'):
+        shared_location = perun_config.lookup_shared_config_dir()
+        perun_config.init_shared_config_at(shared_location)
+    else:
+        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+        vcs_config = {
+            'vcs': {
+                'url': pcs.vcs_path,
+                'type': pcs.vcs_type
+            }
+        }
+        perun_config.init_local_config_at(pcs.path, vcs_config, config_template)
+    perun_log.info("{} configuration reset{}".format(
+        'global' if store_type in ('shared', 'global') else 'local',
+        " to {}".format(config_template) if store not in ("shared", "global") else ""
+    ))
+
+
+def init_perun_at(perun_path, is_reinit, vcs_config, config_template='master'):
     """Initialize the .perun directory at given path
 
     Initializes or reinitializes the .perun directory at the given path.
 
-    Arguments:
-        perun_path(path): path where new perun performance control system will be stored
-        is_reinit(bool): true if this is existing perun, that will be reinitialized
-        vcs_config(dict): dictionary of form {'vcs': {'type', 'url'}} for local config init
+    :param path perun_path: path where new perun performance control system will be stored
+    :param bool is_reinit: true if this is existing perun, that will be reinitialized
+    :param dict vcs_config: dictionary of form {'vcs': {'type', 'url'}} for local config init
+    :param str config_template: name of the configuration template
     """
     # Initialize the basic structure of the .perun directory
     perun_full_path = os.path.join(perun_path, '.perun')
     store.touch_dir(perun_full_path)
     store.touch_dir(os.path.join(perun_full_path, 'objects'))
     store.touch_dir(os.path.join(perun_full_path, 'jobs'))
+    store.touch_dir(os.path.join(perun_full_path, 'logs'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
-    perun_config.init_local_config_at(perun_full_path, vcs_config)
+    # If the config does not exist, we initialize the new version
+    if not os.path.exists(os.path.join(perun_full_path, 'local.yml')):
+        perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
+    else:
+        perun_log.info('configuration file already exists. Run ``perun config reset`` to reset'
+                       ' configuration to default state.')
 
     # Perun successfully created
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
     perun_log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
 
 
-def init(dst, **kwargs):
+def init(dst, configuration_template='master', **kwargs):
     """Initializes the performance and version control systems
 
     Inits the performance control system at a given directory. Optionally inits the
     wrapper of the Version Control System that is used as tracking point.
 
-    Arguments:
-        dst(path): path where the pcs will be initialized
-        pcs(PCS): object with performance control system wrapper
+    :param path dst: path where the pcs will be initialized
+    :param dict kwargs: keyword arguments of the initialization
+    :param str configuration_template: name of the template that will be used for initialization
+        of local configuration
     """
     perun_log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
 
@@ -186,7 +220,7 @@ def init(dst, **kwargs):
     except NotPerunRepositoryException:
         is_pcs_reinitialized = False
 
-    init_perun_at(dst, is_pcs_reinitialized, vcs_config)
+    init_perun_at(dst, is_pcs_reinitialized, vcs_config, configuration_template)
 
     # If the wrapped repo could not be initialized we end with error. The user should adjust this
     # himself and fix it in the config. Note that this decision was made after tagit design,

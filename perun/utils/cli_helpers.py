@@ -114,3 +114,28 @@ def process_continuous_key(ctx, _, value):
             value, ", ".join(str(vnk) for vnk in valid_numeric_keys) + ", snapshots"
         ))
     return value
+
+
+def set_runtime_option_from_flag(config_option, config_option_value=True):
+    """Helper function for setting the config option from the CLI option handler
+
+    Returns the option handler, that sets, if value is equal to true, the config option to the
+    given option value. This is e.g. used to use the CLI to set various configurations temporarily
+    from the command line option.
+
+    :param str config_option: name of the option that will be set in the runtime config
+    :param object config_option_value: value which will be set to the option, by default, true
+    :return:
+    """
+    def option_handler(_, __, value):
+        """Wrapper handling function
+
+        :param click.Context _: called context of the process
+        :param click.Option __: called parameter
+        :param object value: given value of the option param
+        :return:
+        """
+        if value:
+            config.runtime().set(config_option, config_option_value)
+        return value
+    return option_handler

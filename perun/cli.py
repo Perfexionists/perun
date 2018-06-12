@@ -43,6 +43,8 @@ import os
 import pkgutil
 import re
 import sys
+import termcolor
+import distutils.util as dutils
 
 import click
 import perun.logic.commands as commands
@@ -279,6 +281,39 @@ def config_edit(ctx):
         perun_log.error("could not invoke external editor: {}".format(str(editor_exception)))
 
 
+@config.command('reset')
+@click.argument('config_template', required=False, default='master',
+                 metavar='<template>')
+@click.pass_context
+def config_reset(ctx, config_template):
+    """Resets the configuration file to a sane default.
+
+    If we are resetting the local configuration file we can specify a <template> that
+    will be used to generate a predefined set of options. Currently we support the following:
+
+      1. **user** configuration is meant for beginner users, that have no experience with Perun and
+      have not read the documentation thoroughly. This contains a basic preconfiguration that should be
+      applicable for most of the projects---data are collected by :ref:`collectors-time` and are
+      automatically registered in the Perun after successful run. The performance is checked using
+      the :ref:`degradation-method-aat`. Missing profiling info will be looked up automatically.
+
+      2. **developer** configuration is meant for advanced users, that have some understanding of
+      profiling and/or Perun. Fair amount of options are up to the user, such as the collection of
+      the data and the commands that will be profiled.
+
+      3. **master** configuration is meant for experienced users. The configuration will be mostly
+      empty.
+
+    See :ref:`config-templates` to learn more about predefined configuration options.
+    """
+    try:
+        commands.config_reset(ctx.obj['store_type'], config_template)
+    except NotPerunRepositoryException as npre:
+        perun_log.error("could not reset the {} configuration: {}".format(
+            ctx.obj['store_type'], str(npre)
+        ))
+
+
 def configure_local_perun(perun_path):
     """Configures the local perun repository with the interactive help of the user
 
@@ -336,7 +371,11 @@ def parse_vcs_parameter(ctx, param, value):
               help='After successful initialization of both systems, opens '
               'the local configuration using the :ckey:`editor` set in shared '
               'config.')
-def init(dst, configure, **kwargs):
+@click.option('--config-template', '-t', type=click.STRING, default='master',
+              help='States the configuration template that will be used for initialization of local'
+                   ' configuration. See :ref:`config-templates` for more details about predefined '
+                   ' configurations.')
+def init(dst, configure, config_template, **kwargs):
     """Initializes performance versioning system at the destination path.
 
     ``perun init`` command initializes the perun's infrastructure with basic
@@ -369,7 +408,7 @@ def init(dst, configure, **kwargs):
     the ``--vcs-params``.
     """
     try:
-        commands.init(dst, **kwargs)
+        commands.init(dst, config_template, **kwargs)
 
         if configure:
             # Run the interactive configuration of the local perun repository (populating .yml)
@@ -1004,6 +1043,10 @@ def init_unit_commands(lazy_init=True):
 @click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
                    ' will be collected as well')
+@click.option('--force-dirty', '-f', is_flag=True, default=False,
+              callback=process_unsupported_option,
+              help='If set to true, then even if the repository is dirty, '
+                   'the changes will not be stashed')
 @click.pass_context
 def run(ctx, **kwargs):
     """Generates batch of profiles w.r.t. specification of list of jobs.
@@ -1146,7 +1189,9 @@ def job(ctx, **kwargs):
 
 
 @cli.group('check')
-@click.option('--compute-missing', '-c', callback=process_unsupported_option,
+@click.option('--compute-missing', '-c',
+              callback=cli_helpers.set_runtime_option_from_flag(
+                  'degradation.collect_before_check', True),
               is_flag=True, default=False,
               help='whenever there are missing profiles in the given point of history'
               ' the matrix will be rerun and new generated profiles assigned.')
@@ -1189,6 +1234,28 @@ def check_group(**_):
       1. Best Model Order Equality (BMOE)
       2. Average Amount Threshold (AAT)
     """
+    should_precollect = dutils.strtobool(str(
+        perun_config.lookup_key_recursively('degradation.collect_before_check', 'false')
+    ))
+    precollect_to_log = dutils.strtobool(str(
+        perun_config.lookup_key_recursively('degradation.log_collect', 'false')
+    ))
+    if should_precollect:
+        print("{} is set to {}. ".format(
+            termcolor.colored('degradation.collect_before_check', 'white', attrs=['bold']),
+            termcolor.colored('true', 'green', attrs=['bold'])
+        ), end='')
+        print("Missing profiles will be freshly collected with respect to the ", end='')
+        print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
+        if precollect_to_log:
+            pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
+            print("The progress of the pre-collect phase will be stored in logs at {}.".format(
+                termcolor.colored(pcs.get_log_directory(), 'white', attrs=['bold'])
+            ))
+        else:
+            print("The progress of the pre-collect phase will be redirected to {}.".format(
+                termcolor.colored('black hole', 'white', attrs=['bold'])
+            ))
 
 
 @check_group.command('head')
@@ -1206,6 +1273,7 @@ def check_head(head_minor='HEAD'):
 
     By default the ``hash`` corresponds to the `head` of the current project.
     """
+    print("")
     check.degradation_in_minor(head_minor)
 
 
@@ -1221,6 +1289,7 @@ def check_all(minor_head='HEAD'):
     and runs the performance check according to the set of strategies set in the configuration
     (see :ref:`degradation-config` or :doc:`config`).
     """
+    print("[!] Running the degradation checks on the whole VCS history. This might take a while!\n")
     check.degradation_in_history(minor_head)
 
 
@@ -1258,6 +1327,7 @@ def check_profiles(baseline_profile, target_profile, minor, **_):
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
     """
+    print("")
     check.degradation_between_files(baseline_profile, target_profile, minor)
 
 

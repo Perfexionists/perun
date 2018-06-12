@@ -382,6 +382,10 @@ def pcs_with_degradations():
 
     # Create third commit
     repo.git.checkout('master')
+    file3 = os.path.join(pcs_path, "file3")
+    store.touch_file(file3)
+    repo.index.add([file3])
+    repo.index.commit("parallel commit")
     repo.git.merge('--no-ff', 'develop')
     current_head = str(repo.head.commit)
 

@@ -120,6 +120,7 @@ following infrastructure::
 
     .perun/
         |-- /jobs
+        |-- /logs
         |-- /objects
         |-- local.yml
 
@@ -159,6 +160,11 @@ following infrastructure::
     Each object from ``.perun/objects`` is represented by hash value, where the first two characters
     are used to specify directory and the rest of the hash value a file name, where the index or
     compressed file is stored.
+
+``.perun/logs``:
+    Contains various logs for various phases. Currently this holds logs for each minor version,
+    for which we precollected new profiles during the ``perun check`` command. This behaviour
+    can be set up by setting :ckey:`degradation.log_collect` to true.
 
 ``local.yml``:
     Contains local configuration, e.g. the specification of wrapped repository, job matrixes or

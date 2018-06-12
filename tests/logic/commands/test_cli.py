@@ -17,8 +17,10 @@ import perun.utils as utils
 import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.logic.config as config
+import perun.logic.store as store
 import perun.collect.complexity.run as complexity
 import perun.utils.exceptions as exceptions
+import perun.check.factory as check
 
 __author__ = 'Tomas Fiedor'
 
@@ -700,6 +702,43 @@ def test_config(pcs_full, monkeypatch):
     assert result.exit_code == 1
 
 
+@pytest.mark.usefixtures('cleandir')
+def test_reset_outside_pcs(monkeypatch):
+    """Tests resetting of configuration outside of the perun scope
+
+    Excepts error when resetting local config, and no error when resetting global config
+    """
+    runner = CliRunner()
+    result = runner.invoke(cli.config, ['--local', 'reset'])
+    assert result.exit_code == 1
+    assert "could not reset" in result.output
+
+    monkeypatch.setattr('perun.logic.config.lookup_shared_config_dir', lambda: os.getcwd())
+    result = runner.invoke(cli.config, ['--shared', 'reset'])
+    assert result.exit_code == 0
+
+
+def test_reset(pcs_full):
+    """Tests resetting of configuration within the perun scope
+
+    Excepts no error at all
+    """
+    runner = CliRunner()
+    pcs_path = os.getcwd()
+    with open(os.path.join(pcs_path, '.perun', 'local.yml'), 'r') as local_config:
+        contents = "".join(local_config.readlines())
+        assert '#     - make' in contents
+        assert '#   collect_before_check' in contents
+
+    result = runner.invoke(cli.config, ['--local', 'reset', 'developer'])
+    assert result.exit_code == 0
+
+    with open(os.path.join(pcs_path, '.perun', 'local.yml'), 'r') as local_config:
+        contents = "".join(local_config.readlines())
+        assert 'make' in contents
+        assert 'collect_before_check' in contents
+
+
 def test_check_profiles(helpers, pcs_with_degradations):
     """Tests checking degradation between two profiles"""
     pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
@@ -716,19 +755,62 @@ def test_check_profiles(helpers, pcs_with_degradations):
         assert result.exit_code == 0
 
 
-def test_check_head(pcs_with_degradations):
+def test_check_head(pcs_with_degradations, monkeypatch):
     """Test checking degradation for one point of history
 
     Expecting correct behaviours
     """
     runner = CliRunner()
 
+    # Initialize the matrix for the further collecting
+    matrix = config.Config('local', '', {
+        'vcs': {'type': 'git', 'url': '../'},
+        'cmds': ['ls'],
+        'args': ['-al'],
+        'workloads': ['.', '..'],
+        'collectors': [
+            {'name': 'time', 'params': {}}
+        ],
+        'postprocessors': [],
+    })
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+
     result = runner.invoke(cli.check_head, [])
     assert result.exit_code == 0
 
+    # Try the precollect and various combinations of options
     result = runner.invoke(cli.check_group, ['-c', 'head'])
-    assert result.exit_code == 1
-    assert "is unsupported" in result.output
+    assert result.exit_code == 0
+    assert config.runtime().get('degradation.collect_before_check')
+    config.runtime().data.clear()
+
+    # Try to sink it to black hole
+    log_dir = pcs_with_degradations.get_log_directory()
+    shutil.rmtree(log_dir)
+    store.touch_dir(log_dir)
+    config.runtime().set('degradation', {})
+    config.runtime().set('degradation.collect_before_check', 'true')
+    config.runtime().set('degradation.log_collect', 'false')
+    result = runner.invoke(cli.cli, ['--no-pager', 'check', 'head'])
+    assert len(os.listdir(log_dir)) == 0
+    assert result.exit_code == 0
+
+    # First lets clear all the objects
+    object_dir = pcs_with_degradations.get_object_directory()
+    shutil.rmtree(object_dir)
+    store.touch_dir(object_dir)
+    # Clear the pre_collect_profiles cache
+    check.pre_collect_profiles.minor_version_cache.clear()
+    assert len(os.listdir(object_dir)) == 0
+    # Collect for the head commit
+    result = runner.invoke(cli.run, ['matrix'])
+    assert result.exit_code == 0
+
+    config.runtime().set('degradation.log_collect', 'true')
+    result = runner.invoke(cli.cli, ['--no-pager', 'check', 'head'])
+    assert len(os.listdir(log_dir)) >= 1
+    assert result.exit_code == 0
+    config.runtime().data.clear()
 
 
 def test_check_all(pcs_with_degradations):
@@ -827,6 +909,11 @@ def test_run(pcs_full, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(cli.run, ['-c', 'matrix'])
     assert result.exit_code == 0
+
+    # Test unsupported option
+    result = runner.invoke(cli.run, ['-f', 'matrix'])
+    assert result.exit_code == 1
+    assert "is unsupported" in result.output
 
     job_dir = pcs_full.get_job_directory()
     job_profiles = os.listdir(job_dir)
