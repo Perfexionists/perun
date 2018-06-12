@@ -1066,9 +1066,8 @@ def init_unit_commands(lazy_init=True):
             # Skip those packages that do not contain the appropriate cli wrapper
             unit_module = perun.utils.get_module(module[1] + '.' + 'run')
             cli_function_name = module[1].split('.')[-1]
-            if not hasattr(unit_module, cli_function_name):
-                continue
-            cli_cmd.add_command(getattr(unit_module, cli_function_name))
+            if hasattr(unit_module, cli_function_name):
+                cli_cmd.add_command(getattr(unit_module, cli_function_name))
 
 
 # Initialization of other stuff

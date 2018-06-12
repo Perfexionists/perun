@@ -1,3 +1,5 @@
+"""Collection of global methods for detection of performance changes"""
+
 import contextlib
 import os
 
@@ -157,7 +159,7 @@ def degradation_between_profiles(baseline_profile, target_profile):
         target_profile = profiles.load_profile_from_file(target_profile.realpath, False)
 
     # We run all of the degradation methods suitable for the given configuration of profile
-    for degradation_method in get_strategies_for_configuration(baseline_profile):
+    for degradation_method in get_strategies_for(baseline_profile):
         yield from utils.dynamic_module_function_call(
             'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
         )
@@ -189,7 +191,9 @@ def degradation_between_files(baseline_file, target_file, minor_version):
 
     # Store the detected changes for given minor version
     pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
-    store.save_degradation_list_for(pcs.get_object_directory(), target_minor_version, detected_changes)
+    store.save_degradation_list_for(
+        pcs.get_object_directory(), target_minor_version, detected_changes
+    )
     print("")
     log.print_short_summary_of_degradations(detected_changes)
 
@@ -239,13 +243,10 @@ def parse_strategy(strategy):
         'aat': 'average_amount_threshold',
         'bmoe': 'best_model_order_equality'
     }
-    if strategy in short_strings.keys():
-        return short_strings[strategy]
-    else:
-        return strategy
+    return short_strings.get(strategy, strategy)
 
 
-def get_strategies_for_configuration(profile):
+def get_strategies_for(profile):
     """Retrieves the best strategy for the given profile configuration
 
     :param ProfileInfo profile: Profile information with configuration tuple
@@ -273,5 +274,3 @@ def get_strategies_for_configuration(profile):
             method = parse_strategy(strategy['method'])
             already_applied_strategies.append(method)
             yield method
-
-
