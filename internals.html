@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Internals &#8212; Perun 0.14.1 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.14.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.1',
+        VERSION:     '0.14.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -446,6 +446,7 @@ instance of Perun are stored in the filesystem in the <code class="docutils lite
 following infrastructure:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">perun</span><span class="o">/</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">jobs</span>
+    <span class="o">|--</span> <span class="o">/</span><span class="n">logs</span>
     <span class="o">|--</span> <span class="o">/</span><span class="n">objects</span>
     <span class="o">|--</span> <span class="n">local</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
@@ -485,6 +486,10 @@ which lists assigned profiles for the given minor version.</p>
 are used to specify directory and the rest of the hash value a file name, where the index or
 compressed file is stored.</p>
 </dd>
+<dt><code class="docutils literal"><span class="pre">.perun/logs</span></code>:</dt>
+<dd>Contains various logs for various phases. Currently this holds logs for each minor version,
+for which we precollected new profiles during the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">check</span></code> command. This behaviour
+can be set up by setting <a class="reference internal" href="config.html#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a> to true.</dd>
 <dt><code class="docutils literal"><span class="pre">local.yml</span></code>:</dt>
 <dd>Contains local configuration, e.g. the specification of wrapped repository, job matrixes or
 formatting strings corresponding to concrete VCS. See <a class="reference internal" href="config.html"><span class="doc">Perun Configuration files</span></a> for more information about

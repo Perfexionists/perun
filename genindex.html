@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.14.1 documentation</title>
+    <title>Index &#8212; Perun 0.14.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.1',
+        VERSION:     '0.14.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -270,6 +270,13 @@
 </li>
       </ul></li>
       <li>
+    -f, --force-dirty
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-run-f">perun-run command line option</a>
+</li>
+      </ul></li>
+      <li>
     -fwh, --fixed-window-height
 
       <ul>
@@ -390,8 +397,6 @@
         <li><a href="cli.html#cmdoption-perun-utils-create-ne">perun-utils-create command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -o, --of &lt;of_key&gt;
 
@@ -405,6 +410,8 @@
         <li><a href="cli.html#cmdoption-perun-show-scatter-o">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-o">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -ot, --output-filename-template &lt;output_filename_template&gt;
 
@@ -451,6 +458,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-r">perun-postprocessby-regression_analysis command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-r">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -r, --repeat &lt;repeat&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-time-r">perun-collect-time command line option</a>, <a href="collectors.html#cmdoption-perun-collect-time-r">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -530,6 +544,13 @@
 </li>
       </ul></li>
       <li>
+    -t, --config-template &lt;config_template&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-init-t">perun-init command line option</a>
+</li>
+      </ul></li>
+      <li>
     -t, --limit-to &lt;limit_to&gt;
 
       <ul>
@@ -566,6 +587,13 @@
         <li><a href="cli.html#cmdoption-perun-show-flow-v">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-v">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-scatter-v">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-v">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -w, --warm-up-repetition &lt;warmup&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-time-w">perun-collect-time command line option</a>, <a href="collectors.html#cmdoption-perun-collect-time-w">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -804,6 +832,8 @@
 </li>
         <li><a href="config.html#confkey-degradation.collect_before_check">degradation.collect_before_check</a>
 </li>
+        <li><a href="config.html#confkey-degradation.log_collect">degradation.log_collect</a>
+</li>
         <li><a href="config.html#confkey-degradation.strategies">degradation.strategies</a>
 </li>
         <li><a href="config.html#confkey-execute.pre_run">execute.pre_run</a>
@@ -820,7 +850,7 @@
 </li>
         <li><a href="config.html#confkey-general.paging">general.paging</a>
 </li>
-        <li><a href="config.html#confkey-profiles.register_after_run:">profiles.register_after_run:</a>
+        <li><a href="config.html#confkey-profiles.register_after_run">profiles.register_after_run</a>
 </li>
         <li><a href="config.html#confkey-vcs.type">vcs.type</a>
 </li>
@@ -876,13 +906,20 @@
         <li><a href="config.html#confkey-degradation.apply">configuration key</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     degradation.collect_before_check
 
       <ul>
         <li><a href="config.html#confkey-degradation.collect_before_check">configuration key</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    degradation.log_collect
+
+      <ul>
+        <li><a href="config.html#confkey-degradation.log_collect">configuration key</a>
 </li>
       </ul></li>
       <li>
@@ -892,6 +929,8 @@
         <li><a href="config.html#confkey-degradation.strategies">configuration key</a>
 </li>
       </ul></li>
+      <li><a href="degradation.html#perun.utils.structs.DegradationInfo">DegradationInfo (class in perun.utils.structs)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1230,6 +1269,15 @@
 </li>
       </ul></li>
       <li>
+    perun-collect-time command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-time-r">-r, --repeat &lt;repeat&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-time-r">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-time-w">-w, --warm-up-repetition &lt;warmup&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-time-w">[1]</a>
+</li>
+      </ul></li>
+      <li>
     perun-config command line option
 
       <ul>
@@ -1269,6 +1317,8 @@
         <li><a href="cli.html#cmdoption-perun-init-vcs-type">--vcs-type &lt;vcs_type&gt;</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-init-c">-c, --configure</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-init-t">-t, --config-template &lt;config_template&gt;</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-init-arg-path">&lt;path&gt;</a>
 </li>
@@ -1347,6 +1397,8 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-run-c">-c, --crawl-parents</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-run-f">-f, --force-dirty</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-run-m">-m, --minor-version &lt;minor_version_list&gt;</a>
 </li>
@@ -1520,6 +1572,8 @@
 </li>
       <li><a href="collectors.html#module-perun.collect.time">perun.collect.time (module)</a>
 </li>
+      <li><a href="config.html#module-perun.logic.config_templates">perun.logic.config_templates (module)</a>
+</li>
       <li><a href="postprocessors.html#module-perun.postprocess">perun.postprocess (module)</a>
 </li>
       <li><a href="postprocessors.html#module-perun.postprocess.clusterizer">perun.postprocess.clusterizer (module)</a>
@@ -1569,10 +1623,10 @@
 </li>
       </ul></li>
       <li>
-    profiles.register_after_run:
+    profiles.register_after_run
 
       <ul>
-        <li><a href="config.html#confkey-profiles.register_after_run:">configuration key</a>
+        <li><a href="config.html#confkey-profiles.register_after_run">configuration key</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1628,11 +1682,13 @@
       </ul></li>
       <li><a href="profile.html#perun.profile.convert.to_flame_graph_format">to_flame_graph_format() (in module perun.profile.convert)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="profile.html#perun.profile.convert.to_heap_map_format">to_heap_map_format() (in module perun.profile.convert)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="profile.html#perun.profile.convert.to_heat_map_format">to_heat_map_format() (in module perun.profile.convert)</a>
+</li>
+      <li><a href="degradation.html#perun.utils.structs.DegradationInfo.to_storage_record">to_storage_record() (perun.utils.structs.DegradationInfo method)</a>
 </li>
       <li>
     type

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.14.1 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.14.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.1',
+        VERSION:     '0.14.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -252,6 +252,12 @@ the <code class="docutils literal"><span class="pre">--vcs-params</span></code>.
 <dd><p>After successful initialization of both systems, opens the local configuration using the <code class="xref std std-ckey docutils literal"><span class="pre">editor</span></code> set in shared config.</p>
 </dd></dl>
 
+<dl class="option">
+<dt id="cmdoption-perun-init-t">
+<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--config-template</code><code class="descclassname"> &lt;config_template&gt;</code><a class="headerlink" href="#cmdoption-perun-init-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>States the configuration template that will be used for initialization of local configuration. See <a class="reference internal" href="config.html#config-templates"><span class="std std-ref">Predefined Configuration Templates</span></a> for more details about predefined  configurations.</p>
+</dd></dl>
+
 <p class="rubric">Arguments</p>
 <dl class="option">
 <dt id="cmdoption-perun-init-arg-path">
@@ -325,6 +331,12 @@ vcs.type: git
 <dt>
 <code class="descname">get</code></dt>
 <dd><p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">reset</code></dt>
+<dd><p>Resets the configuration file to a sane…</p>
 </dd></dl>
 
 <dl class="object">
@@ -625,6 +637,12 @@ user construct the job run using the set of parameters.</p>
 <dt id="cmdoption-perun-run-c">
 <code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crawl-parents</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-run-c" title="Permalink to this definition">¶</a></dt>
 <dd><p>If set to true, then for each specified minor versions, profiles for parents will be collected as well</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-run-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--force-dirty</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-run-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to true, then even if the repository is dirty, the changes will not be stashed</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
@@ -1162,7 +1180,9 @@ in the following form:</p>
 {
     &quot;amount&quot;: 0.59,
     &quot;type&quot;: &quot;time&quot;,
-    &quot;uid&quot;: &quot;sys&quot;
+    &quot;subtype&quot;: &quot;sys&quot;,
+    &quot;uid&quot;: cmd
+    &quot;order&quot;: 1
 }
 </pre>
 <p>Refer to <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> for more thorough description and examples
@@ -1170,6 +1190,19 @@ of <cite>complexity</cite> collector.</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>perun collect <span class="nb">time</span> <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-collect-time-w">
+<code class="descname">-w</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--warm-up-repetition</code><code class="descclassname"> &lt;warmup&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-time-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Before the actual timing, the collector will execute &lt;int&gt; warm-up executions.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-time-r">
+<code class="descname">-r</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--repeat</code><code class="descclassname"> &lt;repeat&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-time-r" title="Permalink to this definition">¶</a></dt>
+<dd><p>The timing of the given binaries will be repeated &lt;int&gt; times.</p>
+</dd></dl>
+
 </div>
 </div>
 </div>

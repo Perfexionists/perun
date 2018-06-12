@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Customize Logs and Statuses &#8212; Perun 0.14.1 documentation</title>
+    <title>Customize Logs and Statuses &#8212; Perun 0.14.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.1',
+        VERSION:     '0.14.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -137,6 +137,9 @@ concrete minor version such as minor version description, number of assigned pro
 <dt><code class="docutils literal"><span class="pre">%stats%</span></code>:</dt>
 <dd>Lists short summary of overall number of profiles (<code class="docutils literal"><span class="pre">a</span></code>) and number of memory (<code class="docutils literal"><span class="pre">m</span></code>), mixed
 (<code class="docutils literal"><span class="pre">x</span></code>) and time (<code class="docutils literal"><span class="pre">t</span></code>) profiles assinged to given minor version.</dd>
+<dt><code class="docutils literal"><span class="pre">%changes%</span></code>:</dt>
+<dd>Lists a short string of overall found changes for a given minor version. Found degradations are
+represented by red <code class="docutils literal"><span class="pre">-</span></code>, while found optimizations are represented by green <code class="docutils literal"><span class="pre">+</span></code>.</dd>
 <dt><code class="docutils literal"><span class="pre">%desc:num%</span></code>: Lists short description of the minor version, limiting to the first sentence of the</dt>
 <dd>description. If we take <code class="docutils literal"><span class="pre">git</span></code> as an example this will correspond to the short commit message.</dd>
 <dt><code class="docutils literal"><span class="pre">%date:num%</span></code>:</dt>

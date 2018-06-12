@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Configuration files &#8212; Perun 0.14.1 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.14.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.1',
+        VERSION:     '0.14.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -315,12 +315,12 @@ binaries and other settings for the actual collection of the new data.</p>
 <dt id="confunit-profiles">
 <code class="descname">profiles</code><a class="headerlink" href="#confunit-profiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Groups various option specific for profiles, such as strategies for adding or generating
-profiles:w</p>
+profiles</p>
 </dd></dl>
 
 <dl class="confkey">
-<dt id="confkey-profiles.register_after_run:">
-<code class="descname">profiles.register_after_run:</code><a class="headerlink" href="#confkey-profiles.register_after_run:" title="Permalink to this definition">¶</a></dt>
+<dt id="confkey-profiles.register_after_run">
+<code class="descname">profiles.register_after_run</code><a class="headerlink" href="#confkey-profiles.register_after_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>If the key is set to a true value (can be 1, true, True, yes, etc.), then after newly generated
 profile (e.g. by running <code class="docutils literal"><span class="pre">perun</span> <span class="pre">run</span> <span class="pre">matrix</span></code>) is automatically registered in the appropriate
 minor version index.</p>
@@ -337,7 +337,18 @@ methods.</p>
 <dt id="confkey-degradation.collect_before_check">
 <code class="descname">degradation.collect_before_check</code><a class="headerlink" href="#confkey-degradation.collect_before_check" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> If set to true, then before checking profiles of two minor versions, we run the
-collection for job matrix to collect fresh or unexisting profiles.</p>
+collection for job matrix to collect fresh or unexisting profiles. By default, the output of
+this phase is discarded into a <code class="docutils literal"><span class="pre">devnull</span></code>. This behaviour can be changed by setting the
+<a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a>.</p>
+</dd></dl>
+
+<dl class="confkey">
+<dt id="confkey-degradation.log_collect">
+<code class="descname">degradation.log_collect</code><a class="headerlink" href="#confkey-degradation.log_collect" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[recursive]</span></code> If both <a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a> and
+<a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.collect_before_check</span></code></a> are set to true, then the precollect phase will be
+saved into a log of form <code class="docutils literal"><span class="pre">%minor_version$-precollect.log</span></code>. Otherwise, the output will be
+stashed into a black hole (i.e. <code class="docutils literal"><span class="pre">devnull</span></code>).</p>
 </dd></dl>
 
 <dl class="confkey">
@@ -369,6 +380,98 @@ strategies.</p>
 </div>
 </dd></dl>
 
+</div>
+<div class="section" id="module-perun.logic.config_templates">
+<span id="predefined-configuration-templates"></span><span id="config-templates"></span><h2>Predefined Configuration Templates<a class="headerlink" href="#module-perun.logic.config_templates" title="Permalink to this headline">¶</a></h2>
+<p>Internally local configuration files are specified w.r.t a Jinja2 template.</p>
+<p>This template can further be augmented by named sets of predefined configuration as follows:</p>
+<blockquote>
+<div><p>1. <strong>user</strong> configuration is meant for beginner users, that have no experience with Perun and
+have not read the documentation thoroughly. This contains a basic preconfiguration that should be
+applicable for most of the projects—data are collected by <a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a> and are
+automatically registered in the Perun after successful run. The performance is checked using
+the <a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a>. Missing profiling info will be looked up automatically.</p>
+<p>2. <strong>developer</strong> configuration is meant for advanced users, that have some understanding of
+profiling and/or Perun. Fair amount of options are up to the user, such as the collection of
+the data and the commands that will be profiled.</p>
+<p>3. <strong>master</strong> configuration is meant for experienced users. The configuration will be mostly
+empty.</p>
+</div></blockquote>
+<p>The actually set options are specified in the following table. When the option is not set
+(signaled by <code class="docutils literal"><span class="pre">-</span></code> symbol) we output in the configuration table only a commented-out hint.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="32%" />
+<col width="25%" />
+<col width="10%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>&#160;</td>
+<td><strong>user</strong></td>
+<td><strong>developer</strong></td>
+<td><strong>master</strong></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#confunit-cmds"><code class="xref std std-cunit docutils literal"><span class="pre">cmds</span></code></a></td>
+<td>auto lookup</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#confunit-args"><code class="xref std std-cunit docutils literal"><span class="pre">args</span></code></a></td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#confunit-workloads"><code class="xref std std-cunit docutils literal"><span class="pre">workloads</span></code></a></td>
+<td>auto lookup</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#confunit-collectors"><code class="xref std std-cunit docutils literal"><span class="pre">collectors</span></code></a></td>
+<td><a class="reference internal" href="collectors.html#collectors-time"><span class="std std-ref">Time Collector</span></a></td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#confkey-degradation.strategies"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.strategies</span></code></a></td>
+<td><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></td>
+<td><a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a></td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#confkey-degradation.collect_before_check"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.collect_before_check</span></code></a></td>
+<td>true</td>
+<td>true</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#confkey-degradation.log_collect"><code class="xref std std-ckey docutils literal"><span class="pre">degradation.log_collect</span></code></a></td>
+<td>true</td>
+<td>true</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#confkey-execute.pre_run"><code class="xref std std-ckey docutils literal"><span class="pre">execute.pre_run</span></code></a></td>
+<td>make</td>
+<td>make</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#confkey-profiles.register_after_run"><code class="xref std std-ckey docutils literal"><span class="pre">profiles.register_after_run</span></code></a></td>
+<td>true</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#confkey-format.output_profile_template"><code class="xref std std-ckey docutils literal"><span class="pre">format.output_profile_template</span></code></a></td>
+<td>%collector%-of-%cmd%-%workload%-%date%</td>
+<td>–</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>In <strong>user</strong> configuration, we try to lookup the actual commands and workloads for profiling purpose.
+Currently for candidate executables we look within a subfolders named <code class="docutils literal"><span class="pre">build</span></code>, <code class="docutils literal"><span class="pre">_build</span></code> or
+<code class="docutils literal"><span class="pre">dist</span></code> and check if we find any executables. Each found executable is then registered as profiled
+command. For workloads we look for any file (without restrictions), and we restrict ourselves to
+subfolders with names such as <code class="docutils literal"><span class="pre">workload</span></code>, <code class="docutils literal"><span class="pre">workloads</span></code>, <code class="docutils literal"><span class="pre">examples</span></code> or <code class="docutils literal"><span class="pre">payloads</span></code>. Each
+compatible file is then registered as workload.</p>
+<p>Currently the templates are set by <code class="docutils literal"><span class="pre">-t</span></code> option of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">init</span></code> command (see <a class="reference internal" href="cli.html#cli-main-ref"><span class="std std-ref">Perun Commands</span></a>
+for details on <code class="docutils literal"><span class="pre">perun</span> <span class="pre">init</span></code>). By default <strong>master</strong> configuration is used.</p>
 </div>
 <div class="section" id="command-line-interface">
 <span id="config-cli"></span><h2>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
@@ -440,6 +543,12 @@ vcs.type: git
 <dt>
 <code class="descname">get</code></dt>
 <dd><p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">reset</code></dt>
+<dd><p>Resets the configuration file to a sane…</p>
 </dd></dl>
 
 <dl class="object">
@@ -549,6 +658,7 @@ specified in the nearest perun configuration..</p>
 <li><a class="reference internal" href="#">Perun Configuration files</a><ul>
 <li><a class="reference internal" href="#configuration-types">Configuration types</a></li>
 <li><a class="reference internal" href="#list-of-supported-options">List of Supported Options</a></li>
+<li><a class="reference internal" href="#module-perun.logic.config_templates">Predefined Configuration Templates</a></li>
 <li><a class="reference internal" href="#command-line-interface">Command Line Interface</a><ul>
 <li><a class="reference internal" href="#perun-config">perun config</a></li>
 <li><a class="reference internal" href="#perun-config-get">perun config get</a></li>
