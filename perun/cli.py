@@ -41,10 +41,9 @@ the flexibility of Perun's usage.
 
 import os
 import pkgutil
-import re
 import sys
-import termcolor
 import distutils.util as dutils
+import termcolor
 
 import click
 import perun.logic.commands as commands
@@ -61,37 +60,21 @@ import perun.utils as utils
 import perun.utils.script_helpers as scripts
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
-import perun.utils.streams as streams
-import perun.vcs as vcs
 import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
-    MissingConfigSectionException, ExternalEditorErrorException, VersionControlSystemException
+    MissingConfigSectionException, ExternalEditorErrorException
 
 __author__ = 'Tomas Fiedor'
 
 
-def process_unsupported_option(_, param, value):
-    """Processes the currently unsupported option.
-
-    :param click.Context _: called context of the parameter
-    :param click.Option param: parameter we are processing
-    :param Object value: value of the parameter we are trying to set
-    :return:  basically nothing
-    """
-    if value:
-        perun_log.error("option '{}'".format(param.human_readable_name) +
-                        "is unsupported/not implemented in this version of perun"
-                        "\n\nPlease update your perun or wait patiently for the implementation")
-
-
 @click.group()
 @click.option('--no-pager', default=False, is_flag=True,
-              help='Disable paging of the long standard output (currently'
+              help='Disables the paging of the long standard output (currently'
               ' affects only ``status`` and ``log`` outputs). See '
               ':ckey:`paging` to change the default paging strategy.')
 @click.option('--verbose', '-v', count=True, default=0,
-              help='Increase the verbosity of the standard output. Verbosity '
+              help='Increases the verbosity of the standard output. Verbosity '
               'is incremental, and each level increases the extent of output.')
 def cli(verbose=0, no_pager=False):
     """Perun is an open source light-weight Performance Versioning System.
@@ -125,36 +108,13 @@ def cli(verbose=0, no_pager=False):
         perun_log.VERBOSITY = verbose
 
 
-def validate_key(_, param, value):
-    """Validates whether the value of the key is in correct format---strings delimited by dot.
-
-    Arguments:
-        _(click.Context): called context of the command line
-        param(click.Option): called option (key in this case)
-        value(object): assigned value to the <key> argument
-
-    Returns:
-        object: value for the <key> argument
-    """
-    if not perun_config.is_valid_key(str(value)):
-        raise click.BadParameter("<key> argument '{}' for {} config operation is in invalid format."
-            "Valid key should be represented as sections delimited by dot (.),"
-            " e.g. general.paging is valid key.".format(
-                value, str(param.param_type_name)
-            )
-        )
-    return value
-
-
 @cli.group()
 @click.option('--local', '-l', 'store_type', flag_value='local',
-              help='Will lookup or set in the local config i.e. '
-              '``.perun/local.yml``.')
+              help='Sets the local config, i.e. ``.perun/local.yml``, as the source config.')
 @click.option('--shared', '-h', 'store_type', flag_value='shared',
-              help='Will lookup or set in the shared config i.e. '
-              '``shared.yml.``')
+              help='Sets the shared config, i.e. ``shared.yml.``, as the source config')
 @click.option('--nearest', '-n', 'store_type', flag_value='recursive', default=True,
-              help='Will recursively discover the nearest suitable config. The'
+              help='Sets the nearest suitable config as the source config. The'
               ' lookup strategy can differ for ``set`` and '
               '``get``/``edit``.')
 @click.pass_context
@@ -197,7 +157,8 @@ def config(ctx, **kwargs):
 
 
 @config.command('get')
-@click.argument('key', required=True, metavar='<key>', callback=validate_key)
+@click.argument('key', required=True, metavar='<key>',
+                callback=cli_helpers.config_key_validation_callback)
 @click.pass_context
 def config_get(ctx, key):
     """Looks up the given ``<key>`` within the configuration hierarchy and returns
@@ -232,7 +193,8 @@ def config_get(ctx, key):
 
 
 @config.command('set')
-@click.argument('key', required=True, metavar='<key>', callback=validate_key)
+@click.argument('key', required=True, metavar='<key>',
+                callback=cli_helpers.config_key_validation_callback)
 @click.argument('value', required=True, metavar='<value>')
 @click.pass_context
 def config_set(ctx, key, value):
@@ -283,7 +245,7 @@ def config_edit(ctx):
 
 @config.command('reset')
 @click.argument('config_template', required=False, default='master',
-                 metavar='<template>')
+                metavar='<template>')
 @click.pass_context
 def config_reset(ctx, config_template):
     """Resets the configuration file to a sane default.
@@ -292,8 +254,8 @@ def config_reset(ctx, config_template):
     will be used to generate a predefined set of options. Currently we support the following:
 
       1. **user** configuration is meant for beginner users, that have no experience with Perun and
-      have not read the documentation thoroughly. This contains a basic preconfiguration that should be
-      applicable for most of the projects---data are collected by :ref:`collectors-time` and are
+      have not read the documentation thoroughly. This contains a basic preconfiguration that should
+      be applicable for most of the projects---data are collected by :ref:`collectors-time` and are
       automatically registered in the Perun after successful run. The performance is checked using
       the :ref:`degradation-method-aat`. Missing profiling info will be looked up automatically.
 
@@ -320,34 +282,9 @@ def configure_local_perun(perun_path):
     :param str perun_path: destination path of the perun repository
     :raises: ExternalEditorErrorException: when underlying editor makes any mistake
     """
-    pcs = PCS(perun_path)
     editor = perun_config.lookup_key_recursively('general.editor')
-    local_config_file = pcs.get_config_file('local')
+    local_config_file = os.path.join(perun_path, 'local.yml')
     utils.run_external_command([editor, local_config_file])
-
-
-def parse_vcs_parameter(ctx, param, value):
-    """Parses flags and parameters for version control system during the init
-
-    Collects all flags (as flag: True) and parameters (as key value pairs) inside the
-    ctx.params['vcs_params'] dictionary, which is then send to the initialization of vcs.
-
-    Arguments:
-        ctx(Context): context of the called command
-        param(click.Option): parameter that is being parsed
-        value(str): value that is being read from the commandline
-
-    Returns:
-        tuple: tuple of flags or parameters
-    """
-    if 'vcs_params' not in ctx.params.keys():
-        ctx.params['vcs_params'] = {}
-    for v in value:
-        if param.name.endswith("param"):
-            ctx.params['vcs_params'][v[0]] = v[1]
-        else:
-            ctx.params['vcs_params'][v] = True
-    return value
 
 
 @cli.command()
@@ -360,11 +297,11 @@ def parse_vcs_parameter(ctx, param, value):
               help="Sets the destination of wrapped vcs initialization at "
               "<path>.")
 @click.option('--vcs-param', nargs=2, metavar='<param>', multiple=True,
-              callback=parse_vcs_parameter,
+              callback=cli_helpers.vcs_parameter_callback,
               help="Passes additional (key, value) parameter to initialization"
               " of version control system, e.g. ``separate-git-dir dir``.")
 @click.option('--vcs-flag', nargs=1, metavar='<flag>', multiple=True,
-              callback=parse_vcs_parameter,
+              callback=cli_helpers.vcs_parameter_callback,
               help="Passes additional flag to a initialization of version "
               "control system, e.g. ``bare``.")
 @click.option('--configure', '-c', is_flag=True, default=False,
@@ -414,139 +351,24 @@ def init(dst, configure, config_template, **kwargs):
             # Run the interactive configuration of the local perun repository (populating .yml)
             configure_local_perun(dst)
         else:
-            perun_log.quiet_info("\nIn order to automatically run jobs configure the matrix at:\n"
-                                 "\n"
-                                 + (" "*4) + ".perun/local.yml\n")
+            msg = "\nIn order to automatically run jobs configure the matrix at:\n"
+            msg += "\n" + (" "*4) + ".perun/local.yml\n"
+            perun_log.quiet_info(msg)
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error(str(unsup_module_exp))
     except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
-        perun_log.error("cannot launch default editor for configuration.\n"
-                        "Please set 'general.editor' key to a valid text editor (e.g. vim).")
-
-
-def lookup_nth_pending_filename(position):
-    """
-    Arguments:
-        position(int): position of the pending we will lookup
-
-    Returns:
-        str: pending profile at given position
-    """
-    pending = commands.get_untracked_profiles(PCS(store.locate_perun_dir_on(os.getcwd())))
-    profiles.sort_profiles(pending)
-    if 0 <= position < len(pending):
-        return pending[position].realpath
-    else:
-        raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
-            "{}@p".format(position), '0@p', '{}@p'.format(len(pending)-1)
-        ))
-
-
-def added_filename_lookup_callback(ctx, param, value):
-    """Callback function for looking up the profile, if it does not exist
-
-    Arguments:
-        ctx(Context): context of the called command
-        param(click.Option): parameter that is being parsed and read from commandline
-        value(str): value that is being read from the commandline
-
-    Returns:
-        str: filename of the profile
-    """
-    massaged_values = set()
-    for single_value in value:
-        match = store.PENDING_TAG_REGEX.match(single_value)
-        if match:
-            massaged_values.add(lookup_nth_pending_filename(int(match.group(1))))
-        else:
-            massaged_values.add(lookup_profile_filename(single_value))
-    return massaged_values
-
-
-def removed_filename_lookup_callback(ctx, param, value):
-    """
-    Arguments:
-        ctx(Context): context of the called command
-        param(click.Option): parameter that is being parsed and read from commandline
-        value(str): value that is being read from the commandline
-
-    Returns:
-        str: filename of the profile to be removed
-    """
-    massaged_values = set()
-    for single_value in value:
-        match = store.INDEX_TAG_REGEX.match(single_value)
-        if match:
-            index_filename = commands.get_nth_profile_of(
-                int(match.group(1)), ctx.params['minor']
-            )
-            start = index_filename.rfind('objects') + len('objects')
-            # Remove the .perun/objects/... prefix and merge the directory and file to sha
-            massaged_values.add("".join(index_filename[start:].split('/')))
-        else:
-            massaged_values.add(single_value)
-    return massaged_values
-
-
-def lookup_profile_filename(profile_name):
-    """Callback function for looking up the profile, if it does not exist
-
-    Arguments:
-        profile_name(str): value that is being read from the commandline
-
-    Returns:
-        str: full path to profile
-    """
-    # 1) if it exists return the value
-    if os.path.exists(profile_name):
-        return profile_name
-
-    perun_log.info("file '{}' does not exist. Checking pending jobs...".format(profile_name))
-    # 2) if it does not exists check pending
-    job_dir = PCS(store.locate_perun_dir_on(os.getcwd())).get_job_directory()
-    job_path = os.path.join(job_dir, profile_name)
-    if os.path.exists(job_path):
-        return job_path
-
-    perun_log.info("file '{}' not found in pending jobs...".format(profile_name))
-    # 3) if still not found, check recursively all candidates for match and ask for confirmation
-    searched_regex = re.compile(profile_name)
-    for root, _, files in os.walk(os.getcwd()):
-        for file in files:
-            full_path = os.path.join(root, file)
-            if file.endswith('.perf') and searched_regex.search(full_path):
-                rel_path = os.path.relpath(full_path, os.getcwd())
-                if click.confirm("did you perhaps mean '{}'?".format(rel_path)):
-                    return full_path
-
-    return profile_name
-
-
-def minor_version_lookup_callback(ctx, param, value):
-    """
-    Arguments:
-        ctx(Context): context of the called command
-        param(click.Option): parameter that is being parsed and read from commandline
-        value(str): value that is being read from the commandline
-
-    Returns:
-        str: massaged minor version
-    """
-    if value is not None:
-        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
-        try:
-            return vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, value)
-        except VersionControlSystemException as exception:
-            raise click.BadParameter(str(exception))
+        err_msg = "cannot launch default editor for configuration.\n"
+        err_msg += "Please set 'general.editor' key to a valid text editor (e.g. vim)."
+        perun_log.error(err_msg)
 
 
 @cli.command()
 @click.argument('profile', required=True, metavar='<profile>', nargs=-1,
-                callback=added_filename_lookup_callback)
+                callback=cli_helpers.lookup_added_profile_callback)
 @click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
-              callback=minor_version_lookup_callback,
+              callback=cli_helpers.lookup_minor_version_callback,
               help='<profile> will be stored at this minor version (default is HEAD).')
 @click.option('--keep-profile', is_flag=True, required=False, default=False,
               help='Keeps the profile in filesystem after registering it in'
@@ -605,15 +427,15 @@ def add(profile, minor, **kwargs):
         perun_log.error(str(exception))
 
 
-@cli.command()
+@cli.command('rm')
 @click.argument('profile', required=True, metavar='<profile>', nargs=-1,
-                callback=removed_filename_lookup_callback)
+                callback=cli_helpers.lookup_removed_profile_callback)
 @click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
-              callback=minor_version_lookup_callback,
+              callback=cli_helpers.lookup_minor_version_callback,
               help='<profile> will be stored at this minor version (default is HEAD).')
 @click.option('--remove-all', '-A', is_flag=True, default=False,
               help="Removes all occurrences of <profile> from the <hash> index.")
-def rm(profile, minor, **kwargs):
+def remove(profile, minor, **kwargs):
     """Unlinks the profile from the given minor version, keeping the contents
     stored in ``.perun`` directory.
 
@@ -657,51 +479,8 @@ def rm(profile, minor, **kwargs):
         perun_log.info("removed '{}'".format(profile))
 
 
-def profile_lookup_callback(ctx, _, value):
-    """
-    Arguments:
-        ctx(click.core.Context): context
-        _(click.core.Argument): param
-        value(str): value of the profile parameter
-    """
-    # 0) First check if the value is tag or not
-    index_tag_match = store.INDEX_TAG_REGEX.match(value)
-    if index_tag_match:
-        index_profile = commands.get_nth_profile_of(
-            int(index_tag_match.group(1)), ctx.params['minor']
-        )
-        return profiles.load_profile_from_file(index_profile, is_raw_profile=False)
-
-    pending_tag_match = store.PENDING_TAG_REGEX.match(value)
-    if pending_tag_match:
-        pending_profile = lookup_nth_pending_filename(int(pending_tag_match.group(1)))
-        return profiles.load_profile_from_file(pending_profile, is_raw_profile=True)
-
-    # 1) Check the index, if this is registered
-    profile_from_index = commands.load_profile_from_args(value, ctx.params['minor'])
-    if profile_from_index:
-        return profile_from_index
-
-    perun_log.info("file '{}' not found in index. Checking filesystem...".format(value))
-    # 2) Else lookup filenames and load the profile
-    abs_path = lookup_profile_filename(value)
-    if not os.path.exists(abs_path):
-        perun_log.error("could not find the file '{}'".format(abs_path))
-
-    return profiles.load_profile_from_file(abs_path, is_raw_profile=True)
-
-
 @cli.command()
 @click.argument('head', required=False, default=None, metavar='<hash>')
-# @click.option('--count-only', is_flag=True, default=False,
-#               help="Shows only aggregated data without minor version history"
-#               " description")
-# @click.option('--show-aggregate', is_flag=True, default=False,
-#               help="Includes the aggregated values for each minor version.")
-# @click.option('--last', default=1, metavar='<int>',
-#               help="Limits the output of log to last <int> entries.")
-# @click.option('--no-merged', is_flag=True, default=False,
-#               help="Skips merges during the iteration of the project history.")
 @click.option('--short', '-s', is_flag=True, default=False,
               help="Shortens the output of ``log`` to include only most "
               "necessary information.")
@@ -770,9 +549,10 @@ def status(**kwargs):
 
 
 @cli.group()
-@click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
+@click.argument('profile', required=True, metavar='<profile>',
+                callback=cli_helpers.lookup_any_profile_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
-              callback=minor_version_lookup_callback,
+              callback=cli_helpers.lookup_minor_version_callback,
               help='Will check the index of different minor version <hash>'
               ' during the profile lookup')
 @click.pass_context
@@ -818,33 +598,20 @@ def show(ctx, profile, **_):
     refer to :ref:`views-list`.
     """
     ctx.obj = profile
-    # TODO: Check that if profile is not SHA-1, then minor must be set
-
-
-def set_output_formatting_string(_, __, value):
-    """Sets the value of the output_profile_template to the given value in the runtime
-    configuration.
-
-    :param click.Context _: called context of the parameter
-    :param click.Option __: parameter we are processing
-    :param Object value: concrete value of the object that we are storing
-    :returns str: set string (though it is set in the runtime config as well)
-    """
-    if value:
-        perun_config.runtime().set('format.output_profile_template', str(value))
-    return value
 
 
 @cli.group()
-@click.argument('profile', required=True, metavar='<profile>', callback=profile_lookup_callback)
-@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
-              default=None,
-              help='Specifies the template for automatic generation of output filename'
+@click.argument('profile', required=True, metavar='<profile>',
+                callback=cli_helpers.lookup_any_profile_callback)
+@click.option('--output-filename-template', '-ot', default=None,
+              callback=cli_helpers.set_runtime_option_from_flag(
+                  'format.output_profile_template', str
+              ), help='Specifies the template for automatic generation of output filename'
               ' This way the postprocessed file will have a resulting filename w.r.t to this'
               ' parameter. Refer to :ckey:`format.output_profile_template` for more'
               ' details about the format of the template.')
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
-              callback=minor_version_lookup_callback,
+              callback=cli_helpers.lookup_minor_version_callback,
               help='Will check the index of different minor version <hash>'
               ' during the profile lookup')
 @click.pass_context
@@ -899,59 +666,9 @@ def postprocessby(ctx, profile, **_):
     ctx.obj = profile
 
 
-def parse_yaml_single_param(ctx, param, value):
-    """Callback function for parsing the yaml files to dictionary object, when called from 'collect'
-
-    This does not require specification of the collector to which the params correspond and is
-    meant as massaging of parameters for 'perun -p file collect ...' command.
-
-    Arguments:
-        ctx(Context): context of the called command
-        param(click.Option): parameter that is being parsed and read from commandline
-        value(str): value that is being read from the commandline
-
-    Returns:
-        dict: parsed yaml file
-    """
-    unit_to_params = {}
-    for yaml_file in value:
-        # First check if this is file
-        if os.path.exists(yaml_file):
-            unit_to_params.update(streams.safely_load_yaml_from_file(yaml_file))
-        else:
-            unit_to_params.update(streams.safely_load_yaml_from_stream(yaml_file))
-    return unit_to_params
-
-
-def parse_minor_version(ctx, _, value):
-    """Callback function for parsing the minor version list for running the automation
-
-    :param Context ctx: context of the called command
-    :param click.Option _: parameter that is being parsed and read from commandline
-    :param str value: value that is being read from the commandline
-    :returns list: list of MinorVersion objects
-    """
-    minors = []
-    if value:
-        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
-        for minor_version in value:
-            massaged_version = vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, minor_version)
-            # If we should crawl all of the parents, we collect them
-            if ctx.params['crawl_parents']:
-                minors.extend(vcs.walk_minor_versions(
-                    pcs.vcs_type, pcs.vcs_path, massaged_version
-                ))
-            # Otherwise we retrieve the minor version info for the param
-            else:
-                minors.append(vcs.get_minor_version_info(
-                    pcs.vcs_type, pcs.vcs_path, massaged_version
-                ))
-    return minors
-
-
 @cli.group()
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
-              callback=parse_minor_version, default=['HEAD'],
+              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
 @click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
@@ -966,15 +683,16 @@ def parse_minor_version(ctx, _, value):
               help='Inputs for <cmd>. E.g. ``./subdir`` is possible workload'
               'for ``ls`` command.')
 @click.option('--params', '-p', nargs=1, required=False, multiple=True,
-              callback=parse_yaml_single_param,
+              callback=cli_helpers.single_yaml_param_callback,
               help='Additional parameters for called collector read from '
               'file in YAML format.')
-@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
-              default=None,
-              help='Specifies the template for automatic generation of output filename'
-                   ' This way the file with collected data will have a resulting filename w.r.t '
-                   ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
-                   ' details about the format of the template.')
+@click.option('--output-filename-template', '-ot', default=None,
+              callback=cli_helpers.set_runtime_option_from_flag(
+                  'format.output_profile_template', str
+              ), help='Specifies the template for automatic generation of output filename'
+              ' This way the file with collected data will have a resulting filename w.r.t '
+              ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
+              ' details about the format of the template.')
 @click.pass_context
 def collect(ctx, **kwargs):
     """Generates performance profile using selected collector.
@@ -1000,51 +718,22 @@ def collect(ctx, **kwargs):
     ctx.obj = kwargs
 
 
-def init_unit_commands(lazy_init=True):
-    """Runs initializations for all of the subcommands (shows, collectors, postprocessors)
-
-    Some of the subunits has to be dynamically initialized according to the registered modules,
-    like e.g. show has different forms (raw, graphs, etc.).
-    """
-    for (unit, cli_cmd, cli_arg) in [(perun.view, show, 'show'),
-                                     (perun.postprocess, postprocessby, 'postprocessby'),
-                                     (perun.collect, collect, 'collect')]:
-        if lazy_init and cli_arg not in sys.argv:
-            continue
-        for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
-            # Skip modules, only packages can be used for show
-            if not module[2]:
-                continue
-            unit_package = perun.utils.get_module(module[1])
-
-            # Skip packages that are not for viewing, postprocessing, or collection of profiles
-            if not hasattr(unit_package, 'SUPPORTED_PROFILES') and \
-               not hasattr(unit_package, 'COLLECTOR_TYPE'):
-                continue
-
-            # Skip those packages that do not contain the appropriate cli wrapper
-            unit_module = perun.utils.get_module(module[1] + '.' + 'run')
-            cli_function_name = module[1].split('.')[-1]
-            if not hasattr(unit_module, cli_function_name):
-                continue
-            cli_cmd.add_command(getattr(unit_module, cli_function_name))
-
-
 @cli.group()
-@click.option('--output-filename-template', '-ot', callback=set_output_formatting_string,
-              default=None,
-              help='Specifies the template for automatic generation of output filename'
-                   ' This way the file with collected data will have a resulting filename w.r.t '
-                   ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
-                   ' details about the format of the template.')
+@click.option('--output-filename-template', '-ot', default=None,
+              callback=cli_helpers.set_runtime_option_from_flag(
+                  'format.output_profile_template', str
+              ), help='Specifies the template for automatic generation of output filename'
+              ' This way the file with collected data will have a resulting filename w.r.t '
+              ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
+              ' details about the format of the template.')
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
-              callback=parse_minor_version, default=['HEAD'],
+              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
 @click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
                    ' will be collected as well')
 @click.option('--force-dirty', '-f', is_flag=True, default=False,
-              callback=process_unsupported_option,
+              callback=cli_helpers.unsupported_option_callback,
               help='If set to true, then even if the repository is dirty, '
                    'the changes will not be stashed')
 @click.pass_context
@@ -1082,27 +771,6 @@ def matrix(ctx, **kwargs):
     runner.run_matrix_job(**kwargs)
 
 
-def parse_yaml_param(ctx, param, value):
-    """Callback function for parsing the yaml files to dictionary object
-
-    Arguments:
-        ctx(Context): context of the called command
-        param(click.Option): parameter that is being parsed and read from commandline
-        value(str): value that is being read from the commandline
-
-    Returns:
-        dict: parsed yaml file
-    """
-    unit_to_params = {}
-    for (unit, yaml_file) in value:
-        # First check if this is file
-        if os.path.exists(yaml_file):
-            unit_to_params[unit] = streams.safely_load_yaml_from_file(yaml_file)
-        else:
-            unit_to_params[unit] = streams.safely_load_yaml_from_stream(yaml_file)
-    return unit_to_params
-
-
 @run.command()
 @click.option('--cmd', '-b', nargs=1, required=True, multiple=True,
               help='Command that is being profiled. Either corresponds to some'
@@ -1118,7 +786,7 @@ def parse_yaml_param(ctx, param, value):
               help='Profiler used for collection of profiling data for the'
               ' given <cmd>')
 @click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_param,
+              callback=cli_helpers.yaml_param_callback,
               help='Additional parameters for the <collector> read from the'
               ' file in YAML format')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
@@ -1126,7 +794,7 @@ def parse_yaml_param(ctx, param, value):
               help='After each collection of data will run <postprocessor> to '
               'postprocess the collected resources.')
 @click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
-              callback=parse_yaml_param,
+              callback=cli_helpers.yaml_param_callback,
               help='Additional parameters for the <postprocessor> read from the'
               ' file in YAML format')
 @click.pass_context
@@ -1170,7 +838,7 @@ def job(ctx, **kwargs):
 
     .. code-block:: bash
 
-        perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p regression_analysis
+        perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p clusterizer
 
     This commands runs two jobs ``./mybin input.txt`` and ``./otherbin
     input.txt`` and collects the profiles using the :ref:`collectors-memory`.
@@ -1191,7 +859,7 @@ def job(ctx, **kwargs):
 @cli.group('check')
 @click.option('--compute-missing', '-c',
               callback=cli_helpers.set_runtime_option_from_flag(
-                  'degradation.collect_before_check', True),
+                  'degradation.collect_before_check'),
               is_flag=True, default=False,
               help='whenever there are missing profiles in the given point of history'
               ' the matrix will be rerun and new generated profiles assigned.')
@@ -1260,7 +928,7 @@ def check_group(**_):
 
 @check_group.command('head')
 @click.argument('head_minor', required=False, metavar='<hash>', nargs=1,
-                callback=minor_version_lookup_callback, default='HEAD')
+                callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
 def check_head(head_minor='HEAD'):
     """Checks for changes in performance between between specified minor version (or current `head`)
     and its predecessor minor versions.
@@ -1279,7 +947,7 @@ def check_head(head_minor='HEAD'):
 
 @check_group.command('all')
 @click.argument('minor_head', required=False, metavar='<hash>', nargs=1,
-                callback=minor_version_lookup_callback, default='HEAD')
+                callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
 def check_all(minor_head='HEAD'):
     """Checks for changes in performance for the specified interval of version history.
 
@@ -1295,11 +963,11 @@ def check_all(minor_head='HEAD'):
 
 @check_group.command('profiles')
 @click.argument('baseline_profile', required=True, metavar='<baseline>', nargs=1,
-                callback=profile_lookup_callback)
+                callback=cli_helpers.lookup_any_profile_callback)
 @click.argument('target_profile', required=True, metavar='<target>', nargs=1,
-                callback=profile_lookup_callback)
+                callback=cli_helpers.lookup_any_profile_callback)
 @click.option('--minor', '-m', nargs=1, default=None, is_eager=True,
-              callback=minor_version_lookup_callback, metavar='<hash>',
+              callback=cli_helpers.lookup_minor_version_callback, metavar='<hash>',
               help='Will check the index of different minor version <hash>'
                    ' during the profile lookup.')
 def check_profiles(baseline_profile, target_profile, minor, **_):
@@ -1359,7 +1027,7 @@ def create(template_type, **kwargs):
 
     Currently this supports creating new modules for the tool suite (namely ``collect``,
     ``postprocess``, ``view``) or new algorithms for checking degradation (check). The command uses
-    templates stored in `..\perun\templates` directory and uses _jinja as a template handler. The
+    templates stored in `../perun/templates` directory and uses _jinja as a template handler. The
     templates can be parametrized by the following by options (if not specified 'none' is used).
 
     Unless ``--no-edit`` is set, after the successful creation of the files, an external editor,
@@ -1371,6 +1039,36 @@ def create(template_type, **kwargs):
         scripts.create_unit_from_template(template_type, **kwargs)
     except ExternalEditorErrorException as editor_exception:
         perun_log.error("while invoking external editor: {}".format(str(editor_exception)))
+
+
+def init_unit_commands(lazy_init=True):
+    """Runs initializations for all of the subcommands (shows, collectors, postprocessors)
+
+    Some of the subunits has to be dynamically initialized according to the registered modules,
+    like e.g. show has different forms (raw, graphs, etc.).
+    """
+    for (unit, cli_cmd, cli_arg) in [(perun.view, show, 'show'),
+                                     (perun.postprocess, postprocessby, 'postprocessby'),
+                                     (perun.collect, collect, 'collect')]:
+        if lazy_init and cli_arg not in sys.argv:
+            continue
+        for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
+            # Skip modules, only packages can be used for show
+            if not module[2]:
+                continue
+            unit_package = perun.utils.get_module(module[1])
+
+            # Skip packages that are not for viewing, postprocessing, or collection of profiles
+            if not hasattr(unit_package, 'SUPPORTED_PROFILES') and \
+                    not hasattr(unit_package, 'COLLECTOR_TYPE'):
+                continue
+
+            # Skip those packages that do not contain the appropriate cli wrapper
+            unit_module = perun.utils.get_module(module[1] + '.' + 'run')
+            cli_function_name = module[1].split('.')[-1]
+            if not hasattr(unit_module, cli_function_name):
+                continue
+            cli_cmd.add_command(getattr(unit_module, cli_function_name))
 
 
 # Initialization of other stuff

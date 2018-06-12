@@ -378,7 +378,7 @@ def test_cli_outside_pcs(helpers, valid_profile_pool):
     result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added_profile)])
     assert result.exit_code == 1
 
-    result = runner.invoke(cli.rm, ['{}'.format(added_profile)])
+    result = runner.invoke(cli.remove, ['{}'.format(added_profile)])
     assert result.exit_code == 1
 
     result = runner.invoke(cli.log, [])
@@ -395,7 +395,7 @@ def test_rm_correct(helpers, pcs_full, stored_profile_pool):
     """
     runner = CliRunner()
     deleted_profile = os.path.split(stored_profile_pool[1])[-1]
-    result = runner.invoke(cli.rm, ['{}'.format(deleted_profile)])
+    result = runner.invoke(cli.remove, ['{}'.format(deleted_profile)])
     assert result.exit_code == 0
 
 
@@ -566,7 +566,7 @@ def test_remove_tag(helpers, pcs_full):
     Expecting no errors and profile removed as it should
     """
     runner = CliRunner()
-    result = runner.invoke(cli.rm, ['0@i'])
+    result = runner.invoke(cli.remove, ['0@i'])
     assert result.exit_code == 0
     assert "removed" in result.output
 
