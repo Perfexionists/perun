@@ -284,6 +284,31 @@ def test_unsupported_vcs():
 
 
 @pytest.mark.usefixtures('cleandir')
+def test_failed_init_vcs(monkeypatch, capsys):
+    """Test calling the init, while the vcs.init fails
+
+    Excepts error and system exit
+    """
+    pcs_path = os.getcwd()
+
+    def failing_init(*_):
+        """Errorous init, that returns false"""
+        return False
+    monkeypatch.setattr('perun.vcs.init', failing_init)
+
+    # Try to call init, when patched init fails
+    with pytest.raises(SystemExit):
+        commands.init(pcs_path, **{
+            'vcs_type': 'git',
+            'vcs_path': None,
+            'vcs_params': None
+        })
+
+    _, err = capsys.readouterr()
+    assert "Could not initialize empty git repository" in err
+
+
+@pytest.mark.usefixtures('cleandir')
 def test_developer_config():
     """ Test initialization of developer configuration """
     pcs_path = os.getcwd()

@@ -220,7 +220,7 @@ def test_add_wrong_minor(helpers, pcs_full, valid_profile_pool):
     assert before_count == after_count
 
 
-def test_add_wrong_profile(helpers, pcs_full, error_profile_pool):
+def test_add_wrong_profile(helpers, pcs_full, error_profile_pool, capsys):
     """Test calling 'perun add profile hash' with profile in wrong format
 
     Expecting raising an exception, that the profile is wrong.
@@ -241,6 +241,15 @@ def test_add_wrong_profile(helpers, pcs_full, error_profile_pool):
     # Assert that nothing was added (rather weak, but should be enough)
     after_count = helpers.count_contents_on_path(pcs_full.path)
     assert before_count == after_count
+
+    # Try to assert adding not existing profile
+    with pytest.raises(SystemExit):
+        commands.add(['notexisting.perf'], None, keep_profile=True)
+    after_count = helpers.count_contents_on_path(pcs_full.path)
+    assert before_count == after_count
+
+    _, err = capsys.readouterr()
+    assert "notexisting.perf does not exist" in err
 
 
 def test_add_existing(helpers, pcs_full, valid_profile_pool, capsys):
