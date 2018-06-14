@@ -9,117 +9,104 @@ import os
 
 import perun.logic.store as store
 import perun.logic.config as config
-import perun.utils.log as log
-import perun.vcs as vcs
+
+from perun.utils.decorators import singleton, singleton_with_args
 
 __author__ = 'Tomas Fiedor'
 
 
-class PCS(object):
-    """Wrapper over performance control system
+@singleton
+def get_path():
+    """Locates the instance of the perun starting from the current working directory
 
-    PCS represents the performance control systems and its basic methods,
-    which are mostly wrappers over the existing modules
+    This basically returns the current instance of the Perun
+
+    :return: string path where the perun instance is located
+    :raises NotPerunRepositoryException: when we cannot locate perun on the current directory tree
     """
-
-    def __init__(self, fullpath):
-        """
-        Arguments:
-            fullpath(str): path to the performance control system
-        """
-        self.path = os.path.join(fullpath, '.perun')
-        self.vcs_type = config.local(self.path).get('vcs.type')
-        self.vcs_path = os.path.abspath(os.path.join(
-            self.path, config.local(self.path).get('vcs.url')
-        ))
-
-    def local_config(self):
-        """Get local config
-
-        Returns:
-            Config: local config object, that can be passed to functions of config module
-        """
-        return config.local(self.path)
-
-    @staticmethod
-    def global_config():
-        """Get global config
-
-        Returns:
-            Config: global config object, that can be passed to function of config module
-        """
-        return config.shared()
-
-    def __repr__(self):
-        """
-        Returns:
-            str: string representation of the performance control system
-        """
-        return "PCS({})".format(self.path)
-
-    def get_head(self):
-        """
-        Returns:
-            str: minor head of the wrapped version control system
-        """
-        return vcs.get_minor_head(self.vcs_type, self.vcs_path)
-
-    def get_object_directory(self):
-        """
-        Returns:
-            directory: directory, where the objects are stored
-        """
-        object_directory = os.path.join(self.path, "objects")
-        store.touch_dir(object_directory)
-        return object_directory
-
-    def get_log_directory(self):
-        """
-        :return: directory, where logs are stored
-        """
-        logs_directory = os.path.join(self.path, "logs")
-        store.touch_dir(logs_directory)
-        return logs_directory
-
-    def get_job_directory(self):
-        """
-        Returns:
-            directory: directory, where job outputs are stored
-        """
-        jobs_directory = os.path.join(self.path, "jobs")
-        store.touch_dir(jobs_directory)
-        return jobs_directory
-
-    def get_config_file(self, config_type):
-        """
-        Returns:
-            str: path of the config of the given type
-        """
-        if config_type in ('local', 'recursive'):
-            return os.path.join(self.path, 'local.yml')
-        elif config_type in ('shared', 'global'):
-            return os.path.join(config.lookup_shared_config_dir(), 'shared.yml')
-        else:
-            log.error("wrong configuration type for self.get_config_file: '{}'".format(config_type))
+    return os.path.join(store.locate_perun_dir_on(os.getcwd()), '.perun')
 
 
-def pass_pcs(func):
-    """Decorator for passing pcs object to function
+@singleton
+def get_vcs_type():
+    """Returns the type of the wrapped version control system
 
-    Provided the current working directory, constructs the PCS object,
-    that encapsulates the performance control and passes it as argument.
-
-    Note: Used for CLI interface.
-
-    Arguments:
-        func(function): function we are decorating
-
-    Returns:
-        func: wrapped function
+    :return: type of the wrapped version control system
+    :raises MissingConfigSectionException: when vcs.type is not set in local config
     """
-    def wrapper(*args, **kwargs):
-        """Wrapper function for the decorator"""
-        perun_directory = store.locate_perun_dir_on(os.getcwd())
-        return func(PCS(perun_directory), *args, **kwargs)
+    return config.local(get_path()).get('vcs.type')
 
-    return wrapper
+
+@singleton
+def get_vcs_path():
+    """Returns the path to the wrapped version control system
+
+    :return: url to the wrapped version control system
+    :raises MissingConfigSectionException: when vcs.url is not set in local config
+    """
+    return os.path.abspath(os.path.join(
+        get_path(), config.local(get_path()).get('vcs.url')
+    ))
+
+
+@singleton
+def local_config():
+    """Get local config for the current Perun context
+
+    :returns Config: local config object, that can be passed to functions of config module
+    """
+    return config.local(get_path())
+
+
+@singleton
+def global_config():
+    """Get global config for the current Perun context
+
+    :returns Config: global config object, that can be passed to function of config module
+    """
+    return config.shared()
+
+
+@singleton
+def get_object_directory():
+    """Returns the name of the directory, where objects are stored
+
+    :returns str: directory, where the objects are stored
+    """
+    object_directory = os.path.join(get_path(), "objects")
+    store.touch_dir(object_directory)
+    return object_directory
+
+
+@singleton
+def get_log_directory():
+    """Returns the name of the directory, where logs are stored
+
+    :return str: directory, where logs are stored
+    """
+    logs_directory = os.path.join(get_path(), "logs")
+    store.touch_dir(logs_directory)
+    return logs_directory
+
+
+@singleton
+def get_job_directory():
+    """Returns the name of the directory, where pending profiles are stored
+
+    :returns str: directory, where job outputs are stored
+    """
+    jobs_directory = os.path.join(get_path(), "jobs")
+    store.touch_dir(jobs_directory)
+    return jobs_directory
+
+
+@singleton_with_args
+def get_config_file(config_type):
+    """Returns the config file for the given config type
+
+    :returns str: path of the config of the given type
+    """
+    if config_type in ('shared', 'global'):
+        return os.path.join(config.lookup_shared_config_dir(), 'shared.yml')
+    else:
+        return os.path.join(get_path(), 'local.yml')

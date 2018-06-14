@@ -14,6 +14,7 @@ import pytest
 
 import perun.logic.commands as commands
 import perun.profile.factory as perun_profile
+import perun.utils.decorators as decorators
 import perun.utils.streams as streams
 import perun.vcs as vcs
 
@@ -94,15 +95,14 @@ class Helpers(object):
         return False
 
     @staticmethod
-    def prepare_profile(perun, profile, origin):
+    def prepare_profile(dest_dir, profile, origin):
         """
         Arguments:
-            pcs(PCS): perun control system wrapper
+            dest_dir(str): destination of the prepared profile
             profile(str): name of the profile that is going to be stored in pending jobs
             origin(str): origin minor version for the given profile
         """
         # Copy to jobs and prepare origin for the current version
-        dest_dir = perun.get_job_directory() if isinstance(perun, pcs.PCS) else perun
         shutil.copy2(profile, dest_dir)
 
         # Prepare origin for the current version
@@ -344,8 +344,6 @@ def full_profiles():
 @pytest.fixture(scope="function")
 def pcs_with_degradations():
     """
-    Returns:
-        PCS: object with performance control system, initialized with some files and stuff
     """
     pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
     profiles = [
@@ -357,9 +355,6 @@ def pcs_with_degradations():
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
-
-    # Construct the PCS object
-    pcs_obj = pcs.PCS(pcs_path)
 
     # Initialize git
     vcs.init('git', pcs_path, {})
@@ -390,14 +385,15 @@ def pcs_with_degradations():
     current_head = str(repo.head.commit)
 
     # Populate PCS with profiles
-    root_profile = Helpers.prepare_profile(pcs_obj, profiles[0], str(root))
+    jobs_dir = pcs.get_job_directory()
+    root_profile = Helpers.prepare_profile(jobs_dir, profiles[0], str(root))
     commands.add([root_profile], str(root))
-    middle_profile = Helpers.prepare_profile(pcs_obj, profiles[1], str(middle_head))
+    middle_profile = Helpers.prepare_profile(jobs_dir, profiles[1], str(middle_head))
     commands.add([middle_profile], str(middle_head))
-    head_profile = Helpers.prepare_profile(pcs_obj, profiles[2], str(current_head))
+    head_profile = Helpers.prepare_profile(jobs_dir, profiles[2], str(current_head))
     commands.add([head_profile], str(current_head))
 
-    yield pcs_obj
+    yield pcs
 
     # clean up the directory
     shutil.rmtree(pcs_path)
@@ -406,17 +402,12 @@ def pcs_with_degradations():
 @pytest.fixture(scope="function")
 def pcs_full():
     """
-    Returns:
-        PCS: object with performance control system, initialized with some files and stuff
     """
     # Change working dir into the temporary directory
     profiles = stored_profile_pool()
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
-
-    # Construct the PCS object
-    pcs_obj = pcs.PCS(pcs_path)
 
     # Initialize git
     vcs.init('git', pcs_path, {})
@@ -437,10 +428,11 @@ def pcs_full():
     current_head = repo.index.commit("second commit")
 
     # Populate PCS with profiles
-    root_profile = Helpers.prepare_profile(pcs_obj, profiles[0], str(root))
+    jobs_dir = pcs.get_job_directory()
+    root_profile = Helpers.prepare_profile(jobs_dir, profiles[0], str(root))
     commands.add([root_profile], str(root))
-    chead_profile1 = Helpers.prepare_profile(pcs_obj, profiles[1], str(current_head))
-    chead_profile2 = Helpers.prepare_profile(pcs_obj, profiles[2], str(current_head))
+    chead_profile1 = Helpers.prepare_profile(jobs_dir, profiles[1], str(current_head))
+    chead_profile2 = Helpers.prepare_profile(jobs_dir, profiles[2], str(current_head))
     commands.add([chead_profile1, chead_profile2], str(current_head))
 
     # Assert that we have five blobs: 2 for commits and 3 for profiles
@@ -450,7 +442,7 @@ def pcs_full():
     )
     assert number_of_perun_objects == 5
 
-    yield pcs_obj
+    yield pcs
 
     # clean up the directory
     shutil.rmtree(pcs_path)
@@ -459,21 +451,16 @@ def pcs_full():
 @pytest.fixture(scope="function")
 def pcs_with_empty_git():
     """
-    Returns:
-        PCS: object with performance control system initialized with empty git repository
     """
     # Change working dir into the temporary directory
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
 
-    # Construct the PCS object
-    pcs_obj = pcs.PCS(pcs_path)
-
     # Initialize git
     vcs.init('git', pcs_path, {})
 
-    yield pcs_obj
+    yield pcs
 
     # clean up the directory
     shutil.rmtree(pcs_path)
@@ -482,31 +469,16 @@ def pcs_with_empty_git():
 @pytest.fixture(scope="function")
 def pcs_without_vcs():
     """
-    Returns:
-        PCS: object with performance control system initialized without vcs at all
     """
     # Change working dir into the temporary directory
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'pvcs'}})
 
-    # Construct the PCS object
-    pcs_obj = pcs.PCS(pcs_path)
-
-    yield pcs_obj
+    yield pcs
 
     # clean up the directory
     shutil.rmtree(pcs_path)
-
-
-@pytest.fixture(scope="function")
-def pcs_with_git_in_separate_dir():
-    """
-    Returns:
-        PCS: object with performance control system initialized with git at different directory
-    """
-    # Fixme: TODO Implement this
-    assert False
 
 
 @pytest.fixture(scope="function")
@@ -650,3 +622,14 @@ def mock_curses_window():
     """
     lines, cols = 40, 80
     return MockCursesWindow(lines, cols)
+
+
+@pytest.yield_fixture(autouse=True)
+def setup():
+    """Cleans the caches before each test"""
+    # Cleans up the caching of all singleton instances
+    for singleton in decorators.registered_singletons:
+        singleton.instance = None
+    for singleton_with_args in decorators.func_args_cache.values():
+        singleton_with_args.clear()
+    yield

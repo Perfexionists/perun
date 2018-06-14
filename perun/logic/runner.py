@@ -5,14 +5,13 @@ import subprocess
 
 import distutils.util as dutils
 import perun.vcs as vcs
+import perun.logic.pcs as pcs
 import perun.logic.config as config
-import perun.logic.store as store
 import perun.logic.commands as commands
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as log
 import perun.utils.decorators as decorators
-from perun.logic.pcs import pass_pcs, PCS
 from perun.utils import get_module
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, CollectStatus, PostprocessStatus, \
@@ -94,13 +93,9 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
     return matrix, number_of_jobs
 
 
-def load_job_info_from_config(pcs):
+def load_job_info_from_config():
     """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-
-    Returns:
-        dict: dictionary with cmds, args, workloads, collectors and postprocessors
+    :returns dict: dictionary with cmds, args, workloads, collectors and postprocessors
     """
     local_config = pcs.local_config().data
 
@@ -289,14 +284,13 @@ def run_postprocessor(postprocessor, job, prof):
     return post_status, prof
 
 
-def store_generated_profile(pcs, prof, job):
+def store_generated_profile(prof, job):
     """Stores the generated profile in the pending jobs directory.
 
-    :param PCS pcs: object with performance control system wrapper
     :param dict prof: profile that we are storing in the repository
     :param Job job: job with additional information about generated profiles
     """
-    full_profile = profile.finalize_profile_for_job(pcs, prof, job)
+    full_profile = profile.finalize_profile_for_job(prof, job)
     full_profile_name = profile.generate_profile_name(full_profile)
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
@@ -304,7 +298,7 @@ def store_generated_profile(pcs, prof, job):
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
-        dst = prof.get('origin', vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path))
+        dst = prof.get('origin', vcs.get_minor_head(pcs.get_vcs_type(), pcs.get_vcs_path()))
         commands.add([full_profile_path], dst, keep_profile=False)
 
 
@@ -323,21 +317,19 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params)
     Returns:
         PostprocessStatus: status how the postprocessing went
     """
-    pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     profile_job = profile.extract_job_from_profile(prof)
     postprocessor_unit = Unit(postprocessor_name, postprocessor_params)
     profile_job.postprocessors.append(postprocessor_unit)
 
     p_status, processed_profile = run_postprocessor(postprocessor_unit, profile_job, prof)
     if p_status == PostprocessStatus.OK and prof:
-        store_generated_profile(pcs, processed_profile, profile_job)
+        store_generated_profile(processed_profile, profile_job)
     return p_status
 
 
-@pass_pcs
 @decorators.print_elapsed_time
 @decorators.phase_function('prerun')
-def run_prephase_commands(pcs, phase, phase_colour='white'):
+def run_prephase_commands(phase, phase_colour='white'):
     """Runs the phase before the actual collection of the methods
 
     This command first retrieves the phase from the configuration, and runs
@@ -346,7 +338,6 @@ def run_prephase_commands(pcs, phase, phase_colour='white'):
     The phase is specified in :doc:`config` by keys specified in section
     :cunit:`execute`.
 
-    :param PCS pcs: performance control system
     :param str phase: name of the phase commands
     :param str phase_colour: colour for the printed phase
     """
@@ -368,13 +359,12 @@ def run_prephase_commands(pcs, phase, phase_colour='white'):
 
 @decorators.print_elapsed_time
 @decorators.phase_function('batch job run')
-def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
+def run_jobs_on_current_working_dir(job_matrix, number_of_jobs):
     """Runs the batch of jobs on current state of the VCS.
 
     This function expects no changes not commited in the repo, it excepts correct version
     checked out and just runs the matrix.
 
-    :param PCS pcs: object with performance control system wrapper
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
@@ -394,7 +384,7 @@ def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
                     continue
 
                 # Temporary nasty hack
-                prof = profile.finalize_profile_for_job(pcs, prof, job)
+                prof = profile.finalize_profile_for_job(prof, job)
 
                 for postprocessor in job.postprocessors:
                     log.print_job_progress(number_of_jobs)
@@ -404,54 +394,48 @@ def run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs):
                         continue
 
                 # Store the computed profile inside the job directory
-                store_generated_profile(pcs, prof, job)
+                store_generated_profile(prof, job)
 
 
 @decorators.print_elapsed_time
 @decorators.phase_function('overall profiling')
-def run_jobs(pcs, minor_version_list, job_matrix, number_of_jobs):
+def run_jobs(minor_version_list, job_matrix, number_of_jobs):
     """
-    Arguments:
-    :param PCS pcs: object with performance control system wrapper
     :param list minor_version_list: list of MinorVersion info
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
-    with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
+    with vcs.CleanState(pcs.get_vcs_type(), pcs.get_vcs_path()):
         for minor_version in minor_version_list:
-            vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
+            vcs.checkout(pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version.checksum)
             run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
-            run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
+            run_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
 
 @decorators.print_elapsed_time
 @decorators.phase_function('overall profiling')
-def run_jobs_with_history(pcs, minor_version_list, job_matrix, number_of_jobs):
+def run_jobs_with_history(minor_version_list, job_matrix, number_of_jobs):
     """
-    Arguments:
-    :param PCS pcs: object with performance control system wrapper
     :param list minor_version_list: list of MinorVersion info
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
     with log.History(minor_version_list[0].checksum) as history:
-        with vcs.CleanState(pcs.vcs_type, pcs.vcs_path):
+        with vcs.CleanState(pcs.get_vcs_type(), pcs.get_vcs_path()):
             for minor_version in minor_version_list:
                 history.progress_to_next_minor_version(minor_version)
                 print("")
                 history.finish_minor_version(minor_version, [])
-                vcs.checkout(pcs.vcs_type, pcs.vcs_path, minor_version.checksum)
+                vcs.checkout(pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version.checksum)
                 run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
-                run_jobs_on_current_working_dir(pcs, job_matrix, number_of_jobs)
+                run_jobs_on_current_working_dir(job_matrix, number_of_jobs)
                 print("")
                 history.flush(with_border=True)
 
 
-@pass_pcs
-def run_single_job(pcs, cmd, args, workload, collector, postprocessor, minor_version_list,
+def run_single_job(cmd, args, workload, collector, postprocessor, minor_version_list,
                    with_history=False, **kwargs):
     """
-    :param PCS pcs: object with performance control system wrapper
     :param str cmd: cmdary that will be run
     :param str args: lists of additional arguments to the job
     :param list workload: list of workloads
@@ -464,17 +448,15 @@ def run_single_job(pcs, cmd, args, workload, collector, postprocessor, minor_ver
     job_matrix, number_of_jobs = \
         construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
     runner_function = run_jobs_with_history if with_history else run_jobs
-    runner_function(pcs, minor_version_list, job_matrix, number_of_jobs)
+    runner_function(minor_version_list, job_matrix, number_of_jobs)
 
 
-@pass_pcs
-def run_matrix_job(pcs, minor_version_list, with_history=False):
+def run_matrix_job(minor_version_list, with_history=False):
     """
-    :param PCS pcs: object with performance control system wrapper
     :param list minor_version_list: list of MinorVersion info
     :param bool with_history: if set to true, then we will print the history object
     """
-    job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config(pcs))
+    job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config())
     runner_function = run_jobs_with_history if with_history else run_jobs
-    runner_function(pcs, minor_version_list, job_matrix, number_of_jobs)
+    runner_function(minor_version_list, job_matrix, number_of_jobs)
 

@@ -25,6 +25,7 @@ def singleton(func):
         func: decorated function that will be run only once
     """
     func.instance = None
+    registered_singletons.append(func)
 
     def wrapper():
         """Wrapper function of the @p func"""
@@ -33,6 +34,7 @@ def singleton(func):
         return func.instance
 
     return wrapper
+registered_singletons = []
 
 
 def arguments_to_key(func, *args, **kwargs):

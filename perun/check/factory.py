@@ -8,30 +8,29 @@ import distutils.util as dutils
 from perun.utils.structs import PerformanceChange
 
 import perun.utils.exceptions as exceptions
-import perun.profile.factory as profiles
 import perun.utils.log as log
+import perun.profile.factory as profiles
 import perun.logic.runner as runner
 import perun.logic.config as config
+import perun.logic.pcs as pcs
 import perun.logic.store as store
 import perun.utils as utils
 import perun.utils.decorators as decorators
 import perun.vcs as vcs
 
-from perun.logic.pcs import PCS
 
 __author__ = 'Tomas Fiedor'
 
 
-def profiles_to_queue(pcs, minor_version):
+def profiles_to_queue(minor_version):
     """Retrieves the list of profiles corresponding to minor version and transforms them to map.
 
     The map represents both the queue and also provides the mapping of configurations to profiles.
 
-    :param PCS pcs: storage of the perun
     :param minor_version: minor version for which we are retrieving the profile queue
     :returns: dictionary mapping configurations of profiles to the actual profiles
     """
-    minor_version_profiles = profiles.load_list_for_minor_version(pcs, minor_version)
+    minor_version_profiles = profiles.load_list_for_minor_version(minor_version)
     return {
         profile.config_tuple: profile for profile in minor_version_profiles
     }
@@ -58,7 +57,6 @@ def pre_collect_profiles(minor_version):
         collect_to_log = dutils.strtobool(str(
             config.lookup_key_recursively('degradation.log_collect', 'false')
         ))
-        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
         log_file = os.path.join(
             pcs.get_log_directory(),
             "{}-precollect.log".format(minor_version.checksum)
@@ -77,25 +75,26 @@ def degradation_in_minor(minor_version, quiet=False):
     :param bool quiet: if set to true then nothing will be printed
     :returns: list of found changes
     """
-    pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
-    minor_version_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_version)
+    minor_version_info = vcs.get_minor_version_info(
+        pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version
+    )
     baseline_version_queue = minor_version_info.parents
     pre_collect_profiles(minor_version_info)
-    target_profile_queue = profiles_to_queue(pcs, minor_version)
+    target_profile_queue = profiles_to_queue(minor_version)
     detected_changes = []
     while target_profile_queue and baseline_version_queue:
         # Pop the nearest baseline
         baseline = baseline_version_queue.pop(0)
 
         # Enqueue the parents in BFS manner
-        baseline_info = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, baseline)
+        baseline_info = vcs.get_minor_version_info(pcs.get_vcs_type(), pcs.get_vcs_path(), baseline)
         baseline_version_queue.extend(baseline_info.parents)
 
         # Precollect profiles if this is set
         pre_collect_profiles(baseline_info)
 
         # Print header if there is at least some profile to check against
-        baseline_profiles = profiles_to_queue(pcs, baseline)
+        baseline_profiles = profiles_to_queue(baseline)
 
         # Iterate through the profiles and check degradation between those of same configuration
         for baseline_config, baseline_profile in baseline_profiles.items():
@@ -127,10 +126,9 @@ def degradation_in_history(head):
     :param str head: starting point of the checked history for degradation.
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     detected_changes = []
     with log.History(head) as history:
-        for minor_version in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, head):
+        for minor_version in vcs.walk_minor_versions(pcs.get_vcs_type(), pcs.get_vcs_path(), head):
             history.progress_to_next_minor_version(minor_version)
             newly_detected_changes = degradation_in_minor(minor_version.checksum, True)
             log.print_short_change_string(log.count_degradations_per_group(newly_detected_changes))
@@ -190,7 +188,6 @@ def degradation_between_files(baseline_file, target_file, minor_version):
     ]
 
     # Store the detected changes for given minor version
-    pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
     store.save_degradation_list_for(
         pcs.get_object_directory(), target_minor_version, detected_changes
     )

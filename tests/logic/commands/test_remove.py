@@ -44,9 +44,9 @@ def test_rm_no_profiles(helpers, pcs_full, capsys):
 
     Expecting error message and nothing removed at all
     """
-    before_count = helpers.count_contents_on_path(pcs_full.path)
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
 
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')
     store.touch_file(file)
     git_repo.index.add([file])
@@ -59,7 +59,7 @@ def test_rm_no_profiles(helpers, pcs_full, capsys):
     assert out == ''
 
     # Assert that nothing was removed
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count == after_count
 
 
@@ -68,7 +68,7 @@ def test_rm_nonexistent(helpers, pcs_full, capsys):
 
     Expecting error message and nothing removed at all
     """
-    before_count = helpers.count_contents_on_path(pcs_full.path)
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
     with pytest.raises(EntryNotFoundException):
         commands.remove(['nonexistent.perf'], None)
 
@@ -76,7 +76,7 @@ def test_rm_nonexistent(helpers, pcs_full, capsys):
     assert out == ''
 
     # Assert that nothing was removed
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count == after_count
 
 
@@ -86,9 +86,9 @@ def test_rm(helpers, pcs_full, stored_profile_pool, capsys):
     Expecting removing the profile from the index, keeping the number of files
     intact.
     """
-    before_count = helpers.count_contents_on_path(pcs_full.path)
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
 
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     head = str(git_repo.head.commit)
 
     # We need relative path
@@ -98,17 +98,17 @@ def test_rm(helpers, pcs_full, stored_profile_pool, capsys):
         """Helper function for looking up entry to be deleted"""
         return deleted_profile == entry.path
 
-    with helpers.open_index(pcs_full.path, head) as index_handle:
+    with helpers.open_index(pcs_full.get_path(), head) as index_handle:
         assert helpers.exists_profile_in_index_such_that(index_handle, entry_contains_profile)
 
     commands.remove([deleted_profile], None)
 
-    with helpers.open_index(pcs_full.path, head) as index_handle:
+    with helpers.open_index(pcs_full.get_path(), head) as index_handle:
         assert not helpers.exists_profile_in_index_such_that(index_handle, entry_contains_profile)
 
     _, err = capsys.readouterr()
     assert len(err) == 0
 
     # Assert that nothing was removed
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count == after_count

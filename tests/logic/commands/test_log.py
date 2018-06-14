@@ -68,7 +68,7 @@ def test_log_short(pcs_full, capsys):
     Expecting no error, everything on standard output, and list of commits with number of profiles
     for each of them starting from the head.
     """
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     commits = list(git_repo.iter_commits())
 
     commands.log(None, short=True)
@@ -107,7 +107,7 @@ def test_log(pcs_full, capsys):
     Expecting no error, everything on standard output, and list of commits, with full messages
     and number of profiles for each of the starting from the head.
     """
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     commits = list(git_repo.iter_commits())
 
     commands.log(None)

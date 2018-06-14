@@ -226,7 +226,7 @@ def test_status_no_pending(pcs_full, capsys, stored_profile_pool):
     """
     commands.status()
 
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     out = capsys.readouterr()[0].split('\n')
     assert_info(out, git_repo, stored_profile_pool[1:], [])
 
@@ -239,7 +239,7 @@ def test_status_short_no_pending(pcs_full, capsys, stored_profile_pool):
     commands.status(short=True)
 
     # Assert the repo
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     raw_out, _ = capsys.readouterr()
     out = raw_out.split('\n')
     assert_short_info(out, git_repo, stored_profile_pool[1:], [])
@@ -251,7 +251,7 @@ def test_status_no_profiles(pcs_full, capsys):
     Expecting no error and long display of the current status of the perun, without any pending.
     """
     # First we will do a new commit, with no profiles
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')
     store.touch_file(file)
     git_repo.index.add([file])
@@ -269,7 +269,7 @@ def test_status_short_no_profiles(pcs_full, capsys):
     Expecting no errors and short display of status of the profiles
     """
     # First we will do a new commit, with no profiles
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')
     store.touch_file(file)
     git_repo.index.add([file])
@@ -287,11 +287,11 @@ def test_status(helpers, pcs_full, capsys, stored_profile_pool, valid_profile_po
 
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
 
     commands.status()
 
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     raw_out, _ = capsys.readouterr()
     out = raw_out.split('\n')
 
@@ -303,12 +303,12 @@ def test_status_short(helpers, pcs_full, capsys, stored_profile_pool, valid_prof
 
     Expecting no errors and short display of the current status of the perun.
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
 
     commands.status(**{'short': True})
 
     # Assert the repo
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     raw_out, _ = capsys.readouterr()
     out = raw_out.split('\n')
     assert_short_info(out, git_repo, stored_profile_pool[1:], valid_profile_pool)
@@ -321,7 +321,7 @@ def test_status_sort(monkeypatch, helpers, pcs_full, capsys, valid_profile_pool)
 
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
     decorators.remove_from_function_args_cache("lookup_key_recursively")
 
     # Try what happens if we screw the stored profile keys ;)

@@ -21,6 +21,7 @@ import perun.logic.store as store
 import perun.collect.complexity.run as complexity
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
+import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
 
@@ -362,7 +363,10 @@ def test_add_correct(helpers, pcs_full, valid_profile_pool):
     Expecting no exceptions, no errors, zero status.
     """
     runner = CliRunner()
-    added_profile = helpers.prepare_profile(pcs_full, valid_profile_pool[0], pcs_full.get_head())
+    added_profile = helpers.prepare_profile(
+        pcs_full.get_job_directory(), valid_profile_pool[0],
+        vcs.get_minor_head(pcs_full.get_vcs_type(), pcs_full.get_vcs_path())
+    )
     result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added_profile)])
     assert result.exit_code == 0
     assert os.path.exists(added_profile)
@@ -508,10 +512,14 @@ def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
 
     Expecting no errors and profile added as it should, or errors for incorrect revs
     """
-    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
-    first_tagged = os.path.relpath(helpers.prepare_profile(pcs_full, valid_profile_pool[0], head))
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    first_tagged = os.path.relpath(
+        helpers.prepare_profile(
+            pcs_full.get_job_directory(), valid_profile_pool[0], head
+        )
+    )
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ['0@p', '--minor=HEAD'])
@@ -538,12 +546,16 @@ def test_add_tag(helpers, pcs_full, valid_profile_pool):
 
     Expecting no errors and profile added as it should
     """
-    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
     parent = str(git_repo.head.commit.parents[0])
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
-    first_sha = os.path.relpath(helpers.prepare_profile(pcs_full, valid_profile_pool[0], head))
-    os.path.relpath(helpers.prepare_profile(pcs_full, valid_profile_pool[1], parent))
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    first_sha = os.path.relpath(helpers.prepare_profile(
+        pcs_full.get_job_directory(), valid_profile_pool[0], head)
+    )
+    os.path.relpath(helpers.prepare_profile(
+        pcs_full.get_job_directory(), valid_profile_pool[1], parent)
+    )
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ['0@p'])
@@ -576,8 +588,8 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
 
     Expecting no errors (or caught errors), everything postprocessed as it should be
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
-    pending_dir = os.path.join(pcs_full.path, 'jobs')
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
     assert len(os.listdir(pending_dir)) == 2
 
     runner = CliRunner()
@@ -616,8 +628,8 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
 
     Expecting no errors (or caught errors), everythig shown as it should be
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
-    pending_dir = os.path.join(pcs_full.path, 'jobs')
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
 
     runner = CliRunner()
     result = runner.invoke(cli.show, ['0@p', 'raw'])
@@ -747,7 +759,7 @@ def test_check_profiles(helpers, pcs_with_degradations):
         os.path.join(pool_path, 'linear_base_degradated.perf'),
         os.path.join(pool_path, 'quad_base.perf')
     ]
-    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.path, profiles)
+    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
 
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):

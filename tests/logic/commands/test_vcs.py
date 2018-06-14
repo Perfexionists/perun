@@ -14,7 +14,7 @@ def test_major_versions(pcs_full):
 
     Expecting correct behaviour and no error
     """
-    vcs_type, vcs_path = pcs_full.vcs_type, pcs_full.vcs_path
+    vcs_type, vcs_path = pcs_full.get_vcs_type(), pcs_full.get_vcs_path()
     major_versions = list(vcs.walk_major_versions(vcs_type, vcs_path))
 
     assert len(major_versions) == 1
@@ -28,7 +28,7 @@ def test_saved_states(pcs_full):
 
     Expecting correct behaviour, without any raised exceptions
     """
-    vcs_type, vcs_path = pcs_full.vcs_type, pcs_full.vcs_path
+    vcs_type, vcs_path = pcs_full.get_vcs_type(), pcs_full.get_vcs_path()
 
     # Is not dirty
     assert not vcs.is_dirty(vcs_type, vcs_path)

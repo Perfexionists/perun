@@ -12,7 +12,7 @@ def test_alloclist(monkeypatch, helpers, pcs_full, valid_profile_pool):
 
     Expecting no errors and outputed stuff
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
     runner = CliRunner()
 
     result = runner.invoke(cli.show, ['1@p', 'alloclist', 'all'])
@@ -81,7 +81,7 @@ def test_alloclist_warns(monkeypatch, helpers, pcs_full, valid_profile_pool):
 
     Expecting no errors, just writing warnings to the outptu
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
     runner = CliRunner()
 
     args = ['1@p', 'alloclist', 'top', '--from-time=0.5']

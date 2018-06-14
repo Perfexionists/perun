@@ -11,13 +11,13 @@ import click
 import perun.profile.factory as profiles
 import perun.logic.commands as commands
 import perun.logic.store as store
-import perun.utils.streams as streams
 import perun.logic.config as config
+import perun.logic.pcs as pcs
 import perun.profile.query as query
+import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.vcs as vcs
 
-from perun.logic.pcs import PCS
 from perun.utils.exceptions import VersionControlSystemException
 
 __author__ = 'Tomas Fiedor'
@@ -200,18 +200,19 @@ def minor_version_list_callback(ctx, _, value):
     """
     minors = []
     if value:
-        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
         for minor_version in value:
-            massaged_version = vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, minor_version)
+            massaged_version = vcs.massage_parameter(
+                pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version
+            )
             # If we should crawl all of the parents, we collect them
             if ctx.params['crawl_parents']:
                 minors.extend(vcs.walk_minor_versions(
-                    pcs.vcs_type, pcs.vcs_path, massaged_version
+                    pcs.get_vcs_type(), pcs.get_vcs_path(), massaged_version
                 ))
             # Otherwise we retrieve the minor version info for the param
             else:
                 minors.append(vcs.get_minor_version_info(
-                    pcs.vcs_type, pcs.vcs_path, massaged_version
+                    pcs.get_vcs_type(), pcs.get_vcs_path(), massaged_version
                 ))
     return minors
 
@@ -275,7 +276,7 @@ def lookup_nth_pending_filename(position):
     :param int position: position of the pending we will lookup
     :returns str: pending profile at given position
     """
-    pending = commands.get_untracked_profiles(PCS(store.locate_perun_dir_on(os.getcwd())))
+    pending = commands.get_untracked_profiles()
     profiles.sort_profiles(pending)
     if 0 <= position < len(pending):
         return pending[position].realpath
@@ -346,7 +347,7 @@ def lookup_profile_in_filesystem(profile_name):
 
     log.info("file '{}' does not exist. Checking pending jobs...".format(profile_name))
     # 2) if it does not exists check pending
-    job_dir = PCS(store.locate_perun_dir_on(os.getcwd())).get_job_directory()
+    job_dir = pcs.get_job_directory()
     job_path = os.path.join(job_dir, profile_name)
     if os.path.exists(job_path):
         return job_path
@@ -374,9 +375,8 @@ def lookup_minor_version_callback(_, __, value):
     :returns str: massaged minor version
     """
     if value:
-        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
         try:
-            return vcs.massage_parameter(pcs.vcs_type, pcs.vcs_path, value)
+            return vcs.massage_parameter(pcs.get_vcs_type(), pcs.get_vcs_path(), value)
         except VersionControlSystemException as exception:
             raise click.BadParameter(str(exception))
 

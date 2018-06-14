@@ -20,8 +20,10 @@ import time
 import re
 import operator
 
+import perun.logic.pcs as pcs
 import perun.logic.config as config
 import perun.logic.store as store
+import perun.vcs as vcs
 import perun.profile.query as query
 import perun.utils.log as perun_log
 from perun.utils import get_module
@@ -178,17 +180,12 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
     """
     Fixme: Add check that the loaded profile is in valid format!!!
 
-    Arguments:
-        file_name(str): name of the file opened in the handle
-        file_handle(file): opened file handle
-        is_raw_profile(bool): true if the profile is in json format already
-
-    Returns:
-        dict: JSON representation of the profile
-
-    Raises:
-        IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
-            or when the profile is not in correct supported format or when the profile is malformed
+    :param str file_name: name of the file opened in the handle
+    :param file file_handle: opened file handle
+    :param bool is_raw_profile: true if the profile is in json format already
+    :returns dict: JSON representation of the profile
+    :raises IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
+        or when the profile is not in correct supported format or when the profile is malformed
     """
     if is_raw_profile:
         body = file_handle.read().decode('utf-8')
@@ -210,10 +207,9 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
         raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
 
 
-def load_list_for_minor_version(pcs, minor_version):
+def load_list_for_minor_version(minor_version):
     """Returns profiles assigned to the given minor version.
 
-    :param PCS pcs: performance control system
     :param str minor_version: identification of the commit (preferably sha1)
     :returns list: list of ProfileInfo parsed from index of the given minor_version
     """
@@ -233,22 +229,17 @@ def generate_units(collector):
     """Generate information about units used by the collector.
 
     Note that this is mostly placeholder for future extension, how the units will be handled.
-    Arguments:
-        collector(module): collector module that collected the data
 
-    Returns:
-        dict: dictionary with map of resources to units
+    :param module collector: collector module that collected the data
+    :returns dict: dictionary with map of resources to units
     """
     return collector.COLLECTOR_DEFAULT_UNITS
 
 
 def generate_header_for_profile(job):
     """
-    Arguments:
-        job(Job): job with information about the computed profile
-
-    Returns:
-        dict: dictionary in form of {'header': {}} corresponding to the perun specification
+    :param Job job: job with information about the computed profile
+    :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
     try:
         collector = get_module('.'.join(['perun.collect', job.collector.name]))
@@ -266,11 +257,8 @@ def generate_header_for_profile(job):
 
 def generate_collector_info(job):
     """
-    Arguments:
-        job(Job): job with information about the computed profile
-
-    Returns:
-        dict: dictionary in form of {'collector_info': {}} corresponding to the perun specification
+    :param Job job: job with information about the computed profile
+    :returns dict: dictionary in form of {'collector_info': {}} corresponding to the perun specification
     """
     return {
         'name': job.collector.name,
@@ -280,11 +268,8 @@ def generate_collector_info(job):
 
 def generate_postprocessor_info(job):
     """
-    Arguments:
-        job(Job): job with information about the computed profile
-
-    Returns:
-        dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
+    :param Job job: job with information about the computed profile
+    :returns dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
     """
     return [
         {
@@ -294,17 +279,13 @@ def generate_postprocessor_info(job):
     ]
 
 
-def finalize_profile_for_job(pcs, collected_data, job):
+def finalize_profile_for_job(collected_data, job):
     """
-    Arguments:
-        pcs(PCS): wrapped perun control system
-        collected_data(dict): collected profile through some collector
-        job(Job): job with informations about the computed profile
-
-    Returns:
-        dict: valid profile JSON file
+    :param dict collected_data: collected profile through some collector
+    :param Job job: job with informations about the computed profile
+    :returns dict: valid profile JSON file
     """
-    profile = {'origin': pcs.get_head()}
+    profile = {'origin': vcs.get_minor_head(pcs.get_vcs_type(), pcs.get_vcs_path())}
     profile.update(collected_data)
     profile.update({'header': generate_header_for_profile(job)})
     profile.update({'collector_info': generate_collector_info(job)})
@@ -325,11 +306,8 @@ def store_profile_at(profile, file_path):
 def to_string(profile):
     """Converts profile from dictionary to string
 
-    Arguments:
-        profile(dict): profile we are converting to string
-
-    Returns:
-        str: string representation of profile
+    :param dict profile: profile we are converting to string
+    :returns str: string representation of profile
     """
     return json.dumps(profile)
 
@@ -363,11 +341,9 @@ def extract_job_from_profile(profile):
     """Extracts information from profile about job, that was done to generate the profile.
 
     Fixme: Add assert that profile is profile
-    Arguments:
-        profile(dict): dictionary with valid profile
 
-    Returns:
-        Job: job according to the profile informations
+    :param dict profile: dictionary with valid profile
+    :returns Job: job according to the profile informations
     """
     collector_record = profile['collector_info']
     collector = Unit(collector_record['name'], collector_record['params'])
@@ -390,17 +366,12 @@ def is_key_aggregatable_by(profile, func, key, keyname):
     valid aggregation functions for everything. Otherwise (e.g. sum, mean), we need numerical
     values.
 
-    Arguments:
-        profile(dict): profile that will be used against in the validation
-        func(function): function used for aggregation of the data
-        key(str): key that will be aggregated in the graph
-        keyname(str): name of the validated key
-
-    Returns:
-        bool: true if the key is aggregatable by the function
-
-    Raises:
-        InvalidParameterException: if the of_key does not support the given function
+    :param dict profile: profile that will be used against in the validation
+    :param function func: function used for aggregation of the data
+    :param str key: key that will be aggregated in the graph
+    :param str keyname: name of the validated key
+    :returns bool: true if the key is aggregatable by the function
+    :raises InvalidParameterException: if the of_key does not support the given function
     """
     # Everything is countable ;)
     if func in ('count', 'nunique'):
@@ -455,13 +426,12 @@ class ProfileInfo(object):
     """
     def __init__(self, path, real_path, mtime, is_raw_profile=False):
         """
-        Arguments:
-            path(str): contains the name of the file, which identifies it in the index
-            real_path(str): real path to the profile, i.e. how can it really be accessed
-                this is either in jobs, in objects or somewhere else
-            mtime(str): time of the modification of the profile
-            is_raw_profile(bool): true if the stored profile is raw, i.e. in json and not
-                compressed
+        :param str path: contains the name of the file, which identifies it in the index
+        :param str real_path: real path to the profile, i.e. how can it really be accessed
+            this is either in jobs, in objects or somewhere else
+        :param str mtime: time of the modification of the profile
+        :param bool is_raw_profile: true if the stored profile is raw, i.e. in json and not
+            compressed
         """
         # Load the data from JSON, which contains additional information about profile
         loaded_profile = load_profile_from_file(real_path, is_raw_profile)

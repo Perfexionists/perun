@@ -46,13 +46,12 @@ import distutils.util as dutils
 import termcolor
 
 import click
-import perun.logic.commands as commands
-import perun.check.factory as check
-import perun.logic.runner as runner
-import perun.logic.store as store
-from perun.logic.pcs import PCS
 
 import perun.collect
+import perun.check.factory as check
+import perun.logic.commands as commands
+import perun.logic.runner as runner
+import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.postprocess
 import perun.profile.factory as profiles
@@ -916,7 +915,6 @@ def check_group(**_):
         print("Missing profiles will be freshly collected with respect to the ", end='')
         print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
         if precollect_to_log:
-            pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
             print("The progress of the pre-collect phase will be stored in logs at {}.".format(
                 termcolor.colored(pcs.get_log_directory(), 'white', attrs=['bold'])
             ))
