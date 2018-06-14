@@ -365,7 +365,7 @@ def test_add_correct(helpers, pcs_full, valid_profile_pool):
     runner = CliRunner()
     added_profile = helpers.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0],
-        vcs.get_minor_head(pcs_full.get_vcs_type(), pcs_full.get_vcs_path())
+        vcs.get_minor_head()
     )
     result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added_profile)])
     assert result.exit_code == 0

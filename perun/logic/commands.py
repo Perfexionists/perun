@@ -64,11 +64,10 @@ def lookup_minor_version(func):
         if minor_version_position < len(args) and args[minor_version_position] is None:
             # note: since tuples are immutable we have to do this workaround
             arg_list = list(args)
-            arg_list[minor_version_position] = vcs.get_minor_head(
-                pcs.get_vcs_type(), pcs.get_vcs_path())
+            arg_list[minor_version_position] = vcs.get_minor_head()
             args = tuple(arg_list)
         else:
-            vcs.check_minor_version_validity(pcs.get_vcs_type(), pcs.get_vcs_path(), args[minor_version_position])
+            vcs.check_minor_version_validity(args[minor_version_position])
         return func(*args, **kwargs)
 
     return wrapper
@@ -214,7 +213,7 @@ def init(dst, configuration_template='master', **kwargs):
     # If the wrapped repo could not be initialized we end with error. The user should adjust this
     # himself and fix it in the config. Note that this decision was made after tagit design,
     # where one needs to further adjust some options in initialized directory.
-    if vcs_type and not vcs.init(vcs_type, vcs_path, vcs_params):
+    if vcs_type and not vcs.init(vcs_params):
         err_msg = "Could not initialize empty {0} repository at {1}.\n".format(vcs_type, vcs_path)
         err_msg += "Either reinitialize perun with 'perun init' or initialize {0} repository"
         err_msg += "manually and fix the path to vcs in 'perun config --edit'"
@@ -382,7 +381,7 @@ def log(minor_version, short=False, **_):
 
     # Print header for --short-minors
     if short:
-        minor_versions = list(vcs.walk_minor_versions(pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version))
+        minor_versions = list(vcs.walk_minor_versions(minor_version))
         # Reduce the descriptions of minor version to one liners
         for mv_no, minor_version in enumerate(minor_versions):
             minor_versions[mv_no] = minor_version._replace(desc=minor_version.desc.split("\n")[0])
@@ -422,7 +421,7 @@ def log(minor_version, short=False, **_):
         print_short_minor_version_info_list(pcs, minor_versions, minor_version_maxima)
     else:
         # Walk the minor versions and print them
-        for minor in vcs.walk_minor_versions(pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version):
+        for minor in vcs.walk_minor_versions(minor_version):
             cprintln("Minor Version {}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
             base_dir = pcs.get_object_directory()
             tracked_profiles = store.get_profile_number_for_minor(base_dir, minor.checksum)
@@ -752,8 +751,8 @@ def status(short=False, **_):
     :param bool short: true if the output should be short (i.e. without some information)
     """
     # Obtain both of the heads
-    major_head = vcs.get_head_major_version(pcs.get_vcs_type(), pcs.get_vcs_path())
-    minor_head = vcs.get_minor_head(pcs.get_vcs_type(), pcs.get_vcs_path())
+    major_head = vcs.get_head_major_version()
+    minor_head = vcs.get_minor_head()
 
     # Print the status of major head.
     print("On major version {} ".format(
@@ -768,7 +767,7 @@ def status(short=False, **_):
     # Print in long format, the additional information about head commit, by default print
     if not short:
         print("")
-        minor_version = vcs.get_minor_version_info(pcs.get_vcs_type(), pcs.get_vcs_path(), minor_head)
+        minor_version = vcs.get_minor_version_info(minor_head)
         print_minor_version_info(minor_version)
 
     # Print profiles

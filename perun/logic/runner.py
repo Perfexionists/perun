@@ -298,7 +298,7 @@ def store_generated_profile(prof, job):
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
-        dst = prof.get('origin', vcs.get_minor_head(pcs.get_vcs_type(), pcs.get_vcs_path()))
+        dst = prof.get('origin', vcs.get_minor_head())
         commands.add([full_profile_path], dst, keep_profile=False)
 
 
@@ -405,9 +405,9 @@ def run_jobs(minor_version_list, job_matrix, number_of_jobs):
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
-    with vcs.CleanState(pcs.get_vcs_type(), pcs.get_vcs_path()):
+    with vcs.CleanState():
         for minor_version in minor_version_list:
-            vcs.checkout(pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version.checksum)
+            vcs.checkout(minor_version.checksum)
             run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
             run_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
@@ -421,12 +421,12 @@ def run_jobs_with_history(minor_version_list, job_matrix, number_of_jobs):
     :param int number_of_jobs: number of jobs that will be run
     """
     with log.History(minor_version_list[0].checksum) as history:
-        with vcs.CleanState(pcs.get_vcs_type(), pcs.get_vcs_path()):
+        with vcs.CleanState():
             for minor_version in minor_version_list:
                 history.progress_to_next_minor_version(minor_version)
                 print("")
                 history.finish_minor_version(minor_version, [])
-                vcs.checkout(pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version.checksum)
+                vcs.checkout(minor_version.checksum)
                 run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
                 run_jobs_on_current_working_dir(job_matrix, number_of_jobs)
                 print("")

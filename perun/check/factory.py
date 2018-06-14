@@ -75,9 +75,7 @@ def degradation_in_minor(minor_version, quiet=False):
     :param bool quiet: if set to true then nothing will be printed
     :returns: list of found changes
     """
-    minor_version_info = vcs.get_minor_version_info(
-        pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version
-    )
+    minor_version_info = vcs.get_minor_version_info(minor_version)
     baseline_version_queue = minor_version_info.parents
     pre_collect_profiles(minor_version_info)
     target_profile_queue = profiles_to_queue(minor_version)
@@ -87,7 +85,7 @@ def degradation_in_minor(minor_version, quiet=False):
         baseline = baseline_version_queue.pop(0)
 
         # Enqueue the parents in BFS manner
-        baseline_info = vcs.get_minor_version_info(pcs.get_vcs_type(), pcs.get_vcs_path(), baseline)
+        baseline_info = vcs.get_minor_version_info(baseline)
         baseline_version_queue.extend(baseline_info.parents)
 
         # Precollect profiles if this is set
@@ -128,7 +126,7 @@ def degradation_in_history(head):
     """
     detected_changes = []
     with log.History(head) as history:
-        for minor_version in vcs.walk_minor_versions(pcs.get_vcs_type(), pcs.get_vcs_path(), head):
+        for minor_version in vcs.walk_minor_versions(head):
             history.progress_to_next_minor_version(minor_version)
             newly_detected_changes = degradation_in_minor(minor_version.checksum, True)
             log.print_short_change_string(log.count_degradations_per_group(newly_detected_changes))

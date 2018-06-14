@@ -31,7 +31,7 @@ Perun Commands
 .. click:: perun.cli:add
    :prog: perun add
 
-.. click:: perun.cli:rm
+.. click:: perun.cli:remove
    :prog: perun rm
 
 .. click:: perun.cli:status

@@ -201,19 +201,13 @@ def minor_version_list_callback(ctx, _, value):
     minors = []
     if value:
         for minor_version in value:
-            massaged_version = vcs.massage_parameter(
-                pcs.get_vcs_type(), pcs.get_vcs_path(), minor_version
-            )
+            massaged_version = vcs.massage_parameter(minor_version)
             # If we should crawl all of the parents, we collect them
             if ctx.params['crawl_parents']:
-                minors.extend(vcs.walk_minor_versions(
-                    pcs.get_vcs_type(), pcs.get_vcs_path(), massaged_version
-                ))
+                minors.extend(vcs.walk_minor_versions(massaged_version))
             # Otherwise we retrieve the minor version info for the param
             else:
-                minors.append(vcs.get_minor_version_info(
-                    pcs.get_vcs_type(), pcs.get_vcs_path(), massaged_version
-                ))
+                minors.append(vcs.get_minor_version_info(massaged_version))
     return minors
 
 
@@ -376,7 +370,7 @@ def lookup_minor_version_callback(_, __, value):
     """
     if value:
         try:
-            return vcs.massage_parameter(pcs.get_vcs_type(), pcs.get_vcs_path(), value)
+            return vcs.massage_parameter(value)
         except VersionControlSystemException as exception:
             raise click.BadParameter(str(exception))
 

@@ -285,7 +285,7 @@ def finalize_profile_for_job(collected_data, job):
     :param Job job: job with informations about the computed profile
     :returns dict: valid profile JSON file
     """
-    profile = {'origin': vcs.get_minor_head(pcs.get_vcs_type(), pcs.get_vcs_path())}
+    profile = {'origin': vcs.get_minor_head()}
     profile.update(collected_data)
     profile.update({'header': generate_header_for_profile(job)})
     profile.update({'collector_info': generate_collector_info(job)})

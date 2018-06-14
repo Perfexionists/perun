@@ -22,9 +22,7 @@ def _mocked_stap(**kwargs):
 
 def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
-    head = vcs.get_minor_version_info(pcs_full.get_vcs_type(), pcs_full.get_vcs_path(),
-        vcs.get_minor_head(pcs_full.get_vcs_type(), pcs_full.get_vcs_path())
-    )
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
     monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
 
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
@@ -48,9 +46,7 @@ def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_coll
     """Test failed collecting using complexity collector"""
     global _mocked_stap_code
     global _mocked_stap_file
-    head = vcs.get_minor_version_info(pcs_full.get_vcs_type(), pcs_full.get_vcs_path(),
-        vcs.get_minor_head(pcs_full.get_vcs_type(), pcs_full.get_vcs_path())
-    )
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
 
     monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
 
@@ -86,9 +82,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    head = vcs.get_minor_version_info(pcs_full.get_vcs_type(), pcs_full.get_vcs_path(),
-        vcs.get_minor_head(pcs_full.get_vcs_type(), pcs_full.get_vcs_path())
-    )
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
     memory_collect_job += ([head], )
 
     runner.run_single_job(*memory_collect_job)
@@ -128,9 +122,7 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    head = vcs.get_minor_version_info(pcs_full.get_vcs_type(), pcs_full.get_vcs_path(),
-        vcs.get_minor_head(pcs_full.get_vcs_type(), pcs_full.get_vcs_path())
-    )
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
 
     runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
 

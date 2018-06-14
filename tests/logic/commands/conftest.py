@@ -357,7 +357,7 @@ def pcs_with_degradations():
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
 
     # Initialize git
-    vcs.init('git', pcs_path, {})
+    vcs.init({})
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)
@@ -410,7 +410,7 @@ def pcs_full():
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
 
     # Initialize git
-    vcs.init('git', pcs_path, {})
+    vcs.init({})
 
     # Populate repo with commits
     repo = git.Repo(pcs_path)
@@ -458,7 +458,7 @@ def pcs_with_empty_git():
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
 
     # Initialize git
-    vcs.init('git', pcs_path, {})
+    vcs.init({})
 
     yield pcs
 
