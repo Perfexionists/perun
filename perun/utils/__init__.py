@@ -287,7 +287,7 @@ def get_supported_module_names(package):
         'vcs': ['git'],
         'collect': ['complexity', 'memory', 'time'],
         'postprocess': ['clusterizer', 'filter', 'normalizer', 'regression_analysis'],
-        'view': ['alloclist', 'bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
+        'view': ['bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
     }[package]
 
 
