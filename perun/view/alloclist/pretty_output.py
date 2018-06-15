@@ -5,13 +5,10 @@ __author__ = 'Radim Podola'
 def get_pretty_call_trace(trace, indent=2, margin=0):
     """ Transforms the call trace for pretty printing in a string representation
 
-    Arguments:
-        trace(list): records of call traces
-        indent(int): indentation unit, per each level
-        margin(int): staring left margin
-
-    Returns:
-        string: trace in pretty string format
+    :param list trace: records of call traces
+    :param int indent: indentation unit, per each level
+    :param int margin: staring left margin
+    :returns string: trace in pretty string format
     """
     output = ''
 
@@ -30,13 +27,10 @@ def get_pretty_call_trace(trace, indent=2, margin=0):
 def get_pretty_resources(allocations, unit, indent=2):
     """ Modify the allocations for pretty print
 
-    Arguments:
-        allocations(list): list of allocations records
-        unit(string): unit of memory
-        indent(int): indentation unit, per each level
-
-    Returns:
-        string: modified output, stripped of following empty lines
+    :param list allocations: list of allocations records
+    :param string unit: unit of memory
+    :param int indent: indentation unit, per each level
+    :returns string: modified output, stripped of following empty lines
     """
     margin = 3
     output = ''
@@ -60,12 +54,9 @@ def get_pretty_resources(allocations, unit, indent=2):
 def get_pretty_allocations(summary, unit):
     """ Modify the allocations for pretty print
 
-    Arguments:
-        summary(list): list of allocations records
-        unit(string): unit of summary factor
-
-    Returns:
-        string: modified output
+    :param list summary: list of allocations records
+    :param string unit: unit of summary factor
+    :returns string: modified output
     """
     output = ''
     for i, item in enumerate(summary):
@@ -81,11 +72,8 @@ def get_pretty_allocations(summary, unit):
 def get_profile_info(profile):
     """ Create the profile information output
 
-    Arguments:
-        profile(dict): the memory profile
-
-    Returns:
-        string: modified output
+    :param dict profile: the memory profile
+    :returns string: modified output
     """
     output = 'Information were collected and analyzed '
     output += 'from the following execution of the binary:' + '\n'

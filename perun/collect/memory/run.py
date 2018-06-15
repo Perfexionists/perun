@@ -19,11 +19,9 @@ DEFAULT_SAMPLING = 0.001
 
 def before(cmd, **_):
     """ Phase for initialization the collect module
-    Arguments:
-        cmd(string): binary file to profile
 
-    Returns:
-        tuple: (return code, status message, updated kwargs)
+    :param string cmd: binary file to profile
+    :returns tuple: (return code, status message, updated kwargs)
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isfile("{}/{}".format(pwd, _lib_name)):
@@ -53,13 +51,11 @@ def before(cmd, **_):
 
 def collect(cmd, args, workload, **_):
     """ Phase for collection of the profile data
-    Arguments:
-        cmd(string): binary file to profile
-        args(string): executing arguments
-        workload(string): file that has to be provided to binary
 
-    Returns:
-        tuple: (return code, status message, updated kwargs)
+    :param string cmd: binary file to profile
+    :param string args: executing arguments
+    :param string workload: file that has to be provided to binary
+    :returns tuple: (return code, status message, updated kwargs)
     """
     print("Collecting data: ", end='')
     result, collector_errors = syscalls.run(cmd, args, workload)
@@ -77,13 +73,11 @@ def collect(cmd, args, workload, **_):
 def after(cmd, sampling=DEFAULT_SAMPLING, **kwargs):
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
-    Arguments:
-        cmd(string): binary file to profile
-        sampling(int): sampling of the collection of the data
-        kwargs(dict): profile's header
 
-    Returns:
-        tuple: (return code, message, updated kwargs)
+    :param string cmd: binary file to profile
+    :param int sampling: sampling of the collection of the data
+    :param dict kwargs: profile's header
+    :returns tuple: (return code, message, updated kwargs)
 
     Case studies:
         --sampling=0.1 --no-func=f2 --no-source=s --all

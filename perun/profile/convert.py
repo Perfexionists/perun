@@ -202,11 +202,8 @@ def to_heat_map_format(profile):
 def get_heat_map(resources, min_add, max_add):
     """ Parse resources from the memory profile to HEAT map representation
 
-    Arguments:
-        resources(list): list of the resources from the memory profile
-
-    Returns:
-        list: list of the number of access to address
+    :param list resources: list of the resources from the memory profile
+    :returns list: list of the number of access to address
     """
     address_count = max_add - min_add
     add_map = [0 for _ in range(address_count)]
@@ -227,11 +224,8 @@ def get_heat_map(resources, min_add, max_add):
 def get_heap_map(resources):
     """ Parse resources from the memory profile to simpler representation
 
-    Arguments:
-        resources(list): list of the resources from the memory profile
-
-    Returns:
-        list: list of the simple allocations records
+    :param list resources: list of the resources from the memory profile
+    :returns list: list of the simple allocations records
     """
     # TODO maybe needed approximation inc ase of really different sizes
     # of the amount, when smaller sizes could be set to zero and other sizes's
@@ -263,11 +257,8 @@ def calculate_heap_map(snapshots):
         Allocations which are not freed within snapshot are spread to next
         following snapshots till they are freed
 
-    Arguments:
-        snapshots(list): list of snapshots
-
-    Returns:
-        list: chunk of the all used UIDs
+    :param list snapshots: list of snapshots
+    :returns list: chunk of the all used UIDs
     """
     alloc_chunks = []
     new_allocations = []
@@ -303,12 +294,9 @@ def __set_chunks(chunks, uid):
         Check if UID is in the chunk list, if so index is returned.
         If not, UID is added to the chunk list.
 
-    Arguments:
-        chunks(list): chunk list
-        uid(dict): UID structure
-
-    Returns:
-        int: index to chunk list referencing UID
+    :param list chunks: chunk list
+    :param dict uid: UID structure
+    :returns int: index to chunk list referencing UID
     """
     # UID is already referencing
     if isinstance(uid, int):
@@ -330,13 +318,9 @@ def __set_chunks(chunks, uid):
 
 def resource_iterator(snapshot, field, initial_value=None):
     """
-    Arguments:
-        snapshot(list): list of resources
-        field(str): field we are iterating over in the list of resources
-        initial_value(object): neutral value, that is returned as first
-
-    Returns:
-        :
+    :param list snapshot: list of resources
+    :param str field: field we are iterating over in the list of resources
+    :param object initial_value: neutral value, that is returned as first
     """
     found_value = False
     for item in snapshot:
@@ -359,11 +343,8 @@ def add_stats(snapshots):
 
         Result is in the form of modified input argument.
 
-    Arguments:
-        snapshots(list): list of snapshots
-
-    Return:
-        dict: calculated global statistics over all the snapshots
+    :param list snapshots: list of snapshots
+    :returns dict: calculated global statistics over all the snapshots
     """
     glob_max_address = []
     glob_min_address = []
@@ -401,12 +382,6 @@ def to_allocations_table(profile):
 
     Fixme: Where exactly is this used?
 
-    Arguments:
-        profile(dict): the memory profile
-
-    Returns:
-        dict: the allocations table
-
     Format of the allocations table is following:
         {"snapshots": [(int)]
          "amount": [(int)]
@@ -415,6 +390,9 @@ def to_allocations_table(profile):
          "address": [(int)]
         }
     uid object is serialized into: function()~source~line
+
+    :param dict profile: the memory profile
+    :returns dict: the allocations table
     """
     table = {
         'snapshots': [],
@@ -440,12 +418,6 @@ def to_flow_table(profile):
 
     Fixme: Where exactly is this used
 
-    Arguments:
-        profile(dict): the memory profile
-
-    Returns:
-        dict: the heap map table
-
     Format of the allocations table is following:
         {"snapshots": [(int)]
          "amount": [(int)]
@@ -454,6 +426,9 @@ def to_flow_table(profile):
          "address": [(int)]
         }
     uid object is serialized into: function()~source~line
+
+    :param dict profile: the memory profile
+    :returns dict: the heap map table
     """
     heap = to_heap_map_format(profile)
 
@@ -525,11 +500,8 @@ def to_flame_graph_format(profile):
 def to_string_line(frame):
     """ Create string representing call stack's frame
 
-    Arguments:
-        frame(dict): call stack's frame
-
-    Returns:
-        str: line representing call stack's frame
+    :param dict frame: call stack's frame
+    :returns str: line representing call stack's frame
     """
     return "{}()~{}~{}".format(frame['function'], frame['source'], frame['line'])
 

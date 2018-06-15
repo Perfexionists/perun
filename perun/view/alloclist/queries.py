@@ -13,12 +13,9 @@ def get_most(profile, limit_to, **_):
         and also modify the output to be pretty to write into console.
         Only number of top records are processed.
 
-    Arguments:
-        profile(dict): memory profile with records
-        limit_to(int): number of records to process
-
-    Returns:
-        string: modified output
+    :param dict profile: memory profile with records
+    :param int limit_to: number of records to process
+    :returns string: modified output
     """
     snapshots = profile['snapshots']
     allocations = []
@@ -65,12 +62,9 @@ def get_sum(profile, limit_to, **_):
         Parse the profile records, sort them by summary of the allocated memory, and also modify
         the output to be pretty to write into console. Only number of top records are processed.
 
-    Arguments:
-        profile(dict): memory profile with records
-        limit_to(int): number of records to process
-
-    Returns:
-        string: modified output
+    :param dict profile: memory profile with records
+    :param int limit_to: number of records to process
+    :returns string: modified output
     """
     # parsing unit used for amount of memory
     summary_unit = profile['header']['units']['memory']
@@ -117,13 +111,10 @@ def get_func(profile, function, check_trace, **_):
         allocations, and also modify the output to be pretty to write into console.
         Only number of top records are processed.
 
-    Arguments:
-        profile(dict): memory profile with records
-        function(string): specified function to filter out
-        check_trace(bool): specify if process also partial participation
-
-    Returns:
-        string: modified output
+    :param dict profile: memory profile with records
+    :param string function: specified function to filter out
+    :param bool check_trace: specify if process also partial participation
+    :returns string: modified output
     """
     # parsing unit used for amount of memory
     memory_unit = profile['header']['units']['memory']
@@ -136,8 +127,8 @@ def get_func(profile, function, check_trace, **_):
 
     def is_function_in(summary, func):
         """ Evaluate if FUNC is included in SUMMARY
-            Returns:
-                bool: evaluation
+
+        :returns bool: evaluation
         """
         for item in summary:
             if item['function'] == func:
@@ -171,13 +162,10 @@ def get_all(profile, from_time, to_time, **_):
         Parse the profile records, cut the specified timeline, and also modify the output to be
         pretty to write into console. Only number of top records are processed.
 
-    Arguments:
-        profile(dict): memory profile with records
-        from_time(int): starting of timeline
-        to_time(int): ending of timeline
-
-    Returns:
-        string: modified output
+    :param dict profile: memory profile with records
+    :param int from_time: starting of timeline
+    :param int to_time: ending of timeline
+    :returns string: modified output
     """
     # parsing unit used for amount of memory
     memory_unit = profile['header']['units']['memory']
@@ -208,12 +196,9 @@ def get_top(profile, limit_to, **_):
         Parse the profile records, sort them by amount of allocated memory, and also modify
         the output to be pretty to write into console. Only number of top records are processed.
 
-    Arguments:
-        profile(dict): memory profile with records
-        limit_to(int): number of records to process
-
-    Returns:
-        string: modified output
+    :param dict profile: memory profile with records
+    :param int limit_to: number of records to process
+    :returns string: modified output
     """
     # parsing unit used for amount of memory
     memory_unit = profile['header']['units']['memory']
@@ -242,12 +227,9 @@ def get_top(profile, limit_to, **_):
 def is_uid_in(summary, uid):
     """ Evaluate if UID is included in SUMMARY
 
-    Arguments:
-        summary(list): list of resources
-        uid(dict): looked-up uid
-
-    Returns:
-        int: index if it's included, None if not
+    :param list summary: list of resources
+    :param dict uid: looked-up uid
+    :returns int: index if it's included, None if not
     """
     for i, item in enumerate(summary):
         if (item['uid']['source'] == uid['source'] and

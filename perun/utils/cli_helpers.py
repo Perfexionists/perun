@@ -44,13 +44,10 @@ def process_bokeh_axis_title(ctx, param, value):
     create some optimal axis name. We do this according to the already processed parameters and
     we either use 'per_key' or 'of_key'.
 
-    Arguments:
-        ctx(click.Context): called context of the process
-        param(click.Option): called option (either x or y axis)
-        value(object): given value for the the option param
-
-    Returns:
-        object: either value (if it is non-None) or default legend for given axis
+    :param click.Context ctx: called context of the process
+    :param click.Option param: called option (either x or y axis)
+    :param object value: given value for the the option param
+    :returns object: either value (if it is non-None) or default legend for given axis
     """
     if value:
         return value
@@ -74,16 +71,11 @@ def process_resource_key_param(ctx, param, value):
     as a validation list for the given values for the parameters. For X axis, snapshots are
     an additional valid parameter.
 
-    Arguments:
-        ctx(click.Context): called context of the process
-        param(click.Option): called option that takes a valid key from profile as a parameter
-        value(object): given value for the option param
-
-    Returns:
-        object: value or raises bad parameter
-
-    Raises:
-        click.BadParameter: if the value is invalid for the profile
+    :param click.Context ctx: called context of the process
+    :param click.Option param: called option that takes a valid key from profile as a parameter
+    :param object value: given value for the option param
+    :returns object: value or raises bad parameter
+    :raises click.BadParameter: if the value is invalid for the profile
     """
     if param.human_readable_name in ('per_key', 'through_key') and value == 'snapshots':
         return value
@@ -103,16 +95,11 @@ def process_continuous_key(ctx, _, value):
     Continuous keys are used in the continuous graphs (do'h!) on the x axis, i.e. they have to be
     numeric. We check all of the keys in the resources.
 
-    Arguments:
-        ctx(click.Context): called context of the process
-        _(click.Option): called parameter
-        value(object): given value for the option param
-
-    Returns:
-        object: value or raises bad parameter
-
-    Raises:
-        click.BadParameter: if the value is invalid for the profile
+    :param click.Context ctx: called context of the process
+    :param click.Option _: called parameter
+    :param object value: given value for the option param
+    :returns object: value or raises bad parameter
+    :raises click.BadParameter: if the value is invalid for the profile
     """
     if value == 'snapshots':
         return value

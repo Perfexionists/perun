@@ -41,27 +41,21 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
       }
     }
 
-    Arguments:
-        cmd(str): binary that will be run
-        args(str): lists of additional arguments to the job
-        workload(list): list of workloads
-        collector(list): list of collectors
-        postprocessor(list): list of postprocessors
-        kwargs(dict): additional parameters issued from the command line
-
-    Returns:
-        dict, int: dict of jobs in form of {cmds: {workloads: {Job}}}, number of jobs
+    :param str cmd: binary that will be run
+    :param str args: lists of additional arguments to the job
+    :param list workload: list of workloads
+    :param list collector: list of collectors
+    :param list postprocessor: list of postprocessors
+    :param dict kwargs: additional parameters issued from the command line
+    :returns dict, int: dict of jobs in form of {cmds: {workloads: {Job}}}, number of jobs
     """
     def construct_unit(unit, unit_type, ukwargs):
         """Helper function for constructing the {'name', 'params'} objects for collectors and posts.
 
-        Arguments:
-            unit(str): name of the unit (collector/postprocessor)
-            unit_type(str): name of the unit type (collector or postprocessor)
-            ukwargs(dict): dictionary of additional parameters
-
-        Returns:
-            dict: dictionary of the form {'name', 'params'}
+        :param str unit: name of the unit (collector/postprocessor)
+        :param str unit_type: name of the unit type (collector or postprocessor)
+        :param dict ukwargs: dictionary of additional parameters
+        :returns dict: dictionary of the form {'name', 'params'}
         """
         # Get the dictionaries for from string and from file params obtained from commandline
         unit_param_dict = ukwargs.get(unit_type + "_params", {}).get(unit, {})
@@ -131,12 +125,9 @@ def is_status_ok(returned_status, expected_status):
     this function to check either for the expected value of the enum (if they return int
     instead of enum) or enum if they return politely enum.
 
-    Arguments:
-        returned_status(int or Enum): status returned from the collector
-        expected_status(Enum): expected status
-
-    Returns:
-        bool: true if the status was 0, CollectStatus.OK or PostprocessStatus.OK
+    :param int or Enum returned_status: status returned from the collector
+    :param Enum expected_status: expected status
+    :returns bool: true if the status was 0, CollectStatus.OK or PostprocessStatus.OK
     """
     return returned_status == expected_status or returned_status == expected_status.value
 
@@ -151,10 +142,9 @@ def run_all_phases_for(runner, runner_type, runner_params):
 
     Returns the computed profile
 
-    Arguments:
-        runner(module): module that is going to be runned
-        runner_type(str): string type of the runner (either collector or postprocessor)
-        runner_params(dict): dictionary of arguments for runner
+    :param module runner: module that is going to be runned
+    :param str runner_type: string type of the runner (either collector or postprocessor)
+    :param dict runner_params: dictionary of arguments for runner
     """
     ok_status = CollectStatus.OK if runner_type == 'collector' else PostprocessStatus.OK
     error_status = CollectStatus.ERROR if runner_type == 'collector' else PostprocessStatus.ERROR
@@ -194,12 +184,9 @@ def run_collector(collector, job):
     Tries to look up the module containing the collector specified by the
     collector name, and then runs it with the parameters and returns collected profile.
 
-    Arguments:
-        collector(Unit): object representing the collector
-        job(Job): additional information about the running job
-
-    Returns:
-        (int, dict): status of the collection, generated profile
+    :param Unit collector: object representing the collector
+    :param Job job: additional information about the running job
+    :returns (int, dict): status of the collection, generated profile
     """
     log.print_current_phase(
         "Collecting data by {}", collector.name, COLLECT_PHASE_COLLECT
@@ -229,10 +216,9 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
     This is used as a wrapper for calls from various collector modules. This was extracted,
     to minimize the needed input of new potential collectors.
 
-    Arguments:
-        ctx(Context): click context containing arguments obtained by 'perun collect' command
-        collector_name(str): name of the collector that will be run
-        collector_params(dict): dictionary with collector params
+    :param Context ctx: click context containing arguments obtained by 'perun collect' command
+    :param str collector_name: name of the collector that will be run
+    :param dict collector_params: dictionary with collector params
     """
     try:
         cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
@@ -254,13 +240,10 @@ def run_postprocessor(postprocessor, job, prof):
     postprocessor name, and then runs it with the parameters and returns processed
     profile.
 
-    Arguments:
-        postprocessor(Unit): dictionary representing the postprocessor
-        job(Job): additional information about the running job
-        prof(dict): dictionary with profile
-
-    Returns:
-        (int, dict): status of the collection, postprocessed profile
+    :param Unit postprocessor: dictionary representing the postprocessor
+    :param Job job: additional information about the running job
+    :param dict prof: dictionary with profile
+    :returns (int, dict): status of the collection, postprocessed profile
     """
     log.print_current_phase(
         "Postprocessing data with {}", postprocessor.name, COLLECT_PHASE_POSTPROCESS
@@ -309,13 +292,10 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params)
     then runs the given postprocessor that is appended to the list of postprocessors
     of the profile, and the postprocessed profile is stored in the pending jobs.
 
-    Arguments:
-        prof(dict): dictionary with profile informations
-        postprocessor_name(str): name of the postprocessor that we are using
-        postprocessor_params(dict): parameters for the postprocessor
-
-    Returns:
-        PostprocessStatus: status how the postprocessing went
+    :param dict prof: dictionary with profile informations
+    :param str postprocessor_name: name of the postprocessor that we are using
+    :param dict postprocessor_params: parameters for the postprocessor
+    :returns PostprocessStatus: status how the postprocessing went
     """
     profile_job = profile.extract_job_from_profile(prof)
     postprocessor_unit = Unit(postprocessor_name, postprocessor_params)

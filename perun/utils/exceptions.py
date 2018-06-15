@@ -7,10 +7,9 @@ class InvalidParameterException(Exception):
     """Raises when the given parameter is invalid"""
     def __init__(self, parameter, parameter_value, choices_msg=""):
         """
-        Arguments:
-            parameter(str): name of the parameter that is invalid
-            parameter_value(object): value of the parameter
-            choices_msg(str): string with choices for the valid parameters
+        :param str parameter: name of the parameter that is invalid
+        :param object parameter_value: value of the parameter
+        :param str choices_msg: string with choices for the valid parameters
         """
         super().__init__("")
         self.parameter = parameter
@@ -31,9 +30,8 @@ class ExternalEditorErrorException(Exception):
     """Raised when there is an error while invoking the external editor"""
     def __init__(self, editor, reason):
         """
-        Arguments:
-            editor(str): name of the invoked editor
-            reason(str): reason why the editor failed
+        :param str editor: name of the invoked editor
+        :param str reason: reason why the editor failed
         """
         super().__init__("")
         self.editor = editor
@@ -62,8 +60,7 @@ class EntryNotFoundException(Exception):
     """Raised when the looked up entry is not within the index"""
     def __init__(self, entry):
         """
-        Arguments:
-            entry(str): entry we are looking up in the index
+        :param str entry: entry we are looking up in the index
         """
         super().__init__("")
         self.entry = entry
@@ -79,9 +76,8 @@ class VersionControlSystemException(Exception):
     """
     def __init__(self, msg, *args):
         """
-        Arguments:
-            msg(str): format string of the error message
-            args(list): list of arguments for format string
+        :param str msg: format string of the error message
+        :param list args: list of arguments for format string
         """
         super().__init__(msg)
         self.msg = msg
@@ -95,9 +91,8 @@ class IncorrectProfileFormatException(Exception):
     """Raised when the file is missing or the given format is not in the unified json format"""
     def __init__(self, filename, msg):
         """
-        Arguments:
-            filename(str): filename of the profile in the wrong format
-            msg(str): additional message what is wrong withe profile
+        :param str filename: filename of the profile in the wrong format
+        :param str msg: additional message what is wrong withe profile
         """
         super().__init__("")
         self.filename = filename
@@ -136,8 +131,7 @@ class UnsupportedModuleFunctionException(Exception):
     """
     def __init__(self, module, func):
         """
-        Arguments:
-            module(str): name of the module that does not support the given function
+        :param str module: name of the module that does not support the given function
         """
         super().__init__("")
         self.module = module
@@ -153,10 +147,9 @@ class DictionaryKeysValidationFailed(Exception):
     """Raised when validated dictionary is actually not a dictionary or has missing/excess keys"""
     def __init__(self, dictionary, missing_keys, excess_keys):
         """
-        Arguments:
-            dictionary(dict): the validated dictionary
-            missing_keys(list): list of missing keys in the dictionary
-            excess_keys(list): list of excess forbidden keys in the dictionary
+        :param dict dictionary: the validated dictionary
+        :param list missing_keys: list of missing keys in the dictionary
+        :param list excess_keys: list of excess forbidden keys in the dictionary
         """
         super().__init__("")
         self.dictionary = dictionary
@@ -269,8 +262,7 @@ class StrategyNotImplemented(Exception):
     """Raised when requested computation method/strategy is not implemented"""
     def __init__(self, strategy):
         """
-        Arguments:
-            strategy(str): the requested strategy
+        :param str strategy: the requested strategy
         """
         super().__init__("")
         self.strategy = strategy

@@ -12,8 +12,7 @@ __author__ = 'Tomas Fiedor'
 def postprocess(**_):
     """Postprocessing phase of the filter
 
-    Arguments:
-        profile(dict): dictionary with json profile
+    :param dict profile: dictionary with json profile
     """
     return PostprocessStatus.OK, "", {}
 

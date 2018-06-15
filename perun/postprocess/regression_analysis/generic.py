@@ -23,19 +23,15 @@ def generic_compute_regression(data_gen, func_list, **model):
     Computes the regression model according to the provided sequence of generator ('data_gen')
     and function list (func_list).
 
-    Arguments:
-        data_gen(iterable): generator object which provide computation values (sum of x etc.)
-        func_list(list): list of functions which are applied in order to the data from generator
-        model(dict): the regression model dictionary from regression_model
-        (e.g. the 'linear' section)
-    Raises:
-        GenericRegressionExceptionBase: the derived exceptions as used in the generator
-                                        or function list
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        iterable: generator object which produces regression model computation steps in a data
-                  dictionary
-
+    :param iterable data_gen: generator object which provide computation values (sum of x etc.)
+    :param list func_list: list of functions which are applied in order to the data from generator
+    :param dict model: the regression model dictionary from regression_model (e.g. the 'linear'
+        section)
+    :raises GenericRegressionExceptionBase: the derived exceptions as used in the generator or
+        function list
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns iterable: generator object which produces regression model computation steps in a data
+        dictionary
     """
     # Get intermediate results from data generator
     for data in data_gen:
@@ -63,21 +59,17 @@ def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
     Yielded data dictionary contains 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'y_sq_sum', 'pts_num',
     'num_sqrt', 'x_interval_start' and 'x_interval_end' keys.
 
-    Arguments:
-        x_pts(list): the list of x data points
-        y_pts(list): the list of y data points
-        f_x(function): function object for modification of x values (e.g. log10, **2, etc.) as
-                       specified by the model formula
-        f_y(function): function object for modification of y values (e.g. log10, **2, etc.) as
-                       specified by the model formula
-        steps(int): splits the data generation into specified steps
-    Raises:
-        GenericRegressionExceptionBase: the derived exceptions
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        iterable: generator object which produces intermediate results for each computation step
-                  in a data dictionary
-
+    :param list x_pts: the list of x data points
+    :param list y_pts: the list of y data points
+    :param function f_x: function object for modification of x values (e.g. log10, **2, etc.) as
+        specified by the model formula
+    :param function f_y: function object for modification of y values (e.g. log10, **2, etc.) as
+        specified by the model formula
+    :param int steps: splits the data generation into specified steps
+    :raises GenericRegressionExceptionBase: the derived exceptions
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns iterable: generator object which produces intermediate results for each computation
+        step in a data dictionary
     """
     # We also need the min and max values
     x_min = x_pts[0]
@@ -154,22 +146,18 @@ def generic_regression_coefficients(
 
         e.g. b1 = log10(b1)
 
-    Arguments:
-        f_a(function): function object for modification of b0 coefficient (e.g. 10**x) as
-                       specified by the model formula
-        f_b(function): function object for modification of b1 coefficient (e.g. 10**x) as
-                       specified by the model formula
-        x_sum(float): sum of x points values
-        y_sum(float): sum of y points values
-        xy_sum(float): sum of x*y values
-        x_sq_sum(float): sum of x^2 values
-        pts_num(int): number of summed points
-        num_sqrt(float): square root of pts_num
-    Raises:
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        dict: data dictionary with coefficients and intermediate results
-
+    :param function f_a: function object for modification of b0 coefficient (e.g. 10**x) as
+        specified by the model formula
+    :param function f_b: function object for modification of b1 coefficient (e.g. 10**x) as
+        specified by the model formula
+    :param float x_sum: sum of x points values
+    :param float y_sum: sum of y points values
+    :param float xy_sum: sum of x*y values
+    :param float x_sq_sum: sum of x^2 values
+    :param int pts_num: number of summed points
+    :param float num_sqrt: square root of pts_num
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: data dictionary with coefficients and intermediate results
     """
     # Compute the coefficients
     s_xy = xy_sum - (x_sum / num_sqrt) * (y_sum / num_sqrt)
@@ -206,17 +194,13 @@ def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
         RSS equals to the Regression sum of squares, alternatively Explained sum of squares.
         TSS corresponds to the Total sum of squares.
 
-    Arguments:
-        s_xy(float): intermediate value from coefficients computation
-        s_xx(float): intermediate value from coefficients computation
-        y_sum(float): sum of y values
-        y_sq_sum(float): sum of y^2 values
-        num_sqrt(float): square root of number of points summed
-    Raises:
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        dict: data dictionary with error value, tss and rss results
-
+    :param float s_xy: intermediate value from coefficients computation
+    :param float s_xx: intermediate value from coefficients computation
+    :param float y_sum: sum of y values
+    :param float y_sq_sum: sum of y^2 values
+    :param float num_sqrt: square root of number of points summed
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: data dictionary with error value, tss and rss results
     """
     # Compute the TSS
     tss = y_sq_sum - ((y_sum / num_sqrt) ** 2)

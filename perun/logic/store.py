@@ -37,9 +37,8 @@ def touch_file(touched_filename, times=None):
     Courtesy of:
     http://stackoverflow.com/questions/1158076/implement-touch-using-python
 
-    Arguments:
-        touched_filename(str): filename that will be touched
-        times(time): access times of the file
+    :param str touched_filename: filename that will be touched
+    :param time times: access times of the file
     """
     with open(touched_filename, 'a'):
         os.utime(touched_filename, times)
@@ -50,8 +49,7 @@ def touch_dir(touched_dir):
     Touches directory, i.e. if it exists it does nothing and
     if the directory does not exist, then it creates it.
 
-    Arguments:
-        touched_dir(str): path that will be touched
+    :param str touched_dir: path that will be touched
     """
     if not os.path.exists(touched_dir):
         os.mkdir(touched_dir)
@@ -64,9 +62,8 @@ def touch_dir_range(touched_dir_start, touched_dir_end):
     touched_dir_start = '/a/b', touched_dir_end = '/a/b/c/d/e'
     following will be touched: /a/b, /a/b/c, ..., /a/b/c/d/e
 
-    Arguments:
-        touched_dir_start(str): base case of the touched dirs
-        touched_dir_end(str): end case of the touched dirs
+    :param str touched_dir_start: base case of the touched dirs
+    :param str touched_dir_end: end case of the touched dirs
     """
     for subdir in path_to_subpaths(touched_dir_end):
         if subdir.startswith(touched_dir_start):
@@ -79,11 +76,8 @@ def path_to_subpaths(path):
     >>> path_to_subpaths('/dir/subdir/subsubdir')
     ['/dir', '/dir/subdir', '/dir/subdir/subsubdir']
 
-    Arguments:
-        path(str): path separated by os.sep separator
-
-    Returns:
-        list: list of subpaths
+    :param str path: path separated by os.sep separator
+    :returns list: list of subpaths
     """
     components = path.split(os.sep)
     return [os.sep + components[0]] + \
@@ -96,11 +90,8 @@ def locate_perun_dir_on(path):
     Locates the nearest perun directory starting from the @p path. It walks all of the
     subpaths sorted by their lenght and checks if .perun directory exists there.
 
-    Arguments:
-        path(str): starting point of the perun dir search
-
-    Returns:
-        str: path to perun dir or "" if the path is not underneath some underlying perun control
+    :param str path: starting point of the perun dir search
+    :returns str: path to perun dir or "" if the path is not underneath some underlying perun control
     """
     # convert path to subpaths and reverse the list so deepest subpaths are traversed first
     lookup_paths = path_to_subpaths(path)[::-1]
@@ -114,22 +105,16 @@ def locate_perun_dir_on(path):
 def compute_checksum(content):
     """Compute the checksum of the content using the SHA-1 algorithm
 
-    Arguments:
-        content(bytes): content we are computing checksum for
-
-    Returns:
-        str: 40-character SHA-1 checksum of the content
+    :param bytes content: content we are computing checksum for
+    :returns str: 40-character SHA-1 checksum of the content
     """
     return hashlib.sha1(content).hexdigest()
 
 
 def is_sha1(checksum):
     """
-    Arguments:
-        checksum(str): hexa string
-
-    Returns:
-        bool: true if the checksum is sha1 checksum
+    :param str checksum: hexa string
+    :returns bool: true if the checksum is sha1 checksum
     """
     return len(checksum) == 40 and all(c in string.hexdigits for c in checksum)
 
@@ -139,11 +124,8 @@ def pack_content(content):
 
     Uses the zlib compression algorithm, to deflate the content.
 
-    Arguments:
-        content(bytes): content we are packing
-
-    Returns:
-        str: packed content
+    :param bytes content: content we are packing
+    :returns str: packed content
     """
     return zlib.compress(content)
 
@@ -153,11 +135,9 @@ def peek_profile_type(profile_name):
 
     Peeks inside the binary file of the profile_name and returns the type of the
     profile, without reading it whole.
-    Arguments:
-        profile_name(str): filename of the profile
 
-    Returns:
-        str: type of the profile
+    :param str profile_name: filename of the profile
+    :returns str: type of the profile
     """
     with open(profile_name, 'rb') as profile_handle:
         profile_chunk = read_and_deflate_chunk(profile_handle, helpers.READ_CHUNK_SIZE)
@@ -172,12 +152,9 @@ def peek_profile_type(profile_name):
 
 def read_and_deflate_chunk(file_handle, chunk_size=-1):
     """
-    Arguments:
-        file_handle(file): opened file handle
-        chunk_size(int): size of read chunk or -1 if whole file should be read
-
-    Returns:
-        str: deflated chunk or whole file
+    :param file file_handle: opened file handle
+    :param int chunk_size: size of read chunk or -1 if whole file should be read
+    :returns str: deflated chunk or whole file
     """
     if chunk_size == -1:
         packed_content = file_handle.read()
@@ -204,10 +181,9 @@ def split_object_name(base_dir, object_name, object_ext=""):
 
 def add_loose_object_to_dir(base_dir, object_name, object_content):
     """
-    Arguments:
-        base_dir(path): path to the base directory
-        object_name(str): sha-1 string representing the object (possibly with extension)
-        object_content(bytes): contents of the packed object
+    :param path base_dir: path to the base directory
+    :param str object_name: sha-1 string representing the object (possibly with extension)
+    :param bytes object_content: contents of the packed object
     """
     # Break the sha1 representation to base dir (first byte) and rest of the file
     object_dir_full_path, object_file_full_path = split_object_name(base_dir, object_name)
@@ -225,11 +201,8 @@ def add_loose_object_to_dir(base_dir, object_name, object_content):
 def read_int_from_handle(file_handle):
     """Helper function for reading one integer from handle
 
-    Arguments:
-        file_handle(file): read file
-
-    Returns:
-        int: one integer
+    :param file file_handle: read file
+    :returns int: one integer
     """
     return struct.unpack('i', file_handle.read(4))[0]
 
@@ -237,11 +210,8 @@ def read_int_from_handle(file_handle):
 def read_char_from_handle(file_handle):
     """Helper function for reading one char from handle
 
-    Arguments:
-        file_handle(file): read file
-
-    Returns:
-        char: one read char
+    :param file file_handle: read file
+    :returns char: one read char
     """
     return struct.unpack('c', file_handle.read(1))[0].decode('utf-8')
 
@@ -249,8 +219,7 @@ def read_char_from_handle(file_handle):
 def read_number_of_entries_from_handle(index_handle):
     """Helper function for reading number of entries in the handle.
 
-    Arguments:
-        index_handle(file): filehandle with index
+    :param file index_handle: filehandle with index
     """
     current_position = index_handle.tell()
     index_handle.seek(0)
@@ -268,11 +237,8 @@ def walk_index(index_handle):
     through all of the index entries and returns them as a IndexEntry structure for further
     processing.
 
-    Arguments:
-        index_handle(file): handle to file containing index
-
-    Returns:
-        IndexEntry: Index entry named tuple
+    :param file index_handle: handle to file containing index
+    :returns IndexEntry: Index entry named tuple
     """
     # Get end of file position
     index_handle.seek(0, 2)
@@ -295,8 +261,7 @@ def walk_index(index_handle):
 
     def read_entry():
         """
-        Returns:
-            IndexEntry: one read index entry
+        :returns IndexEntry: one read index entry
         """
         # Rather nasty hack, but nothing better comes to my mind currently
         if index_handle.tell() + 24 >= last_position:
@@ -324,8 +289,7 @@ def walk_index(index_handle):
 def print_index(index_file):
     """Helper function for printing the contents of the index
 
-    Arguments:
-        index_file(str): path to the index file
+    :param str index_file: path to the index file
     """
     with open(index_file, 'rb') as index_handle:
         print_index_from_handle(index_handle)
@@ -333,8 +297,8 @@ def print_index(index_file):
 
 def print_index_from_handle(index_handle):
     """Helper funciton for printing the contents of index inside the handle.
-    Arguments:
-        index_handle(file): opened file handle
+
+    :param file index_handle: opened file handle
     """
     index_prefix = index_handle.read(4)
     index_version = read_int_from_handle(index_handle)
@@ -356,12 +320,9 @@ def print_index_from_handle(index_handle):
 def get_profile_list_for_minor(base_dir, minor_version):
     """Read the list of entries corresponding to the minor version from its index.
 
-    Arguments:
-        base_dir(str): base directory of the models
-        minor_version(str): representation of minor version
-
-    Returns:
-        list: list of IndexEntries
+    :param str base_dir: base directory of the models
+    :param str minor_version: representation of minor version
+    :returns list: list of IndexEntries
     """
     _, minor_index_file = split_object_name(base_dir, minor_version)
 
@@ -374,12 +335,9 @@ def get_profile_list_for_minor(base_dir, minor_version):
 
 def get_profile_number_for_minor(base_dir, minor_version):
     """
-    Arguments:
-        base_dir(str): base directory of the profiles
-        minor_version(str): representation of minor version
-
-    Returns:
-        dict: dictionary of number of profiles inside the index of the minor_version of types
+    :param str base_dir: base directory of the profiles
+    :param str minor_version: representation of minor version
+    :returns dict: dictionary of number of profiles inside the index of the minor_version of types
     """
     _, minor_index_file = split_object_name(base_dir, minor_version)
 
@@ -417,8 +375,8 @@ def touch_index(index_path):
       - 20B SHA-1 representation of the object
       -  ?B Variable length path
       -  ?B zero byte padding
-    Arguments:
-        index_path(str): path to the index
+
+    :param str index_path: path to the index
     """
     if not os.path.exists(index_path):
         touch_file(index_path)
@@ -433,9 +391,8 @@ def touch_index(index_path):
 def modify_number_of_entries_in_index(index_handle, modify):
     """Helper function of inplace modification of number of entries in index
 
-    Arguments:
-        index_handle(file): handle of the opened index
-        modify(function): function that will modify the value of number of entries
+    :param file index_handle: handle of the opened index
+    :param function modify: function that will modify the value of number of entries
     """
     index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
     number_of_entries = read_int_from_handle(index_handle)
@@ -446,9 +403,8 @@ def modify_number_of_entries_in_index(index_handle, modify):
 def write_entry(index_handle, file_entry):
     """Writes entry at current location in the index_handle
 
-    Arguments:
-        index_handle(file): file handle of the index
-        file_entry(IndexEntry): entry to be written at current position
+    :param file index_handle: file handle of the index
+    :param IndexEntry file_entry: entry to be written at current position
     """
     timestamps.write_timestamp(index_handle, timestamps.str_to_timestamp(file_entry.time))
     index_handle.write(bytearray.fromhex(file_entry.checksum))
@@ -462,9 +418,8 @@ def write_entry_to_index(index_file, file_entry):
     Given the file entry, writes the entry within the file, moving everything by the given offset
     and then incrementing the number of entries within the index.
 
-    Arguments:
-        index_file(str): path to the index file
-        file_entry(IndexEntry): index entry that will be written to the file
+    :param str index_file: path to the index file
+    :param IndexEntry file_entry: index entry that will be written to the file
     """
     with open(index_file, 'rb+') as index_handle:
         # Lookup the position of the registered file within the index
@@ -509,9 +464,8 @@ def write_entry_to_index(index_file, file_entry):
 
 def remove_entry_from_index(index_handle, file_entry):
     """
-    Arguments:
-        index_handle(file): opened file handle of index
-        file_entry(IndexEntry): removed entry
+    :param file index_handle: opened file handle of index
+    :param IndexEntry file_entry: removed entry
     """
     index_handle.seek(file_entry.offset)
 
@@ -519,13 +473,9 @@ def remove_entry_from_index(index_handle, file_entry):
 def lookup_entry_within_index(index_handle, predicate):
     """Looks up the first entry within index that satisfies the predicate
 
-    Arguments:
-        index_handle(file): file handle of the index
-        predicate(function): predicate that tests given entry in index
-            IndexEntry -> bool
-
-    Returns:
-        IndexEntry: index entry satisfying the given predicate
+    :param file index_handle: file handle of the index
+    :param function predicate: predicate that tests given entry in index IndexEntry -> bool
+    :returns IndexEntry: index entry satisfying the given predicate
     """
     for entry in walk_index(index_handle):
         if predicate(entry):
@@ -536,13 +486,10 @@ def lookup_entry_within_index(index_handle, predicate):
 
 def lookup_all_entries_within_index(index_handle, predicate):
     """
-    Arguments:
-        index_handle(file): file handle of the index
-        predicate(function): predicate that tests given entry in index
-            IndexEntry -> bool
+    :param file index_handle: file handle of the index
+    :param function predicate: predicate that tests given entry in index IndexEntry -> bool
 
-    Returns:
-        [IndexEntry]: list of index entries satisfying given predicate
+    :returns [IndexEntry]: list of index entries satisfying given predicate
     """
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
 
@@ -553,11 +500,10 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     If the index for the minor_version does not exist, then it is touched and initialized
     with empty prefix. Then the entry is added to the file.
 
-    Arguments:
-        base_dir(str): base directory of the minor version
-        minor_version(str): sha-1 representation of the minor version of vcs (like e.g. commit)
-        registered_file(path): filename that is registered
-        registered_file_checksum(str): sha-1 representation fo the registered file
+    :param str base_dir: base directory of the minor version
+    :param str minor_version: sha-1 representation of the minor version of vcs (like e.g. commit)
+    :param path registered_file: filename that is registered
+    :param str registered_file_checksum: sha-1 representation fo the registered file
     """
     # Create the directory and index (if it does not exist)
     minor_dir, minor_index_file = split_object_name(base_dir, minor_version)
@@ -579,12 +525,11 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
     Iterates through all of the removed files, and removes their partial/full occurence from the
     index. The index is walked just once.
 
-    Arguments:
-        base_dir(str): base directory of the minor version
-        minor_version(str): sha-1 representation of the minor version of vcs (like e..g commit)
-        removed_file_generator(generator):
-            generator of filenames, that will be removed from the tracking
-        remove_all(bool): true if all of the entries should be removed
+    :param str base_dir: base directory of the minor version
+    :param str minor_version: sha-1 representation of the minor version of vcs (like e..g commit)
+    :param generator removed_file_generator: generator of filenames, that will be removed from the
+        tracking
+    :param bool remove_all: true if all of the entries should be removed
     """
     # Get directory and index
     _, minor_version_index = split_object_name(base_dir, minor_version)

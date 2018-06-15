@@ -116,8 +116,7 @@ class HeapMapVisualization(object):
 
             Menu text is placed in the middle of the window's bottom
 
-        Arguments:
-            menu_text(string): string to print as a MENU text
+        :param string menu_text: string to print as a MENU text
         """
         window_lines, window_cols = self.__window.getmaxyx()
         # clearing line for MENU text
@@ -132,8 +131,7 @@ class HeapMapVisualization(object):
 
             Informative text is placed in the middle of the map's top border
 
-        Arguments:
-            margin(int): left margin
+        :param int margin: left margin
         """
         _, window_cols = self.__window.getmaxyx()
         text = 'SNAPSHOT: {!s}/{!s}  ({!s}s)'.format(
@@ -149,11 +147,8 @@ class HeapMapVisualization(object):
     def __append_unit(self, data):
         """Returns data converted to string together with unit of the data
 
-        Arguments:
-            data(int): integer data that will be appended with unit
-
-        Returns:
-            str: string with unit according to the set default
+        :param int data: integer data that will be appended with unit
+        :returns str: string with unit according to the set default
         """
         return str(data) + ' ' + self.__heap['unit']
 
@@ -162,8 +157,7 @@ class HeapMapVisualization(object):
 
             Informative text is placed right bellow the map
 
-        Arguments:
-            address(float): map field's address
+        :param float address: map field's address
         """
         _, window_cols = self.__window.getmaxyx()
         snap = self.__heap['snapshots'][self.__current_snap - 1]
@@ -204,8 +198,7 @@ class HeapMapVisualization(object):
 
             Informative text is placed right bellow the map
 
-        Arguments:
-            data(dict): map field's data
+        :param dict data: map field's data
         """
         _, window_cols = self.__window.getmaxyx()
         space_text = "Allocated space: "
@@ -249,8 +242,7 @@ class HeapMapVisualization(object):
 
             Informative text is placed right bellow the map
 
-        Arguments:
-            data(dict): map field's data
+        :param dict data: map field's data
         """
         _, window_cols = self.__window.getmaxyx()
         heat_text = 'HEAT INFO:'
@@ -282,12 +274,9 @@ class HeapMapVisualization(object):
     def __get_tick_info(self, length, tick_amount):
         """ Builds tick information line
 
-        Arguments:
-           length(int): length of information text
-           tick_amount(int): tick amount
-
-        Returns:
-            str: built tick information text
+        :param int length: length of information text
+        :param int tick_amount: tick amount
+        :returns str: built tick information text
         """
         tick_amount_str = ''
 
@@ -304,10 +293,9 @@ class HeapMapVisualization(object):
     def __print_address(self, row, add_str, space):
         """ Prints the address info
 
-        Arguments:
-           row(int): window's row where print the address
-           add_str(str): address string
-           space(int): length of the address info space
+        :param int row: window's row where print the address
+        :param str add_str: address string
+        :param int space: length of the address info space
         """
         empty_fields = space - len(add_str)
         add_str += self.BORDER_SYM * empty_fields
@@ -317,8 +305,7 @@ class HeapMapVisualization(object):
     def __get_field_size(self):
         """ Calculates the field's size based on the screen's size
 
-        Returns:
-            float: field size
+        :returns float: field size
         """
         stats = self.__heap['stats']
         _, rows, cols = self.__get_map_size()
@@ -331,8 +318,7 @@ class HeapMapVisualization(object):
     def __get_map_size(self):
         """ Calculate the true map's size
 
-        Returns:
-            tuple: address info length, map's rows, map's columns
+        :returns tuple: address info length, map's rows, map's columns
         """
         _, window_cols = self.__window.getmaxyx()
         # calculate space for the addresses information
@@ -351,11 +337,7 @@ class HeapMapVisualization(object):
     def create_map_matrix(self, rows, cols):
         """ Create a matrix with corresponding representation of the snapshot
 
-        Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's columns
-
-        Returns:
+        The return format is as follows:
             dict: matrix representing map with additional info
                   following format:
                   {"data": matrix,
@@ -369,6 +351,11 @@ class HeapMapVisualization(object):
                                 allocation's starting address (float),
                    "amount": (int)
                   }]
+
+        :param int rows: total number of the screen's rows
+        :param int cols: total number of the screen's columns
+        :returns dict:
+
         """
         snap = self.__heap['snapshots'][self.__current_snap - 1]
         field_size = self.__get_field_size()
@@ -437,11 +424,7 @@ class HeapMapVisualization(object):
     def create_heat_matrix(self, rows, cols):
         """ Create a matrix with corresponding HEAT representation
 
-        Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's columns
-
-        Returns:
+        Return format is as follows:
             dict: matrix representing HEAT map with additional info
                   following format:
                   {"data": matrix,
@@ -453,6 +436,10 @@ class HeapMapVisualization(object):
                   [{"address": # field's address (float),
                     "access": number of the field's access (int)
                   }]
+
+        :param int rows: total number of the screen's rows
+        :param int cols: total number of the screen's columns
+        :returns dict:
         """
         field_size = self.__get_field_size()
 
@@ -489,10 +476,9 @@ class HeapMapVisualization(object):
 
             Printed matrix is also surrounded by border and address info
 
-        Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's columns
-            add_length(int): length of the address info space
+        :param int rows: total number of the screen's rows
+        :param int cols: total number of the screen's columns
+        :param int add_length: length of the address info space
         """
         map_data = self.__map_cords['map']
         tick_amount = int(map_data['field_size'] * self.TICK_FREQ)
@@ -547,8 +533,7 @@ class HeapMapVisualization(object):
     def draw_heap_map(self):
         """ Draw the window to represent the current snapshot
 
-        Returns:
-            bool: success of the operation
+        :returns bool: success of the operation
         """
         window_lines, window_cols = self.__window.getmaxyx()
         if hasattr(curses, "update_lines_cols"):
@@ -612,8 +597,7 @@ class HeapMapVisualization(object):
     def __set_current_snap(self, following_snap):
         """ Sets current snapshot
 
-        Arguments:
-            following_snap(int): number of the snapshot to set
+        :param int following_snap: number of the snapshot to set
         """
         if following_snap in range(1, len(self.__heap['snapshots']) + 1):
             self.__current_snap = following_snap
@@ -624,11 +608,8 @@ class HeapMapVisualization(object):
     def following_snapshot(self, direction):
         """ Set following snapshot and print the map
 
-        Arguments:
-            direction(int): direction of the following snapshot (PREVIOUS/NEXT)
-
-        Returns:
-            bool: success of the operation
+        :param int direction: direction of the following snapshot (PREVIOUS/NEXT)
+        :returns bool: success of the operation
         """
         if not self.__set_current_snap(self.__current_snap + direction):
             return
@@ -652,8 +633,7 @@ class HeapMapVisualization(object):
     def move_cursor(self, direction):
         """ Move the cursor to the new position defined by direction
 
-        Arguments:
-            direction(any): character returned by curses.getch()
+        :param any direction: character returned by curses.getch()
         """
         if not self.__map_cords:
             return
@@ -765,9 +745,8 @@ class HeapMapVisualization(object):
     def __init__(self, window, heap, colours=hpcolors.HeapMapColors.CURSES_COLORS):
         """ Initialize the HEAP MAP visualization object
 
-        Arguments:
-            window(any): initialized curses window
-            heap(dict): the heap representation
+        :param any window: initialized curses window
+        :param dict heap: the heap representation
         """
         # initialized curses window
         self.__window = window
@@ -789,10 +768,9 @@ class HeapMapVisualization(object):
 def heat_map_logic(window, heat, colours=hpcolors.HeapMapColors.CURSES_COLORS):
     """ HEAT visualization logic prompt
 
-    Arguments:
-        window(any): initialized curses window
-        heat(dict): the heat map representation
-        colours(int): colour mode of the heat map
+    :param any window: initialized curses window
+    :param dict heat: the heat map representation
+    :param int colours: colour mode of the heat map
     """
     # instantiate of the heat map visualization object
     vis_obj = HeapMapVisualization(window, heat, colours)
@@ -818,11 +796,10 @@ def heat_map_logic(window, heat, colours=hpcolors.HeapMapColors.CURSES_COLORS):
 def heap_map_logic(window, heap, heat, colours=hpcolors.HeapMapColors.CURSES_COLORS):
     """ HEAP visualization logic prompt
 
-    Arguments:
-        window(any): initialized curses window
-        heap(dict): the heap map representation
-        heat(dict): the heat map representation
-        colours(int): colour mode of the heat map
+    :param any window: initialized curses window
+    :param dict heap: the heap map representation
+    :param dict heat: the heat map representation
+    :param int colours: colour mode of the heat map
     """
     # instantiate of the heap map visualization object
     vis_obj = HeapMapVisualization(window, heap, colours)
@@ -870,12 +847,9 @@ def heap_map(heap, heat):
         (without requiring the Enter key to be pressed) on,
         enable keypad mode for special keys s.a. HOME.
 
-    Arguments:
-        heap(dict): dictionary representing the heap map informations
-        heat(dict): dictionary representing the heat information of the heap map
-
-    Returns:
-        string: message informing about operation success
+    :param dict heap: dictionary representing the heap map informations
+    :param dict heat: dictionary representing the heat information of the heap map
+    :returns string: message informing about operation success
     """
     # after integration remove try block
     try:

@@ -15,10 +15,9 @@ def draw_flame_graph(profile, output_file, height):
         To create Flame graphs it's uses perl script created by Brendan Gregg.
         https://github.com/brendangregg/FlameGraph/blob/master/flamegraph.pl
 
-    Arguments:
-        profile(dict): the memory profile
-        output_file(str): filename of the output file, expected is SVG format
-        height(int): graphs height
+    :param dict profile: the memory profile
+    :param str output_file: filename of the output file, expected is SVG format
+    :param int height: graphs height
     """
     # converting profile format to format suitable to Flame graph visualization
     flame = converter.to_flame_graph_format(profile)

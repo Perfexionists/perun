@@ -20,15 +20,9 @@ APPROX_ZERO = 0.000001
 def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
-    Arguments:
-        dictionary(dict): the inspected dictionary
-        required_keys(list of str): keys that must be present in the inspected dictionary
-        forbidden_keys(list of str): keys that must not be in the inspected dictionary
-    Raises:
-        DictionaryKeysValidationFailed: if the dictionary inspection fails
-    Returns:
-        None
-
+    :param list of str required_keys: keys that must be present in the inspected dictionary
+    :param list of str forbidden_keys: keys that must not be in the inspected dictionary
+    :raises DictionaryKeysValidationFailed: if the dictionary inspection fails
     """
     missing_keys, excess_keys = [], []
 
@@ -52,15 +46,11 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
 def check_points(x_len, y_len, threshold):
     """Checks the regression points for possible problems
 
-    Arguments:
-        x_len(int): the count of x coordinates
-        y_len(int): the count of y coordinates
-        threshold(int): the minimum number of points
-    Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have
-                                different lengths
-    Returns:
-        None
+    :param int x_len: the count of x coordinates
+    :param int y_len: the count of y coordinates
+    :param int threshold: the minimum number of points
+    :raises InvalidPointsException: if the points count is too low or their coordinates list have
+        different lengths
     """
     if x_len < threshold or y_len < threshold or x_len != y_len:
         raise exceptions.InvalidPointsException(x_len, y_len, MIN_POINTS_COUNT)
@@ -69,11 +59,9 @@ def check_points(x_len, y_len, threshold):
 def check_coeffs(coeffs_count, collection):
     """Checks the coefficients count in the collection.
 
-    Arguments:
-        coeffs_count(int): the expected count of coefficients
-        collection(dict): the dictionary with coefficients member 'coeffs'
-    Raises:
-        InvalidCoeffsException: if the expected coefficients count does not match the actual
+    :param int coeffs_count: the expected count of coefficients
+    :param dict collection: the dictionary with coefficients member 'coeffs'
+    :raises InvalidCoeffsException: if the expected coefficients count does not match the actual
     """
     if 'coeffs' not in collection or len(collection['coeffs']) != coeffs_count:
         exceptions.InvalidCoeffsException(coeffs_count)
@@ -83,13 +71,10 @@ def split_sequence(length, parts):
     """Generator. Splits the given (collection) length into roughly equal parts and yields the part
        start and end indices pair one by one.
 
-    Arguments:
-        length(int): the length to split
-        parts(int): the number of parts
-    Raises:
-        InvalidSequenceSplitException: if the result of split produces too few points
-    Returns:
-        iterable: the generator object
+    :param int length: the length to split
+    :param int parts: the number of parts
+    :raises InvalidSequenceSplitException: if the result of split produces too few points
+    :returns iterable: the generator object
     """
     # Check if the split would produce meaningful values
     if length / parts < 2.0:
@@ -106,15 +91,11 @@ def split_sequence(length, parts):
 def shuffle_points(x_pts, y_pts):
     """Shuffles the x and y coordinates sequence to produce random points sequence.
 
-    Arguments:
-        x_pts(list): the x coordinates list
-        y_pts(list): the y coordinates list
-    Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have
-                                different lengths
-    Returns:
-        tuple:  x: the randomized x sequence
-                y: the randomized y sequence
+    :param list x_pts: the x coordinates list
+    :param list y_pts: the y coordinates list
+    :raises InvalidPointsException: if the points count is too low or their coordinates list have
+        different lengths
+    :returns tuple: (x: the randomized x sequence, y: the randomized y sequence)
     """
     # Build one list to ensure the coordinates are paired after the shuffle
     check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
@@ -127,15 +108,11 @@ def shuffle_points(x_pts, y_pts):
 def sort_points(x_pts, y_pts):
     """Sorts the x and y_pts coordinates sequence by x values in the ascending order.
 
-    Arguments:
-        x_pts(list): the x coordinates list
-        y_pts(list): the y_pts coordinates list
-    Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have
-                                different lengths
-    Returns:
-        tuple:  x: the sorted x sequence
-                y_pts: the sorted y_pts sequence
+    :param list x_pts: the x coordinates list
+    :param list y_pts: the y_pts coordinates list
+    :raises InvalidPointsException: if the points count is too low or their coordinates list have
+        different lengths
+    :returns tuple: (x: the sorted x sequence, y_pts: the sorted y_pts sequence)
     """
     # Build one list to ensure the coordinates are paired after the sorting
     check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
@@ -148,14 +125,11 @@ def sort_points(x_pts, y_pts):
 def zip_points(x_pts, y_pts, len_start=0, len_end=-1):
     """Creates points pair (x, y) useful for iteration.
 
-    Arguments:
-        x_pts(list): list of x points
-        y_pts(list): list of y points
-        len_start(int): slicing start value
-        len_end(int): slicing end value
-    Returns:
-        iterable: zip iterator object
-
+    :param list x_pts: list of x points
+    :param list y_pts: list of y points
+    :param int len_start: slicing start value
+    :param int len_end: slicing end value
+    :returns iterable: zip iterator object
     """
     return zip(x_pts[len_start:len_end], y_pts[len_start:len_end])
 
@@ -164,13 +138,10 @@ def split_model_interval(start, end, steps):
     """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
 
-    Arguments:
-        start(int or float): the start of interval
-        end(int or float): the end of interval
-        steps(int): number of points to split the interval into
-
-    Returns:
-        ndarray: the numpy array containing points
+    :param int or float start: the start of interval
+    :param int or float end: the end of interval
+    :param int steps: number of points to split the interval into
+    :returns ndarray: the numpy array containing points
     """
     # Slice the interval to points
     x_pts = np.linspace(start, end, steps)

@@ -18,13 +18,10 @@ def validate_timestamp_parameter(ctx, param, value):
 
     If the parameter was called with mode for which it has no effect, the warning is issued.
 
-    Arguments:
-        ctx(click.Context): called click context
-        param(click.Option): parameter (either --from-time or --to-time)
-        value(object): value for the given parameter
-
-    Returns:
-        object: value of the validated parameter
+    :param click.Context ctx: called click context
+    :param click.Option param: parameter (either --from-time or --to-time)
+    :param object value: value for the given parameter
+    :returns object: value of the validated parameter
     """
     mode = ctx.params['mode']
     param_name = param.human_readable_name
@@ -41,13 +38,10 @@ def validate_timestamp_parameter(ctx, param, value):
 def validate_limit_to_parameter(ctx, _, value):
     """Validates that the limit to is called in top/most/sum mode otherwise issues warning
 
-    Arguments:
-        ctx(click.Context): called click context
-        _(click.Option): parameter (either --from-time or --to-time)
-        value(object): value for the given parameter
-
-    Returns:
-        object: value of the validated parameter
+    :param click.Context ctx: called click context
+    :param click.Option _: parameter (either --from-time or --to-time)
+    :param object value: value for the given parameter
+    :returns object: value of the validated parameter
     """
     mode = ctx.params['mode']
 
@@ -60,13 +54,10 @@ def validate_limit_to_parameter(ctx, _, value):
 def validate_func_parameter(ctx, _, value):
     """Validates that the func is called for func parameter (do'h!).
 
-    Arguments:
-        ctx(click.Context): called click context
-        _(click.Option): parameter (either --from-time or --to-time)
-        value(object): value for the given parameter
-
-    Returns:
-        object: value of the validated parameter
+    :param click.Context ctx: called click context
+    :param click.Option _: parameter (either --from-time or --to-time)
+    :param object value: value for the given parameter
+    :returns object: value of the validated parameter
     """
     mode = ctx.params['mode']
 

@@ -50,9 +50,8 @@ def page_function_if(func, paging_switch):
     def wrapper(*args, **kwargs):
         """Wrapper for the original function whose output will be paged
 
-        Arguments:
-            args(list): list of positional arguments for original function
-            kwargs(dict): dictionary of key:value arguments for original function
+        :param list args: list of positional arguments for original function
+        :param dict kwargs: dictionary of key:value arguments for original function
         """
         if SUPPRESS_PAGING or not paging_switch:
             return func(*args, **kwargs)
@@ -117,25 +116,22 @@ def msg_to_file(msg, msg_verbosity, log_level=logging.INFO):
 
 def info(msg):
     """
-    Arguments:
-        msg(str): info message that will be printed only when there is at least lvl1 verbosity
+    :param str msg: info message that will be printed only when there is at least lvl1 verbosity
     """
     print("info: {}".format(msg))
 
 
 def quiet_info(msg):
     """
-    Arguments:
-        msg(str): info message to the stream that will be always shown
+    :param str msg: info message to the stream that will be always shown
     """
     msg_to_stdout(msg, VERBOSE_RELEASE)
 
 
 def error(msg, recoverable=False):
     """
-    Arguments:
-        msg(str): error message printe to standard output
-        recoverable(bool): whether we can recover from the error
+    :param str msg: error message printe to standard output
+    :param bool recoverable: whether we can recover from the error
     """
     print(termcolor.colored("fatal: {}".format(msg), 'red'), file=sys.stderr)
 
@@ -146,8 +142,7 @@ def error(msg, recoverable=False):
 
 def warn(msg):
     """
-    Arguments:
-        msg(str): warn message printed to standard output
+    :param str msg: warn message printed to standard output
     """
     if not SUPPRESS_WARNINGS:
         print("warn: {}".format(msg))
@@ -156,10 +151,9 @@ def warn(msg):
 def print_current_phase(phase_msg, phase_unit, phase_colour):
     """Print helper coloured message for the current phase
 
-    Arguments:
-        phase_msg(str): message that will be printed to the output
-        phase_unit(str): additional parameter that is passed to the phase_msg
-        phase_colour(str): phase colour defined in helpers.py
+    :param str phase_msg: message that will be printed to the output
+    :param str phase_unit: additional parameter that is passed to the phase_msg
+    :param str phase_colour: phase colour defined in helpers.py
     """
     print(termcolor.colored(
         phase_msg.format(
@@ -172,8 +166,7 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
 def print_job_progress(overall_jobs):
     """Print the tag with the percent of the jobs currently done
 
-    Arguments:
-        overall_jobs(int): overall number of jobs to be done
+    :param int overall_jobs: overall number of jobs to be done
     """
     percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
     print("[{}%] ".format(
@@ -185,10 +178,9 @@ def print_job_progress(overall_jobs):
 def cprint(string, colour, attrs=None):
     """Wrapper over coloured print without adding new line
 
-    Arguments:
-        string(str): string that is printed with colours
-        colour(str): colour that will be used to colour the string
-        attrs(list): list of additional attributes for the colouring
+    :param str string: string that is printed with colours
+    :param str colour: colour that will be used to colour the string
+    :param list attrs: list of additional attributes for the colouring
     """
     attrs = attrs or []
     print(termcolor.colored(string, colour, attrs=attrs), end='')
@@ -197,11 +189,10 @@ def cprint(string, colour, attrs=None):
 def cprintln(string, colour, attrs=None, ending='\n'):
     """Wrapper over coloured print with added new line or other ending
 
-    Arguments:
-        string(str): string that is printed with colours and newline
-        colour(str): colour that will be used to colour the stirng
-        attrs(list): list of additional attributes for the colouring
-        ending(str): ending of the string, be default new line
+    :param str string: string that is printed with colours and newline
+    :param str colour: colour that will be used to colour the stirng
+    :param list attrs: list of additional attributes for the colouring
+    :param str ending: ending of the string, be default new line
     """
     attrs = attrs or []
     print(termcolor.colored(string, colour, attrs=attrs), end=ending)
@@ -210,8 +201,7 @@ def cprintln(string, colour, attrs=None, ending='\n'):
 def done(ending='\n'):
     """Helper function that will print green done to the terminal
 
-    Arguments:
-        ending(str): end of the string, by default new line
+    :param str ending: end of the string, by default new line
     """
     print('[', end='')
     cprint("DONE", 'green', attrs=['bold'])
@@ -220,8 +210,7 @@ def done(ending='\n'):
 
 def failed(ending='\n'):
     """
-    Arguments:
-        ending(str): end of the string, by default new line
+    :param str ending: end of the string, by default new line
     """
     print('[', end='')
     cprint("FAILED", 'red', attrs=['bold'])
