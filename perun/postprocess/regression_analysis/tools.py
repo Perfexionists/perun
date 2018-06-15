@@ -56,17 +56,6 @@ def check_points(x_len, y_len, threshold):
         raise exceptions.InvalidPointsException(x_len, y_len, MIN_POINTS_COUNT)
 
 
-def check_coeffs(coeffs_count, collection):
-    """Checks the coefficients count in the collection.
-
-    :param int coeffs_count: the expected count of coefficients
-    :param dict collection: the dictionary with coefficients member 'coeffs'
-    :raises InvalidCoeffsException: if the expected coefficients count does not match the actual
-    """
-    if 'coeffs' not in collection or len(collection['coeffs']) != coeffs_count:
-        exceptions.InvalidCoeffsException(coeffs_count)
-
-
 def split_sequence(length, parts):
     """Generator. Splits the given (collection) length into roughly equal parts and yields the part
        start and end indices pair one by one.

@@ -369,89 +369,13 @@ def add_stats(snapshots):
         glob_max_amount.append(snap['max_amount'])
         glob_min_amount.append(snap['min_amount'])
 
-    return {'max_address': max(glob_max_address),
-            'min_address': min(glob_min_address),
-            'max_sum_amount': max(glob_max_sum_amount),
-            'max_amount': max(glob_max_amount),
-            'min_amount': min(glob_min_amount)
-           }
-
-
-def to_allocations_table(profile):
-    """ Create the allocations table
-
-    Fixme: Where exactly is this used?
-
-    Format of the allocations table is following:
-        {"snapshots": [(int)]
-         "amount": [(int)]
-         "uid": [(str)]
-         "subtype": [(str)]
-         "address": [(int)]
-        }
-    uid object is serialized into: function()~source~line
-
-    :param dict profile: the memory profile
-    :returns dict: the allocations table
-    """
-    table = {
-        'snapshots': [],
-        'amount': [],
-        'uid': [],
-        'subtype': [],
-        'address': []
+    return {
+        'max_address': max(glob_max_address),
+        'min_address': min(glob_min_address),
+        'max_sum_amount': max(glob_max_sum_amount),
+        'max_amount': max(glob_max_amount),
+        'min_amount': min(glob_min_amount)
     }
-
-    for i, snap in enumerate(profile['snapshots']):
-        for alloc in snap['resources']:
-            table['snapshots'].append(i + 1)
-            table['amount'].append(alloc['amount'])
-            table['uid'].append(to_string_line(alloc['uid']))
-            table['subtype'].append(alloc['subtype'])
-            table['address'].append(alloc['address'])
-
-    return table
-
-
-def to_flow_table(profile):
-    """ Create the heap map table
-
-    Fixme: Where exactly is this used
-
-    Format of the allocations table is following:
-        {"snapshots": [(int)]
-         "amount": [(int)]
-         "uid": [(str)]
-         "subtype": [(str)]
-         "address": [(int)]
-        }
-    uid object is serialized into: function()~source~line
-
-    :param dict profile: the memory profile
-    :returns dict: the heap map table
-    """
-    heap = to_heap_map_format(profile)
-
-    table = {
-        'snapshots': [],
-        'amount': [],
-        'uid': [],
-        'subtype': [],
-        'address': []
-    }
-
-    for i, snap in enumerate(heap['snapshots']):
-
-        for alloc in snap['map']:
-            uid_chunk = heap['info'][alloc['uid']]
-
-            table['snapshots'].append(i + 1)
-            table['amount'].append(alloc['amount'])
-            table['uid'].append(to_string_line(uid_chunk))
-            table['subtype'].append(alloc['subtype'])
-            table['address'].append(alloc['address'])
-
-    return table
 
 
 def to_flame_graph_format(profile):

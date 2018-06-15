@@ -222,18 +222,6 @@ class InvalidSequenceSplitException(GenericRegressionExceptionBase):
         return self.msg
 
 
-class InvalidCoeffsException(GenericRegressionExceptionBase):
-    """Raised when data format contains unexpected number of coefficient"""
-    def __init__(self, coeffs_count):
-        super().__init__("")
-        self.coeffs_count = coeffs_count
-        self.msg = ("Missing coefficients list or their count different from: {0}.".format(
-            str(self.coeffs_count)))
-
-    def __str__(self):
-        return self.msg
-
-
 class InvalidModelException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown regression model is requested"""
     def __init__(self, model):
