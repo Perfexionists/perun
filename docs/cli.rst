@@ -118,9 +118,6 @@ Show Commands
 Show units
 ~~~~~~~~~~
 
-.. click:: perun.view.alloclist.run:alloclist
-   :prog: perun show alloclist
-
 .. click:: perun.view.bars.run:bars
    :prog: perun show bars
 
