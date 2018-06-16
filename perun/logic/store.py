@@ -91,7 +91,8 @@ def locate_perun_dir_on(path):
     subpaths sorted by their lenght and checks if .perun directory exists there.
 
     :param str path: starting point of the perun dir search
-    :returns str: path to perun dir or "" if the path is not underneath some underlying perun control
+    :returns str: path to perun dir or "" if the path is not underneath some underlying perun
+        control
     """
     # convert path to subpaths and reverse the list so deepest subpaths are traversed first
     lookup_paths = path_to_subpaths(path)[::-1]

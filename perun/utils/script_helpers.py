@@ -1,3 +1,5 @@
+"""Contains helper scripts for creating units from templates."""
+
 import os
 import jinja2
 

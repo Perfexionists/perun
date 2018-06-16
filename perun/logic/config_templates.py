@@ -52,9 +52,11 @@ compatible file is then registered as workload.
 Currently the templates are set by ``-t`` option of ``perun init`` command (see :ref:`cli-main-ref`
 for details on ``perun init``). By default **master** configuration is used.
 """
+
 import os
-import jinja2
 import subprocess
+
+import jinja2
 
 import perun.utils.log as log
 import perun.utils as utils
@@ -230,7 +232,8 @@ execute:
 def get_predefined_configuration(name, kwargs):
     """Converts the given string to an appropriate predefined configuration.
 
-    In case the specified configuration does not exist, then Master configuration is used as default.
+    In case the specified configuration does not exist, then Master configuration is used as
+    default.
 
     :param str name: name of the predefined configuration
     :param dict kwargs: additional keyword arguments

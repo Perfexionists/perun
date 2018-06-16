@@ -66,8 +66,8 @@ def resources_to_pandas_dataframe(profile):
     for (snapshot, resource) in query.all_resources_of(profile):
         values['snapshots'].append(snapshot)
         flattened_resource = dict(list(query.all_items_of(resource)))
-        for rk in resource_keys:
-            values[rk].append(flattened_resource.get(rk, numpy.nan))
+        for resource_key in resource_keys:
+            values[resource_key].append(flattened_resource.get(resource_key, numpy.nan))
 
     return pandas.DataFrame(values)
 
@@ -227,19 +227,22 @@ def get_heap_map(resources):
     :param list resources: list of the resources from the memory profile
     :returns list: list of the simple allocations records
     """
-    # TODO maybe needed approximation inc ase of really different sizes
     # of the amount, when smaller sizes could be set to zero and other sizes's
     # units change to bigger ones (B > MB)
     simple_map = []
 
     for res in resources:
-        map_item = {}
-        map_item['address'] = res['address']
-        map_item['subtype'] = res['subtype']
-        map_item['amount'] = res['amount']
+        map_item = {
+            'address': res['address'],
+            'subtype': res['subtype'],
+            'amount': res['amount']
+        }
+
         if not res['uid']:
             continue
+
         map_item['uid'] = res['uid']
+
         if res['subtype'] == 'free':
             map_item['type'] = 'free'
         else:
@@ -395,7 +398,7 @@ def to_flame_graph_format(profile):
 
         >>> print(''.join(convert.to_flame_graph_format(memprof)))
         malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4
-        valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0;_start()~unreachable~0 8
+        valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0 8
         main()~/home/user/dev/test02.c~79 156
 
     Each line corresponds to some collected resource (in this case amount of

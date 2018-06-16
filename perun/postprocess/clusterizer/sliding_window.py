@@ -1,3 +1,10 @@
+"""A simple clusterization technique, that considers a broader range of values according to the
+sliding window.
+
+The size of the window can be augmented with type (relative vs absolute), or by its size (width
+and height).
+"""
+
 import perun.utils.log as log
 __author__ = 'Tomas Fiedor'
 

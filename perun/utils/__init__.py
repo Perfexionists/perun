@@ -18,8 +18,8 @@ __coauthor__ = 'Jiri Pavela'
 
 
 def get_build_directories(root='.', template=None):
-    """Search for build directories in project tree. The build directories can be specified as an argument
-    or default templates are used.
+    """Search for build directories in project tree. The build directories can be specified as an
+    argument or default templates are used.
 
     :param str root: directory tree root
     :param list template: list of directory names to search for
@@ -30,25 +30,27 @@ def get_build_directories(root='.', template=None):
     # Find all build directories in directory tree
     root = os.path.join(root, '')
     for current, subdirs, _ in os.walk(root):
-        # current directory without root section (to prevent nesting detection if root contains template directory)
+        # current directory without root section
+        # (to prevent nesting detection if root contains template directory)
         relative = current[len(root):]
         # Do not traverse hidden directories
         subdirs[:] = [d for d in subdirs if not d[0] == '.']
-        for b in template:
+        for build_dir in template:
             # find directories conforming to the templates without nested ones
-            if b in subdirs and not _is_nested(relative, template):
-                yield current + b
+            if build_dir in subdirs and not _is_nested(relative, template):
+                yield current + build_dir
 
 
-def _is_nested(path, template):
-    """Check if any element from template is contained within the path - resolve nested template directories
+def _is_nested(path, templates):
+    """Check if any element from template is contained within the path - resolve nested template
+    directories
 
     :param str path: path to be resolved
-    :param list template: list of directory names to search for
+    :param list templates: list of directory names to search for
     :return: bool value representing result
     """
-    for t in template:
-        if t in path:
+    for template in templates:
+        if template in path:
             return True
 
 
@@ -80,7 +82,8 @@ def is_executable_elf(file, only_not_stripped=False):
     """
     # Determine file magic code, we are looking out for ELF files
     file_magic = magic.from_file(file)
-    if file_magic.startswith('ELF') and ('executable' in file_magic or 'shared object' in file_magic):
+    if file_magic.startswith('ELF') and \
+            ('executable' in file_magic or 'shared object' in file_magic):
         if only_not_stripped:
             return 'not stripped' in file_magic
         return True
@@ -105,8 +108,8 @@ def get_project_elf_executables(root='.', only_not_stripped=False):
 
     # Gather binaries
     binaries = []
-    for b in build:
-        binaries += list(get_directory_elf_executables(b, only_not_stripped))
+    for build_dir in build:
+        binaries += list(get_directory_elf_executables(build_dir, only_not_stripped))
 
     return binaries
 
@@ -148,7 +151,7 @@ def run_safely_external_command(cmd, check_results=True):
     Courtesy of: https://blog.avinetworks.com/tech/python-best-practices
 
     :param str cmd: string with command that we are executing
-    :param bool check_results: check correct command exit code and raise exception in case of failure
+    :param bool check_results: check correct command exit code and raise exception in case of fail
     :return: returned standard output and error
     :raises subprocess.CalledProcessError: when any of the piped commands fails
     """

@@ -14,8 +14,6 @@ complex queries and statistical tests over the profiles.
 
 
 """
-# TODO: Consider adding caching to ease some of the computations (in case it is
-# time consuming)
 
 import operator
 import numbers

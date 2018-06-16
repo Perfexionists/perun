@@ -5,15 +5,16 @@ import collections
 import operator
 import logging
 import sys
-import termcolor
 import itertools
 import io
 import pydoc
 import functools
 
+import termcolor
+
 from perun.utils.helpers import first_index_of_attr
 from perun.utils.decorators import static_variables
-from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH,CHANGE_COLOURS, \
+from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, CHANGE_COLOURS, \
     CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
 from perun.utils.structs import PerformanceChange
 
@@ -226,8 +227,8 @@ def count_degradations_per_group(degradation_list):
     # Get only degradation results
     changes = map(operator.attrgetter('result'), map(operator.itemgetter(0), degradation_list))
     # Transform the enum into a string
-    changes = list(map(operator.attrgetter('name'), changes))
-    counts = dict(collections.Counter(changes))
+    change_names = list(map(operator.attrgetter('name'), changes))
+    counts = dict(collections.Counter(change_names))
     return counts
 
 
@@ -379,6 +380,9 @@ class History(object):
         for each such parent, we keep one column.
     :ivar bool auto_flush_with_border: specifies whether in auto-flushing the border should be
         included in the output
+    :ivar object _original_stdout: original standard output that is saved and restored when leaving
+    :ivar function _saved_print: original print function which is replaced with flushed function
+        and is restored when leaving the history
     """
     class Edge(object):
         """Represents one edge of the history
@@ -415,6 +419,8 @@ class History(object):
         """
         self.unresolved_edges = [History.Edge(head)]
         self.auto_flush_with_border = False
+        self._original_stdout = None
+        self._saved_print = None
 
     def __enter__(self):
         """When entering, we create a new string io object to catch standard output
@@ -422,7 +428,7 @@ class History(object):
         :return: the history object
         """
         # We will get the original standard output with string buffer and handle writing ourselves
-        self.original_stdout = sys.stdout
+        self._original_stdout = sys.stdout
         sys.stdout = io.StringIO()
         self._saved_print = builtins.print
 
@@ -545,6 +551,14 @@ class History(object):
         self._print_minor_version(minor_version_info)
 
     def finish_minor_version(self, minor_version_info, degradation_list):
+        """Notifies that we have processed the minor version.
+
+        Updates the unresolved parents, taints those where we found degradations and processes
+        the merge points. Everything is flushed.
+
+        :param MinorVersion minor_version_info: name of the finished minor version
+        :param list degradation_list: list of found degradations
+        """
         # Update the unresolved parents
         minor_sha = minor_version_info.checksum
         version_index = first_index_of_attr(self.unresolved_edges, 'next', minor_sha)
@@ -572,8 +586,8 @@ class History(object):
             sys.stdout.seek(0)
             for line in sys.stdout.readlines():
                 if with_border:
-                    self.original_stdout.write(self.get_left_border())
-                self.original_stdout.write(line)
+                    self._original_stdout.write(self.get_left_border())
+                self._original_stdout.write(line)
 
             # create new stringio
             sys.stdout = io.StringIO()
@@ -646,7 +660,9 @@ class History(object):
                     e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
                 ) if rightmost_branches_num else ""
                 print(left_str + right_str)
-                print(left_str + " ".join([self.unresolved_edges[merged_at].to_ascii('\\'), right_str]))
+                print(left_str + " ".join(
+                    [self.unresolved_edges[merged_at].to_ascii('\\'), right_str]
+                ))
 
     def _process_fork_point(self, fork_point):
         """Updates the printed tree after we forked from the given sha.
@@ -663,7 +679,8 @@ class History(object):
         forked_index = first_index_of_attr(self.unresolved_edges, 'next', fork_point)
         src_index_map = list(range(0, ulen))
         tgt_index_map = [
-            forked_index if self.unresolved_edges[i].next == fork_point else i for i in range(0, ulen)
+            forked_index if self.unresolved_edges[i].next == fork_point else i
+            for i in range(0, ulen)
         ]
 
         while src_index_map != tgt_index_map:

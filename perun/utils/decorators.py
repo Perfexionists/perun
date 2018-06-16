@@ -4,9 +4,10 @@ Contains decorators for enforcing certain conditions, like e.g. singleton-like r
 the functions. Or various checker function, that checks given parameters of the functions.
 """
 
-import termcolor
 import inspect
 import time
+
+import termcolor
 
 from perun.utils.exceptions import InvalidParameterException
 

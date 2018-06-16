@@ -120,25 +120,27 @@ def generate_profile_name(profile):
     """
     global PROFILE_COUNTER
     fmt_parser = re.Scanner([
-        (r"%collector%", lambda scanner, token: lookup_value(profile['collector_info'], 'name', "_")),
+        (r"%collector%", lambda scanner, token:
+            lookup_value(profile['collector_info'], 'name', "_")
+        ),
         (r"%postprocessors%", lambda scanner, token:
             ("after-" + "-and-".join(map(lambda p: p['name'], profile['postprocessors'])))
                 if len(profile['postprocessors']) else '_'
-         ),
+        ),
         (r"%[^.]+\.[^%]+%", lambda scanner, token:
             lookup_param(profile, *token[1:-1].split('.', maxsplit=1))
-         ),
+        ),
         (r"%cmd%", lambda scanner, token:
             os.path.split(lookup_value(profile['header'], 'cmd', '_'))[-1]
-         ),
+        ),
         (r"%args%", lambda scanner, token:
             "[" + sanitize_filepart(lookup_value(profile['header'], 'args', '_')) + "]"
-         ),
+        ),
         (r"%workload%", lambda scanner, token:
             "[" + sanitize_filepart(
                 os.path.split(lookup_value(profile['header'], 'workload', '_'))[-1]
             ) + "]"
-         ),
+        ),
         (r"%type%", lambda scanner, token: lookup_value(profile['header'], 'type', '_')),
         (r"%date%", lambda scanner, token: time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())),
         (r"%origin%", lambda scanner, token: lookup_value(profile, 'origin', '_')),
@@ -258,7 +260,8 @@ def generate_header_for_profile(job):
 def generate_collector_info(job):
     """
     :param Job job: job with information about the computed profile
-    :returns dict: dictionary in form of {'collector_info': {}} corresponding to the perun specification
+    :returns dict: dictionary in form of {'collector_info': {}} corresponding to the perun
+        specification
     """
     return {
         'name': job.collector.name,

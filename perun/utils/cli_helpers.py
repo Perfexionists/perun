@@ -394,4 +394,3 @@ def lookup_any_profile_callback(ctx, _, value):
         log.error("could not find the file '{}'".format(abs_path))
 
     return profiles.load_profile_from_file(abs_path, is_raw_profile=True)
-

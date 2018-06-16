@@ -65,14 +65,13 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
 
     # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
     collector_pairs = list(map(lambda c: construct_unit(c, 'collector', kwargs), collector))
-    postprocessors = list(map(lambda p: construct_unit(p, 'postprocessor', kwargs), postprocessor))
+    posts = list(map(lambda p: construct_unit(p, 'postprocessor', kwargs), postprocessor))
 
     # Construct the actual job matrix
     matrix = {
         str(b): {
             str(w): [
-                Job(c, postprocessors, str(b), str(w), str(a))
-                    for c in collector_pairs for a in args or ['']
+                Job(c, posts, str(b), str(w), str(a)) for c in collector_pairs for a in args or ['']
                 ] for w in workload
             } for b in cmd
         }
@@ -340,10 +339,10 @@ def run_prephase_commands(phase, phase_colour='white'):
         print("")
         try:
             utils.run_safely_list_of_commands(cmds)
-        except subprocess.CalledProcessError as e:
-            error_command = str(e.cmd)
-            error_code = e.returncode
-            error_output = e.output
+        except subprocess.CalledProcessError as exception:
+            error_command = str(exception.cmd)
+            error_code = exception.returncode
+            error_output = exception.output
             log.error("error in {} phase while running '{}' exited with: {} ({})".format(
                 phase, error_command, error_code, error_output
             ))
@@ -451,4 +450,3 @@ def run_matrix_job(minor_version_list, with_history=False):
     job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config())
     runner_function = run_jobs_with_history if with_history else run_jobs
     runner_function(minor_version_list, job_matrix, number_of_jobs)
-

@@ -284,7 +284,7 @@ def lookup_shared_config_dir():
     First we check if PERUN_CONFIG_DIR environmental variable is set, otherwise, we try to expand
     the home directory of the user and according to the platform we return the sane location.
 
-    On windows systems, we use the AppData\Local\perun directory in the user space, on linux
+    On windows systems, we use the AppData\\Local\\perun directory in the user space, on linux
     system we use the ~/.config/perun. Other platforms are not supported, however can be initialized
     using the PERUN_CONFIG_DIR.
 
@@ -301,10 +301,10 @@ def lookup_shared_config_dir():
     elif sys.platform == 'linux':
         perun_config_dir = os.path.join(home_directory, '.config', 'perun')
     else:
-        perun_log.error("""{} platform is currently unsupported.
-
-Set `PERUN_CONFIG_DIR` environment variable to a valid directory, where the global config will be stored and rerun the command.
-        """.format(sys.platform))
+        err_msg = "{} platform is currently unsupported.\n\n".format(sys.platform)
+        err_msg += "Set `PERUN_CONFIG_DIR` environment variable to a valid directory," \
+                   "where the global config will be stored and rerun the command."
+        perun_log.error(err_msg)
 
     store.touch_dir_range(home_directory, perun_config_dir)
     return perun_config_dir
@@ -332,10 +332,10 @@ def local(path):
     if os.path.isdir(path):
         return load_config(path, 'local')
     else:
-        perun_log.warn("""local configuration file at {} does not exist.
-
-Creating an empty configuration. Run ``perun config --local --edit`` to initialized or modify the local configuration in text editor.
-        """.format(path))
+        warn_msg = "local configuration file at {} does not exist.\n\n".format(path)
+        warn_msg += "Creating an empty configuration. Run ``perun config --local --edit``" \
+                    " to initialized or modify the local configuration in text editor."
+        perun_log.warn(warn_msg)
         return Config('local', path, {})
 
 
@@ -424,4 +424,3 @@ def gather_key_recursively(key):
         except exceptions.MissingConfigSectionException:
             continue
     return gathered_values
-

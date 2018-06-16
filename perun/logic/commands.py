@@ -418,7 +418,7 @@ def log(minor_version, short=False, **_):
         minor_version_maxima.update(
             calculate_maximal_lengths_for_stats(minor_versions, deg_count_retriever, " changes ")
         )
-        print_short_minor_version_info_list(pcs, minor_versions, minor_version_maxima)
+        print_short_minor_version_info_list(minor_versions, minor_version_maxima)
     else:
         # Walk the minor versions and print them
         for minor in vcs.walk_minor_versions(minor_version):
@@ -445,7 +445,7 @@ def adjust_limit(limit, attr_type, maxima, padding=0):
     return max(int(limit[1:]), len(attr_type)) if limit else maxima[attr_type] + padding
 
 
-def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
+def print_short_minor_version_info_list(minor_version_list, max_lengths):
     """Prints list of profiles and counts per type of tracked/untracked profiles.
 
     Prints the list of profiles, trims the sizes of each information according to the
