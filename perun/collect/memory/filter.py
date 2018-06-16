@@ -4,20 +4,6 @@ import perun.collect.memory.parsing as parsing
 __author__ = "Radim Podola"
 
 
-def validate_profile(func):
-    """ Validation decorator fro profile """
-    def inner_decorator(profile, *args, **kwargs):
-        """ Validate profile"""
-        if 'snapshots' not in profile.keys():
-            return {}
-        if 'global' not in profile.keys():
-            return {}
-
-        return func(profile, *args, **kwargs)
-
-    return inner_decorator
-
-
 def remove_allocators(profile):
     """ Remove records in trace with direct allocation function
 
@@ -34,7 +20,6 @@ def remove_allocators(profile):
     return profile
 
 
-@validate_profile
 def trace_filter(profile, function, source):
     """ Remove records in trace section matching source or function
 
@@ -69,7 +54,6 @@ def set_global_region(profile):
     profile['global']['resources'] = {}
 
 
-@validate_profile
 def allocation_filter(profile, function, source):
     """ Remove record of specified function or source code out of the profile
 
@@ -84,7 +68,7 @@ def allocation_filter(profile, function, source):
             return True
         if uid['function'] in function:
             return False
-        if uid['source'] in source:
+        if any(map(lambda s: s is not None and str(uid['source']).endswith(s), source)):
             return False
         return True
 
@@ -96,7 +80,6 @@ def allocation_filter(profile, function, source):
     return profile
 
 
-@validate_profile
 def remove_uidless_records_from(profile):
     """ Remove record without UID out of the profile
 

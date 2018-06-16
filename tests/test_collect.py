@@ -4,7 +4,10 @@ import os
 
 import perun.vcs as vcs
 import perun.logic.runner as runner
+import perun.profile.query as query
 import perun.collect.complexity.run as complexity
+
+from perun.utils.helpers import Unit, Job
 
 __author__ = 'Tomas Fiedor'
 
@@ -116,6 +119,25 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     _, err = capsys.readouterr()
     assert after_second_object_count == last_object_count
     assert 'debug info' in err
+
+    target_bin = memory_collect_job[0][0]
+    collector_unit = Unit('memory', {
+        'all': False,
+        'no_func': 'main'
+    })
+    job = Job('memory', [], str(target_bin), '', '')
+    _, prof = runner.run_collector(collector_unit, job)
+
+    assert len(list(query.all_resources_of(prof))) == 2
+
+    collector_unit = Unit('memory', {
+        'all': False,
+        'no_source': 'memory_collect_test.c'
+    })
+    job = Job('memory', [], str(target_bin), '', '')
+    _, prof = runner.run_collector(collector_unit, job)
+
+    assert len(list(query.all_resources_of(prof))) == 0
 
 
 def test_collect_time(monkeypatch, helpers, pcs_full, capsys):

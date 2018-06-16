@@ -10,7 +10,7 @@ import subprocess
 import os
 import magic
 
-from .log import msg_to_stdout, error
+from .log import error, cprint
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 __author__ = 'Tomas Fiedor'
@@ -201,7 +201,7 @@ def run_safely_list_of_commands(cmd_list):
         if out:
             print(out.decode('utf-8'), end='')
         if err:
-            log.cprint(err.decode('utf-8'), 'red')
+            cprint(err.decode('utf-8'), 'red')
 
 
 def get_stdout_from_external_command(command):

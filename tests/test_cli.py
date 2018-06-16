@@ -971,3 +971,44 @@ def test_run(pcs_full, monkeypatch):
     matrix.data['execute']['pre_run'].append('ls | grep dafad')
     result = runner.invoke(cli.run, ['matrix'])
     assert result.exit_code == 1
+
+
+def test_error_runs(pcs_full, monkeypatch):
+    """Try various error states induced by job matrix"""
+    matrix = config.Config('local', '', {
+        'vcs': {'type': 'git', 'url': '../'},
+        'args': ['-al'],
+        'workloads': ['.', '..'],
+        'postprocessors': [
+            {'name': 'fokume', 'params': {}}
+        ],
+        'execute': {
+            'pre_run': [
+                'ls | grep "."',
+            ]
+        }
+    })
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+    runner = CliRunner()
+    result = runner.invoke(cli.run, ['matrix'])
+    assert result.exit_code == 1
+    assert "missing 'collectors'" in result.output
+
+    matrix.data['collectors'] = [
+        {'name': 'tome', 'params': {}}
+    ]
+
+    result = runner.invoke(cli.run, ['matrix'])
+    assert result.exit_code == 1
+    assert "missing 'cmds'" in result.output
+    matrix.data['cmds'] = ['ls']
+
+    result = runner.invoke(cli.run, ['matrix', '-q'])
+    assert result.exit_code == 0
+    assert "tome does not exist" in result.output
+    matrix.data['collectors'][0]['name'] = 'time'
+
+    result = runner.invoke(cli.run, ['matrix', '-q'])
+    assert result.exit_code == 0
+    assert "fokume does not exist" in result.output
+

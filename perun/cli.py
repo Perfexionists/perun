@@ -747,7 +747,9 @@ def run(ctx, **kwargs):
 
 @run.command()
 @click.pass_context
-def matrix(ctx, **kwargs):
+@click.option('--without-vcs-history', '-q', 'quiet', is_flag=True, default=False,
+              help="Will not print the VCS history tree during the collection of the data.")
+def matrix(ctx, quiet, **kwargs):
     """Runs the jobs matrix specified in the local.yml configuration.
 
     This commands loads the jobs configuration from local configuration, builds
@@ -766,7 +768,7 @@ def matrix(ctx, **kwargs):
     with Perun's configuration files.
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
-    kwargs.update({'with_history': True})
+    kwargs.update({'with_history': not quiet})
     runner.run_matrix_job(**kwargs)
 
 

@@ -94,12 +94,20 @@ def load_job_info_from_config():
     local_config = pcs.local_config().data
 
     if 'collectors' not in local_config.keys():
-        log.error("missing 'collector' in the local.yml")
+        log.error(
+            "missing 'collectors' region in the local.yml\n\n"
+            "Run `perun config edit` and fix the job matrix in order to collect the data."
+            "For more information about job matrix see :doc:`jobs`."
+        )
     collectors = local_config['collectors']
     postprocessors = local_config.get('postprocessors', [])
 
     if 'cmds' not in local_config.keys():
-        log.error("missing 'cmds' section in local.yml")
+        log.error(
+            "missing 'cmds' region in the local.yml\n\n"
+            "Run `perun config edit` and fix the job matrix in order to collect the data."
+            "For more information about job matrix see :doc:`jobs`."
+        )
 
     info = {
         'cmd': local_config['cmds'],
@@ -195,7 +203,9 @@ def run_collector(collector, job):
     try:
         collector_module = get_module('perun.collect.{0}.run'.format(collector.name))
     except ImportError:
-        return CollectStatus.ERROR, "{} does not exist".format(collector.name), {}
+        err_msg = "{} does not exist".format(collector.name)
+        log.error(err_msg, recoverable=True)
+        return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dictionaries(job._asdict(), collector.params)
@@ -228,7 +238,7 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
             'collector_params': {collector_name: collector_params}
         })
     except KeyError as collector_exception:
-        log.error("missing parameter: {}".format(collector_exception))
+        log.error("missing parameter: {}".format(str(collector_exception)))
 
 
 @decorators.print_elapsed_time
@@ -252,7 +262,9 @@ def run_postprocessor(postprocessor, job, prof):
     try:
         postprocessor_module = get_module('perun.postprocess.{0}.run'.format(postprocessor.name))
     except ImportError:
-        return PostprocessStatus.ERROR, "{} does not exist".format(postprocessor.name), {}
+        err_msg = "{} does not exist".format(postprocessor.name)
+        log.error(err_msg, recoverable=True)
+        return PostprocessStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
     job_params = utils.merge_dict_range(job._asdict(), {'profile': prof}, postprocessor.params)
@@ -371,10 +383,10 @@ def run_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                     # Run the postprocessor and check if the profile was successfully postprocessed
                     p_status, prof = run_postprocessor(postprocessor, job, prof)
                     if p_status != PostprocessStatus.OK or not prof:
-                        continue
-
-                # Store the computed profile inside the job directory
-                store_generated_profile(prof, job)
+                        break
+                else:
+                    # Store the computed profile inside the job directory
+                    store_generated_profile(prof, job)
 
 
 @decorators.print_elapsed_time

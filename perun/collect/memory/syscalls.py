@@ -63,23 +63,6 @@ def build_address_to_line_cache(addresses, binary_name):
         ))
 
 
-def get_extern_funcs(filename):
-    """
-    :param string filename: name of file to inspect for functions
-    :returns list: list of functions from dynamic section
-    """
-    sys_call = ['nm', '-D', '-C', filename]
-    output = subprocess.check_output(sys_call)
-    output = output.decode("utf-8").splitlines()
-    functions = []
-    for line in output:
-        line = line.strip()
-        if line[0] == 'U':
-            functions.append(line[2:])
-
-    return functions
-
-
 def address_to_line(ip):
     """
     :param string ip: instruction pointer value
@@ -137,7 +120,3 @@ def check_debug_symbols(cmd):
         return False
 
     return True
-
-
-if __name__ == "__main__":
-    pass

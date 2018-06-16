@@ -24,8 +24,7 @@ def contains_git_repo(path):
     :returns bool: true if @p path contains a git repo already
     """
     try:
-        _ = git.Repo(path).git_dir
-        return True
+        return git.Repo(path).git_dir is not None
     except (git.exc.InvalidGitRepositoryError, git.exc.NoSuchPathError):
         return False
 
