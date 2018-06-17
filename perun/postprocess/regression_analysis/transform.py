@@ -11,16 +11,13 @@ def coefficients_to_points(model, coeffs, x_interval_start, x_interval_end, **_)
     """ Transform computed coefficients from regression analysis into points, which can be
         plotted as a function / curve.
 
-    Arguments:
-        model(str): the model name
-        coeffs(list): the model coefficients
-        x_interval_start(int or float): the left bound of the x interval
-        x_interval_end(int or float): the right bound of the x interval
-    Raises:
-        DictionaryKeysValidationFailed: if some dictionary checking fails
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        dict: dictionary with 'plot_x' and 'plot_y' arrays
+    :param str model: the model name
+    :param list coeffs: the model coefficients
+    :param int or float x_interval_start: the left bound of the x interval
+    :param int or float x_interval_end: the right bound of the x interval
+    :raises DictionaryKeysValidationFailed: if some dictionary checking fails
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: dictionary with 'plot_x' and 'plot_y' arrays
     """
     # Get the transformation data from the regression models
     data = get_transformation_data_for(model, 'plot_model')

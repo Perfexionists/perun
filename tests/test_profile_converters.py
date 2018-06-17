@@ -70,26 +70,6 @@ def test_heat_map(memory_profiles):
         assert len(heat_map['map']) == number_of_cells
 
 
-def test_allocation_table(memory_profiles):
-    """Test creation of allocations table
-
-    Expecting no error and returned dictionary with allocation info
-    """
-    for memory_profile in memory_profiles:
-        allocation_info = convert.to_allocations_table(memory_profile)
-        assert len(allocation_info['snapshots']) > 0
-
-
-def test_flow_table(memory_profiles):
-    """Test creation of flow table
-
-    Expecting no error and returned dictionary with some flow info
-    """
-    for memory_profile in memory_profiles:
-        flow_info = convert.to_flow_table(memory_profile)
-        assert len(flow_info['snapshots']) > 0
-
-
 def test_coefficients_to_points_correct(postprocess_profiles):
     """ Test correct conversion from models coefficients to points that can be used for plotting.
 

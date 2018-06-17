@@ -13,9 +13,9 @@ __author__ = 'Tomas Fiedor'
 
 def write_timestamp(file_handle, timestamp):
     """Helper function for writing timestamp into the file
-    Arguments:
-        file_handle(file): opened file handle
-        timestamp(float): timestamp we are writing to file
+
+    :param file file_handle: opened file handle
+    :param float timestamp: timestamp we are writing to file
     """
     binary_timestamp = struct.pack('<I', round(timestamp))
     file_handle.write(binary_timestamp)
@@ -23,11 +23,8 @@ def write_timestamp(file_handle, timestamp):
 
 def read_timestamp_from_file(file_handle):
     """
-    Arguments:
-        file_handle(file): opened file handle
-
-    Returns:
-        int: timestamp
+    :param file file_handle: opened file handle
+    :returns int: timestamp
     """
     timestamp_bytes = file_handle.read(4)
     return struct.unpack('<I', timestamp_bytes)[0]
@@ -35,21 +32,15 @@ def read_timestamp_from_file(file_handle):
 
 def timestamp_to_str(timestamp):
     """
-    Arguments:
-        timestamp(int): timestamp, that will be converted to string
-
-    Returns:
-        str: string representation of the timestamp in format %Y-%m-%d %H:%M:%S
+    :param int timestamp: timestamp, that will be converted to string
+    :returns str: string representation of the timestamp in format %Y-%m-%d %H:%M:%S
     """
     return datetime.datetime.fromtimestamp(round(timestamp)).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def str_to_timestamp(date_string):
     """
-    Arguments:
-        date_string(str): string representation of form %Y-%m-%d %H:%M:%S
-
-    Returns:
-        int: timestamp representing the string
+    :param str date_string: string representation of form %Y-%m-%d %H:%M:%S
+    :returns int: timestamp representing the string
     """
     return time.mktime(datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S").timetuple())

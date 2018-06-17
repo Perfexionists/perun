@@ -14,8 +14,7 @@ import perun.postprocess.regression_analysis.tools as tools
 def get_supported_methods():
     """Provides all currently supported computational methods as a list of their names.
 
-    Returns:
-        list of str: the names of all supported methods
+    :returns list of str: the names of all supported methods
     """
     return [key for key in _METHODS.keys()]
 
@@ -23,18 +22,15 @@ def get_supported_methods():
 def compute(data_gen, method, models, **kwargs):
     """The regression analysis wrapper for various computation methods.
 
-    Arguments:
-        data_gen(iter): the generator object with collected data (data provider generators)
-        method(str): the _METHODS key value indicating requested computation method
-        models(tuple of str): tuple of requested regression models to compute
-        kwargs: various additional configuration arguments for specific models
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        list of dict: the computation results
-
+    :param iter data_gen: the generator object with collected data (data provider generators)
+    :param str method: the _METHODS key value indicating requested computation method
+    :param tuple of str models: tuple of requested regression models to compute
+    :param kwargs: various additional configuration arguments for specific models
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns list of dict: the computation results
     """
     # Split the models into derived and standard ones
     derived, models = mod.filter_derived(models)
@@ -59,13 +55,10 @@ def compute(data_gen, method, models, **kwargs):
 def compute_derived(derived_models, analysis, **kwargs):
     """The computation wrapper for derived models.
 
-    Arguments:
-        derived_models(tuple of str): collection of derived models to compute
-        analysis(list of dict): the already computed standard regression models
-        kwargs: additional optional parameters
-    Returns:
-        iterable: generator object which produces results one by one
-
+    :param tuple of str derived_models: collection of derived models to compute
+    :param list of dict analysis: the already computed standard regression models
+    :param kwargs: additional optional parameters
+    :returns iterable: generator object which produces results one by one
     """
     if derived_models:
         for der in mod.map_keys_to_models(derived_models):
@@ -78,18 +71,15 @@ def full_computation(x_pts, y_pts, computation_models, **_):
 
     The method might have performance issues in case of too many models or data points.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        iterable: the generator object which produces computed models one by one as a transformed
-                  output data dictionary
-
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns iterable: the generator object which produces computed models one by one as a
+        transformed output data dictionary
     """
     # Get all the models properties
     for model in mod.map_keys_to_models(computation_models):
@@ -110,19 +100,16 @@ def iterative_computation(x_pts, y_pts, computation_models, steps, **_):
     This method might produce only local result (local extrema), but it's generally faster than
     the full computation method.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-        steps(int): number of steps to slit the computation into
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        iterable: the generator object which produces best fitting model as a transformed data
-                  dictionary
-
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :param int steps: number of steps to slit the computation into
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns iterable: the generator object which produces best fitting model as a transformed data
+        dictionary
     """
     x_pts, y_pts = tools.shuffle_points(x_pts, y_pts)
 
@@ -149,19 +136,16 @@ def interval_computation(x_pts, y_pts, computation_models, steps, **_):
     This technique allows to find different regression models in each interval and thus discover
     different complexity behaviour for algorithm based on it's input size.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-        steps(int): number of steps to slit the computation into
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        the generator object which produces computed models one by one for every interval as
-        a transformed output data dictionary
-
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :param int steps: number of steps to slit the computation into
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns the generator object which produces computed models one by one for every interval as a
+        transformed output data dictionary
     """
     # Sort the regression data
     x_pts, y_pts = tools.sort_points(x_pts, y_pts)
@@ -188,18 +172,16 @@ def initial_guess_computation(x_pts, y_pts, computation_models, steps, **_):
     This method might produce only local result (local extrema), but it's generally faster than the
     full computation method.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-        steps(int): number of steps to slit the computation into
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        iterable: the generator object that produces the complete result in one step
 
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :param int steps: number of steps to slit the computation into
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns iterable: the generator object that produces the complete result in one step
     """
     x_pts, y_pts = tools.shuffle_points(x_pts, y_pts)
 
@@ -224,17 +206,14 @@ def bisection_computation(x_pts, y_pts, computation_models, **_):
     This method computes the best fitting model for the whole profiling data and then perform
     interval bisection in order to find potential difference between interval models.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        iterable: the generator object that produces interval models in order
-
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns iterable: the generator object that produces interval models in order
     """
     # Sort the regression data
     x_pts, y_pts = tools.sort_points(x_pts, y_pts)
@@ -252,17 +231,16 @@ def _compute_bisection_model(x_pts, y_pts, computation_models, **kwargs):
 
     Currently uses the full computation method.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models that will be computed
-        kwargs: additional configuration parameters
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        dict: the best fitting model
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models that will be
+        computed
+    :param kwargs: additional configuration parameters
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: the best fitting model
     """
 
     results = []
@@ -281,18 +259,15 @@ def _bisection_step(x_pts, y_pts, computation_models, last_model):
     process repeats. Otherwise the last model is used as a final model.
 
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-        last_model(dict): the full interval model that is split
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        iterable: the generator object that produces interval result
-
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :param dict last_model: the full interval model that is split
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns iterable: the generator object that produces interval result
     """
     # Split the interval and compute each one of them
     half_models = []
@@ -327,12 +302,11 @@ def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, la
     The functions checks if the model has changed for the given half and if yes, then continues
     with bisection - otherwise the half model is used as the final one for the interval.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-        half_model(dict): the half interval model
-        last_model(dict): the full interval model that is split
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :param dict half_model: the half interval model
+    :param dict last_model: the full interval model that is split
     """
     if half_model['model'] != last_model['model']:
         # The model is different, continue with bisection
@@ -350,19 +324,15 @@ def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, la
 def _models_initial_step(x_pts, y_pts, computation_models, steps):
     """Performs initial step with specified models in multi-step methods.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        computation_models(tuple of str): the collection of regression models to compute
-        steps(int): number of total steps
-    Raises:
-        GenericRegressionExceptionBase: derived versions which are used in the computation functions
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        tuple: list of model generators
-               list of model initial step results
-
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param tuple of str computation_models: the collection of regression models to compute
+    :param int steps: number of total steps
+    :raises GenericRegressionExceptionBase: derived versions which are used in the computation
+        functions
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns tuple: list of model generators, list of model initial step results
     """
     model_generators = []
     results = []
@@ -383,11 +353,8 @@ def _find_best_fitting_model(model_results):
     This function operates on a (intermediate) result dictionaries,
     where 'r_square' key is required.
 
-    Arguments:
-        model_results(list of dict): the list of result dictionaries for models
-    Return:
-        int: the index of best fitting model amongst the list
-
+    :param list of dict model_results: the list of result dictionaries for models
+    :returns int: the index of best fitting model amongst the list
     """
     # Guess the best fitting model is the first one
     best_fit = 0
@@ -408,14 +375,10 @@ def _transform_to_output_data(data, extra_keys=None):
     dictionary, then it's not included in the output dictionary. Coefficients are saved with
     default names 'b0', 'b1'...
 
-    Arguments:
-        data(dict): the data dictionary with results
-        extra_keys(list of str): the extra keys to include
-    Raises:
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-    Returns:
-        dict: the output dictionary
-
+    :param dict data: the data dictionary with results
+    :param list of str extra_keys: the extra keys to include
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :returns dict: the output dictionary
     """
     tools.validate_dictionary_keys(
         data, ['model', 'coeffs', 'r_square', 'x_interval_start', 'x_interval_end'], [])
@@ -443,17 +406,13 @@ def _build_uniform_regression_data_format(x_pts, y_pts, model):
     The uniform data dictionary is used in the regression computation as it allows to build
     generic and easily extensible computational methods and models.
 
-    Arguments:
-        x_pts(list): the list of x points coordinates
-        y_pts(list): the list of y points coordinates
-        model(dict): the regression model properties
-    Raises:
-        InvalidPointsException: if the points count is too low or their coordinates list have
-                                different lengths
-        DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
-    Return:
-        dict: the uniform data dictionary
-
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param dict model: the regression model properties
+    :raises InvalidPointsException: if the points count is too low or their coordinates list have
+        different lengths
+    :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
+    :returns dict: the uniform data dictionary
     """
     # Check the requirements
     tools.check_points(len(x_pts), len(y_pts), tools.MIN_POINTS_COUNT)

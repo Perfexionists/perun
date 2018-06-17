@@ -30,6 +30,7 @@ int main(){
 	free(n);
 
 	for (int i = 0; i < 1000000; ++i);
+	fun();
 
 	m = (int*)malloc(sizeof(int));
 	*m = 5;

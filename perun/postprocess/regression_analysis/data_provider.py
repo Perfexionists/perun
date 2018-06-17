@@ -33,7 +33,8 @@ def generic_profile_provider(profile, of_key, per_key, **_):
     :param str of_key: key for which we are finding the model
     :param str per_key: key of the independent variable
     :param dict _: rest of the key arguments
-    :returns generator: each subsequent call returns tuple: x points list, y points list, function name
+    :returns generator: each subsequent call returns tuple: x points list, y points list, function
+        name
     """
     # Get the file resources contents
     resources = list(map(itemgetter(1), query.all_resources_of(profile)))

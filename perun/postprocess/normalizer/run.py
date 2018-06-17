@@ -14,11 +14,8 @@ def get_resource_type(resource):
     Checks if there is 'type' defined inside the resource, and if so then returns
     the type. Otherwise it returns empty string as a type.
 
-    Arguments:
-        resource(dict): dictionary representing the resource
-
-    Returns:
-        str: type of the resource ('' if there is none type)
+    :param dict resource: dictionary representing the resource
+    :returns str: type of the resource ('' if there is none type)
     """
     return resource['type'] if 'type' in resource.keys() else ''
 
@@ -29,8 +26,7 @@ def normalize_resources(resources):
     Computes the maximal values per each type inside the snapshot of the resource,
     and then normalizes the values to the interval <0,1>.
 
-    Arguments:
-        resources(list): list of resources
+    :param list resources: list of resources
     """
     # First compute maximas per each type
     maximum_per_type = {}
@@ -51,8 +47,7 @@ def normalize_resources(resources):
 
 def postprocess(profile, **_):
     """
-    Arguments:
-        profile(dict): json-like profile that will be preprocessed by normalizer
+    :param dict profile: json-like profile that will be preprocessed by normalizer
     """
     # Normalize global profile
     if 'global' in profile.keys():

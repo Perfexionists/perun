@@ -63,9 +63,8 @@ class FlowGraphVisualization(object):
 
             [{'fields': 0, 'peak': False, 'time': 0.0, 'snapshot': 0}]
 
-        Arguments:
-            window(any): initialized curses window
-            heap(dict): the heap representation
+        :param any window: initialized curses window
+        :param dict heap: the heap representation
         """
         # memory allocated peak
         self.__peak = heap['stats']['max_sum_amount']
@@ -119,8 +118,7 @@ class FlowGraphVisualization(object):
 
             Menu text is placed in the middle of the window's bottom
 
-        Arguments:
-            menu_text(string): string to print as a MENU text
+        :param string menu_text: string to print as a MENU text
         """
         window_lines, window_cols = self.__window.getmaxyx()
         # clearing line for MENU text
@@ -133,10 +131,9 @@ class FlowGraphVisualization(object):
     def __print_y_axis_info(self, rows, cols, margin):
         """ Prints the Y-axis information
 
-        Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's columns
-            margin(int): length of the Y-axis info space
+        :param int rows: total number of the screen's rows
+        :param int cols: total number of the screen's columns
+        :param int margin: length of the Y-axis info space
         """
         field_size = self.__get_field_size(rows)
 
@@ -156,9 +153,8 @@ class FlowGraphVisualization(object):
     def __print_x_axis_info(self, rows, margin):
         """ Prints the X-axis information
 
-        Arguments:
-            rows(int): total number of the screen's rows
-            margin(int): length of the Y-axis info space
+        :param int rows: total number of the screen's rows
+        :param int margin: length of the Y-axis info space
         """
         self.__window.addstr(rows - 1, 0, self.__X_AXIS_TEXT)
 
@@ -169,10 +165,9 @@ class FlowGraphVisualization(object):
     def __print_borders(self, rows, cols, margin):
         """ Prints the borders around graph
 
-        Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's cols
-            margin(int): length of the Y-axis info space
+        :param int rows: total number of the screen's rows
+        :param int cols: total number of the screen's cols
+        :param int margin: length of the Y-axis info space
         """
         # printing horizontal borders
         for col in range(margin, cols):
@@ -193,9 +188,8 @@ class FlowGraphVisualization(object):
     def __set_start_snap(self, following_snap, cols):
         """ Sets starting snapshot
 
-        Arguments:
-            following_snap(int): number of the snapshot to set
-            cols(int): total number of the screen's columns
+        :param int following_snap: number of the snapshot to set
+        :param int cols: total number of the screen's columns
         """
         # calculating total number of the bars in screen
         bars = cols // self.BAR_SPACE
@@ -219,10 +213,9 @@ class FlowGraphVisualization(object):
     def print_graph(self, rows, cols, margin):
         """ Prints the graph data to the screen with borders and axis's info
 
-        Arguments:
-            rows(int): total number of the screen's rows
-            cols(int): total number of the screen's columns
-            margin(int): length of the Y-axis info space
+        :param int rows: total number of the screen's rows
+        :param int cols: total number of the screen's columns
+        :param int margin: length of the Y-axis info space
         """
         # set iterator over graph data list
         iterator = iter(self.__graph_data)
@@ -257,8 +250,7 @@ class FlowGraphVisualization(object):
     def __get_field_size(self, rows):
         """ Calculates the field's size based on the screen's size
 
-        Returns:
-            float: field size
+        :returns float: field size
         """
         # calculating approximation size of the field
         size = self.__peak / rows
@@ -270,9 +262,8 @@ class FlowGraphVisualization(object):
 
             Structure is saved into instance attribute __graph_data.
 
-        Arguments:
-            rows(int): total number of the graph's rows
-            cols(int): total number of the graph's columns
+        :param int rows: total number of the graph's rows
+        :param int cols: total number of the graph's columns
         """
         # clearing old data
         self.__graph_data = []
@@ -302,8 +293,7 @@ class FlowGraphVisualization(object):
     def print_partial_view(self, move):
         """ Draws the heap map screen to represent the specified snapshot
 
-        Arguments:
-            move(int): move of the following snapshot (PREVIOUS/NEXT)
+        :param int move: move of the following snapshot (PREVIOUS/NEXT)
         """
         try:
             rows, cols, margin = self.__get_graph_size()
@@ -349,9 +339,8 @@ class FlowGraphVisualization(object):
 
             Structure is saved into instance attribute __graph_data.
 
-        Arguments:
-            rows(int): total number of the graph's rows
-            cols(int): total number of the graph's columns
+        :param int rows: total number of the graph's rows
+        :param int cols: total number of the graph's columns
         """
         # clearing old data
         self.__graph_data = []
@@ -404,11 +393,8 @@ class FlowGraphVisualization(object):
 
             Also check the screen's size limitations.
 
-        Returns:
-            tuple: address info length, map's rows, map's columns
-
-        Raises:
-            curses.error: when minimal screen's size is not respected
+        :returns tuple: address info length, map's rows, map's columns
+        :raises curses.error: when minimal screen's size is not respected
         """
         window_lines, window_cols = self.__window.getmaxyx()
 
@@ -462,9 +448,8 @@ class FlowGraphVisualization(object):
 def flow_graph_logic(window, heap):
     """ FLOW GRAPH visualization prompt logic
 
-    Arguments:
-        window(any): initialized curses window
-        heap(dict): the heap representation
+    :param any window: initialized curses window
+    :param dict heap: the heap representation
     """
     # instantiate of the flow graph visualization object
     vis_obj = FlowGraphVisualization(window, heap)
@@ -501,11 +486,8 @@ def flow_graph(heap):
         (without requiring the Enter key to be pressed) on,
         enable keypad mode for special keys s.a. HOME.
 
-    Arguments:
-        heap(dict): the heap representation
-
-    Returns:
-        string: message informing about operation success
+    :param dict heap: the heap representation
+    :returns string: message informing about operation success
     """
     # after integration remove try block
     try:

@@ -14,6 +14,7 @@ import click
 import colorama
 import termcolor
 
+import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.logic.store as store
 import perun.profile.factory as profile
@@ -22,7 +23,6 @@ import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
 
-from perun.logic.pcs import pass_pcs, PCS
 from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import \
@@ -52,37 +52,30 @@ def lookup_minor_version(func):
     then this decorator performs a lookup of the minor_version corresponding
     to the head of the repository.
 
-    Arguments:
-        func(function): decorated function for which we will lookup the minor_version
-
-    Returns:
-        function: decorated function, with minor_version translated or obtained
+    :param function func: decorated function for which we will lookup the minor_version
+    :returns function: decorated function, with minor_version translated or obtained
     """
-    # the position of minor_version is one less, because of needed pcs parameter
     f_args, _, _, _, *_ = inspect.getfullargspec(func)
-    minor_version_position = f_args.index('minor_version') - 1
+    minor_version_position = f_args.index('minor_version')
 
-    def wrapper(pcs, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         """Inner wrapper of the function"""
         # if the minor_version is None, then we obtain the minor head for the wrapped type
         if minor_version_position < len(args) and args[minor_version_position] is None:
             # note: since tuples are immutable we have to do this workaround
             arg_list = list(args)
-            arg_list[minor_version_position] = vcs.get_minor_head(
-                pcs.vcs_type, pcs.vcs_path)
+            arg_list[minor_version_position] = vcs.get_minor_head()
             args = tuple(arg_list)
         else:
-            vcs.check_minor_version_validity(pcs.vcs_type, pcs.vcs_path, args[minor_version_position])
-        return func(pcs, *args, **kwargs)
+            vcs.check_minor_version_validity(args[minor_version_position])
+        return func(*args, **kwargs)
 
     return wrapper
 
 
-@pass_pcs
-def config_get(pcs, store_type, key):
+def config_get(store_type, key):
     """Gets from the store_type configuration the value of the given key.
 
-    :param PCS pcs: object with performance control system wrapper
     :param str store_type: type of the store lookup (local, shared of recursive)
     :param str key: list of section delimited by dot (.)
     """
@@ -95,11 +88,9 @@ def config_get(pcs, store_type, key):
     print("{}: {}".format(key, value))
 
 
-@pass_pcs
-def config_set(pcs, store_type, key, value):
+def config_set(store_type, key, value):
     """Sets in the store_type configuration the key to the given value.
 
-    :param PCS pcs: object with performance control system wrapper
     :param str store_type: type of the store lookup (local, shared of recursive)
     :param str key: list of section delimited by dot (.)
     :param object value: arbitrary value that will be set in the configuration
@@ -110,11 +101,9 @@ def config_set(pcs, store_type, key, value):
     print("Value '{1}' set for key '{0}'".format(key, value))
 
 
-@pass_pcs
-def config_edit(pcs, store_type):
+def config_edit(store_type):
     """Runs the external editor stored in general.editor key in order to edit the config file.
 
-    :param PCS pcs: object with performance control system wrapper
     :param str store_type: type of the store (local, shared, or recursive)
     :raises MissingConfigSectionException: when the general.editor is not found in any config
     :raises ExternalEditorErrorException: raised if there are any problems during invoking of
@@ -142,14 +131,13 @@ def config_reset(store_type, config_template):
         shared_location = perun_config.lookup_shared_config_dir()
         perun_config.init_shared_config_at(shared_location)
     else:
-        pcs = PCS(store.locate_perun_dir_on(os.getcwd()))
         vcs_config = {
             'vcs': {
-                'url': pcs.vcs_path,
-                'type': pcs.vcs_type
+                'url': pcs.get_vcs_path(),
+                'type': pcs.get_vcs_type()
             }
         }
-        perun_config.init_local_config_at(pcs.path, vcs_config, config_template)
+        perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
     perun_log.info("{} configuration reset{}".format(
         'global' if store_type in ('shared', 'global') else 'local',
         " to {}".format(config_template) if store not in ("shared", "global") else ""
@@ -225,25 +213,21 @@ def init(dst, configuration_template='master', **kwargs):
     # If the wrapped repo could not be initialized we end with error. The user should adjust this
     # himself and fix it in the config. Note that this decision was made after tagit design,
     # where one needs to further adjust some options in initialized directory.
-    if vcs_type and not vcs.init(vcs_type, vcs_path, vcs_params):
-        perun_log.error("Could not initialize empty {0} repository at {1}.\n"
-                        "Either reinitialize perun with 'perun init' or initialize {0} repository"
-                        "manually and fix the path to vcs in 'perun config --edit'"
-                        "".format(vcs_type, vcs_path
-        ))
+    if vcs_type and not vcs.init(vcs_params):
+        err_msg = "Could not initialize empty {0} repository at {1}.\n".format(vcs_type, vcs_path)
+        err_msg += "Either reinitialize perun with 'perun init' or initialize {0} repository"
+        err_msg += "manually and fix the path to vcs in 'perun config --edit'"
+        perun_log.error(err_msg)
 
 
-@pass_pcs
 @lookup_minor_version
-def add(pcs, profile_names, minor_version, keep_profile=False):
+def add(profile_names, minor_version, keep_profile=False):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        profile_names(generator): generator of profiles that will be stored for the minor version
-        minor_version(str): SHA-1 representation of the minor version
-        keep_profile(bool): if true, then the profile that is about to be added will be not
-            deleted, and will be kept as it is. By default false, i.e. profile is deleted.
+    :param generator profile_names: generator of profiles that will be stored for the minor version
+    :param str minor_version: SHA-1 representation of the minor version
+    :param bool keep_profile: if true, then the profile that is about to be added will be not
+        deleted, and will be kept as it is. By default false, i.e. profile is deleted.
     """
     added_profile_count = 0
     for profile_name in profile_names:
@@ -299,19 +283,14 @@ def add(pcs, profile_names, minor_version, keep_profile=False):
     perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
 
 
-@pass_pcs
 @lookup_minor_version
-def remove(pcs, profile_name, minor_version, **kwargs):
+def remove(profile_name, minor_version, **kwargs):
     """Removes @p profile from the @p minor_version inside the @p pcs
 
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        profile_name(str): profile that will be stored for the minor version
-        minor_version(str): SHA-1 representation of the minor version
-        kwargs(dict): dictionary with additional options
-
-    Raises:
-        EntryNotFoundException: when the given profile_name points to non-tracked profile
+    :param str profile_name: profile that will be stored for the minor version
+    :param str minor_version: SHA-1 representation of the minor version
+    :param dict kwargs: dictionary with additional options
+    :raisesEntryNotFoundException: when the given profile_name points to non-tracked profile
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
@@ -326,11 +305,8 @@ def calculate_profile_numbers_per_type(profile_list):
     number of profiles that are occurring in the profile list. Used for statistics
     about profiles corresponding to minor versions.
 
-    Arguments:
-        profile_list(list): list of ProfileInfo with information about profiles
-
-    Returns:
-        dict: dictionary mapping profile types to number of profiles of given type in the list
+    :param list profile_list: list of ProfileInfo with information about profiles
+    :returns dict: dictionary mapping profile types to number of profiles of given type in the list
     """
     profile_numbers = collections.defaultdict(int)
     for profile_info in profile_list:
@@ -342,10 +318,9 @@ def calculate_profile_numbers_per_type(profile_list):
 def print_profile_numbers(profile_numbers, profile_types, line_ending='\n'):
     """Helper function for printing the numbers of profile to output.
 
-    Arguments:
-        profile_numbers(dict): dictionary of number of profiles grouped by type
-        profile_types(str): type of the profiles (tracked, untracked, etc.)
-        line_ending(str): ending of the print (for different outputs of log and status)
+    :param dict profile_numbers: dictionary of number of profiles grouped by type
+    :param str profile_types: type of the profiles (tracked, untracked, etc.)
+    :param str line_ending: ending of the print (for different outputs of log and status)
     """
     if profile_numbers['all']:
         print("{0[all]} {1} profiles (".format(profile_numbers, profile_types), end='')
@@ -390,9 +365,8 @@ output of status, log and others.
 
 
 @perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('log'))
-@pass_pcs
 @lookup_minor_version
-def log(pcs, minor_version, short=False, **_):
+def log(minor_version, short=False, **_):
     """Prints the log of the performance control system
 
     Either prints the short or longer version. In short version, only header and short
@@ -400,16 +374,14 @@ def log(pcs, minor_version, short=False, **_):
     the number of profiles associated with each of the minor version and some basic
     information about minor versions, like e.g. description, hash, etc.
 
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        minor_version(str): representation of the head version
-        short(bool): true if the log should be in short format
+    :param str minor_version: representation of the head version
+    :param bool short: true if the log should be in short format
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun log '", 2)
 
     # Print header for --short-minors
     if short:
-        minor_versions = list(vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, minor_version))
+        minor_versions = list(vcs.walk_minor_versions(minor_version))
         # Reduce the descriptions of minor version to one liners
         for mv_no, minor_version in enumerate(minor_versions):
             minor_versions[mv_no] = minor_version._replace(desc=minor_version.desc.split("\n")[0])
@@ -419,24 +391,24 @@ def log(pcs, minor_version, short=False, **_):
         # Update manually the maxima for the printed supported profile types, each requires two
         # characters and 9 stands for " profiles" string
 
-        def minor_stat_retriever(mv):
+        def minor_stat_retriever(minor_v):
             """Helper function for picking stats of the given minor version
 
-            :param MinorVersion mv: minor version for which we are retrieving the stats
+            :param MinorVersion minor_v: minor version for which we are retrieving the stats
             :return: dictionary with stats for minor version
             """
             return store.get_profile_number_for_minor(
-                pcs.get_object_directory(), mv.checksum
+                pcs.get_object_directory(), minor_v.checksum
             )
 
-        def deg_count_retriever(mv):
+        def deg_count_retriever(minor_v):
             """Helper function for picking stats of the degradation strings of form ++--
 
-            :param MinorVersion mv: minor version for which we are retrieving the stats
+            :param MinorVersion minor_v: minor version for which we are retrieving the stats
             :return: dictionary with stats for minor version
             """
             counts = perun_log.count_degradations_per_group(
-                store.load_degradation_list_for(pcs.get_object_directory(), mv.checksum)
+                store.load_degradation_list_for(pcs.get_object_directory(), minor_v.checksum)
             )
             return {'changes': counts.get('Optimization', 0)*'+' + counts.get('Degradation', 0)*'-'}
 
@@ -446,10 +418,10 @@ def log(pcs, minor_version, short=False, **_):
         minor_version_maxima.update(
             calculate_maximal_lengths_for_stats(minor_versions, deg_count_retriever, " changes ")
         )
-        print_short_minor_version_info_list(pcs, minor_versions, minor_version_maxima)
+        print_short_minor_version_info_list(minor_versions, minor_version_maxima)
     else:
         # Walk the minor versions and print them
-        for minor in vcs.walk_minor_versions(pcs.vcs_type, pcs.vcs_path, minor_version):
+        for minor in vcs.walk_minor_versions(minor_version):
             cprintln("Minor Version {}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
             base_dir = pcs.get_object_directory()
             tracked_profiles = store.get_profile_number_for_minor(base_dir, minor.checksum)
@@ -473,16 +445,15 @@ def adjust_limit(limit, attr_type, maxima, padding=0):
     return max(int(limit[1:]), len(attr_type)) if limit else maxima[attr_type] + padding
 
 
-def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
+def print_short_minor_version_info_list(minor_version_list, max_lengths):
     """Prints list of profiles and counts per type of tracked/untracked profiles.
 
     Prints the list of profiles, trims the sizes of each information according to the
     computed maximal lengths If the output is short, the list itself is not printed,
     just the information about counts. Tracked and untracked differs in colours.
 
-    Arguments:
-        minor_version_list(list): list of profiles of MinorVersionInfo objects
-        max_lengths(dict): dictionary with maximal sizes for the output of profiles
+    :param list minor_version_list: list of profiles of MinorVersionInfo objects
+    :param dict max_lengths: dictionary with maximal sizes for the output of profiles
     """
     # Load formating string for profile
     stat_length = sum([
@@ -491,13 +462,13 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
     minor_version_output_colour = 'white'
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
     fmt_tokens, _ = FMT_SCANNER.scan(minor_version_info_fmt)
+    slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
 
     # Print header (2 is padding for id)
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             if attr_type == 'stats':
-                slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
                 end_msg = termcolor.colored(' profiles', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
                 print(termcolor.colored("{0}{4}{1}{4}{2}{4}{3}{5}".format(
                     termcolor.colored(
@@ -548,10 +519,18 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
                                 ), PROFILE_TYPE_COLOURS[profile_type])
                             ), end='')
 
-                        print(termcolor.colored(" profiles", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS), end='')
+                        print(
+                            termcolor.colored(
+                                " profiles", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS
+                            ), end=''
+                        )
                     else:
-                        print(termcolor.colored(
-                            '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS), end='')
+                        print(
+                            termcolor.colored(
+                                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR,
+                                attrs=TEXT_ATTRS
+                            ), end=''
+                        )
                 elif attr_type == 'changes':
                     degradations = store.load_degradation_list_for(
                         pcs.get_object_directory(), minor_version.checksum
@@ -562,8 +541,10 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
                     )
                     print(change_string, end='')
                 else:
-                    print_formating_token(minor_version_info_fmt, minor_version, attr_type, limit,
-                                          default_color=minor_version_output_colour, value_fill=fill or ' ')
+                    print_formating_token(
+                        minor_version_info_fmt, minor_version, attr_type, limit,
+                        default_color=minor_version_output_colour, value_fill=fill or ' '
+                    )
             else:
                 cprint(token, minor_version_output_colour)
         print("")
@@ -571,9 +552,8 @@ def print_short_minor_version_info_list(pcs, minor_version_list, max_lengths):
 
 def print_minor_version_info(head_minor_version, indent=0):
     """
-    Arguments:
-        head_minor_version(str): identification of the commit (preferably sha1)
-        indent(int): indent of the description part
+    :param str head_minor_version: identification of the commit (preferably sha1)
+    :param int indent: indent of the description part
     """
     print("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
     for parent in head_minor_version.parents:
@@ -593,13 +573,12 @@ def print_formating_token(fmt_string, info_object, info_attr, size_limit,
     that stores the real value. This value is then output to stdout with colours, fills,
     and is trimmed to the given size.
 
-    Arguments:
-        fmt_string(str): formatting string for the given token
-        info_object(object): object with stored information (ProfileInfo or MinorVersion)
-        size_limit(int): will limit the output of the value of the info_object to this size
-        info_attr(str): attribute we are looking up in the info_object
-        default_color(str): default colour of the formatting token that will be printed out
-        value_fill(char): will fill the string with this
+    :param str fmt_string: formatting string for the given token
+    :param object info_object: object with stored information (ProfileInfo or MinorVersion)
+    :param int size_limit: will limit the output of the value of the info_object to this size
+    :param str info_attr: attribute we are looking up in the info_object
+    :param str default_color: default colour of the formatting token that will be printed out
+    :param char value_fill: will fill the string with this
     """
     # Check if encountered incorrect token in the formating string
     if not hasattr(info_object, info_attr):
@@ -637,12 +616,9 @@ def calculate_maximal_lengths_for_stats(obj_list, stat_function, stat_header="")
 def calculate_maximal_lengths_for_object_list(object_list, valid_attributes):
     """For given object list, will calculate the maximal sizes for its values for table view.
 
-    Arguments:
-        object_list(list): list of objects (e.g. ProfileInfo or MinorVersion) information
-        valid_attributes(list): list of valid attributes of objects from list
-
-    Returns:
-        dict: dictionary with maximal lengths for profiles
+    :param list object_list: list of objects (e.g. ProfileInfo or MinorVersion) information
+    :param list valid_attributes: list of valid attributes of objects from list
+    :returns dict: dictionary with maximal lengths for profiles
     """
     # Measure the maxima for the lengths of the object info
     max_lengths = collections.defaultdict(int)
@@ -661,11 +637,10 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
     computed maximal lengths If the output is short, the list itself is not printed,
     just the information about counts. Tracked and untracked differs in colours.
 
-    Arguments:
-        profile_list(list): list of profiles of ProfileInfo objects
-        max_lengths(dict): dictionary with maximal sizes for the output of profiles
-        short(bool): true if the output should be short
-        list_type(str): type of the profile list (either untracked or tracked)
+    :param list profile_list: list of profiles of ProfileInfo objects
+    :param dict max_lengths: dictionary with maximal sizes for the output of profiles
+    :param bool short: true if the output should be short
+    :param str list_type: type of the profile list (either untracked or tracked)
     """
     # Sort the profiles w.r.t time of creation
     profile.sort_profiles(profile_list)
@@ -733,17 +708,14 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
             cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
 
 
-@pass_pcs
 @lookup_minor_version
-def get_nth_profile_of(pcs, position, minor_version):
+def get_nth_profile_of(position, minor_version):
     """Returns the profile at nth position in the index
 
-    Arguments:
-        pcs(PCS): wrapped perun control system
-        position(int): position of the profile we are obtaining
-        minor_version(str): looked up minor version for the wrapped vcs
+    :param int position: position of the profile we are obtaining
+    :param str minor_version: looked up minor version for the wrapped vcs
     """
-    registered_profiles = profile.load_list_for_minor_version(pcs, minor_version)
+    registered_profiles = profile.load_list_for_minor_version(minor_version)
     profile.sort_profiles(registered_profiles)
     if 0 <= position < len(registered_profiles):
         return registered_profiles[position].realpath
@@ -753,43 +725,34 @@ def get_nth_profile_of(pcs, position, minor_version):
         ))
 
 
-def get_untracked_profiles(pcs):
+def get_untracked_profiles():
     """Returns list untracked profiles, currently residing in the .perun/jobs directory.
 
-    Arguments:
-        pcs(PCS): performance control system
-
-    Returns:
-        list: list of ProfileInfo parsed from .perun/jobs directory
+    :returns list: list of ProfileInfo parsed from .perun/jobs directory
     """
     profile_list = []
     # Transform each profile of the path to the ProfileInfo object
     for untracked_path in sorted(os.listdir(pcs.get_job_directory())):
-        if not untracked_path.endswith('perf'):
-            continue
+        if untracked_path.endswith('perf'):
+            real_path = os.path.join(pcs.get_job_directory(), untracked_path)
+            time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
 
-        real_path = os.path.join(pcs.get_job_directory(), untracked_path)
-        time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
-
-        # Update the list of profiles and counters of types
-        profile_info = profile.ProfileInfo(untracked_path, real_path, time, is_raw_profile=True)
-        profile_list.append(profile_info)
+            # Update the list of profiles and counters of types
+            profile_info = profile.ProfileInfo(untracked_path, real_path, time, is_raw_profile=True)
+            profile_list.append(profile_info)
 
     return profile_list
 
 
 @perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('status'))
-@pass_pcs
-def status(pcs, short=False, **_):
+def status(short=False, **_):
     """Prints the status of performance control system
 
-    Arguments:
-        pcs(PCS): performance control system
-        short(bool): true if the output should be short (i.e. without some information)
+    :param bool short: true if the output should be short (i.e. without some information)
     """
     # Obtain both of the heads
-    major_head = vcs.get_head_major_version(pcs.vcs_type, pcs.vcs_path)
-    minor_head = vcs.get_minor_head(pcs.vcs_type, pcs.vcs_path)
+    major_head = vcs.get_head_major_version()
+    minor_head = vcs.get_minor_head()
 
     # Print the status of major head.
     print("On major version {} ".format(
@@ -804,12 +767,12 @@ def status(pcs, short=False, **_):
     # Print in long format, the additional information about head commit, by default print
     if not short:
         print("")
-        minor_version = vcs.get_minor_version_info(pcs.vcs_type, pcs.vcs_path, minor_head)
+        minor_version = vcs.get_minor_version_info(minor_head)
         print_minor_version_info(minor_version)
 
     # Print profiles
-    minor_version_profiles = profile.load_list_for_minor_version(pcs, minor_head)
-    untracked_profiles = get_untracked_profiles(pcs)
+    minor_version_profiles = profile.load_list_for_minor_version(minor_head)
+    untracked_profiles = get_untracked_profiles()
     maxs = calculate_maximal_lengths_for_object_list(
         minor_version_profiles + untracked_profiles, profile.ProfileInfo.valid_attributes
     )
@@ -830,17 +793,12 @@ def status(pcs, short=False, **_):
         perun_log.print_list_of_degradations(degradation_list)
 
 
-@pass_pcs
 @lookup_minor_version
-def load_profile_from_args(pcs, profile_name, minor_version):
+def load_profile_from_args(profile_name, minor_version):
     """
-    Arguments:
-        pcs(PCS): object with performance control system wrapper
-        profile_name(Profile): profile that will be stored for the minor version
-        minor_version(str): SHA-1 representation of the minor version
-
-    Returns:
-        dict: loaded profile represented as dictionary
+    :param Profile profile_name: profile that will be stored for the minor version
+    :param str minor_version: SHA-1 representation of the minor version
+    :returns dict: loaded profile represented as dictionary
     """
     # If the profile is in raw form
     if not store.is_sha1(profile_name):

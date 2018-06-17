@@ -21,16 +21,11 @@ def validate_keywords(profile, func, of_key, **_):
 
     Checks if the of key can be aggregated by the function.
 
-    Arguments:
-        profile(dict): profile that will be used against in the validation
-        func(function): function used for aggregation of the data
-        of_key(str): key that will be aggregated in the graph
-
-    Returns:
-        bool: true if the values are OK
-
-    Raises:
-        InvalidParameterException: if the of_key does not support the given function
+    :param dict profile: profile that will be used against in the validation
+    :param function func: function used for aggregation of the data
+    :param str of_key: key that will be aggregated in the graph
+    :returns bool: true if the values are OK
+    :raises InvalidParameterException: if the of_key does not support the given function
     """
     return profiles.is_key_aggregatable_by(profile, func, of_key, "of_key")
 
@@ -45,22 +40,19 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
 
     For each computed data, we output the area and points.
 
-    Arguments:
-        profile(dict): dictionary with measured data
-        func(str): function that will be used for aggregation of the data
-        of_key(str): key that specifies which fields of the resource entry will be used as data
-        through_key(str): key that specifies fields of the resource that will be on the x axis
-        by_key(str): key that specifies values for which graphs will be outputed
-        stacked(bool): true if the values of the graphs should be stacked on each other
-          -> this shows the overall values
-        accumulate(bool): true if the values from previous x values should be accumulated
-        x_axis_label(str): label on the x axis
-        y_axis_label(str): label on the y axis
-        graph_title(str): name of the graph
-        graph_width(int): width of the created bokeh graph
-
-    Returns:
-        charts.Area: flow graph according to the params
+    :param dict profile: dictionary with measured data
+    :param str func: function that will be used for aggregation of the data
+    :param str of_key: key that specifies which fields of the resource entry will be used as data
+    :param str through_key: key that specifies fields of the resource that will be on the x axis
+    :param str by_key: key that specifies values for which graphs will be outputed
+    :param bool stacked: true if the values of the graphs should be stacked on each other -> this
+        shows the overall values
+    :param bool accumulate: true if the values from previous x values should be accumulated
+    :param str x_axis_label: label on the x axis
+    :param str y_axis_label: label on the y axis
+    :param str graph_title: name of the graph
+    :param int graph_width: width of the created bokeh graph
+    :returns charts.Area: flow graph according to the params
     """
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)
@@ -90,12 +82,11 @@ def configure_area_chart(area_chart, data_frame, data_source, through_key, stack
 
     Configures the legend location, click policy and ranges of the graph.
 
-    Arguments:
-        area_chart(charts.Area): area chart which will be further configured
-        data_frame(pandas.DataFrame): original data frame
-        data_source(pandas.DataFrame): transformed data frame with aggregated data
-        through_key(str): key on the x axis
-        stacked(bool): true if the values in the graph are stacked
+    :param charts.Area area_chart: area chart which will be further configured
+    :param pandas.DataFrame data_frame: original data frame
+    :param pandas.DataFrame data_source: transformed data frame with aggregated data
+    :param str through_key: key on the x axis
+    :param bool stacked: true if the values in the graph are stacked
     """
     # Get minimal and maximal values; note we will add some small bonus to the maximal value
     minimal_x_value = data_frame[through_key].min()
@@ -118,16 +109,13 @@ def construct_data_source_from(data_frame, func, of_key, by_key, through_key, ac
     Takes the original data frame, groups it by the 'by_key' and then for each group, groups values
     again by the 'through_key', which are further aggregated by func and optionally accumulated.
 
-    Arguments:
-        data_frame(pandas.DataFrame): source data for the aggregated data frame
-        func(str): function that will be used for aggregation of the data
-        of_key(str): key that specifies which fields of the resource entry will be used as data
-        through_key(str): key that specifies fields of the resource that will be on the x axis
-        by_key(str): key that specifies values for which graphs will be outputed
-        accumulate(bool): true if the values from previous x values should be accumulated
-
-    Returns:
-        pandas.DataFrame: transformed data frame
+    :param pandas.DataFrame data_frame: source data for the aggregated data frame
+    :param str func: function that will be used for aggregation of the data
+    :param str of_key: key that specifies which fields of the resource entry will be used as data
+    :param str through_key: key that specifies fields of the resource that will be on the x axis
+    :param str by_key: key that specifies values for which graphs will be outputed
+    :param bool accumulate: true if the values from previous x values should be accumulated
+    :returns pandas.DataFrame: transformed data frame
     """
     # Compute extremes for X axis
     #  -> this is needed for offseting of the values for the area chart
@@ -155,13 +143,10 @@ def construct_data_source_from(data_frame, func, of_key, by_key, through_key, ac
 def group_and_aggregate(data, group_through_key, func):
     """Groups the data by group_through_key and then aggregates it through function
 
-    Arguments:
-        data(pandas.DataFrame): data frame with partially grouped data
-        group_through_key(str): key which will be used for further aggregation
-        func(str): aggregation function for the grouped data
-
-    Returns:
-        dict: source data frame
+    :param pandas.DataFrame data: data frame with partially grouped data
+    :param str group_through_key: key which will be used for further aggregation
+    :param str func: aggregation function for the grouped data
+    :returns dict: source data frame
     """
     # Aggregate the data according to the func grouped by through_key
     through_data_group = data.groupby(group_through_key)

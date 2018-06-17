@@ -14,8 +14,7 @@ __author__ = 'Radim Podola'
 def _call_heap(profile):
     """ Call interactive heap map visualization
 
-    Arguments:
-        profile(dict): memory profile with records
+    :param dict profile: memory profile with records
     """
     heap_map = heap_representation.to_heap_map_format(deepcopy(profile))
     heat_map = heap_representation.to_heat_map_format(profile)

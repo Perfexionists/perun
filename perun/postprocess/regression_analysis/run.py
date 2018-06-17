@@ -18,9 +18,8 @@ _DEFAULT_STEPS = 3
 def postprocess(profile, **configuration):
     """Invoked from perun core, handles the postprocess actions
 
-    Arguments:
-        profile(dict): the profile to analyze
-        configuration: the perun and options context
+    :param dict profile: the profile to analyze
+    :param configuration: the perun and options context
     """
     # Validate the input configuration
     tools.validate_dictionary_keys(configuration, ['method', 'regression_models', 'steps'], [])
@@ -53,7 +52,8 @@ def postprocess(profile, **configuration):
               required=False, default=_DEFAULT_STEPS,
               help=('Restricts the number of number of steps / data parts used'
                     ' by the iterative, interval and initial guess methods'))
-@click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size', nargs=1, metavar='<depending_on>',
+@click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size',
+              nargs=1, metavar='<depending_on>',
               callback=cli_helpers.process_resource_key_param,
               help="Sets the key that will be used as a source of independent variable.")
 @click.option('--of', '-o', 'of_key', nargs=1, metavar="<of_resource_key>",

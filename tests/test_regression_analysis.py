@@ -7,6 +7,9 @@ Sources (if any) to examples are provided in the test functions.
 The postprocessby CLI is tested in test_cli module.
 """
 
+import pytest
+
+import perun.utils.exceptions as exceptions
 from perun.postprocess.regression_analysis.run import postprocess
 
 __author__ = 'Jiri Pavela'
@@ -56,6 +59,19 @@ def generate_models_by_uid(profile, model, uid_sequence):
     models = profile['profile']['global']['models']
     for uid in uid_sequence:
         yield [m for m in models if m['uid'] == uid and m['model'] == model]
+
+
+def test_incorrect_calls(postprocess_profiles):
+    """Test various incorrect calls and exceptions"""
+    # Get any profile, in following we will try to
+    const_model = profile_filter(postprocess_profiles, 'const_model')
+    assert const_model is not None
+
+    # Try calling postprocess, while missing keys
+    with pytest.raises(exceptions.DictionaryKeysValidationFailed):
+        postprocess(
+            const_model, method='full', steps=7, of_key='amount', per_key='structure-unit-size'
+        )
 
 
 def test_const_model(postprocess_profiles):

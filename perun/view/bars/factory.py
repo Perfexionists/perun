@@ -19,16 +19,11 @@ def validate_keywords(profile, func, of_key, **_):
 
     Checks if the of key can be aggregated by the function.
 
-    Arguments:
-        profile(dict): profile that will be used against in the validation
-        func(function): function used for aggregation of the data
-        of_key(str): key that will be aggregated in the graph
-
-    Returns:
-        bool: true if the values are OK
-
-    Raises:
-        InvalidParameterException: if the of_key does not support the given function
+    :param dict profile: profile that will be used against in the validation
+    :param function func: function used for aggregation of the data
+    :param str of_key: key that will be aggregated in the graph
+    :returns bool: true if the values are OK
+    :raises InvalidParameterException: if the of_key does not support the given function
     """
     return profiles.is_key_aggregatable_by(profile, func, of_key, "of_key")
 
@@ -42,20 +37,17 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
     values of 'per_key'. Values are further stacked by 'by_key' key and cummulated according to the
     type.
 
-    Arguments:
-        profile(dict): dictionary with measured data
-        func(str): function that will be used for aggregation of the data
-        of_key(str): key that specifies which fields of the resource entry will be used as data
-        per_key(str): key that specifies fields of the resource that will be on the x axis
-        by_key(str): key that specifies grouping or stacking of the resources
-        cummulation_type(str): type of the cummulation of the data (either stacked or grouped)
-        x_axis_label(str): label on the x axis
-        y_axis_label(str): label on the y axis
-        graph_title(str): name of the graph
-        graph_width(int): width of the created bokeh graph
-
-    Returns:
-        charts.Bar: bar graph according to the params
+    :param dict profile: dictionary with measured data
+    :param str func: function that will be used for aggregation of the data
+    :param str of_key: key that specifies which fields of the resource entry will be used as data
+    :param str per_key: key that specifies fields of the resource that will be on the x axis
+    :param str by_key: key that specifies grouping or stacking of the resources
+    :param str cummulation_type: type of the cummulation of the data (either stacked or grouped)
+    :param str x_axis_label: label on the x axis
+    :param str y_axis_label: label on the y axis
+    :param str graph_title: name of the graph
+    :param int graph_width: width of the created bokeh graph
+    :returns charts.Bar: bar graph according to the params
     """
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)
@@ -80,15 +72,12 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
 def create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key):
     """Creates a bar graph with stacked values.
 
-    Arguments:
-        data_frame(pandas.DataFrame): data frame with values of resources
-        func(str): aggregation function for the values
-        of_key(str): key specifying the values of the graph
-        per_key(str): key specifying the x labels
-        by_key(str): key specifying the stacking field
-
-    Returns:
-        charts.Bar: stacked bar
+    :param pandas.DataFrame data_frame: data frame with values of resources
+    :param str func: aggregation function for the values
+    :param str of_key: key specifying the values of the graph
+    :param str per_key: key specifying the x labels
+    :param str by_key: key specifying the stacking field
+    :returns charts.Bar: stacked bar
     """
     bar_graph = charts.Bar(
         data_frame, label=per_key, values=of_key, agg=func, stack=by_key, bar_width=1.0,
@@ -102,15 +91,12 @@ def create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key):
 def create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key):
     """Creates a bar graph with grouped values.
 
-    Arguments:
-        data_frame(pandas.DataFrame): data frame with values of resources
-        func(str): aggregation function for the values
-        of_key(str): key specifying the values of the graph
-        per_key(str): key specifying the x labels
-        by_key(str): key specifying the stacking field
-
-    Returns:
-        charts.Bar: stacked bar
+    :param pandas.DataFrame data_frame: data frame with values of resources
+    :param str func: aggregation function for the values
+    :param str of_key: key specifying the values of the graph
+    :param str per_key: key specifying the x labels
+    :param str by_key: key specifying the stacking field
+    :returns charts.Bar: stacked bar
     """
     bar_graph = charts.Bar(
         data_frame, label=per_key, values=of_key, agg=func, group=by_key, bar_width=1.0,

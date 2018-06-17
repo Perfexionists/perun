@@ -128,16 +128,16 @@ class PostprocessStatus(Enum):
     ERROR = 1
 
 
-def first_index_of_attr(l, attr, value):
+def first_index_of_attr(tuple_list, attr, value):
     """Helper function for getting the first index of value in list of tuples
 
-    :param list l: list of tuples
+    :param list tuple_list: list of tuples
     :param str attr: name of the attribute we are getting
     :param value: lookedup value
     :return: index of the tuple or exception
     :raises: ValueError when there is no object/tuple with attribute with given value
     """
-    list_of_attributes = list(map(operator.attrgetter(attr), l))
+    list_of_attributes = list(map(operator.attrgetter(attr), tuple_list))
     return list_of_attributes.index(value)
 
 
@@ -166,5 +166,3 @@ def uid_getter(uid):
         uid[0],
         int("".join(map(str, map(lambda x: x+max_value, map(ord, uid[0])))))
     )
-
-

@@ -20,8 +20,7 @@ def get_supported_models():
 
     The 'all' specifier is used in reverse mapping as it enables to easily specify all models
 
-    Returns:
-        list of str: the names of all supported models and 'all' specifier
+    :returns list of str: the names of all supported models and 'all' specifier
     """
     # Disable quadratic model, but allow to process already existing profiles with quad model
     return [key for key in sorted(_MODELS.keys())]
@@ -30,11 +29,8 @@ def get_supported_models():
 def get_supported_transformations(model_key):
     """Provides all currently supported transformations for given model as a list of their names.
 
-    Arguments:
-        model_key(str): model key (e.g. 'log') for which the transformations are gathered
-
-    Returns:
-        list of str: the names of all supported transformations for given model
+    :param str model_key: model key (e.g. 'log') for which the transformations are gathered
+    :returns list of str: the names of all supported transformations for given model
     """
     return [t for t in _MODELS.get(model_key, {}).get('transformations', {}).keys()]
 
@@ -42,13 +38,10 @@ def get_supported_transformations(model_key):
 def get_transformation_data_for(regression_model, transformation):
     """Provides transformation dictionary from _MODELS for specific transformation and model.
 
-    Arguments:
-        regression_model(str): the regression model in which to search for transformation
-        transformation(str): transformation name (key in _MODELS transformation, e.g. plot_model)
-                             that identify the desired transformation dictionary
-
-    Returns:
-        dict: the transformation dictionary
+    :param str regression_model: the regression model in which to search for transformation
+    :param str transformation: transformation name (key in _MODELS transformation, e.g. plot_model)
+        that identify the desired transformation dictionary
+    :returns dict: the transformation dictionary
     """
     # Get the model key first
     key = map_model_to_key(regression_model)
@@ -67,14 +60,10 @@ def map_keys_to_models(regression_models_keys):
     """The mapping generator which provides the sections of _MODELS dictionary according to
     specified model keys list.
 
-    Arguments:
-        regression_models_keys(tuple): the list of Models values
-    Raises:
-        InvalidModelException: if specified model does not have a properties record in _MODELS
-                               dictionary
-    Return:
-        iterable: the generator object which yields models records one by one as a dictionary
-
+    :param tuple regression_models_keys: the list of Models values
+    :raises InvalidModelException: if specified model does not have a properties record in _MODELS
+        dictionary
+    :returns iterable: the generator object which yields models records one by one as a dictionary
     """
     # Convert single value to list
     if not isinstance(regression_models_keys, tuple):
@@ -98,11 +87,8 @@ def map_model_to_key(model):
     """ The mapping function which takes model name and provides the _MODELS key containing
         the model dictionary.
 
-    Arguments:
-        model(str): the model name to map
-
-    Returns:
-        str:  the _MODELS key containing the model data
+    :param str model: the model name to map
+    :returns str:  the _MODELS key containing the model data
     """
     # Collect all models in _MODELS as a dict of model: key
     elements = {_MODELS[m].get('model'): m for m in _MODELS}
@@ -115,10 +101,8 @@ def map_model_to_key(model):
 def filter_derived(regression_models_keys):
     """Filtering of the selected models to standard and derived models.
 
-    Arguments:
-        regression_models_keys(tuple of str): the models to be computed
-    Returns:
-        tuple, tuple: the derived models and standard models in separated tuples
+    :param tuple of str regression_models_keys: the models to be computed
+    :returns tuple, tuple: the derived models and standard models in separated tuples
     """
     # Convert single value to list
     if not isinstance(regression_models_keys, tuple):

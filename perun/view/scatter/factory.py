@@ -18,15 +18,11 @@ __author__ = 'Jiri Pavela'
 def slice_resources_by_uid(resources, models, uids):
     """ Splits the resource tables and models into slices by the unique uids found in the resources.
 
-    Arguments:
-        resources(pandas.DataFrame): the data table from resources
-        models(list of dict): the list of models from profile
-        uids(map): the list of unique uids from profile
-
-    Returns:
-        generator: resources and models slices of unique uid as pair
-            data_slice(pandas.DataFrame)
-            uid_models(list)
+    :param pandas.DataFrame resources: the data table from resources
+    :param list of dict models: the list of models from profile
+    :param map uids: the list of unique uids from profile
+    :returns generator: resources and models slices of unique uid as pair
+        (data_slice(pandas.DataFrame), uid_models(list))
     """
     for uid in uids:
         # Slice only the plotted uid from the data table
@@ -42,11 +38,8 @@ def slice_resources_by_uid(resources, models, uids):
 def slice_models_by_interval(models):
     """ Splits the models list into slices with different x axis intervals.
 
-    Arguments:
-        models(list of dict): the list of models to split
-
-    Returns:
-        generator: stream of models slices (list)
+    :param list of dict models: the list of models to split
+    :returns generator: stream of models slices (list)
     """
     # Sort the models by intervals first, to yield them in order
     models = sorted(models, key=itemgetter('x_interval_start', 'x_interval_end'))
@@ -63,13 +56,9 @@ def generate_plot_data_slices(profile):
     """ Generates data slices for plotting resources and models. The resources are split by unique
         uids, models are sliced into parts by uid and interval.
 
-    Arguments:
-        profile(dict): loaded perun profile
-
-    Returns:
-        generator: generator: resources and models slices of unique uid as pair
-            data_slice(pandas.DataFrame)
-            uid_models(list)
+    :param dict profile: loaded perun profile
+    :returns generator: generator: resources and models slices of unique uid as pair
+        (data_slice(pandas.DataFrame), uid_models(list))
     """
     # Get resources for scatter plot points and models for curves
     resource_table = convert.resources_to_pandas_dataframe(profile)
@@ -92,12 +81,9 @@ def generate_plot_data_slices(profile):
 def draw_models(graph, models):
     """ Add models renderers to the graph.
 
-    Arguments:
-        graph(charts.Graph): the scatter plot without models
-        models(list): list of models to plot
-
-    Returns:
-        charts.Graph: the modified graph with model curves renderers
+    :param charts.Graph graph: the scatter plot without models
+    :param list models: list of models to plot
+    :returns charts.Graph: the modified graph with model curves renderers
     """
     # Get unique colors for the model curves
     colour_palette = palettes.viridis(len(models))
@@ -123,17 +109,14 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
     parameter are used as values and are output depending on values of 'per_key'.
     Furthermore, models records are also plotted if the profile contains them.
 
-    Arguments:
-        profile(dict): dictionary with measured data
-        of_key(str): key that specifies which fields of the resource entry will be used as data
-        per_key(str): key that specifies fields of the resource that will be on the x axis
-        x_axis_label(str): label on the x axis
-        y_axis_label(str): label on the y axis
-        graph_title(str): name of the graph
-        graph_width(int): width of the created bokeh graph
-
-    Returns:
-        charts.Scatter: scatter plot graph with models built according to the params
+    :param dict profile: dictionary with measured data
+    :param str of_key: key that specifies which fields of the resource entry will be used as data
+    :param str per_key: key that specifies fields of the resource that will be on the x axis
+    :param str x_axis_label: label on the x axis
+    :param str y_axis_label: label on the y axis
+    :param str graph_title: name of the graph
+    :param int graph_width: width of the created bokeh graph
+    :returns charts.Scatter: scatter plot graph with models built according to the params
     """
     for data_slice, models_slice in generate_plot_data_slices(profile):
         # Plot the points as a scatter plot

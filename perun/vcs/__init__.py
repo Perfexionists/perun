@@ -9,12 +9,13 @@ depending of the chosen type/module, like e.g. git, svn, etc.
 """
 
 import perun.utils.log as perun_log
+import perun.logic.pcs as pcs
 from perun.utils import dynamic_module_function_call
 
 __author__ = 'Tomas Fiedor'
 
 
-def get_minor_head(vcs_type, vcs_path):
+def get_minor_head():
     """Returns the string representation of head of current major version, i.e.
     for git this returns the massaged HEAD reference.
 
@@ -23,15 +24,13 @@ def get_minor_head(vcs_type, vcs_path):
     (either by ``perun run`` or ``perun collect``), where the retrieved
     identification is used as :preg:`origin`.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :returns: unique string representation of current head (usually in SHA)
     :raises ValueError: if the head cannot be retrieved from the current
         context
     """
     try:
         return dynamic_module_function_call(
-            'perun.vcs', vcs_type, '_get_minor_head', vcs_path
+            'perun.vcs', pcs.get_vcs_type(), '_get_minor_head', pcs.get_vcs_path()
         )
     except ValueError as value_error:
         perun_log.error(
@@ -39,7 +38,7 @@ def get_minor_head(vcs_type, vcs_path):
         )
 
 
-def init(vcs_type, vcs_path, vcs_init_params):
+def init(vcs_init_params):
     """Calls the implementation of initialization of wrapped underlying version
     control system.
 
@@ -47,12 +46,11 @@ def init(vcs_type, vcs_path, vcs_init_params):
     version control system instances and newly created instances. Init is
     called during the ``perun init`` command from command line interface.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: destination path of the initialized wrapped vcs
     :param dict vcs_init_params: dictionary of keyword arguments passed to
         initialization method of the underlying vcs module
     :return: true if the underlying vcs was successfully initialized
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     perun_log.msg_to_stdout("Initializing {} version control params {} and {}".format(
         vcs_type, vcs_path, vcs_init_params
     ), 1)
@@ -61,7 +59,7 @@ def init(vcs_type, vcs_path, vcs_init_params):
     )
 
 
-def walk_minor_versions(vcs_type, vcs_path, head_minor_version):
+def walk_minor_versions(head_minor_version):
     """Generator of minor versions for the given major version, which yields
     the ``MinorVersion`` named tuples containing the following information:
     ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation
@@ -71,12 +69,11 @@ def walk_minor_versions(vcs_type, vcs_path, head_minor_version):
     Minor versions are walked through this function during the ``perun log``
     command.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :param str head_minor_version: the root minor versions which is the root
         of the walk.
     :returns: iterable stream of minor version representation
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     perun_log.msg_to_stdout("Walking minor versions of type {}".format(
         vcs_type
     ), 1)
@@ -85,15 +82,14 @@ def walk_minor_versions(vcs_type, vcs_path, head_minor_version):
     )
 
 
-def walk_major_versions(vcs_type, vcs_path):
+def walk_major_versions():
     """Generator of major versions for the current wrapped repository.
 
     This function is currently unused, but will be needed in the future.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :returns: iterable stream of major version representation
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     perun_log.msg_to_stdout("Walking major versions of type {}".format(
         vcs_type
     ), 1)
@@ -102,7 +98,7 @@ def walk_major_versions(vcs_type, vcs_path):
     )
 
 
-def get_minor_version_info(vcs_type, vcs_path, minor_version):
+def get_minor_version_info(minor_version):
     """Yields the specification of concrete minor version in form of
     the ``MinorVersion`` named tuples containing the following information:
     ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation
@@ -113,12 +109,11 @@ def get_minor_version_info(vcs_type, vcs_path, minor_version):
     :func:`perun.vcs.walk_minor_versions` and is used during the ``perun
     status`` output to display the specifics of minor version.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :param str minor_version: the specification of minor version (in form of
         sha e.g.) for which we are retrieving the details
     :returns: minor version named tuple
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     perun_log.msg_to_stdout("Getting minor version info of type {} and args {}, {}".format(
         vcs_type, vcs_path, minor_version
     ), 1)
@@ -127,17 +122,16 @@ def get_minor_version_info(vcs_type, vcs_path, minor_version):
     )
 
 
-def get_head_major_version(vcs_type, vcs_path):
+def get_head_major_version():
     """Returns the string representation of current major version of the
     wrapped repository.
 
     Major version is displayed during the ``perun status`` output, which shows
     the current working major version of the project.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :returns: string representation of the major version
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     perun_log.msg_to_stdout("Getting head major version of type {}".format(
         vcs_type
     ), 1)
@@ -146,26 +140,25 @@ def get_head_major_version(vcs_type, vcs_path):
     )
 
 
-def check_minor_version_validity(vcs_type, vcs_path, minor_version):
+def check_minor_version_validity(minor_version):
     """Checks whether the given minor version specification corresponds to the
     wrapped version control system, and is not in wrong format.
 
     Minor version validity is mostly checked during the lookup of the minor
     versions from the command line interface.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :param str minor_version: the specification of minor version (in form of
         sha e.g.) for which we are checking the validity
     :raises VersionControlSystemException: when the given minor version is
         invalid in the context of the wrapped version control system.
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     dynamic_module_function_call(
         'perun.vcs', vcs_type, '_check_minor_version_validity', vcs_path, minor_version
     )
 
 
-def massage_parameter(vcs_type, vcs_path, parameter, parameter_type=None):
+def massage_parameter(parameter, parameter_type=None):
     """Conversion function for massaging (or unifying different representations
     of objects) the parameters for version control systems.
 
@@ -174,19 +167,18 @@ def massage_parameter(vcs_type, vcs_path, parameter, parameter_type=None):
     versions. Massing then unifies e.g. the references or proper hash
     representations, to just one representation for internal processing.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :param str parameter: vcs parameter (e.g. revision, minor or major version)
         which will be massaged, i.e. transformed to unified representation
     :param str parameter_type: more detailed type of the parameter
     :returns: string representation of parameter
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     return dynamic_module_function_call(
         'perun.vcs', vcs_type, '_massage_parameter', vcs_path, parameter, parameter_type
     )
 
 
-def is_dirty(vcs_type, vcs_path):
+def is_dirty():
     """Tests whether the wrapped repository is dirty.
 
     By dirty repository we mean a repository that has either a submitted changes to its index (i.e.
@@ -197,10 +189,9 @@ def is_dirty(vcs_type, vcs_path):
     the profiled data and hence the resulting profiles would not correctly represent the performance
     of minor versions.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :return: whether the given repository is dirty or not
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     return dynamic_module_function_call(
         'perun.vcs', vcs_type, '_is_dirty', vcs_path
     )
@@ -213,14 +204,8 @@ class CleanState:
     then we use this CleanState to keep those changes, have a clean state (or maybe even checkout
     different version) and then collect correctly the data. The previous state is then restored
     """
-    def __init__(self, vcs_type, vcs_path):
-        """Creates a with wrapper for a corresponding VCS
-
-        :param str vcs_type: type of the underlying wrapped version control system
-        :param str vcs_path: source path of the wrapped vcs
-        """
-        self.type = vcs_type
-        self.path = vcs_path
+    def __init__(self):
+        """Creates a with wrapper for a corresponding VCS"""
         self.saved_state = False
         self.last_head = None
 
@@ -230,7 +215,7 @@ class CleanState:
         We save the uncommited/unsaved changes (e.g. to stash) and also we remeber the previous
         head, which will be restored at the end.
         """
-        self.saved_state, self.last_head = save_state(self.type, self.path)
+        self.saved_state, self.last_head = save_state()
 
     def __exit__(self, *_):
         """When exiting, restores the state of the repository
@@ -239,54 +224,51 @@ class CleanState:
 
         :param _: not used params of exit handler
         """
-        restore_state(self.type, self.path, self.saved_state, self.last_head)
+        restore_state(self.saved_state, self.last_head)
 
 
-def save_state(vcs_type, vcs_path):
+def save_state():
     """Saves the state of the repository in case it is dirty.
 
     When saving the state of the repository one should store all of the uncommited changes to
     the working directory and index. Any issues while this process happens should be handled by
     user itself, hence no workarounds and mending should take place in this function.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :return:
     """
     # Todo: Check the vcs.fail_when_dirty and log error in the case
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     return dynamic_module_function_call(
         'perun.vcs', vcs_type, '_save_state', vcs_path
     )
 
 
-def restore_state(vcs_type, vcs_path, saved, state):
+def restore_state(saved, state):
     """Restores the previous state of the the repository
 
     When restoring the state of the repository one should pop the stored changes from the stash
     and reapply them on the current directory. This make sure, that after the performance testing,
     the project is in the previous state and developer can continue with his work.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :param bool saved: whether the stashed was something
     :param str state: the previous state of the repository
     """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     dynamic_module_function_call(
         'perun.vcs', vcs_type, '_restore_state', vcs_path, saved, state
     )
 
 
-def checkout(vcs_type, vcs_path, minor_version):
+def checkout(minor_version):
     """Checks out the new working directory corresponding to the given minor version.
 
     According to the supplied minor version, this command should remake the working directory
     so it corresponds to the state defined by the minor version.
 
-    :param str vcs_type: type of the underlying wrapped version control system
-    :param str vcs_path: source path of the wrapped vcs
     :param str minor_version: minor version that will be checked out
     """
-    massaged_minor_version = massage_parameter(vcs_type, vcs_path, minor_version)
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
+    massaged_minor_version = massage_parameter(minor_version)
     dynamic_module_function_call(
         'perun.vcs', vcs_type, '_checkout', vcs_path, massaged_minor_version
     )
