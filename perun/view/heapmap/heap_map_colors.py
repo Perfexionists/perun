@@ -26,8 +26,7 @@ class HeapMapColors(object):
     def __init__(self, colors_type):
         """ Initialize HEAP MAP COLORS object.
 
-        Arguments:
-            colors_type(int): type of colors
+        :param int colors_type: type of colors
         """
         if colors_type == HeapMapColors.CURSES_COLORS:
             self.__init_curses_colors()
@@ -93,11 +92,8 @@ class HeapMapColors(object):
     def heap_field_color(self, uid):
         """ Pick a right color for the given field.
 
-        Arguments:
-            uid(dict): allocation's information
-
-        Returns:
-            int: number of the picked color
+        :param dict uid: allocation's information
+        :returns int: number of the picked color
         """
         if uid is None:
             return self.free_field
@@ -116,11 +112,8 @@ class HeapMapColors(object):
     def heat_field_color(self, access):
         """ Pick a right shade of HEAT color for the given number of access.
 
-        Arguments:
-            access(int): number of access
-
-        Returns:
-            int: number of the picked color
+        :param int access: number of access
+        :returns int: number of the picked color
         """
         if access >= len(self.__heat_colors):
             return self.__heat_colors[-1]
@@ -130,8 +123,7 @@ class HeapMapColors(object):
     def demonstrate_curses_colors(self, window):
         """ Demonstrate curses good colors by print each of them to the window
 
-        Arguments:
-            window(any): initialized curses window
+        :param any window: initialized curses window
         """
         for i in range(1, len(self.__good_colors)):
             color_str = str(i) + ' '

@@ -18,12 +18,9 @@ UID_RESOURCE_MAP = collections.defaultdict(int)
 
 def parse_stack(stack):
     """ Parse stack information of one allocation
-    Arguments:
-        stack(list): list of raw stack data
 
-    Returns:
-        list: list of formatted structures representing
-              stack trace of one allocation
+    :param list stack: list of raw stack data
+    :returns list: list of formatted structures representing stack trace of one allocation
     """
     data = []
     for call in stack:
@@ -60,11 +57,9 @@ def parse_stack(stack):
 
 def parse_allocation_location(trace):
     """ Parse the location of user's allocation from stack trace
-    Arguments:
-        trace(list): list representing stack call trace
 
-    Returns:
-        dict: first user's call to allocation
+    :param list trace: list representing stack call trace
+    :returns dict: first user's call to allocation
     """
     if not trace:
         return {}
@@ -79,12 +74,9 @@ def parse_allocation_location(trace):
 
 def parse_resources(allocation):
     """ Parse resources of one allocation
-    Arguments:
-        allocation(list): list of raw allocation data
 
-    Returns:
-        structure: formatted structure representing
-                   resources of one allocation
+    :param list allocation: list of raw allocation data
+    :returns structure: formatted structure representing resources of one allocation
     """
     data = {}
 
@@ -126,14 +118,10 @@ def parse_resources(allocation):
 def parse_log(filename, cmd, snapshots_interval):
     """ Parse raw data in the log file
 
-    Arguments:
-        filename(string): name of the log file
-        cmd(string): profiled binary
-        snapshots_interval(Decimal): interval of snapshots [s]
-
-    Returns:
-        structure: formatted structure representing
-                   section "snapshots" and "global" in memory profile
+    :param string filename: name of the log file
+    :param string cmd: profiled binary
+    :param Decimal snapshots_interval: interval of snapshots [s]
+    :returns structure: formatted structure representing section "snapshots" and "global" in memory profile
     """
     interval = snapshots_interval
     with open(filename) as logfile:

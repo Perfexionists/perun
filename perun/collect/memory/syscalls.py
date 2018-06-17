@@ -20,8 +20,7 @@ def build_demangle_cache(names):
     Instead of continuous calls to subprocess, this takes all of the collected names
     and calls the demangle just once, while constructing the cache.
 
-    Arguments:
-        names(set): set of names that will be demangled in future
+    :param set names: set of names that will be demangled in future
     """
     global demangle_cache
 
@@ -36,11 +35,8 @@ def build_demangle_cache(names):
 
 def demangle(name):
     """
-    Arguments:
-        name(string): name to demangle
-
-    Returns:
-        string: demangled name
+    :param string name: name to demangle
+    :returns string: demangled name
     """
     return demangle_cache[name]
 
@@ -51,9 +47,8 @@ def build_address_to_line_cache(addresses, binary_name):
     Instead of continuous calls to subprocess, this takes all of the collected
     names and calls the addr2line just once.
 
-    Arguments:
-        addresses(set): set of addresses that will be translated to line info
-        binary_name(str): name of the binary which will be parsed for info
+    :param set addresses: set of addresses that will be translated to line info
+    :param str binary_name: name of the binary which will be parsed for info
     """
     global address_to_line_cache
 
@@ -68,47 +63,20 @@ def build_address_to_line_cache(addresses, binary_name):
         ))
 
 
-def get_extern_funcs(filename):
-    """
-    Arguments:
-        filename(string): name of file to inspect for functions
-
-    Returns:
-        list: list of functions from dynamic section
-    """
-    sys_call = ['nm', '-D', '-C', filename]
-    output = subprocess.check_output(sys_call)
-    output = output.decode("utf-8").splitlines()
-    functions = []
-    for line in output:
-        line = line.strip()
-        if line[0] == 'U':
-            functions.append(line[2:])
-
-    return functions
-
-
 def address_to_line(ip):
     """
-    Arguments:
-        ip(string): instruction pointer value
-
-    Returns:
-        list: list of two objects, 1st is the name of the source file,
-              2nd is the line number
+    :param string ip: instruction pointer value
+    :returns list: list of two objects, 1st is the name of the source file, 2nd is the line number
     """
     return address_to_line_cache[ip][:]
 
 
 def run(cmd, params, workload):
     """
-    Arguments:
-        cmd(string): binary file to profile
-        params(string): executing arguments
-        workload(string): file that has to be provided to binary
-
-    Returns:
-        int: return code of executed binary
+    :param string cmd: binary file to profile
+    :param string params: executing arguments
+    :param string workload: file that has to be provided to binary
+    :returns int: return code of executed binary
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
     sys_call = ('LD_PRELOAD="' + pwd + '/malloc.so" ' + cmd +
@@ -126,8 +94,7 @@ def run(cmd, params, workload):
 def init():
     """ Initialize the injected library
 
-    Returns:
-        bool: success of the operation
+    :returns bool: success of the operation
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
     try:
@@ -141,11 +108,8 @@ def init():
 def check_debug_symbols(cmd):
     """ Check if binary was compiled with debug symbols
 
-    Arguments:
-        cmd(string): binary file to profile
-
-    Returns:
-        bool: True if binary was compiled with debug symbols
+    :param string cmd: binary file to profile
+    :returns bool: True if binary was compiled with debug symbols
     """
     try:
         output = subprocess.check_output(["objdump", "-h", cmd])
@@ -156,7 +120,3 @@ def check_debug_symbols(cmd):
         return False
 
     return True
-
-
-if __name__ == "__main__":
-    pass

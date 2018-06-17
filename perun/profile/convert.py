@@ -66,8 +66,8 @@ def resources_to_pandas_dataframe(profile):
     for (snapshot, resource) in query.all_resources_of(profile):
         values['snapshots'].append(snapshot)
         flattened_resource = dict(list(query.all_items_of(resource)))
-        for rk in resource_keys:
-            values[rk].append(flattened_resource.get(rk, numpy.nan))
+        for resource_key in resource_keys:
+            values[resource_key].append(flattened_resource.get(resource_key, numpy.nan))
 
     return pandas.DataFrame(values)
 
@@ -202,11 +202,8 @@ def to_heat_map_format(profile):
 def get_heat_map(resources, min_add, max_add):
     """ Parse resources from the memory profile to HEAT map representation
 
-    Arguments:
-        resources(list): list of the resources from the memory profile
-
-    Returns:
-        list: list of the number of access to address
+    :param list resources: list of the resources from the memory profile
+    :returns list: list of the number of access to address
     """
     address_count = max_add - min_add
     add_map = [0 for _ in range(address_count)]
@@ -227,25 +224,25 @@ def get_heat_map(resources, min_add, max_add):
 def get_heap_map(resources):
     """ Parse resources from the memory profile to simpler representation
 
-    Arguments:
-        resources(list): list of the resources from the memory profile
-
-    Returns:
-        list: list of the simple allocations records
+    :param list resources: list of the resources from the memory profile
+    :returns list: list of the simple allocations records
     """
-    # TODO maybe needed approximation inc ase of really different sizes
     # of the amount, when smaller sizes could be set to zero and other sizes's
     # units change to bigger ones (B > MB)
     simple_map = []
 
     for res in resources:
-        map_item = {}
-        map_item['address'] = res['address']
-        map_item['subtype'] = res['subtype']
-        map_item['amount'] = res['amount']
+        map_item = {
+            'address': res['address'],
+            'subtype': res['subtype'],
+            'amount': res['amount']
+        }
+
         if not res['uid']:
             continue
+
         map_item['uid'] = res['uid']
+
         if res['subtype'] == 'free':
             map_item['type'] = 'free'
         else:
@@ -263,11 +260,8 @@ def calculate_heap_map(snapshots):
         Allocations which are not freed within snapshot are spread to next
         following snapshots till they are freed
 
-    Arguments:
-        snapshots(list): list of snapshots
-
-    Returns:
-        list: chunk of the all used UIDs
+    :param list snapshots: list of snapshots
+    :returns list: chunk of the all used UIDs
     """
     alloc_chunks = []
     new_allocations = []
@@ -303,12 +297,9 @@ def __set_chunks(chunks, uid):
         Check if UID is in the chunk list, if so index is returned.
         If not, UID is added to the chunk list.
 
-    Arguments:
-        chunks(list): chunk list
-        uid(dict): UID structure
-
-    Returns:
-        int: index to chunk list referencing UID
+    :param list chunks: chunk list
+    :param dict uid: UID structure
+    :returns int: index to chunk list referencing UID
     """
     # UID is already referencing
     if isinstance(uid, int):
@@ -330,13 +321,9 @@ def __set_chunks(chunks, uid):
 
 def resource_iterator(snapshot, field, initial_value=None):
     """
-    Arguments:
-        snapshot(list): list of resources
-        field(str): field we are iterating over in the list of resources
-        initial_value(object): neutral value, that is returned as first
-
-    Returns:
-        :
+    :param list snapshot: list of resources
+    :param str field: field we are iterating over in the list of resources
+    :param object initial_value: neutral value, that is returned as first
     """
     found_value = False
     for item in snapshot:
@@ -359,11 +346,8 @@ def add_stats(snapshots):
 
         Result is in the form of modified input argument.
 
-    Arguments:
-        snapshots(list): list of snapshots
-
-    Return:
-        dict: calculated global statistics over all the snapshots
+    :param list snapshots: list of snapshots
+    :returns dict: calculated global statistics over all the snapshots
     """
     glob_max_address = []
     glob_min_address = []
@@ -388,95 +372,13 @@ def add_stats(snapshots):
         glob_max_amount.append(snap['max_amount'])
         glob_min_amount.append(snap['min_amount'])
 
-    return {'max_address': max(glob_max_address),
-            'min_address': min(glob_min_address),
-            'max_sum_amount': max(glob_max_sum_amount),
-            'max_amount': max(glob_max_amount),
-            'min_amount': min(glob_min_amount)
-           }
-
-
-def to_allocations_table(profile):
-    """ Create the allocations table
-
-    Fixme: Where exactly is this used?
-
-    Arguments:
-        profile(dict): the memory profile
-
-    Returns:
-        dict: the allocations table
-
-    Format of the allocations table is following:
-        {"snapshots": [(int)]
-         "amount": [(int)]
-         "uid": [(str)]
-         "subtype": [(str)]
-         "address": [(int)]
-        }
-    uid object is serialized into: function()~source~line
-    """
-    table = {
-        'snapshots': [],
-        'amount': [],
-        'uid': [],
-        'subtype': [],
-        'address': []
+    return {
+        'max_address': max(glob_max_address),
+        'min_address': min(glob_min_address),
+        'max_sum_amount': max(glob_max_sum_amount),
+        'max_amount': max(glob_max_amount),
+        'min_amount': min(glob_min_amount)
     }
-
-    for i, snap in enumerate(profile['snapshots']):
-        for alloc in snap['resources']:
-            table['snapshots'].append(i + 1)
-            table['amount'].append(alloc['amount'])
-            table['uid'].append(to_string_line(alloc['uid']))
-            table['subtype'].append(alloc['subtype'])
-            table['address'].append(alloc['address'])
-
-    return table
-
-
-def to_flow_table(profile):
-    """ Create the heap map table
-
-    Fixme: Where exactly is this used
-
-    Arguments:
-        profile(dict): the memory profile
-
-    Returns:
-        dict: the heap map table
-
-    Format of the allocations table is following:
-        {"snapshots": [(int)]
-         "amount": [(int)]
-         "uid": [(str)]
-         "subtype": [(str)]
-         "address": [(int)]
-        }
-    uid object is serialized into: function()~source~line
-    """
-    heap = to_heap_map_format(profile)
-
-    table = {
-        'snapshots': [],
-        'amount': [],
-        'uid': [],
-        'subtype': [],
-        'address': []
-    }
-
-    for i, snap in enumerate(heap['snapshots']):
-
-        for alloc in snap['map']:
-            uid_chunk = heap['info'][alloc['uid']]
-
-            table['snapshots'].append(i + 1)
-            table['amount'].append(alloc['amount'])
-            table['uid'].append(to_string_line(uid_chunk))
-            table['subtype'].append(alloc['subtype'])
-            table['address'].append(alloc['address'])
-
-    return table
 
 
 def to_flame_graph_format(profile):
@@ -496,7 +398,7 @@ def to_flame_graph_format(profile):
 
         >>> print(''.join(convert.to_flame_graph_format(memprof)))
         malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4
-        valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0;_start()~unreachable~0 8
+        valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0 8
         main()~/home/user/dev/test02.c~79 156
 
     Each line corresponds to some collected resource (in this case amount of
@@ -525,11 +427,8 @@ def to_flame_graph_format(profile):
 def to_string_line(frame):
     """ Create string representing call stack's frame
 
-    Arguments:
-        frame(dict): call stack's frame
-
-    Returns:
-        str: line representing call stack's frame
+    :param dict frame: call stack's frame
+    :returns str: line representing call stack's frame
     """
     return "{}()~{}~{}".format(frame['function'], frame['source'], frame['line'])
 

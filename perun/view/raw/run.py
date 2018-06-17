@@ -14,13 +14,10 @@ __author__ = 'Tomas Fiedor'
 
 def process_object(item, colour, coloured):
     """
-    Arguments:
-        item(str): item we are processing by the show
-        colour(str): colour used to colour the object
-        coloured(bool): whether the item should be coloured or not
-
-    Returns:
-        str: coloured or uncoloured item
+    :param str item: item we are processing by the show
+    :param str colour: colour used to colour the object
+    :param bool coloured: whether the item should be coloured or not
+    :returns str: coloured or uncoloured item
     """
     if coloured:
         return termcolor.colored(item, colour, attrs=RAW_ATTRS)
@@ -30,13 +27,10 @@ def process_object(item, colour, coloured):
 
 def show(profile, coloured=False, **_):
     """
-    Arguments:
-        profile(dict): dictionary profile
-        coloured(bool): true if the output should be in colours
-        _(dict): additional keyword for the non coloured show
-
-    Returns:
-        str: string representation of the profile
+    :param dict profile: dictionary profile
+    :param bool coloured: true if the output should be in colours
+    :param dict _: additional keyword for the non coloured show
+    :returns str: string representation of the profile
     """
     RAW_INDENT = 4
 
@@ -67,12 +61,9 @@ def show(profile, coloured=False, **_):
 
 def show_coloured(profile, **kwargs):
     """
-    Arguments:
-        profile(dict): dictionary profile
-        kwargs(dict): additional parameters for the coloured show
-
-    Returns:
-        str: string representation of the profile with colours
+    :param dict profile: dictionary profile
+    :param dict kwargs: additional parameters for the coloured show
+    :returns str: string representation of the profile with colours
     """
     show(profile, True)
 

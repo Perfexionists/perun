@@ -5,15 +5,16 @@ import collections
 import operator
 import logging
 import sys
-import termcolor
 import itertools
 import io
 import pydoc
 import functools
 
+import termcolor
+
 from perun.utils.helpers import first_index_of_attr
 from perun.utils.decorators import static_variables
-from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH,CHANGE_COLOURS, \
+from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, CHANGE_COLOURS, \
     CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
 from perun.utils.structs import PerformanceChange
 
@@ -50,9 +51,8 @@ def page_function_if(func, paging_switch):
     def wrapper(*args, **kwargs):
         """Wrapper for the original function whose output will be paged
 
-        Arguments:
-            args(list): list of positional arguments for original function
-            kwargs(dict): dictionary of key:value arguments for original function
+        :param list args: list of positional arguments for original function
+        :param dict kwargs: dictionary of key:value arguments for original function
         """
         if SUPPRESS_PAGING or not paging_switch:
             return func(*args, **kwargs)
@@ -117,25 +117,22 @@ def msg_to_file(msg, msg_verbosity, log_level=logging.INFO):
 
 def info(msg):
     """
-    Arguments:
-        msg(str): info message that will be printed only when there is at least lvl1 verbosity
+    :param str msg: info message that will be printed only when there is at least lvl1 verbosity
     """
     print("info: {}".format(msg))
 
 
 def quiet_info(msg):
     """
-    Arguments:
-        msg(str): info message to the stream that will be always shown
+    :param str msg: info message to the stream that will be always shown
     """
     msg_to_stdout(msg, VERBOSE_RELEASE)
 
 
 def error(msg, recoverable=False):
     """
-    Arguments:
-        msg(str): error message printe to standard output
-        recoverable(bool): whether we can recover from the error
+    :param str msg: error message printe to standard output
+    :param bool recoverable: whether we can recover from the error
     """
     print(termcolor.colored("fatal: {}".format(msg), 'red'), file=sys.stderr)
 
@@ -146,8 +143,7 @@ def error(msg, recoverable=False):
 
 def warn(msg):
     """
-    Arguments:
-        msg(str): warn message printed to standard output
+    :param str msg: warn message printed to standard output
     """
     if not SUPPRESS_WARNINGS:
         print("warn: {}".format(msg))
@@ -156,10 +152,9 @@ def warn(msg):
 def print_current_phase(phase_msg, phase_unit, phase_colour):
     """Print helper coloured message for the current phase
 
-    Arguments:
-        phase_msg(str): message that will be printed to the output
-        phase_unit(str): additional parameter that is passed to the phase_msg
-        phase_colour(str): phase colour defined in helpers.py
+    :param str phase_msg: message that will be printed to the output
+    :param str phase_unit: additional parameter that is passed to the phase_msg
+    :param str phase_colour: phase colour defined in helpers.py
     """
     print(termcolor.colored(
         phase_msg.format(
@@ -172,8 +167,7 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
 def print_job_progress(overall_jobs):
     """Print the tag with the percent of the jobs currently done
 
-    Arguments:
-        overall_jobs(int): overall number of jobs to be done
+    :param int overall_jobs: overall number of jobs to be done
     """
     percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
     print("[{}%] ".format(
@@ -185,10 +179,9 @@ def print_job_progress(overall_jobs):
 def cprint(string, colour, attrs=None):
     """Wrapper over coloured print without adding new line
 
-    Arguments:
-        string(str): string that is printed with colours
-        colour(str): colour that will be used to colour the string
-        attrs(list): list of additional attributes for the colouring
+    :param str string: string that is printed with colours
+    :param str colour: colour that will be used to colour the string
+    :param list attrs: list of additional attributes for the colouring
     """
     attrs = attrs or []
     print(termcolor.colored(string, colour, attrs=attrs), end='')
@@ -197,11 +190,10 @@ def cprint(string, colour, attrs=None):
 def cprintln(string, colour, attrs=None, ending='\n'):
     """Wrapper over coloured print with added new line or other ending
 
-    Arguments:
-        string(str): string that is printed with colours and newline
-        colour(str): colour that will be used to colour the stirng
-        attrs(list): list of additional attributes for the colouring
-        ending(str): ending of the string, be default new line
+    :param str string: string that is printed with colours and newline
+    :param str colour: colour that will be used to colour the stirng
+    :param list attrs: list of additional attributes for the colouring
+    :param str ending: ending of the string, be default new line
     """
     attrs = attrs or []
     print(termcolor.colored(string, colour, attrs=attrs), end=ending)
@@ -210,8 +202,7 @@ def cprintln(string, colour, attrs=None, ending='\n'):
 def done(ending='\n'):
     """Helper function that will print green done to the terminal
 
-    Arguments:
-        ending(str): end of the string, by default new line
+    :param str ending: end of the string, by default new line
     """
     print('[', end='')
     cprint("DONE", 'green', attrs=['bold'])
@@ -220,8 +211,7 @@ def done(ending='\n'):
 
 def failed(ending='\n'):
     """
-    Arguments:
-        ending(str): end of the string, by default new line
+    :param str ending: end of the string, by default new line
     """
     print('[', end='')
     cprint("FAILED", 'red', attrs=['bold'])
@@ -237,8 +227,8 @@ def count_degradations_per_group(degradation_list):
     # Get only degradation results
     changes = map(operator.attrgetter('result'), map(operator.itemgetter(0), degradation_list))
     # Transform the enum into a string
-    changes = list(map(operator.attrgetter('name'), changes))
-    counts = dict(collections.Counter(changes))
+    change_names = list(map(operator.attrgetter('name'), changes))
+    counts = dict(collections.Counter(change_names))
     return counts
 
 
@@ -390,6 +380,9 @@ class History(object):
         for each such parent, we keep one column.
     :ivar bool auto_flush_with_border: specifies whether in auto-flushing the border should be
         included in the output
+    :ivar object _original_stdout: original standard output that is saved and restored when leaving
+    :ivar function _saved_print: original print function which is replaced with flushed function
+        and is restored when leaving the history
     """
     class Edge(object):
         """Represents one edge of the history
@@ -426,6 +419,8 @@ class History(object):
         """
         self.unresolved_edges = [History.Edge(head)]
         self.auto_flush_with_border = False
+        self._original_stdout = None
+        self._saved_print = None
 
     def __enter__(self):
         """When entering, we create a new string io object to catch standard output
@@ -433,7 +428,7 @@ class History(object):
         :return: the history object
         """
         # We will get the original standard output with string buffer and handle writing ourselves
-        self.original_stdout = sys.stdout
+        self._original_stdout = sys.stdout
         sys.stdout = io.StringIO()
         self._saved_print = builtins.print
 
@@ -556,6 +551,14 @@ class History(object):
         self._print_minor_version(minor_version_info)
 
     def finish_minor_version(self, minor_version_info, degradation_list):
+        """Notifies that we have processed the minor version.
+
+        Updates the unresolved parents, taints those where we found degradations and processes
+        the merge points. Everything is flushed.
+
+        :param MinorVersion minor_version_info: name of the finished minor version
+        :param list degradation_list: list of found degradations
+        """
         # Update the unresolved parents
         minor_sha = minor_version_info.checksum
         version_index = first_index_of_attr(self.unresolved_edges, 'next', minor_sha)
@@ -583,8 +586,8 @@ class History(object):
             sys.stdout.seek(0)
             for line in sys.stdout.readlines():
                 if with_border:
-                    self.original_stdout.write(self.get_left_border())
-                self.original_stdout.write(line)
+                    self._original_stdout.write(self.get_left_border())
+                self._original_stdout.write(line)
 
             # create new stringio
             sys.stdout = io.StringIO()
@@ -657,7 +660,9 @@ class History(object):
                     e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
                 ) if rightmost_branches_num else ""
                 print(left_str + right_str)
-                print(left_str + " ".join([self.unresolved_edges[merged_at].to_ascii('\\'), right_str]))
+                print(left_str + " ".join(
+                    [self.unresolved_edges[merged_at].to_ascii('\\'), right_str]
+                ))
 
     def _process_fork_point(self, fork_point):
         """Updates the printed tree after we forked from the given sha.
@@ -674,7 +679,8 @@ class History(object):
         forked_index = first_index_of_attr(self.unresolved_edges, 'next', fork_point)
         src_index_map = list(range(0, ulen))
         tgt_index_map = [
-            forked_index if self.unresolved_edges[i].next == fork_point else i for i in range(0, ulen)
+            forked_index if self.unresolved_edges[i].next == fork_point else i
+            for i in range(0, ulen)
         ]
 
         while src_index_map != tgt_index_map:

@@ -6,6 +6,18 @@ HEAD
 
 **To be included in next release**
 
+  - fix various linting issues (e.g. too long lines)
+  - remove unused code and function (e.g. in memory)
+  - fix minor issues
+  - extend the test suite with several more tests
+  - flatten the test hierarchy
+  - remove alloclist view (query+convert imported in python is more powerful)
+  - renew the rest of the old documentation format
+  - extract path and type function parameters from vcs api
+  - refactor pcs module and remove pcs as argument from all of the functions
+  - fix various codacy issues
+  - refactor cli module by moving callbacks, renaming functions and removing redundant functions
+
 0.14.3 (2018-06-12)
 -------------------
 

@@ -24,15 +24,11 @@ def model_plot_computation(model_x, model_y, **data):
     Creates data dictionary with 'plot_x' and 'plot_y' lists containing the model points
     for plotting.
 
-    Arguments:
-        model_x(function): function for computation of x plot points
-        model_y(function): function for computation of y plot points
-        data(dict): data dictionary with computed regression model
-    Raises:
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        dict: data dictionary with 'plot_x' and 'plot_y' points
-
+    :param function model_x: function for computation of x plot points
+    :param function model_y: function for computation of y plot points
+    :param dict data: data dictionary with computed regression model
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: data dictionary with 'plot_x' and 'plot_y' points
     """
     # Build the x points from the x interval values, stored as 'plot_x'
     plot_data = model_x(**data)
@@ -49,14 +45,11 @@ def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOO
 
     Splits the x interval of model into number of points.
 
-    Arguments:
-        x_interval_start(int or float): the left bound of the x interval
-        x_interval_end(int or float): the right bound of the x interval
-        smoothness(int): number of points to produce from the interval
-    Raises:
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        dict: data dictionary with 'plot_x' array
+    :param int or float x_interval_start: the left bound of the x interval
+    :param int or float x_interval_end: the right bound of the x interval
+    :param int smoothness: number of points to produce from the interval
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: data dictionary with 'plot_x' array
     """
     # Produce number of points from the interval
     plot_x = tools.split_model_interval(x_interval_start, x_interval_end, smoothness)
@@ -68,13 +61,10 @@ def linear_plot_x_pts(x_interval_start, x_interval_end, **_):
 
     Creates array with only the interval border values (i.e. [interval_start, interval_end])
 
-    Arguments:
-        x_interval_start(int or float): the left bound of the x interval
-        x_interval_end(int or float): the right bound of the x interval
-    Raises:
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Returns:
-        dict: data dictionary with 'plot_x' array
+    :param int or float x_interval_start: the left bound of the x interval
+    :param int or float x_interval_end: the right bound of the x interval
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: data dictionary with 'plot_x' array
     """
     # Create simple two-value array
     plot_x = np.array([x_interval_start, x_interval_end])
@@ -91,17 +81,13 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, **_):
 
     Creates data dictionary with 'plot_y' containing the y values for plotting.
 
-    Arguments:
-        plot_x(numpy array): array of x points
-        b0(float): the b0 model coefficient
-        b1(float): the b1 model coefficient
-        formula(function): function object containing the computation formula
-        m_fx(function): function object with x values modification
-    Raises:
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        dict: data dictionary with 'plot_y' array
-
+    :param numpy array plot_x: array of x points
+    :param float b0: the b0 model coefficient
+    :param float b1: the b1 model coefficient
+    :param function formula: function object containing the computation formula
+    :param function m_fx: function object with x values modification
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: data dictionary with 'plot_y' array
     """
     # Modify the x points if needed
     if m_fx:
@@ -123,17 +109,13 @@ def quad_plot_y_pts(plot_x, b0, b1, b2, formula, **_):
 
     Creates data dictionary with 'plot_y' containing the y values for plotting.
 
-    Arguments:
-        plot_x(numpy array): array of x points
-        b0(float): the b0 model coefficient
-        b1(float): the b1 model coefficient
-        b2(float): the b2 model coefficient
-        formula(function): function object containing the computation formula
-    Raises:
-        TypeError: if the required function arguments are not in the unpacked dictionary input
-    Return:
-        dict: data dictionary with 'plot_y' array
-
+    :param numpy array plot_x: array of x points
+    :param float b0: the b0 model coefficient
+    :param float b1: the b1 model coefficient
+    :param float b2: the b2 model coefficient
+    :param function formula: function object containing the computation formula
+    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
+    :returns dict: data dictionary with 'plot_y' array
     """
     # Apply the computation formula
     plot_y = np.array(formula(b0, b1, b2, plot_x))

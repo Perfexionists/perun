@@ -4,9 +4,10 @@ Contains decorators for enforcing certain conditions, like e.g. singleton-like r
 the functions. Or various checker function, that checks given parameters of the functions.
 """
 
-import termcolor
 import inspect
 import time
+
+import termcolor
 
 from perun.utils.exceptions import InvalidParameterException
 
@@ -18,13 +19,11 @@ def singleton(func):
     Wraps the function @p func so it will always return the same result,
     as given by the first call. I.e. the singleton. No params are expected.
 
-    Arguments:
-        func(function): function that will be decorated
-
-    Returns:
-        func: decorated function that will be run only once
+    :param function func: function that will be decorated
+    :returns func: decorated function that will be run only once
     """
     func.instance = None
+    registered_singletons.append(func)
 
     def wrapper():
         """Wrapper function of the @p func"""
@@ -33,6 +32,7 @@ def singleton(func):
         return func.instance
 
     return wrapper
+registered_singletons = []
 
 
 def arguments_to_key(func, *args, **kwargs):
@@ -41,13 +41,10 @@ def arguments_to_key(func, *args, **kwargs):
     of args and kwargs into unique key. Note that this has to be generic and
     accept various types of function combinations
 
-    Arguments:
-        func(function): function we are extracting parameters for
-        *args(list): list of non keyword arguments
-        **kwargs(dict): dictionary of keyword arguments
-
-    Returns:
-        tuple: key usable for identification of called parameters
+    :param function func: function we are extracting parameters for
+    :param list args: list of non keyword arguments
+    :param dict kwargs: dictionary of keyword arguments
+    :returns tuple: key usable for identification of called parameters
     """
     # positional, *, **, default for positional, keywords after *, keywords defaults
     f_args, _, _, f_defaults, _, f_kwonlydefaults, _ = inspect.getfullargspec(func)
@@ -74,11 +71,9 @@ def singleton_with_args(func):
     """
     Wraps the function @p func, so it will always return the same result,
     as givn by the first call with given positional and keyword arguments.
-    Arguments:
-        func(function): function that will be decorated
 
-    Returns:
-        func: decorated function that will be run only once for give parameters
+    :param function func: function that will be decorated
+    :returns func: decorated function that will be run only once for give parameters
     """
     func_args_cache[func.__name__] = {}
 
@@ -108,14 +103,11 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
     Validates the arguments stated by validated_args with validate function.
     Note that positional and kwarguments are not supported by this decorator
 
-    Arguments:
-        validated_args(list[str]): list of validated arguments
-        validate(function): function used for validation
-        args(list): list of additional positional arguments to validate function
-        kwargs(dict): dictionary of additional keyword arguments to validate function
-
-    Returns:
-        func: decorated function for which given parameters will be validated
+    :param list[str] validated_args: list of validated arguments
+    :param function validate: function used for validation
+    :param list args: list of additional positional arguments to validate function
+    :param dict kwargs: dictionary of additional keyword arguments to validate function
+    :returns func: decorated function for which given parameters will be validated
     """
     def inner_decorator(func):
         """Wrapper function of the @p func"""
@@ -139,11 +131,8 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
 
 def static_variables(**kwargs):
     """
-    Arguments:
-        kwargs(dict): keyword with static variables and their values
-
-    Returns:
-        func: decorated function for which static variables are set
+    :param dict kwargs: keyword with static variables and their values
+    :returns func: decorated function for which static variables are set
     """
     def inner_wrapper(func):
         """Inner wrapper of the function"""

@@ -1,3 +1,5 @@
+"""A simple clusterization technique, which classifies resources according to sorted values."""
+
 __author__ = 'Tomas Fiedor'
 
 

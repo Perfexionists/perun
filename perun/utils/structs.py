@@ -5,8 +5,8 @@ from enum import Enum
 __author__ = 'Tomas Fiedor'
 
 PerformanceChange = Enum(
-    'PerformanceChange', 'Degradation MaybeDegradation ' +
-                         'Unknown NoChange MaybeOptimization Optimization'
+    'PerformanceChange',
+    'Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization'
 )
 
 

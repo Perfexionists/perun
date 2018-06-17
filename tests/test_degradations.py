@@ -41,7 +41,7 @@ def test_degradation_precollect(monkeypatch, pcs_full, capsys):
         }
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     head = str(git_repo.head.commit)
 
     check.degradation_in_minor(head)
@@ -54,7 +54,7 @@ def test_degradation_in_minor(pcs_with_degradations, capsys):
 
     Expects correct behaviour
     """
-    git_repo = git.Repo(pcs_with_degradations.vcs_path)
+    git_repo = git.Repo(pcs_with_degradations.get_vcs_path())
     head = str(git_repo.head.commit)
 
     check.degradation_in_minor(head)
@@ -68,7 +68,7 @@ def test_degradation_in_history(pcs_with_degradations):
 
     Expects correct behaviour
     """
-    git_repo = git.Repo(pcs_with_degradations.vcs_path)
+    git_repo = git.Repo(pcs_with_degradations.get_vcs_path())
     head = str(git_repo.head.commit)
 
     result = check.degradation_in_history(head)

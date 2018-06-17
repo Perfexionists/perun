@@ -106,15 +106,15 @@ def test_add_on_empty_repo(helpers, pcs_with_empty_git, valid_profile_pool, caps
 
     Expecting an error and system exist as there is no commit, so nothing can be add.
     """
-    assert os.getcwd() == os.path.split(pcs_with_empty_git.path)[0]
-    before_count = helpers.count_contents_on_path(pcs_with_empty_git.path)
+    assert os.getcwd() == os.path.split(pcs_with_empty_git.get_path())[0]
+    before_count = helpers.count_contents_on_path(pcs_with_empty_git.get_path())
 
     # Assert that the program ends
     with pytest.raises(SystemExit):
         commands.add([valid_profile_pool[0]], None, keep_profile=True)
 
     # Assert that nothing was added (rather weak, but should be enough)
-    after_count = helpers.count_contents_on_path(pcs_with_empty_git.path)
+    after_count = helpers.count_contents_on_path(pcs_with_empty_git.get_path())
     assert before_count == after_count
 
     # Assert that the error message is OK
@@ -130,13 +130,13 @@ def test_add_on_no_vcs(helpers, pcs_without_vcs, valid_profile_pool):
     Expecting and error, as this will call a wrapper over custom "repo" called pvcs, which
     is not supported, but is simply a sane default.
     """
-    before_count = helpers.count_contents_on_path(pcs_without_vcs.path)
-    assert pcs_without_vcs.vcs_type == 'pvcs'
+    before_count = helpers.count_contents_on_path(pcs_without_vcs.get_path())
+    assert pcs_without_vcs.get_vcs_type() == 'pvcs'
     with pytest.raises(UnsupportedModuleException):
         commands.add([valid_profile_pool[0]], None, keep_profile=True)
 
     # Assert that nothing was added (rather weak, but should be enough)
-    after_count = helpers.count_contents_on_path(pcs_without_vcs.path)
+    after_count = helpers.count_contents_on_path(pcs_without_vcs.get_path())
     assert before_count == after_count
 
 
@@ -146,15 +146,17 @@ def test_add(helpers, pcs_full, valid_profile_pool):
     Expecting no error. Profile is added to the repository, and to the index, to the specified
     minor version.
     """
-    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     commits = [binascii.hexlify(c.binsha).decode('utf-8') for c in git_repo.iter_commits()]
     current_head = commits[0]
-    before_count = helpers.count_contents_on_path(pcs_full.path)
-    obj_path = pcs_full.path
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
+    obj_path = pcs_full.get_path()
 
     # First valid profile should be mapped to the same chunk
     for valid_profile in valid_profile_pool:
-        valid_profile = helpers.prepare_profile(pcs_full, valid_profile, current_head)
+        valid_profile = helpers.prepare_profile(
+            pcs_full.get_job_directory(), valid_profile, current_head
+        )
         # Check that the profile was NOT in the index before
         before_entries_count = assert_before_add(helpers, obj_path, current_head, valid_profile)
 
@@ -167,7 +169,7 @@ def test_add(helpers, pcs_full, valid_profile_pool):
 
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
     #   one of the profiles already in the tracking
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
 
 
@@ -178,13 +180,15 @@ def test_add_no_minor(helpers, pcs_full, valid_profile_pool):
 
     Fixme: Extend with more checks
     """
-    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    before_count = helpers.count_contents_on_path(pcs_full.path)
-    obj_path = pcs_full.path
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
+    obj_path = pcs_full.get_path()
 
     for valid_profile in valid_profile_pool:
-        valid_profile = helpers.prepare_profile(pcs_full, valid_profile, head)
+        valid_profile = helpers.prepare_profile(
+            pcs_full.get_job_directory(), valid_profile, head
+        )
         # Check that the profile was NOT in the index before
         before_entries_count = assert_before_add(helpers, obj_path, head, valid_profile)
 
@@ -196,7 +200,7 @@ def test_add_no_minor(helpers, pcs_full, valid_profile_pool):
 
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
     #   one of the profiles already in the tracking
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
 
 
@@ -205,42 +209,51 @@ def test_add_wrong_minor(helpers, pcs_full, valid_profile_pool):
 
     Expecting raising an exception, that the specified minor version is wrong.
     """
-    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     commits = [binascii.hexlify(c.binsha).decode('utf-8') for c in git_repo.iter_commits()]
     wrong_commit = commits[0][:20] + commits[1][20:]
     assert len(wrong_commit) == 40
     assert wrong_commit != commits[0] and wrong_commit != commits[1]
-    before_count = helpers.count_contents_on_path(pcs_full.path)
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
 
     with pytest.raises(VersionControlSystemException):
         commands.add([valid_profile_pool[0]], wrong_commit, keep_profile=True)
 
     # Assert that nothing was added (rather weak, but should be enough)
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count == after_count
 
 
-def test_add_wrong_profile(helpers, pcs_full, error_profile_pool):
+def test_add_wrong_profile(helpers, pcs_full, error_profile_pool, capsys):
     """Test calling 'perun add profile hash' with profile in wrong format
 
     Expecting raising an exception, that the profile is wrong.
     """
-    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    before_count = helpers.count_contents_on_path(pcs_full.path)
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
 
     for error_profile in error_profile_pool:
-        before_entries_count = assert_before_add(helpers, pcs_full.path, head, error_profile)
+        before_entries_count = assert_before_add(helpers, pcs_full.get_path(), head, error_profile)
         with pytest.raises(IncorrectProfileFormatException):
             commands.add([error_profile], None, keep_profile=True)
 
         # Assert that the profile was not added into the index
-        after_entries_count = assert_after_invalid_add(helpers, pcs_full.path, head, error_profile)
+        after_entries_count = assert_after_invalid_add(helpers, pcs_full.get_path(), head, error_profile)
         assert before_entries_count == after_entries_count
 
     # Assert that nothing was added (rather weak, but should be enough)
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count == after_count
+
+    # Try to assert adding not existing profile
+    with pytest.raises(SystemExit):
+        commands.add(['notexisting.perf'], None, keep_profile=True)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
+    assert before_count == after_count
+
+    _, err = capsys.readouterr()
+    assert "notexisting.perf does not exist" in err
 
 
 def test_add_existing(helpers, pcs_full, valid_profile_pool, capsys):
@@ -251,13 +264,15 @@ def test_add_existing(helpers, pcs_full, valid_profile_pool, capsys):
 
     Fixme: Extend with more checks
     """
-    git_repo = git.Repo(os.path.split(pcs_full.path)[0])
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    before_count = helpers.count_contents_on_path(pcs_full.path)
-    obj_path = pcs_full.path
+    before_count = helpers.count_contents_on_path(pcs_full.get_path())
+    obj_path = pcs_full.get_path()
 
     for valid_profile in valid_profile_pool:
-        valid_profile = helpers.prepare_profile(pcs_full, valid_profile, head)
+        valid_profile = helpers.prepare_profile(
+            pcs_full.get_job_directory(), valid_profile, head
+        )
         # Check that the profile was NOT in the index before
         before_entries_count = assert_before_add(helpers, obj_path, head, valid_profile)
 
@@ -279,7 +294,7 @@ def test_add_existing(helpers, pcs_full, valid_profile_pool, capsys):
 
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
     #   one of the profiles already in the tracking
-    after_count = helpers.count_contents_on_path(pcs_full.path)
+    after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
 
 

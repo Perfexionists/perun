@@ -14,18 +14,18 @@ def test_loading(helpers, pcs_full, valid_profile_pool):
 
     Expecting correct behaviour
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.path, valid_profile_pool)
-    untracked = commands.get_untracked_profiles(pcs_full)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    untracked = commands.get_untracked_profiles()
     assert len(untracked) != 0
 
     first_untracked = untracked[0].load()
     assert isinstance(first_untracked, dict)
     assert 'header' in first_untracked.keys()
 
-    git_repo = git.Repo(pcs_full.vcs_path)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
     head = str(git_repo.head.commit)
 
-    minor_version_profiles = profiles.load_list_for_minor_version(pcs_full, head)
+    minor_version_profiles = profiles.load_list_for_minor_version(head)
     assert len(minor_version_profiles) != 0
     first_indexed = minor_version_profiles[0].load()
     assert isinstance(first_indexed, dict)
