@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.14.4 (2018-06-17)
+-------------------
+
+`commit: 4e36142252e123f3e8e6422583c71383adc9fc30`
+
+**Refactor the code**
+
   - fix various linting issues (e.g. too long lines)
   - remove unused code and function (e.g. in memory)
   - fix minor issues
