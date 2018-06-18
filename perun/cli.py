@@ -399,9 +399,16 @@ def add(profile, minor, **kwargs):
     control system is used instead. Massaging of <hash> is taken care of by
     underlying version control system (e.g. git uses ``git rev-parse``).
 
-    <profile> can either be a ``pending tag`` or a fullpath. ``Pending tags``
-    are in form of ``i@p``, where ``i`` stands for an index in the pending
-    profile directory (i.e. ``.perun/jobs``) and ``@p`` is literal suffix.
+    <profile> can either be a ``pending tag``, ``pending tag range`` or a
+    fullpath. ``Pending tags`` are in form of ``i@p``, where ``i`` stands
+    for an index in the pending profile directory (i.e. ``.perun/jobs``)
+    and ``@p`` is literal suffix.  The ``pending tag range`` is in form
+    of ``i@p-j@p``, where both ``i`` and ``j`` stands for indexes in the
+    pending profiles. The ``pending tag range`` then represents all of
+    the profiles in the interval <i, j>. When ``i > j``, then no profiles
+    will be add; when ``j``; when ``j`` is bigger than the number of
+    pending profiles, then all of the non-existing pending profiles will
+    be obviously skipped.
     Run ``perun status`` to see the `tag` anotation of pending profiles.
 
     Example of adding profiles:
@@ -454,7 +461,13 @@ def remove(profile, minor, **kwargs):
     <profile> can either be a ``index tag`` or a path specifying the profile.
     ``Index tags`` are in form of ``i@i``, where ``i`` stands for an index in
     the minor version's index and ``@i`` is literal suffix. Run ``perun
-    status`` to see the `tags` of current ``HEAD``'s index.
+    status`` to see the `tags` of current ``HEAD``'s index. The
+    ``index tag range`` is in form of ``i@i-j@i``, where both ``i`` and ``j``
+    stands for indexes in the minor version's index. The ``index tag range``
+    then represents all of the profiles in the interval <i, j>. registered
+    in index. When ``i > j``, then no profiles will be removed; when ``j``;
+    when ``j`` is bigger than the number of pending profiles, then all of
+    the non-existing pending profiles will be obviously skipped.
 
     Examples of removing profiles:
 
@@ -474,8 +487,6 @@ def remove(profile, minor, **kwargs):
         commands.remove(profile, minor, **kwargs)
     except (NotPerunRepositoryException, EntryNotFoundException) as exception:
         perun_log.error(str(exception))
-    finally:
-        perun_log.info("removed '{}'".format(profile))
 
 
 @cli.command()
@@ -515,6 +526,7 @@ def log(head, **kwargs):
               help="Shortens the output of ``status`` to include only most"
               " necessary information.")
 @click.option('--sort-by', '-sb', 'format__sort_profiles_by', nargs=1,
+              default=profiles.DEFAULT_SORT_KEY,
               type=click.Choice(profiles.ProfileInfo.valid_attributes),
               callback=cli_helpers.process_config_option,
               help="The stored and pending profiles will be sorted by <key>.")

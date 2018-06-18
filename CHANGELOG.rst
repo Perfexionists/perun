@@ -7,6 +7,8 @@ HEAD
 **To be included in next release**
 
   - refactor check modules
+  - add ``pending tag range`` to ``perun add`` command to add more profiles at once
+  - add ``index tag rage`` to ``perun rm`` command to remove more profiles at once
 
 0.15 (2018-06-20)
 -----------------
