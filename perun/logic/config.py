@@ -84,7 +84,6 @@ class Config(object):
         *sections, last_section = key.split('.')
         _locate_section_from_query(self.data, sections)[last_section] = value
         if self.path:
-            print(self.path)
             write_config_to(self.path, self.data)
 
     @decorators.validate_arguments(['key'], is_valid_key)

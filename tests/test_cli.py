@@ -251,9 +251,17 @@ def test_status_correct(pcs_full):
     short_result = runner.invoke(cli.status, ['--short'])
     assert short_result.exit_code == 0
     assert len(short_result.output.split("\n")) == 6
+    assert config.lookup_key_recursively('format.sort_profiles_by') == 'time'
 
+    # Try that the sort order changed
     short_result = runner.invoke(cli.status, ['--short', '--sort-by', 'source'])
     assert short_result.exit_code == 0
+    assert pcs_full.local_config().get('format.sort_profiles_by') == 'source'
+
+    # The sort order is kept the same
+    short_result = runner.invoke(cli.status, ['--short'])
+    assert short_result.exit_code == 0
+    assert pcs_full.local_config().get('format.sort_profiles_by') == 'source'
 
 
 @pytest.mark.usefixtures('cleandir')

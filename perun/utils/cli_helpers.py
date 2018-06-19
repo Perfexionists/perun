@@ -23,20 +23,6 @@ from perun.utils.exceptions import VersionControlSystemException
 __author__ = 'Tomas Fiedor'
 
 
-def process_config_option(_, param, value):
-    """Processes the value of the param and stores it in the temporary config
-
-    :param click.Context _: unused click context
-    :param click.Option param: click option, that is being processed
-    :param object value: value we are setting
-    :return: set value
-    """
-    option_name = param.human_readable_name.replace("__", ".")
-    if value:
-        config.runtime().set(option_name, value)
-    return value
-
-
 def process_bokeh_axis_title(ctx, param, value):
     """Processes default value for axes.
 
@@ -113,13 +99,14 @@ def process_continuous_key(ctx, _, value):
     return value
 
 
-def set_runtime_option_from_flag(config_option, postprocess_function=lambda x: x):
+def set_config_option_from_flag(dst_config_getter, config_option, postprocess_function=lambda x: x):
     """Helper function for setting the config option from the CLI option handler
 
     Returns the option handler, that sets, if value is equal to true, the config option to the
     given option value. This is e.g. used to use the CLI to set various configurations temporarily
     from the command line option.
 
+    :param function dst_config_getter: destination config, where the option will be set
     :param str config_option: name of the option that will be set in the runtime config
     :param function postprocess_function: function which will postprocess the value
     :return: handler for the command line interface
@@ -133,7 +120,7 @@ def set_runtime_option_from_flag(config_option, postprocess_function=lambda x: x
         :return:
         """
         if value:
-            config.runtime().set(config_option, postprocess_function(value))
+            dst_config_getter().set(config_option, postprocess_function(value))
         return value
     return option_handler
 

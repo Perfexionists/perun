@@ -410,6 +410,8 @@ def add(profile, minor, **kwargs):
     pending profiles, then all of the non-existing pending profiles will
     be obviously skipped.
     Run ``perun status`` to see the `tag` anotation of pending profiles.
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
 
     Example of adding profiles:
 
@@ -468,6 +470,8 @@ def remove(profile, minor, **kwargs):
     in index. When ``i > j``, then no profiles will be removed; when ``j``;
     when ``j`` is bigger than the number of pending profiles, then all of
     the non-existing pending profiles will be obviously skipped.
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
 
     Examples of removing profiles:
 
@@ -526,10 +530,13 @@ def log(head, **kwargs):
               help="Shortens the output of ``status`` to include only most"
               " necessary information.")
 @click.option('--sort-by', '-sb', 'format__sort_profiles_by', nargs=1,
-              default=profiles.DEFAULT_SORT_KEY,
               type=click.Choice(profiles.ProfileInfo.valid_attributes),
-              callback=cli_helpers.process_config_option,
-              help="The stored and pending profiles will be sorted by <key>.")
+              callback=cli_helpers.set_config_option_from_flag(
+                  pcs.local_config, 'format.sort_profiles_by', str
+              ),
+              help="Sets the <key> in the local configuration for sorting profiles. "
+                   "Note that after setting the <key> it will be used for sorting which is "
+                   "considered in pending and index tags!")
 def status(**kwargs):
     """Shows the status of vcs, associated profiles and perun.
 
@@ -547,6 +554,11 @@ def status(**kwargs):
     An error is raised if the command is executed outside of range of any
     perun, or configuration misses certain configuration keys
     (namely ``format.status``).
+
+    Profiles (both registered in index and stored in pending directory) are sorted
+    according to the :ckey:`format.sort_profiles_by`. The option ``--sort-by``
+    sets this key in the local configuration for further usage. This means that
+    using the pending or index tags will consider this order.
 
     Refer to :ref:`logs-status` for information how to customize the outputs of
     ``status`` or how to set :ckey:`format.status` in nearest
@@ -593,6 +605,9 @@ def show(ctx, profile, **_):
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
 
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
+
     Example 1. The following command will show the first profile registered at
     index of ``HEAD~1`` commit. The resulting graph will contain bars
     representing sum of amounts per each subtype of resources and will be shown
@@ -615,8 +630,8 @@ def show(ctx, profile, **_):
 @click.argument('profile', required=True, metavar='<profile>',
                 callback=cli_helpers.lookup_any_profile_callback)
 @click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'format.output_profile_template', str
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the postprocessed file will have a resulting filename w.r.t to this'
               ' parameter. Refer to :ckey:`format.output_profile_template` for more'
@@ -654,6 +669,9 @@ def postprocessby(ctx, profile, **_):
 
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
+
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
 
     For checking the associated `tags` to profiles run ``perun status``.
 
@@ -698,8 +716,8 @@ def postprocessby(ctx, profile, **_):
               help='Additional parameters for called collector read from '
               'file in YAML format.')
 @click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'format.output_profile_template', str
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the file with collected data will have a resulting filename w.r.t '
               ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
@@ -731,8 +749,8 @@ def collect(ctx, **kwargs):
 
 @cli.group()
 @click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'format.output_profile_template', str
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the file with collected data will have a resulting filename w.r.t '
               ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
@@ -871,8 +889,8 @@ def job(ctx, **kwargs):
 
 @cli.group('check')
 @click.option('--compute-missing', '-c',
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'degradation.collect_before_check'),
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'degradation.collect_before_check'),
               is_flag=True, default=False,
               help='whenever there are missing profiles in the given point of history'
               ' the matrix will be rerun and new generated profiles assigned.')

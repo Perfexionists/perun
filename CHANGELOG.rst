@@ -9,6 +9,7 @@ HEAD
   - refactor check modules
   - add ``pending tag range`` to ``perun add`` command to add more profiles at once
   - add ``index tag rage`` to ``perun rm`` command to remove more profiles at once
+  - fix the issue with wrong sort order and tags (now :ckey:`format.sort_profiles_by` sets the option in local)
 
 0.15 (2018-06-20)
 -----------------
