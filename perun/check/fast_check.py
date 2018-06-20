@@ -45,11 +45,14 @@ def exec_fast_check(baseline_profile, baseline_x_pts, abs_error, mode=False):
         std_err_profile['global']['resources'][i]['structure-unit-size'] = x
         std_err_profile['global']['resources'][i]['amount'] = y
         i += 1
-        
+
+    # Fixme: Extract of and per key
     std_err_profile = runner.run_postprocessor_on_profile(std_err_profile, 'regression_analysis', {
         "regression_models": [],
         "steps": 3,
-        "method": "full"
+        "method": "full",
+        "of_key": "amount",
+        "per_key": "structure-unit-size"
     }, True)
     
     if not mode:
