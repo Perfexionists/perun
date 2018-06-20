@@ -1,12 +1,11 @@
-"""The module contains common methods, which are use by three detection methods 
+"""The module contains common methods, which are use by three detection methods
 (fast_check, linear_regression, polynomial_regression).
 
 The module contains one general method, which controls the all logic of the detection.
 This method is called by three other methods and its task is calculating the needed
-metrics to check performance change between two profiles and obtaining required models from 
+metrics to check performance change between two profiles and obtaining required models from
 these profiles. Module contains two other temporary methods, which are using by mentioned
-general methods. 
-
+general methods.
 """
 
 import numpy as np
@@ -29,7 +28,7 @@ def get_best_models_of(profile, model_type=None):
     best fitting models, it means, that it obtains the models which have the higher values
     of coefficient determination. In the case, that arguments model_type was given, method
     obtains model of that type. Method maps the individually metrics from obtained profile
-    to map, which is returns to calling function. Models are chosen unique according to its UID. 
+    to map, which is returns to calling function. Models are chosen unique according to its UID.
 
     :param dict profile: dictionary of profile resources and stuff
     :param string model_type: the type of model for obtaining
@@ -77,7 +76,7 @@ def get_function_values(model):
     is interval divide into several parts and to them is computed relevant values of
     dependent variables.
 
-    :param dict model: model with its required metrics (value of coefficient, type, ...) 
+    :param dict model: model with its required metrics (value of coefficient, type, ...)
     :returns: np_array (x-coordinates, y-coordinates)
     """
 
@@ -86,21 +85,21 @@ def get_function_values(model):
 
     if model[1][0] == 'quadratic':
         array_y_pts = regression_models._MODELS[model[1][0]]['transformations']['plot_model']['model_y'](
-            array_x_pts, model[1][2], model[1][3], model[1][6], 
-            regression_models._MODELS[model[1][0]]['transformations']['plot_model']['formula'], 
+            array_x_pts, model[1][2], model[1][3], model[1][6],
+            regression_models._MODELS[model[1][0]]['transformations']['plot_model']['formula'],
             return_dict=False)
     else:
         array_y_pts = regression_models._MODELS[model[1][0]]['transformations']['plot_model']['model_y'](
-            array_x_pts, model[1][2], model[1][3], 
-            regression_models._MODELS[model[1][0]]['transformations']['plot_model']['formula'], 
+            array_x_pts, model[1][2], model[1][3],
+            regression_models._MODELS[model[1][0]]['transformations']['plot_model']['formula'],
             regression_models._MODELS[model[1][0]]['f_x'], return_dict=False)
 
     return array_y_pts, array_x_pts
-    
+
 def general_detection(baseline_profile, target_profile, mode=0):
-    """The general method, which covers all detection logic. At the begin obtains the pairs 
+    """The general method, which covers all detection logic. At the begin obtains the pairs
     of the best models from the given profiles and the pairs of the linears models. Subsequently
-    are computed the needed statistics metrics, concretely relative and absolute error. According 
+    are computed the needed statistics metrics, concretely relative and absolute error. According
     to the calling method is call the relevant classification method. After the returned from this
     classification is know the type of occurred changes. In the last steps is determined
     information, which will be returned to users (i.e. confidence, change between models).
@@ -148,7 +147,7 @@ def general_detection(baseline_profile, target_profile, mode=0):
             elif mode == 2: # classification based on the regression analysis
                 change_type = check.fast_check.exec_fast_check(baseline_profile, baseline_x_pts, abs_error)
                 change_type = change_type[baseline_model[0]][0].upper() + ' '
-        
+
         # check the relevant degree of changes and its type (negative or positive)
         if change != PerformanceChange.NoChange:
             if (sum_abs_err > 0):
@@ -163,7 +162,7 @@ def general_detection(baseline_profile, target_profile, mode=0):
                 else:
                     change = PerformanceChange.MaybeOptimization
                 change_type += 'IMPROVEMENT'
-        
+
         best_corresponding_linear_model = best_baseline_models.get(
             baseline_linear_model[0])
         best_corresponding_baseline_model = best_baseline_models.get(
@@ -178,4 +177,4 @@ def general_detection(baseline_profile, target_profile, mode=0):
             target_model[1][0],
             rel_error,
             'r_square', confidence
-        ) 
+        )
