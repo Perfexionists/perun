@@ -110,6 +110,23 @@ def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
         yield data
 
 
+def try_square(x_sq_sum, x_sum, num_sqrt):
+    """Tries to square the sum and something
+
+    Fixme: Comment this properly
+
+    :param x_sq_sum:
+    :param x_sum:
+    :param num_sqrt:
+    :return:
+    """
+    try:
+        s_xx = x_sq_sum - ((x_sum / num_sqrt) ** 2)
+    except ZeroDivisionError:
+        s_xx = x_sq_sum - ((x_sum / tools.APPROX_ZERO) ** 2)
+    return s_xx
+
+
 def generic_regression_coefficients(
         f_a, f_b, x_sum, y_sum, xy_sum, x_sq_sum, pts_num, num_sqrt, **_):
     """The generic function for coefficients computation.
@@ -165,10 +182,7 @@ def generic_regression_coefficients(
     except ZeroDivisionError:
         s_xy = xy_sum - (x_sum / tools.APPROX_ZERO) * (y_sum / tools.APPROX_ZERO)
 
-    try:
-        s_xx = x_sq_sum - ((x_sum / num_sqrt) ** 2)
-    except ZeroDivisionError:
-        s_xx = x_sq_sum - ((x_sum / tools.APPROX_ZERO) ** 2)
+    s_xx = try_square(x_sq_sum, x_sum, num_sqrt)
 
     try:
         b1 = s_xy / s_xx
@@ -215,10 +229,8 @@ def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
     :returns dict: data dictionary with error value, tss and rss results
     """
     # Compute the TSS
-    try:
-        tss = y_sq_sum - ((y_sum / num_sqrt) ** 2)
-    except ZeroDivisionError:
-        tss = y_sq_sum - ((y_sum / tools.APPROX_ZERO) ** 2)
+    tss = try_square(y_sq_sum, y_sum, num_sqrt)
+
     # Compute the RSS
     try:
         rss = (s_xy / sqrt(s_xx)) ** 2
