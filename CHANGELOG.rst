@@ -6,6 +6,20 @@ HEAD
 
 **To be included in next release**
 
+0.15 (2018-06-20)
+-----------------
+
+`commit: 6bb792fd8e172ab6c97a3cd1ac517bfe416b6c85`
+
+**Extend the suite of change detection methods**
+
+  - add fast check degradation check method (:ref:`degradation-fast-check`)
+  - add linear regression based degradation check method (:ref:`degradation-lreg`)
+  - add polynomial regression based degradation check method (:ref:`degradation-preg`)
+  - rename regression models to full names
+  - fix divisions by zero in several places in regression analysis
+  - rename the api of several regression functions
+
 0.14.4 (2018-06-17)
 -------------------
 
