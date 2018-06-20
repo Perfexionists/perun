@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.14.3 documentation</title>
+    <title>Index &#8212; Perun 0.15 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.3',
+        VERSION:     '0.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -83,20 +83,6 @@
 </li>
       </ul></li>
       <li>
-    --from-time &lt;from_time&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-from-time">perun-show-alloclist command line option</a>
-</li>
-      </ul></li>
-      <li>
-    --function &lt;function&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-function">perun-show-alloclist command line option</a>
-</li>
-      </ul></li>
-      <li>
     --keep-profile
 
       <ul>
@@ -122,13 +108,6 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-memory-no-source">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-no-source">[1]</a>
-</li>
-      </ul></li>
-      <li>
-    --to-time &lt;to_time&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-to-time">perun-show-alloclist command line option</a>
 </li>
       </ul></li>
       <li>
@@ -164,13 +143,6 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-memory-a">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-a">[1]</a>
-</li>
-      </ul></li>
-      <li>
-    -a, --all-occurrences
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-a">perun-show-alloclist command line option</a>
 </li>
       </ul></li>
       <li>
@@ -410,8 +382,6 @@
         <li><a href="cli.html#cmdoption-perun-show-scatter-o">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-o">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -ot, --output-filename-template &lt;output_filename_template&gt;
 
@@ -423,6 +393,8 @@
         <li><a href="cli.html#cmdoption-perun-run-ot">perun-run command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -p, --params &lt;params&gt;
 
@@ -451,6 +423,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-run-job-pp">perun-run-job command line option</a>, <a href="jobs.html#cmdoption-perun-run-job-pp">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -q, --without-vcs-history
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-run-matrix-q">perun-run-matrix command line option</a>, <a href="jobs.html#cmdoption-perun-run-matrix-q">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -548,13 +527,6 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-init-t">perun-init command line option</a>
-</li>
-      </ul></li>
-      <li>
-    -t, --limit-to &lt;limit_to&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-t">perun-show-alloclist command line option</a>
 </li>
       </ul></li>
       <li>
@@ -1090,13 +1062,6 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    MODE
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-arg-mode">perun-show-alloclist command line option</a>
-</li>
-      </ul></li>
-      <li>
     models
 
       <ul>
@@ -1425,29 +1390,19 @@
 </li>
       </ul></li>
       <li>
+    perun-run-matrix command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-run-matrix-q">-q, --without-vcs-history</a>, <a href="jobs.html#cmdoption-perun-run-matrix-q">[1]</a>
+</li>
+      </ul></li>
+      <li>
     perun-show command line option
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-show-m">-m, --minor &lt;minor&gt;</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-arg-profile">&lt;profile&gt;</a>
-</li>
-      </ul></li>
-      <li>
-    perun-show-alloclist command line option
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-from-time">--from-time &lt;from_time&gt;</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-function">--function &lt;function&gt;</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-to-time">--to-time &lt;to_time&gt;</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-a">-a, --all-occurrences</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-t">-t, --limit-to &lt;limit_to&gt;</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-alloclist-arg-mode">MODE</a>
 </li>
       </ul></li>
       <li>
@@ -1562,6 +1517,16 @@
         <li><a href="cli.html#cmdoption-perun-utils-create-arg-unit">&lt;unit&gt;</a>
 </li>
       </ul></li>
+      <li><a href="degradation.html#module-perun.check.average_amount_threshold">perun.check.average_amount_threshold (module)</a>, <a href="degradation.html#module-perun.check.average_amount_threshold">[1]</a>
+</li>
+      <li><a href="degradation.html#module-perun.check.best_model_order_equality">perun.check.best_model_order_equality (module)</a>
+</li>
+      <li><a href="degradation.html#module-perun.check.fast_check">perun.check.fast_check (module)</a>
+</li>
+      <li><a href="degradation.html#module-perun.check.linear_regression">perun.check.linear_regression (module)</a>
+</li>
+      <li><a href="degradation.html#module-perun.check.polynomial_regression">perun.check.polynomial_regression (module)</a>
+</li>
       <li><a href="cli.html#module-perun.cli">perun.cli (module)</a>
 </li>
       <li><a href="collectors.html#module-perun.collect">perun.collect (module)</a>
@@ -1810,7 +1775,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>

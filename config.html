@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Configuration files &#8212; Perun 0.14.3 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.15 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.3',
+        VERSION:     '0.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -517,19 +517,19 @@ vcs.type: git
 <dl class="option">
 <dt id="cmdoption-perun-config-l">
 <code class="descname">-l</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--local</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-l" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will lookup or set in the local config i.e. <code class="docutils literal"><span class="pre">.perun/local.yml</span></code>.</p>
+<dd><p>Sets the local config, i.e. <code class="docutils literal"><span class="pre">.perun/local.yml</span></code>, as the source config.</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-config-h">
 <code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--shared</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-h" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will lookup or set in the shared config i.e. <code class="docutils literal"><span class="pre">shared.yml.</span></code></p>
+<dd><p>Sets the shared config, i.e. <code class="docutils literal"><span class="pre">shared.yml.</span></code>, as the source config</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-config-n">
 <code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--nearest</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-n" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will recursively discover the nearest suitable config. The lookup strategy can differ for <code class="docutils literal"><span class="pre">set</span></code> and <code class="docutils literal"><span class="pre">get</span></code>/<code class="docutils literal"><span class="pre">edit</span></code>.</p>
+<dd><p>Sets the nearest suitable config as the source config. The lookup strategy can differ for <code class="docutils literal"><span class="pre">set</span></code> and <code class="docutils literal"><span class="pre">get</span></code>/<code class="docutils literal"><span class="pre">edit</span></code>.</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
@@ -700,7 +700,7 @@ specified in the nearest perun configuration..</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>

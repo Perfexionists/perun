@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.14.3 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.15 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.3',
+        VERSION:     '0.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -104,13 +104,13 @@ following:</p>
 <dl class="option">
 <dt id="cmdoption-perun-no-pager">
 <code class="descname">--no-pager</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-no-pager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Disable paging of the long standard output (currently affects only <code class="docutils literal"><span class="pre">status</span></code> and <code class="docutils literal"><span class="pre">log</span></code> outputs). See <code class="xref std std-ckey docutils literal"><span class="pre">paging</span></code> to change the default paging strategy.</p>
+<dd><p>Disables the paging of the long standard output (currently affects only <code class="docutils literal"><span class="pre">status</span></code> and <code class="docutils literal"><span class="pre">log</span></code> outputs). See <code class="xref std std-ckey docutils literal"><span class="pre">paging</span></code> to change the default paging strategy.</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-v">
 <code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--verbose</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-v" title="Permalink to this definition">¶</a></dt>
-<dd><p>Increase the verbosity of the standard output. Verbosity is incremental, and each level increases the extent of output.</p>
+<dd><p>Increases the verbosity of the standard output. Verbosity is incremental, and each level increases the extent of output.</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
@@ -305,19 +305,19 @@ vcs.type: git
 <dl class="option">
 <dt id="cmdoption-perun-config-l">
 <code class="descname">-l</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--local</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-l" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will lookup or set in the local config i.e. <code class="docutils literal"><span class="pre">.perun/local.yml</span></code>.</p>
+<dd><p>Sets the local config, i.e. <code class="docutils literal"><span class="pre">.perun/local.yml</span></code>, as the source config.</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-config-h">
 <code class="descname">-h</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--shared</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-h" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will lookup or set in the shared config i.e. <code class="docutils literal"><span class="pre">shared.yml.</span></code></p>
+<dd><p>Sets the shared config, i.e. <code class="docutils literal"><span class="pre">shared.yml.</span></code>, as the source config</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-config-n">
 <code class="descname">-n</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--nearest</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-config-n" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will recursively discover the nearest suitable config. The lookup strategy can differ for <code class="docutils literal"><span class="pre">set</span></code> and <code class="docutils literal"><span class="pre">get</span></code>/<code class="docutils literal"><span class="pre">edit</span></code>.</p>
+<dd><p>Sets the nearest suitable config as the source config. The lookup strategy can differ for <code class="docutils literal"><span class="pre">set</span></code> and <code class="docutils literal"><span class="pre">get</span></code>/<code class="docutils literal"><span class="pre">edit</span></code>.</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
@@ -692,7 +692,7 @@ corresponding to <cite>pending tag</cite>, which can be obtained by running <cod
 <p>This commands runs one job ‘./mybin sll.cpp’ using the
 <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a>, which uses custom binaries targeted at
 <code class="docutils literal"><span class="pre">./src</span></code> directory.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p regression_analysis
+<div class="highlight-bash"><div class="highlight"><pre><span></span>perun run job -c mcollect -b ./mybin -b ./otherbin -w input.txt -p normalizer -p clusterizer
 </pre></div>
 </div>
 <p>This commands runs two jobs <code class="docutils literal"><span class="pre">./mybin</span> <span class="pre">input.txt</span></code> and <code class="docutils literal"><span class="pre">./otherbin</span>
@@ -769,6 +769,13 @@ with Perun’s configuration files.</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>perun run matrix <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-run-matrix-q">
+<code class="descname">-q</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--without-vcs-history</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-run-matrix-q" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will not print the VCS history tree during the collection of the data.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="perun-check">
 <h3>perun check<a class="headerlink" href="#perun-check" title="Permalink to this headline">¶</a></h3>
@@ -1571,89 +1578,6 @@ refer to <a class="reference internal" href="views.html#views-list"><span class=
 </div>
 <div class="section" id="show-units">
 <span id="cli-views-units-ref"></span><h3>Show units<a class="headerlink" href="#show-units" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="perun-show-alloclist">
-<h4>perun show alloclist<a class="headerlink" href="#perun-show-alloclist" title="Permalink to this headline">¶</a></h4>
-<p>Alloclist is a specific query interface for profiles collected by
-<cite>memory</cite> collector.</p>
-<dl class="docutils">
-<dt></dt>
-<dd><ul class="first last simple">
-<li><strong>Limitations</strong>: <cite>memory</cite> profiles generated by
-<a class="reference internal" href="collectors.html#collectors-memory"><span class="std std-ref">Memory Collector</span></a>.</li>
-<li><strong>Interpretation style</strong>: textual</li>
-<li><strong>Visualization backend</strong>: terminal</li>
-</ul>
-</dd>
-</dl>
-<p>Memstat contains several predefined functions for aggregated basic
-information about allocations within the profile—list of allocations,
-tops, sums, etc.—and serves as a base for future extension.
-Currently the following modes are supported:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li><code class="docutils literal"><span class="pre">most</span></code> lists trace records sorted by the frequency of allocations
-of memory they made.</li>
-<li><code class="docutils literal"><span class="pre">sum</span></code> lists trace records sorted by the overall amount of
-allocated memory they made.</li>
-<li><code class="docutils literal"><span class="pre">func</span></code> lists allocation records w.r.t. to the specified functions.</li>
-<li><code class="docutils literal"><span class="pre">all</span></code> lists all allocation records in specified time interval
-sorted by timestamp.</li>
-<li><code class="docutils literal"><span class="pre">top</span></code> lists trace records sorted by amount of allocated memory.</li>
-</ol>
-</div></blockquote>
-<p>The example of output of <cite>alloclist</cite> is as follows:</p>
-<pre class="literal-block">
-#1 malloc: 100B at 0x31341343
-  └ malloc  in  /dir/subdir/file.c:32
-    └ main  in /dir/subdir/file.c:12
-
-#2 calloc: 12B at 0x31411341
-  └ malloc in /dir/subdir/file.c:1
-</pre>
-<p>Note: alloclist is an old prototype and is expected to be replaced by more
-sophisticated queries in near future.</p>
-<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show alloclist <span class="o">[</span>OPTIONS<span class="o">]</span> MODE
-</pre></div>
-</div>
-<p class="rubric">Options</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-alloclist-t">
-<code class="descname">-t</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--limit-to</code><code class="descclassname"> &lt;limit_to&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-t" title="Permalink to this definition">¶</a></dt>
-<dd><p>The displayed list of records will be limited to &lt;int&gt; records.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-show-alloclist-from-time">
-<code class="descname">--from-time</code><code class="descclassname"> &lt;from_time&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-from-time" title="Permalink to this definition">¶</a></dt>
-<dd><p>The list of records will start from the &lt;timestamp&gt; (in seconds).</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-show-alloclist-to-time">
-<code class="descname">--to-time</code><code class="descclassname"> &lt;to_time&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-to-time" title="Permalink to this definition">¶</a></dt>
-<dd><p>The list of records will be displayed until the &lt;timestamp&gt; (in seconds).</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-show-alloclist-function">
-<code class="descname">--function</code><code class="descclassname"> &lt;function&gt;</code><a class="headerlink" href="#cmdoption-perun-show-alloclist-function" title="Permalink to this definition">¶</a></dt>
-<dd><p>Specifies the name of the function for the <code class="docutils literal"><span class="pre">func</span></code> mode.</p>
-</dd></dl>
-
-<dl class="option">
-<dt id="cmdoption-perun-show-alloclist-a">
-<code class="descname">-a</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--all-occurrences</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-alloclist-a" title="Permalink to this definition">¶</a></dt>
-<dd><p>Includes all of the occurrences of the function (even the partial participationin the call traces) in the list of allocations.</p>
-</dd></dl>
-
-<p class="rubric">Arguments</p>
-<dl class="option">
-<dt id="cmdoption-perun-show-alloclist-arg-mode">
-<code class="descname">MODE</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-alloclist-arg-mode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Required argument</p>
-</dd></dl>
-
-</div>
 <div class="section" id="perun-show-bars">
 <h4>perun show bars<a class="headerlink" href="#perun-show-bars" title="Permalink to this headline">¶</a></h4>
 <p>Customizable interpretation of resources using the bar format.</p>
@@ -2107,7 +2031,7 @@ not the part of the main perun suite.</p>
 <p>According to the given &lt;template&gt; constructs a new modules in Perun for &lt;unit&gt;.</p>
 <p>Currently this supports creating new modules for the tool suite (namely <code class="docutils literal"><span class="pre">collect</span></code>,
 <code class="docutils literal"><span class="pre">postprocess</span></code>, <code class="docutils literal"><span class="pre">view</span></code>) or new algorithms for checking degradation (check). The command uses
-templates stored in <cite>..perun       emplates</cite> directory and uses _jinja as a template handler. The
+templates stored in <cite>../perun/templates</cite> directory and uses _jinja as a template handler. The
 templates can be parametrized by the following by options (if not specified ‘none’ is used).</p>
 <p>Unless <code class="docutils literal"><span class="pre">--no-edit</span></code> is set, after the successful creation of the files, an external editor,
 which is specified by <a class="reference internal" href="config.html#confkey-general.editor"><code class="xref std std-ckey docutils literal"><span class="pre">general.editor</span></code></a> configuration key.</p>
@@ -2218,7 +2142,6 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
 <li><a class="reference internal" href="#show-commands">Show Commands</a><ul>
 <li><a class="reference internal" href="#perun-show">perun show</a></li>
 <li><a class="reference internal" href="#show-units">Show units</a><ul>
-<li><a class="reference internal" href="#perun-show-alloclist">perun show alloclist</a></li>
 <li><a class="reference internal" href="#perun-show-bars">perun show bars</a></li>
 <li><a class="reference internal" href="#perun-show-flamegraph">perun show flamegraph</a></li>
 <li><a class="reference internal" href="#perun-show-flow">perun show flow</a></li>
@@ -2267,7 +2190,7 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>

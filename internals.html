@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Internals &#8212; Perun 0.14.3 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.15 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.3',
+        VERSION:     '0.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -77,7 +77,7 @@ control and performance versioning systems.</p>
 <span id="version-control-system-api"></span><span id="internals-vcs-api"></span><h3>Version Control System API<a class="headerlink" href="#module-perun.vcs" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="perun.vcs.init">
-<code class="descclassname">perun.vcs.</code><code class="descname">init</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>vcs_init_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.init" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">init</code><span class="sig-paren">(</span><em>vcs_init_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the implementation of initialization of wrapped underlying version
 control system.</p>
 <p>The initialization should take care of both reinitialization of existing
@@ -87,16 +87,10 @@ called during the <code class="docutils literal"><span class="pre">perun</span> 
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – destination path of the initialized wrapped vcs</li>
-<li><strong>vcs_init_params</strong> (<em>dict</em>) – dictionary of keyword arguments passed to
-initialization method of the underlying vcs module</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vcs_init_params</strong> (<em>dict</em>) – dictionary of keyword arguments passed to
+initialization method of the underlying vcs module</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">true if the underlying vcs was successfully initialized</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">true if the underlying vcs was successfully initialized</td>
 </tr>
 </tbody>
 </table>
@@ -104,7 +98,7 @@ initialization method of the underlying vcs module</li>
 
 <dl class="function">
 <dt id="perun.vcs.walk_minor_versions">
-<code class="descclassname">perun.vcs.</code><code class="descname">walk_minor_versions</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>head_minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#walk_minor_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.walk_minor_versions" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">walk_minor_versions</code><span class="sig-paren">(</span><em>head_minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#walk_minor_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.walk_minor_versions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generator of minor versions for the given major version, which yields
 the <code class="docutils literal"><span class="pre">MinorVersion</span></code> named tuples containing the following information:
 <code class="docutils literal"><span class="pre">date</span></code>, <code class="docutils literal"><span class="pre">author</span></code>, <code class="docutils literal"><span class="pre">email</span></code>, <code class="docutils literal"><span class="pre">checksum</span></code> (i.e. the hash representation
@@ -116,16 +110,10 @@ command.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-<li><strong>head_minor_version</strong> (<em>str</em>) – the root minor versions which is the root
-of the walk.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>head_minor_version</strong> (<em>str</em>) – the root minor versions which is the root
+of the walk.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">iterable stream of minor version representation</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">iterable stream of minor version representation</td>
 </tr>
 </tbody>
 </table>
@@ -133,21 +121,14 @@ of the walk.</li>
 
 <dl class="function">
 <dt id="perun.vcs.walk_major_versions">
-<code class="descclassname">perun.vcs.</code><code class="descname">walk_major_versions</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#walk_major_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.walk_major_versions" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">walk_major_versions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#walk_major_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.walk_major_versions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generator of major versions for the current wrapped repository.</p>
 <p>This function is currently unused, but will be needed in the future.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">iterable stream of major version representation</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">iterable stream of major version representation</td>
 </tr>
 </tbody>
 </table>
@@ -155,7 +136,7 @@ of the walk.</li>
 
 <dl class="function">
 <dt id="perun.vcs.get_minor_head">
-<code class="descclassname">perun.vcs.</code><code class="descname">get_minor_head</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_head"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_minor_head" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">get_minor_head</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_head"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_minor_head" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the string representation of head of current major version, i.e.
 for git this returns the massaged HEAD reference.</p>
 <p>This function is called mainly during the outputs of <code class="docutils literal"><span class="pre">perun</span> <span class="pre">log</span></code> and
@@ -166,18 +147,10 @@ identification is used as <a class="reference internal" href="profile.html#perfr
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">unique string representation of current head (usually in SHA)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">unique string representation of current head (usually in SHA)</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> – if the head cannot be retrieved from the current
-context</p>
-</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – if the head cannot be retrieved from the current
+context</td>
 </tr>
 </tbody>
 </table>
@@ -185,7 +158,7 @@ context</p>
 
 <dl class="function">
 <dt id="perun.vcs.get_head_major_version">
-<code class="descclassname">perun.vcs.</code><code class="descname">get_head_major_version</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_head_major_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_head_major_version" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">get_head_major_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_head_major_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_head_major_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the string representation of current major version of the
 wrapped repository.</p>
 <p>Major version is displayed during the <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> output, which shows
@@ -194,14 +167,7 @@ the current working major version of the project.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">string representation of the major version</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string representation of the major version</td>
 </tr>
 </tbody>
 </table>
@@ -209,7 +175,7 @@ the current working major version of the project.</p>
 
 <dl class="function">
 <dt id="perun.vcs.get_minor_version_info">
-<code class="descclassname">perun.vcs.</code><code class="descname">get_minor_version_info</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_version_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_minor_version_info" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">get_minor_version_info</code><span class="sig-paren">(</span><em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#get_minor_version_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.get_minor_version_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yields the specification of concrete minor version in form of
 the <code class="docutils literal"><span class="pre">MinorVersion</span></code> named tuples containing the following information:
 <code class="docutils literal"><span class="pre">date</span></code>, <code class="docutils literal"><span class="pre">author</span></code>, <code class="docutils literal"><span class="pre">email</span></code>, <code class="docutils literal"><span class="pre">checksum</span></code> (i.e. the hash representation
@@ -222,16 +188,10 @@ other minor versions).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-<li><strong>minor_version</strong> (<em>str</em>) – the specification of minor version (in form of
-sha e.g.) for which we are retrieving the details</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minor_version</strong> (<em>str</em>) – the specification of minor version (in form of
+sha e.g.) for which we are retrieving the details</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">minor version named tuple</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">minor version named tuple</td>
 </tr>
 </tbody>
 </table>
@@ -239,7 +199,7 @@ sha e.g.) for which we are retrieving the details</li>
 
 <dl class="function">
 <dt id="perun.vcs.check_minor_version_validity">
-<code class="descclassname">perun.vcs.</code><code class="descname">check_minor_version_validity</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#check_minor_version_validity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.check_minor_version_validity" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">check_minor_version_validity</code><span class="sig-paren">(</span><em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#check_minor_version_validity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.check_minor_version_validity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether the given minor version specification corresponds to the
 wrapped version control system, and is not in wrong format.</p>
 <p>Minor version validity is mostly checked during the lookup of the minor
@@ -248,17 +208,11 @@ versions from the command line interface.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-<li><strong>minor_version</strong> (<em>str</em>) – the specification of minor version (in form of
-sha e.g.) for which we are checking the validity</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minor_version</strong> (<em>str</em>) – the specification of minor version (in form of
+sha e.g.) for which we are checking the validity</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>VersionControlSystemException</strong> – when the given minor version is
-invalid in the context of the wrapped version control system.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>VersionControlSystemException</strong> – when the given minor version is
+invalid in the context of the wrapped version control system.</td>
 </tr>
 </tbody>
 </table>
@@ -266,7 +220,7 @@ invalid in the context of the wrapped version control system.</p>
 
 <dl class="function">
 <dt id="perun.vcs.massage_parameter">
-<code class="descclassname">perun.vcs.</code><code class="descname">massage_parameter</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>parameter</em>, <em>parameter_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#massage_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.massage_parameter" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">massage_parameter</code><span class="sig-paren">(</span><em>parameter</em>, <em>parameter_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#massage_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.massage_parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conversion function for massaging (or unifying different representations
 of objects) the parameters for version control systems.</p>
 <p>Massaging is mainly executed during from the command line interface, when
@@ -278,8 +232,6 @@ representations, to just one representation for internal processing.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
 <li><strong>parameter</strong> (<em>str</em>) – vcs parameter (e.g. revision, minor or major version)
 which will be massaged, i.e. transformed to unified representation</li>
 <li><strong>parameter_type</strong> (<em>str</em>) – more detailed type of the parameter</li>
@@ -295,7 +247,7 @@ which will be massaged, i.e. transformed to unified representation</li>
 
 <dl class="function">
 <dt id="perun.vcs.is_dirty">
-<code class="descclassname">perun.vcs.</code><code class="descname">is_dirty</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#is_dirty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.is_dirty" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">is_dirty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#is_dirty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.is_dirty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tests whether the wrapped repository is dirty.</p>
 <p>By dirty repository we mean a repository that has either a submitted changes to its index (i.e.
 we are in the middle of commit) or any unsubmitted changes to tracked files in the current
@@ -307,14 +259,7 @@ of minor versions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">whether the given repository is dirty or not</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the given repository is dirty or not</td>
 </tr>
 </tbody>
 </table>
@@ -322,7 +267,7 @@ of minor versions.</p>
 
 <dl class="function">
 <dt id="perun.vcs.save_state">
-<code class="descclassname">perun.vcs.</code><code class="descname">save_state</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#save_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.save_state" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">save_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#save_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.save_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves the state of the repository in case it is dirty.</p>
 <p>When saving the state of the repository one should store all of the uncommited changes to
 the working directory and index. Any issues while this process happens should be handled by
@@ -331,14 +276,7 @@ user itself, hence no workarounds and mending should take place in this function
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -346,7 +284,7 @@ user itself, hence no workarounds and mending should take place in this function
 
 <dl class="function">
 <dt id="perun.vcs.restore_state">
-<code class="descclassname">perun.vcs.</code><code class="descname">restore_state</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>saved</em>, <em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#restore_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.restore_state" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">restore_state</code><span class="sig-paren">(</span><em>saved</em>, <em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#restore_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.restore_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restores the previous state of the the repository</p>
 <p>When restoring the state of the repository one should pop the stored changes from the stash
 and reapply them on the current directory. This make sure, that after the performance testing,
@@ -356,8 +294,6 @@ the project is in the previous state and developer can continue with his work.</
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
 <li><strong>saved</strong> (<em>bool</em>) – whether the stashed was something</li>
 <li><strong>state</strong> (<em>str</em>) – the previous state of the repository</li>
 </ul>
@@ -369,7 +305,7 @@ the project is in the previous state and developer can continue with his work.</
 
 <dl class="function">
 <dt id="perun.vcs.checkout">
-<code class="descclassname">perun.vcs.</code><code class="descname">checkout</code><span class="sig-paren">(</span><em>vcs_type</em>, <em>vcs_path</em>, <em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#checkout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.checkout" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">perun.vcs.</code><code class="descname">checkout</code><span class="sig-paren">(</span><em>minor_version</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/vcs.html#checkout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.vcs.checkout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks out the new working directory corresponding to the given minor version.</p>
 <p>According to the supplied minor version, this command should remake the working directory
 so it corresponds to the state defined by the minor version.</p>
@@ -377,12 +313,7 @@ so it corresponds to the state defined by the minor version.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>vcs_type</strong> (<em>str</em>) – type of the underlying wrapped version control system</li>
-<li><strong>vcs_path</strong> (<em>str</em>) – source path of the wrapped vcs</li>
-<li><strong>minor_version</strong> (<em>str</em>) – minor version that will be checked out</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>minor_version</strong> (<em>str</em>) – minor version that will be checked out</td>
 </tr>
 </tbody>
 </table>
@@ -693,7 +624,7 @@ confirmation until the profile is found.</li>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>

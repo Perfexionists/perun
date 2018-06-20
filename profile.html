@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun’s Profile Format &#8212; Perun 0.14.3 documentation</title>
+    <title>Perun’s Profile Format &#8212; Perun 0.15 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.14.3',
+        VERSION:     '0.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -612,7 +612,7 @@ Wrapper. For more information about flame graphs itself, please check
 <p>Example of format is as follows:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">convert</span><span class="o">.</span><span class="n">to_flame_graph_format</span><span class="p">(</span><span class="n">memprof</span><span class="p">)))</span>
 <span class="go">malloc()~unreachable~0;main()~/home/user/dev/test.c~45 4</span>
-<span class="go">valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0;_start()~unreachable~0 8</span>
+<span class="go">valloc()~unreachable~0;main()~/home/user/dev/test.c~75;__libc_start_main()~unreachable~0 8</span>
 <span class="go">main()~/home/user/dev/test02.c~79 156</span>
 </pre></div>
 </div>
@@ -1014,7 +1014,7 @@ its unique values</li>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
