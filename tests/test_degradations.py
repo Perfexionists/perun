@@ -48,7 +48,6 @@ def test_degradation_precollect(monkeypatch, pcs_full, capsys):
 
     check.degradation_in_minor(head)
     out, err = capsys.readouterr()
-    assert "Maybe Optimization" in out #
     assert err == ""
 
 
