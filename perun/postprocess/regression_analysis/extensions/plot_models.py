@@ -57,23 +57,6 @@ def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOO
     return plot_x
 
 
-def linear_plot_x_pts(x_interval_start, x_interval_end, return_dict=True, **_):
-    """Specific version of model x points computation.
-
-    Creates array with only the interval border values (i.e. [interval_start, interval_end])
-
-    :param int or float x_interval_start: the left bound of the x interval
-    :param int or float x_interval_end: the right bound of the x interval
-    :raises TypeError: if the required function arguments are not in the unpacked dictionary input
-    :returns dict: data dictionary with 'plot_x' array
-    """
-    # Create simple two-value array
-    plot_x = np.array([x_interval_start, x_interval_end])
-    if return_dict == True:
-        return dict(plot_x=plot_x)
-    return plot_x
-
-
 def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, return_dict=True, **_):
     """ The generic function for y points computation.
 
