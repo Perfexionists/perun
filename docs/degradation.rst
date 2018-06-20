@@ -127,6 +127,32 @@ Average Amount Threshold
 
 .. automodule:: perun.check.average_amount_threshold
 
+.. _degradation-fast-check:
+
+Fast Check
+~~~~~~~~~~
+
+.. automodule:: perun.check.fast_check
+
+.. _degradation-lreg:
+
+Linear Regression
+~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.check.linear_regression
+
+.. _degradation-preg:
+
+Polynomial Regression
+~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.check.polynomial_regression
+
+Average Amount Threshold
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.check.average_amount_threshold
+
 .. _degradation-config:
 
 Configuring Degradation Detection

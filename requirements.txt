@@ -9,3 +9,4 @@ Sphinx==1.6.4
 sphinx-click==1.0.3
 Jinja2==2.9.6
 python-magic>=0.4
+scipy>=0.19.1

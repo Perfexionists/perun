@@ -9,6 +9,8 @@ import perun.profile.factory as factory
 import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
+import perun.check.polynomial_regression as preg
+import perun.check.linear_regression as lreg
 
 __author__ = 'Tomas Fiedor'
 
@@ -59,7 +61,7 @@ def test_degradation_in_minor(pcs_with_degradations, capsys):
 
     check.degradation_in_minor(head)
     out, err = capsys.readouterr()
-    assert "Degradation" in out
+    assert "Optimization" in out #
     assert err == ""
 
 
