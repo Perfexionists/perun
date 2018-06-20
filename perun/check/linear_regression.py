@@ -4,13 +4,10 @@ This module contains method for classification the perfomance change between two
 according to computed metrics and models from these profiles, based on the linear regression.
 
 """
-import numpy as np
 import scipy.stats as stats
-import copy
 
 import perun.check.general_detection as detect
 import perun.check as check
-import perun.logic.runner as runner
 import perun.check.fast_check as fast_check
 
 

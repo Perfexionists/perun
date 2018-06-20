@@ -12,10 +12,8 @@ import numpy as np
 np.seterr(divide='ignore', invalid='ignore')
 
 import perun.check as check
-import perun.postprocess.regression_analysis.tools as tools
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.profile.query as query
-import perun.logic.runner as runner
 
 from perun.utils.structs import PerformanceChange, DegradationInfo
 
