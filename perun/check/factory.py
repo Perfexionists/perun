@@ -236,7 +236,10 @@ def parse_strategy(strategy):
     """
     short_strings = {
         'aat': 'average_amount_threshold',
-        'bmoe': 'best_model_order_equality'
+        'bmoe': 'best_model_order_equality',
+        'preg': 'polynomial_regression',
+        'lreg': 'linear_regression',
+        'fast': 'fast_check'
     }
     return short_strings.get(strategy, strategy)
 
