@@ -18,6 +18,8 @@ import perun.postprocess.regression_analysis.regression_models as regression_mod
 import perun.profile.query as query
 import perun.logic.runner as runner
 
+from perun.utils.structs import PerformanceChange, DegradationInfo
+
 __author__ = 'Simon Stupinsky'
 
 SAMPLES = 1000
@@ -130,13 +132,13 @@ def general_detection(baseline_profile, target_profile, mode=0):
         rel_error = np.sum(rel_error) / len(rel_error) * 100
 
         # check state, when no change has occurred
-        change = check.PerformanceChange.Unknown
+        change = PerformanceChange.Unknown
         change_type = ''
         THRESHOLD_B0 = abs(0.05 * baseline_model[1][2])
         THRESHOLD_B1 = abs(0.05 * baseline_model[1][3])
         if (abs(target_model[1][2] - baseline_model[1][2]) <= THRESHOLD_B0
             and abs(target_model[1][3] - baseline_model[1][3]) <= THRESHOLD_B1):
-            change = check.PerformanceChange.NoChange  
+            change = PerformanceChange.NoChange
         else: # some change between profile was occurred
             if mode == 0: # classification based on the polynomial regression
                 change_type = check.polynomial_regression.exec_polynomial_regression(baseline_x_pts, lin_abs_error)
@@ -148,18 +150,18 @@ def general_detection(baseline_profile, target_profile, mode=0):
                 change_type = change_type[baseline_model[0]][0].upper() + ' '
         
         # check the relevant degree of changes and its type (negative or positive)
-        if change != check.PerformanceChange.NoChange:
+        if change != PerformanceChange.NoChange:
             if (sum_abs_err > 0):
                 if (rel_error > 25):
-                    change = check.PerformanceChange.Degradation
+                    change = PerformanceChange.Degradation
                 else:
-                    change = check.PerformanceChange.MaybeDegradation
+                    change = PerformanceChange.MaybeDegradation
                 change_type += 'ERROR'
             else:
                 if (rel_error < -25):
-                    change = check.PerformanceChange.Optimization    
+                    change = PerformanceChange.Optimization
                 else:
-                    change = check.PerformanceChange.MaybeOptimization
+                    change = PerformanceChange.MaybeOptimization
                 change_type += 'IMPROVEMENT'
         
         best_corresponding_linear_model = best_baseline_models.get(
@@ -170,7 +172,7 @@ def general_detection(baseline_profile, target_profile, mode=0):
             confidence = min(
                 best_corresponding_linear_model[1], target_linear_model[1][1])
 
-        yield check.DegradationInfo(
+        yield DegradationInfo(
             change, change_type, baseline_model[0],
             best_corresponding_baseline_model[0],
             target_model[1][0],

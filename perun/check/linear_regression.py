@@ -13,6 +13,7 @@ import perun.check as check
 import perun.logic.runner as runner
 import perun.check.fast_check as fast_check
 
+
 def linear_regression(baseline_profile, target_profile):
     """Temporary function, which call the general function and subsequently returns the 
     information about performance changes to calling function.

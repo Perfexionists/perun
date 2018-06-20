@@ -314,7 +314,7 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params,
     p_status, processed_profile = run_postprocessor(postprocessor_unit, profile_job, prof)
     if p_status == PostprocessStatus.OK and prof:
         if not return_prof:
-            store_generated_profile(pcs, processed_profile, profile_job)
+            store_generated_profile(processed_profile, profile_job)
             return p_status
         else:
             return processed_profile
