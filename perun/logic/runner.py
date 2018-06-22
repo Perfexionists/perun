@@ -295,7 +295,7 @@ def store_generated_profile(prof, job):
         commands.add([full_profile_path], dst, keep_profile=False)
 
 
-def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params, return_prof=False):
+def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params, skip_store=False):
     """Run the job of the postprocessor according to the given profile.
 
     First extracts the information from the profile in order to construct the job,
@@ -305,19 +305,18 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params,
     :param dict prof: dictionary with profile informations
     :param str postprocessor_name: name of the postprocessor that we are using
     :param dict postprocessor_params: parameters for the postprocessor
-    :returns PostprocessStatus: status how the postprocessing went
+    :param bool skip_store: if set to true, then the profil will not be stored
+    :returns (PostprocessStatus, dict): status how the postprocessing went and the postprocessed
+        profile
     """
     profile_job = profile.extract_job_from_profile(prof)
     postprocessor_unit = Unit(postprocessor_name, postprocessor_params)
     profile_job.postprocessors.append(postprocessor_unit)
 
     p_status, processed_profile = run_postprocessor(postprocessor_unit, profile_job, prof)
-    if p_status == PostprocessStatus.OK and prof:
-        if not return_prof:
-            store_generated_profile(processed_profile, profile_job)
-            return p_status
-        else:
-            return processed_profile
+    if p_status == PostprocessStatus.OK and prof and not skip_store:
+        store_generated_profile(processed_profile, profile_job)
+    return p_status, processed_profile
 
 
 @decorators.print_elapsed_time

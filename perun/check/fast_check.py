@@ -11,6 +11,7 @@ import perun.check as check
 import perun.logic.runner as runner
 import perun.check.general_detection as detect
 
+
 def fast_check(baseline_profile, target_profile):
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
@@ -19,8 +20,8 @@ def fast_check(baseline_profile, target_profile):
     :param dict target_profile: profile corresponding to the checked minor version
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
-
     return detect.general_detection(baseline_profile, target_profile, 2)
+
 
 def exec_fast_check(baseline_profile, baseline_x_pts, abs_error, mode=False):
     """The function executes the classification of performance change between two profiles with
@@ -33,26 +34,26 @@ def exec_fast_check(baseline_profile, baseline_x_pts, abs_error, mode=False):
     :param integer abs_error: values of the independent variables from both profiles
     :returns: string (classification of the change)
     """
-
     # creating the new profile
     std_err_profile = copy.deepcopy(baseline_profile)
     del std_err_profile['global']['models']
 
     # executing the regression analysis
-    i = 0
-    for x, y in zip(np.nditer(baseline_x_pts), np.nditer(abs_error)):
+    for i, (x, y) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
         std_err_profile['global']['resources'][i]['structure-unit-size'] = x
         std_err_profile['global']['resources'][i]['amount'] = y
-        i += 1
 
     # Fixme: Extract of and per key
-    std_err_profile = runner.run_postprocessor_on_profile(std_err_profile, 'regression_analysis', {
+    regression_analysis_params = {
         "regression_models": [],
         "steps": 3,
         "method": "full",
         "of_key": "amount",
         "per_key": "structure-unit-size"
-    }, True)
+    }
+    _, std_err_profile = runner.run_postprocessor_on_profile(
+        std_err_profile, 'regression_analysis', regression_analysis_params, skip_store=True
+    )
 
     if not mode:
         std_err_model = check.general_detection.get_best_models_of(std_err_profile)

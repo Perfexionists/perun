@@ -316,3 +316,16 @@ def merge_dict_range(*args):
     for dictionary in args:
         res.update(dictionary)
     return res
+
+
+def identity(*args):
+    """Identity function, that takes the arguments and return them as they are
+
+    Note that this is used as default transformator for to be used in arguments for transforming
+    the data.
+
+    :param list args: list of input arguments
+    :return: non-changed list of arguments
+    """
+    # Unpack the tuple if it is single
+    return args if len(args) > 1 else args[0]

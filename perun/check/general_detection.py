@@ -9,8 +9,8 @@ general methods.
 """
 
 import numpy as np
-np.seterr(divide='ignore', invalid='ignore')
 
+import perun.utils as utils
 import perun.check as check
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.profile.query as query
@@ -20,6 +20,9 @@ from perun.utils.structs import PerformanceChange, DegradationInfo
 __author__ = 'Simon Stupinsky'
 
 SAMPLES = 1000
+
+np.seterr(divide='ignore', invalid='ignore')
+
 
 def get_best_models_of(profile, model_type=None):
     """Obtains the models from the given profile. In the first case the method obtains the
@@ -32,7 +35,6 @@ def get_best_models_of(profile, model_type=None):
     :param string model_type: the type of model for obtaining
     :returns: map of unique identifier of computed models to their best models
     """
-
     if model_type is None:
         best_model_map = {
             uid: ("", 0.0, 0.0, 0.0, 0, 0, 0.0) for uid in query.unique_model_values_of(profile, 'uid')
@@ -68,6 +70,7 @@ def get_best_models_of(profile, model_type=None):
 
     return best_model_map
 
+
 def get_function_values(model):
     """Obtains the relevant values of dependent and independent variables according to
     the given profile, respectively its coefficients. On the base of the count of samples
@@ -79,20 +82,25 @@ def get_function_values(model):
     """
 
     array_x_pts = regression_models._MODELS[model[1][0]
-        ]['transformations']['plot_model']['model_x'](model[1][4], model[1][5], SAMPLES, False)
+        ]['transformations']['plot_model']['model_x'](model[1][4], model[1][5],
+                                                      SAMPLES, transform_by=utils.identity)
 
     if model[1][0] == 'quadratic':
         array_y_pts = regression_models._MODELS[model[1][0]]['transformations']['plot_model']['model_y'](
             array_x_pts, model[1][2], model[1][3], model[1][6],
             regression_models._MODELS[model[1][0]]['transformations']['plot_model']['formula'],
-            return_dict=False)
+            transform_by=utils.identity
+        )
     else:
         array_y_pts = regression_models._MODELS[model[1][0]]['transformations']['plot_model']['model_y'](
             array_x_pts, model[1][2], model[1][3],
             regression_models._MODELS[model[1][0]]['transformations']['plot_model']['formula'],
-            regression_models._MODELS[model[1][0]]['f_x'], return_dict=False)
+            regression_models._MODELS[model[1][0]]['f_x'],
+            transform_by=utils.identity
+        )
 
     return array_y_pts, array_x_pts
+
 
 def general_detection(baseline_profile, target_profile, mode=0):
     """The general method, which covers all detection logic. At the begin obtains the pairs
@@ -113,8 +121,12 @@ def general_detection(baseline_profile, target_profile, mode=0):
     linear_baseline_model = get_best_models_of(baseline_profile, 'linear')
     linear_target_model = get_best_models_of(target_profile, 'linear')
 
-    for baseline_model, target_model, baseline_linear_model, target_linear_model in zip(best_baseline_models.items(), best_target_models.items(), linear_baseline_model.items(), linear_target_model.items()):
+    models = zip(
+        best_baseline_models.items(), best_target_models.items(),
+        linear_baseline_model.items(), linear_target_model.items()
+    )
 
+    for baseline_model, target_model, baseline_linear_model, target_linear_model in models:
         # obtaining the dependent and independent variables of all models
         baseline_y_pts, baseline_x_pts = get_function_values(baseline_model)
         target_y_pts, _ = get_function_values(target_model)

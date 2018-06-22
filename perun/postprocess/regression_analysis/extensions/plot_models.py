@@ -39,7 +39,8 @@ def model_plot_computation(model_x, model_y, **data):
     return plot_data
 
 
-def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOOTHNESS, return_dict=True, **_):
+def generic_plot_x_pts(x_interval_start, x_interval_end,
+                       smoothness=DEFAULT_SMOOTHNESS, transform_by=tools.as_plot_x_dict, **_):
     """Generic version of model x points computation.
 
     Splits the x interval of model into number of points.
@@ -47,17 +48,15 @@ def generic_plot_x_pts(x_interval_start, x_interval_end, smoothness=DEFAULT_SMOO
     :param int or float x_interval_start: the left bound of the x interval
     :param int or float x_interval_end: the right bound of the x interval
     :param int smoothness: number of points to produce from the interval
+    :param function transform_by: function for additional transformation of the resulting data
     :raises TypeError: if the required function arguments are not in the unpacked dictionary input
     :returns dict: data dictionary with 'plot_x' array
     """
     # Produce number of points from the interval
-    plot_x = tools.split_model_interval(x_interval_start, x_interval_end, smoothness)
-    if return_dict == True:
-        return dict(plot_x=plot_x)
-    return plot_x
+    return transform_by(tools.split_model_interval(x_interval_start, x_interval_end, smoothness))
 
 
-def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, return_dict=True, **_):
+def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, transform_by=tools.as_plot_y_dict, **_):
     """ The generic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.
@@ -72,6 +71,7 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, return_dict=True, **_
     :param float b1: the b1 model coefficient
     :param function formula: function object containing the computation formula
     :param function m_fx: function object with x values modification
+    :param function transform_by: function for additional transformation of the resulting data
     :raises TypeError: if the required function arguments are not in the unpacked dictionary input
     :returns dict: data dictionary with 'plot_y' array
     """
@@ -80,14 +80,10 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, return_dict=True, **_
         f_x = np.vectorize(m_fx)
         plot_x = f_x(plot_x)
     # Apply the computation formula
-    plot_y = np.array(formula(b0, b1, plot_x))
-
-    if return_dict:
-        return dict(plot_y=plot_y)
-    return plot_y
+    return transform_by(np.array(formula(b0, b1, plot_x)))
 
 
-def quad_plot_y_pts(plot_x, b0, b1, b2, formula, return_dict=True, **_):
+def quad_plot_y_pts(plot_x, b0, b1, b2, formula, transform_by=tools.as_plot_y_dict, **_):
     """ The quadratic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.
@@ -102,12 +98,9 @@ def quad_plot_y_pts(plot_x, b0, b1, b2, formula, return_dict=True, **_):
     :param float b1: the b1 model coefficient
     :param float b2: the b2 model coefficient
     :param function formula: function object containing the computation formula
+    :param function transform_by: function for additional transformation of the resulting data
     :raises TypeError: if the required function arguments are not in the unpacked dictionary input
     :returns dict: data dictionary with 'plot_y' array
     """
     # Apply the computation formula
-    plot_y = np.array(formula(b0, b1, b2, plot_x))
-
-    if return_dict:
-        return dict(plot_y=plot_y)
-    return plot_y
+    return transform_by(np.array(formula(b0, b1, b2, plot_x)))

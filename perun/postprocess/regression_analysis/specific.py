@@ -147,11 +147,7 @@ def specific_quad_error(coeffs, y_sum, y_sq_sum, xy_sum, x_sq_y_sum, pts_num, **
     sse = y_sq_sum - coeffs[0] * y_sum - coeffs[1] * xy_sum - coeffs[2] * x_sq_y_sum
 
     # Compute the r^2
-    try:
-        r_square = 1 - sse / tss
-    except ZeroDivisionError:
-        # Approximate 0 in TSS
-        r_square = 1 - sse / tools.APPROX_ZERO
+    r_square = 1 - tools.safe_division(sse, tss)
 
     # Save the data
     data = dict(sse=sse, tss=tss, r_square=r_square)
