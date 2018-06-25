@@ -113,6 +113,7 @@ def after(**kwargs):
     print('Starting the post-processing phase... ', end='')
     resources, call_stack = [], []
     func_map = dict()
+    workload = kwargs.get('workload')
 
     # Get the trace log path
     try:
@@ -130,7 +131,7 @@ def after(**kwargs):
                 record = _parse_record(line)
 
                 # Process the record
-                if _process_file_record(record, call_stack, resources, func_map) != 0:
+                if _process_file_record(record, call_stack, resources, func_map, workload) != 0:
                     # Stack error
                     err_msg = 'Call stack error, record: ' + record.func
                     if not call_stack:
@@ -192,13 +193,14 @@ def _call_stap(**kwargs):
     return _Status(int(stap_runner.returncode != 0)), output  # code 0 = False = .OK
 
 
-def _process_file_record(record, call_stack, resources, sequences):
+def _process_file_record(record, call_stack, resources, sequences, workload):
     """ Processes the next profile record and tries to pair it with stack record if possible
 
     :param namedtuple record: the _ProfileRecord tuple containing the record data
     :param list call_stack: the call stack with file records
     :param list resources: the list of resource dictionaries
     :param dict sequences: stores the sequence counter for every function
+    :param str workload: workload for which the record corresponds to
     :returns: int -- status code, nonzero values for errors
     """
     if record.func:
@@ -212,11 +214,16 @@ def _process_file_record(record, call_stack, resources, sequences):
     elif call_stack and record.offset == call_stack[-1].offset - 1:
         # Function exit, match with the function enter to create resources record
         matching_record = call_stack.pop()
-        resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
-                          'uid': matching_record.func,
-                          'type': 'mixed',
-                          'subtype': 'time delta',
-                          'structure-unit-size': sequences[matching_record.func]})
+        resources.append(
+            {
+                'amount': int(record.timestamp) - int(matching_record.timestamp),
+                'uid': matching_record.func,
+                'type': 'mixed',
+                'subtype': 'time delta',
+                'structure-unit-size': sequences[matching_record.func],
+                'workload': workload
+             }
+        )
         return 0
     else:
         return 1

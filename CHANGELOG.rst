@@ -10,6 +10,8 @@ HEAD
   - add ``pending tag range`` to ``perun add`` command to add more profiles at once
   - add ``index tag rage`` to ``perun rm`` command to remove more profiles at once
   - fix the issue with wrong sort order and tags (now :ckey:`format.sort_profiles_by` sets the option in local)
+  - add support for workload generators
+  - implement integer workload generator that generates workload from the integer interval
 
 0.15 (2018-06-20)
 -----------------
