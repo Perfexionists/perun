@@ -329,3 +329,29 @@ def identity(*args):
     """
     # Unpack the tuple if it is single
     return args if len(args) > 1 else args[0]
+
+
+def abs_in_relative_range(value, range_val, range_rate):
+    """Tests if value is in relative range as follows:
+
+    (1 - range_rate) * range_val <= value <= (1 + range_rate) * range_val
+
+    :param numeric value: value we are testing if it is in the range
+    :param numeric range_val: value which gives the range
+    :param float range_rate: the rate in percents which specifies the range
+    :return: true if the value is in relative range
+    """
+    range_rate = range_rate if 0.0 <= range_rate <= 1.0 else 0.0
+    return abs((1.0 - range_rate) * range_val) <= abs(value) <= abs((1.0 + range_rate) * range_val)
+
+
+def abs_in_absolute_range(value, border):
+    """Tests if value is in absolute range as follows:
+
+    -border <= value <= border
+
+    :param numeric value: tests if the
+    :param numeric border:
+    :return: true if the value is in absolute range
+    """
+    return -abs(border) <= value <= abs(border)

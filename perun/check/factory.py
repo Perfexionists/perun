@@ -190,6 +190,7 @@ def degradation_between_files(baseline_file, target_file, minor_version):
         pcs.get_object_directory(), target_minor_version, detected_changes
     )
     print("")
+    log.print_list_of_degradations(detected_changes)
     log.print_short_summary_of_degradations(detected_changes)
 
 

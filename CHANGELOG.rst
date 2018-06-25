@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - refactor check modules
+
 0.15 (2018-06-20)
 -----------------
 
