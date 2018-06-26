@@ -8,15 +8,13 @@ This package contains the general generator object and the concrete generators o
 as the string workload, integer workload, etc.
 """
 
-import collections
-
 import perun.logic.config as config
 import perun.utils.log as log
 import perun.utils as utils
 
-__author__ = 'Tomas Fiedor'
+from perun.utils.structs import GeneratorSpec
 
-GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
+__author__ = 'Tomas Fiedor'
 
 
 def load_generator_specifications():
@@ -36,17 +34,30 @@ def load_generator_specifications():
     """
     specifications_from_config = config.gather_key_recursively('generators.workload')
     spec_map = {}
+    warnings = []
+    print("Loading workload generator specifications ", end='')
     for spec in specifications_from_config:
         if 'id' not in spec.keys() or 'type' not in spec.keys():
-            log.warn("incorrect workload specification: missing 'id' or 'type'")
+            warnings.append("incorrect workload specification: missing 'id' or 'type'")
+            print("F", end='')
             continue
         generator_module = "perun.workload.{}_generator".format(spec['type'].lower())
         constructor_name = "{}Generator".format(spec['type'].title())
         try:
             constructor = getattr(utils.get_module(generator_module), constructor_name)
             spec_map[spec['id']] = GeneratorSpec(constructor, spec)
+            print(".", end='')
         except (ImportError, AttributeError):
-            log.warn("incorrect workload generator '{}': '{}' is not valid workload type".format(
+            warnings.append("incorrect workload generator '{}': '{}' is not valid workload type".format(
                 spec['id'], spec['type']
             ))
+            print("F", end='')
+
+    # Print the warnings and badge
+    if len(warnings):
+        log.failed()
+        print("\n".join(warnings))
+    else:
+        log.done()
+
     return spec_map

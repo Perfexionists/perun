@@ -12,10 +12,14 @@ import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as log
 import perun.utils.decorators as decorators
+import perun.workload as workloads
+
 from perun.utils import get_module
+from perun.utils.structs import GeneratorSpec
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, CollectStatus, PostprocessStatus, \
     Job, Unit
+from perun.workload.singleton_generator import SingletonGenerator
 
 __author__ = 'Tomas Fiedor'
 
@@ -360,33 +364,38 @@ def run_jobs_on_current_working_dir(job_matrix, number_of_jobs):
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
     """
+    workload_generators_specs = workloads.load_generator_specifications()
+
     log.print_job_progress.current_job = 1
     print("")
     for job_cmd, workloads_per_cmd in job_matrix.items():
         log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
         for workload, jobs_per_workload in workloads_per_cmd.items():
-            log.print_current_phase(" - processing workload {}", workload, COLLECT_PHASE_WORKLOAD)
+            log.print_current_phase(" = processing generator {}", workload, COLLECT_PHASE_WORKLOAD)
+            # Prepare the specification
+            generator, params = workload_generators_specs.get(
+                workload, GeneratorSpec(SingletonGenerator, {'value': workload})
+            )
             for job in jobs_per_workload:
                 log.print_job_progress(number_of_jobs)
+                for c_status, prof in generator(job, **params).generate(run_collector):
+                    # Run the collector and check if the profile was successfully collected
+                    # In case, the status was not OK, then we skip the postprocessing
+                    if c_status != CollectStatus.OK or not prof:
+                        continue
 
-                # Run the collector and check if the profile was successfully collected
-                # In case, the status was not OK, then we skip the postprocessing
-                c_status, prof = run_collector(job.collector, job)
-                if c_status != CollectStatus.OK or not prof:
-                    continue
+                    # Temporary nasty hack
+                    prof = profile.finalize_profile_for_job(prof, job)
 
-                # Temporary nasty hack
-                prof = profile.finalize_profile_for_job(prof, job)
-
-                for postprocessor in job.postprocessors:
-                    log.print_job_progress(number_of_jobs)
-                    # Run the postprocessor and check if the profile was successfully postprocessed
-                    p_status, prof = run_postprocessor(postprocessor, job, prof)
-                    if p_status != PostprocessStatus.OK or not prof:
-                        break
-                else:
-                    # Store the computed profile inside the job directory
-                    store_generated_profile(prof, job)
+                    for postprocessor in job.postprocessors:
+                        log.print_job_progress(number_of_jobs)
+                        # Run postprocess and check if the profile was successfully postprocessed
+                        p_status, prof = run_postprocessor(postprocessor, job, prof)
+                        if p_status != PostprocessStatus.OK or not prof:
+                            break
+                    else:
+                        # Store the computed profile inside the job directory
+                        store_generated_profile(prof, job)
 
 
 @decorators.print_elapsed_time

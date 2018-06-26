@@ -26,4 +26,3 @@ class SingletonGenerator(Generator):
         :return: single value
         """
         yield self.value
-

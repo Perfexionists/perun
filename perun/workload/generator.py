@@ -1,7 +1,6 @@
 """Generic object to be inherited from. Contains the basic method and API"""
 
 import perun.utils.log as log
-import perun.logic.runner as runner
 
 __author__ = 'Tomas Fiedor'
 
@@ -18,7 +17,7 @@ class Generator(object):
         """
         self.job = job
 
-    def generate(self):
+    def generate(self, collect_function):
         """Collects the data for the generated workload
 
         TODO: Merge the workload stuff
@@ -27,7 +26,7 @@ class Generator(object):
         """
         for workload in self._generate_next_workload():
             self.job.collector.params['workload'] = str(workload)
-            c_status, prof = runner.run_collector(self.job.collector, self.job)
+            c_status, prof = collect_function(self.job.collector, self.job)
             yield c_status, prof
 
     def _generate_next_workload(self):
