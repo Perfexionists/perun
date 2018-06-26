@@ -7,6 +7,7 @@ import perun.workload as workload
 
 from perun.utils.helpers import Job, CollectStatus, Unit
 from perun.workload.integer_generator import IntegerGenerator
+from perun.workload.singleton_generator import SingletonGenerator
 from perun.workload.generator import Generator
 
 
@@ -85,3 +86,18 @@ def test_loading_generators_from_config(monkeypatch, pcs_full):
         assert c_status == CollectStatus.OK
         assert profile
         assert len(profile['global']['resources'])
+
+
+def test_singleton():
+    """Tests singleton generator"""
+    collector = Unit('time', {})
+    integer_job = Job(collector, [], 'factor', '', '')
+    singleton_generator = SingletonGenerator(integer_job, "10")
+
+    job_count = 0
+    for c_status, profile in singleton_generator.generate():
+        assert c_status == CollectStatus.OK
+        assert profile
+        assert len(profile['global']['resources']) > 0
+        job_count += 1
+    assert job_count == 1
