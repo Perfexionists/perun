@@ -313,6 +313,29 @@ List of Supported Options
               method: bmoe
             - method: aat
 
+.. confkey:: generators.workload
+
+    ``[gathered]`` Specifies generators of the workload. Each workload has to be specified by its
+    ``id`` and ``type``, which corresponds to the name of the generator (currently we support only
+    Integer generator, that generates the range of values). Further you can specify rest of the
+    params, where each workload generator has different parameters. The specification can be as
+    follows:
+
+    .. code-block:: yaml
+
+        generators:
+          workload:
+            - id: gen1
+              type: integer
+            - id: gen2
+              type: integer
+              min_range: 10
+              max_range: 100
+              step: 10
+
+    This specifies two integer workload generators ``gen1`` and ``gen2``. The first uses the default
+    range, while the latter specifies the range 10, 20, ..., 100.
+
 .. _config-templates:
 
 Predefined Configuration Templates

@@ -12,6 +12,7 @@ HEAD
   - fix the issue with wrong sort order and tags (now :ckey:`format.sort_profiles_by` sets the option in local)
   - add support for workload generators
   - implement integer workload generator that generates workload from the integer interval
+  - add :ckey:`generators.workload` for specification of workload generators in config
 
 0.15 (2018-06-20)
 -----------------
