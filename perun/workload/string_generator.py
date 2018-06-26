@@ -36,6 +36,6 @@ class StringGenerator(Generator):
         """
         for str_len in range(self.min_len, self.max_len+1, self.step_len):
             yield "".join(
-                random.choice(string.ascii_letters + string.digits + string.whitespace)
+                random.choice(string.ascii_letters + string.digits)
                 for _ in range(str_len)
             )

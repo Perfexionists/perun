@@ -108,7 +108,7 @@ def test_singleton():
 def test_string_generator():
     """Tests string generator"""
     collector = Unit('time', {})
-    string_job = Job(collector, [], 'expr', 'length', '')
+    string_job = Job(collector, [], 'echo', '', '')
     string_generator = StringGenerator(string_job, 10, 20, 1)
 
     for c_status, profile in string_generator.generate(runner.run_collector):
