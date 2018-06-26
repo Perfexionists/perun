@@ -13,6 +13,7 @@ HEAD
   - add support for workload generators
   - implement integer workload generator that generates workload from the integer interval
   - implement singleton workload generator that generates single workload
+  - implement string workload generator that generates random strings
   - add :ckey:`generators.workload` for specification of workload generators in config
   - remodel the notion of workloads to accept the workload generators to allow other style of workloads
 

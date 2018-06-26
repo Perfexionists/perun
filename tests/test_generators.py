@@ -9,6 +9,7 @@ import perun.logic.runner as runner
 from perun.utils.helpers import Job, CollectStatus, Unit
 from perun.workload.integer_generator import IntegerGenerator
 from perun.workload.singleton_generator import SingletonGenerator
+from perun.workload.string_generator import StringGenerator
 from perun.workload.generator import Generator
 
 
@@ -102,3 +103,15 @@ def test_singleton():
         assert len(profile['global']['resources']) > 0
         job_count += 1
     assert job_count == 1
+
+
+def test_string_generator():
+    """Tests string generator"""
+    collector = Unit('time', {})
+    string_job = Job(collector, [], 'expr', 'length', '')
+    string_generator = StringGenerator(string_job, 10, 20, 1)
+
+    for c_status, profile in string_generator.generate(runner.run_collector):
+        assert c_status == CollectStatus.OK
+        assert profile
+        assert len(profile['global']['resources']) > 0

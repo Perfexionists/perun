@@ -1,4 +1,4 @@
-""""""
+"""Simple generator that generates single value"""
 
 from perun.workload.generator import Generator
 
