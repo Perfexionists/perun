@@ -15,15 +15,16 @@ class StringGenerator(Generator):
     :ivar int max_len: maximal length of generated strings
     :ivar int step_len: increment of the lengths
     """
-    def __init__(self, job, min_len, max_len, step=1):
+    def __init__(self, job, min_len, max_len, step=1, **kwargs):
         """Initializes the generator of string workloads
 
-        :param job:
-        :param min_len:
-        :param max_len:
-        :param step:
+        :param Job job: job for which we are generating the workloads
+        :param int min_len: minimal length of the generated string
+        :param int max_len: maximal length of the generated string
+        :param int step: step for generating the strings
+        :param dict kwargs: additional keyword arguments
         """
-        super().__init__(job)
+        super().__init__(job, **kwargs)
 
         self.min_len = int(min_len)
         self.max_len = int(max_len)

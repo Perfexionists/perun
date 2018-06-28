@@ -23,7 +23,7 @@ class TextfileGenerator(Generator):
     :ivar Faker faker: faker of the data
     """
     def __init__(self, job, min_lines, max_lines, step=1, min_rows=5, max_rows=80,
-                 randomize_rows=True):
+                 randomize_rows=True, **kwargs):
         """Initializes the generator of random text files
 
         :param Job job: job for which we are generating workloads
@@ -34,18 +34,19 @@ class TextfileGenerator(Generator):
         :param int max_rows: maximal number of rows/chars on one line in the text file
         :param bool randomize_rows: if set to true, then the lines in the file will be
             randomized. Otherwise they will always be maximal.
+        :param dict kwargs: additional keyword arguments
         """
-        super().__init__(job)
+        super().__init__(job, **kwargs)
 
         # Line specific attributes
-        self.min_lines = min_lines
-        self.max_lines = max_lines
-        self.step = step
+        self.min_lines = int(min_lines)
+        self.max_lines = int(max_lines)
+        self.step = int(step)
 
         # Row / Character specific
         # Note that faker has a lower limit on generated text.
-        self.min_chars_in_row = max(min_rows, 5)
-        self.max_chars_in_row = max_rows
+        self.min_chars_in_row = max(int(min_rows), 5)
+        self.max_chars_in_row = int(max_rows)
         self.randomize_rows = randomize_rows
 
         self.faker = faker.Faker()

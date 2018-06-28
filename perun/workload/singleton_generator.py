@@ -10,13 +10,13 @@ class SingletonGenerator(Generator):
 
     :ivar object value: singleton value used as workload
     """
-    def __init__(self, job, value):
+    def __init__(self, job, value, **kwargs):
         """Initializes the generator of singleton workload
 
         :param Job job: job for which we are generating the workloads
         :param value: singleton value that is used as workload
         """
-        super().__init__(job)
+        super().__init__(job, **kwargs)
 
         self.value = value
 
