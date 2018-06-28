@@ -10,6 +10,7 @@ from perun.utils.helpers import Job, CollectStatus, Unit
 from perun.workload.integer_generator import IntegerGenerator
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.workload.string_generator import StringGenerator
+from perun.workload.textfile_generator import TextfileGenerator
 from perun.workload.generator import Generator
 
 
@@ -112,6 +113,18 @@ def test_string_generator():
     string_generator = StringGenerator(string_job, 10, 20, 1)
 
     for c_status, profile in string_generator.generate(runner.run_collector):
+        assert c_status == CollectStatus.OK
+        assert profile
+        assert len(profile['global']['resources']) > 0
+
+
+def test_file_generator():
+    """Tests file generator"""
+    collector = Unit('time', {})
+    file_job = Job(collector, [], 'wc', '-l', '')
+    file_generator = TextfileGenerator(file_job, 2, 5)
+
+    for c_status, profile in file_generator.generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile
         assert len(profile['global']['resources']) > 0
