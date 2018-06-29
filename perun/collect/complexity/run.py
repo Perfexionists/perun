@@ -11,34 +11,29 @@ import sys
 import subprocess
 import shutil
 import shlex
-from enum import IntEnum
+import time
 
 import click
 
 import perun.collect.complexity.strategy as strategy
+import perun.collect.complexity.systemtap as systemtap
 import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
+import perun.utils as utils
+
 from perun.utils.helpers import CollectStatus
 
 # The profiling record template
 _ProfileRecord = collections.namedtuple('record', ['offset', 'func', 'timestamp'])
 
 
-# Collection statuses
-class _Status(IntEnum):
-    OK = 0
-    STAP = 1
-    STAP_DEP = 2
-    EXCEPT = 3
-
-
 # The converter for collector statuses
 _COLLECTOR_STATUS = {
-    _Status.OK: (CollectStatus.OK, 'Ok'),
-    _Status.STAP: (CollectStatus.ERROR,
-                   'SystemTap related issue, see the corresponding <cmd>_stap.log file.'),
-    _Status.STAP_DEP: (CollectStatus.ERROR, 'SystemTap dependency missing.'),
-    _Status.EXCEPT: (CollectStatus.ERROR, '')  # The msg should be set by the exception
+    systemtap.Status.OK: (CollectStatus.OK, 'Ok'),
+    systemtap.Status.STAP: (CollectStatus.ERROR,
+                            'SystemTap related issue, see the corresponding collect_log_<timestamp>.txt file.'),
+    systemtap.Status.STAP_DEP: (CollectStatus.ERROR, 'SystemTap dependency missing.'),
+    systemtap.Status.EXCEPT: (CollectStatus.ERROR, '')  # The msg should be set by the exception
 }
 
 # The collector subtypes
@@ -50,10 +45,10 @@ _COLLECTOR_SUBTYPES = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(**kwargs):
+def before(function, function_sampled, static, static_sampled, dynamic, dynamic_sampled, **kwargs):
     """ Assembles the SystemTap script according to input parameters and collection strategy
 
-    :param dict kwargs: dictionary containing the configuration settings for the collector
+    :param kwargs: dictionary containing the configuration settings for the collector
     :returns: tuple (int as a status code, nonzero values for errors,
                     string as a status message, mainly for error states,
                     dict of modified kwargs with 'script' value as a path to the script file)
@@ -61,21 +56,22 @@ def before(**kwargs):
     try:
         print('Starting the pre-processing phase... ', end='')
 
-        # Check the command (must be file)
-        if not os.path.isfile(shlex.quote(kwargs['cmd'])):
-            raise ValueError('The command argument (-c) is not a file.')
+        kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        kwargs['function'] = _merge_probes_lists(function, function_sampled, kwargs['global_sampling'])
+        kwargs['static'] = _merge_probes_lists(static, static_sampled, kwargs['global_sampling'])
+        kwargs['dynamic'] = _merge_probes_lists(dynamic, dynamic_sampled, kwargs['global_sampling'])
 
         # Assemble script according to the parameters
-        kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = _get_path_dir_file(kwargs['cmd'])
+        kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(kwargs['cmd'])
         kwargs['script'] = strategy.assemble_script(**kwargs)
 
         print('Done.\n')
-        return _COLLECTOR_STATUS[_Status.OK][0], _COLLECTOR_STATUS[_Status.OK][1], dict(kwargs)
+        return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
     # The "expected" exception types
     except (OSError, ValueError, subprocess.CalledProcessError,
             UnicodeError, exceptions.StrategyNotImplemented) as exception:
         print('Failed.\n')
-        return _COLLECTOR_STATUS[_Status.EXCEPT][0], str(exception), dict(kwargs)
+        return _COLLECTOR_STATUS[systemtap.Status.EXCEPT][0], str(exception), dict(kwargs)
 
 
 def collect(**kwargs):
@@ -86,12 +82,12 @@ def collect(**kwargs):
               string as a status message, mainly for error states,
               dict of modified kwargs with 'output' value representing the trace records)
     """
-    print('Running the collector, progress output stored in <cmd>_stap.log.\n'
-          'This may take a while... ', end='')
+    print('Running the collector, progress output stored in collect_log_{0}.txt\n'
+          'This may take a while... '.format(kwargs['timestamp']))
     try:
         # Call the system tap
-        code, kwargs['output'] = _call_stap(**kwargs)
-        if code == _Status.OK:
+        code, kwargs['output'] = systemtap.systemtap_collect(**kwargs)
+        if code == systemtap.Status.OK:
             print('Done.\n')
         else:
             print('Failed.\n')
@@ -104,7 +100,7 @@ def collect(**kwargs):
 def after(**kwargs):
     """ Handles the complexity collector output and transforms it into resources
 
-    :param dict kwargs: dictionary containing the configuration settings for the collector
+    :param kwargs: dictionary containing the configuration settings for the collector
     :returns: tuple (int as a status code, nonzero values for errors,
                     string as a status message, mainly for error states,
                     dict of modified kwargs with 'profile' containing the processed trace)
@@ -116,70 +112,57 @@ def after(**kwargs):
 
     # Get the trace log path
     try:
-        with open(kwargs['output'], 'r') as profile:
-
-            # Create demangled counterparts of the function names
-            demangler = shutil.which('c++filt')
-            if demangler:
-                demangler = shlex.split(shlex.quote(demangler))
-                demangle = subprocess.check_output(demangler, stdin=profile, shell=False)
-                profile = demangle.decode(sys.__stdout__.encoding)
-
-            for line in profile.splitlines(True):
-                # Split the line into action, function name, timestamp and size
-                record = _parse_record(line)
-
-                # Process the record
-                if _process_file_record(record, call_stack, resources, func_map) != 0:
-                    # Stack error
-                    err_msg = 'Call stack error, record: ' + record.func
-                    if not call_stack:
-                        err_msg += ', stack top: empty'
-                    else:
-                        err_msg += ', stack top: ' + call_stack[-1].func
-
-                    print('Failed.\n')
-                    return _COLLECTOR_STATUS[_Status.EXCEPT][0], err_msg, dict(kwargs)
-
-        # Update the profile dictionary
-        kwargs['profile'] = {
-            'global': {
-                'time': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
-                'resources': resources
-            }
-        }
+        # with open(kwargs['output'], 'r') as profile:
+        #
+        #     # Create demangled counterparts of the function names
+        #     demangler = shutil.which('c++filt')
+        #     if demangler:
+        #         demangler = shlex.split(shlex.quote(demangler))
+        #         demangle = subprocess.check_output(demangler, stdin=profile, shell=False)
+        #         profile = demangle.decode(sys.__stdout__.encoding)
+        #
+        #     for line in profile.splitlines(True):
+        #         # Split the line into action, function name, timestamp and size
+        #         record = _parse_record(line)
+        #
+        #         # Process the record
+        #         if _process_file_record(record, call_stack, resources, func_map) != 0:
+        #             # Stack error
+        #             err_msg = 'Call stack error, record: ' + record.func
+        #             if not call_stack:
+        #                 err_msg += ', stack top: empty'
+        #             else:
+        #                 err_msg += ', stack top: ' + call_stack[-1].func
+        #
+        #             print('Failed.\n')
+        #             return _COLLECTOR_STATUS[stap.Status.EXCEPT][0], err_msg, dict(kwargs)
+        #
+        # # Update the profile dictionary
+        # kwargs['profile'] = {
+        #     'global': {
+        #         'time': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
+        #         'resources': resources
+        #     }
+        # }
         print('Done.\n')
-        return _COLLECTOR_STATUS[_Status.OK][0], _COLLECTOR_STATUS[_Status.OK][1], dict(kwargs)
+        return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
     except (OSError, subprocess.CalledProcessError) as exception:
         print('Failed.\n')
-        return _COLLECTOR_STATUS[_Status.EXCEPT], str(exception), dict(kwargs)
-
-
-def _get_path_dir_file(target):
-    """ Extracts the target's absolute path, location directory and base name
-
-    :param str target: name or location
-    :returns: tuple (the absolute target path, the target directory, the target base name)
-    """
-    path = os.path.realpath(target)
-    path_dir = os.path.dirname(path)
-    if path_dir and path_dir[-1] != '/':
-        path_dir += '/'
-    return path, path_dir, os.path.basename(path)
+        return _COLLECTOR_STATUS[systemtap.Status.EXCEPT], str(exception), dict(kwargs)
 
 
 def _call_stap(**kwargs):
     """Wrapper for SystemTap call and execution
 
-    :param dict kwargs: complexity collector configuration parameters
+    :param kwargs: complexity collector configuration parameters
     :returns: tuple (int code value - nonzero for errors, path to the SystemTap output)
     """
     # Resolve the system tap path
     stap = shutil.which('stap')
     if not stap:
-        return _Status.STAP_DEP, ''
+        return stap.Status.STAP_DEP, ''
 
-    script_path, script_dir, _ = _get_path_dir_file(kwargs['script'])
+    script_path, script_dir, _ = utils.get_path_dir_file(kwargs['script'])
     # Create the output file and collection log
     output = script_dir + kwargs['cmd_base'] + '_stap_record.txt'
     with open(script_dir + kwargs['cmd_base'] + '_stap.log', 'w') as log:
@@ -189,7 +172,7 @@ def _call_stap(**kwargs):
                                                    shlex.quote(output), shlex.quote(kwargs['cmd'])))
         stap_runner = subprocess.Popen(stap, cwd=script_dir, stderr=log, shell=False)
         stap_runner.communicate()
-    return _Status(int(stap_runner.returncode != 0)), output  # code 0 = False = .OK
+    return stap.Status(int(stap_runner.returncode != 0)), output  # code 0 = False = .OK
 
 
 def _process_file_record(record, call_stack, resources, sequences):
@@ -240,53 +223,56 @@ def _parse_record(line):
     return _ProfileRecord(offset, func, time)
 
 
-def sampling_to_dictionary(ctx, param, value):
-    """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
-
-    :param dict ctx: click context
-    :param object param: the parameter object
-    :param list value: the list of sampling values
-    :returns: list of dict -- list of sampling dictionaries
-    """
-    sampling_list = []
-    if value:
-        # Initialize
-
-        # Transform the tuple to more human readable dictionary
-        for sample in value:
-            sampling_list.append({
-                "func": sample[0],
-                "sample": sample[1]
-            })
-    return sampling_list
-
-
-def validate_gsamp(ctx, param, value):
+def _validate_gsamp(ctx, param, global_sampling):
     """Global sampling cli option converter callback. Checks the global sampling value.
 
     :param dict ctx: click context
     :param object param: the parameter object
-    :param int value: the global sampling value
+    :param int global_sampling: the global sampling value
     :returns: the checked global sampling value or None
     """
-    if value and value <= 1:
-        return None
+    if global_sampling <= 1:
+        return 0
     else:
-        return value
+        return global_sampling
 
 
+def _merge_probes_lists(probes, probes_sampled, global_sampling):
+    # Add global sampling (default 0) to the probes without sampling specification
+    probes = [{'name': probe, 'sample': global_sampling} for probe in probes]
+
+    # Validate the sampling values and merge the lists
+    for probe in probes_sampled:
+        if probe[1] < 2:
+            probes.append({'name': probe[0], 'sample': global_sampling})
+        else:
+            probes.append({'name': probe[0], 'sample': probe[1]})
+    return probes
+
+
+# TODO: allow multiple executables to be specified
 @click.command()
 @click.option('--method', '-m', type=click.Choice(strategy.get_supported_strategies()),
               default=strategy.get_default_strategy(), required=True,
               help='Select strategy for probing the binary. See documentation for'
                    ' detailed explanation for each strategy.')
-@click.option('--rules', '-r', type=str, multiple=True,
-              help='Set the probe points for profiling.')
-@click.option('--sampling', '-s', type=(str, int), multiple=True, callback=sampling_to_dictionary,
-              help='Set the runtime sampling of the given probe points.')
-@click.option('--global_sampling', '-g', type=int, callback=validate_gsamp,
-              help='Set the global sample for all probes, --sampling parameter for specific'
+@click.option('--function', '-f', type=str, multiple=True,
+              help='Set the probe point for the given function.')
+@click.option('--static', '-s', type=str, multiple=True,
+              help='Set the probe point for the given static location.')
+@click.option('--dynamic', '-d', type=str, multiple=True,
+              help='Set the probe point for the given dynamic location.')
+@click.option('--function-sampled', '-fs', type=(str, int), multiple=True,
+              help='Set the probe point and sampling for the given function.')
+@click.option('--static-sampled', '-ss', type=(str, int), multiple=True,
+              help='Set the probe point and sampling for the given static location.')
+@click.option('--dynamic-sampled', '-ds', type=(str, int), multiple=True,
+              help='Set the probe point and sampling for the given dynamic location.')
+@click.option('--global-sampling', '-g', type=int, default=0, callback=_validate_gsamp,
+              help='Set the global sample for all probes, sampling parameter for specific'
                    ' rules have higher priority.')
+@click.option('--binary', '-b', type=click.Path(exists=True),
+              help='The profiled executable')
 @click.pass_context
 def complexity(ctx, **kwargs):
     """Generates `complexity` performance profile, capturing running times of

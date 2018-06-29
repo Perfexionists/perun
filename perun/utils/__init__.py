@@ -355,3 +355,14 @@ def abs_in_absolute_range(value, border):
     :return: true if the value is in absolute range
     """
     return -abs(border) <= value <= abs(border)
+
+
+def get_path_dir_file(target):
+    """ Extracts the target's absolute path, location directory and base name
+
+    :param str target: name or path
+    :returns: tuple (the absolute target path, the target directory, the target base name)
+    """
+    path = os.path.realpath(target)
+    path_dir = os.path.join(os.path.dirname(path), '')  # Add directory slash if missing
+    return path, path_dir, os.path.basename(path)
