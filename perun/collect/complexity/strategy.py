@@ -8,9 +8,9 @@
 """
 
 import collections
+import os
 
 import perun.utils.exceptions as exceptions
-import perun.collect.complexity.systemtap_script as stap_script
 
 # The default global sampling for 'sample' strategies if global sampling is not set
 _DEFAULT_SAMPLE = 5
@@ -32,7 +32,7 @@ def get_default_strategy():
     return 'custom'
 
 
-def assemble_script(**kwargs):
+def extract_configuration(**kwargs):
     """Interface for the script assembling. Handles the specifics for each strategy.
 
     :param kwargs: the parameters to the collector as set by the cli
@@ -40,16 +40,10 @@ def assemble_script(**kwargs):
     :returns: str -- the path to the created script file
     """
     # Choose the handler for specified strategy
-    script = _STRATEGIES[kwargs['method']](**kwargs)
-
-    # Create the file and save the script
-    script_path = 'collect_script_{0}.stp'.format(kwargs['timestamp'])
-    with open(script_path, 'w') as stp_handle:
-        stp_handle.write(script)
-    return script_path
+    return _STRATEGIES[kwargs['method']](**kwargs)
 
 
-def custom_strategy(function, static, dynamic, binary, **_):
+def custom_strategy(func, func_sampled, static, static_sampled, dynamic, dynamic_sampled, **kwargs):
     """The custom strategy implementation. There are no defaults and only the parameters
     specified by the user are used for collection.
 
@@ -61,27 +55,84 @@ def custom_strategy(function, static, dynamic, binary, **_):
     :returns: str -- the script code
     """
 
+    kwargs['func'] = _remove_duplicate_probes(_merge_probes_lists(
+        func, func_sampled, kwargs['global_sampling']))
+    kwargs['static'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
+        static, static_sampled, kwargs['global_sampling'])))
+    kwargs['dynamic'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
+        dynamic, dynamic_sampled, kwargs['global_sampling'])))
+
     # Build sampling dictionary
-    return stap_script.assemble_system_tap_script(function, static, dynamic, binary)
+    return kwargs
 
 
-# TODO: add clever automatic pairing based on <name>_start:<name>_end
-def _filter_static_probes(rules):
-    dynamic, static = [], []
-    for rule in rules:
-        # Detect static rule and strip the static identifier
-        if rule.startswith('s:'):
-            rule = rule[2:]
-            # Pair the static probes to start, end locations
-            probes = rule.split(':')
-            if len(probes) == 1:
-                static.append((probes[0], probes[0]))
-            elif len(probes) == 2:
-                static.append((probes[0], probes[1]))
-            else:
-                continue
+def _pair_rules(probes):
+    result = []
+    for probe in probes:
+        # Split the probe definition into pair or probes
+        delim = probe['name'].find('#')
+        if delim != -1:
+            probe['pair'] = probe['name'][delim + 1:]
+            probe['name'] = probe['name'][:delim]
+            result.append(probe)
+        elif probe['name'].endswith('_end') or probe['name'].endswith('_END'):
+            # Skip the end probes
+            continue
         else:
-            dynamic.append(rule)
+            # Find the pair probe automatically as <name>_end template
+            pair = next((pair_probe for pair_probe in probes if (pair_probe['name'] == probe['name'] + '_end' or
+                                                                 pair_probe['name'] == probe['name'] + '_END')), None)
+            if pair:
+                probe['pair'] = pair['name']
+            result.append(probe)
+    return result
+
+
+def _merge_probes_lists(probes, probes_sampled, global_sampling):
+    # Add global sampling (default 0) to the probes without sampling specification
+    probes = [{'name': probe, 'sample': global_sampling} for probe in probes]
+
+    # Validate the sampling values and merge the lists
+    for probe in probes_sampled:
+        if probe[1] < 2:
+            probes.append({'name': probe[0], 'sample': global_sampling})
+        else:
+            probes.append({'name': probe[0], 'sample': probe[1]})
+    return probes
+
+
+# TODO: allow the probe to be used in multiple pairs e.g. TEST+TEST_END, TEST+TEST_END2, requires modification of
+# the script generator
+def _remove_duplicate_probes(probes):
+    # Classify the rules into paired, paired with sampling, single and single with sampling
+    paired, paired_sampled, single, single_sampled = [], [], [], []
+    for probe in probes:
+        if probe['sample'] > 0:
+            (paired_sampled if 'pair' in probe else single_sampled).append(probe)
+        else:
+            (paired if 'pair' in probe else single).append(probe)
+
+    seen = set()
+    unique = []
+    # Prioritize paired rules - we can't afford to remove paired rule instead of a single rule
+    # Also prioritize sampled rules
+    for paired_rules in [paired_sampled, paired]:
+        for probe in paired_rules:
+            if probe['name'] not in seen and probe['pair'] not in seen:
+                # Add new unique rule
+                seen.add(probe['name'])
+                seen.add(probe['pair'])
+                unique.append(probe)
+
+    # Now add single rules that are not duplicate
+    for single_rules in [single_sampled, single]:
+        for probe in single_rules:
+            if probe['name'] not in seen:
+                # Add new unique rule
+                seen.add(probe['name'])
+                unique.append(probe)
+
+    return unique
 
 
 def _not_implemented(method, **_):

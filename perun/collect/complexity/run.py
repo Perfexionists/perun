@@ -17,6 +17,7 @@ import click
 
 import perun.collect.complexity.strategy as strategy
 import perun.collect.complexity.systemtap as systemtap
+import perun.collect.complexity.systemtap_script as stap_script
 import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
 import perun.utils as utils
@@ -45,7 +46,7 @@ _COLLECTOR_SUBTYPES = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(function, function_sampled, static, static_sampled, dynamic, dynamic_sampled, **kwargs):
+def before(cmd, **kwargs):
     """ Assembles the SystemTap script according to input parameters and collection strategy
 
     :param kwargs: dictionary containing the configuration settings for the collector
@@ -57,13 +58,12 @@ def before(function, function_sampled, static, static_sampled, dynamic, dynamic_
         print('Starting the pre-processing phase... ', end='')
 
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        kwargs['function'] = _merge_probes_lists(function, function_sampled, kwargs['global_sampling'])
-        kwargs['static'] = _merge_probes_lists(static, static_sampled, kwargs['global_sampling'])
-        kwargs['dynamic'] = _merge_probes_lists(dynamic, dynamic_sampled, kwargs['global_sampling'])
+        kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(cmd)
+
+        kwargs = strategy.extract_configuration(**kwargs)
 
         # Assemble script according to the parameters
-        kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(kwargs['cmd'])
-        kwargs['script'] = strategy.assemble_script(**kwargs)
+        kwargs['script'] = stap_script.assemble_system_tap_script(**kwargs)
 
         print('Done.\n')
         return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
@@ -88,13 +88,14 @@ def collect(**kwargs):
         # Call the system tap
         code, kwargs['output'] = systemtap.systemtap_collect(**kwargs)
         if code == systemtap.Status.OK:
-            print('Done.\n')
+            print('Collection done.\n')
         else:
-            print('Failed.\n')
+            print('Collection failed.\n')
         return _COLLECTOR_STATUS[code][0], _COLLECTOR_STATUS[code][1], dict(kwargs)
     except (OSError, subprocess.CalledProcessError) as exception:
-        print('Failed.\n')
+        print('Collection failed.\n')
         return CollectStatus.ERROR, str(exception), dict(kwargs)
+    # return CollectStatus.OK, 'Ok', dict(kwargs)
 
 
 def after(**kwargs):
@@ -107,46 +108,22 @@ def after(**kwargs):
     """
 
     print('Starting the post-processing phase... ', end='')
-    resources, call_stack = [], []
-    func_map = dict()
 
     # Get the trace log path
     try:
-        # with open(kwargs['output'], 'r') as profile:
-        #
-        #     # Create demangled counterparts of the function names
-        #     demangler = shutil.which('c++filt')
-        #     if demangler:
-        #         demangler = shlex.split(shlex.quote(demangler))
-        #         demangle = subprocess.check_output(demangler, stdin=profile, shell=False)
-        #         profile = demangle.decode(sys.__stdout__.encoding)
-        #
-        #     for line in profile.splitlines(True):
-        #         # Split the line into action, function name, timestamp and size
-        #         record = _parse_record(line)
-        #
-        #         # Process the record
-        #         if _process_file_record(record, call_stack, resources, func_map) != 0:
-        #             # Stack error
-        #             err_msg = 'Call stack error, record: ' + record.func
-        #             if not call_stack:
-        #                 err_msg += ', stack top: empty'
-        #             else:
-        #                 err_msg += ', stack top: ' + call_stack[-1].func
-        #
-        #             print('Failed.\n')
-        #             return _COLLECTOR_STATUS[stap.Status.EXCEPT][0], err_msg, dict(kwargs)
-        #
-        # # Update the profile dictionary
-        # kwargs['profile'] = {
-        #     'global': {
-        #         'time': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
-        #         'resources': resources
-        #     }
-        # }
+        resources = list(systemtap.trace_to_profile(**kwargs))
+
+        # Update the profile dictionary
+        kwargs['profile'] = {
+            'global': {
+                'time': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
+                'resources': resources
+            }
+        }
         print('Done.\n')
+
         return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
-    except (OSError, subprocess.CalledProcessError) as exception:
+    except (subprocess.CalledProcessError, exceptions.TraceStackException) as exception:
         print('Failed.\n')
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT], str(exception), dict(kwargs)
 
@@ -237,32 +214,19 @@ def _validate_gsamp(ctx, param, global_sampling):
         return global_sampling
 
 
-def _merge_probes_lists(probes, probes_sampled, global_sampling):
-    # Add global sampling (default 0) to the probes without sampling specification
-    probes = [{'name': probe, 'sample': global_sampling} for probe in probes]
-
-    # Validate the sampling values and merge the lists
-    for probe in probes_sampled:
-        if probe[1] < 2:
-            probes.append({'name': probe[0], 'sample': global_sampling})
-        else:
-            probes.append({'name': probe[0], 'sample': probe[1]})
-    return probes
-
-
 # TODO: allow multiple executables to be specified
 @click.command()
 @click.option('--method', '-m', type=click.Choice(strategy.get_supported_strategies()),
               default=strategy.get_default_strategy(), required=True,
               help='Select strategy for probing the binary. See documentation for'
                    ' detailed explanation for each strategy.')
-@click.option('--function', '-f', type=str, multiple=True,
+@click.option('--func', '-f', type=str, multiple=True,
               help='Set the probe point for the given function.')
 @click.option('--static', '-s', type=str, multiple=True,
               help='Set the probe point for the given static location.')
 @click.option('--dynamic', '-d', type=str, multiple=True,
               help='Set the probe point for the given dynamic location.')
-@click.option('--function-sampled', '-fs', type=(str, int), multiple=True,
+@click.option('--func-sampled', '-fs', type=(str, int), multiple=True,
               help='Set the probe point and sampling for the given function.')
 @click.option('--static-sampled', '-ss', type=(str, int), multiple=True,
               help='Set the probe point and sampling for the given static location.')
