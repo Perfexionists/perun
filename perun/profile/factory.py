@@ -421,6 +421,30 @@ def sort_profiles(profile_list, reverse_profiles=True):
     profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)
 
 
+def merge_resources_of(lhs, rhs):
+    """Merges the resources of lhs and rhs profiles
+
+    :param dict lhs: left operator of the profile merge
+    :param dict rhs: right operator of the profile merge
+    :return: profile with merged resources
+    """
+    # Return lhs/rhs if rhs/lhs is empty
+    if not rhs:
+        return lhs
+    if not lhs:
+        return rhs
+
+    # Note that we assume  that lhs and rhs are the same type ;)
+    if 'global' in lhs.keys() and lhs['global']:
+        lhs['global']['resources'].extend(rhs['global']['resources'])
+        lhs['global']['timestamp'] += rhs['global']['timestamp']
+
+    if 'snapshots' in lhs.keys():
+        lhs['snapshots'].extend(rhs['snapshots'])
+
+    return lhs
+
+
 class ProfileInfo(object):
     """Structure for storing information about profiles.
 

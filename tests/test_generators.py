@@ -34,6 +34,26 @@ def test_integer_generator():
         _ = list(pure_generator.generate(runner.run_collector))
 
 
+def test_integer_generator_for_each():
+    """Tests the profile_for_each_workload option"""
+    # When profile_for_each_workload is not set, we yield profiles for each workload
+    collector = Unit('time', {})
+    integer_job = Job(collector, [], 'factor', '', '')
+    integer_generator = IntegerGenerator(integer_job, 10, 100, 10, profile_for_each_workload=True)
+
+    collection_pairs = list(
+        integer_generator.generate(runner.run_collector)
+    )
+    assert len(collection_pairs) == 10
+
+    # When profile_for_each_workload is set, then we merge the resources
+    integer_generator = IntegerGenerator(integer_job, 10, 100, 10, profile_for_each_workload=False)
+    collection_pairs = list(
+        integer_generator.generate(runner.run_collector)
+    )
+    assert len(collection_pairs) == 1
+
+
 def test_loading_generators_from_config(monkeypatch, pcs_full):
     """Tests loading generator specification from config"""
     # Initialize the testing configurations
