@@ -1,5 +1,13 @@
-"""Generic object to be inherited from. Contains the basic method and API"""
+"""All generators can be configured using the following generic settings:
 
+  * ``profile_for_each_workload``: by default this option is set to false, and then when one uses
+    the generator to generate the workload, the collected resources will be merged into one single
+    profile. If otherwise this option is set to true value (true, 1, yes, etc.) then Perun will
+    generate profile for each of the generated workload.
+
+"""
+
+import distutils.util as dutils
 import perun.utils.log as log
 import perun.profile.factory as profile
 
@@ -9,10 +17,10 @@ __author__ = 'Tomas Fiedor'
 
 
 class Generator(object):
-    """Base object for generation of the workloads
+    """Generator is a base object of all generators and contains generic options for all generators.
 
-    :ivar Job job: job for which we are collecting the data
-    :ivar str generator_name: name of the workload generator
+    :ivar bool profile_for_each_workload: if set to true, then we will generate one profile
+        for each workload, otherwise the workload will be merged into one single profile
     """
     def __init__(self, job, profile_for_each_workload=False, **_):
         """Initializes the job of the generator
@@ -24,12 +32,10 @@ class Generator(object):
         """
         self.job = job
         self.generator_name = self.job.workload
-        self.for_each = profile_for_each_workload
+        self.for_each = dutils.strtobool(str(profile_for_each_workload))
 
     def generate(self, collect_function):
         """Collects the data for the generated workload
-
-        TODO: Merge the workload stuff
 
         :return: tuple of collection status and collected profile
         """

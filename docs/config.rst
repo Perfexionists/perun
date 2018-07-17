@@ -327,14 +327,21 @@ List of Supported Options
           workload:
             - id: gen1
               type: integer
+              profile_for_each_workload: True
             - id: gen2
               type: integer
               min_range: 10
               max_range: 100
               step: 10
 
-    This specifies two integer workload generators ``gen1`` and ``gen2``. The first uses the default
-    range, while the latter specifies the range 10, 20, ..., 100.
+    This specifies two integer workload generators ``gen1`` and ``gen2``. The first uses the
+    default range, while the latter specifies the range 10, 20, ..., 100. If
+    ``profile_for_each_workload`` is set to true value (true, yes, etc.), then isolate profile will
+    be generated for each collected workload. Otherwise the resulting profiles are merged into the
+    one profile, and each resources has additional key called "workload", that allows using
+    :ref:`_postprocessors-regression-analysis` of amount depending on the workload.
+
+    For more details about supported generators refer to :ref:`jobs-workload-generators`.
 
 .. _config-templates:
 

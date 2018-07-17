@@ -1,5 +1,37 @@
-"""Generator of random text files"""
+"""Text File Generator generates the range of random files.
 
+The TextFile Generator generates files with random contents (lorem ipsum) starting from
+``min_lines``, and continuously increments this value by ``step`` until the number of lines in
+the generated file reaches ``max_lines``. Each row will then either have maximal length of
+``max_chars`` (if ``randomize_rows`` is set to false value), otherwise the length is randomized
+from the interval (``min_lines``, ``max_lines``).
+
+The following shows the example of integer generator, which continuously generates workloads
+10, 20, ..., 90, 100:
+
+  .. code-block:: yaml
+
+      generators:
+        workload:
+          - id: textfile_generator
+            type: textfile
+            min_lines: 10
+            max_lines: 100
+            step: 10
+
+The TextFile Generator can be configured by following options:
+
+  * ``min_lines``: the minimal number of lines in the file that shall be generated.
+  * ``max_lines``: the maximal number of lines in the file that shall be generated.
+  * ``step``: the step (or increment) of the range. By default set to 1.
+  * ``min_chars``: the minimal number of characters on one line. By default set to 5.
+  * ``max_chars``: the maximal number of characters on one line. By default set to 80.
+  * ``randomize_rows``: by default set to True, the rows in the file have then randomized length
+    from interval (``min_chars``, ``max_chars``). Otherwise (if set to false), the lines will always
+    be of maximal length (``max_chars``).
+"""
+
+import distutils.util as dutils
 import os
 import tempfile
 import random
@@ -16,11 +48,10 @@ class TextfileGenerator(Generator):
     :ivar int min_lines: minimal number of lines in generated text file
     :ivar int max_lines: maximal number of lines in generated text file
     :ivar int step: step for lines in generated text file
-    :ivar int min_chars_in_row: minimal number of rows/chars on one line in the text file
-    :ivar int max_chars_in_row: maximal number of rows/chars on one line in the text file
+    :ivar int min_chars: minimal number of rows/chars on one line in the text file
+    :ivar int max_chars: maximal number of rows/chars on one line in the text file
     :ivar bool randomize_rows: if set to true, then the lines in the file will be
         randomized. Otherwise they will always be maximal.
-    :ivar Faker faker: faker of the data
     """
     def __init__(self, job, min_lines, max_lines, step=1, min_rows=5, max_rows=80,
                  randomize_rows=True, **kwargs):
@@ -45,9 +76,9 @@ class TextfileGenerator(Generator):
 
         # Row / Character specific
         # Note that faker has a lower limit on generated text.
-        self.min_chars_in_row = max(int(min_rows), 5)
-        self.max_chars_in_row = int(max_rows)
-        self.randomize_rows = randomize_rows
+        self.min_chars = max(int(min_rows), 5)
+        self.max_chars = int(max_rows)
+        self.randomize_rows = dutils.strtobool(str(randomize_rows))
 
         self.faker = faker.Faker()
 
@@ -56,8 +87,8 @@ class TextfileGenerator(Generator):
 
         :return: one random line of lorem ipsum dolor text
         """
-        line_len = random.randint(self.min_chars_in_row, self.max_chars_in_row + 1) \
-            if self.randomize_rows else self.max_chars_in_row
+        line_len = random.randint(self.min_chars, self.max_chars + 1) \
+            if self.randomize_rows else self.max_chars
         return self.faker.text(max_nb_chars=line_len).replace('\n', ' ')
 
     def _get_file_content(self, file_len):

@@ -1,11 +1,10 @@
-"""Package containing generators of workloads.
+"""From version 15.1, Perun supports the specification of workload generators, instead of raw
+workload values specified in :munit:`workloads`. These generators continuously generates workloads
+and internally Perun either merges the resources into one single profile or gradually generates
+profile for each workload.
 
-In previous Perun version, the workloads were considered to be string supplied by the user.
-Now, this has been changed to a set of generators, that can generate a wider range of values and
-also serve as missing independent variable.
-
-This package contains the general generator object and the concrete generators of workload, such
-as the string workload, integer workload, etc.
+The generators are specified by :ckey:`generators.workload` section. These specifications are
+collected through all of the configurations in the hierarchy.
 """
 
 import perun.logic.config as config
