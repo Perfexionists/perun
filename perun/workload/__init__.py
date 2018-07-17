@@ -1,4 +1,4 @@
-"""From version 15.1, Perun supports the specification of workload generators, instead of raw
+"""From version 0.15.1, Perun supports the specification of workload generators, instead of raw
 workload values specified in :munit:`workloads`. These generators continuously generates workloads
 and internally Perun either merges the resources into one single profile or gradually generates
 profile for each workload.

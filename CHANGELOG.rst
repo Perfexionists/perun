@@ -17,6 +17,8 @@ HEAD
   - implement file workload generator that generates random text files
   - add :ckey:`generators.workload` for specification of workload generators in config
   - remodel the notion of workloads to accept the workload generators to allow other style of workloads
+  - add two modes of workload generation (one that merges the profiles into one; and one which gradually generates profiles)
+  - add default workload generators to shared configuration
 
 0.15 (2018-06-20)
 -----------------
