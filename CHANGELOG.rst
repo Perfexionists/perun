@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.15.1 (2018-07-17)
+-------------------
+
+`commit: f137abac6c428fc5e580dfa0fc9446c65ac30e4c`
+
+**Rehaul the notion of workloads**
+
   - refactor check modules
   - add ``pending tag range`` to ``perun add`` command to add more profiles at once
   - add ``index tag rage`` to ``perun rm`` command to remove more profiles at once
