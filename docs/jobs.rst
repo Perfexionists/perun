@@ -236,6 +236,11 @@ can be set in the configuration:
               - /usr/share
               - << "Hello world!"
 
+   From version 15.1. you can use the workload generators instead. See
+   :ref:`jobs-workload-generators` for more information about supported workload generators and
+   :ckey:`generators.workload` for more information how to specify the workload generators in the
+   configuration files.
+
 .. matrixunit:: collectors
 
    List of collectors used to collect data for the given configuration of application represented
@@ -268,3 +273,34 @@ can be set in the configuration:
                  - method: full
                  - steps: 10
 
+.. _jobs-workload-generators:
+
+List of Supported Workload Generators
+-------------------------------------
+
+.. automodule:: perun.workload
+
+Generic settings
+^^^^^^^^^^^^^^^^
+
+.. automodule:: perun.workload.generator
+
+Singleton Generator
+^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: perun.workload.singleton_generator
+
+Integer Generator
+^^^^^^^^^^^^^^^^^
+
+.. automodule:: perun.workload.integer_generator
+
+String Generator
+^^^^^^^^^^^^^^^^
+
+.. automodule:: perun.workload.string_generator
+
+Text File Generator
+^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: perun.workload.textfile_generator

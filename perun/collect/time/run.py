@@ -64,7 +64,8 @@ def collect(repeat=10, warmup=3, **kwargs):
                     "uid": kwargs['cmd'],
                     "order": order,
                     "subtype": key,
-                    "type": "time"
+                    "type": "time",
+                    "workload": kwargs['workload']
                 } for (order, key, timing) in times
             ]
         }

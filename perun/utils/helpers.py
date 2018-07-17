@@ -3,6 +3,8 @@
 import re
 import operator
 import collections
+import namedlist
+
 from enum import Enum
 from perun.utils.structs import PerformanceChange
 
@@ -64,7 +66,7 @@ RAW_ITEM_COLOUR = 'yellow'
 RAW_ATTRS = []
 
 # Job specific
-Job = collections.namedtuple("Job", "collector postprocessors cmd workload args")
+Job = namedlist.namedlist("Job", "collector postprocessors cmd workload args")
 Unit = collections.namedtuple("Unit", "name params")
 
 COLLECT_PHASE_CMD = 'blue'

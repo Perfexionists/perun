@@ -10,3 +10,5 @@ sphinx-click==1.0.3
 Jinja2==2.9.6
 python-magic>=0.4
 scipy>=0.19.1
+Faker>=0.8.16
+namedlist>=1.7
