@@ -5,6 +5,12 @@ profile for each workload.
 
 The generators are specified by :ckey:`generators.workload` section. These specifications are
 collected through all of the configurations in the hierarchy.
+
+You can use some basic generators specified in shared configurations called ``basic_strings``
+(which generates strings of lengths from interval (8, 128) with increment of 8), ``basic_integers``
+(which generates integers from interval (100, 10000), with increment of 200) or ``basic_files``
+(which generates text files with number of lines from interval (10, 10000), with increment of
+1000).
 """
 
 import perun.logic.config as config
