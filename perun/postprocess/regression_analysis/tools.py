@@ -138,3 +138,34 @@ def split_model_interval(start, end, steps):
     # Result of linspace is array, not tuple, with these arguments
     x_pts[np.abs(x_pts) < APPROX_ZERO] = APPROX_ZERO
     return x_pts
+
+
+def safe_division(dividend, divisor):
+    """Safe division of divident by operand
+
+    :param number dividend: upper operand of the division
+    :param number divisor: lower operand of the division, may be zero
+    :return: safe value after division of approximated zero
+    """
+    try:
+        return dividend / divisor
+    except (ZeroDivisionError, ValueError):
+        return dividend / APPROX_ZERO
+
+
+def as_plot_x_dict(plot_x):
+    """Returns the argument as dictionary with given key
+
+    :param object plot_x: object that contains plot_x data
+    :return: dictionary with key 'plot_x' set to plot_x
+    """
+    return dict(plot_x=plot_x)
+
+
+def as_plot_y_dict(plot_y):
+    """Returns the argument as dictionary with given key
+
+    :param object plot_y: object that contains plot_y data
+    :return: dictionary with key 'plot_y' set to plot_y
+    """
+    return dict(plot_y=plot_y)

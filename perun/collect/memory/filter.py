@@ -51,7 +51,7 @@ def set_global_region(profile):
     """
     :param dict profile: partially computed profile
     """
-    profile['global']['resources'] = {}
+    profile['global'] = {}
 
 
 def allocation_filter(profile, function, source):

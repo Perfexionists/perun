@@ -284,18 +284,19 @@ def add(profile_names, minor_version, keep_profile=False):
 
 
 @lookup_minor_version
-def remove(profile_name, minor_version, **kwargs):
+def remove(profile_generator, minor_version, **kwargs):
     """Removes @p profile from the @p minor_version inside the @p pcs
 
-    :param str profile_name: profile that will be stored for the minor version
+    :param generator profile_generator: profile that will be stored for the minor version
     :param str minor_version: SHA-1 representation of the minor version
     :param dict kwargs: dictionary with additional options
-    :raisesEntryNotFoundException: when the given profile_name points to non-tracked profile
+    :raisesEntryNotFoundException: when the given profile_generator points to non-tracked profile
     """
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     object_directory = pcs.get_object_directory()
-    store.remove_from_index(object_directory, minor_version, profile_name, **kwargs)
+    store.remove_from_index(object_directory, minor_version, profile_generator, **kwargs)
+    perun_log.info("successfully removed {} from index".format(len(profile_generator)))
 
 
 def calculate_profile_numbers_per_type(profile_list):

@@ -84,7 +84,6 @@ class Config(object):
         *sections, last_section = key.split('.')
         _locate_section_from_query(self.data, sections)[last_section] = value
         if self.path:
-            print(self.path)
             write_config_to(self.path, self.data)
 
     @decorators.validate_arguments(['key'], is_valid_key)
@@ -185,6 +184,24 @@ degradation:
     apply: all
     strategies:
       - method: average_amount_threshold
+
+generators:
+    workload:
+      - id: basic_strings
+        type: string
+        min_len: 8
+        max_len: 128
+        step: 8
+      - id: basic_integers
+        type: integer
+        min_range: 100
+        max_range: 10000
+        step: 200
+      - id: basic_files
+        type: textfile
+        min_lines: 10
+        max_lines: 10000
+        step: 1000
     """)
 
     write_config_to(path, shared_config)

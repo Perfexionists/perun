@@ -28,7 +28,9 @@ __author__ = 'Tomas Fiedor'
 
 
 INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
+INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")
 PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
+PENDING_TAG_RANGE_REGEX = re.compile(r"^(\d+)@p-(\d+)@p$")
 
 
 def touch_file(touched_filename, times=None):
@@ -559,6 +561,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
                 )
             else:
                 removed_entries.extend([lookup_entry_within_index(index_handle, lookup_function)])
+            perun_log.info("deregistered: {}".format(removed_file))
 
         # Update number of entries
         index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)

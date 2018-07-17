@@ -399,10 +399,19 @@ def add(profile, minor, **kwargs):
     control system is used instead. Massaging of <hash> is taken care of by
     underlying version control system (e.g. git uses ``git rev-parse``).
 
-    <profile> can either be a ``pending tag`` or a fullpath. ``Pending tags``
-    are in form of ``i@p``, where ``i`` stands for an index in the pending
-    profile directory (i.e. ``.perun/jobs``) and ``@p`` is literal suffix.
+    <profile> can either be a ``pending tag``, ``pending tag range`` or a
+    fullpath. ``Pending tags`` are in form of ``i@p``, where ``i`` stands
+    for an index in the pending profile directory (i.e. ``.perun/jobs``)
+    and ``@p`` is literal suffix.  The ``pending tag range`` is in form
+    of ``i@p-j@p``, where both ``i`` and ``j`` stands for indexes in the
+    pending profiles. The ``pending tag range`` then represents all of
+    the profiles in the interval <i, j>. When ``i > j``, then no profiles
+    will be add; when ``j``; when ``j`` is bigger than the number of
+    pending profiles, then all of the non-existing pending profiles will
+    be obviously skipped.
     Run ``perun status`` to see the `tag` anotation of pending profiles.
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
 
     Example of adding profiles:
 
@@ -454,7 +463,15 @@ def remove(profile, minor, **kwargs):
     <profile> can either be a ``index tag`` or a path specifying the profile.
     ``Index tags`` are in form of ``i@i``, where ``i`` stands for an index in
     the minor version's index and ``@i`` is literal suffix. Run ``perun
-    status`` to see the `tags` of current ``HEAD``'s index.
+    status`` to see the `tags` of current ``HEAD``'s index. The
+    ``index tag range`` is in form of ``i@i-j@i``, where both ``i`` and ``j``
+    stands for indexes in the minor version's index. The ``index tag range``
+    then represents all of the profiles in the interval <i, j>. registered
+    in index. When ``i > j``, then no profiles will be removed; when ``j``;
+    when ``j`` is bigger than the number of pending profiles, then all of
+    the non-existing pending profiles will be obviously skipped.
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
 
     Examples of removing profiles:
 
@@ -474,8 +491,6 @@ def remove(profile, minor, **kwargs):
         commands.remove(profile, minor, **kwargs)
     except (NotPerunRepositoryException, EntryNotFoundException) as exception:
         perun_log.error(str(exception))
-    finally:
-        perun_log.info("removed '{}'".format(profile))
 
 
 @cli.command()
@@ -516,8 +531,12 @@ def log(head, **kwargs):
               " necessary information.")
 @click.option('--sort-by', '-sb', 'format__sort_profiles_by', nargs=1,
               type=click.Choice(profiles.ProfileInfo.valid_attributes),
-              callback=cli_helpers.process_config_option,
-              help="The stored and pending profiles will be sorted by <key>.")
+              callback=cli_helpers.set_config_option_from_flag(
+                  pcs.local_config, 'format.sort_profiles_by', str
+              ),
+              help="Sets the <key> in the local configuration for sorting profiles. "
+                   "Note that after setting the <key> it will be used for sorting which is "
+                   "considered in pending and index tags!")
 def status(**kwargs):
     """Shows the status of vcs, associated profiles and perun.
 
@@ -535,6 +554,11 @@ def status(**kwargs):
     An error is raised if the command is executed outside of range of any
     perun, or configuration misses certain configuration keys
     (namely ``format.status``).
+
+    Profiles (both registered in index and stored in pending directory) are sorted
+    according to the :ckey:`format.sort_profiles_by`. The option ``--sort-by``
+    sets this key in the local configuration for further usage. This means that
+    using the pending or index tags will consider this order.
 
     Refer to :ref:`logs-status` for information how to customize the outputs of
     ``status`` or how to set :ckey:`format.status` in nearest
@@ -581,6 +605,9 @@ def show(ctx, profile, **_):
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
 
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
+
     Example 1. The following command will show the first profile registered at
     index of ``HEAD~1`` commit. The resulting graph will contain bars
     representing sum of amounts per each subtype of resources and will be shown
@@ -603,8 +630,8 @@ def show(ctx, profile, **_):
 @click.argument('profile', required=True, metavar='<profile>',
                 callback=cli_helpers.lookup_any_profile_callback)
 @click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'format.output_profile_template', str
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the postprocessed file will have a resulting filename w.r.t to this'
               ' parameter. Refer to :ckey:`format.output_profile_template` for more'
@@ -643,6 +670,9 @@ def postprocessby(ctx, profile, **_):
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
 
+    Tags consider the sorted order as specified by the following option
+    :ckey:`format.sort_profiles_by`.
+
     For checking the associated `tags` to profiles run ``perun status``.
 
     Example 1. The following command will postprocess the given profile
@@ -669,7 +699,7 @@ def postprocessby(ctx, profile, **_):
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
               callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
-@click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
+@click.option('--crawl-parents', '-cp', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
                    ' will be collected as well')
 @click.option('--cmd', '-c', nargs=1, required=False, multiple=True, default=[''],
@@ -686,8 +716,8 @@ def postprocessby(ctx, profile, **_):
               help='Additional parameters for called collector read from '
               'file in YAML format.')
 @click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'format.output_profile_template', str
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the file with collected data will have a resulting filename w.r.t '
               ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
@@ -719,8 +749,8 @@ def collect(ctx, **kwargs):
 
 @cli.group()
 @click.option('--output-filename-template', '-ot', default=None,
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'format.output_profile_template', str
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the file with collected data will have a resulting filename w.r.t '
               ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
@@ -859,8 +889,8 @@ def job(ctx, **kwargs):
 
 @cli.group('check')
 @click.option('--compute-missing', '-c',
-              callback=cli_helpers.set_runtime_option_from_flag(
-                  'degradation.collect_before_check'),
+              callback=cli_helpers.set_config_option_from_flag(
+                  perun_config.runtime, 'degradation.collect_before_check'),
               is_flag=True, default=False,
               help='whenever there are missing profiles in the given point of history'
               ' the matrix will be rerun and new generated profiles assigned.')

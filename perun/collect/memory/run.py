@@ -70,12 +70,13 @@ def collect(cmd, args, workload, **_):
     return CollectStatus.OK, '', {}
 
 
-def after(cmd, sampling=DEFAULT_SAMPLING, **kwargs):
+def after(cmd, workload, sampling=DEFAULT_SAMPLING, **kwargs):
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
 
     :param string cmd: binary file to profile
     :param int sampling: sampling of the collection of the data
+    :param str workload: workload for which we are collecting the data
     :param dict kwargs: profile's header
     :returns tuple: (return code, message, updated kwargs)
 
@@ -101,7 +102,7 @@ def after(cmd, sampling=DEFAULT_SAMPLING, **kwargs):
 
     print("Generating profile: ", end='')
     try:
-        profile = parser.parse_log(_tmp_log_filename, cmd, sampling)
+        profile = parser.parse_log(_tmp_log_filename, cmd, sampling, workload)
     except IndexError as i_err:
         log.failed()
         return CollectStatus.ERROR, 'Info missing in log file: {}'.format(str(i_err)), {}

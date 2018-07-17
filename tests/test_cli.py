@@ -251,9 +251,17 @@ def test_status_correct(pcs_full):
     short_result = runner.invoke(cli.status, ['--short'])
     assert short_result.exit_code == 0
     assert len(short_result.output.split("\n")) == 6
+    assert config.lookup_key_recursively('format.sort_profiles_by') == 'time'
 
+    # Try that the sort order changed
     short_result = runner.invoke(cli.status, ['--short', '--sort-by', 'source'])
     assert short_result.exit_code == 0
+    assert pcs_full.local_config().get('format.sort_profiles_by') == 'source'
+
+    # The sort order is kept the same
+    short_result = runner.invoke(cli.status, ['--short'])
+    assert short_result.exit_code == 0
+    assert pcs_full.local_config().get('format.sort_profiles_by') == 'source'
 
 
 @pytest.mark.usefixtures('cleandir')
@@ -572,7 +580,37 @@ def test_add_tag(helpers, pcs_full, valid_profile_pool):
     assert '0@p' in result.output
 
 
-def test_remove_tag(helpers, pcs_full):
+def test_add_tag_range(helpers, pcs_full, valid_profile_pool):
+    """Test running add with tags instead of profile
+
+    Expecting no errors and profile added as it should
+    """
+    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
+    head = str(git_repo.head.commit)
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    os.path.relpath(helpers.prepare_profile(
+        pcs_full.get_job_directory(), valid_profile_pool[0], head)
+    )
+    os.path.relpath(helpers.prepare_profile(
+        pcs_full.get_job_directory(), valid_profile_pool[1], head)
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['10@p-0@p'])
+    assert result.exit_code == 0
+    assert 'successfully registered 0 profiles in index'
+
+    result = runner.invoke(cli.add, ['0@p-10@p'])
+    print(result.output)
+    assert result.exit_code == 0
+    assert 'successfully registered 2 profiles in index'
+
+    # Nothing should remain!
+    result = runner.invoke(cli.status, [])
+    assert "no untracked" in result.output
+
+
+def test_remove_tag(pcs_full):
     """Test running remove with tags instead of profile
 
     Expecting no errors and profile removed as it should
@@ -581,6 +619,26 @@ def test_remove_tag(helpers, pcs_full):
     result = runner.invoke(cli.remove, ['0@i'])
     assert result.exit_code == 0
     assert "removed" in result.output
+
+
+def test_remove_tag_range(helpers, pcs_full):
+    """Test running remove with range of tags instead of profile
+
+    Expecting no errors and profile removed as it should
+    """
+    runner = CliRunner()
+    result = runner.invoke(cli.remove, ['10@i-0@i'])
+    assert result.exit_code == 0
+    assert "removed 0 from index" in result.output
+
+    result = runner.invoke(cli.remove, ['0@i-10@i'])
+    assert result.exit_code == 0
+    assert "removed 2 from index" in result.output
+
+    # Nothing should remain!
+    result = runner.invoke(cli.status, [])
+    assert "no tracked" in result.output
+    assert result.exit_code == 0
 
 
 def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):

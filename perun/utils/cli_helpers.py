@@ -23,20 +23,6 @@ from perun.utils.exceptions import VersionControlSystemException
 __author__ = 'Tomas Fiedor'
 
 
-def process_config_option(_, param, value):
-    """Processes the value of the param and stores it in the temporary config
-
-    :param click.Context _: unused click context
-    :param click.Option param: click option, that is being processed
-    :param object value: value we are setting
-    :return: set value
-    """
-    option_name = param.human_readable_name.replace("__", ".")
-    if value:
-        config.runtime().set(option_name, value)
-    return value
-
-
 def process_bokeh_axis_title(ctx, param, value):
     """Processes default value for axes.
 
@@ -113,13 +99,14 @@ def process_continuous_key(ctx, _, value):
     return value
 
 
-def set_runtime_option_from_flag(config_option, postprocess_function=lambda x: x):
+def set_config_option_from_flag(dst_config_getter, config_option, postprocess_function=lambda x: x):
     """Helper function for setting the config option from the CLI option handler
 
     Returns the option handler, that sets, if value is equal to true, the config option to the
     given option value. This is e.g. used to use the CLI to set various configurations temporarily
     from the command line option.
 
+    :param function dst_config_getter: destination config, where the option will be set
     :param str config_option: name of the option that will be set in the runtime config
     :param function postprocess_function: function which will postprocess the value
     :return: handler for the command line interface
@@ -133,7 +120,7 @@ def set_runtime_option_from_flag(config_option, postprocess_function=lambda x: x
         :return:
         """
         if value:
-            config.runtime().set(config_option, postprocess_function(value))
+            dst_config_getter().set(config_option, postprocess_function(value))
         return value
     return option_handler
 
@@ -270,7 +257,8 @@ def lookup_nth_pending_filename(position):
 def lookup_added_profile_callback(_, __, value):
     """Callback function for looking up the profile which will be added/registered
 
-    Profile can either be represented as a pending tag (e.g. 0@p) or as a path to a file.
+    Profile can either be represented as a pending tag (e.g. 0@p), as a pending tag range
+    (e.g. 0@p-5@p) or as a path to a file.
 
     :param Context _: context of the called command
     :param click.Option __: parameter that is being parsed and read from commandline
@@ -279,9 +267,17 @@ def lookup_added_profile_callback(_, __, value):
     """
     massaged_values = set()
     for single_value in value:
-        match = store.PENDING_TAG_REGEX.match(single_value)
-        if match:
-            massaged_values.add(lookup_nth_pending_filename(int(match.group(1))))
+        pending_match = store.PENDING_TAG_REGEX.match(single_value)
+        range_match = store.PENDING_TAG_RANGE_REGEX.match(single_value)
+        if pending_match:
+            massaged_values.add(lookup_nth_pending_filename(int(pending_match.group(1))))
+        elif range_match:
+            from_range, to_range = int(range_match.group(1)), int(range_match.group(2))
+            for i in range(from_range, to_range+1):
+                try:
+                    massaged_values.add(lookup_nth_pending_filename(i))
+                except click.BadParameter:
+                    log.warn("skipping nonexisting tag {}@p".format(i))
         else:
             massaged_values.add(lookup_profile_in_filesystem(single_value))
     return massaged_values
@@ -290,23 +286,39 @@ def lookup_added_profile_callback(_, __, value):
 def lookup_removed_profile_callback(ctx, _, value):
     """Callback function for looking up the profile which will be removed
 
-    Profile can either be represented as an index tag (e.g. 0@i) or as a path in the index
+    Profile can either be represented as an index tag (e.g. 0@i), as an index tag range (e.g.
+    0@i-5@i) or as a path in the index
 
     :param Context ctx: context of the called command
     :param click.Option _: parameter that is being parsed and read from commandline
     :param str value: value that is being read from the commandline
     :returns str: filename of the profile to be removed
     """
+    def add_to_removed(index):
+        """Helper function for adding stuff to massaged values
+
+        :param int index: index we are looking up and registering to massaged values
+        """
+        index_filename = commands.get_nth_profile_of(
+            index, ctx.params['minor']
+        )
+        start = index_filename.rfind('objects') + len('objects')
+        # Remove the .perun/objects/... prefix and merge the directory and file to sha
+        massaged_values.add("".join(index_filename[start:].split('/')))
+
     massaged_values = set()
     for single_value in value:
-        match = store.INDEX_TAG_REGEX.match(single_value)
-        if match:
-            index_filename = commands.get_nth_profile_of(
-                int(match.group(1)), ctx.params['minor']
-            )
-            start = index_filename.rfind('objects') + len('objects')
-            # Remove the .perun/objects/... prefix and merge the directory and file to sha
-            massaged_values.add("".join(index_filename[start:].split('/')))
+        index_match = store.INDEX_TAG_REGEX.match(single_value)
+        range_match = store.INDEX_TAG_RANGE_REGEX.match(single_value)
+        if index_match:
+            add_to_removed(int(index_match.group(1)))
+        elif range_match:
+            from_range, to_range = int(range_match.group(1)), int(range_match.group(2))
+            for i in range(from_range, to_range+1):
+                try:
+                    add_to_removed(i)
+                except click.BadParameter:
+                    log.warn("skipping nonexisting tag {}@i".format(i))
         else:
             massaged_values.add(single_value)
     return massaged_values

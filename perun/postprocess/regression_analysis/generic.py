@@ -110,23 +110,6 @@ def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
         yield data
 
 
-def try_square(x_sq_sum, x_sum, num_sqrt):
-    """Tries to square the sum and something
-
-    Fixme: Comment this properly
-
-    :param x_sq_sum:
-    :param x_sum:
-    :param num_sqrt:
-    :return:
-    """
-    try:
-        s_xx = x_sq_sum - ((x_sum / num_sqrt) ** 2)
-    except ZeroDivisionError:
-        s_xx = x_sq_sum - ((x_sum / tools.APPROX_ZERO) ** 2)
-    return s_xx
-
-
 def generic_regression_coefficients(
         f_a, f_b, x_sum, y_sum, xy_sum, x_sq_sum, pts_num, num_sqrt, **_):
     """The generic function for coefficients computation.
@@ -177,22 +160,11 @@ def generic_regression_coefficients(
     :returns dict: data dictionary with coefficients and intermediate results
     """
     # Compute the coefficients
-    try:
-        s_xy = xy_sum - (x_sum / num_sqrt) * (y_sum / num_sqrt)
-    except ZeroDivisionError:
-        s_xy = xy_sum - (x_sum / tools.APPROX_ZERO) * (y_sum / tools.APPROX_ZERO)
+    s_xy = xy_sum - tools.safe_division(x_sum, num_sqrt) * tools.safe_division(y_sum, num_sqrt)
+    s_xx = x_sq_sum - (tools.safe_division(x_sum, num_sqrt) ** 2)
 
-    s_xx = try_square(x_sq_sum, x_sum, num_sqrt)
-
-    try:
-        b1 = s_xy / s_xx
-    except ZeroDivisionError:
-        b1 = s_xy / tools.APPROX_ZERO
-
-    try:
-        b0 = (y_sum - b1 * x_sum) / pts_num
-    except ZeroDivisionError:
-        b0 = (y_sum - b1 * x_sum) / tools.APPROX_ZERO
+    b1 = tools.safe_division(s_xy, s_xx)
+    b0 = tools.safe_division(y_sum - b1 * x_sum, pts_num)
 
     # Apply the modification functions on the coefficients and save them
     data = dict(coeffs=[f_a(b0), f_b(b1)], s_xy=s_xy, s_xx=s_xx)
@@ -229,21 +201,13 @@ def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
     :returns dict: data dictionary with error value, tss and rss results
     """
     # Compute the TSS
-    tss = try_square(y_sq_sum, y_sum, num_sqrt)
+    tss = y_sq_sum - (tools.safe_division(y_sum, num_sqrt) ** 2)
 
     # Compute the RSS
-    try:
-        rss = (s_xy / sqrt(s_xx)) ** 2
-    except (ZeroDivisionError, ValueError):
-        # s_xx or square root of s_xx is zero, approximate
-        rss = (s_xy / tools.APPROX_ZERO) ** 2
+    rss = tools.safe_division(s_xy, sqrt(s_xx)) ** 2
 
     # Compute the r^2
-    try:
-        r_square = rss / tss
-    except ZeroDivisionError:
-        # Approximate 0 in TSS
-        r_square = rss / tools.APPROX_ZERO
+    r_square = tools.safe_division(rss, tss)
 
     # Save the data
     data = dict(rss=rss, tss=tss, r_square=r_square)

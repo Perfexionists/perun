@@ -72,13 +72,13 @@ def parse_allocation_location(trace):
     return {}
 
 
-def parse_resources(allocation):
+def parse_resources(allocation, workload):
     """ Parse resources of one allocation
 
     :param list allocation: list of raw allocation data
     :returns structure: formatted structure representing resources of one allocation
     """
-    data = {}
+    data = {'workload': workload}
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
@@ -115,7 +115,7 @@ def parse_resources(allocation):
     return data
 
 
-def parse_log(filename, cmd, snapshots_interval):
+def parse_log(filename, cmd, snapshots_interval, workload):
     """ Parse raw data in the log file
 
     :param string filename: name of the log file
@@ -182,13 +182,10 @@ def parse_log(filename, cmd, snapshots_interval):
 
         # using parse_resources()
         # parsing resources,
-        data['resources'].append(parse_resources(allocation))
+        data['resources'].append(parse_resources(allocation, workload))
 
     if data:
         snapshots.append(data)
-
-    # WTF IS THIS?
-    #glob[0].update({'resources': [snapshots[-1]['resources'][-1]]})
 
     return {'snapshots': snapshots, 'global': {'resources': []}}
 
