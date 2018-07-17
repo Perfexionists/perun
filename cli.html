@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.15 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.15.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15',
+        VERSION:     '0.15.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -39,6 +39,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="module-perun.cli">
@@ -451,10 +453,19 @@ in <code class="docutils literal"><span class="pre">.perun/objects</span></code>
 <p>If no <cite>&lt;hash&gt;</cite> is specified, then current <code class="docutils literal"><span class="pre">HEAD</span></code> of the wrapped version
 control system is used instead. Massaging of &lt;hash&gt; is taken care of by
 underlying version control system (e.g. git uses <code class="docutils literal"><span class="pre">git</span> <span class="pre">rev-parse</span></code>).</p>
-<p>&lt;profile&gt; can either be a <code class="docutils literal"><span class="pre">pending</span> <span class="pre">tag</span></code> or a fullpath. <code class="docutils literal"><span class="pre">Pending</span> <span class="pre">tags</span></code>
-are in form of <code class="docutils literal"><span class="pre">i&#64;p</span></code>, where <code class="docutils literal"><span class="pre">i</span></code> stands for an index in the pending
-profile directory (i.e. <code class="docutils literal"><span class="pre">.perun/jobs</span></code>) and <code class="docutils literal"><span class="pre">&#64;p</span></code> is literal suffix.
-Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> to see the <cite>tag</cite> anotation of pending profiles.</p>
+<p>&lt;profile&gt; can either be a <code class="docutils literal"><span class="pre">pending</span> <span class="pre">tag</span></code>, <code class="docutils literal"><span class="pre">pending</span> <span class="pre">tag</span> <span class="pre">range</span></code> or a
+fullpath. <code class="docutils literal"><span class="pre">Pending</span> <span class="pre">tags</span></code> are in form of <code class="docutils literal"><span class="pre">i&#64;p</span></code>, where <code class="docutils literal"><span class="pre">i</span></code> stands
+for an index in the pending profile directory (i.e. <code class="docutils literal"><span class="pre">.perun/jobs</span></code>)
+and <code class="docutils literal"><span class="pre">&#64;p</span></code> is literal suffix.  The <code class="docutils literal"><span class="pre">pending</span> <span class="pre">tag</span> <span class="pre">range</span></code> is in form
+of <code class="docutils literal"><span class="pre">i&#64;p-j&#64;p</span></code>, where both <code class="docutils literal"><span class="pre">i</span></code> and <code class="docutils literal"><span class="pre">j</span></code> stands for indexes in the
+pending profiles. The <code class="docutils literal"><span class="pre">pending</span> <span class="pre">tag</span> <span class="pre">range</span></code> then represents all of
+the profiles in the interval &lt;i, j&gt;. When <code class="docutils literal"><span class="pre">i</span> <span class="pre">&gt;</span> <span class="pre">j</span></code>, then no profiles
+will be add; when <code class="docutils literal"><span class="pre">j</span></code>; when <code class="docutils literal"><span class="pre">j</span></code> is bigger than the number of
+pending profiles, then all of the non-existing pending profiles will
+be obviously skipped.
+Run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code> to see the <cite>tag</cite> anotation of pending profiles.
+Tags consider the sorted order as specified by the following option
+<a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
 <p>Example of adding profiles:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun add mybin-memory-input.txt-2017-03-01-16-11-04.perf
 </pre></div>
@@ -509,7 +520,15 @@ underlying version control system (e.g. git uses <code class="docutils literal">
 <p>&lt;profile&gt; can either be a <code class="docutils literal"><span class="pre">index</span> <span class="pre">tag</span></code> or a path specifying the profile.
 <code class="docutils literal"><span class="pre">Index</span> <span class="pre">tags</span></code> are in form of <code class="docutils literal"><span class="pre">i&#64;i</span></code>, where <code class="docutils literal"><span class="pre">i</span></code> stands for an index in
 the minor version’s index and <code class="docutils literal"><span class="pre">&#64;i</span></code> is literal suffix. Run <code class="docutils literal"><span class="pre">perun</span>
-<span class="pre">status</span></code> to see the <cite>tags</cite> of current <code class="docutils literal"><span class="pre">HEAD</span></code>’s index.</p>
+<span class="pre">status</span></code> to see the <cite>tags</cite> of current <code class="docutils literal"><span class="pre">HEAD</span></code>’s index. The
+<code class="docutils literal"><span class="pre">index</span> <span class="pre">tag</span> <span class="pre">range</span></code> is in form of <code class="docutils literal"><span class="pre">i&#64;i-j&#64;i</span></code>, where both <code class="docutils literal"><span class="pre">i</span></code> and <code class="docutils literal"><span class="pre">j</span></code>
+stands for indexes in the minor version’s index. The <code class="docutils literal"><span class="pre">index</span> <span class="pre">tag</span> <span class="pre">range</span></code>
+then represents all of the profiles in the interval &lt;i, j&gt;. registered
+in index. When <code class="docutils literal"><span class="pre">i</span> <span class="pre">&gt;</span> <span class="pre">j</span></code>, then no profiles will be removed; when <code class="docutils literal"><span class="pre">j</span></code>;
+when <code class="docutils literal"><span class="pre">j</span></code> is bigger than the number of pending profiles, then all of
+the non-existing pending profiles will be obviously skipped.
+Tags consider the sorted order as specified by the following option
+<a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
 <p>Examples of removing profiles:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>$ perun rm <span class="m">2</span>@i
 </pre></div>
@@ -558,6 +577,10 @@ default using <code class="docutils literal"><span class="pre">less</span></code
 <p>An error is raised if the command is executed outside of range of any
 perun, or configuration misses certain configuration keys
 (namely <code class="docutils literal"><span class="pre">format.status</span></code>).</p>
+<p>Profiles (both registered in index and stored in pending directory) are sorted
+according to the <a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a>. The option <code class="docutils literal"><span class="pre">--sort-by</span></code>
+sets this key in the local configuration for further usage. This means that
+using the pending or index tags will consider this order.</p>
 <p>Refer to <a class="reference internal" href="logs.html#logs-status"><span class="std std-ref">Customizing Statuses</span></a> for information how to customize the outputs of
 <code class="docutils literal"><span class="pre">status</span></code> or how to set <a class="reference internal" href="config.html#confkey-format.status"><code class="xref std std-ckey docutils literal"><span class="pre">format.status</span></code></a> in nearest
 configuration.</p>
@@ -574,7 +597,7 @@ configuration.</p>
 <dl class="option">
 <dt id="cmdoption-perun-status-sb">
 <code class="descname">-sb</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--sort-by</code><code class="descclassname"> &lt;format__sort_profiles_by&gt;</code><a class="headerlink" href="#cmdoption-perun-status-sb" title="Permalink to this definition">¶</a></dt>
-<dd><p>The stored and pending profiles will be sorted by &lt;key&gt;.</p>
+<dd><p>Sets the &lt;key&gt; in the local configuration for sorting profiles. Note that after setting the &lt;key&gt; it will be used for sorting which is considered in pending and index tags!</p>
 </dd></dl>
 
 </div>
@@ -971,14 +994,14 @@ more complex configuration consult either <code class="docutils literal"><span c
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-collect-c">
-<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crawl-parents</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-c" title="Permalink to this definition">¶</a></dt>
+<dt id="cmdoption-perun-collect-cp">
+<code class="descname">-cp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--crawl-parents</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-cp" title="Permalink to this definition">¶</a></dt>
 <dd><p>If set to true, then for each specified minor versions, profiles for parents will be collected as well</p>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-collect-cmd">
-<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cmd</code><code class="descclassname"> &lt;cmd&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-cmd" title="Permalink to this definition">¶</a></dt>
+<dt id="cmdoption-perun-collect-c">
+<code class="descname">-c</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--cmd</code><code class="descclassname"> &lt;cmd&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-c" title="Permalink to this definition">¶</a></dt>
 <dd><p>Command that is being profiled. Either corresponds to some script, binary or command, e.g. <code class="docutils literal"><span class="pre">./mybin</span></code> or <code class="docutils literal"><span class="pre">perun</span></code>.</p>
 </dd></dl>
 
@@ -1242,6 +1265,8 @@ there is a match, the found profile will be postprocessed.</li>
 is asked for confirmation by user.</li>
 </ol>
 </div></blockquote>
+<p>Tags consider the sorted order as specified by the following option
+<a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
 <p>For checking the associated <cite>tags</cite> to profiles run <code class="docutils literal"><span class="pre">perun</span> <span class="pre">status</span></code>.</p>
 <p>Example 1. The following command will postprocess the given profile
 stored at given path by normalizer, i.e. for each snapshot, the resources
@@ -1544,6 +1569,8 @@ there is a match, the found profile will be shown.</li>
 is asked for confirmation by user.</li>
 </ol>
 </div></blockquote>
+<p>Tags consider the sorted order as specified by the following option
+<a class="reference internal" href="config.html#confkey-format.sort_profiles_by"><code class="xref std std-ckey docutils literal"><span class="pre">format.sort_profiles_by</span></code></a>.</p>
 <p>Example 1. The following command will show the first profile registered at
 index of <code class="docutils literal"><span class="pre">HEAD~1</span></code> commit. The resulting graph will contain bars
 representing sum of amounts per each subtype of resources and will be shown
@@ -2088,6 +2115,7 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -2194,7 +2222,7 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/cli.rst.txt"

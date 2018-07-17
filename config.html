@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Configuration files &#8212; Perun 0.15 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.15.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15',
+        VERSION:     '0.15.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -39,6 +39,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="perun-configuration-files">
@@ -380,6 +382,35 @@ strategies.</p>
 </div>
 </dd></dl>
 
+<dl class="confkey">
+<dt id="confkey-generators.workload">
+<code class="descname">generators.workload</code><a class="headerlink" href="#confkey-generators.workload" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">[gathered]</span></code> Specifies generators of the workload. Each workload has to be specified by its
+<code class="docutils literal"><span class="pre">id</span></code> and <code class="docutils literal"><span class="pre">type</span></code>, which corresponds to the name of the generator (currently we support only
+Integer generator, that generates the range of values). Further you can specify rest of the
+params, where each workload generator has different parameters. The specification can be as
+follows:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">gen1</span>
+      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+      <span class="l l-Scalar l-Scalar-Plain">profile_for_each_workload</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">gen2</span>
+      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+      <span class="l l-Scalar l-Scalar-Plain">min_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="l l-Scalar l-Scalar-Plain">max_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+      <span class="l l-Scalar l-Scalar-Plain">step</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+</pre></div>
+</div>
+<p>This specifies two integer workload generators <code class="docutils literal"><span class="pre">gen1</span></code> and <code class="docutils literal"><span class="pre">gen2</span></code>. The first uses the
+default range, while the latter specifies the range 10, 20, …, 100. If
+<code class="docutils literal"><span class="pre">profile_for_each_workload</span></code> is set to true value (true, yes, etc.), then isolate profile will
+be generated for each collected workload. Otherwise the resulting profiles are merged into the
+one profile, and each resources has additional key called “workload”, that allows using
+<span class="xref std std-ref">_postprocessors-regression-analysis</span> of amount depending on the workload.</p>
+<p>For more details about supported generators refer to <a class="reference internal" href="jobs.html#jobs-workload-generators"><span class="std std-ref">List of Supported Workload Generators</span></a>.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-perun.logic.config_templates">
 <span id="predefined-configuration-templates"></span><span id="config-templates"></span><h2>Predefined Configuration Templates<a class="headerlink" href="#module-perun.logic.config_templates" title="Permalink to this headline">¶</a></h2>
@@ -645,6 +676,7 @@ specified in the nearest perun configuration..</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -704,7 +736,7 @@ specified in the nearest perun configuration..</p>
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/config.rst.txt"

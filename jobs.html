@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Automating Runs &#8212; Perun 0.15 documentation</title>
+    <title>Automating Runs &#8212; Perun 0.15.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15',
+        VERSION:     '0.15.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -39,6 +39,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="automating-runs">
@@ -362,6 +364,10 @@ and supplied files.</p>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">&lt;&lt; &quot;Hello world!&quot;</span>
 </pre></div>
 </div>
+<p>From version 15.1. you can use the workload generators instead. See
+<a class="reference internal" href="#jobs-workload-generators"><span class="std std-ref">List of Supported Workload Generators</span></a> for more information about supported workload generators and
+<a class="reference internal" href="config.html#confkey-generators.workload"><code class="xref std std-ckey docutils literal"><span class="pre">generators.workload</span></code></a> for more information how to specify the workload generators in the
+configuration files.</p>
 </dd></dl>
 
 <dl class="matrixunit">
@@ -399,10 +405,139 @@ than just once. For list of supported postprocessors refer to <a class="referenc
 </dd></dl>
 
 </div>
+<div class="section" id="module-perun.workload">
+<span id="list-of-supported-workload-generators"></span><span id="jobs-workload-generators"></span><h2>List of Supported Workload Generators<a class="headerlink" href="#module-perun.workload" title="Permalink to this headline">¶</a></h2>
+<p>From version 0.15.1, Perun supports the specification of workload generators, instead of raw
+workload values specified in <a class="reference internal" href="#matrixunit-workloads"><code class="xref std std-munit docutils literal"><span class="pre">workloads</span></code></a>. These generators continuously generates workloads
+and internally Perun either merges the resources into one single profile or gradually generates
+profile for each workload.</p>
+<p>The generators are specified by <a class="reference internal" href="config.html#confkey-generators.workload"><code class="xref std std-ckey docutils literal"><span class="pre">generators.workload</span></code></a> section. These specifications are
+collected through all of the configurations in the hierarchy.</p>
+<p>You can use some basic generators specified in shared configurations called <code class="docutils literal"><span class="pre">basic_strings</span></code>
+(which generates strings of lengths from interval (8, 128) with increment of 8), <code class="docutils literal"><span class="pre">basic_integers</span></code>
+(which generates integers from interval (100, 10000), with increment of 200) or <code class="docutils literal"><span class="pre">basic_files</span></code>
+(which generates text files with number of lines from interval (10, 10000), with increment of
+1000).</p>
+<div class="section" id="module-perun.workload.generator">
+<span id="generic-settings"></span><h3>Generic settings<a class="headerlink" href="#module-perun.workload.generator" title="Permalink to this headline">¶</a></h3>
+<p>All generators can be configured using the following generic settings:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">profile_for_each_workload</span></code>: by default this option is set to false, and then when one uses
+the generator to generate the workload, the collected resources will be merged into one single
+profile. If otherwise this option is set to true value (true, 1, yes, etc.) then Perun will
+generate profile for each of the generated workload.</li>
+</ul>
+</div>
+<div class="section" id="module-perun.workload.singleton_generator">
+<span id="singleton-generator"></span><h3>Singleton Generator<a class="headerlink" href="#module-perun.workload.singleton_generator" title="Permalink to this headline">¶</a></h3>
+<p>Singleton Generator generates only one single value. This generator corresponds to the default
+behaviour of Perun, i.e. when each specified workload in <a class="reference internal" href="#matrixunit-workloads"><code class="xref std std-munit docutils literal"><span class="pre">workloads</span></code></a> was passed to profiled
+program as string.</p>
+<p>Currently be default, any string specified in <a class="reference internal" href="#matrixunit-workloads"><code class="xref std std-munit docutils literal"><span class="pre">workloads</span></code></a>, that does not correspond to some
+generator specified in <a class="reference internal" href="config.html#confkey-generators.workload"><code class="xref std std-ckey docutils literal"><span class="pre">generators.workload</span></code></a>, is converted to Singleton Generator.</p>
+<p>The Singleton Generator can be configured by following options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">value</span></code>: singleton value that is passed as workload.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="module-perun.workload.integer_generator">
+<span id="integer-generator"></span><h3>Integer Generator<a class="headerlink" href="#module-perun.workload.integer_generator" title="Permalink to this headline">¶</a></h3>
+<p>Integer Generator generates the range of the integers.</p>
+<p>The Integer Generator starts from the <code class="docutils literal"><span class="pre">min_range</span></code> workload, and continuously increments this
+value by <code class="docutils literal"><span class="pre">step</span></code> (by default equal to 1) until it reaches max_range (including).</p>
+<p>The following shows the example of integer generator, which continuously generates workloads
+10, 20, …, 90, 100:</p>
+<blockquote>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer_generator</span>
+      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+      <span class="l l-Scalar l-Scalar-Plain">min_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="l l-Scalar l-Scalar-Plain">max_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+      <span class="l l-Scalar l-Scalar-Plain">step</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The Integer Generator can be configured by following options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">min_range</span></code>: the minimal integer value that shall be generated.</li>
+<li><code class="docutils literal"><span class="pre">max_range</span></code>: the maximal integer value that shall be generated.</li>
+<li><code class="docutils literal"><span class="pre">step</span></code>: the step (or increment) of the range.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="module-perun.workload.string_generator">
+<span id="string-generator"></span><h3>String Generator<a class="headerlink" href="#module-perun.workload.string_generator" title="Permalink to this headline">¶</a></h3>
+<p>String Generator generates strings of changing length.</p>
+<p>The String Generators starts generating random strings starting from the <code class="docutils literal"><span class="pre">min_len</span></code>, and
+continuously increments this length by <code class="docutils literal"><span class="pre">step_len</span></code> (by default equal to 1), until it reaches
+the <code class="docutils literal"><span class="pre">max_len</span></code> (including).</p>
+<p>The following shows the example of integer generator, which continuously generates workload strings
+of length 1, 2, …, 9, 10:</p>
+<blockquote>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string_generator</span>
+      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+      <span class="l l-Scalar l-Scalar-Plain">min_len</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+      <span class="l l-Scalar l-Scalar-Plain">max_len</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="l l-Scalar l-Scalar-Plain">step_len</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The String Generator can be configured by following options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">min_len</span></code>: the minimal length of the string that shall be generated.</li>
+<li><code class="docutils literal"><span class="pre">max_len</span></code>: the maximal length of the string that shall be generated.</li>
+<li><code class="docutils literal"><span class="pre">step_len</span></code>: the step (or increment) of the lengths.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="module-perun.workload.textfile_generator">
+<span id="text-file-generator"></span><h3>Text File Generator<a class="headerlink" href="#module-perun.workload.textfile_generator" title="Permalink to this headline">¶</a></h3>
+<p>Text File Generator generates the range of random files.</p>
+<p>The TextFile Generator generates files with random contents (lorem ipsum) starting from
+<code class="docutils literal"><span class="pre">min_lines</span></code>, and continuously increments this value by <code class="docutils literal"><span class="pre">step</span></code> until the number of lines in
+the generated file reaches <code class="docutils literal"><span class="pre">max_lines</span></code>. Each row will then either have maximal length of
+<code class="docutils literal"><span class="pre">max_chars</span></code> (if <code class="docutils literal"><span class="pre">randomize_rows</span></code> is set to false value), otherwise the length is randomized
+from the interval (<code class="docutils literal"><span class="pre">min_lines</span></code>, <code class="docutils literal"><span class="pre">max_lines</span></code>).</p>
+<p>The following shows the example of integer generator, which continuously generates workloads
+10, 20, …, 90, 100:</p>
+<blockquote>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
+  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">textfile_generator</span>
+      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">textfile</span>
+      <span class="l l-Scalar l-Scalar-Plain">min_lines</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="l l-Scalar l-Scalar-Plain">max_lines</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+      <span class="l l-Scalar l-Scalar-Plain">step</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The TextFile Generator can be configured by following options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">min_lines</span></code>: the minimal number of lines in the file that shall be generated.</li>
+<li><code class="docutils literal"><span class="pre">max_lines</span></code>: the maximal number of lines in the file that shall be generated.</li>
+<li><code class="docutils literal"><span class="pre">step</span></code>: the step (or increment) of the range. By default set to 1.</li>
+<li><code class="docutils literal"><span class="pre">min_chars</span></code>: the minimal number of characters on one line. By default set to 5.</li>
+<li><code class="docutils literal"><span class="pre">max_chars</span></code>: the maximal number of characters on one line. By default set to 80.</li>
+<li><code class="docutils literal"><span class="pre">randomize_rows</span></code>: by default set to True, the rows in the file have then randomized length
+from interval (<code class="docutils literal"><span class="pre">min_chars</span></code>, <code class="docutils literal"><span class="pre">max_chars</span></code>). Otherwise (if set to false), the lines will always
+be of maximal length (<code class="docutils literal"><span class="pre">max_chars</span></code>).</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -421,6 +556,14 @@ than just once. For list of supported postprocessors refer to <a class="referenc
 </li>
 <li><a class="reference internal" href="#overview-of-jobs">Overview of Jobs</a></li>
 <li><a class="reference internal" href="#job-matrix-format">Job Matrix Format</a></li>
+<li><a class="reference internal" href="#module-perun.workload">List of Supported Workload Generators</a><ul>
+<li><a class="reference internal" href="#module-perun.workload.generator">Generic settings</a></li>
+<li><a class="reference internal" href="#module-perun.workload.singleton_generator">Singleton Generator</a></li>
+<li><a class="reference internal" href="#module-perun.workload.integer_generator">Integer Generator</a></li>
+<li><a class="reference internal" href="#module-perun.workload.string_generator">String Generator</a></li>
+<li><a class="reference internal" href="#module-perun.workload.textfile_generator">Text File Generator</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -459,7 +602,7 @@ than just once. For list of supported postprocessors refer to <a class="referenc
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/jobs.rst.txt"

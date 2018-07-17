@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.15 documentation</title>
+    <title>Index &#8212; Perun 0.15.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15',
+        VERSION:     '0.15.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -38,6 +38,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
 
@@ -181,7 +183,7 @@
     -c, --cmd &lt;cmd&gt;
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-cmd">perun-collect command line option</a>
+        <li><a href="cli.html#cmdoption-perun-collect-c">perun-collect command line option</a>
 </li>
       </ul></li>
       <li>
@@ -209,8 +211,6 @@
     -c, --crawl-parents
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-c">perun-collect command line option</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-run-c">perun-run command line option</a>
 </li>
       </ul></li>
@@ -219,6 +219,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-run-job-cp">perun-run-job command line option</a>, <a href="jobs.html#cmdoption-perun-run-job-cp">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -cp, --crawl-parents
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-cp">perun-collect command line option</a>
 </li>
       </ul></li>
       <li>
@@ -822,6 +829,8 @@
 </li>
         <li><a href="config.html#confkey-general.paging">general.paging</a>
 </li>
+        <li><a href="config.html#confkey-generators.workload">generators.workload</a>
+</li>
         <li><a href="config.html#confkey-profiles.register_after_run">profiles.register_after_run</a>
 </li>
         <li><a href="config.html#confkey-vcs.type">vcs.type</a>
@@ -988,13 +997,20 @@
         <li><a href="config.html#confkey-general.editor">configuration key</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     general.paging
 
       <ul>
         <li><a href="config.html#confkey-general.paging">configuration key</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    generators.workload
+
+      <ul>
+        <li><a href="config.html#confkey-generators.workload">configuration key</a>
 </li>
       </ul></li>
       <li><a href="internals.html#perun.vcs.get_head_major_version">get_head_major_version() (in module perun.vcs)</a>
@@ -1194,9 +1210,9 @@
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-a">-a, --args &lt;args&gt;</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-cmd">-c, --cmd &lt;cmd&gt;</a>
+        <li><a href="cli.html#cmdoption-perun-collect-c">-c, --cmd &lt;cmd&gt;</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-c">-c, --crawl-parents</a>
+        <li><a href="cli.html#cmdoption-perun-collect-cp">-cp, --crawl-parents</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-m">-m, --minor-version &lt;minor_version_list&gt;</a>
 </li>
@@ -1355,8 +1371,6 @@
         <li><a href="cli.html#cmdoption-perun-rm-arg-profile">&lt;profile&gt;</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-run command line option
 
@@ -1370,6 +1384,8 @@
         <li><a href="cli.html#cmdoption-perun-run-ot">-ot, --output-filename-template &lt;output_filename_template&gt;</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-run-job command line option
 
@@ -1567,6 +1583,18 @@
 </li>
       <li><a href="views.html#module-perun.view.scatter">perun.view.scatter (module)</a>
 </li>
+      <li><a href="jobs.html#module-perun.workload">perun.workload (module)</a>
+</li>
+      <li><a href="jobs.html#module-perun.workload.generator">perun.workload.generator (module)</a>
+</li>
+      <li><a href="jobs.html#module-perun.workload.integer_generator">perun.workload.integer_generator (module)</a>
+</li>
+      <li><a href="jobs.html#module-perun.workload.singleton_generator">perun.workload.singleton_generator (module)</a>
+</li>
+      <li><a href="jobs.html#module-perun.workload.string_generator">perun.workload.string_generator (module)</a>
+</li>
+      <li><a href="jobs.html#module-perun.workload.textfile_generator">perun.workload.textfile_generator (module)</a>
+</li>
       <li><a href="profile.html#perun.profile.convert.plot_data_from_coefficients_of">plot_data_from_coefficients_of() (in module perun.profile.convert)</a>
 </li>
       <li>
@@ -1746,6 +1774,7 @@
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -1779,7 +1808,7 @@
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>
 
