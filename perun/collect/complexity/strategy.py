@@ -4,11 +4,14 @@
     does not have to specify every detail for each collection. The strategies focus on
     userspace / everything collection with sampling / no sampling etc.
 
-    The assemble_script method serves as a interface which handles specifics of each strategy.
+    Using the strategies, one can automatically extract collection configuration from target
+    executable(s) and / or postprocess the configuration (such as remove duplicate rules,
+    pair static rules, merge the sampled / non-sampled rules etc.)
+
+    extract_configuration serves as a recommended module interface
 """
 
 import collections
-import os
 
 import perun.utils.exceptions as exceptions
 
@@ -47,14 +50,23 @@ def custom_strategy(func, func_sampled, static, static_sampled, dynamic, dynamic
     """The custom strategy implementation. There are no defaults and only the parameters
     specified by the user are used for collection.
 
-    :param list rules: the list of rules / functions used for tracing probes
-    :param list of dict sampling: list of sampling specifications as dictionaries
-    :param str cmd: the tracing target executable / process
-    :param int global_sampling: the sampling value set globally for every rule
+    The output dictionary is updated as follows:
+     - func, static, dynamic: contains prepared rules for profiling with unified sampling specification
+       - the rules are stored as lists of dictionaries with keys 'name', 'sample' and optionally 'pair' for
+         rules that can be paired (such as static or dynamic rules)
 
-    :returns: str -- the script code
+    :param list func: the list of function names that will be traced
+    :param list func_sampled: the list of function names with specified sampling
+    :param list static: the list of static probes that will be traced
+    :param list static_sampled: the list of static probes with specified sampling
+    :param list dynamic: the list of dynamic probes that will be traced
+    :param list dynamic_sampled: the list of dynamic probes with specified sampling
+    :param kwargs: additional configuration parameters
+
+    :returns kwargs: the updated dictionary with post processed rules
     """
 
+    # Remove duplicate rules, merge sampled / non-sampled rule lists and optionally pair the rules
     kwargs['func'] = _remove_duplicate_probes(_merge_probes_lists(
         func, func_sampled, kwargs['global_sampling']))
     kwargs['static'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
@@ -67,6 +79,14 @@ def custom_strategy(func, func_sampled, static, static_sampled, dynamic, dynamic
 
 
 def _pair_rules(probes):
+    """Pairs the rules according to convention:
+     - rule names with '#' serving as a delimiter between two probes, which should be paired as a starting and
+       ending probe
+     - rules with <name>_end or <name>_END are paired with corresponding <name> probes
+
+     :param list probes: the list of probes (as dicts) that should be paired
+     :returns list: probe dictionaries with optionally added 'pair' key containing paired probe name
+    """
     result = []
     for probe in probes:
         # Split the probe definition into pair or probes
@@ -89,6 +109,13 @@ def _pair_rules(probes):
 
 
 def _merge_probes_lists(probes, probes_sampled, global_sampling):
+    """Merges the probe lists without and with specified sampling into one list with unified sampling specification
+
+    :param list probes: list of strings that represent probe names
+    :param list probes_sampled: list of tuples that contain 0) probe name, 1) probe sampling
+    :param global_sampling: the global sampling value that is applied to all probes without sampling
+    :return list: list of probes in unified format (dictionaries with 'name' and 'sample' keys)
+    """
     # Add global sampling (default 0) to the probes without sampling specification
     probes = [{'name': probe, 'sample': global_sampling} for probe in probes]
 
@@ -104,6 +131,14 @@ def _merge_probes_lists(probes, probes_sampled, global_sampling):
 # TODO: allow the probe to be used in multiple pairs e.g. TEST+TEST_END, TEST+TEST_END2, requires modification of
 # the script generator
 def _remove_duplicate_probes(probes):
+    """Removes duplicate rules / probes using following technique:
+     1) probes are classified into paired, paired with sampling, single and single with sampling
+     2) sampled rules across paired and single rules are prioritized
+     3) paired rules are prioritized over single rules
+
+    :param list probes: the list of probes as a dictionaries
+    :return list: the list of unique probes
+    """
     # Classify the rules into paired, paired with sampling, single and single with sampling
     paired, paired_sampled, single, single_sampled = [], [], [], []
     for probe in probes:
@@ -151,4 +186,3 @@ _STRATEGIES = collections.OrderedDict([
     ('a_sampled', _not_implemented),
     ('custom', custom_strategy)
 ])
-

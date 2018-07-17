@@ -5,12 +5,7 @@ Specifies before, collect and after functions to perform the initialization,
 collection and postprocessing of collection data.
 """
 
-import collections
-import os
-import sys
-import subprocess
-import shutil
-import shlex
+from subprocess import CalledProcessError
 import time
 
 import click
@@ -24,8 +19,11 @@ import perun.utils as utils
 
 from perun.utils.helpers import CollectStatus
 
-# The profiling record template
-_ProfileRecord = collections.namedtuple('record', ['offset', 'func', 'timestamp'])
+
+# The collector subtypes
+_COLLECTOR_SUBTYPES = {
+    'delta': 'time delta'
+}
 
 
 # The converter for collector statuses
@@ -37,10 +35,6 @@ _COLLECTOR_STATUS = {
     systemtap.Status.EXCEPT: (CollectStatus.ERROR, '')  # The msg should be set by the exception
 }
 
-# The collector subtypes
-_COLLECTOR_SUBTYPES = {
-    'delta': 'time delta'
-}
 
 # The time conversion constant
 _MICRO_TO_SECONDS = 1000000.0
@@ -49,10 +43,16 @@ _MICRO_TO_SECONDS = 1000000.0
 def before(cmd, **kwargs):
     """ Assembles the SystemTap script according to input parameters and collection strategy
 
+    The output dictionary is updated with:
+     - timestamp: current timestamp that is used for saved files
+     - cmd, cmd_dir, cmd_base: absolute path to the command, its directory and the command base name
+     - script: path to the generated script file
+
+    :param string cmd: the profiled command
     :param kwargs: dictionary containing the configuration settings for the collector
     :returns: tuple (int as a status code, nonzero values for errors,
                     string as a status message, mainly for error states,
-                    dict of modified kwargs with 'script' value as a path to the script file)
+                    dict of kwargs and new values)
     """
     try:
         print('Starting the pre-processing phase... ', end='')
@@ -60,6 +60,7 @@ def before(cmd, **kwargs):
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(cmd)
 
+        # Extract and / or post process the collect configuration
         kwargs = strategy.extract_configuration(**kwargs)
 
         # Assemble script according to the parameters
@@ -67,20 +68,23 @@ def before(cmd, **kwargs):
 
         print('Done.\n')
         return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
-    # The "expected" exception types
-    except (OSError, ValueError, subprocess.CalledProcessError,
+
+    except (OSError, ValueError, CalledProcessError,
             UnicodeError, exceptions.StrategyNotImplemented) as exception:
         print('Failed.\n')
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT][0], str(exception), dict(kwargs)
 
 
 def collect(**kwargs):
-    """ Runs the created SystemTap script on the input executable
+    """ Runs the created SystemTap script and the profiled command
+
+    The output dictionary is updated with:
+     - output: path to the collector output file
 
     :param dict kwargs: dictionary containing the configuration settings for the collector
     :returns: (int as a status code, nonzero values for errors,
               string as a status message, mainly for error states,
-              dict of modified kwargs with 'output' value representing the trace records)
+              dict of kwargs and new values)
     """
     print('Running the collector, progress output stored in collect_log_{0}.txt\n'
           'This may take a while... '.format(kwargs['timestamp']))
@@ -92,21 +96,23 @@ def collect(**kwargs):
         else:
             print('Collection failed.\n')
         return _COLLECTOR_STATUS[code][0], _COLLECTOR_STATUS[code][1], dict(kwargs)
-    except (OSError, subprocess.CalledProcessError) as exception:
+
+    except (OSError, CalledProcessError) as exception:
         print('Collection failed.\n')
         return CollectStatus.ERROR, str(exception), dict(kwargs)
-    # return CollectStatus.OK, 'Ok', dict(kwargs)
 
 
 def after(**kwargs):
     """ Handles the complexity collector output and transforms it into resources
 
+    The output dictionary is updated with:
+     - profile: the performance profile contents created from the collector output
+
     :param kwargs: dictionary containing the configuration settings for the collector
     :returns: tuple (int as a status code, nonzero values for errors,
                     string as a status message, mainly for error states,
-                    dict of modified kwargs with 'profile' containing the processed trace)
+                    dict of kwargs and new values)
     """
-
     print('Starting the post-processing phase... ', end='')
 
     # Get the trace log path
@@ -121,83 +127,11 @@ def after(**kwargs):
             }
         }
         print('Done.\n')
-
         return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
-    except (subprocess.CalledProcessError, exceptions.TraceStackException) as exception:
+
+    except (CalledProcessError, exceptions.TraceStackException) as exception:
         print('Failed.\n')
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT], str(exception), dict(kwargs)
-
-
-def _call_stap(**kwargs):
-    """Wrapper for SystemTap call and execution
-
-    :param kwargs: complexity collector configuration parameters
-    :returns: tuple (int code value - nonzero for errors, path to the SystemTap output)
-    """
-    # Resolve the system tap path
-    stap = shutil.which('stap')
-    if not stap:
-        return stap.Status.STAP_DEP, ''
-
-    script_path, script_dir, _ = utils.get_path_dir_file(kwargs['script'])
-    # Create the output file and collection log
-    output = script_dir + kwargs['cmd_base'] + '_stap_record.txt'
-    with open(script_dir + kwargs['cmd_base'] + '_stap.log', 'w') as log:
-        # Start the collector
-        stap = shlex.split(
-            'sudo {0} -v {1} -o {2} -c {3}'.format(shlex.quote(stap), shlex.quote(script_path),
-                                                   shlex.quote(output), shlex.quote(kwargs['cmd'])))
-        stap_runner = subprocess.Popen(stap, cwd=script_dir, stderr=log, shell=False)
-        stap_runner.communicate()
-    return stap.Status(int(stap_runner.returncode != 0)), output  # code 0 = False = .OK
-
-
-def _process_file_record(record, call_stack, resources, sequences):
-    """ Processes the next profile record and tries to pair it with stack record if possible
-
-    :param namedtuple record: the _ProfileRecord tuple containing the record data
-    :param list call_stack: the call stack with file records
-    :param list resources: the list of resource dictionaries
-    :param dict sequences: stores the sequence counter for every function
-    :returns: int -- status code, nonzero values for errors
-    """
-    if record.func:
-        # Function entry, add to stack and note the sequence number
-        call_stack.append(record)
-        if record.func in sequences:
-            sequences[record.func] += 1
-        else:
-            sequences[record.func] = 0
-        return 0
-    elif call_stack and record.offset == call_stack[-1].offset - 1:
-        # Function exit, match with the function enter to create resources record
-        matching_record = call_stack.pop()
-        resources.append({'amount': int(record.timestamp) - int(matching_record.timestamp),
-                          'uid': matching_record.func,
-                          'type': 'mixed',
-                          'subtype': 'time delta',
-                          'structure-unit-size': sequences[matching_record.func]})
-        return 0
-    else:
-        return 1
-
-
-def _parse_record(line):
-    """ Parses line into record tuple consisting of call stack offset, function name and timestamp.
-
-    :param str line: one line from the trace output
-    :returns: namedtuple -- the _ProfileRecord tuple
-    """
-
-    # Split the line into timestamp : offset func
-    parts = line.partition(':')
-    # Parse the timestamp
-    time = parts[0].split()[0]
-    # Parse the offset and function name
-    right_section = parts[2].rstrip('\n')
-    func = right_section.lstrip(' ')
-    offset = len(right_section) - len(func)
-    return _ProfileRecord(offset, func, time)
 
 
 def _validate_gsamp(ctx, param, global_sampling):
@@ -281,6 +215,21 @@ def complexity(ctx, **kwargs):
 
     Note that manually specified parameters have higher priority than strategy specification
     and it is thus possible to override concrete rules / sampling by the user.
+
+    The collector interface operates with two seemingly same concepts: (external) command and binary.
+    External command refers to the script, executable, makefile, etc. that will be called / invoked
+    during the profiling, such as 'make test', 'run_script.sh', './my_binary'.
+    Binary, on the other hand, refers to the actual binary or executable file that will be profiled
+    and contains specified functions / static probes etc. It is expected that the binary will be
+    invoked / called as part of the external command script or that external command and binary are
+    the same.
+
+    The interface for rules (functions, static probes) specification offers a way to specify profiled
+    locations both with sampling or without it. Note that sampling can reduce the overhead imposed by
+    the profiling. Static rules can be further paired - paired rules act as a start and end point for
+    time measurement. Without a pair, the rule measures time between each two probe hits. The pairing
+    is done automatically for static locations with convention <name> and <name>_end or <name>_END.
+    Otherwise, it is possible to pair rules by the delimiter '#', such as <name1>#<name2>.
 
     Complexity profiles are suitable for postprocessing by
     :ref:`postprocessors-regression-analysis` since they capture dependency of
