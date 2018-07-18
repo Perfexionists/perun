@@ -1,22 +1,11 @@
-     0 tst(14535): main
-    25 tst(14535):  func
-    35 tst(14535): 
-    40 tst(14535):  func
-    48 tst(14535): 
-    52 tst(14535):  func
-    60 tst(14535): 
-    65 tst(14535):  func
-    72 tst(14535): 
-    77 tst(14535):  func
-    85 tst(14535): 
-    89 tst(14535):  func
-    97 tst(14535): 
-   102 tst(14535):  func
-   110 tst(14535): 
-   115 tst(14535):  func
-   122 tst(14535): 
-   127 tst(14535):  func
-   135 tst(14535): 
-   139 tst(14535):  func
-   147 tst(14535): 
-   152 tst(14535):
+0      0 quicksort(6873): main
+3     55 quicksort(6873): BEFORE_CYCLE
+0     60 quicksort(6873):  _Z12QuickSortBadPii
+1     65 quicksort(6873): 
+0     75 quicksort(6873):  _Z12QuickSortBadPii
+1     81 quicksort(6873): 
+0     91 quicksort(6873):  _Z12QuickSortBadPii
+1     97 quicksort(6873): 
+4    107 quicksort(6873): BEFORE_CYCLE_end
+1    111 quicksort(6873):
+end

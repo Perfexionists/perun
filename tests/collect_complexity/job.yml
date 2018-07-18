@@ -1,17 +1,9 @@
-rules:
-    - 'SLList_init'
-    - 'SLList_insert'
-    - 'SLList_search'
-    - 'SLList_destroy'
-    - 'SLListcls::SLListcls'
-    - 'SLListcls::~SLListcls'
-    - 'SLListcls::Insert'
-    - 'SLListcls::Search'
-
+binary: './tests/collect_complexity/tst'
+func:
+    - 'main'
+func_sampled:
+    - ['QuickSortBad', 2]
+static:
+    - 'BEFORE_CYCLE'
+    - 'BEFORE_CYCLE_end'
 method: 'custom'
-global_sampling: null
-sampling:
-    - func: 'SLList_insert'
-      sample: 1
-    - func: 'func1'
-      sample: 1

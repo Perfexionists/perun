@@ -1,0 +1,47 @@
+global samp_0[3]
+probe process("cmp").begin {
+	samp_0[0] = 1
+	samp_0[1] = 2
+	samp_0[2] = 3
+}
+
+probe process("cmp").function("main").call {
+	samp_0[0] ++
+	if(samp_0[0] == 2) {
+		printf("0 %s %s\n", thread_indent(1), probefunc())
+		samp_0[0] = 0
+	}
+}
+probe process("cmp").function("main").return {
+	if(samp_0[0] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").mark("BEFORE_CYCLE") {
+	samp_0[1] ++
+	if(samp_0[1] == 3) {
+		printf("3 %s BEFORE_CYCLE\n", thread_indent(0))
+		samp_0[1] = 0
+	}
+}
+probe process("cmp").mark("BEFORE_CYCLE_end") {
+	if(samp_0[1] == 0) {
+		printf("4 %s BEFORE_CYCLE_end\n", thread_indent(0))
+	}
+}
+
+probe process("cmp").mark("TEST_SINGLE") {
+	samp_0[2] ++
+	if(samp_0[2] == 4) {
+		printf("2 %s TEST_SINGLE\n", thread_indent(0))
+		samp_0[2] = 0
+	}
+}
+probe process("cmp").mark("TEST_SINGLE2") {
+	printf("2 %s TEST_SINGLE2\n", thread_indent(0))
+}
+
+probe process("cmp").end {
+	printf("end")
+}
