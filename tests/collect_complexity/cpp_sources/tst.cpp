@@ -7,14 +7,6 @@ const int SORT_ARR_LEN_INC = 5;
 
 
 int main() {
-    try
-    {
-        throw 20;
-    }
-    catch (int e)
-    {
-        std::cout << "An exception occurred. Exception Nr. " << e << std::endl;
-    }
     // Run bad quicksort on different scales with reverse sorted input
 	STAP_PROBE(PROV, BEFORE_CYCLE);
     for(int i = SORT_ARR_LEN_INC; i <= MAX_SORT_ARR_LEN; i += SORT_ARR_LEN_INC) {
