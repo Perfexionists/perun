@@ -699,7 +699,7 @@ def postprocessby(ctx, profile, **_):
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
               callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
-@click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
+@click.option('--crawl-parents', '-cp', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
                    ' will be collected as well')
 @click.option('--cmd', '-c', nargs=1, required=False, multiple=True, default=[''],

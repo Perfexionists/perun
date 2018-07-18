@@ -1,8 +1,12 @@
 """List of helper and globally used structures and named tuples"""
 
+import collections
+
 from enum import Enum
 
 __author__ = 'Tomas Fiedor'
+
+GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
 
 PerformanceChange = Enum(
     'PerformanceChange',

@@ -8,6 +8,7 @@ import perun.profile.query as query
 import perun.collect.complexity.systemtap as stap
 
 from perun.utils.helpers import Unit, Job
+from perun.workload.integer_generator import IntegerGenerator
 
 __author__ = 'Tomas Fiedor'
 
@@ -138,6 +139,16 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     _, prof = runner.run_collector(collector_unit, job)
 
     assert len(list(query.all_resources_of(prof))) == 0
+
+
+def test_collect_memory_with_generator(pcs_full, memory_collect_job):
+    """Tries to collect the memory with integer generators"""
+    cmd = memory_collect_job[0][0]
+    collector = Unit('memory', {})
+    integer_job = Job(collector, [], cmd, '', '')
+    integer_generator = IntegerGenerator(integer_job, 1, 3, 1)
+    memory_profiles = list(integer_generator.generate(runner.run_collector))
+    assert len(memory_profiles) == 1
 
 
 def test_collect_time(monkeypatch, helpers, pcs_full, capsys):

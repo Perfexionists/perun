@@ -6,10 +6,26 @@ HEAD
 
 **To be included in next release**
 
+0.15.1 (2018-07-17)
+-------------------
+
+`commit: f137abac6c428fc5e580dfa0fc9446c65ac30e4c`
+
+**Rehaul the notion of workloads**
+
   - refactor check modules
   - add ``pending tag range`` to ``perun add`` command to add more profiles at once
   - add ``index tag rage`` to ``perun rm`` command to remove more profiles at once
   - fix the issue with wrong sort order and tags (now :ckey:`format.sort_profiles_by` sets the option in local)
+  - add support for workload generators
+  - implement integer workload generator that generates workload from the integer interval
+  - implement singleton workload generator that generates single workload
+  - implement string workload generator that generates random strings
+  - implement file workload generator that generates random text files
+  - add :ckey:`generators.workload` for specification of workload generators in config
+  - remodel the notion of workloads to accept the workload generators to allow other style of workloads
+  - add two modes of workload generation (one that merges the profiles into one; and one which gradually generates profiles)
+  - add default workload generators to shared configuration
 
 0.15 (2018-06-20)
 -----------------
