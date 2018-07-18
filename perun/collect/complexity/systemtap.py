@@ -168,12 +168,13 @@ def _wait_for_fully_written(output):
             time.sleep(0.5)
 
 
-def trace_to_profile(output, static, **_):
+def trace_to_profile(output, static, **kwargs):
     """Transforms the collection output into the performance profile, where the collected time data are paired and
     stored as a resources.
 
     :param str output: name of the collection output file
     :param list static: the static probe specifications as a dictionaries
+    :param kwargs: additional parameters
     :return object: the generator object that produces dictionaries representing the resources
     """
     trace_stack = {'func': [], 'static': collections.defaultdict(list), 'dynamic': collections.defaultdict(list)}
@@ -195,6 +196,7 @@ def trace_to_profile(output, static, **_):
             # Process the record
             resource = _process_record(record, trace_stack, sequence_map, static)
             if resource:
+                resource['workload'] = kwargs.get('workload', "")
                 yield resource
 
 
