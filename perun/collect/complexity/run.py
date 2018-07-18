@@ -57,6 +57,7 @@ def before(cmd, **kwargs):
     try:
         print('Starting the pre-processing phase... ', end='')
 
+        kwargs = _validate_input(**kwargs)
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(cmd)
 
@@ -134,18 +135,22 @@ def after(**kwargs):
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT], str(exception), dict(kwargs)
 
 
-def _validate_gsamp(ctx, param, global_sampling):
-    """Global sampling cli option converter callback. Checks the global sampling value.
+def _validate_input(**kwargs):
+    """Validate the collector input parameters and transform them to expected format.
 
-    :param dict ctx: click context
-    :param object param: the parameter object
-    :param int global_sampling: the global sampling value
-    :returns: the checked global sampling value or None
+    :param kwargs: the collector input parameters
+    :return dict: validated and transformed input parameters
     """
-    if global_sampling <= 1:
-        return 0
-    else:
-        return global_sampling
+    kwargs['func'] = list(kwargs.get('func', ''))
+    kwargs['func_sampled'] = list(kwargs.get('func_sampled', ''))
+    kwargs['static'] = list(kwargs.get('static', ''))
+    kwargs['static_sampled'] = list(kwargs.get('static_sampled', ''))
+    kwargs['dynamic'] = list(kwargs.get('dynamic', ''))
+    kwargs['dynamic_sampled'] = list(kwargs.get('dynamic_sampled', ''))
+    kwargs['global_sampling'] = kwargs.get('global_sampling', 0)
+    if kwargs['global_sampling'] <= 1:
+        kwargs['global_sampling'] = 0
+    return kwargs
 
 
 # TODO: allow multiple executables to be specified
@@ -166,10 +171,10 @@ def _validate_gsamp(ctx, param, global_sampling):
               help='Set the probe point and sampling for the given static location.')
 @click.option('--dynamic-sampled', '-ds', type=(str, int), multiple=True,
               help='Set the probe point and sampling for the given dynamic location.')
-@click.option('--global-sampling', '-g', type=int, default=0, callback=_validate_gsamp,
+@click.option('--global-sampling', '-g', type=int, default=0,
               help='Set the global sample for all probes, sampling parameter for specific'
                    ' rules have higher priority.')
-@click.option('--binary', '-b', type=click.Path(exists=True),
+@click.option('--binary', '-b', type=click.Path(exists=True), required=True,
               help='The profiled executable')
 @click.pass_context
 def complexity(ctx, **kwargs):
