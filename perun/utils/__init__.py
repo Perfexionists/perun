@@ -207,14 +207,14 @@ def run_safely_list_of_commands(cmd_list):
             cprint(err.decode('utf-8'), 'red')
 
 
-def get_stdout_from_external_command(command, **kwargs):
+def get_stdout_from_external_command(command, stdin=None):
     """Runs external command with parameters, checks its output and provides its output.
 
     :param list command: list of arguments for command
-    :param kwargs: additional arguments for the subprocess invocation
+    :param handle stdin: the command input as a file handle
     :return: string representation of output of command
     """
-    output = subprocess.check_output([c for c in command if c is not ''], stderr=subprocess.STDOUT, **kwargs)
+    output = subprocess.check_output([c for c in command if c is not ''], stderr=subprocess.STDOUT, stdin=stdin)
     return output.decode('utf-8')
 
 

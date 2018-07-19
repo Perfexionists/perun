@@ -95,10 +95,7 @@ def _pair_rules(probes):
             probe['pair'] = probe['name'][delim + 1:]
             probe['name'] = probe['name'][:delim]
             result.append(probe)
-        elif probe['name'].endswith('_end') or probe['name'].endswith('_END'):
-            # Skip the end probes
-            continue
-        else:
+        elif not probe['name'].endswith('_end') and not probe['name'].endswith('_END'):
             # Find the pair probe automatically as <name>_end template
             pair = next((pair_probe for pair_probe in probes if (pair_probe['name'] == probe['name'] + '_end' or
                                                                  pair_probe['name'] == probe['name'] + '_END')), None)

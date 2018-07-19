@@ -6,4 +6,5 @@ func_sampled:
 static:
     - 'BEFORE_CYCLE'
     - 'BEFORE_CYCLE_end'
+    - 'INSIDE_CYCLE'
 method: 'custom'

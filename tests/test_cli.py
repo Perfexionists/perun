@@ -460,7 +460,6 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     result = runner.invoke(cli.collect, ['-c{}'.format(target),
                                          'complexity'] + func + func_sampled + static + binary)
 
-    print(result.output)
     assert result.exit_code == 0
 
     # Test running the job from the params using the job file
@@ -475,7 +474,6 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     result = runner.invoke(cli.collect, ['-c{}'.format(target),
                                          '-p\"global_sampling: 2\"',
                                          'complexity'] + func + func_sampled + static + binary)
-    print(result.output)
     assert result.exit_code == 0
 
     # Try different template
@@ -495,23 +493,20 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-f', 'main', '-f', 'main', '-fs',
                                          'main', 2, '-fs', 'main', 2, '-s', 'BEFORE_CYCLE', '-ss', 'BEFORE_CYCLE', 3,
                                          '-s', 'BEFORE_CYCLE_end', '-s', 'BEFORE_CYCLE#BEFORE_CYCLE_end',
-                                         '-ss', 'TEST_SINGLE', 4, '-s', 'TEST_SINGLE2'] + binary)
+                                         '-ss', 'TEST_SINGLE', 4, '-s', 'TEST_SINGLE2', '-fs', 'test', -3] + binary)
     assert result.exit_code == 0
 
     # Get all stap script in the directory and find the last one, which will be then analyzed for correctness
     scripts = glob.glob(os.path.join(script_dir, 'collect_script_*.stp'))
     # Find the newest script in the directory
     newest_script = scripts[0]
-    newest_timestamp = list(map(int, scripts[0][-23:-4].split('-')))  # Extract timestamp from the first script
+    newest_timestamp = int(''.join(scripts[0][-23:-4].split('-')))  # Extract timestamp from the first script
     for script in scripts:
         # Check every script file and find the biggest timestamp
-        timestamp = list(map(int, script[-23:-4].split('-')))
-        for idx, segment in enumerate(timestamp):
-            if segment < newest_timestamp[idx]:
-                break
-            elif segment > newest_timestamp[idx]:
-                newest_timestamp = timestamp
-                newest_script = script
+        timestamp = int(''.join(script[-23:-4].split('-')))
+        if timestamp >= newest_timestamp:
+            newest_timestamp = timestamp
+            newest_script = script
 
     # Replace the machine-specific path to the binary with some generic text to allow for comparison
     with open(newest_script, 'r') as script:

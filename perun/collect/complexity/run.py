@@ -16,6 +16,7 @@ import perun.collect.complexity.systemtap_script as stap_script
 import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
 import perun.utils as utils
+import perun.utils.log as log
 
 from perun.utils.helpers import CollectStatus
 
@@ -55,7 +56,7 @@ def before(cmd, **kwargs):
                     dict of kwargs and new values)
     """
     try:
-        print('Starting the pre-processing phase... ', end='')
+        log.cprint('Starting the pre-processing phase... ', 'white')
 
         kwargs = _validate_input(**kwargs)
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
@@ -67,12 +68,12 @@ def before(cmd, **kwargs):
         # Assemble script according to the parameters
         kwargs['script'] = stap_script.assemble_system_tap_script(**kwargs)
 
-        print('Done.\n')
+        log.done()
         return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
 
     except (OSError, ValueError, CalledProcessError,
             UnicodeError, exceptions.StrategyNotImplemented) as exception:
-        print('Failed.\n')
+        log.failed()
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT][0], str(exception), dict(kwargs)
 
 
@@ -87,19 +88,19 @@ def collect(**kwargs):
               string as a status message, mainly for error states,
               dict of kwargs and new values)
     """
-    print('Running the collector, progress output stored in collect_log_{0}.txt\n'
-          'This may take a while... '.format(kwargs['timestamp']))
+    log.cprint('Running the collector, progress output stored in collect_log_{0}.txt\n'
+               'This may take a while... '.format(kwargs['timestamp']), 'white')
     try:
         # Call the system tap
         code, kwargs['output'] = systemtap.systemtap_collect(**kwargs)
         if code == systemtap.Status.OK:
-            print('Collection done.\n')
+            log.done()
         else:
-            print('Collection failed.\n')
+            log.failed()
         return _COLLECTOR_STATUS[code][0], _COLLECTOR_STATUS[code][1], dict(kwargs)
 
     except (OSError, CalledProcessError) as exception:
-        print('Collection failed.\n')
+        log.failed()
         return CollectStatus.ERROR, str(exception), dict(kwargs)
 
 
@@ -114,7 +115,7 @@ def after(**kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs and new values)
     """
-    print('Starting the post-processing phase... ', end='')
+    log.cprint('Starting the post-processing phase... ', 'white')
 
     # Get the trace log path
     try:
@@ -127,11 +128,11 @@ def after(**kwargs):
                 'resources': resources
             }
         }
-        print('Done.\n')
+        log.done()
         return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
 
     except (CalledProcessError, exceptions.TraceStackException) as exception:
-        print('Failed.\n')
+        log.failed()
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT], str(exception), dict(kwargs)
 
 

@@ -17,6 +17,7 @@ from enum import IntEnum
 
 import perun.utils as utils
 import perun.utils.exceptions as exceptions
+import perun.utils.log as log
 from perun.collect.complexity.systemtap_script import RecordType
 
 
@@ -44,31 +45,31 @@ def systemtap_collect(script, cmd, args, **kwargs):
     """
     # Create the output and log file for collection
     output = os.path.join(kwargs['cmd_dir'], 'collect_record_{0}.txt'.format(kwargs['timestamp']))
-    log = os.path.join(kwargs['cmd_dir'], 'collect_log_{0}.txt'.format(kwargs['timestamp']))
+    collect_log = os.path.join(kwargs['cmd_dir'], 'collect_log_{0}.txt'.format(kwargs['timestamp']))
 
-    with open(log, 'w') as logfile:
+    with open(collect_log, 'w') as logfile:
         # Start the SystemTap process
-        print('Starting the SystemTap process... ', end='')
+        log.cprint('Starting the SystemTap process... ', 'white')
         stap_runner, code = start_systemtap_in_background(script, output, logfile, **kwargs)
         if code != Status.OK:
             return code, None
-        print('Done')
+        log.done()
 
         # Run the command that is supposed to be profiled
-        print('SystemTap up and running, execute the profiling target... ', end='')
+        log.cprint('SystemTap up and running, execute the profiling target... ', 'white')
         try:
             run_profiled_command(cmd, args)
         except CalledProcessError:
             # Critical error during profiled command, make sure we terminate the collector
             kill_systemtap_in_background(stap_runner)
             raise
-        print('Done')
+        log.done()
 
         # Terminate SystemTap process after the file was fully written
-        print('Data collection complete, terminating the SystemTap process... ', end='')
+        log.cprint('Data collection complete, terminating the SystemTap process... ', 'white')
         _wait_for_fully_written(output)
         kill_systemtap_in_background(stap_runner)
-        print('Done')
+        log.done()
         return Status.OK, output
 
 
@@ -188,7 +189,7 @@ def trace_to_profile(output, static, **kwargs):
 
         for line in trace.splitlines(keepends=True):
             # File ended
-            if line == 'end':
+            if line == 'end' or 'end\n':
                 return
 
             # Parse the line into the _TraceRecord tuple
@@ -209,7 +210,7 @@ def _demangle(trace):
     # Demangle the output if demangler is present
     demangler = shutil.which('c++filt')
     if demangler:
-        return utils.get_stdout_from_external_command([demangler], shell=False, stdin=trace)
+        return utils.get_stdout_from_external_command([demangler], stdin=trace)
     else:
         return trace
 
@@ -277,8 +278,9 @@ def _process_static_record(record, trace_stack, sequence_map, probes):
         # Static end probe, find the starting probe record
         name = None
         for probe in probes:
-            if probe['pair'] == record.name:
+            if 'pair' in probe and probe['pair'] == record.name:
                 name = probe['name']
+                break
         # The stack is empty
         if not trace_stack[name]:
             raise exceptions.TraceStackException(record, trace_stack[name])
@@ -307,14 +309,14 @@ def _parse_record(line):
     """
 
     # Split the line into = 'type' 'timestamp process' : 'offset' 'rule'
-    parts = line.partition(':')
+    left, _, right = line.partition(':')
     # Parse the type = '0 - 9 decimal'
-    rtype = RecordType(int(parts[0][0]))
+    rtype = RecordType(int(left[0]))
     # Parse the timestamp = 'int process'
 
-    timestamp = parts[0][1:].lstrip(' ').split()[0]
+    timestamp = left[1:].split()[0]
     # Parse the offset and rule name = 'offset-spaces rule\n'
-    right_section = parts[2].rstrip('\n')
-    name = right_section.lstrip(' ')
-    offset = len(right_section) - len(name)
+    right = right.rstrip('\n')
+    name = right.lstrip(' ')
+    offset = len(right) - len(name)
     return _TraceRecord(rtype, offset, name, timestamp, 0)

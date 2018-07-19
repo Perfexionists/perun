@@ -265,7 +265,7 @@ class TraceStackException(Exception):
     """Raised when trace stack processing encounters error"""
     def __init__(self, record, trace_stack):
         """
-        :param namedtuple record: the record that was being processed 
+        :param namedtuple record: the record that was being processed
         :param list trace_stack: the actual trace stack
         """
         super().__init__("")

@@ -18,6 +18,14 @@ probe process("cmp").function("main").return {
 	}
 }
 
+probe process("cmp").function("test").call {
+	printf("0 %s %s\n", thread_indent(1), probefunc())
+}
+
+probe process("cmp").function("test").return {
+	printf("1 %s\n", thread_indent(-1))
+}
+
 probe process("cmp").mark("BEFORE_CYCLE") {
 	samp_0[1] ++
 	if(samp_0[1] == 3) {
