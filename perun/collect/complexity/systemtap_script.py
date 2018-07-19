@@ -42,8 +42,9 @@ def assemble_system_tap_script(func, static, dynamic, binary, **kwargs):
 
     # Get sampled probes and prepare the sampling array
     sampled_probes = next(indexer)
-    script += _sampling_array_for(0, len(sampled_probes))
-    script += _sampling_array_init_for(binary, 0, sampled_probes)
+    if sampled_probes:
+        script += _sampling_array_for(0, len(sampled_probes))
+        script += _sampling_array_init_for(binary, 0, sampled_probes)
 
     for func in func:
         script += _function_probe(func, binary, 0)
