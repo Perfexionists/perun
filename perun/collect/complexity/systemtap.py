@@ -73,12 +73,12 @@ def systemtap_collect(script, cmd, args, **kwargs):
         return Status.OK, output
 
 
-def start_systemtap_in_background(stap_script, output, log, **_):
+def start_systemtap_in_background(stap_script, output, logfile, **_):
     """Sets up the system tap process in the background with root privileges
 
     :param str stap_script: path to the assembled system tap script file
     :param str output: path to the collector output file
-    :param file log: file handle of the opened status log for collection
+    :param file logfile: file handle of the opened status log for collection
     :return tuple: consisting of the subprocess object, Status value
     """
     # Resolve the systemtap path
@@ -91,10 +91,10 @@ def start_systemtap_in_background(stap_script, output, log, **_):
     # The setpgrp is needed for killing the root process which spawns child processes
     process = utils.start_nonblocking_process(
         'sudo stap -v {0} -o {1}'.format(shlex.quote(stap_script), shlex.quote(output)),
-        universal_newlines=True, stderr=log, preexec_fn=os.setpgrp
+        universal_newlines=True, stderr=logfile, preexec_fn=os.setpgrp
     )
     # Wait until systemtap process is ready or error occurs
-    return process, _wait_for_systemtap_startup(log.name, process)
+    return process, _wait_for_systemtap_startup(logfile.name, process)
 
 
 def kill_systemtap_in_background(stap_process):
@@ -183,13 +183,12 @@ def trace_to_profile(output, static, **kwargs):
                     'dynamic': collections.defaultdict(int)}
 
     with open(output, 'r') as trace:
-
         # Create demangled counterparts of the function names
         trace = _demangle(trace)
 
         for line in trace.splitlines(keepends=True):
             # File ended
-            if line == 'end' or 'end\n':
+            if line == 'end' or line == 'end\n':
                 return
 
             # Parse the line into the _TraceRecord tuple
