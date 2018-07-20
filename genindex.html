@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.15.1 documentation</title>
+    <title>Index &#8212; Perun 0.15.2 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.1',
+        VERSION:     '0.15.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -164,6 +164,13 @@
 </li>
       </ul></li>
       <li>
+    -b, --binary &lt;binary&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-b">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-b">[1]</a>
+</li>
+      </ul></li>
+      <li>
     -b, --by &lt;by_key&gt;
 
       <ul>
@@ -229,10 +236,24 @@
 </li>
       </ul></li>
       <li>
+    -d, --dynamic &lt;dynamic&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-d">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-d">[1]</a>
+</li>
+      </ul></li>
+      <li>
     -dp, --depending-on &lt;per_key&gt;
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-dp">perun-postprocessby-regression_analysis command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-dp">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -ds, --dynamic-sampled &lt;dynamic_sampled&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-ds">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-ds">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -256,6 +277,20 @@
 </li>
       </ul></li>
       <li>
+    -f, --func &lt;func&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-f">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-f">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -fs, --func-sampled &lt;func_sampled&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-fs">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-fs">[1]</a>
+</li>
+      </ul></li>
+      <li>
     -fwh, --fixed-window-height
 
       <ul>
@@ -270,7 +305,7 @@
 </li>
       </ul></li>
       <li>
-    -g, --global_sampling &lt;global_sampling&gt;
+    -g, --global-sampling &lt;global_sampling&gt;
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-complexity-g">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-g">[1]</a>
@@ -389,6 +424,8 @@
         <li><a href="cli.html#cmdoption-perun-show-scatter-o">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-o">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -ot, --output-filename-template &lt;output_filename_template&gt;
 
@@ -400,8 +437,6 @@
         <li><a href="cli.html#cmdoption-perun-run-ot">perun-run command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -p, --params &lt;params&gt;
 
@@ -454,13 +489,6 @@
 </li>
       </ul></li>
       <li>
-    -r, --rules &lt;rules&gt;
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-r">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-r">[1]</a>
-</li>
-      </ul></li>
-      <li>
     -rwh, --relative-window-height
 
       <ul>
@@ -478,8 +506,6 @@
     -s, --sampling &lt;sampling&gt;
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-s">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-s">[1]</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-collect-memory-s">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-s">[1]</a>
 </li>
       </ul></li>
@@ -502,6 +528,13 @@
 </li>
       </ul></li>
       <li>
+    -s, --static &lt;static&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-s">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-s">[1]</a>
+</li>
+      </ul></li>
+      <li>
     -s, --steps &lt;steps&gt;
 
       <ul>
@@ -520,6 +553,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-status-sb">perun-status command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -ss, --static-sampled &lt;static_sampled&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-ss">perun-collect-complexity command line option</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-ss">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -1227,13 +1267,23 @@
     perun-collect-complexity command line option
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-g">-g, --global_sampling &lt;global_sampling&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-g">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-b">-b, --binary &lt;binary&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-b">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-d">-d, --dynamic &lt;dynamic&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-d">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-ds">-ds, --dynamic-sampled &lt;dynamic_sampled&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-ds">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-f">-f, --func &lt;func&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-f">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-fs">-fs, --func-sampled &lt;func_sampled&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-fs">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-g">-g, --global-sampling &lt;global_sampling&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-g">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-collect-complexity-m">-m, --method &lt;method&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-m">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-r">-r, --rules &lt;rules&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-r">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-s">-s, --static &lt;static&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-s">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-collect-complexity-s">-s, --sampling &lt;sampling&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-s">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-collect-complexity-ss">-ss, --static-sampled &lt;static_sampled&gt;</a>, <a href="collectors.html#cmdoption-perun-collect-complexity-ss">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -1371,6 +1421,8 @@
         <li><a href="cli.html#cmdoption-perun-rm-arg-profile">&lt;profile&gt;</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-run command line option
 
@@ -1384,8 +1436,6 @@
         <li><a href="cli.html#cmdoption-perun-run-ot">-ot, --output-filename-template &lt;output_filename_template&gt;</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-run-job command line option
 

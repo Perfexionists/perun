@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Collectors Overview &#8212; Perun 0.15.1 documentation</title>
+    <title>Collectors Overview &#8212; Perun 0.15.2 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.1',
+        VERSION:     '0.15.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -105,10 +105,9 @@ requires simple python interface registered within Perun. For brief tutorial how
 register new collectors in Perun refer to <a class="reference internal" href="#collectors-custom"><span class="std std-ref">Creating your own Collector</span></a>.</p>
 <div class="section" id="module-perun.collect.complexity">
 <span id="complexity-collector"></span><span id="collectors-complexity"></span><h3>Complexity Collector<a class="headerlink" href="#module-perun.collect.complexity" title="Permalink to this headline">¶</a></h3>
-<p>Complexity collector collects running times of C/C++ functions along with
-the sizes of the structures they were executed on. The collected data are
-suitable for further postprocessing using the regression analysis and
-visualization by scatter plots.</p>
+<p>Complexity collector collects running times of C/C++ functions.
+The collected data are suitable for further postprocessing using
+the regression analysis and visualization by scatter plots.</p>
 <div class="section" id="overview-and-command-line-interface">
 <span id="collectors-complexity-cli"></span><h4>Overview and Command Line Interface<a class="headerlink" href="#overview-and-command-line-interface" title="Permalink to this headline">¶</a></h4>
 <div class="section" id="perun-collect-complexity">
@@ -158,6 +157,19 @@ manually.</p>
 </dl>
 <p>Note that manually specified parameters have higher priority than strategy specification
 and it is thus possible to override concrete rules / sampling by the user.</p>
+<p>The collector interface operates with two seemingly same concepts: (external) command and binary.
+External command refers to the script, executable, makefile, etc. that will be called / invoked
+during the profiling, such as ‘make test’, ‘run_script.sh’, ‘./my_binary’.
+Binary, on the other hand, refers to the actual binary or executable file that will be profiled
+and contains specified functions / static probes etc. It is expected that the binary will be
+invoked / called as part of the external command script or that external command and binary are
+the same.</p>
+<p>The interface for rules (functions, static probes) specification offers a way to specify profiled
+locations both with sampling or without it. Note that sampling can reduce the overhead imposed by
+the profiling. Static rules can be further paired - paired rules act as a start and end point for
+time measurement. Without a pair, the rule measures time between each two probe hits. The pairing
+is done automatically for static locations with convention &lt;name&gt; and &lt;name&gt;_end or &lt;name&gt;_END.
+Otherwise, it is possible to pair rules by the delimiter ‘#’, such as &lt;name1&gt;#&lt;name2&gt;.</p>
 <p>Complexity profiles are suitable for postprocessing by
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> since they capture dependency of
 time consumption depending on the size of the structure. This allows one to
@@ -180,21 +192,51 @@ examples of <cite>complexity</cite> collector.</p>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-collect-complexity-r">
-<code class="descname">-r</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--rules</code><code class="descclassname"> &lt;rules&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-r" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the probe points for profiling.</p>
+<dt id="cmdoption-perun-collect-complexity-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--func</code><code class="descclassname"> &lt;func&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the probe point for the given function.</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-collect-complexity-s">
-<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--sampling</code><code class="descclassname"> &lt;sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-s" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the runtime sampling of the given probe points.</p>
+<code class="descname">-s</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--static</code><code class="descclassname"> &lt;static&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the probe point for the given static location.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-d">
+<code class="descname">-d</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--dynamic</code><code class="descclassname"> &lt;dynamic&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the probe point for the given dynamic location.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-fs">
+<code class="descname">-fs</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--func-sampled</code><code class="descclassname"> &lt;func_sampled&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-fs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the probe point and sampling for the given function.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-ss">
+<code class="descname">-ss</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--static-sampled</code><code class="descclassname"> &lt;static_sampled&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-ss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the probe point and sampling for the given static location.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-ds">
+<code class="descname">-ds</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--dynamic-sampled</code><code class="descclassname"> &lt;dynamic_sampled&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the probe point and sampling for the given dynamic location.</p>
 </dd></dl>
 
 <dl class="option">
 <dt id="cmdoption-perun-collect-complexity-g">
-<code class="descname">-g</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--global_sampling</code><code class="descclassname"> &lt;global_sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-g" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the global sample for all probes, –sampling parameter for specific rules have higher priority.</p>
+<code class="descname">-g</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--global-sampling</code><code class="descclassname"> &lt;global_sampling&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the global sample for all probes, sampling parameter for specific rules have higher priority.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-complexity-b">
+<code class="descname">-b</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--binary</code><code class="descclassname"> &lt;binary&gt;</code><a class="headerlink" href="#cmdoption-perun-collect-complexity-b" title="Permalink to this definition">¶</a></dt>
+<dd><p>The profiled executable  [required]</p>
 </dd></dl>
 
 </div>
