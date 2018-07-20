@@ -207,13 +207,14 @@ def run_safely_list_of_commands(cmd_list):
             cprint(err.decode('utf-8'), 'red')
 
 
-def get_stdout_from_external_command(command):
+def get_stdout_from_external_command(command, stdin=None):
     """Runs external command with parameters, checks its output and provides its output.
 
     :param list command: list of arguments for command
+    :param handle stdin: the command input as a file handle
     :return: string representation of output of command
     """
-    output = subprocess.check_output([c for c in command if c is not ''], stderr=subprocess.STDOUT)
+    output = subprocess.check_output([c for c in command if c is not ''], stderr=subprocess.STDOUT, stdin=stdin)
     return output.decode('utf-8')
 
 
@@ -355,3 +356,14 @@ def abs_in_absolute_range(value, border):
     :return: true if the value is in absolute range
     """
     return -abs(border) <= value <= abs(border)
+
+
+def get_path_dir_file(target):
+    """ Extracts the target's absolute path, location directory and base name
+
+    :param str target: name or path
+    :returns: tuple (the absolute target path, the target directory, the target base name)
+    """
+    path = os.path.realpath(target)
+    path_dir = os.path.join(os.path.dirname(path), '')  # Add directory slash if missing
+    return path, path_dir, os.path.basename(path)
