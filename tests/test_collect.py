@@ -5,7 +5,7 @@ import os
 import perun.vcs as vcs
 import perun.logic.runner as runner
 import perun.profile.query as query
-import perun.collect.complexity.run as complexity
+import perun.collect.complexity.systemtap as stap
 
 from perun.utils.helpers import Unit, Job
 from perun.workload.integer_generator import IntegerGenerator
@@ -17,7 +17,7 @@ _mocked_stap_code = 0
 _mocked_stap_file = 'tst_stap_record.txt'
 
 
-def _mocked_stap(**kwargs):
+def _mocked_stap(**_):
     """System tap mock, provide OK code and pre-fabricated collection output"""
     code = _mocked_stap_code
     file = os.path.join(os.path.dirname(__file__), 'collect_complexity', _mocked_stap_file)
@@ -27,7 +27,7 @@ def _mocked_stap(**kwargs):
 def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
     head = vcs.get_minor_version_info(vcs.get_minor_head())
-    monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
+    monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
 
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
 
@@ -52,7 +52,7 @@ def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_coll
     global _mocked_stap_file
     head = vcs.get_minor_version_info(vcs.get_minor_head())
 
-    monkeypatch.setattr(complexity, '_call_stap', _mocked_stap)
+    monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
 
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
 

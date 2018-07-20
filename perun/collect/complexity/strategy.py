@@ -4,7 +4,11 @@
     does not have to specify every detail for each collection. The strategies focus on
     userspace / everything collection with sampling / no sampling etc.
 
-    The assemble_script method serves as a interface which handles specifics of each strategy.
+    Using the strategies, one can automatically extract collection configuration from target
+    executable(s) and / or postprocess the configuration (such as remove duplicate rules,
+    pair static rules, merge the sampled / non-sampled rules etc.)
+
+    extract_configuration serves as a recommended module interface
 """
 
 import collections
@@ -31,100 +35,136 @@ def get_default_strategy():
     return 'custom'
 
 
-def assemble_script(**kwargs):
+def extract_configuration(**kwargs):
     """Interface for the script assembling. Handles the specifics for each strategy.
 
-    :param dict kwargs: the parameters to the collector as set by the cli
+    :param kwargs: the parameters to the collector as set by the cli
 
     :returns: str -- the path to the created script file
     """
     # Choose the handler for specified strategy
-    script = _STRATEGIES[kwargs['method']](**kwargs)
-
-    # Create the file and save the script
-    script_path = kwargs['cmd'] + '_collect.stp'
-    with open(script_path, 'w') as stp_handle:
-        stp_handle.write(script)
-    return script_path
+    return _STRATEGIES[kwargs['method']](**kwargs)
 
 
-def custom_strategy(rules, sampling, cmd, global_sampling, **_):
+def custom_strategy(func, func_sampled, static, static_sampled, dynamic, dynamic_sampled, **kwargs):
     """The custom strategy implementation. There are no defaults and only the parameters
     specified by the user are used for collection.
 
-    :param list rules: the list of rules / functions used for tracing probes
-    :param list of dict sampling: list of sampling specifications as dictionaries
-    :param str cmd: the tracing target executable / process
-    :param int global_sampling: the sampling value set globally for every rule
+    The output dictionary is updated as follows:
+     - func, static, dynamic: contains prepared rules for profiling with unified sampling specification
+       - the rules are stored as lists of dictionaries with keys 'name', 'sample' and optionally 'pair' for
+         rules that can be paired (such as static or dynamic rules)
 
-    :returns: str -- the script code
+    :param list func: the list of function names that will be traced
+    :param list func_sampled: the list of function names with specified sampling
+    :param list static: the list of static probes that will be traced
+    :param list static_sampled: the list of static probes with specified sampling
+    :param list dynamic: the list of dynamic probes that will be traced
+    :param list dynamic_sampled: the list of dynamic probes with specified sampling
+    :param kwargs: additional configuration parameters
+
+    :returns kwargs: the updated dictionary with post processed rules
     """
+
+    # Remove duplicate rules, merge sampled / non-sampled rule lists and optionally pair the rules
+    kwargs['func'] = _remove_duplicate_probes(_merge_probes_lists(
+        func, func_sampled, kwargs['global_sampling']))
+    kwargs['static'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
+        static, static_sampled, kwargs['global_sampling'])))
+    kwargs['dynamic'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
+        dynamic, dynamic_sampled, kwargs['global_sampling'])))
 
     # Build sampling dictionary
-    samples = _build_samples(sampling, rules, global_sampling)
-
-    # Assembly the script
-    script = ''
-    # Add sampling counters
-    for _, sample in samples.items():
-        script += 'global samp_{0} = {1}\n'.format(str(sample[1]), sample[0] - 1)
-    script += '\n'
-
-    # Add probes
-    for rule in rules:
-        probe_in = 'probe process("{0}").function("{1}").call {{\n'.format(cmd, rule)
-        probe_out = 'probe process("{0}").function("{1}").return {{\n'.format(cmd, rule)
-        call = 'printf("%s %s\\n", thread_indent(1), probefunc())\n'
-        ret = 'printf("%s\\n", thread_indent(-1))\n'
-
-        if rule in samples:
-            # Probe should be sampled, add counter manipulation
-            probe_in += ('\tsamp_{0}++\n'
-                         '\tif(samp_{0} == {1}) {{\n'
-                         '\t\t{2}'
-                         '\t\tsamp_{0} = 0\n'
-                         '\t}}\n}}\n\n'
-                         .format(str(samples[rule][1]), str(samples[rule][0]), call))
-            probe_out += ('\tif(samp_{0} == 0) {{\n'
-                          '\t\t{1}'
-                          '\t}}\n}}\n\n'.format(str(samples[rule][1]), ret))
-        else:
-            # Probe does not need to be sampled
-            probe_in += '\t{0}}}\n\n'.format(call)
-            probe_out += '\t{0}}}\n\n'.format(ret)
-
-        # Add probe and return points to the script
-        script += probe_in + probe_out
-
-    return script
+    return kwargs
 
 
-def _build_samples(sampling, rules, global_sampling):
-    """Creates sampling dictionary that has appropriate form for the script generation.
-    Handles the global sampling and specific sampling overlaps and priorities.
+def _pair_rules(probes):
+    """Pairs the rules according to convention:
+     - rule names with '#' serving as a delimiter between two probes, which should be paired as a starting and
+       ending probe
+     - rules with <name>_end or <name>_END are paired with corresponding <name> probes
 
-    :param list of dict sampling: list of sampling specifications as dictionaries
-    :param list rules: the list of rules / functions used for tracing probes
-    :param int global_sampling: the sampling value set globally for every rule
-
-    :returns: dict -- the sampling dictionary in form of {rule: (sampling value, index)},
-                      where index is unique value representing the rule name
-
+     :param list probes: the list of probes (as dicts) that should be paired
+     :returns list: probe dictionaries with optionally added 'pair' key containing paired probe name
     """
+    result = []
+    for probe in probes:
+        # Split the probe definition into pair or probes
+        delim = probe['name'].find('#')
+        if delim != -1:
+            probe['pair'] = probe['name'][delim + 1:]
+            probe['name'] = probe['name'][:delim]
+            result.append(probe)
+        elif not probe['name'].endswith('_end') and not probe['name'].endswith('_END'):
+            # Find the pair probe automatically as <name>_end template
+            pair = next((pair_probe for pair_probe in probes if (pair_probe['name'] == probe['name'] + '_end' or
+                                                                 pair_probe['name'] == probe['name'] + '_END')), None)
+            if pair:
+                probe['pair'] = pair['name']
+            result.append(probe)
+    return result
 
-    # Create samples from sampling list, filter <negative, 1> entries
-    samples = {samp['func']: (samp['sample'], idx) for idx, samp in
-               enumerate(sampling) if samp['sample'] > 1}
 
-    # Create samples for all remaining rules if needed
-    if global_sampling:
-        samples_all = {rule: (global_sampling, idx) for idx, rule in enumerate(rules)}
-        for k, v in samples.items():
-            # Change the sampling value and keep the sampling index
-            samples_all[k] = (v[0], samples_all[k][1])
-        samples = samples_all
+def _merge_probes_lists(probes, probes_sampled, global_sampling):
+    """Merges the probe lists without and with specified sampling into one list with unified sampling specification
 
-    return samples
+    :param list probes: list of strings that represent probe names
+    :param list probes_sampled: list of tuples that contain 0) probe name, 1) probe sampling
+    :param global_sampling: the global sampling value that is applied to all probes without sampling
+    :return list: list of probes in unified format (dictionaries with 'name' and 'sample' keys)
+    """
+    # Add global sampling (default 0) to the probes without sampling specification
+    probes = [{'name': probe, 'sample': global_sampling} for probe in probes]
+
+    # Validate the sampling values and merge the lists
+    for probe in probes_sampled:
+        if probe[1] < 2:
+            probes.append({'name': probe[0], 'sample': global_sampling})
+        else:
+            probes.append({'name': probe[0], 'sample': probe[1]})
+    return probes
+
+
+# TODO: allow the probe to be used in multiple pairs e.g. TEST+TEST_END, TEST+TEST_END2, requires modification of
+# the script generator
+def _remove_duplicate_probes(probes):
+    """Removes duplicate rules / probes using following technique:
+     1) probes are classified into paired, paired with sampling, single and single with sampling
+     2) sampled rules across paired and single rules are prioritized
+     3) paired rules are prioritized over single rules
+
+    :param list probes: the list of probes as a dictionaries
+    :return list: the list of unique probes
+    """
+    # Classify the rules into paired, paired with sampling, single and single with sampling
+    paired, paired_sampled, single, single_sampled = [], [], [], []
+    for probe in probes:
+        if probe['sample'] > 0:
+            (paired_sampled if 'pair' in probe else single_sampled).append(probe)
+        else:
+            (paired if 'pair' in probe else single).append(probe)
+
+    seen = set()
+    unique = []
+    # Prioritize paired rules - we can't afford to remove paired rule instead of a single rule
+    # Also prioritize sampled rules
+    for paired_rules in [paired_sampled, paired]:
+        for probe in paired_rules:
+            if probe['name'] not in seen and probe['pair'] not in seen:
+                # Add new unique rule
+                seen.add(probe['name'])
+                seen.add(probe['pair'])
+                unique.append(probe)
+
+    # Now add single rules that are not duplicate
+    for single_rules in [single_sampled, single]:
+        for probe in single_rules:
+            if probe['name'] not in seen:
+                # Add new unique rule
+                seen.add(probe['name'])
+                unique.append(probe)
+
+    return unique
 
 
 def _not_implemented(method, **_):
@@ -143,4 +183,3 @@ _STRATEGIES = collections.OrderedDict([
     ('a_sampled', _not_implemented),
     ('custom', custom_strategy)
 ])
-

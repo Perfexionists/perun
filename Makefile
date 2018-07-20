@@ -24,4 +24,7 @@ docs-all:
 	$(MAKE) -C docs dirhtml
 	$(MAKE) -C docs latex
 
+docs-release: docs-latex
+	cp ./docs/_build/latex/Perun.pdf ./docs/pdf/perun.pdf
+
 .PHONY: init test docs install dev run-gui
