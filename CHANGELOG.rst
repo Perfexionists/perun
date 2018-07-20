@@ -6,6 +6,18 @@ HEAD
 
 **To be included in next release**
 
+0.15.2 (2018-07-20)
+-------------------
+
+`commit: a9b46ed478258bbcd8292df0775a14e69b7db329`
+
+**Upgrade Trace collector architecture**
+
+  - update the cli of the :ref:`collectors-complexity` with new options
+  - add support for static and dynamic probing of the binaries (hence allow custom user probes)
+  - fix minor issues
+  - rework the architecture of system-tap collector to work as a daemon
+
 0.15.1 (2018-07-17)
 -------------------
 
