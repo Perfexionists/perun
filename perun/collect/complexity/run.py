@@ -58,12 +58,15 @@ def before(cmd, **kwargs):
     try:
         log.cprint('Starting the pre-processing phase... ', 'white')
 
-        kwargs = _validate_input(**kwargs)
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(cmd)
+        kwargs = _validate_input(**kwargs)
 
         # Extract and / or post process the collect configuration
         kwargs = strategy.extract_configuration(**kwargs)
+        if not kwargs['func'] and not kwargs['static'] and not kwargs['dynamic']:
+            return CollectStatus.ERROR, ('No function, static or dynamic probes to be profiled (due to invalid '
+                                         'specification, failed extraction or filtering)'), dict(kwargs)
 
         # Assemble script according to the parameters
         kwargs['script'] = stap_script.assemble_system_tap_script(**kwargs)
@@ -88,14 +91,12 @@ def collect(**kwargs):
               string as a status message, mainly for error states,
               dict of kwargs and new values)
     """
-    log.cprint('Running the collector, progress output stored in collect_log_{0}.txt\n'
-               'This may take a while... '.format(kwargs['timestamp']), 'white')
+    log.cprintln('Running the collector, progress output stored in collect_log_{0}.txt\n'
+                 'This may take a while... '.format(kwargs['timestamp']), 'white')
     try:
         # Call the system tap
         code, kwargs['output'] = systemtap.systemtap_collect(**kwargs)
-        if code == systemtap.Status.OK:
-            log.done()
-        else:
+        if code != systemtap.Status.OK:
             log.failed()
         return _COLLECTOR_STATUS[code][0], _COLLECTOR_STATUS[code][1], dict(kwargs)
 
@@ -149,8 +150,14 @@ def _validate_input(**kwargs):
     kwargs['dynamic'] = list(kwargs.get('dynamic', ''))
     kwargs['dynamic_sampled'] = list(kwargs.get('dynamic_sampled', ''))
     kwargs['global_sampling'] = kwargs.get('global_sampling', 0)
+
+    # Normalize global sampling
     if kwargs['global_sampling'] <= 1:
         kwargs['global_sampling'] = 0
+
+    # Set the binary if not provided
+    if not kwargs['binary']:
+        kwargs['binary'] = kwargs['cmd']
     return kwargs
 
 
@@ -175,8 +182,11 @@ def _validate_input(**kwargs):
 @click.option('--global-sampling', '-g', type=int, default=0,
               help='Set the global sample for all probes, sampling parameter for specific'
                    ' rules have higher priority.')
-@click.option('--binary', '-b', type=click.Path(exists=True), required=True,
-              help='The profiled executable')
+@click.option('--with-static/--no-static', default=True,
+              help='The selected method will also extract and profile static probes.')
+@click.option('--binary', '-b', type=click.Path(exists=True),
+              help='The profiled executable. If not set, then the command is considered '
+                   'to be the profiled executable and is used as a binary parameter')
 @click.pass_context
 def complexity(ctx, **kwargs):
     """Generates `complexity` performance profile, capturing running times of

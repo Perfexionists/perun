@@ -115,8 +115,8 @@ def _function_probe(func, process, process_id):
     :return str: the script component with function probes
     """
     # Probe start and end point declaration
-    begin_probe = 'probe process("{proc}").function("{func}").call {{\n'.format(proc=process, func=func['name'])
-    end_probe = 'probe process("{proc}").function("{func}").return {{\n'.format(proc=process, func=func['name'])
+    begin_probe = 'probe process("{proc}").function("{func}").call? {{\n'.format(proc=process, func=func['name'])
+    end_probe = 'probe process("{proc}").function("{func}").return? {{\n'.format(proc=process, func=func['name'])
     # Probes definition
     begin_body = 'printf("{type} %s %s\\n", thread_indent(1), probefunc())'.format(type=int(RecordType.FuncBegin))
     end_body = 'printf("{type} %s\\n", thread_indent(-1))'.format(type=int(RecordType.FuncEnd))

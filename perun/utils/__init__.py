@@ -156,7 +156,7 @@ def run_safely_external_command(cmd, check_results=True):
     :raises subprocess.CalledProcessError: when any of the piped commands fails
     """
     # Split
-    unpiped_commands = list(map(str.strip, cmd.split("|")))
+    unpiped_commands = list(map(str.strip, cmd.split(" | ")))
     cmd_no = len(unpiped_commands)
 
     # Run the command through pipes
