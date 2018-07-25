@@ -50,6 +50,15 @@ def test_degradation_precollect(monkeypatch, pcs_full, capsys):
     out, err = capsys.readouterr()
     assert err == ""
 
+    def raise_sysexit(*_):
+        """Raises System Exit ;)"""
+        raise SystemExit()
+    check.pre_collect_profiles.minor_version_cache.clear()
+    monkeypatch.setattr("perun.logic.runner.run_matrix_job", raise_sysexit)
+    check.degradation_in_minor(head)
+    out, err = capsys.readouterr()
+    assert err == ""
+
 
 def test_degradation_in_minor(pcs_with_degradations, capsys):
     """Set of basic tests for testing degradation in concrete minor version point

@@ -64,7 +64,12 @@ def pre_collect_profiles(minor_version):
         out = log_file if collect_to_log else os.devnull
         with open(out, 'w') as black_hole:
             with contextlib.redirect_stdout(black_hole):
-                runner.run_matrix_job([minor_version])
+                try:
+                    runner.run_matrix_job([minor_version])
+                except SystemExit as system_exit:
+                    log.warn("Could not precollect data for {} minor version: {}".format(
+                        minor_version.checksum[:6], str(system_exit)
+                    ))
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
 
