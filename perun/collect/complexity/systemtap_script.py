@@ -106,6 +106,7 @@ def _sampling_array_init_for(process, process_id, samples):
     return array_init
 
 
+# TODO: improve the temporary func parameter (we would like to cross-compare mangled / demangled / user specified names)
 def _function_probe(func, process, process_id):
     """Assembles function entry and exit probes including sampling.
 
@@ -118,7 +119,8 @@ def _function_probe(func, process, process_id):
     begin_probe = 'probe process("{proc}").function("{func}").call? {{\n'.format(proc=process, func=func['name'])
     end_probe = 'probe process("{proc}").function("{func}").return? {{\n'.format(proc=process, func=func['name'])
     # Probes definition
-    begin_body = 'printf("{type} %s %s\\n", thread_indent(1), probefunc())'.format(type=int(RecordType.FuncBegin))
+    begin_body = ('printf("{type} %s {func}\\n", thread_indent(1))'
+                  .format(type=int(RecordType.FuncBegin), func=func['name']))
     end_body = 'printf("{type} %s\\n", thread_indent(-1))'.format(type=int(RecordType.FuncEnd))
 
     # Add sampling counter manipulation to the probe definition if needed
@@ -224,7 +226,7 @@ def _index_process_sampling(func, static, dynamic):
     for probe_list in [func, static, dynamic]:
         for probe in probe_list:
             # Index probes that actually have sampling
-            if probe['sample'] > 0:
+            if probe['sample'] > 1:
                 probe['index'] = index
                 sampled.append(probe)
                 index += 1

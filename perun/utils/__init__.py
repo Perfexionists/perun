@@ -82,8 +82,7 @@ def is_executable_elf(file, only_not_stripped=False):
     """
     # Determine file magic code, we are looking out for ELF files
     file_magic = magic.from_file(file)
-    if file_magic.startswith('ELF') and \
-            ('executable' in file_magic or 'shared object' in file_magic):
+    if file_magic.startswith('ELF') and ('executable' in file_magic or 'shared object' in file_magic):
         if only_not_stripped:
             return 'not stripped' in file_magic
         return True

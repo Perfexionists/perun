@@ -15,7 +15,6 @@ import collections
 import shutil
 from enum import IntEnum
 
-import perun.utils.exceptions as exceptions
 import perun.utils as utils
 import perun.utils.log as log
 
@@ -31,6 +30,7 @@ class _Status(IntEnum):
 _DEFAULT_SAMPLE = 20
 
 
+# TODO: rethink the probes data structures!!!
 def get_supported_strategies():
     """Provides list of supported strategies.
 
@@ -109,7 +109,7 @@ def extraction_strategy(func, func_sampled, static, static_sampled, **kwargs):
     :returns kwargs: the updated dictionary with post processed rules
     """
     # Apply global sampling for sampled strategies
-    if (kwargs['method'] == 'u_sampled' or kwargs['method'] == 'a_sampled') and kwargs['global_sampling'] == 0:
+    if (kwargs['method'] == 'u_sampled' or kwargs['method'] == 'a_sampled') and kwargs['global_sampling'] == 1:
         kwargs['global_sampling'] = _DEFAULT_SAMPLE
 
     # Create probe locations: process separately user supplied and extracted locations, then merge them
@@ -163,10 +163,10 @@ def _merge_probes_lists(probes, probes_sampled, global_sampling):
 
     # Validate the sampling values and merge the lists
     for probe in probes_sampled:
-        if probe[1] < 2:
-            probes.append({'name': probe[0], 'sample': global_sampling})
-        else:
+        if probe[1] > 1:
             probes.append({'name': probe[0], 'sample': probe[1]})
+        else:
+            probes.append({'name': probe[0], 'sample': global_sampling})
     return probes
 
 
@@ -184,7 +184,7 @@ def _remove_duplicate_probes(probes):
     # Classify the rules into paired, paired with sampling, single and single with sampling
     paired, paired_sampled, single, single_sampled = [], [], [], []
     for probe in probes:
-        if probe['sample'] > 0:
+        if probe['sample'] > 1:
             (paired_sampled if 'pair' in probe else single_sampled).append(probe)
         else:
             (paired if 'pair' in probe else single).append(probe)
@@ -320,14 +320,6 @@ def _check_dependency(command):
         log.warn(("Missing dependency utility '{util}'".format(util=command)))
         return False
     return True
-
-
-def _not_implemented(method, **_):
-    """Placeholder function for strategies that are not implemented and should not be used.
-
-    :param str method: the name of the method that is being requested
-    """
-    raise exceptions.StrategyNotImplemented(method)
 
 
 # The strategies names and their implementation

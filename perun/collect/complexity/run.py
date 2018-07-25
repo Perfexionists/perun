@@ -7,6 +7,7 @@ collection and postprocessing of collection data.
 
 from subprocess import CalledProcessError
 import time
+import os
 
 import click
 
@@ -41,7 +42,7 @@ _COLLECTOR_STATUS = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(cmd, **kwargs):
+def before(**kwargs):
     """ Assembles the SystemTap script according to input parameters and collection strategy
 
     The output dictionary is updated with:
@@ -49,7 +50,6 @@ def before(cmd, **kwargs):
      - cmd, cmd_dir, cmd_base: absolute path to the command, its directory and the command base name
      - script: path to the generated script file
 
-    :param string cmd: the profiled command
     :param kwargs: dictionary containing the configuration settings for the collector
     :returns: tuple (int as a status code, nonzero values for errors,
                     string as a status message, mainly for error states,
@@ -59,7 +59,7 @@ def before(cmd, **kwargs):
         log.cprint('Starting the pre-processing phase... ', 'white')
 
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(cmd)
+        _, kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(kwargs['cmd'])
         kwargs = _validate_input(**kwargs)
 
         # Extract and / or post process the collect configuration
@@ -75,7 +75,7 @@ def before(cmd, **kwargs):
         return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
 
     except (OSError, ValueError, CalledProcessError,
-            UnicodeError, exceptions.StrategyNotImplemented) as exception:
+            UnicodeError, exceptions.InvalidBinaryException) as exception:
         log.failed()
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT][0], str(exception), dict(kwargs)
 
@@ -149,15 +149,21 @@ def _validate_input(**kwargs):
     kwargs['static_sampled'] = list(kwargs.get('static_sampled', ''))
     kwargs['dynamic'] = list(kwargs.get('dynamic', ''))
     kwargs['dynamic_sampled'] = list(kwargs.get('dynamic_sampled', ''))
-    kwargs['global_sampling'] = kwargs.get('global_sampling', 0)
+    kwargs['global_sampling'] = kwargs.get('global_sampling', 1)
 
     # Normalize global sampling
     if kwargs['global_sampling'] <= 1:
-        kwargs['global_sampling'] = 0
+        kwargs['global_sampling'] = 1
+
+    # Normalize timeout value
+    if kwargs['timeout'] <= 0:
+        kwargs['timeout'] = None
 
     # Set the binary if not provided
     if not kwargs['binary']:
-        kwargs['binary'] = kwargs['cmd']
+        kwargs['binary'] = os.path.realpath(kwargs['cmd'])
+        if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
+            raise exceptions.InvalidBinaryException(kwargs['binary'])
     return kwargs
 
 
@@ -179,7 +185,7 @@ def _validate_input(**kwargs):
               help='Set the probe point and sampling for the given static location.')
 @click.option('--dynamic-sampled', '-ds', type=(str, int), multiple=True,
               help='Set the probe point and sampling for the given dynamic location.')
-@click.option('--global-sampling', '-g', type=int, default=0,
+@click.option('--global-sampling', '-g', type=int, default=1,
               help='Set the global sample for all probes, sampling parameter for specific'
                    ' rules have higher priority.')
 @click.option('--with-static/--no-static', default=True,
@@ -187,6 +193,9 @@ def _validate_input(**kwargs):
 @click.option('--binary', '-b', type=click.Path(exists=True),
               help='The profiled executable. If not set, then the command is considered '
                    'to be the profiled executable and is used as a binary parameter')
+@click.option('--timeout', '-t', type=int, default=0,
+              help='Set time limit for the profiled command, i.e. the command will be terminated '
+                   'after reaching the time limit. Useful for endless commands etc.')
 @click.pass_context
 def complexity(ctx, **kwargs):
     """Generates `complexity` performance profile, capturing running times of
