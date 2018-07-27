@@ -18,7 +18,7 @@ from enum import IntEnum
 import perun.utils as utils
 import perun.utils.exceptions as exceptions
 import perun.utils.log as log
-from perun.collect.complexity.systemtap_script import RecordType
+from perun.collect.trace.systemtap_script import RecordType
 
 
 # Collection statuses

@@ -66,7 +66,7 @@ def regression_analysis(profile, **kwargs):
     \b
       * **Limitations**: Currently limited to models of `amount` depending on
         `structural-unit-size`
-      * **Dependencies**: :ref:`collectors-complexity`
+      * **Dependencies**: :ref:`collectors-trace`
 
     Regression analyzer tries to find a fitting model to estimate the `amount`
     of resources depending on `structural-unit-size`.
@@ -128,6 +128,6 @@ def regression_analysis(profile, **kwargs):
 
     For more details about regression analysis refer to
     :ref:`postprocessors-regression-analysis`. For more details how to collect
-    suitable resources refer to :ref:`collectors-complexity`.
+    suitable resources refer to :ref:`collectors-trace`.
     """
     runner.run_postprocessor_on_profile(profile, 'regression_analysis', kwargs)

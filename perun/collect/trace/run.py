@@ -1,4 +1,4 @@
-"""Wrapper for complexity collector, which collects profiling data about
+"""Wrapper for trace collector, which collects profiling data about
 running times and sizes of structures.
 
 Specifies before, collect and after functions to perform the initialization,
@@ -11,9 +11,9 @@ import os
 
 import click
 
-import perun.collect.complexity.strategy as strategy
-import perun.collect.complexity.systemtap as systemtap
-import perun.collect.complexity.systemtap_script as stap_script
+import perun.collect.trace.strategy as strategy
+import perun.collect.trace.systemtap as systemtap
+import perun.collect.trace.systemtap_script as stap_script
 import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
 import perun.utils as utils
@@ -106,7 +106,7 @@ def collect(**kwargs):
 
 
 def after(**kwargs):
-    """ Handles the complexity collector output and transforms it into resources
+    """ Handles the trace collector output and transforms it into resources
 
     The output dictionary is updated with:
      - profile: the performance profile contents created from the collector output
@@ -156,7 +156,7 @@ def _validate_input(**kwargs):
         kwargs['global_sampling'] = 1
 
     # Normalize timeout value
-    if kwargs['timeout'] <= 0:
+    if not 'timeout' in kwargs or kwargs['timeout'] <= 0:
         kwargs['timeout'] = None
 
     # Set the binary if not provided
@@ -197,8 +197,8 @@ def _validate_input(**kwargs):
               help='Set time limit for the profiled command, i.e. the command will be terminated '
                    'after reaching the time limit. Useful for endless commands etc.')
 @click.pass_context
-def complexity(ctx, **kwargs):
-    """Generates `complexity` performance profile, capturing running times of
+def trace(ctx, **kwargs):
+    """Generates `trace` performance profile, capturing running times of
     function depending on underlying structural sizes.
 
     \b
@@ -259,15 +259,15 @@ def complexity(ctx, **kwargs):
     Complexity profiles are suitable for postprocessing by
     :ref:`postprocessors-regression-analysis` since they capture dependency of
     time consumption depending on the size of the structure. This allows one to
-    model the estimation of complexity of individual functions.
+    model the estimation of trace of individual functions.
 
     Scatter plots are suitable visualization for profiles collected by
-    `complexity` collector, which plots individual points along with regression
+    `trace` collector, which plots individual points along with regression
     models (if the profile was postprocessed by regression analysis). Run
     ``perun show scatter --help`` or refer to :ref:`views-scatter` for more
     information about `scatter plots`.
 
-    Refer to :ref:`collectors-complexity` for more thorough description and
-    examples of `complexity` collector.
+    Refer to :ref:`collectors-trace` for more thorough description and
+    examples of `trace` collector.
     """
-    runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)
+    runner.run_collector_from_cli_context(ctx, 'trace', kwargs)

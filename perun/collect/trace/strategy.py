@@ -1,4 +1,4 @@
-""" Module with complexity collector strategies for tracing.
+""" Module with trace collector strategies for tracing.
 
     The strategies are meant to be useful default settings for collection so that user
     does not have to specify every detail for each collection. The strategies focus on

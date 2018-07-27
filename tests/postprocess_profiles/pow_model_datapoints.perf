@@ -1,6 +1,6 @@
 {
   "collector_info": {
-    "name": "complexity",
+    "name": "trace",
     "params": {
       "sampling": [
         {

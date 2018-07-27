@@ -19,7 +19,7 @@ import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.logic.config as config
 import perun.logic.store as store
-import perun.collect.complexity.systemtap as stap
+import perun.collect.trace.systemtap as stap
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
@@ -29,7 +29,7 @@ __author__ = 'Tomas Fiedor'
 
 def _mocked_stap(**_):
     """System tap mock, provide OK code and pre-fabricated collection output"""
-    return 0, os.path.join(os.path.dirname(__file__), 'collect_complexity', 'tst_stap_record.txt')
+    return 0, os.path.join(os.path.dirname(__file__), 'collect_trace', 'tst_stap_record.txt')
 
 
 def test_cli(pcs_full):
@@ -436,17 +436,17 @@ def test_collect_correct(pcs_full):
     assert result.exit_code == 0
 
 
-def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
-    """Test running the complexity collector from the CLI with parameter handling
+def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
+    """Test running the trace collector from the CLI with parameter handling
 
     Expecting no errors
     """
     monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
     runner = CliRunner()
 
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity')
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
     target = os.path.join(script_dir, 'tst')
-    job_params = complexity_collect_job[5]['collector_params']['complexity']
+    job_params = trace_collect_job[5]['collector_params']['trace']
 
     func = ['-f{}'.format(func) for func in job_params['func']]
     func_sampled = []
@@ -458,22 +458,22 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     binary = ['-b{}'.format(target)]
 
     result = runner.invoke(cli.collect, ['-c{}'.format(target),
-                                         'complexity'] + func + func_sampled + static + binary)
+                                         'trace'] + func + func_sampled + static + binary)
 
     assert result.exit_code == 0
 
     # Test running the job from the params using the job file
     # Fixme: yaml parameters applied after the cli, thus cli reports missing parameters as they are not updated yet
     # script_dir = os.path.split(__file__)[0]
-    # source_dir = os.path.join(script_dir, 'collect_complexity')
+    # source_dir = os.path.join(script_dir, 'collect_trace')
     # job_config_file = os.path.join(source_dir, 'job.yml')
-    # result = runner.invoke(cli.collect, ['-c{}'.format(target), '-p{}'.format(job_config_file), 'complexity'])
+    # result = runner.invoke(cli.collect, ['-c{}'.format(target), '-p{}'.format(job_config_file), 'trace'])
     # assert result.exit_code == 0
 
     # Test running the job from the params using the yaml string
     result = runner.invoke(cli.collect, ['-c{}'.format(target),
                                          '-p\"global_sampling: 2\"',
-                                         'complexity'] + func + func_sampled + static + binary)
+                                         'trace'] + func + func_sampled + static + binary)
     assert result.exit_code == 0
 
     # Try different template
@@ -481,16 +481,16 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
         '-ot', '%collector%-profile',
         '-c{}'.format(target),
         '-p\"method: custom\"',
-        'complexity',
+        'trace',
     ] + func + func_sampled + static + binary)
     del config.runtime().data['format']
     decorators.remove_from_function_args_cache("lookup_key_recursively")
     assert result.exit_code == 0
     pending_profiles = os.listdir(os.path.join(os.getcwd(), ".perun", "jobs"))
-    assert "complexity-profile.perf" in pending_profiles
+    assert "trace-profile.perf" in pending_profiles
 
     # Test duplicity detection and pairing
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-f', 'main', '-f', 'main', '-fs',
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-f', 'main', '-f', 'main', '-fs',
                                          'main', 2, '-fs', 'main', 2, '-s', 'BEFORE_CYCLE', '-ss', 'BEFORE_CYCLE', 3,
                                          '-s', 'BEFORE_CYCLE_end', '-s', 'BEFORE_CYCLE#BEFORE_CYCLE_end',
                                          '-ss', 'TEST_SINGLE', 4, '-s', 'TEST_SINGLE2', '-fs', 'test', -3] + binary)
@@ -519,20 +519,16 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     assert content_sub == cmp_content
 
     # Test negative global sampling
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-g -2'] + binary)
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-g -2'] + binary)
     assert result.exit_code == 0
 
     # Try missing parameter -c
     # Fixme: before fails but still produces 0?
-    result = runner.invoke(cli.collect, ['complexity'] + binary)
-    assert result.exit_code == 0
-
-    # Try using not implemented method 'all'
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-mall'] + binary)
+    result = runner.invoke(cli.collect, ['trace'] + binary)
     assert result.exit_code == 0
 
     # Try invalid parameter --method
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'complexity', '-minvalid'] + binary)
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-minvalid'] + binary)
     assert result.exit_code == 2
 
 
@@ -1034,7 +1030,7 @@ def test_run(pcs_full, monkeypatch):
     config.runtime().set('profiles.register_after_run', 'false')
 
     script_dir = os.path.split(__file__)[0]
-    source_dir = os.path.join(script_dir, 'collect_complexity')
+    source_dir = os.path.join(script_dir, 'collect_trace')
     job_config_file = os.path.join(source_dir, 'job.yml')
     result = runner.invoke(cli.run, [
         'job',

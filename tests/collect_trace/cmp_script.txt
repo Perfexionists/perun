@@ -5,24 +5,24 @@ probe process("cmp").begin {
 	samp_0[2] = 3
 }
 
-probe process("cmp").function("main").call {
+probe process("cmp").function("main").call? {
 	samp_0[0] ++
 	if(samp_0[0] == 2) {
-		printf("0 %s %s\n", thread_indent(1), probefunc())
+		printf("0 %s main\n", thread_indent(1))
 		samp_0[0] = 0
 	}
 }
-probe process("cmp").function("main").return {
+probe process("cmp").function("main").return? {
 	if(samp_0[0] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("test").call {
-	printf("0 %s %s\n", thread_indent(1), probefunc())
+probe process("cmp").function("test").call? {
+	printf("0 %s test\n", thread_indent(1))
 }
 
-probe process("cmp").function("test").return {
+probe process("cmp").function("test").return? {
 	printf("1 %s\n", thread_indent(-1))
 }
 
