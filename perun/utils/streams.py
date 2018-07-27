@@ -39,3 +39,15 @@ def safely_load_yaml_from_stream(yaml_stream):
         log.warn('stream is not in yaml format')
 
     return loaded_yaml or {}
+
+
+def safely_load_yaml(yaml_source):
+    """Wrapper which takes the yaml source and either load it from the file or from the string
+
+    :param str yaml_source: either string or name of the file
+    :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
+    """
+    if os.path.exists(yaml_source):
+        return safely_load_yaml_from_file(yaml_source)
+    else:
+        return safely_load_yaml_from_stream(yaml_source)
