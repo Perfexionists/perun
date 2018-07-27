@@ -156,8 +156,12 @@ def _validate_input(**kwargs):
         kwargs['global_sampling'] = 1
 
     # Normalize timeout value
-    if not 'timeout' in kwargs or kwargs['timeout'] <= 0:
+    if 'timeout' not in kwargs or kwargs['timeout'] <= 0:
         kwargs['timeout'] = None
+
+    # Set the with-static if not provided
+    if 'with_static' not in kwargs:
+        kwargs['with_static'] = True
 
     # Set the binary if not provided
     if not kwargs['binary']:

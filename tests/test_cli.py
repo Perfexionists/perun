@@ -20,6 +20,7 @@ import perun.utils.decorators as decorators
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.collect.trace.systemtap as stap
+import perun.collect.trace.strategy as strategy
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
@@ -30,6 +31,52 @@ __author__ = 'Tomas Fiedor'
 def _mocked_stap(**_):
     """System tap mock, provide OK code and pre-fabricated collection output"""
     return 0, os.path.join(os.path.dirname(__file__), 'collect_trace', 'tst_stap_record.txt')
+
+
+def _mocked_stap_extraction(_):
+    return (b'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE")\n'
+            b'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE_end")\n'
+            b'process("/home/jirka/perun/tests/collect_trace/tst").mark("INSIDE_CYCLE")\n'), ''
+
+
+def _mocked_stap_extraction_empty(_):
+    return b'Tip: /usr/share/doc/systemtap/README.Debian should help you get started.', ''
+
+
+def _get_latest_collect_script(script_dir):
+    """Return name of the latest collect script from given script directory
+
+    :param str script_dir: path to the directory where multiple (or single) collect scripts are located
+    :return str: path to the latest trace collector script
+    """
+    # Get all stap script in the directory and find the last one, which will be then analyzed for correctness
+    scripts = glob.glob(os.path.join(script_dir, 'collect_script_*.stp'))
+    # Find the newest script in the directory
+    latest = scripts[0]
+    latest_timestamp = int(''.join(scripts[0][-23:-4].split('-')))  # Extract timestamp from the first script
+    for script in scripts:
+        # Check every script file and find the biggest timestamp
+        timestamp = int(''.join(script[-23:-4].split('-')))
+        if timestamp >= latest_timestamp:
+            latest_timestamp = timestamp
+            latest = script
+    return latest
+
+
+def _compare_collect_scripts(new_script, reference_script):
+    """Compares collect script with its reference scripts
+
+    :param str new_script: path to the script to compare
+    :param str reference_script: path to the reference script
+    :return bool: True if scripts are the same (except machine specific values in the script), false otherwise
+    """
+    # Replace the machine-specific path to the binary with some generic text to allow for comparison
+    with open(new_script, 'r') as script:
+        content = script.read()
+    sub_content = re.sub(r' process\(\".*?/tst\"\)\.', ' process("cmp").', content)
+    with open(reference_script, 'r') as cmp:
+        cmp_content = cmp.read()
+    return sub_content == cmp_content
 
 
 def test_cli(pcs_full):
@@ -495,28 +542,8 @@ def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
                                          '-s', 'BEFORE_CYCLE_end', '-s', 'BEFORE_CYCLE#BEFORE_CYCLE_end',
                                          '-ss', 'TEST_SINGLE', 4, '-s', 'TEST_SINGLE2', '-fs', 'test', -3] + binary)
     assert result.exit_code == 0
-
-    # Get all stap script in the directory and find the last one, which will be then analyzed for correctness
-    scripts = glob.glob(os.path.join(script_dir, 'collect_script_*.stp'))
-    # Find the newest script in the directory
-    newest_script = scripts[0]
-    newest_timestamp = int(''.join(scripts[0][-23:-4].split('-')))  # Extract timestamp from the first script
-    for script in scripts:
-        # Check every script file and find the biggest timestamp
-        timestamp = int(''.join(script[-23:-4].split('-')))
-        if timestamp >= newest_timestamp:
-            newest_timestamp = timestamp
-            newest_script = script
-
-    # Replace the machine-specific path to the binary with some generic text to allow for comparison
-    with open(newest_script, 'r') as script:
-        content = script.read()
-    content_sub = re.sub(r' process\(\".*?/tst\"\)\.', ' process("cmp").', content)
-    with open(os.path.join(script_dir, 'cmp_script.txt'), 'r') as cmp:
-        cmp_content = cmp.read()
-
     # Compare the created script with the correct one
-    assert content_sub == cmp_content
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir, 'cmp_script.txt'))
 
     # Test negative global sampling
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-g -2'] + binary)
@@ -530,6 +557,65 @@ def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
     # Try invalid parameter --method
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-minvalid'] + binary)
     assert result.exit_code == 2
+
+
+def test_collect_trace_strategies(monkeypatch, pcs_full):
+    """Test various trace collector strategies
+
+    Expecting no errors and correctly generated scripts
+    """
+    monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
+    monkeypatch.setattr(strategy, '_static_stap_extractor', _mocked_stap_extraction)
+    runner = CliRunner()
+
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target = os.path.join(script_dir, 'tst')
+
+    # Test simple userspace strategy without external modification or sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy1_script.txt'))
+    # Test simple u_sampled strategy without external modification
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'u_sampled'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy2_script.txt'))
+    # Test simple all strategy without external modification or sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'all'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy3_script.txt'))
+    # Test simple a_sampled strategy without external modification
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'a_sampled'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy4_script.txt'))
+    # Test userspace strategy with overridden function, respecified function and added invalid function
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '-fs', 'main', '4', '-f',
+                                         '_Z12QuickSortBadPii', '-f', 'invalid'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy6_script.txt'))
+    # Change the mocked static extractor to empty one
+    monkeypatch.setattr(strategy, '_static_stap_extractor', _mocked_stap_extraction_empty)
+    # Test userspace strategy without static probes and added global_sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '--no-static', '-g', '10'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy5_script.txt'))
+    # Test u_sampled strategy without static probes and overriden global_sampling
+    # The output should be exactly the same as the previous
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'u_sampled', '--no-static', '-g', '10'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy5_script.txt'))
+    # Test userspace strategy with added invalid static probe (it won't be detected as --no-static is used)
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '--no-static',
+                                         '-s', 'INVALID'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy7_script.txt'))
 
 
 def test_show_help(pcs_full):

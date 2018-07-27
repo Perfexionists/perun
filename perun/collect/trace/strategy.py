@@ -81,8 +81,10 @@ def custom_strategy(func, func_sampled, static, static_sampled, dynamic, dynamic
     # Remove duplicate rules, merge sampled / non-sampled rule lists and optionally pair the rules
     kwargs['func'] = _remove_duplicate_probes(_merge_probes_lists(
         func, func_sampled, kwargs['global_sampling']))
-    kwargs['static'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
-        static, static_sampled, kwargs['global_sampling'])))
+    kwargs['static'] = []
+    if kwargs['with_static']:
+        kwargs['static'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
+            static, static_sampled, kwargs['global_sampling'])))
     kwargs['dynamic'] = _remove_duplicate_probes(_pair_rules(_merge_probes_lists(
         dynamic, dynamic_sampled, kwargs['global_sampling'])))
 
@@ -116,9 +118,11 @@ def extraction_strategy(func, func_sampled, static, static_sampled, **kwargs):
     kwargs['func'] = _merge_extracted_with_custom(
         _remove_duplicate_probes(_extract_functions(**kwargs)),
         _remove_duplicate_probes(_merge_probes_lists(func, func_sampled, kwargs['global_sampling'])))
-    kwargs['static'] = _merge_extracted_with_custom(
-        _remove_duplicate_probes(_pair_rules(_extract_static_probes(**kwargs))),
-        _remove_duplicate_probes(_pair_rules(_merge_probes_lists(static, static_sampled, kwargs['global_sampling']))))
+    kwargs['static'] = []
+    if kwargs['with_static']:
+        kwargs['static'] = _merge_extracted_with_custom(
+            _remove_duplicate_probes(_pair_rules(_extract_static_probes(**kwargs))),
+            _remove_duplicate_probes(_pair_rules(_merge_probes_lists(static, static_sampled, kwargs['global_sampling']))))
 
     return kwargs
 
@@ -268,8 +272,7 @@ def _extract_static_probes(binary, global_sampling, **kwargs):
         return []
 
     # Extract the static probe locations from the binary, note: stap -l returns code '1' if there are no static probes
-    output, _ = utils.run_safely_external_command('sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary),
-                                                  False)
+    output, _ = _static_stap_extractor(binary)
     output = output.decode('utf-8')
 
     # There are no static probes in the binary
@@ -278,6 +281,15 @@ def _extract_static_probes(binary, global_sampling, **kwargs):
 
     # Transform
     return [{'name': probe, 'sample': global_sampling} for probe in _static_probe_filter(output)]
+
+
+def _static_stap_extractor(binary):
+    """Wrapper for systemtap static probe points extraction. The wrapper allows to mock the systemtap invocation.
+
+    :param str binary: path to the binary file
+    :return tuple: (str, str) for standard output and standard error
+    """
+    return utils.run_safely_external_command('sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary), False)
 
 
 def _static_probe_filter(static_list):

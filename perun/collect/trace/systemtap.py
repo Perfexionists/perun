@@ -159,6 +159,10 @@ def _wait_for_fully_written(output):
 
     :param str output: name of the collection output file
     """
+    # Wait until the file exists
+    while not os.path.exists(output):
+        time.sleep(0.5)
+
     with open(output, 'rb') as content:
         # Wait until the file is not empty
         while os.path.getsize(output) == 0:
@@ -254,8 +258,14 @@ def _process_func_record(record, trace_stack, sequence_map):
     """
     if record.type == RecordType.FuncBegin:
         # Function entry, add to stack and note the sequence number
-        trace_stack.append(record._replace(sequence=sequence_map[record.name]['seq']))
-        sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
+        # TODO: temporary workaround until symbol cross-compare is finished
+        try:
+            trace_stack.append(record._replace(sequence=sequence_map[record.name]['seq']))
+            sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
+        except KeyError:
+            sequence_map[record.name] = {'seq': 0, 'sample': 1}
+            trace_stack.append(record._replace(sequence=sequence_map[record.name]['seq']))
+            sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
         return {}, trace_stack
     elif trace_stack and record.offset == trace_stack[-1].offset - 1:
         # Function exit, match with the function enter to create resources record

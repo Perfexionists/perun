@@ -271,7 +271,7 @@ def stored_profile_pool():
     Returns:
         list: list of stored profiles in the pcs_full
     """
-    profiles = list(all_profiles_in("full_profiles"))
+    profiles = list(all_profiles_in("full_profiles", True))
     assert len(profiles) == 3
     return profiles
 
@@ -429,7 +429,6 @@ def pcs_full():
 
     # Populate PCS with profiles
     jobs_dir = pcs.get_job_directory()
-    print(profiles)
     root_profile = Helpers.prepare_profile(jobs_dir, profiles[0], str(root))
     commands.add([root_profile], str(root))
     chead_profile1 = Helpers.prepare_profile(jobs_dir, profiles[1], str(current_head))
