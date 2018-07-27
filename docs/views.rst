@@ -68,7 +68,7 @@ Examples of Output
 
 The :ref:`views-bars` above shows the overall sum of the running times for each
 ``structure-unit-size`` for the ``SLList_search`` function collected by
-:ref:`collectors-complexity`. The interpretation highlights that the most of the consumed running
+:ref:`collectors-trace`. The interpretation highlights that the most of the consumed running
 time were over the single linked lists with 41 elements.
 
 .. image:: /../examples/memory-bars-stacked.*

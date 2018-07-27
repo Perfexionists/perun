@@ -224,7 +224,7 @@ def trace(ctx, **kwargs):
             "structure-unit-size": 0
         }
 
-    Complexity collector provides various collection *strategies* which are supposed to provide
+    Trace collector provides various collection *strategies* which are supposed to provide
     sensible default settings for collection. This allows the user to choose suitable
     collection method without the need of detailed rules / sampling specification. Currently
     supported strategies are:
@@ -260,7 +260,7 @@ def trace(ctx, **kwargs):
     is done automatically for static locations with convention <name> and <name>_end or <name>_END.
     Otherwise, it is possible to pair rules by the delimiter '#', such as <name1>#<name2>.
 
-    Complexity profiles are suitable for postprocessing by
+    Trace profiles are suitable for postprocessing by
     :ref:`postprocessors-regression-analysis` since they capture dependency of
     time consumption depending on the size of the structure. This allows one to
     model the estimation of trace of individual functions.
