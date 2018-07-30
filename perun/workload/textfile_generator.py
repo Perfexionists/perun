@@ -106,7 +106,7 @@ class TextfileGenerator(Generator):
 
         :return: path to a file
         """
-        for file_len in range(self.min_lines, self.max_lines + 1):
+        for file_len in range(self.min_lines, self.max_lines + 1, self.step):
             fd, path = tempfile.mkstemp()
             try:
                 print("Generating {}".format(path))
