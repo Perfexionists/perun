@@ -181,8 +181,8 @@ def _validate_input(**kwargs):
     # Set the binary if not provided
     if not kwargs['binary']:
         kwargs['binary'] = os.path.realpath(kwargs['cmd'])
-        if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
-            raise exceptions.InvalidBinaryException(kwargs['binary'])
+    if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
+        raise exceptions.InvalidBinaryException(kwargs['binary'])
     return kwargs
 
 

@@ -32,6 +32,8 @@ def test_collect_trace(monkeypatch, helpers, pcs_full, trace_collect_job):
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
 
     cmd, args, work, collectors, posts, config = trace_collect_job
+    config['collector_params']['trace']['binary'] = os.path.join(os.path.dirname(__file__),
+                                                                 'collect_trace', 'tst')
     runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
 
     # Assert that nothing was removed

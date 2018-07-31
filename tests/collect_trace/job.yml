@@ -1,4 +1,3 @@
-binary: './tests/collect_trace/tst'
 func:
     - 'main'
 func_sampled:
