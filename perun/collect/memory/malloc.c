@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <time.h> //clock()
 #include <stdbool.h>
+#include <pthread.h>
 
 #include "backtrace.h"
 
@@ -24,6 +25,7 @@
 
 static FILE *logFile = NULL;
 static bool profiling = false;
+__thread bool inside_malloc = false;
 
 /*
 GCC destructor attribute provides finalizing function which close log file properly
@@ -86,9 +88,10 @@ void *malloc(size_t size){
 
    void *ptr = real_malloc(size);
 
-   if(!profiling && ptr != NULL){
-
+   if(!profiling && ptr != NULL && !inside_malloc){
+      inside_malloc = true;
       ad_log("malloc", size, ptr);
+      inside_malloc = false;
    }
 
    return ptr;

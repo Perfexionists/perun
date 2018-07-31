@@ -13,7 +13,7 @@ CC = gcc
 all: lib
 
 lib: malloc.c backtrace.c
-	$(CC) -shared -fPIC malloc.c backtrace.c -o malloc.so -lunwind -ldl
+	$(CC) -shared -fPIC malloc.c backtrace.c -o malloc.so -lunwind -ldl -pthread
 
 clean:
 	rm -f malloc.so
