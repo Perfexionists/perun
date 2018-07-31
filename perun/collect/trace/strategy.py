@@ -122,8 +122,8 @@ def extraction_strategy(func, func_sampled, static, static_sampled, **kwargs):
     if kwargs['with_static']:
         kwargs['static'] = _merge_extracted_with_custom(
             _remove_duplicate_probes(_pair_rules(_extract_static_probes(**kwargs))),
-            _remove_duplicate_probes(_pair_rules(_merge_probes_lists(static, static_sampled, kwargs['global_sampling']))))
-
+            _remove_duplicate_probes(_pair_rules(_merge_probes_lists(static, static_sampled,
+                                                                     kwargs['global_sampling']))))
     return kwargs
 
 
@@ -260,20 +260,15 @@ def _extract_functions(binary, method, global_sampling, **_):
         return [{'name': func, 'sample': global_sampling} for func in output.splitlines()]
 
 
-def _extract_static_probes(binary, global_sampling, **kwargs):
+def _extract_static_probes(binary, global_sampling, **_):
     """Extract static probe locations from the supplied binary file.
 
     :param str binary: path to the binary file
     :param int global_sampling: the sampling value applied to all extracted static probe locations
     :return list: extracted static locations stored as a probes = dictionaries
     """
-    # Check if static symbols are desired and stap is present
-    if not kwargs['with_static'] or not _check_dependency('stap'):
-        return []
-
     # Extract the static probe locations from the binary, note: stap -l returns code '1' if there are no static probes
-    output, _ = _static_stap_extractor(binary)
-    output = output.decode('utf-8')
+    output = _static_stap_extractor(binary)
 
     # There are no static probes in the binary
     if not output or output.lstrip(' ').startswith('Tip:'):
@@ -287,9 +282,13 @@ def _static_stap_extractor(binary):
     """Wrapper for systemtap static probe points extraction. The wrapper allows to mock the systemtap invocation.
 
     :param str binary: path to the binary file
-    :return tuple: (str, str) for standard output and standard error
+    :return str: the decoded standard output
     """
-    return utils.run_safely_external_command('sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary), False)
+    if not _check_dependency('stap'):
+        out, _ = utils.run_safely_external_command('sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary),
+                                                   False)
+        return out.decode('utf-8')
+    return ''
 
 
 def _static_probe_filter(static_list):

@@ -104,18 +104,6 @@ probe process("cmp").function("_Z9repairTopPiii").return? {
 	printf("1 %s\n", thread_indent(-1))
 }
 
-probe process("cmp").mark("BEFORE_CYCLE") {
-	printf("3 %s BEFORE_CYCLE\n", thread_indent(0))
-}
-
-probe process("cmp").mark("BEFORE_CYCLE_end") {
-	printf("4 %s BEFORE_CYCLE_end\n", thread_indent(0))
-}
-
-probe process("cmp").mark("INSIDE_CYCLE") {
-	printf("2 %s INSIDE_CYCLE\n", thread_indent(0))
-}
-
 probe process("cmp").end {
 	printf("end")
 }

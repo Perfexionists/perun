@@ -34,13 +34,13 @@ def _mocked_stap(**_):
 
 
 def _mocked_stap_extraction(_):
-    return (b'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE")\n'
-            b'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE_end")\n'
-            b'process("/home/jirka/perun/tests/collect_trace/tst").mark("INSIDE_CYCLE")\n'), ''
+    return ('process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE")\n'
+            'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE_end")\n'
+            'process("/home/jirka/perun/tests/collect_trace/tst").mark("INSIDE_CYCLE")\n')
 
 
 def _mocked_stap_extraction_empty(_):
-    return b'Tip: /usr/share/doc/systemtap/README.Debian should help you get started.', ''
+    return 'Tip: /usr/share/doc/systemtap/README.Debian should help you get started.'
 
 
 def _get_latest_collect_script(script_dir):
@@ -558,6 +558,12 @@ def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-minvalid'] + binary)
     assert result.exit_code == 2
 
+    # Try binary parameter that is actually not executable ELF
+    target = os.path.join(script_dir, 'cpp_sources', 'tst.cpp')
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace'])
+    assert result.exit_code == 0
+    assert 'is not an executable ELF file.' in result.output
+
 
 def test_collect_trace_strategies(monkeypatch, pcs_full):
     """Test various trace collector strategies
@@ -591,12 +597,6 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     assert result.exit_code == 0
     assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
                                                                                          'strategy4_script.txt'))
-    # Test userspace strategy with overridden function, respecified function and added invalid function
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '-fs', 'main', '4', '-f',
-                                         '_Z12QuickSortBadPii', '-f', 'invalid'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
-                                                                                         'strategy6_script.txt'))
     # Change the mocked static extractor to empty one
     monkeypatch.setattr(strategy, '_static_stap_extractor', _mocked_stap_extraction_empty)
     # Test userspace strategy without static probes and added global_sampling
@@ -610,6 +610,12 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     assert result.exit_code == 0
     assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
                                                                                          'strategy5_script.txt'))
+    # Test userspace strategy with overridden function, respecified function and added invalid function
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '-fs', 'main', '4', '-f',
+                                         '_Z12QuickSortBadPii', '-f', 'invalid'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir), os.path.join(script_dir,
+                                                                                         'strategy6_script.txt'))
     # Test userspace strategy with added invalid static probe (it won't be detected as --no-static is used)
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '--no-static',
                                          '-s', 'INVALID'])
