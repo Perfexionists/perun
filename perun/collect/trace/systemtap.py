@@ -23,6 +23,7 @@ from perun.collect.trace.systemtap_script import RecordType
 
 # Collection statuses
 class Status(IntEnum):
+    """Status codes for before / collect / after phases. """
     OK = 0
     STAP = 1
     STAP_DEP = 2
@@ -30,27 +31,28 @@ class Status(IntEnum):
 
 
 # The trace record template
-_TraceRecord = collections.namedtuple('record', ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence'])
+_TraceRecord = collections.namedtuple('record',
+                                      ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence'])
 
 
-def systemtap_collect(script, cmd, args, **kwargs):
-    """Collects performance data using the system tap wrapper, assembled script and external command.
-    This function serves as a interface to the system tap collector.
+def systemtap_collect(script_path, log_path, output_path, cmd, args, **kwargs):
+    """Collects performance data using the system tap wrapper, assembled script and
+    external command. This function serves as a interface to the system tap collector.
 
-    :param str script: path to the assembled system tap script
+    :param str script_path: path to the assembled system tap script file
+    :param str log_path: path to the collection log file
+    :param str output_path: path to the collection output file
     :param str cmd: the external command that contains / invokes the profiled executable
     :param list args: the arguments supplied to the external command
     :param kwargs: additional collector configuration
     :return tuple: containing the collection status, path to the output file of the collector
     """
     # Create the output and log file for collection
-    output = os.path.join(kwargs['cmd_dir'], 'collect_record_{0}.txt'.format(kwargs['timestamp']))
-    collect_log = os.path.join(kwargs['cmd_dir'], 'collect_log_{0}.txt'.format(kwargs['timestamp']))
-
-    with open(collect_log, 'w') as logfile:
+    with open(log_path, 'w') as logfile:
         # Start the SystemTap process
         log.cprint('Starting the SystemTap process... ', 'white')
-        stap_runner, code = start_systemtap_in_background(script, output, logfile, **kwargs)
+        stap_runner, code = start_systemtap_in_background(script_path, output_path, logfile,
+                                                          **kwargs)
         if code != Status.OK:
             return code, None
         log.done()
@@ -67,10 +69,10 @@ def systemtap_collect(script, cmd, args, **kwargs):
 
         # Terminate SystemTap process after the file was fully written
         log.cprint('Data collection complete, terminating the SystemTap process... ', 'white')
-        _wait_for_fully_written(output)
+        _wait_for_fully_written(output_path)
         kill_systemtap_in_background(stap_runner)
         log.done()
-        return Status.OK, output
+        return Status.OK, output_path
 
 
 def start_systemtap_in_background(stap_script, output, logfile, **_):
@@ -86,7 +88,7 @@ def start_systemtap_in_background(stap_script, output, logfile, **_):
     if not stap:
         return Status.STAP_DEP
 
-    # Basically no-op, but requesting root password so os.setpgrp does not halt due to missing password
+    # Basically no-op, but fetches root password so os.setpgrp does not halt due to missing password
     utils.run_safely_external_command('sudo sleep 0')
     # The setpgrp is needed for killing the root process which spawns child processes
     process = utils.start_nonblocking_process(
@@ -98,7 +100,8 @@ def start_systemtap_in_background(stap_script, output, logfile, **_):
 
 
 def kill_systemtap_in_background(stap_process):
-    """Terminates the system tap process that is running in the background and all child processes that were spawned.
+    """Terminates the system tap process that is running in the background and all child
+    processes that were spawned.
 
     :param subprocess object stap_process: the object representing the system tap process
     """
@@ -110,13 +113,18 @@ def run_profiled_command(cmd, args, timeout, **_):
 
     :param str cmd: the external command
     :param list args: the command arguments
-    :param int timeout: if the process does not end before the specified timeout, the process is terminated
+    :param int timeout: if the process does not end before the specified timeout,
+                        the process is terminated
     """
-    if args != '':
-        full_command = '{0} {1}'.format(shlex.quote(cmd), ' '.join(args))
+    if args:
+        # The args could actually be a list or str, create str from list if needed
+        if isinstance(args, list):
+            args = ' '.join(args)
+        full_command = '{0} {1}'.format(shlex.quote(cmd), args)
     else:
         full_command = shlex.quote(cmd)
 
+    # Run the profiled command and block it with wait if timeout is specified
     process = utils.start_nonblocking_process(full_command)
     try:
         process.wait(timeout=timeout)
@@ -126,9 +134,9 @@ def run_profiled_command(cmd, args, timeout, **_):
 
 
 def _wait_for_systemtap_startup(logfile, stap_process):
-    """The system tap startup takes some time and it is necessary to wait until the process is ready before
-    the data collection itself. This function periodically scans the status log for updates until the process is
-    ready.
+    """The system tap startup takes some time and it is necessary to wait until the process
+    is ready before the data collection itself. This function periodically scans the status
+    log for updates until the process is ready.
 
     :param str logfile: name of the status log to check
     :param subprocess object stap_process: object representing the system tap process
@@ -153,9 +161,9 @@ def _wait_for_systemtap_startup(logfile, stap_process):
 
 
 def _wait_for_fully_written(output):
-    """Due to the system tap process being in the background, the output file is generally not fully written after
-    the external command is finished and system tap process killed. Thus we scan the output file for ending marker
-    that indicates finished writing.
+    """Due to the system tap process being in the background, the output file is generally
+    not fully written after the external command is finished and system tap process killed.
+    Thus we scan the output file for ending marker that indicates finished writing.
 
     :param str output: name of the collection output file
     """
@@ -169,41 +177,47 @@ def _wait_for_fully_written(output):
             time.sleep(0.5)
 
         while True:
+            # Cover the case where end marker is the only record
+            if content.readline().decode() == 'end\n':
+                return
             # Find the last line of the file
             content.seek(-2, os.SEEK_END)
             while content.read(1) != b'\n':
                 content.seek(-2, os.SEEK_CUR)
             marker = content.readline().decode()
             # The file is ready if it's last line is end marker
-            if marker == 'end':
+            if marker == 'end\n':
                 return
             time.sleep(0.5)
 
 
-def trace_to_profile(output, func, static, **kwargs):
-    """Transforms the collection output into the performance profile, where the collected time data are paired and
-    stored as a resources.
+def trace_to_profile(output_path, func, static, **kwargs):
+    """Transforms the collection output into the performance profile, where the
+    collected time data are paired and stored as a resources.
 
-    :param str output: name of the collection output file
+    :param str output_path: name of the collection output file
     :param list func: the function probe specifications
     :param list static: the static probe specifications as a dictionaries
     :param kwargs: additional parameters
     :return object: the generator object that produces dictionaries representing the resources
     """
     trace_stack = {'func': collections.defaultdict(list),  # thread -> trace stack
-                   'static': collections.defaultdict(lambda: collections.defaultdict(list)),  # thread -> name -> stack
+                   # thread -> name -> stack
+                   'static': collections.defaultdict(lambda: collections.defaultdict(list)),
                    'dynamic': collections.defaultdict(lambda: collections.defaultdict(list))}
-    sequence_map = {'func': {record['name']: {'seq': 0, 'sample': record['sample']} for record in func},
-                    'static': {record['name']: {'seq': 0, 'sample': record['sample']} for record in static},
+    sequence_map = {'func': {record['name']: {'seq': 0, 'sample': record['sample']}
+                             for record in func},
+                    'static': {record['name']: {'seq': 0, 'sample': record['sample']}
+                               for record in static},
                     'dynamic': collections.defaultdict(int)}
 
-    with open(output, 'r') as trace:
+    with open(output_path, 'r') as trace:
         # Create demangled counterparts of the function names
         # trace = _demangle(trace)
 
         for line in trace.read().splitlines(keepends=True):
             # File ended
-            if line == 'end' or line == 'end\n':
+            if line in ('end', 'end\n'):
                 return
 
             # Parse the line into the _TraceRecord tuple
@@ -215,37 +229,43 @@ def trace_to_profile(output, func, static, **kwargs):
                 yield resource
 
 
-def _demangle(trace):
-    """ Demangles the c++ function names in the collection output file if possible, otherwise does nothing.
-
-    :param handle trace: the opened collection output file
-    :return iterable: (demangled) file contents
-    """
-    # Demangle the output if demangler is present
-    demangler = shutil.which('c++filt')
-    if demangler:
-        return utils.get_stdout_from_external_command([demangler], stdin=trace)
-    else:
-        return trace
+# TODO: this should be used only after symbol cross-compare is functional
+# def _demangle(trace):
+#     """ Demangles the c++ function names in the collection output file if possible,
+#     otherwise does nothing.
+#
+#     :param handle trace: the opened collection output file
+#     :return iterable: (demangled) file contents
+#     """
+#     # Demangle the output if demangler is present
+#     demangler = shutil.which('c++filt')
+#     if demangler:
+#         return utils.get_stdout_from_external_command([demangler], stdin=trace)
+#     else:
+#         return trace
 
 
 def _process_record(record, trace_stack, sequence_map, static):
-    """Process one output file line = record by calling corresponding functions for the given record type.
+    """Process one output file line = record by calling corresponding functions for
+    the given record type.
 
     :param namedtuple record: the _TraceRecord namedtuple with parsed line values
-    :param dict trace_stack: the trace stack dictionary containing trace stacks for function / static / etc. probes
+    :param dict trace_stack: the trace stack dictionary containing trace stacks for
+                             function / static / etc. probes
     :param dict sequence_map: the map of sequence numbers for function / static / etc. probe names
     :param list static: the list of static probes used for pairing the static records
-    :return dict: the record transformed into the performance resource or empty dict if no resource could be produced
+    :return dict: the record transformed into the performance resource or empty dict if no resource
+                  could be produced
     """
+    # The record is function begin or end point
     if record.type == RecordType.FuncBegin or record.type == RecordType.FuncEnd:
-        resource, trace_stack['func'][record.thread] = _process_func_record(record, trace_stack['func'][record.thread],
-                                                                            sequence_map['func'])
+        resource = _process_func_record(record, trace_stack['func'][record.thread],
+                                        sequence_map['func'])
         return resource
-    else:
-        resource, trace_stack['static'][record.thread] = _process_static_record(
-            record, trace_stack['static'][record.thread], sequence_map['static'], static)
-        return resource
+    # The record is static probe point
+    resource = _process_static_record(record, trace_stack['static'][record.thread],
+                                      sequence_map['static'], static)
+    return resource
 
 
 def _process_func_record(record, trace_stack, sequence_map):
@@ -254,20 +274,18 @@ def _process_func_record(record, trace_stack, sequence_map):
     :param namedtuple record: the _TraceRecord namedtuple with parsed line values
     :param list trace_stack: the trace stack for function records
     :param dict sequence_map: stores the sequence counter for every function
-    :returns tuple: the resource dictionary or empty dict, updated trace stack
+    :returns dict: the resource dictionary or empty dict
     """
     if record.type == RecordType.FuncBegin:
         # Function entry, add to stack and note the sequence number
         # TODO: temporary workaround until symbol cross-compare is finished
         try:
-            trace_stack.append(record._replace(sequence=sequence_map[record.name]['seq']))
-            sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
+            _add_to_stack(trace_stack, sequence_map, record)
         except KeyError:
             sequence_map[record.name] = {'seq': 0, 'sample': 1}
-            trace_stack.append(record._replace(sequence=sequence_map[record.name]['seq']))
-            sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
-        return {}, trace_stack
-    elif trace_stack and record.offset == trace_stack[-1].offset - 1:
+            _add_to_stack(trace_stack, sequence_map, record)
+        return {}
+    if trace_stack and record.offset == trace_stack[-1].offset - 1:
         # Function exit, match with the function enter to create resources record
         matching_record = trace_stack.pop()
         return {'amount': int(record.timestamp) - int(matching_record.timestamp),
@@ -275,7 +293,7 @@ def _process_func_record(record, trace_stack, sequence_map):
                 'type': 'mixed',
                 'subtype': 'time delta',
                 'thread': record.thread,
-                'structure-unit-size': matching_record.sequence}, trace_stack
+                'structure-unit-size': matching_record.sequence}
     raise exceptions.TraceStackException(record, trace_stack)
 
 
@@ -286,7 +304,7 @@ def _process_static_record(record, trace_stack, sequence_map, probes):
     :param dict trace_stack: the dictionary containing trace stack (list) for each static probe
     :param dict sequence_map: stores the sequence counter for every static probe
     :param list probes: the list of all static probe definitions for pairing
-    :returns tuple: the resource dictionary or empty dict, updated trace stack
+    :returns dict: the resource dictionary or empty dict
     """
     matching_record = None
     if record.type == RecordType.StaticSingle:
@@ -294,8 +312,7 @@ def _process_static_record(record, trace_stack, sequence_map, probes):
         if trace_stack[record.name]:
             matching_record = trace_stack[record.name].pop()
             # Add the record into the trace stack to correctly measure time between each two hits
-            trace_stack[record.name].append(record._replace(sequence=sequence_map[record.name]))
-            sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
+            _add_to_stack(trace_stack[record.name], sequence_map, record)
     elif record.type == RecordType.StaticEnd:
         # Static end probe, find the starting probe record
         name = None
@@ -311,15 +328,25 @@ def _process_static_record(record, trace_stack, sequence_map, probes):
     if matching_record:
         # Matching record was found, create resource
         return {'amount': int(record.timestamp) - int(matching_record.timestamp),
-                'uid': record.name + '#' + matching_record.name,
+                'uid': matching_record.name + '#' + record.name,
                 'type': 'mixed',
                 'subtype': 'time delta',
-                'structure-unit-size': record.sequence}, trace_stack
-    else:
-        # No matching record found, insert into the stack
-        trace_stack[record.name].append(record._replace(sequence=sequence_map[record.name]))
-        sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
-        return {}, trace_stack
+                'structure-unit-size': matching_record.sequence}
+
+    # No matching record found, insert into the stack
+    _add_to_stack(trace_stack[record.name], sequence_map, record)
+    return {}
+
+
+def _add_to_stack(trace_stack, sequence_map, record):
+    """Updates the trace stack and sequence mapping structures.
+
+    :param list trace_stack: the trace stack list
+    :param dict sequence_map: the sequence mapping dictionary
+    :param namedtuple record: the _TraceRecord namedtuple representing the parsed record
+    """
+    trace_stack.append(record._replace(sequence=sequence_map[record.name]['seq']))
+    sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
 
 
 def _parse_record(line):

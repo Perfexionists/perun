@@ -105,5 +105,5 @@ probe process("cmp").function("_Z9repairTopPiii").return? {
 }
 
 probe process("cmp").end {
-	printf("end")
+	printf("end\n")
 }

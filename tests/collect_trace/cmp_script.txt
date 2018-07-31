@@ -51,5 +51,5 @@ probe process("cmp").mark("TEST_SINGLE2") {
 }
 
 probe process("cmp").end {
-	printf("end")
+	printf("end\n")
 }

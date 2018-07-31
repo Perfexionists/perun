@@ -155,5 +155,5 @@ probe process("cmp").mark("INSIDE_CYCLE") {
 }
 
 probe process("cmp").end {
-	printf("end")
+	printf("end\n")
 }

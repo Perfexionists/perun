@@ -20,9 +20,9 @@ import perun.utils.log as log
 
 
 class _Status(IntEnum):
-    OK = 0,
-    STAP_DEP = 1,
-    NM_DEP = 2,
+    OK = 0
+    STAP_DEP = 1
+    NM_DEP = 2
     AWK_DEP = 3
 
 
@@ -63,9 +63,9 @@ def custom_strategy(func, func_sampled, static, static_sampled, dynamic, dynamic
     specified by the user are used for collection.
 
     The output dictionary is updated as follows:
-     - func, static, dynamic: contains prepared rules for profiling with unified sampling specification
-       - the rules are stored as lists of dictionaries with keys 'name', 'sample' and optionally 'pair' for
-         rules that can be paired (such as static or dynamic rules)
+     - func, static, dynamic: contains rules for profiling with unified sampling specification
+       - the rules are stored as lists of dictionaries with keys 'name', 'sample' and optionally
+         'pair' for rules that can be paired (such as static or dynamic rules)
 
     :param list func: the list of function names that will be traced
     :param list func_sampled: the list of function names with specified sampling
@@ -93,14 +93,15 @@ def custom_strategy(func, func_sampled, static, static_sampled, dynamic, dynamic
 
 
 def extraction_strategy(func, func_sampled, static, static_sampled, **kwargs):
-    """The userspace, all, u_sampled and a_sampled strategy implementation. No manual configuration of profiled
-    locations is required and is instead automatically extracted from the provided binary according to the specific
-    strategy. However the user can specify additional rules, that have higher priority than the extracted ones.
+    """The userspace, all, u_sampled and a_sampled strategy implementation. No manual
+    configuration of profiled locations is required and is instead automatically extracted
+    from the provided binary according to the specific strategy. However the user can
+    specify additional rules, that have higher priority than the extracted ones.
 
     The output dictionary is updated as follows:
      - func, static: contains prepared rules for profiling with unified sampling specification
-       - the rules are stored as lists of dictionaries with keys 'name', 'sample' and optionally 'pair' for
-         rules that can be paired (such as static or dynamic rules)
+       - the rules are stored as lists of dictionaries with keys 'name', 'sample' and optionally
+         'pair' for rules that can be paired (such as static or dynamic rules)
 
     :param list func: the list of function names that will be traced
     :param list func_sampled: the list of function names with specified sampling
@@ -111,13 +112,15 @@ def extraction_strategy(func, func_sampled, static, static_sampled, **kwargs):
     :returns kwargs: the updated dictionary with post processed rules
     """
     # Apply global sampling for sampled strategies
-    if (kwargs['method'] == 'u_sampled' or kwargs['method'] == 'a_sampled') and kwargs['global_sampling'] == 1:
+    if ((kwargs['method'] == 'u_sampled' or kwargs['method'] == 'a_sampled')
+            and kwargs['global_sampling'] == 1):
         kwargs['global_sampling'] = _DEFAULT_SAMPLE
 
-    # Create probe locations: process separately user supplied and extracted locations, then merge them
+    # Create probe locations: process separately user and extracted locations, then merge them
     kwargs['func'] = _merge_extracted_with_custom(
         _remove_duplicate_probes(_extract_functions(**kwargs)),
-        _remove_duplicate_probes(_merge_probes_lists(func, func_sampled, kwargs['global_sampling'])))
+        _remove_duplicate_probes(_merge_probes_lists(func, func_sampled,
+                                                     kwargs['global_sampling'])))
     kwargs['static'] = []
     if kwargs['with_static']:
         kwargs['static'] = _merge_extracted_with_custom(
@@ -129,8 +132,8 @@ def extraction_strategy(func, func_sampled, static, static_sampled, **kwargs):
 
 def _pair_rules(probes):
     """Pairs the rules according to convention:
-     - rule names with '#' serving as a delimiter between two probes, which should be paired as a starting and
-       ending probe
+     - rule names with '#' serving as a delimiter between two probes, which should be paired
+       as a starting and ending probe
      - rules with <name>_end or <name>_END are paired with corresponding <name> probes
 
      :param list probes: the list of probes (as dicts) that should be paired
@@ -146,8 +149,9 @@ def _pair_rules(probes):
             result.append(probe)
         elif not probe['name'].endswith('_end') and not probe['name'].endswith('_END'):
             # Find the pair probe automatically as <name>_end template
-            pair = next((pair_probe for pair_probe in probes if (pair_probe['name'] == probe['name'] + '_end' or
-                                                                 pair_probe['name'] == probe['name'] + '_END')), None)
+            pair = next((pair_probe for pair_probe in probes if
+                         (pair_probe['name'] == probe['name'] + '_end' or
+                          pair_probe['name'] == probe['name'] + '_END')), None)
             if pair:
                 probe['pair'] = pair['name']
             result.append(probe)
@@ -155,7 +159,8 @@ def _pair_rules(probes):
 
 
 def _merge_probes_lists(probes, probes_sampled, global_sampling):
-    """Merges the probe lists without and with specified sampling into one list with unified sampling specification
+    """Merges the probe lists without and with specified sampling into one list with
+    unified sampling specification
 
     :param list probes: list of strings that represent probe names
     :param list probes_sampled: list of tuples that contain 0) probe name, 1) probe sampling
@@ -174,8 +179,8 @@ def _merge_probes_lists(probes, probes_sampled, global_sampling):
     return probes
 
 
-# TODO: allow the probe to be used in multiple pairs e.g. TEST+TEST_END, TEST+TEST_END2, requires modification of
-# the script generator
+# TODO: allow the probe to be used in multiple pairs e.g. TEST+TEST_END, TEST+TEST_END2,
+# requires modification of the script generator
 def _remove_duplicate_probes(probes):
     """Removes duplicate rules / probes using following technique:
      1) probes are classified into paired, paired with sampling, single and single with sampling
@@ -217,8 +222,8 @@ def _remove_duplicate_probes(probes):
 
 
 def _merge_extracted_with_custom(extracted, custom):
-    """Merges extracted probe locations with user-specified ones, where the extracted have lower priority and can be
-    overwritten by the user supplied rules.
+    """Merges extracted probe locations with user-specified ones, where the extracted have
+    lower priority and can be overwritten by the user supplied rules.
 
     :param list extracted: list of extracted probes represented as a dictionaries
     :param list custom: list of user-specified probes represented also as a dictionaries
@@ -245,7 +250,7 @@ def _extract_functions(binary, method, global_sampling, **_):
     # Check if nm and awk utils are available, both are needed for the extraction
     if not _check_dependency('nm') or not _check_dependency('awk'):
         return []
-    user = method == 'userspace' or method == 'u_sampled'
+    user = method in ('userspace', 'u_sampled')
 
     # Extract user function symbols from the supplied binary
     awk_filter = '$2 == "T"' if user else '$2 == "T" || $2 == "W"'
@@ -255,9 +260,9 @@ def _extract_functions(binary, method, global_sampling, **_):
 
     # Transform to the desired format
     if user:
-        return [{'name': func, 'sample': global_sampling} for func in output.splitlines() if _filter_user_symbol(func)]
-    else:
-        return [{'name': func, 'sample': global_sampling} for func in output.splitlines()]
+        return [{'name': func, 'sample': global_sampling} for func in output.splitlines() if
+                _filter_user_symbol(func)]
+    return [{'name': func, 'sample': global_sampling} for func in output.splitlines()]
 
 
 def _extract_static_probes(binary, global_sampling, **_):
@@ -267,7 +272,8 @@ def _extract_static_probes(binary, global_sampling, **_):
     :param int global_sampling: the sampling value applied to all extracted static probe locations
     :return list: extracted static locations stored as a probes = dictionaries
     """
-    # Extract the static probe locations from the binary, note: stap -l returns code '1' if there are no static probes
+    # Extract the static probe locations from the binary
+    # note: stap -l returns code '1' if there are no static probes
     output = _static_stap_extractor(binary)
 
     # There are no static probes in the binary
@@ -279,14 +285,15 @@ def _extract_static_probes(binary, global_sampling, **_):
 
 
 def _static_stap_extractor(binary):
-    """Wrapper for systemtap static probe points extraction. The wrapper allows to mock the systemtap invocation.
+    """Wrapper for systemtap static probe points extraction. The wrapper allows to mock the
+    systemtap invocation.
 
     :param str binary: path to the binary file
     :return str: the decoded standard output
     """
-    if not _check_dependency('stap'):
-        out, _ = utils.run_safely_external_command('sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary),
-                                                   False)
+    if _check_dependency('stap'):
+        out, _ = utils.run_safely_external_command(
+            'sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary), False)
         return out.decode('utf-8')
     return ''
 
@@ -305,15 +312,15 @@ def _static_probe_filter(static_list):
 
 
 def _filter_user_symbol(func):
-    """Filtering function for extracted function symbols from the executable, specifically used to filter symbols
-    that are from standard library etc.
+    """Filtering function for extracted function symbols from the executable,
+    specifically used to filter symbols that are from standard library etc.
 
     :param str func: the (mangled) function name
     :return bool: True if the function is from the user, false otherwise
     """
     if not func:
         return False
-    # Filter out function that start with underscore and not with '_Z', which is used in mangled symbols
+    # Filter function that start with underscore and not with '_Z', which is used in mangled symbols
     flen = len(func)
     if func[0] == '_':
         if func[:2] != '_Z' or flen < 3:
