@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <time.h> //clock()
 #include <stdbool.h>
-#include <pthread.h>
 
 #include "backtrace.h"
 
@@ -25,7 +24,7 @@
 
 static FILE *logFile = NULL;
 static bool profiling = false;
-__thread bool inside_malloc = false;
+bool inside_malloc = false;
 
 /*
 GCC destructor attribute provides finalizing function which close log file properly
