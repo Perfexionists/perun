@@ -21,7 +21,7 @@ docs-all:
 	$(MAKE) -C docs dirhtml
 	$(MAKE) -C docs latex
 
-docs-release: docs-latex
+docs-release: docs-latex docs
 	cp ./docs/_build/latex/Perun.pdf ./docs/pdf/perun.pdf
 
 # Releases the latest documentation to the gh-pages

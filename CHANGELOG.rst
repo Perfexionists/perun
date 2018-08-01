@@ -6,6 +6,20 @@ HEAD
 
 **To be included in next release**
 
+0.15.3 (2018-08-01)
+-------------------
+
+`commit: a9b46ed478258bbcd8292df0775a14e69b7db329`
+
+**Extract trace configuration automatically**
+
+  - rename complexity collector to **trace**
+  - fix minor issues with trace collector
+  - add basic support for parallel programs in trace collector
+  - add basic support for non-terminating programs (--timeout) in trace collector
+  - fix minor issues in incorrect piping (class with ||)
+  - add lookup of profiled functions in trace collector
+
 0.15.2 (2018-07-20)
 -------------------
 
