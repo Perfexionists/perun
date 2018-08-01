@@ -864,7 +864,7 @@ def job(ctx, **kwargs):
         perun run job -c complexity -b ./mybin -w sll.cpp -cp complexity targetdir=./src
 
     This commands runs one job './mybin sll.cpp' using the
-    :ref:`collectors-complexity`, which uses custom binaries targeted at
+    :ref:`collectors-trace`, which uses custom binaries targeted at
     ``./src`` directory.
 
     .. code-block:: bash
@@ -1024,6 +1024,7 @@ def check_profiles(baseline_profile, target_profile, minor, **_):
 
         5. Otherwise, the directory is walked for any match. Each found match
            is asked for confirmation by user.
+
     """
     print("")
     check.degradation_between_files(baseline_profile, target_profile, minor)

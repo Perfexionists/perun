@@ -339,7 +339,7 @@ List of Supported Options
     ``profile_for_each_workload`` is set to true value (true, yes, etc.), then isolate profile will
     be generated for each collected workload. Otherwise the resulting profiles are merged into the
     one profile, and each resources has additional key called "workload", that allows using
-    :ref:`_postprocessors-regression-analysis` of amount depending on the workload.
+    :ref:`postprocessors-regression-analysis` of amount depending on the workload.
 
     For more details about supported generators refer to :ref:`jobs-workload-generators`.
 

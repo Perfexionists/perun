@@ -21,6 +21,7 @@ The Integer Generator can be configured by following options:
   * ``min_range``: the minimal integer value that shall be generated.
   * ``max_range``: the maximal integer value that shall be generated.
   * ``step``: the step (or increment) of the range.
+
 """
 
 from perun.workload.generator import Generator

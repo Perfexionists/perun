@@ -36,7 +36,7 @@ gh-pages:
 	cp·CHANGELOG.rst·docs/changelog.rst
 	make docs
 	mv·-fv·docs/_build/html/*·./
-	rm·-rf·docs·examples·figs·Makefile·CHANGELOG.rst
+	rm·-rf·docs·examples·figs·CHANGELOG.rst
 	git add -A
 	git·commit·-m·"Generated·gh-pages·for·version·`git·describe·--tags·`git·rev-list·--tags·--max-count=1``"
 
