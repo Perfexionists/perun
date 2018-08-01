@@ -246,16 +246,16 @@ class InvalidTransformationException(GenericRegressionExceptionBase):
         return self.msg
 
 
-class StrategyNotImplemented(Exception):
-    """Raised when requested computation method/strategy is not implemented"""
-    def __init__(self, strategy):
+class InvalidBinaryException(Exception):
+    """Raised when collector parameter 'binary' is not actually executable ELF file"""
+    def __init__(self, binary):
         """
-        :param str strategy: the requested strategy
+        :param str binary: the supplied binary parameter
         """
         super().__init__("")
-        self.strategy = strategy
-        self.msg = ("Requested computation method '{0}' is currently not implemented."
-                    .format(self.strategy))
+        self.binary = binary
+        self.msg = ("Supplied binary parameter '{0}' is not an executable ELF file."
+                    .format(self.binary))
 
     def __str__(self):
         return self.msg

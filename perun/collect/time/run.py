@@ -105,6 +105,6 @@ def time(ctx, **kwargs):
         }
 
     Refer to :ref:`collectors-time` for more thorough description and examples
-    of `complexity` collector.
+    of `trace` collector.
     """
     runner.run_collector_from_cli_context(ctx, 'time', kwargs)

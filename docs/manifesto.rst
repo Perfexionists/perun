@@ -405,7 +405,7 @@ Runners have following modes:
 Profiles
 ========
 
-Perun currently supports only three types of profiles (time, space, complexity).
+Perun currently supports only three types of profiles (time, space, trace).
 These can be visualized with several strategies.
 
 !Note that if the checked out Major Version has some uncommited changes, then the
@@ -425,7 +425,7 @@ Our current focus is on the following types of profiles:
   1. Time---amount of time the program spends on given workload
   2. Space---amount of resources the program spends on given workload,
      moreover, the mapping of objects to addresses.
-  3. Complexity---the complexity of the program or given/chosen functions
+  3. Trace---the complexity of the program or given/chosen functions
 
 Perun profile format is currently under development, the current version is
 described in the following snipped, where the # parts are used as comments for

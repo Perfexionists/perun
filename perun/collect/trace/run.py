@@ -1,4 +1,4 @@
-"""Wrapper for complexity collector, which collects profiling data about
+"""Wrapper for trace collector, which collects profiling data about
 running times and sizes of structures.
 
 Specifies before, collect and after functions to perform the initialization,
@@ -7,12 +7,13 @@ collection and postprocessing of collection data.
 
 from subprocess import CalledProcessError
 import time
+import os
 
 import click
 
-import perun.collect.complexity.strategy as strategy
-import perun.collect.complexity.systemtap as systemtap
-import perun.collect.complexity.systemtap_script as stap_script
+import perun.collect.trace.strategy as strategy
+import perun.collect.trace.systemtap as systemtap
+import perun.collect.trace.systemtap_script as stap_script
 import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
 import perun.utils as utils
@@ -31,7 +32,7 @@ _COLLECTOR_SUBTYPES = {
 _COLLECTOR_STATUS = {
     systemtap.Status.OK: (CollectStatus.OK, 'Ok'),
     systemtap.Status.STAP: (CollectStatus.ERROR,
-                            'SystemTap related issue, see the corresponding collect_log_<timestamp>.txt file.'),
+                            'SystemTap related issue, see the corresponding {log} file.'),
     systemtap.Status.STAP_DEP: (CollectStatus.ERROR, 'SystemTap dependency missing.'),
     systemtap.Status.EXCEPT: (CollectStatus.ERROR, '')  # The msg should be set by the exception
 }
@@ -41,15 +42,16 @@ _COLLECTOR_STATUS = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(cmd, **kwargs):
+def before(**kwargs):
     """ Assembles the SystemTap script according to input parameters and collection strategy
 
     The output dictionary is updated with:
      - timestamp: current timestamp that is used for saved files
      - cmd, cmd_dir, cmd_base: absolute path to the command, its directory and the command base name
-     - script: path to the generated script file
+     - script_path: path to the generated script file
+     - log_path: path to the collection log
+     - output_path: path to the collection output
 
-    :param string cmd: the profiled command
     :param kwargs: dictionary containing the configuration settings for the collector
     :returns: tuple (int as a status code, nonzero values for errors,
                     string as a status message, mainly for error states,
@@ -58,21 +60,32 @@ def before(cmd, **kwargs):
     try:
         log.cprint('Starting the pre-processing phase... ', 'white')
 
-        kwargs = _validate_input(**kwargs)
+        # Update the configuration dictionary with some additional values
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        kwargs['cmd'], kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(cmd)
+        _, kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(kwargs['cmd'])
+        kwargs['script_path'] = _create_collector_file('script', '.stp', **kwargs)
+        kwargs['log_path'] = _create_collector_file('log', **kwargs)
+        kwargs['output_path'] = _create_collector_file('record', **kwargs)
+
+        # Validate collection parameters
+        kwargs = _validate_input(**kwargs)
 
         # Extract and / or post process the collect configuration
         kwargs = strategy.extract_configuration(**kwargs)
+        if not kwargs['func'] and not kwargs['static'] and not kwargs['dynamic']:
+            return CollectStatus.ERROR, ('No function, static or dynamic probes to be profiled '
+                                         '(due to invalid specification, failed extraction or '
+                                         'filtering)'), dict(kwargs)
 
         # Assemble script according to the parameters
-        kwargs['script'] = stap_script.assemble_system_tap_script(**kwargs)
+        stap_script.assemble_system_tap_script(**kwargs)
 
         log.done()
-        return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
+        result = _COLLECTOR_STATUS[systemtap.Status.OK]
+        return result[0], result[1], dict(kwargs)
 
     except (OSError, ValueError, CalledProcessError,
-            UnicodeError, exceptions.StrategyNotImplemented) as exception:
+            UnicodeError, exceptions.InvalidBinaryException) as exception:
         log.failed()
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT][0], str(exception), dict(kwargs)
 
@@ -88,16 +101,18 @@ def collect(**kwargs):
               string as a status message, mainly for error states,
               dict of kwargs and new values)
     """
-    log.cprint('Running the collector, progress output stored in collect_log_{0}.txt\n'
-               'This may take a while... '.format(kwargs['timestamp']), 'white')
+    log.cprintln('Running the collector, progress output stored in collect_log_{0}.txt\n'
+                 'This may take a while... '.format(kwargs['timestamp']), 'white')
     try:
         # Call the system tap
-        code, kwargs['output'] = systemtap.systemtap_collect(**kwargs)
-        if code == systemtap.Status.OK:
-            log.done()
-        else:
+        code, kwargs['output_path'] = systemtap.systemtap_collect(**kwargs)
+        result = _COLLECTOR_STATUS[code]
+        if code != systemtap.Status.OK:
             log.failed()
-        return _COLLECTOR_STATUS[code][0], _COLLECTOR_STATUS[code][1], dict(kwargs)
+            # Add specific return for STAP error which includes the precise log file path
+            if code == systemtap.Status.STAP:
+                return result[0], result[1].format(kwargs['log_path']), dict(kwargs)
+        return result[0], result[1], dict(kwargs)
 
     except (OSError, CalledProcessError) as exception:
         log.failed()
@@ -105,7 +120,7 @@ def collect(**kwargs):
 
 
 def after(**kwargs):
-    """ Handles the complexity collector output and transforms it into resources
+    """ Handles the trace collector output and transforms it into resources
 
     The output dictionary is updated with:
      - profile: the performance profile contents created from the collector output
@@ -129,7 +144,8 @@ def after(**kwargs):
             }
         }
         log.done()
-        return _COLLECTOR_STATUS[systemtap.Status.OK][0], _COLLECTOR_STATUS[systemtap.Status.OK][1], dict(kwargs)
+        result = _COLLECTOR_STATUS[systemtap.Status.OK]
+        return result[0], result[1], dict(kwargs)
 
     except (CalledProcessError, exceptions.TraceStackException) as exception:
         log.failed()
@@ -148,10 +164,39 @@ def _validate_input(**kwargs):
     kwargs['static_sampled'] = list(kwargs.get('static_sampled', ''))
     kwargs['dynamic'] = list(kwargs.get('dynamic', ''))
     kwargs['dynamic_sampled'] = list(kwargs.get('dynamic_sampled', ''))
-    kwargs['global_sampling'] = kwargs.get('global_sampling', 0)
+    kwargs['global_sampling'] = kwargs.get('global_sampling', 1)
+
+    # Normalize global sampling
     if kwargs['global_sampling'] <= 1:
-        kwargs['global_sampling'] = 0
+        kwargs['global_sampling'] = 1
+
+    # Normalize timeout value
+    if 'timeout' not in kwargs or kwargs['timeout'] <= 0:
+        kwargs['timeout'] = None
+
+    # Set the with-static if not provided
+    if 'with_static' not in kwargs:
+        kwargs['with_static'] = True
+
+    # Set the binary if not provided
+    if not kwargs['binary']:
+        kwargs['binary'] = os.path.realpath(kwargs['cmd'])
+    if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
+        raise exceptions.InvalidBinaryException(kwargs['binary'])
     return kwargs
+
+
+def _create_collector_file(name, suffix='.txt', **kwargs):
+    """Prepares path to the requested file used during collection.
+    The format is as follows: 'collect_<name>_<timestamp><suffix>
+
+    :param str name: further specification of collector file name
+    :param str suffix: the file suffix
+    :param kwargs: additional parameters, e.g. timestamp
+    :return str: assembled path to the file
+    """
+    return os.path.join(kwargs['cmd_dir'], 'collect_{name}_{time}{suffix}'
+                        .format(name=name, time=kwargs['timestamp'], suffix=suffix))
 
 
 # TODO: allow multiple executables to be specified
@@ -172,14 +217,20 @@ def _validate_input(**kwargs):
               help='Set the probe point and sampling for the given static location.')
 @click.option('--dynamic-sampled', '-ds', type=(str, int), multiple=True,
               help='Set the probe point and sampling for the given dynamic location.')
-@click.option('--global-sampling', '-g', type=int, default=0,
+@click.option('--global-sampling', '-g', type=int, default=1,
               help='Set the global sample for all probes, sampling parameter for specific'
                    ' rules have higher priority.')
-@click.option('--binary', '-b', type=click.Path(exists=True), required=True,
-              help='The profiled executable')
+@click.option('--with-static/--no-static', default=True,
+              help='The selected method will also extract and profile static probes.')
+@click.option('--binary', '-b', type=click.Path(exists=True),
+              help='The profiled executable. If not set, then the command is considered '
+                   'to be the profiled executable and is used as a binary parameter')
+@click.option('--timeout', '-t', type=int, default=0,
+              help='Set time limit for the profiled command, i.e. the command will be terminated '
+                   'after reaching the time limit. Useful for endless commands etc.')
 @click.pass_context
-def complexity(ctx, **kwargs):
-    """Generates `complexity` performance profile, capturing running times of
+def trace(ctx, **kwargs):
+    """Generates `trace` performance profile, capturing running times of
     function depending on underlying structural sizes.
 
     \b
@@ -201,7 +252,7 @@ def complexity(ctx, **kwargs):
             "structure-unit-size": 0
         }
 
-    Complexity collector provides various collection *strategies* which are supposed to provide
+    Trace collector provides various collection *strategies* which are supposed to provide
     sensible default settings for collection. This allows the user to choose suitable
     collection method without the need of detailed rules / sampling specification. Currently
     supported strategies are:
@@ -222,33 +273,34 @@ def complexity(ctx, **kwargs):
     Note that manually specified parameters have higher priority than strategy specification
     and it is thus possible to override concrete rules / sampling by the user.
 
-    The collector interface operates with two seemingly same concepts: (external) command and binary.
-    External command refers to the script, executable, makefile, etc. that will be called / invoked
-    during the profiling, such as 'make test', 'run_script.sh', './my_binary'.
+    The collector interface operates with two seemingly same concepts: (external) command
+    and binary. External command refers to the script, executable, makefile, etc. that will
+    be called / invoked during the profiling, such as 'make test', 'run_script.sh', './my_binary'.
     Binary, on the other hand, refers to the actual binary or executable file that will be profiled
     and contains specified functions / static probes etc. It is expected that the binary will be
     invoked / called as part of the external command script or that external command and binary are
     the same.
 
-    The interface for rules (functions, static probes) specification offers a way to specify profiled
-    locations both with sampling or without it. Note that sampling can reduce the overhead imposed by
-    the profiling. Static rules can be further paired - paired rules act as a start and end point for
-    time measurement. Without a pair, the rule measures time between each two probe hits. The pairing
-    is done automatically for static locations with convention <name> and <name>_end or <name>_END.
+    The interface for rules (functions, static probes) specification offers a way to specify
+    profiled locations both with sampling or without it. Note that sampling can reduce the
+    overhead imposed by the profiling. Static rules can be further paired - paired rules act
+    as a start and end point for time measurement. Without a pair, the rule measures time
+    between each two probe hits. The pairing is done automatically for static locations with
+    convention <name> and <name>_end or <name>_END.
     Otherwise, it is possible to pair rules by the delimiter '#', such as <name1>#<name2>.
 
-    Complexity profiles are suitable for postprocessing by
+    Trace profiles are suitable for postprocessing by
     :ref:`postprocessors-regression-analysis` since they capture dependency of
     time consumption depending on the size of the structure. This allows one to
-    model the estimation of complexity of individual functions.
+    model the estimation of trace of individual functions.
 
     Scatter plots are suitable visualization for profiles collected by
-    `complexity` collector, which plots individual points along with regression
+    `trace` collector, which plots individual points along with regression
     models (if the profile was postprocessed by regression analysis). Run
     ``perun show scatter --help`` or refer to :ref:`views-scatter` for more
     information about `scatter plots`.
 
-    Refer to :ref:`collectors-complexity` for more thorough description and
-    examples of `complexity` collector.
+    Refer to :ref:`collectors-trace` for more thorough description and
+    examples of `trace` collector.
     """
-    runner.run_collector_from_cli_context(ctx, 'complexity', kwargs)
+    runner.run_collector_from_cli_context(ctx, 'trace', kwargs)

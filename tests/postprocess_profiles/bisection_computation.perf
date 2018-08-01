@@ -304,7 +304,7 @@
       "internal_storage_size": 20000,
       "internal_data_filename": "trace.log"
     },
-    "name": "complexity"
+    "name": "trace"
   },
   "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a"
 }

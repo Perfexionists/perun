@@ -82,8 +82,7 @@ def is_executable_elf(file, only_not_stripped=False):
     """
     # Determine file magic code, we are looking out for ELF files
     file_magic = magic.from_file(file)
-    if file_magic.startswith('ELF') and \
-            ('executable' in file_magic or 'shared object' in file_magic):
+    if file_magic.startswith('ELF') and ('executable' in file_magic or 'shared object' in file_magic):
         if only_not_stripped:
             return 'not stripped' in file_magic
         return True
@@ -156,7 +155,7 @@ def run_safely_external_command(cmd, check_results=True):
     :raises subprocess.CalledProcessError: when any of the piped commands fails
     """
     # Split
-    unpiped_commands = list(map(str.strip, cmd.split("|")))
+    unpiped_commands = list(map(str.strip, cmd.split(" | ")))
     cmd_no = len(unpiped_commands)
 
     # Run the command through pipes
@@ -289,7 +288,7 @@ def get_supported_module_names(package):
         ))
     return {
         'vcs': ['git'],
-        'collect': ['complexity', 'memory', 'time'],
+        'collect': ['trace', 'memory', 'time'],
         'postprocess': ['clusterizer', 'filter', 'normalizer', 'regression_analysis'],
         'view': ['bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
     }[package]

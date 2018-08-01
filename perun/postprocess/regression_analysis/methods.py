@@ -134,7 +134,7 @@ def interval_computation(x_pts, y_pts, computation_models, steps, **_):
     and each interval is computed separately using the full computation.
 
     This technique allows to find different regression models in each interval and thus discover
-    different complexity behaviour for algorithm based on it's input size.
+    different trace behaviour for algorithm based on it's input size.
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates

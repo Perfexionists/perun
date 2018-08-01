@@ -74,8 +74,8 @@ Collect Commands
 Collect units
 ~~~~~~~~~~~~~
 
-.. click:: perun.collect.complexity.run:complexity
-   :prog: perun collect complexity
+.. click:: perun.collect.trace.run:trace
+   :prog: perun collect trace
 
 .. click:: perun.collect.memory.run:memory
    :prog: perun collect memory

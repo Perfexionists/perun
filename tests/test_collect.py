@@ -5,7 +5,7 @@ import os
 import perun.vcs as vcs
 import perun.logic.runner as runner
 import perun.profile.query as query
-import perun.collect.complexity.systemtap as stap
+import perun.collect.trace.systemtap as stap
 
 from perun.utils.helpers import Unit, Job
 from perun.workload.integer_generator import IntegerGenerator
@@ -20,18 +20,20 @@ _mocked_stap_file = 'tst_stap_record.txt'
 def _mocked_stap(**_):
     """System tap mock, provide OK code and pre-fabricated collection output"""
     code = _mocked_stap_code
-    file = os.path.join(os.path.dirname(__file__), 'collect_complexity', _mocked_stap_file)
+    file = os.path.join(os.path.dirname(__file__), 'collect_trace', _mocked_stap_file)
     return code, file
 
 
-def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
-    """Test collecting the profile using complexity collector"""
+def test_collect_trace(monkeypatch, helpers, pcs_full, trace_collect_job):
+    """Test collecting the profile using trace collector"""
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
 
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
 
-    cmd, args, work, collectors, posts, config = complexity_collect_job
+    cmd, args, work, collectors, posts, config = trace_collect_job
+    config['collector_params']['trace']['binary'] = os.path.join(os.path.dirname(__file__),
+                                                                 'collect_trace', 'tst')
     runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
 
     # Assert that nothing was removed
@@ -46,8 +48,8 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     # Fixme: Add check that the profile was correctly generated
 
 
-def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_collect_job):
-    """Test failed collecting using complexity collector"""
+def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
+    """Test failed collecting using trace collector"""
     global _mocked_stap_code
     global _mocked_stap_file
     head = vcs.get_minor_version_info(vcs.get_minor_head())
@@ -58,7 +60,7 @@ def test_collect_complexity_fail(monkeypatch, helpers, pcs_full, complexity_coll
 
     # Test malformed file that ends in unexpected way
     _mocked_stap_file = 'record_malformed.txt'
-    cmd, args, work, collectors, posts, config = complexity_collect_job
+    cmd, args, work, collectors, posts, config = trace_collect_job
     runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
 
     # Assert that nothing was added

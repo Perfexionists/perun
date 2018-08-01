@@ -147,7 +147,7 @@ def all_resource_fields_of(profile):
     keys. In case some of the keys were not yet processed, they are yielded.
 
     E.g. considering the example profiles from :pkey:`resources`, the function
-    yields the following for `memory`, `time` and `complexity` profiles
+    yields the following for `memory`, `time` and `trace` profiles
     respectively (considering we convert the stream to list)::
 
         memory_resource_fields = [
@@ -182,7 +182,7 @@ def all_numerical_resource_fields_of(profile):
     of the key does not contain integer values, it is skipped.
 
     E.g. considering the example profiles from :pkey:`resources`, the function
-    yields the following for `memory`, `time` and `complexity` profiles
+    yields the following for `memory`, `time` and `trace` profiles
     respectively (considering we convert the stream to list)::
 
         memory_num_resource_fields = ['address', 'amount', 'uid:line']
@@ -222,7 +222,7 @@ def unique_resource_values_of(profile, resource_key):
     or set level, e.g. in case of `traces` one uses ``trace::function``.
 
     E.g. considering the example profiles from :pkey:`resources`, the function
-    yields the following for `memory`, `time` and `complexity` profiles stored
+    yields the following for `memory`, `time` and `trace` profiles stored
     in variables ``mprof``, ``tprof`` and ``cprof`` respectively::
 
         >>> list(query.unique_resource_values_of(mprof, 'subtype')
@@ -295,7 +295,7 @@ def all_models_of(profile):
     and iterates through all of its models (for more details about models refer
     to :pkey:`models` or :ref:`postprocessors-regression-analysis`).
 
-    E.g. given some complexity profile ``complexity_prof``, we can iterate its
+    E.g. given some trace profile ``complexity_prof``, we can iterate its
     models as follows:
 
         >>> gen = query.all_models_of(complexity_prof)
@@ -340,7 +340,7 @@ def unique_model_values_of(profile, model_key):
     more details about the specification of models refer to :pkey:`models` or
     :ref:`postprocessors-regression-analysis`).
 
-    E.g. given some complexity profile ``complexity_prof``, we can obtain
+    E.g. given some trace profile ``complexity_prof``, we can obtain
     unique values of keys from `models` as follows:
 
         >>> list(query.unique_model_values_of(complexity_prof, 'model')

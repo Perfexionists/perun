@@ -72,7 +72,7 @@ Examples
     :linenos:
     :emphasize-lines: 44-153
 
-The profile above shows the complexity profile taken from :ref:`collectors-complexity-examples` and
+The profile above shows the complexity profile taken from :ref:`collectors-trace-examples` and
 postprocessed using the full method. The highlighted part shows all of the fully computed models of
 form :math:`y = b_0 + b_1*f(x)`, represented by their types (e.g. `linear`, `quadratic`, etc.),
 concrete found coeficients :math:`b_0` and :math:`b_1` and e.g. coeficient of determination

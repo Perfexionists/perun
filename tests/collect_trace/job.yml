@@ -1,8 +1,7 @@
-binary: './tests/collect_complexity/tst'
 func:
     - 'main'
 func_sampled:
-    - ['QuickSortBad', 2]
+    - ['_Z12QuickSortBadPii', 2]
 static:
     - 'BEFORE_CYCLE'
     - 'BEFORE_CYCLE_end'

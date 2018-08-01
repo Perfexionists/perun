@@ -259,7 +259,7 @@
       "internal_direct_output": false,
       "internal_storage_size": 20000
     },
-    "name": "complexity"
+    "name": "trace"
   },
   "postprocessors": [],
   "header": {

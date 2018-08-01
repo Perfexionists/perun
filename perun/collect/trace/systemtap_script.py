@@ -9,12 +9,12 @@ Creates SystemTap script according to the specification:
 """
 
 
-import os
 from enum import IntEnum
 
 
 # Type of record in collector output
 class RecordType(IntEnum):
+    """Reference numbers to the various types of probes used in the collection script."""
     FuncBegin = 0
     FuncEnd = 1
     StaticSingle = 2
@@ -22,15 +22,14 @@ class RecordType(IntEnum):
     StaticEnd = 4
 
 
-def assemble_system_tap_script(func, static, dynamic, binary, **kwargs):
+def assemble_system_tap_script(script_path, func, static, dynamic, binary, **_):
     """Assembles system tap script according to the configuration parameters.
 
+    :param str script_path: path to the script file, that should be generated
     :param list func: the list of functions to probe, each function is represented with dictionary
     :param list static: the list of static probe locations represented as a dictionaries
     :param list dynamic: the list of dynamic probe locations represented as a dictionaries
-    :param str binary: the binary / executable file that contains specified probe points (functions, static, ...)
-    :param kwargs: additional collector parameters
-    :return str: the path to the assembled script file
+    :param str binary: the binary / executable file that contains specified probe points
     """
     script = ''
 
@@ -46,8 +45,8 @@ def assemble_system_tap_script(func, static, dynamic, binary, **kwargs):
         script += _sampling_array_for(0, len(sampled_probes))
         script += _sampling_array_init_for(binary, 0, sampled_probes)
 
-    for func in func:
-        script += _function_probe(func, binary, 0)
+    for func_probe in func:
+        script += _function_probe(func_probe, binary, 0)
 
     for rule in static:
         script += _static_probe(rule, binary, 0)
@@ -56,24 +55,23 @@ def assemble_system_tap_script(func, static, dynamic, binary, **kwargs):
     script += _end_marker(binary)
 
     # Create the file and save the script
-    script_path = os.path.join(kwargs['cmd_dir'], 'collect_script_{0}.stp'.format(kwargs['timestamp']))
     with open(script_path, 'w') as stp_handle:
         stp_handle.write(script)
-    return script_path
 
 
 def _end_marker(process):
-    """Adds marker to the collection output indicating the end of collection. This is needed to determine that the
-    output file is fully written and can be further analyzed and processed.
+    """Adds marker to the collection output indicating the end of collection. This is needed to
+    determine that the output file is fully written and can be further analyzed and processed.
 
     :param str process: the name of the process / executable that is profiled
     :return str: the rule for marker generation
     """
-    return 'probe process("{path}").end {{\n\tprintf("end")\n}}'.format(path=process)
+    return 'probe process("{path}").end {{\n\tprintf("end\\n")\n}}'.format(path=process)
 
 
 # TODO: generalize script content generation to multiple processes
-# def _script_content_for(process, func_probes, static_probes, dynamic_probes, sampling, global_sampling):
+# def _script_content_for(process, func_probes, static_probes, dynamic_probes,
+#                         sampling, global_sampling):
 #     pass
 
 
@@ -93,19 +91,22 @@ def _sampling_array_init_for(process, process_id, samples):
 
     :param str process: the name of the process / executable
     :param int process_id: the process / executable identification
-    :param list samples: list of probes as dictionaries for process with sampling initialization values
+    :param list samples: list of probes for process with sampling initialization values
     :return str: the script component for array initialization
     """
     # initialize the array values according to the sampling specification during process startup
     array_init = 'probe process("{path}").begin {{\n'.format(path=process)
     for probe in samples:
         array_init += ('\tsamp_{proc_idx}[{index}] = {init}\n'
-                       .format(proc_idx=str(process_id), index=str(probe['index']), init=str(probe['sample'] - 1)))
+                       .format(proc_idx=str(process_id), index=str(probe['index']),
+                               init=str(probe['sample'] - 1)))
     array_init += '}\n\n'
 
     return array_init
 
 
+# TODO: improve the temporary func parameter
+# (we would like to cross-compare mangled / demangled / user specified names)
 def _function_probe(func, process, process_id):
     """Assembles function entry and exit probes including sampling.
 
@@ -115,10 +116,13 @@ def _function_probe(func, process, process_id):
     :return str: the script component with function probes
     """
     # Probe start and end point declaration
-    begin_probe = 'probe process("{proc}").function("{func}").call {{\n'.format(proc=process, func=func['name'])
-    end_probe = 'probe process("{proc}").function("{func}").return {{\n'.format(proc=process, func=func['name'])
+    begin_probe = ('probe process("{proc}").function("{func}").call? {{\n'
+                   .format(proc=process, func=func['name']))
+    end_probe = ('probe process("{proc}").function("{func}").return? {{\n'
+                 .format(proc=process, func=func['name']))
     # Probes definition
-    begin_body = 'printf("{type} %s %s\\n", thread_indent(1), probefunc())'.format(type=int(RecordType.FuncBegin))
+    begin_body = ('printf("{type} %s {func}\\n", thread_indent(1))'
+                  .format(type=int(RecordType.FuncBegin), func=func['name']))
     end_body = 'printf("{type} %s\\n", thread_indent(-1))'.format(type=int(RecordType.FuncEnd))
 
     # Add sampling counter manipulation to the probe definition if needed
@@ -129,9 +133,9 @@ def _function_probe(func, process, process_id):
 
 
 def _static_probe(rule, process, process_id):
-    """Assembles static rule probe. The static probe can have corresponding paired probe, which serves as a exit
-    point for measuring, or the paired probe may not be present, which means that the time will be measured
-    between each probe hit
+    """Assembles static rule probe. The static probe can have corresponding paired probe,
+    which serves as a exitpoint for measuring, or the paired probe may not be present, which
+    means that the time will be measured between each probe hit
 
     :param dict rule: the static probe specification
     :param str process: the name of the process / executable that contains the static probe point
@@ -139,18 +143,20 @@ def _static_probe(rule, process, process_id):
     :return str: the script component with the static probe(s)
     """
     # Create static start probe
-    begin_probe = 'probe process("{proc}").mark("{loc}") {{\n'.format(proc=process, loc=rule['name'])
-    begin_body = 'printf("{type} %s {loc}\\n", thread_indent(0))'.format(loc=rule['name'],
-                                                                         type=int(RecordType.StaticSingle))
+    begin_probe = ('probe process("{proc}").mark("{loc}") {{\n'
+                   .format(proc=process, loc=rule['name']))
+    begin_body = ('printf("{type} %s {loc}\\n", thread_indent(0))'
+                  .format(loc=rule['name'], type=int(RecordType.StaticSingle)))
     end_probe = ''
     # Create also end probe if needed
     if 'pair' in rule:
         # Update the body record type
-        begin_body = 'printf("{type} %s {loc}\\n", thread_indent(0))'.format(loc=rule['name'],
-                                                                             type=int(RecordType.StaticBegin))
-        end_probe = 'probe process("{proc}").mark("{loc}") {{\n'.format(proc=process, loc=rule['pair'])
-        end_body = 'printf("{type} %s {loc}\\n", thread_indent(0))'.format(loc=rule['pair'],
-                                                                           type=int(RecordType.StaticEnd))
+        begin_body = ('printf("{type} %s {loc}\\n", thread_indent(0))'
+                      .format(loc=rule['name'], type=int(RecordType.StaticBegin)))
+        end_probe = ('probe process("{proc}").mark("{loc}") {{\n'
+                     .format(proc=process, loc=rule['pair']))
+        end_body = ('printf("{type} %s {loc}\\n", thread_indent(0))'
+                    .format(loc=rule['pair'], type=int(RecordType.StaticEnd)))
         # Add sampling to the end probe
         end_probe += _probe_sampling_end(process_id, rule, end_body)
 
@@ -178,9 +184,9 @@ def _probe_sampling_begin(process_id, rule, body):
                 '\t\t{body}\n'
                 '\t\tsamp_{proc_idx}[{index}] = 0\n'
                 '\t}}\n}}\n'
-                .format(proc_idx=str(process_id), index=str(rule['index']), threshold=str(rule['sample']), body=body))
-    else:
-        return '\t{body}\n}}\n\n'.format(body=body)
+                .format(proc_idx=str(process_id), index=str(rule['index']),
+                        threshold=str(rule['sample']), body=body))
+    return '\t{body}\n}}\n\n'.format(body=body)
 
 
 def _probe_sampling_end(process_id, rule, body):
@@ -196,18 +202,18 @@ def _probe_sampling_end(process_id, rule, body):
                 '\t\t{body}\n'
                 '\t}}\n}}\n\n'
                 .format(proc_idx=str(process_id), index=str(rule['index']), body=body))
-    else:
-        return '\t{body}\n}}\n\n'.format(body=body)
+    return '\t{body}\n}}\n\n'.format(body=body)
 
 
 # TODO: generalize sampling transformation to multiple processes
-# def _transform_sampling(func_probes, static_probes, dynamic_probes, sampling, processes, global_sampling):
+# def _transform_sampling(func_probes, static_probes, dynamic_probes, sampling,
+#                         processes, global_sampling):
 #     pass
 
 
 def _index_process_sampling(func, static, dynamic):
-    """Performs indexation of probes that are sampled, which is needed to access the sampling array value for
-    the given probe.
+    """Performs indexation of probes that are sampled, which is needed to access the
+    sampling array value for the given probe.
 
     :param list func: the list of function specification as dictionaries
     :param list static: the list of static probe locations that will be probed
@@ -224,7 +230,7 @@ def _index_process_sampling(func, static, dynamic):
     for probe_list in [func, static, dynamic]:
         for probe in probe_list:
             # Index probes that actually have sampling
-            if probe['sample'] > 0:
+            if probe['sample'] > 1:
                 probe['index'] = index
                 sampled.append(probe)
                 index += 1

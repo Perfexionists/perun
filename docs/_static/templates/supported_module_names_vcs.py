@@ -6,7 +6,7 @@ def get_supported_module_names(package):
         ))
     return {
         'vcs': ['git', 'myvcs'],
-        'collect': ['complexity', 'memory', 'time'],
+        'collect': ['trace', 'memory', 'time'],
         'postprocess': ['filter', 'normalizer', 'regression_analysis'],
         'view': ['alloclist', 'bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
     }[package]

@@ -27,9 +27,9 @@ def resource_sort_key(resource):
 
 
 def generic_profile_provider(profile, of_key, per_key, **_):
-    """Data provider for complexity collector profiling output.
+    """Data provider for trace collector profiling output.
 
-    :param dict profile: the complexity profile dictionary
+    :param dict profile: the trace profile dictionary
     :param str of_key: key for which we are finding the model
     :param str per_key: key of the independent variable
     :param dict _: rest of the key arguments

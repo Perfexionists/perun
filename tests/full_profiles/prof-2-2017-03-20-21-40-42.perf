@@ -213,7 +213,7 @@
         "../cpp_sources/test_workload/SLListcls.h"
       ]
     },
-    "name": "complexity"
+    "name": "trace"
   },
   "header": {
     "cmd": "target",

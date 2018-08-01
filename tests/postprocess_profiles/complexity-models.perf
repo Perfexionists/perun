@@ -424,7 +424,7 @@
   },
   "postprocessors": [],
   "collector_info": {
-    "name": "complexity",
+    "name": "trace",
     "params": {
       "internal_data_filename": "trace.log",
       "internal_direct_output": false,
