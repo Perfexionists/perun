@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Manifesto &#8212; Perun 0.15.2 documentation</title>
+    <title>Perun Manifesto &#8212; Perun 0.15.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.2',
+        VERSION:     '0.15.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -489,7 +489,7 @@ older minor or major version is checked out,</li>
 </div>
 <div class="section" id="profiles">
 <h2><a class="toc-backref" href="#id25">Profiles</a><a class="headerlink" href="#profiles" title="Permalink to this headline">¶</a></h2>
-<p>Perun currently supports only three types of profiles (time, space, complexity).
+<p>Perun currently supports only three types of profiles (time, space, trace).
 These can be visualized with several strategies.</p>
 <p>!Note that if the checked out Major Version has some uncommited changes, then the
 computed profiles cannot be assigned to current minor version!</p>
@@ -505,7 +505,7 @@ like e.g. Massif format,  callgrind, etc.</p>
 <li>Time—amount of time the program spends on given workload</li>
 <li>Space—amount of resources the program spends on given workload,
 moreover, the mapping of objects to addresses.</li>
-<li>Complexity—the complexity of the program or given/chosen functions</li>
+<li>Trace—the complexity of the program or given/chosen functions</li>
 </ol>
 </div></blockquote>
 <p>Perun profile format is currently under development, the current version is

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Visualizations Overview &#8212; Perun 0.15.2 documentation</title>
+    <title>Visualizations Overview &#8212; Perun 0.15.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.2',
+        VERSION:     '0.15.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -248,7 +248,7 @@ the program):</p>
 <img alt="_images/complexity-bars.png" src="_images/complexity-bars.png" />
 <p>The <a class="reference internal" href="#views-bars"><span class="std std-ref">Bars Plot</span></a> above shows the overall sum of the running times for each
 <code class="docutils literal"><span class="pre">structure-unit-size</span></code> for the <code class="docutils literal"><span class="pre">SLList_search</span></code> function collected by
-<a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a>. The interpretation highlights that the most of the consumed running
+<a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>. The interpretation highlights that the most of the consumed running
 time were over the single linked lists with 41 elements.</p>
 <img alt="_images/memory-bars-stacked.png" src="_images/memory-bars-stacked.png" />
 <p>The <cite>bars</cite> above shows the <cite>stacked</cite> view of number of memory allocations made per each snapshot
@@ -719,7 +719,7 @@ same as your visualization technique. This function is called from the command l
 <span class="gi">+++ /mnt/f/phdwork/perun/gh-pages/docs/_static/templates/supported_module_names_views.py</span>
 <span class="gu">@@ -8,5 +8,6 @@</span>
          &#39;vcs&#39;: [&#39;git&#39;],
-         &#39;collect&#39;: [&#39;complexity&#39;, &#39;memory&#39;, &#39;time&#39;],
+         &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;],
          &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression_analysis&#39;],
 <span class="gd">-        &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;]</span>
 <span class="gi">+        &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;, </span>

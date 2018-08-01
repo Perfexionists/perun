@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun’s Profile Format &#8212; Perun 0.15.2 documentation</title>
+    <title>Perun’s Profile Format &#8212; Perun 0.15.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.2',
+        VERSION:     '0.15.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -149,7 +149,7 @@ in <cite>kB/s</cite>, etc.</p>
 some script (e.g. <code class="docutils literal"><span class="pre">perun</span></code>), some command (e.g. <code class="docutils literal"><span class="pre">ls</span></code>), or execution of binary (e.g. <code class="docutils literal"><span class="pre">./out</span></code>.
 In general this corresponds to a profiled application. Note, that some collectors are working with
 their own binaries and thus do not require the command to be specified at all (like e.g.
-<a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a> and will thus omit the actual usage of the command), however, this key
+<a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> and will thus omit the actual usage of the command), however, this key
 can still be used e.g. for tagging the profiles.</p>
 <dl class="perfkey">
 <dt id="perfkey-params">
@@ -219,8 +219,8 @@ differentiate between profiles collected by different profilers.</p>
 <dd></dd></dl>
 
 <p>The configuration of the collector in the form of <cite>(key, value)</cite> dictionary.</p>
-<p>The example above lists the configuration of <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a> (for full specification
-of parameters refer to <a class="reference internal" href="collectors.html#collectors-complexity-cli"><span class="std std-ref">Overview and Command Line Interface</span></a>). This configurations e.g. specifies, that
+<p>The example above lists the configuration of <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> (for full specification
+of parameters refer to <a class="reference internal" href="collectors.html#collectors-trace-cli"><span class="std std-ref">Overview and Command Line Interface</span></a>). This configurations e.g. specifies, that
 the list of <cite>files</cite> will be compiled into the <cite>target_dir</cite> with custom Makefile and these sources
 will be used create a new binary for the project (prepared for profiling), which will profile
 function specified by <cite>rules</cite> w.r.t specified <cite>sampling</cite>.</p>
@@ -353,7 +353,7 @@ the profile application (as obtained by <code class="docutils literal"><span cla
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>These resources were collected by <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a>. <cite>Amount</cite> here represents the
+<p>These resources were collected by <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>. <cite>Amount</cite> here represents the
 difference between calling and returning the function <cite>uid</cite> in miliseconds, on structure of size
 given by <cite>structure-unit-size</cite>. Note that these resources are suitable for
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
@@ -752,7 +752,7 @@ original) that are occuring in the resources.</p>
 <p>Generator iterates through all of the resources and checks their flattened
 keys. In case some of the keys were not yet processed, they are yielded.</p>
 <p>E.g. considering the example profiles from <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a>, the function
-yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>complexity</cite> profiles
+yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>trace</cite> profiles
 respectively (considering we convert the stream to list):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">memory_resource_fields</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="s1">&#39;uid:function&#39;</span><span class="p">,</span> <span class="s1">&#39;uid:source&#39;</span><span class="p">,</span>
@@ -788,7 +788,7 @@ values.</p>
 keys and yields them in case they were not yet processed. If the instance
 of the key does not contain integer values, it is skipped.</p>
 <p>E.g. considering the example profiles from <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a>, the function
-yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>complexity</cite> profiles
+yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>trace</cite> profiles
 respectively (considering we convert the stream to list):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">memory_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="s1">&#39;amount&#39;</span><span class="p">,</span> <span class="s1">&#39;uid:line&#39;</span><span class="p">]</span>
 <span class="n">time_num_resource_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span>
@@ -818,7 +818,7 @@ only unique values. Note that the key can contain ‘:’ symbol indicating
 another level of dictionary hierarchy or ‘::’ for specifying keys in list
 or set level, e.g. in case of <cite>traces</cite> one uses <code class="docutils literal"><span class="pre">trace::function</span></code>.</p>
 <p>E.g. considering the example profiles from <a class="reference internal" href="#perfkey-resources"><em class="xref std std-pkey">resources</em></a>, the function
-yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>complexity</cite> profiles stored
+yields the following for <cite>memory</cite>, <cite>time</cite> and <cite>trace</cite> profiles stored
 in variables <code class="docutils literal"><span class="pre">mprof</span></code>, <code class="docutils literal"><span class="pre">tprof</span></code> and <code class="docutils literal"><span class="pre">cprof</span></code> respectively:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_resource_values_of</span><span class="p">(</span><span class="n">mprof</span><span class="p">,</span> <span class="s1">&#39;subtype&#39;</span><span class="p">)</span>
 <span class="go">[&#39;malloc&#39;, &#39;free&#39;]</span>
@@ -892,7 +892,7 @@ will be iterated</li>
 <p>Takes a profile, postprocessed by <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>
 and iterates through all of its models (for more details about models refer
 to <a class="reference internal" href="#perfkey-models"><em class="xref std std-pkey">models</em></a> or <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>).</p>
-<p>E.g. given some complexity profile <code class="docutils literal"><span class="pre">complexity_prof</span></code>, we can iterate its
+<p>E.g. given some trace profile <code class="docutils literal"><span class="pre">complexity_prof</span></code>, we can iterate its
 models as follows:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gen</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">all_models_of</span><span class="p">(</span><span class="n">complexity_prof</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gen</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
@@ -933,7 +933,7 @@ another level of dictionary hierarchy or ‘::’ for specifying keys in list
 or set level, e.g. in case of <cite>traces</cite> one uses <code class="docutils literal"><span class="pre">trace::function</span></code>.  For
 more details about the specification of models refer to <a class="reference internal" href="#perfkey-models"><em class="xref std std-pkey">models</em></a> or
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>).</p>
-<p>E.g. given some complexity profile <code class="docutils literal"><span class="pre">complexity_prof</span></code>, we can obtain
+<p>E.g. given some trace profile <code class="docutils literal"><span class="pre">complexity_prof</span></code>, we can obtain
 unique values of keys from <cite>models</cite> as follows:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">unique_model_values_of</span><span class="p">(</span><span class="n">complexity_prof</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">)</span>
 <span class="go">[&#39;constant&#39;, &#39;exponential&#39;, &#39;linear&#39;, &#39;logarithmic&#39;, &#39;quadratic&#39;]</span>

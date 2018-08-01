@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Postprocessors Overview &#8212; Perun 0.15.2 documentation</title>
+    <title>Postprocessors Overview &#8212; Perun 0.15.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.2',
+        VERSION:     '0.15.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -175,7 +175,7 @@ fitting models for trends in the captured profiling resources.</p>
 <dd><ul class="first last simple">
 <li><strong>Limitations</strong>: Currently limited to models of <cite>amount</cite> depending on
 <cite>structural-unit-size</cite></li>
-<li><strong>Dependencies</strong>: <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a></li>
+<li><strong>Dependencies</strong>: <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a></li>
 </ul>
 </dd>
 </dl>
@@ -232,7 +232,7 @@ follows:</p>
 analysable by this analysis.</p>
 <p>For more details about regression analysis refer to
 <a class="reference internal" href="#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>. For more details how to collect
-suitable resources refer to <a class="reference internal" href="collectors.html#collectors-complexity"><span class="std std-ref">Complexity Collector</span></a>.</p>
+suitable resources refer to <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a>.</p>
 <div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby regression_analysis <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -672,7 +672,7 @@ suitable resources refer to <a class="reference internal" href="collectors.html#
 <span class="p">}</span>
 </pre></div>
 </td></tr></table></div>
-<p>The profile above shows the complexity profile taken from <a class="reference internal" href="collectors.html#collectors-complexity-examples"><span class="std std-ref">Examples</span></a> and
+<p>The profile above shows the complexity profile taken from <a class="reference internal" href="collectors.html#collectors-trace-examples"><span class="std std-ref">Examples</span></a> and
 postprocessed using the full method. The highlighted part shows all of the fully computed models of
 form <span class="math">\(y = b_0 + b_1*f(x)\)</span>, represented by their types (e.g. <cite>linear</cite>, <cite>quadratic</cite>, etc.),
 concrete found coeficients <span class="math">\(b_0\)</span> and <span class="math">\(b_1\)</span> and e.g. coeficient of determination
@@ -1024,7 +1024,7 @@ your collector. This function will be called from the command line as <code clas
 <span class="gu">@@ -7,6 +7,6 @@</span>
      return {
          &#39;vcs&#39;: [&#39;git&#39;],
-         &#39;collect&#39;: [&#39;complexity&#39;, &#39;memory&#39;, &#39;time&#39;],
+         &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;],
 <span class="gd">-        &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression_analysis&#39;],</span>
 <span class="gi">+        &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression_analysis&#39;, &#39;mypostprocessor&#39;],</span>
          &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;]

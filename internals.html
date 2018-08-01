@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Internals &#8212; Perun 0.15.2 documentation</title>
+    <title>Perun Internals &#8212; Perun 0.15.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.2',
+        VERSION:     '0.15.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -348,8 +348,8 @@ located in <code class="docutils literal"><span class="pre">perun.utils.__init__
          ))
      return {
          &#39;vcs&#39;: [&#39;git&#39;],
-<span class="gd">-        &#39;collect&#39;: [&#39;complexity&#39;, &#39;memory&#39;, &#39;time&#39;],</span>
-<span class="gi">+        &#39;collect&#39;: [&#39;complexity&#39;, &#39;memory&#39;, &#39;time&#39;, &#39;mycollector&#39;],</span>
+<span class="gd">-        &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;],</span>
+<span class="gi">+        &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;, &#39;mycollector&#39;],</span>
          &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression_analysis&#39;],
          &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;]
      }[package]
