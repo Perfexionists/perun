@@ -112,7 +112,7 @@ Specifies the command which was profiled and yielded the generated the profile. 
 some script (e.g. ``perun``), some command (e.g. ``ls``), or execution of binary (e.g. ``./out``.
 In general this corresponds to a profiled application. Note, that some collectors are working with
 their own binaries and thus do not require the command to be specified at all (like e.g.
-:ref:`collectors-complexity` and will thus omit the actual usage of the command), however, this key
+:ref:`collectors-trace` and will thus omit the actual usage of the command), however, this key
 can still be used e.g. for tagging the profiles.
 
 .. perfkey:: params
@@ -174,8 +174,8 @@ differentiate between profiles collected by different profilers.
 
 The configuration of the collector in the form of `(key, value)` dictionary.
 
-The example above lists the configuration of :ref:`collectors-complexity` (for full specification
-of parameters refer to :ref:`collectors-complexity-cli`). This configurations e.g. specifies, that
+The example above lists the configuration of :ref:`collectors-trace` (for full specification
+of parameters refer to :ref:`collectors-trace-cli`). This configurations e.g. specifies, that
 the list of `files` will be compiled into the `target_dir` with custom Makefile and these sources
 will be used create a new binary for the project (prepared for profiling), which will profile
 function specified by `rules` w.r.t specified `sampling`.
@@ -308,7 +308,7 @@ the profile application (as obtained by ``time`` utility).
         "structure-unit-size": 0
     }
 
-These resources were collected by :ref:`collectors-complexity`. `Amount` here represents the
+These resources were collected by :ref:`collectors-trace`. `Amount` here represents the
 difference between calling and returning the function `uid` in miliseconds, on structure of size
 given by `structure-unit-size`. Note that these resources are suitable for
 :ref:`postprocessors-regression-analysis`.

@@ -135,11 +135,7 @@ def yaml_param_callback(_, __, value):
     """
     unit_to_params = {}
     for (unit, yaml_file) in value:
-        # First check if this is file
-        if os.path.exists(yaml_file):
-            unit_to_params[unit] = streams.safely_load_yaml_from_file(yaml_file)
-        else:
-            unit_to_params[unit] = streams.safely_load_yaml_from_stream(yaml_file)
+        unit_to_params[unit] = streams.safely_load_yaml(yaml_file)
     return unit_to_params
 
 
@@ -157,10 +153,7 @@ def single_yaml_param_callback(_, __, value):
     unit_to_params = {}
     for yaml_file in value:
         # First check if this is file
-        if os.path.exists(yaml_file):
-            unit_to_params.update(streams.safely_load_yaml_from_file(yaml_file))
-        else:
-            unit_to_params.update(streams.safely_load_yaml_from_stream(yaml_file))
+        unit_to_params.update(streams.safely_load_yaml(yaml_file))
     return unit_to_params
 
 

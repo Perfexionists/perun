@@ -118,7 +118,7 @@ collectors:
     {% if collector.params is defined %}
       params:
     // for param, value in collector.params.items()
-       - {{ param }}: {{ value }}
+        {{ param }}: {{ value }}
     // endfor
     {% endif %}
   // endfor
@@ -137,15 +137,16 @@ postprocessors:
     {% if postprocessor.params is defined %}
       params:
     // for param, value in postprocessor.params.items()
-       {{ param }}: {{ value }}
+        {{ param }}: {{ value }}
     // endfor
     {% endif %}
 // endfor
 {% else %}
 ## Uncomment and edit the following region (!order matters!):
 # postprocessors:
-#   - name: normalizer
-#     params: --remove-zero
+#   - name: regression_analysis
+#     params:
+#       method: full
 #   - name: filter
 {% endif %}
 ## Try '$ perun postprocessby --help' to obtain list of supported collectors!
@@ -165,7 +166,7 @@ profiles:
 {% if format is defined and format.output_profile_template is defined %}
 ## The following changes the automatically generated name of the profiles
 format:
-  output_profile_template: {{ format.output_profile_template }}
+  output_profile_template: "{{ format.output_profile_template }}"
 {% endif %}
 
 ## The following options control the degradation checks in repository
@@ -386,7 +387,7 @@ class UserConfiguration(DeveloperConfiguration):
              }}
         ]
         self.format = {
-            'output_profile_template': '\"%collector%-of-%cmd%-%workload%-%date%\"'
+            'output_profile_template': '%collector%-of-%cmd%-%workload%-%date%'
         }
         self.profiles = {
             'register_after_run': 'true'

@@ -331,7 +331,7 @@
       ],
       "target_dir": "/home/jirka/Git/complexity-repo/target"
     },
-    "name": "complexity"
+    "name": "trace"
   },
   "header": {
     "params": "",

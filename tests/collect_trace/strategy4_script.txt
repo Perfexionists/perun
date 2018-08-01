@@ -1,0 +1,281 @@
+global samp_0[20]
+probe process("cmp").begin {
+	samp_0[0] = 19
+	samp_0[1] = 19
+	samp_0[2] = 19
+	samp_0[3] = 19
+	samp_0[4] = 19
+	samp_0[5] = 19
+	samp_0[6] = 19
+	samp_0[7] = 19
+	samp_0[8] = 19
+	samp_0[9] = 19
+	samp_0[10] = 19
+	samp_0[11] = 19
+	samp_0[12] = 19
+	samp_0[13] = 19
+	samp_0[14] = 19
+	samp_0[15] = 19
+	samp_0[16] = 19
+	samp_0[17] = 19
+	samp_0[18] = 19
+	samp_0[19] = 19
+}
+
+probe process("cmp").function("data_start").call? {
+	samp_0[0] ++
+	if(samp_0[0] == 20) {
+		printf("0 %s data_start\n", thread_indent(1))
+		samp_0[0] = 0
+	}
+}
+probe process("cmp").function("data_start").return? {
+	if(samp_0[0] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_fini").call? {
+	samp_0[1] ++
+	if(samp_0[1] == 20) {
+		printf("0 %s _fini\n", thread_indent(1))
+		samp_0[1] = 0
+	}
+}
+probe process("cmp").function("_fini").return? {
+	if(samp_0[1] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_init").call? {
+	samp_0[2] ++
+	if(samp_0[2] == 20) {
+		printf("0 %s _init\n", thread_indent(1))
+		samp_0[2] = 0
+	}
+}
+probe process("cmp").function("_init").return? {
+	if(samp_0[2] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("__libc_csu_fini").call? {
+	samp_0[3] ++
+	if(samp_0[3] == 20) {
+		printf("0 %s __libc_csu_fini\n", thread_indent(1))
+		samp_0[3] = 0
+	}
+}
+probe process("cmp").function("__libc_csu_fini").return? {
+	if(samp_0[3] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("__libc_csu_init").call? {
+	samp_0[4] ++
+	if(samp_0[4] == 20) {
+		printf("0 %s __libc_csu_init\n", thread_indent(1))
+		samp_0[4] = 0
+	}
+}
+probe process("cmp").function("__libc_csu_init").return? {
+	if(samp_0[4] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("main").call? {
+	samp_0[5] ++
+	if(samp_0[5] == 20) {
+		printf("0 %s main\n", thread_indent(1))
+		samp_0[5] = 0
+	}
+}
+probe process("cmp").function("main").return? {
+	if(samp_0[5] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_.stapsdt.base").call? {
+	samp_0[6] ++
+	if(samp_0[6] == 20) {
+		printf("0 %s _.stapsdt.base\n", thread_indent(1))
+		samp_0[6] = 0
+	}
+}
+probe process("cmp").function("_.stapsdt.base").return? {
+	if(samp_0[6] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_start").call? {
+	samp_0[7] ++
+	if(samp_0[7] == 20) {
+		printf("0 %s _start\n", thread_indent(1))
+		samp_0[7] = 0
+	}
+}
+probe process("cmp").function("_start").return? {
+	if(samp_0[7] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z10BubbleSortPii").call? {
+	samp_0[8] ++
+	if(samp_0[8] == 20) {
+		printf("0 %s _Z10BubbleSortPii\n", thread_indent(1))
+		samp_0[8] = 0
+	}
+}
+probe process("cmp").function("_Z10BubbleSortPii").return? {
+	if(samp_0[8] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z10InsertSortPii").call? {
+	samp_0[9] ++
+	if(samp_0[9] == 20) {
+		printf("0 %s _Z10InsertSortPii\n", thread_indent(1))
+		samp_0[9] = 0
+	}
+}
+probe process("cmp").function("_Z10InsertSortPii").return? {
+	if(samp_0[9] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z12BadPartitionPiii").call? {
+	samp_0[10] ++
+	if(samp_0[10] == 20) {
+		printf("0 %s _Z12BadPartitionPiii\n", thread_indent(1))
+		samp_0[10] = 0
+	}
+}
+probe process("cmp").function("_Z12BadPartitionPiii").return? {
+	if(samp_0[10] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z12QuickSortBadPii").call? {
+	samp_0[11] ++
+	if(samp_0[11] == 20) {
+		printf("0 %s _Z12QuickSortBadPii\n", thread_indent(1))
+		samp_0[11] = 0
+	}
+}
+probe process("cmp").function("_Z12QuickSortBadPii").return? {
+	if(samp_0[11] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z4swapPiii").call? {
+	samp_0[12] ++
+	if(samp_0[12] == 20) {
+		printf("0 %s _Z4swapPiii\n", thread_indent(1))
+		samp_0[12] = 0
+	}
+}
+probe process("cmp").function("_Z4swapPiii").return? {
+	if(samp_0[12] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z4SwapRiS_").call? {
+	samp_0[13] ++
+	if(samp_0[13] == 20) {
+		printf("0 %s _Z4SwapRiS_\n", thread_indent(1))
+		samp_0[13] = 0
+	}
+}
+probe process("cmp").function("_Z4SwapRiS_").return? {
+	if(samp_0[13] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z8HeapSortPii").call? {
+	samp_0[14] ++
+	if(samp_0[14] == 20) {
+		printf("0 %s _Z8HeapSortPii\n", thread_indent(1))
+		samp_0[14] = 0
+	}
+}
+probe process("cmp").function("_Z8HeapSortPii").return? {
+	if(samp_0[14] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z9PartitionPiii").call? {
+	samp_0[15] ++
+	if(samp_0[15] == 20) {
+		printf("0 %s _Z9PartitionPiii\n", thread_indent(1))
+		samp_0[15] = 0
+	}
+}
+probe process("cmp").function("_Z9PartitionPiii").return? {
+	if(samp_0[15] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z9QuickSortPii").call? {
+	samp_0[16] ++
+	if(samp_0[16] == 20) {
+		printf("0 %s _Z9QuickSortPii\n", thread_indent(1))
+		samp_0[16] = 0
+	}
+}
+probe process("cmp").function("_Z9QuickSortPii").return? {
+	if(samp_0[16] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").function("_Z9repairTopPiii").call? {
+	samp_0[17] ++
+	if(samp_0[17] == 20) {
+		printf("0 %s _Z9repairTopPiii\n", thread_indent(1))
+		samp_0[17] = 0
+	}
+}
+probe process("cmp").function("_Z9repairTopPiii").return? {
+	if(samp_0[17] == 0) {
+		printf("1 %s\n", thread_indent(-1))
+	}
+}
+
+probe process("cmp").mark("BEFORE_CYCLE") {
+	samp_0[18] ++
+	if(samp_0[18] == 20) {
+		printf("3 %s BEFORE_CYCLE\n", thread_indent(0))
+		samp_0[18] = 0
+	}
+}
+probe process("cmp").mark("BEFORE_CYCLE_end") {
+	if(samp_0[18] == 0) {
+		printf("4 %s BEFORE_CYCLE_end\n", thread_indent(0))
+	}
+}
+
+probe process("cmp").mark("INSIDE_CYCLE") {
+	samp_0[19] ++
+	if(samp_0[19] == 20) {
+		printf("2 %s INSIDE_CYCLE\n", thread_indent(0))
+		samp_0[19] = 0
+	}
+}
+probe process("cmp").end {
+	printf("end\n")
+}

@@ -176,15 +176,16 @@ def print_job_progress(overall_jobs):
     print_job_progress.current_job += 1
 
 
-def cprint(string, colour, attrs=None):
+def cprint(string, colour, attrs=None, flush=True):
     """Wrapper over coloured print without adding new line
 
     :param str string: string that is printed with colours
     :param str colour: colour that will be used to colour the string
     :param list attrs: list of additional attributes for the colouring
+    :param bool flush: set True to immediately perform print operation
     """
     attrs = attrs or []
-    print(termcolor.colored(string, colour, attrs=attrs), end='')
+    print(termcolor.colored(string, colour, attrs=attrs), end='', flush=flush)
 
 
 def cprintln(string, colour, attrs=None, ending='\n'):

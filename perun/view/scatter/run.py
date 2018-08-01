@@ -2,6 +2,7 @@
 
 import click
 
+import perun.profile.factory as profiles
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.view.scatter.factory as scatter_factory
@@ -122,6 +123,6 @@ def scatter(profile, filename, view_in_browser, **kwargs):
     # discuss multiple results plotting (i.e. grid of plots? separate files? etc.)
     # Temporary solution for plotting multiple graphs from one command
     graphs = scatter_factory.create_from_params(profile, **kwargs)
-    for idx, graph in enumerate(graphs):
-        filename_uid = filename + '_result{0}.html'.format(idx)
+    for uid, graph in graphs:
+        filename_uid = filename + '_{}.html'.format(profiles.sanitize_filepart(uid))
         bokeh_helpers.save_graphs_in_column([graph], filename_uid, view_in_browser)

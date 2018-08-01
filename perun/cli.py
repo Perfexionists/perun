@@ -282,7 +282,7 @@ def configure_local_perun(perun_path):
     :raises: ExternalEditorErrorException: when underlying editor makes any mistake
     """
     editor = perun_config.lookup_key_recursively('general.editor')
-    local_config_file = os.path.join(perun_path, 'local.yml')
+    local_config_file = os.path.join(perun_path, '.perun', 'local.yml')
     utils.run_external_command([editor, local_config_file])
 
 

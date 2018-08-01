@@ -198,7 +198,7 @@
     "type": "mixed"
   },
   "collector_info": {
-    "name": "complexity",
+    "name": "trace",
     "params": {
       "internal_data_filename": "trace.log",
       "target_dir": "/home/jirka/Git/complexity-repo/target",

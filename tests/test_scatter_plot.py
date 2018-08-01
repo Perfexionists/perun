@@ -1,6 +1,7 @@
 """ Basic tests for scatter plot visualization """
 
 import os
+import operator
 
 from click.testing import CliRunner
 
@@ -24,7 +25,7 @@ def test_scatter_plot_models(postprocess_profiles):
         graphs = scatter.create_from_params(profile[1], 'amount', 'structure-unit-size',
                                             'structure-unit-size', 'amount [us]',
                                             "Plot of 'amount' per 'structure-unit-size'")
-        results = list(graphs)
+        results = list(map(operator.itemgetter(0), graphs))
 
         # Check if scatter plot generated expected amount of graphs for each profile
         if ('full_computation.perf' in profile[0] or 'initial_guess_computation.perf' in profile[0]
@@ -52,7 +53,7 @@ def test_scatter_plot_no_models(full_profiles):
     graphs = scatter.create_from_params(profile[1], 'amount', 'structure-unit-size',
                                         'structure-unit-size', 'amount [us]',
                                         "Plot of 'amount' per 'structure-unit-size'")
-    results = list(graphs)
+    results = list(map(operator.itemgetter(0), graphs))
 
     # Graphs for two functions should be generated
     assert len(results) == 2
@@ -75,8 +76,8 @@ def test_scatter_plot_cli(pcs_full, postprocess_profiles):
                                       '-xl=structure-unit-size', '-yl=amount [us]'])
 
     assert result.exit_code == 0
-    assert 'scatter_result0.html' in os.listdir(os.getcwd())
-    assert 'scatter_result1.html' in os.listdir(os.getcwd())
+    assert 'scatter_SLList_insert(SLList_,_int).html' in os.listdir(os.getcwd())
+    assert 'scatter_SLListcls__Insert(int).html' in os.listdir(os.getcwd())
 
 
 def test_scatter_plot_cli_errors(pcs_full, postprocess_profiles):

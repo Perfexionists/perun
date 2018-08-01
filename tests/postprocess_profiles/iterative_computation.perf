@@ -2,7 +2,7 @@
   "origin": "a64466d9d49e5bfe15378ebd6c9086c16a968f52",
   "postprocessors": [],
   "collector_info": {
-    "name": "complexity",
+    "name": "trace",
     "params": {
       "internal_data_filename": "trace.log",
       "rules": [

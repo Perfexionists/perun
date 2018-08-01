@@ -1,9 +1,0 @@
-0      0 quicksort(5898): main
-3     13 quicksort(5898): BEFORE_CYCLE
-2     20 quicksort(5898): INSIDE_CYCLE
-0     36 quicksort(5898):  _Z12QuickSortBadPii
-1     53 quicksort(5898): 
-2     60 quicksort(5898): INSIDE_CYCLE
-2     82 quicksort(5898): INSIDE_CYCLE
-0     93 quicksort(5898):  _Z12QuickSortBadPii
-1    105 quicksort(5898):

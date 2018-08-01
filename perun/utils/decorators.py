@@ -180,7 +180,7 @@ def print_elapsed_time(func):
         before = time.time()
         results = func(*args, **kwargs)
         elapsed = time.time() - before
-        print("[\u231A] {} [{}] in {} [\u231A]".format(
+        print("[!] {} [{}] in {} [!]".format(
             (func.phase_name if hasattr(func, 'phase_name') else func.__name__).title(),
             termcolor.colored("DONE", 'green', attrs=['bold']),
             termcolor.colored("{:0.2f}s".format(elapsed), 'white', attrs=['bold'])

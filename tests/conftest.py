@@ -207,22 +207,22 @@ def memory_collect_no_debug_job():
 
 
 @pytest.fixture(scope="session")
-def complexity_collect_job():
+def trace_collect_job():
     """
 
 
     Returns:
-        tuple: 'bin', '', [''], 'complexity', [], {}
+        tuple: 'bin', '', [''], 'trace', [], {}
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
-    source_dir = os.path.join(script_dir, 'collect_complexity')
+    source_dir = os.path.join(script_dir, 'collect_trace')
     target_dir = source_dir
     job_config_file = os.path.join(source_dir, 'job.yml')
     job_config = streams.safely_load_yaml_from_file(job_config_file)
 
-    return [target_dir + '/tst'], '', [''], ['complexity'], [], {'collector_params': {
-        'complexity': job_config
+    return [target_dir + '/tst'], '', [''], ['trace'], [], {'collector_params': {
+        'trace': job_config
     }}
 
 
@@ -271,7 +271,7 @@ def stored_profile_pool():
     Returns:
         list: list of stored profiles in the pcs_full
     """
-    profiles = list(all_profiles_in("full_profiles"))
+    profiles = list(all_profiles_in("full_profiles", True))
     assert len(profiles) == 3
     return profiles
 

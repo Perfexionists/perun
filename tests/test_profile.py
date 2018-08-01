@@ -123,7 +123,7 @@ def test_name_generation(capsys):
     rt_config.set('format.output_profile_template', 'sampling-[%memory.sampling%]')
     profile_name = factory.generate_profile_name({
         'collector_info': {
-            'name': 'complexity'
+            'name': 'trace'
         }
     })
     assert profile_name == "sampling-[_].perf"

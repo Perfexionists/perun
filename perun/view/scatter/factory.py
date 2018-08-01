@@ -116,7 +116,8 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
     :param str y_axis_label: label on the y axis
     :param str graph_title: name of the graph
     :param int graph_width: width of the created bokeh graph
-    :returns charts.Scatter: scatter plot graph with models built according to the params
+    :returns uid, charts.Scatter: uid and scatter plot graph with models built according to the
+        params
     """
     for data_slice, models_slice in generate_plot_data_slices(profile):
         # Plot the points as a scatter plot
@@ -140,4 +141,4 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
         # Plot all models
         scatter = draw_models(scatter, models_slice)
 
-        yield scatter
+        yield "{}".format(data_slice.uid.values[0]), scatter
