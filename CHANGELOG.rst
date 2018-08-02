@@ -6,6 +6,16 @@ HEAD
 
 **To be included in next release**
 
+0.15.3-hotfix (2018-08-02)
+--------------------------
+
+`commit: a9b46ed478258bbcd8292df0775a14e69b7db329`
+
+**Hotfix unused workload parameter in trace collector**
+
+  - hotfix missing workload parameter in trace collector
+
+
 0.15.3 (2018-08-01)
 -------------------
 
