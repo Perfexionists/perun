@@ -36,7 +36,7 @@ register new collectors in Perun refer to :ref:`collectors-custom`.
 .. _collectors-trace:
 
 Trace Collector
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. automodule:: perun.collect.trace
 

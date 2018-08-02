@@ -148,11 +148,6 @@ Polynomial Regression
 
 .. automodule:: perun.check.polynomial_regression
 
-Average Amount Threshold
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: perun.check.average_amount_threshold
-
 .. _degradation-config:
 
 Configuring Degradation Detection

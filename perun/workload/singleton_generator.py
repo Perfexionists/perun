@@ -8,6 +8,7 @@ generator specified in :ckey:`generators.workload`, is converted to Singleton Ge
 The Singleton Generator can be configured by following options:
 
   * ``value``: singleton value that is passed as workload.
+
 """
 
 from perun.workload.generator import Generator
