@@ -108,22 +108,27 @@ def kill_systemtap_in_background(stap_process):
     utils.run_safely_external_command('sudo kill {0}'.format(os.getpgid(stap_process.pid)))
 
 
-def run_profiled_command(cmd, args, timeout, **_):
+def run_profiled_command(cmd, args, workload, timeout, **_):
     """Runs the profiled external command with arguments.
 
     :param str cmd: the external command
     :param list args: the command arguments
+    :param str workload: the workload input
     :param int timeout: if the process does not end before the specified timeout,
                         the process is terminated
     """
-    if args:
-        # The args could actually be a list or str, create str from list if needed
-        if isinstance(args, list):
-            args = ' '.join(args)
-        full_command = '{0} {1}'.format(shlex.quote(cmd), args)
-    else:
-        full_command = shlex.quote(cmd)
+    # The args / workload could actually be a list or str, create str from list if needed
+    if isinstance(args, list):
+        args = ' '.join(args)
+    if isinstance(workload, list):
+        workload = workload[0]
 
+    # Build the command accordingly
+    full_command = shlex.quote(cmd)
+    if args:
+        full_command += ' ' + args
+    if workload:
+        full_command += ' ' + workload
     # Run the profiled command and block it with wait if timeout is specified
     process = utils.start_nonblocking_process(full_command)
     try:
