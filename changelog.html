@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Changelog &#8212; Perun 0.15.3 documentation</title>
+    <title>Changelog &#8212; Perun 0.15.3-hotfix documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.3',
+        VERSION:     '0.15.3-hotfix',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -48,6 +48,16 @@
 <h2>HEAD<a class="headerlink" href="#head" title="Permalink to this headline">¶</a></h2>
 <p><strong>To be included in next release</strong></p>
 </div>
+<div class="section" id="hotfix-2018-08-02">
+<h2>0.15.3-hotfix (2018-08-02)<a class="headerlink" href="#hotfix-2018-08-02" title="Permalink to this headline">¶</a></h2>
+<p><cite>commit: a9b46ed478258bbcd8292df0775a14e69b7db329</cite></p>
+<p><strong>Hotfix unused workload parameter in trace collector</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>hotfix missing workload parameter in trace collector</li>
+</ul>
+</div></blockquote>
+</div>
 <div class="section" id="id1">
 <h2>0.15.3 (2018-08-01)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p><cite>commit: a9b46ed478258bbcd8292df0775a14e69b7db329</cite></p>
@@ -69,7 +79,7 @@
 <p><strong>Upgrade Trace collector architecture</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>update the cli of the <span class="xref std std-ref">collectors-complexity</span> with new options</li>
+<li>update the cli of the <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> with new options</li>
 <li>add support for static and dynamic probing of the binaries (hence allow custom user probes)</li>
 <li>fix minor issues</li>
 <li>rework the architecture of system-tap collector to work as a daemon</li>
@@ -231,7 +241,7 @@
 <p><strong>Add SystemTap based complexity collector</strong></p>
 <blockquote>
 <div><ul class="simple">
-<li>add SystemTap based complexity collector (see <span class="xref std std-ref">collectors-complexity</span> for more details)</li>
+<li>add SystemTap based complexity collector (see <a class="reference internal" href="collectors.html#collectors-trace"><span class="std std-ref">Trace Collector</span></a> for more details)</li>
 <li>add <code class="docutils literal"><span class="pre">perun</span> <span class="pre">utils</span> <span class="pre">create</span></code> command (see <a class="reference internal" href="cli.html#cli-utils-ref"><span class="std std-ref">Utility Commands</span></a> for more details) for creating new modules according to stored templates</li>
 <li>fix issue with getting config hierarchy, when outside of any perun scope</li>
 </ul>
@@ -669,6 +679,7 @@ to customize performance checking</li>
   <ul>
 <li><a class="reference internal" href="#">Changelog</a><ul>
 <li><a class="reference internal" href="#head">HEAD</a></li>
+<li><a class="reference internal" href="#hotfix-2018-08-02">0.15.3-hotfix (2018-08-02)</a></li>
 <li><a class="reference internal" href="#id1">0.15.3 (2018-08-01)</a></li>
 <li><a class="reference internal" href="#id2">0.15.2 (2018-07-20)</a></li>
 <li><a class="reference internal" href="#id3">0.15.1 (2018-07-17)</a></li>
