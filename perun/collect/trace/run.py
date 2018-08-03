@@ -139,7 +139,7 @@ def after(**kwargs):
         # Update the profile dictionary
         kwargs['profile'] = {
             'global': {
-                'time': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
+                'timestamp': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
                 'resources': resources
             }
         }

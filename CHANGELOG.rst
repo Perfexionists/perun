@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - fix wrong parameter name in trace collector
+
 0.15.3-hotfix (2018-08-02)
 --------------------------
 
