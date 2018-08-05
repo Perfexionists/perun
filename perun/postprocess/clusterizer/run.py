@@ -71,7 +71,8 @@ def postprocess(profile, strategy, **kwargs):
     resources.sort(key=resource_sort_key)
 
     # For debug purposes, print the results
-    print_groups(resources)
+    if log.is_verbose_enough(log.VERBOSE_INFO):
+        print_groups(resources)
 
     # Call the concrete strategy, for each group of resources
     groups = itertools.groupby(resources, resource_group_key)
@@ -84,7 +85,8 @@ def postprocess(profile, strategy, **kwargs):
         )
 
     # For debug purposes, print the results
-    print_groups(resources)
+    if log.is_verbose_enough(log.VERBOSE_INFO):
+        print_groups(resources)
 
     # Return that everything is ok
     return PostprocessStatus.OK, "Sucessfully clusterized the profile", dict(kwargs)
