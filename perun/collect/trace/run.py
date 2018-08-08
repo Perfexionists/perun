@@ -178,6 +178,9 @@ def _validate_input(**kwargs):
     if 'with_static' not in kwargs:
         kwargs['with_static'] = True
 
+    if 'cleanup' not in kwargs:
+        kwargs['cleanup'] = True
+
     # Set the binary if not provided
     if not kwargs['binary']:
         kwargs['binary'] = os.path.realpath(kwargs['cmd'])
@@ -228,6 +231,9 @@ def _create_collector_file(name, suffix='.txt', **kwargs):
 @click.option('--timeout', '-t', type=int, default=0,
               help='Set time limit for the profiled command, i.e. the command will be terminated '
                    'after reaching the time limit. Useful for endless commands etc.')
+@click.option('--cleanup/--no-cleanup', default=True,
+              help='Enable/disable the pre-cleanup of possibly running systemtap processes that'
+                   ' could cause the corruption of the output file due to multiple writes.')
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of

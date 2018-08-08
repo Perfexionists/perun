@@ -12,13 +12,19 @@ import shutil
 import shlex
 import os
 import collections
-from subprocess import TimeoutExpired, CalledProcessError
+from subprocess import TimeoutExpired
 from enum import IntEnum
 
 import perun.utils as utils
 import perun.utils.exceptions as exceptions
 import perun.utils.log as log
 from perun.collect.trace.systemtap_script import RecordType
+
+
+# The default sleep value
+_DEFAULT_SLEEP = 0.5
+# Avoid endless loops with hard timeout value, that breaks the loop in specific cases
+_HARD_TIMEOUT = 10
 
 
 # Collection statuses
@@ -47,32 +53,50 @@ def systemtap_collect(script_path, log_path, output_path, cmd, args, **kwargs):
     :param kwargs: additional collector configuration
     :return tuple: containing the collection status, path to the output file of the collector
     """
+    # Perform the cleanup
+    if kwargs['cleanup']:
+        _stap_cleanup()
+
     # Create the output and log file for collection
     with open(log_path, 'w') as logfile:
         # Start the SystemTap process
         log.cprint('Starting the SystemTap process... ', 'white')
-        stap_runner, code = start_systemtap_in_background(script_path, output_path, logfile,
-                                                          **kwargs)
-        if code != Status.OK:
-            return code, None
-        log.done()
-
-        # Run the command that is supposed to be profiled
-        log.cprint('SystemTap up and running, execute the profiling target... ', 'white')
+        stap_pgid = set()
         try:
-            run_profiled_command(cmd, args, **kwargs)
-        except CalledProcessError:
-            # Critical error during profiled command, make sure we terminate the collector
-            kill_systemtap_in_background(stap_runner)
-            raise
-        log.done()
+            stap_runner, code = start_systemtap_in_background(script_path, output_path, logfile,
+                                                              **kwargs)
+            if code != Status.OK:
+                return code, None
+            stap_pgid.add(os.getpgid(stap_runner.pid))
+            log.done()
 
-        # Terminate SystemTap process after the file was fully written
-        log.cprint('Data collection complete, terminating the SystemTap process... ', 'white')
-        _wait_for_fully_written(output_path)
-        kill_systemtap_in_background(stap_runner)
-        log.done()
-        return Status.OK, output_path
+            # Run the command that is supposed to be profiled
+            log.cprint('SystemTap up and running, execute the profiling target... ', 'white')
+            run_profiled_command(cmd, args, **kwargs)
+            log.done()
+
+            # Terminate SystemTap process after the file was fully written
+            log.cprint('Data collection complete, terminating the SystemTap process... ', 'white')
+            # _wait_for_fully_written(output_path)
+            _wait_for_fully_written(output_path)
+            kill_systemtap_in_background(stap_pgid)
+            log.done()
+            return Status.OK, output_path
+        # Timeout was reached, inform the user but continue normally
+        except exceptions.HardTimeoutException as e:
+            kill_systemtap_in_background(stap_pgid)
+            log.cprintln('', 'white')
+            log.warn(e.msg)
+            log.warn('The profile creation might fail or be inaccurate.')
+            return Status.OK, output_path
+        # Critical error during profiling or collection interrupted
+        # make sure we terminate the collector and remove module
+        except (Exception, KeyboardInterrupt):
+            if not stap_pgid:
+                stap_pgid = None
+            # Clean only our mess
+            _stap_cleanup(stap_pgid, output_path)
+            raise
 
 
 def start_systemtap_in_background(stap_script, output, logfile, **_):
@@ -97,15 +121,6 @@ def start_systemtap_in_background(stap_script, output, logfile, **_):
     )
     # Wait until systemtap process is ready or error occurs
     return process, _wait_for_systemtap_startup(logfile.name, process)
-
-
-def kill_systemtap_in_background(stap_process):
-    """Terminates the system tap process that is running in the background and all child
-    processes that were spawned.
-
-    :param subprocess object stap_process: the object representing the system tap process
-    """
-    utils.run_safely_external_command('sudo kill {0}'.format(os.getpgid(stap_process.pid)))
 
 
 def run_profiled_command(cmd, args, timeout, **_):
@@ -146,7 +161,7 @@ def _wait_for_systemtap_startup(logfile, stap_process):
         while True:
             try:
                 # Take a break before the next status check
-                stap_process.wait(timeout=0.5)
+                stap_process.wait(timeout=_DEFAULT_SLEEP)
                 # The process actually terminated which means that error occurred
                 return Status.STAP
             except TimeoutExpired:
@@ -167,28 +182,140 @@ def _wait_for_fully_written(output):
 
     :param str output: name of the collection output file
     """
-    # Wait until the file exists
-    while not os.path.exists(output):
-        time.sleep(0.5)
+    # Wait until the file exists and is not empty
+    timeout = 0
+    while not os.path.exists(output) or os.path.getsize(output) == 0:
+        timeout = _sleep_with_timeout(timeout)
 
     with open(output, 'rb') as content:
-        # Wait until the file is not empty
-        while os.path.getsize(output) == 0:
-            time.sleep(0.5)
-
+        # Find the last line of the file
+        timeout = 0
         while True:
-            # Cover the case where end marker is the only record
-            if content.readline().decode() == 'end\n':
-                return
-            # Find the last line of the file
-            content.seek(-2, os.SEEK_END)
+            # Move to the end of the file
+            content.seek(0, os.SEEK_END)
+            while content.tell() < 2:
+                timeout = _sleep_with_timeout(timeout)
+                content.seek(0, os.SEEK_END)
+            # Do backward steps until we find the newline
+            content.seek(-2, os.SEEK_CUR)
             while content.read(1) != b'\n':
+                if content.tell() < 2:
+                    # The file has only one line
+                    content.seek(0)
+                    break
                 content.seek(-2, os.SEEK_CUR)
-            marker = content.readline().decode()
-            # The file is ready if it's last line is end marker
-            if marker == 'end\n':
-                return
-            time.sleep(0.5)
+
+            # The file is ready if its last line is end marker
+            if content.readline().decode().startswith('end'):
+                return True
+            timeout = _sleep_with_timeout(timeout)
+
+
+def _sleep_with_timeout(counter):
+    """Performs sleep and keeps track of total time slept to indicate hard timeout condition
+    fulfilled. Raises HardTimeoutException if the timeout threshold was reached.
+
+    :param int counter: the counter variable for hard timeout detection
+    :return int: the updated counter value
+    """
+    if counter >= _HARD_TIMEOUT:
+        raise exceptions.HardTimeoutException('Timeout reached during waiting for the collection'
+                                              ' output file to fully load.')
+    time.sleep(_DEFAULT_SLEEP)
+    counter += _DEFAULT_SLEEP
+    return counter
+
+
+def _stap_cleanup(stap_pgid=None, target=''):
+    """Performs cleanup of the possibly running systemtap processes and loaded kernel modules
+
+    :param set stap_pgid: list of the systemtap processes to terminate
+    :param str target: if set to some collect_record_<timestamp>.txt, then only the process
+                       associated with this collection will be searched for
+    """
+    if stap_pgid is None:
+        stap_pgid = _running_stap_processes(target)
+    kill_systemtap_in_background(stap_pgid)
+    # Remove also the loaded kernel modules that were not removed by the systemtap
+    time.sleep(_DEFAULT_SLEEP)  # Stap processes are in background, the unloading can take some time
+    _remove_stap_modules(_loaded_stap_kernel_modules())
+
+
+def _running_stap_processes(target=''):
+    """Extracts gpid of all systemtap processes that are currently running on the system
+    or only the systemtap process that is associated with the specified profiling
+
+    :param str target: if set to some collect_record_<timestamp>.txt, then only the process
+                       associated with this collection will be searched for
+    :return set: the set of gpid of running stap processes
+    """
+    # Check that dependencies are not missing
+    if (not utils.check_dependency('ps') or not utils.check_dependency('grep')
+            or not utils.check_dependency('awk')):
+        log.warn('Unable to perform cleanup of systemtap processes, please terminate them manually'
+                 ' or install the missing dependencies')
+
+    # Create command for extraction of stap processes that are currently running on the system
+    extractor = 'ps aux | grep stap'
+    if target:
+        # We look only for the process that was possibly used in this collection
+        extractor += ' | grep {record}'.format(record=target)
+    # Filter only the root stap process, not the spawned children
+    extractor += ' | awk \'$11" "$12 == "sudo stap" {print $2}\''
+
+    # Get the pid list and kill the processes
+    out, _ = utils.run_safely_external_command(extractor, False)
+    gpid = set()
+    for line in out.decode('utf-8').splitlines():
+        try:
+            gpid.add(os.getpgid(int(line)))
+        except ProcessLookupError:
+            # The process might have been already somehow terminated
+            continue
+    return gpid
+
+
+# TODO: There seems to be useless to test for only_self, as the same module can be used from cache
+# and loaded again, check again for possible distinction
+def _loaded_stap_kernel_modules():
+    """Extracts the names of all systemtap kernel modules that are currently loaded
+
+    :return set: the list of names of loaded systemtap kernel modules
+    """
+    # Check that dependencies are not missing
+    if (not utils.check_dependency('lsmod') or not utils.check_dependency('grep')
+            or not utils.check_dependency('awk') or not utils.check_dependency('rmmod')):
+        log.warn('Unable to perform cleanup of systemtap kernel modules, please terminate them '
+                 'manually or install the missing dependencies')
+    # Build the extraction command
+    extractor = 'lsmod | grep stap_ | awk \'{print $1}\''
+
+    # Run the command and save the found modules
+    out, _ = utils.run_safely_external_command(extractor, False)
+    modules = set()
+    for line in out.decode('utf-8'):
+        modules.add(line)
+    return modules
+
+
+def kill_systemtap_in_background(stap_processes):
+    """Terminates the system tap processes that are running in the background and all child
+    processes that were spawned.
+
+    :param set stap_processes: the list of PGID of the stap processes to kill
+    """
+    for pgid in stap_processes:
+        utils.run_safely_external_command('sudo kill {0}'.format(pgid), False)
+
+
+def _remove_stap_modules(modules):
+    """Removes (unloads) the specified systemtap modules from the kernel
+
+    :param set modules: the list of modules to unload
+    """
+    for module in modules:
+        rm_cmd = 'sudo rmmod {mod}'.format(mod=module)
+        utils.run_safely_external_command(rm_cmd, False)
 
 
 def trace_to_profile(output_path, func, static, **kwargs):

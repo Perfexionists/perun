@@ -12,11 +12,9 @@
 """
 
 import collections
-import shutil
 from enum import IntEnum
 
 import perun.utils as utils
-import perun.utils.log as log
 
 
 class _Status(IntEnum):
@@ -248,7 +246,7 @@ def _extract_functions(binary, method, global_sampling, **_):
     :return list: extracted function symbols stored as a probes = dictionaries
     """
     # Check if nm and awk utils are available, both are needed for the extraction
-    if not _check_dependency('nm') or not _check_dependency('awk'):
+    if not utils.check_dependency('nm') or not utils.check_dependency('awk'):
         return []
     user = method in ('userspace', 'u_sampled')
 
@@ -291,7 +289,7 @@ def _static_stap_extractor(binary):
     :param str binary: path to the binary file
     :return str: the decoded standard output
     """
-    if _check_dependency('stap'):
+    if utils.check_dependency('stap'):
         out, _ = utils.run_safely_external_command(
             'sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary), False)
         return out.decode('utf-8')
@@ -325,18 +323,6 @@ def _filter_user_symbol(func):
     if func[0] == '_':
         if func[:2] != '_Z' or flen < 3:
             return False
-    return True
-
-
-def _check_dependency(command):
-    """Check possibly missing dependency utility (such as awk, nm, ls, ...)
-
-    :param str command: the dependency utility to check
-    :return bool: True if dependency utility is present on the system, False otherwise
-    """
-    if not shutil.which(command):
-        log.warn(("Missing dependency utility '{util}'".format(util=command)))
-        return False
     return True
 
 
