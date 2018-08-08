@@ -168,10 +168,11 @@ def _wait_for_systemtap_startup(logfile, stap_process):
                 # Check process status and reload the log file
                 scanlog.seek(0)
                 # Read the last line of logfile and return if the systemtap is ready
-                last = ''
-                for line in scanlog:
-                    last = line
-                if last == 'Pass 5: starting run.\n':
+                last = (0, '')
+                for line_num, line in enumerate(scanlog):
+                    last = (line_num, line)
+                # The line we are looking for is at least 5th, use language-neutral test
+                if last[0] >= 4 and ' 5: ' in last[1]:
                     return Status.OK
 
 
