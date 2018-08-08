@@ -29,6 +29,7 @@ The TextFile Generator can be configured by following options:
   * ``randomize_rows``: by default set to True, the rows in the file have then randomized length
     from interval (``min_chars``, ``max_chars``). Otherwise (if set to false), the lines will always
     be of maximal length (``max_chars``).
+
 """
 
 import distutils.util as dutils

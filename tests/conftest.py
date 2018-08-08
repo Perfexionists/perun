@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 
 import git
+import perun.utils.log as log
 import perun.logic.pcs as pcs
 import perun.logic.store as store
 import perun.cli as cli
@@ -632,4 +633,7 @@ def setup():
         singleton.instance = None
     for singleton_with_args in decorators.func_args_cache.values():
         singleton_with_args.clear()
+
+    # Reset the verbosity to release
+    log.VERBOSITY = 0
     yield

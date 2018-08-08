@@ -22,6 +22,7 @@ The String Generator can be configured by following options:
   * ``min_len``: the minimal length of the string that shall be generated.
   * ``max_len``: the maximal length of the string that shall be generated.
   * ``step_len``: the step (or increment) of the lengths.
+
 """
 
 import random

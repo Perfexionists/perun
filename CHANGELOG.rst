@@ -6,6 +6,18 @@ HEAD
 
 **To be included in next release**
 
+  - fix wrong parameter name in trace collector
+
+0.15.3-hotfix (2018-08-02)
+--------------------------
+
+`commit: a9b46ed478258bbcd8292df0775a14e69b7db329`
+
+**Hotfix unused workload parameter in trace collector**
+
+  - hotfix missing workload parameter in trace collector
+
+
 0.15.3 (2018-08-01)
 -------------------
 
@@ -27,7 +39,7 @@ HEAD
 
 **Upgrade Trace collector architecture**
 
-  - update the cli of the :ref:`collectors-complexity` with new options
+  - update the cli of the :ref:`collectors-trace` with new options
   - add support for static and dynamic probing of the binaries (hence allow custom user probes)
   - fix minor issues
   - rework the architecture of system-tap collector to work as a daemon
@@ -181,7 +193,7 @@ HEAD
 
 **Add SystemTap based complexity collector**
 
-  - add SystemTap based complexity collector (see :ref:`collectors-complexity` for more details)
+  - add SystemTap based complexity collector (see :ref:`collectors-trace` for more details)
   - add ``perun utils create`` command (see :ref:`cli-utils-ref` for more details) for creating new modules according to stored templates
   - fix issue with getting config hierarchy, when outside of any perun scope
 

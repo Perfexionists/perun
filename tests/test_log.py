@@ -116,6 +116,7 @@ def test_log(pcs_full, capsys):
 
     # Assert nothing was printed on error stream
     assert len(err) == 0
+    assert len(out) != 0
 
     for commit in commits:
         c_binsha = binascii.hexlify(commit.binsha).decode('utf-8')
