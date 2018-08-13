@@ -254,8 +254,8 @@ class InvalidBinaryException(Exception):
         """
         super().__init__("")
         self.binary = binary
-        self.msg = ("Supplied binary parameter '{0}' is not an executable ELF file."
-                    .format(self.binary))
+        self.msg = ("Supplied binary parameter '{0}' does not exists or is not an "
+                    "executable ELF file.".format(self.binary))
 
     def __str__(self):
         return self.msg
@@ -276,6 +276,21 @@ class TraceStackException(Exception):
             self.msg += '\nstack: \n  empty'
         else:
             self.msg += '\nstack:' + '\n  '.join(map(str, trace_stack))
+
+    def __str__(self):
+        return self.msg
+
+
+class HardTimeoutException(Exception):
+    """Raised when various sleep calls exceed specified hard timeout threshold"""
+    def __init__(self, msg):
+        """
+        :param str msg: specific exception message
+        """
+        super().__init__("")
+        self.msg = msg
+        if not msg:
+            self.msg += 'Hard timeout was reached during sleep operation'
 
     def __str__(self):
         return self.msg

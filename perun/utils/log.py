@@ -33,6 +33,15 @@ SUPPRESS_PAGING = True
 logging.basicConfig(filename='perun.log', level=logging.DEBUG)
 
 
+def is_verbose_enough(verbosity_peak):
+    """Tests if the current verbosity of the log is enough
+
+    :param int verbosity_peak: peak of the verbosity we are testing
+    :return: true if the verbosity is enough
+    """
+    return VERBOSITY >= verbosity_peak
+
+
 def page_function_if(func, paging_switch):
     """Adds paging of the output to standard stream
 

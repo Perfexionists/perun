@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='perun',
-    version='0.1',
+    version='0.15.4',
     py_modules=['perun'],
     packages=find_packages(),
     package_data={'perun': [

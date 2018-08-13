@@ -6,6 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.utils.log as log
 import perun.postprocess.clusterizer.run as clusterizer
 import perun.profile.factory as factory
 import perun.profile.query as query
@@ -24,6 +25,11 @@ def test_from_cli(pcs_full):
     # Test that something was created
     object_no_after = len(os.listdir(object_dir))
     assert object_no_after == object_no + 1
+
+    # Test verbosity of printing the groups
+    log.VERBOSITY = log.VERBOSE_DEBUG
+    result = runner.invoke(cli.postprocessby, ["0@i", "clusterizer"])
+    assert result.exit_code == 0
 
 
 def test_sort_order(full_profiles):
