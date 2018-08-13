@@ -9,8 +9,9 @@ import shlex
 import subprocess
 import os
 import magic
+import shutil
 
-from .log import error, cprint
+from .log import error, cprint, warn
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 __author__ = 'Tomas Fiedor'
@@ -366,3 +367,15 @@ def get_path_dir_file(target):
     path = os.path.realpath(target)
     path_dir = os.path.join(os.path.dirname(path), '')  # Add directory slash if missing
     return path, path_dir, os.path.basename(path)
+
+
+def check_dependency(command):
+    """Check possibly missing dependency utility (such as awk, nm, ls, ...)
+
+    :param str command: the dependency utility to check
+    :return bool: True if dependency utility is present on the system, False otherwise
+    """
+    if not shutil.which(command):
+        warn(("Missing dependency utility '{util}'".format(util=command)))
+        return False
+    return True
