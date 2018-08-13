@@ -6,6 +6,18 @@ HEAD
 
 **To be included in next release**
 
+0.15.4 (2018-08-13)
+-------------------
+
+`commit: b1e2e3bdcca839efcf7a59ebb8fdbd2b8fc38888`
+
+**Add cleanup procedures to Trace collector**
+
+  - add cleanup procedures to trace collector (so it properly kills systemtap modules)
+  - fix setup.py versions
+  - make clusterizer less verbose
+  - fix wrong parameter name in trace collector
+
 0.15.3-hotfix (2018-08-02)
 --------------------------
 
