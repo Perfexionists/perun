@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - add --version option to perun cli, so it shows version of perun (d'oh!)
+
 0.15.4 (2018-08-13)
 -------------------
 

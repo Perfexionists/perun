@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
+import perun
 
 setup(
     name='perun',
-    version='0.15.4',
+    version=perun.__version__,
     py_modules=['perun'],
     packages=find_packages(),
     package_data={'perun': [
