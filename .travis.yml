@@ -7,7 +7,6 @@ cache: pip
 
 install:
     - pip install -r requirements.txt
-    - pip install -U pytest pytest-cov codecov
     - make install
 
 before_script:

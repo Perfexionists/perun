@@ -95,6 +95,10 @@ def test_cli(pcs_full):
     log.VERBOSITY = log.VERBOSE_RELEASE
     log.SUPPRESS_PAGING = True
 
+    result = runner.invoke(cli.cli, ['--version'])
+    assert result.output.startswith('Perun')
+    assert result.exit_code == 0
+
 
 def test_reg_analysis_incorrect(pcs_full):
     """Test various failure scenarios for regression analysis cli.

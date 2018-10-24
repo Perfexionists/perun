@@ -13,3 +13,6 @@ scipy>=0.19.1
 Faker>=0.8.16
 namedlist>=1.7
 GitPython>=2.1.11
+pytest==3.6.3
+pytest-cov==2.5.1
+codecov==2.0.15
