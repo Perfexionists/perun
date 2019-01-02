@@ -32,7 +32,7 @@ _COLLECTOR_SUBTYPES = {
 _COLLECTOR_STATUS = {
     systemtap.Status.OK: (CollectStatus.OK, 'Ok'),
     systemtap.Status.STAP: (CollectStatus.ERROR,
-                            'SystemTap related issue, see the corresponding {log} file.'),
+                            'SystemTap related issue, see the corresponding {} file.'),
     systemtap.Status.STAP_DEP: (CollectStatus.ERROR, 'SystemTap dependency missing.'),
     systemtap.Status.EXCEPT: (CollectStatus.ERROR, '')  # The msg should be set by the exception
 }
@@ -70,7 +70,7 @@ def before(**kwargs):
         # Validate collection parameters
         kwargs = _validate_input(**kwargs)
 
-        # Extract and / or post process the collect configuration
+        # Extract and / or post-process the collect configuration
         kwargs = strategy.extract_configuration(**kwargs)
         if not kwargs['func'] and not kwargs['static'] and not kwargs['dynamic']:
             return CollectStatus.ERROR, ('No function, static or dynamic probes to be profiled '
@@ -147,7 +147,7 @@ def after(**kwargs):
         result = _COLLECTOR_STATUS[systemtap.Status.OK]
         return result[0], result[1], dict(kwargs)
 
-    except (CalledProcessError, exceptions.TraceStackException) as exception:
+    except CalledProcessError as exception:
         log.failed()
         return _COLLECTOR_STATUS[systemtap.Status.EXCEPT], str(exception), dict(kwargs)
 
@@ -174,16 +174,15 @@ def _validate_input(**kwargs):
     if 'timeout' not in kwargs or kwargs['timeout'] <= 0:
         kwargs['timeout'] = None
 
-    # Set the with-static if not provided
-    if 'with_static' not in kwargs:
-        kwargs['with_static'] = True
+    # Set the some default values if not provided
+    kwargs.setdefault('with_static', True)
+    kwargs.setdefault('cleanup', True)
+    kwargs.setdefault('verbose_trace', False)
 
-    if 'cleanup' not in kwargs:
-        kwargs['cleanup'] = True
-
-    # Set the binary if not provided
+    # Set the binary to cmd if not provided and check that it exists
     if not kwargs['binary']:
-        kwargs['binary'] = os.path.realpath(kwargs['cmd'])
+        kwargs['binary'] = kwargs['cmd']
+    kwargs['binary'] = os.path.realpath(kwargs['binary'])
     if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
         raise exceptions.InvalidBinaryException(kwargs['binary'])
     return kwargs
@@ -234,6 +233,8 @@ def _create_collector_file(name, suffix='.txt', **kwargs):
 @click.option('--cleanup/--no-cleanup', default=True,
               help='Enable/disable the pre-cleanup of possibly running systemtap processes that'
                    ' could cause the corruption of the output file due to multiple writes.')
+@click.option('--verbose-trace', '-vt', is_flag=True,
+              help='Set the trace file output to be more verbose, useful for debugging.')
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of
