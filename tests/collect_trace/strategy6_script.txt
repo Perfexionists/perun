@@ -1,12 +1,101 @@
 global samp_0[1]
 probe process("cmp").begin {
 	samp_0[0] = 3
+	printf("cmp")
+}
+
+probe process("cmp").function("_Z10BubbleSortPii").call? {
+	printf("0 %s_Z10BubbleSortPii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z10BubbleSortPii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z10InsertSortPii").call? {
+	printf("0 %s_Z10InsertSortPii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z10InsertSortPii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z12BadPartitionPiii").call? {
+	printf("0 %s_Z12BadPartitionPiii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z12BadPartitionPiii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z12QuickSortBadPii").call? {
+	printf("0 %s_Z12QuickSortBadPii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z12QuickSortBadPii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z4SwapRiS_").call? {
+	printf("0 %s_Z4SwapRiS_\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z4SwapRiS_").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z4swapPiii").call? {
+	printf("0 %s_Z4swapPiii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z4swapPiii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z8HeapSortPii").call? {
+	printf("0 %s_Z8HeapSortPii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z8HeapSortPii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z9PartitionPiii").call? {
+	printf("0 %s_Z9PartitionPiii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z9PartitionPiii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z9QuickSortPii").call? {
+	printf("0 %s_Z9QuickSortPii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z9QuickSortPii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("_Z9repairTopPiii").call? {
+	printf("0 %s_Z9repairTopPiii\n", thread_indent(1))
+}
+
+probe process("cmp").function("_Z9repairTopPiii").return? {
+	printf("1 %s\n", thread_indent(-1))
+}
+
+probe process("cmp").function("invalid").call? {
+	printf("0 %sinvalid\n", thread_indent(1))
+}
+
+probe process("cmp").function("invalid").return? {
+	printf("1 %s\n", thread_indent(-1))
 }
 
 probe process("cmp").function("main").call? {
 	samp_0[0] ++
 	if(samp_0[0] == 4) {
-		printf("0 %s main\n", thread_indent(1))
+		printf("0 %smain\n", thread_indent(1))
 		samp_0[0] = 0
 	}
 }
@@ -16,94 +105,6 @@ probe process("cmp").function("main").return? {
 	}
 }
 
-probe process("cmp").function("_Z12QuickSortBadPii").call? {
-	printf("0 %s _Z12QuickSortBadPii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z12QuickSortBadPii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("invalid").call? {
-	printf("0 %s invalid\n", thread_indent(1))
-}
-
-probe process("cmp").function("invalid").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z10BubbleSortPii").call? {
-	printf("0 %s _Z10BubbleSortPii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z10BubbleSortPii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z10InsertSortPii").call? {
-	printf("0 %s _Z10InsertSortPii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z10InsertSortPii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z12BadPartitionPiii").call? {
-	printf("0 %s _Z12BadPartitionPiii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z12BadPartitionPiii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z4swapPiii").call? {
-	printf("0 %s _Z4swapPiii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z4swapPiii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z4SwapRiS_").call? {
-	printf("0 %s _Z4SwapRiS_\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z4SwapRiS_").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z8HeapSortPii").call? {
-	printf("0 %s _Z8HeapSortPii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z8HeapSortPii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z9PartitionPiii").call? {
-	printf("0 %s _Z9PartitionPiii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z9PartitionPiii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z9QuickSortPii").call? {
-	printf("0 %s _Z9QuickSortPii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z9QuickSortPii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z9repairTopPiii").call? {
-	printf("0 %s _Z9repairTopPiii\n", thread_indent(1))
-}
-
-probe process("cmp").function("_Z9repairTopPiii").return? {
-	printf("1 %s\n", thread_indent(-1))
-}
-
 probe process("cmp").end {
-	printf("end\n")
+	printf("cmp")
 }

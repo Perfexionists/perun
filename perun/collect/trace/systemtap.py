@@ -343,6 +343,8 @@ def trace_to_profile(output_path, func, static, **kwargs):
         # trace = _demangle(trace)
         cnt = 0
         try:
+            # Initialize just in case the trace doesn't have 'begin' statement
+            trace_stack, sequence_map = _init_stack_and_map(func, static)
             for cnt, line in enumerate(trace):
                 # File starts or ends
                 if line.startswith('begin '):
@@ -388,7 +390,7 @@ def _init_stack_and_map(func, static):
     :param dict static: the static probes
     :return tuple: initialized trace stack and sequence map
     """
-    # func: thread -> stack (faults list, stack list)
+    # func: thread -> stack (stack list, faults list)
     # static: thread -> name -> stack
     trace_stack = {'func': collections.defaultdict(lambda: ([], [])),
                    'static': collections.defaultdict(lambda: collections.defaultdict(list))}

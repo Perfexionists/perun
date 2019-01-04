@@ -76,7 +76,7 @@ def extract_configuration(func, func_sampled, static, static_sampled, **kwargs):
     kwargs['func'] = _merge_probes(func, func_sampled, extracted_func, kwargs['global_sampling'])
 
     # Create one dictionary of static probes specification
-    kwargs['static'] = []
+    kwargs['static'] = extracted_static
     if kwargs['with_static']:
         # We also need to do some automated pairing of static rules
         kwargs['static'] = _pair_rules(
@@ -121,8 +121,8 @@ def _merge_probes(specified, specified_sampled, extracted, global_sampling):
     probes = {probe: {'name': probe, 'sample': global_sampling} for probe in specified}
 
     # Validate the sampling values and merge the lists
-    for probe in specified_sampled:
-        probes[probe] = {'name': probe[0], 'sample': probe[1] if probe[1] > 1 else global_sampling}
+    for prb in specified_sampled:
+        probes[prb[0]] = {'name': prb[0], 'sample': prb[1] if prb[1] > 1 else global_sampling}
 
     # 'Merge' the two dictionaries - user specification has bigger priority
     extracted.update(probes)
@@ -145,9 +145,11 @@ def _pair_rules(probes):
     """
     result = dict()
 
+    # Direct suffix pairs that should be paired
     suffix_pairs = {'begin': 'end', 'entry': 'return', 'start': 'finish',
                     'create': 'destroy', 'construct': 'deconstruct'}
-    related = (['begin', 'entry', 'start'], ['create', 'construct'])
+    # Related suffixes that could still be paired together
+    related = (['end', 'return', 'finish'], ['destroy', 'deconstruct'])
 
     delimited, beginnings, endings = _classify_static_probes(probes, suffix_pairs)
 
@@ -286,7 +288,7 @@ def _add_paired_rule(probe_start, probe_end, start_sample, end_sample, result, a
         sampling = min(start_sample, end_sample)
         result[probe_start] = {'name': probe_start, 'sample': sampling,
                                'pair': (RecordType.StaticBegin, probe_end)}
-        result[probe_end] = {'name': probe_start, 'sample': sampling,
+        result[probe_end] = {'name': probe_end, 'sample': sampling,
                              'pair': (RecordType.StaticEnd, probe_start)}
     elif add_separate:
         # The probes are not unique, do the single insertion by setdefault

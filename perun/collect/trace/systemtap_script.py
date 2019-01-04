@@ -41,10 +41,11 @@ def assemble_system_tap_script(script_path, func, static, binary, verbose_trace,
         script += _sampling_array_for(0, len(sampled_probes))
     script += _begin_marker(binary, 0, sampled_probes)
 
-    for func_probe in func.values():
+    # Sort the functions and static probes by name to ensure deterministic scripts
+    for func_probe in sorted(func.values(), key=lambda value: value['name']):
         script += _function_probe(func_probe, binary, 0, verbose_trace)
 
-    for rule in static.values():
+    for rule in sorted(static.values(), key=lambda value: value['name']):
         # Do not create duplicate rules for pairs (starting probe also creates the ending probe)
         if rule.get('pair', [RecordType.StaticBegin])[0] != RecordType.StaticEnd:
             script += _static_probe(rule, binary, 0)
@@ -243,9 +244,9 @@ def _index_process_sampling(func, static):
     sampled = []
     # Iterate all probe lists
     for probe_collection in [func, static]:
-        for _, v in probe_collection.items():
-            # Index probes that actually have sampling
-            if v['sample'] > 1:
+        for v in sorted(probe_collection.values(), key=lambda value: value['name']):
+            # Index probes that actually have sampling and avoid duplicate index for pairs
+            if v['sample'] > 1 and ('pair' not in v or v['pair'][0] != RecordType.StaticEnd):
                 v['index'] = index
                 sampled.append((index, v['sample']))
                 index += 1

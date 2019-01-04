@@ -17,8 +17,8 @@ begin /home/jirka/perun/experiments/quicksort
 0    165 quicksort(14060):   _Z4SwapRiS_
 1    174 quicksort(14060):   
 1    179 quicksort(14060):  
-0    190 quicksort(14060):  _Z12BadPartitionPiii
-0    204 quicksort(14060):   _Z4SwapRiS_
+0    190 quick
+0204 quickso _Z4SwapRiS_
 1    213 quicksort(14060):   
 1    218 quicksort(14060):  
 0    229 quicksort(14060):  _Z12BadPartitionPiii
@@ -33,4 +33,3 @@ begin /home/jirka/perun/experiments/quicksort
 0    320 quicksort(14060):  _Z12BadPartitionPiii
 0    334 quicksort(14060):   _Z4SwapRiS_
 1    342 quicksort(14060):   
-1    347 quicksort(14060):

@@ -1,14 +1,24 @@
 """Basic tests for running the currently supported collectors"""
 
 import os
+import glob
+import re
+
+from click.testing import CliRunner
 
 import perun.vcs as vcs
-import perun.logic.runner as runner
+import perun.cli as cli
+import perun.logic.runner as run
 import perun.profile.query as query
 import perun.collect.trace.systemtap as stap
+import perun.collect.trace.strategy as strategy
+import perun.utils.decorators as decorators
+import perun.logic.config as config
 
 from perun.utils.helpers import Unit, Job
 from perun.workload.integer_generator import IntegerGenerator
+from perun.collect.trace.systemtap import _TraceRecord
+from perun.collect.trace.systemtap_script import RecordType
 
 __author__ = 'Tomas Fiedor'
 
@@ -24,64 +34,335 @@ def _mocked_stap(**_):
     return code, file
 
 
-def test_collect_trace(monkeypatch, helpers, pcs_full, trace_collect_job):
-    """Test collecting the profile using trace collector"""
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
+def _mocked_stap_extraction(_):
+    return ('process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE")\n'
+            'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE_end")\n'
+            'process("/home/jirka/perun/tests/collect_trace/tst").mark("INSIDE_CYCLE")\n')
+
+
+def _mocked_stap_extraction2(_):
+    """Static probes in ruby code enhanced with some artificial one to trigger all pairing
+       possibilities.
+    """
+    return ('process("/home/jirka/perun/experiments/ruby/ruby").mark("array__create")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("array__end")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("cmethod__entry")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("cmethod__return")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("cmethod__deconstruct")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("find__require__entry")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("find__require__return")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("find__require__begin")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("gc__mark__begin")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("gc__mark__end")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("gc__sweep__begin")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("gc__sweep__end")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("hash__create")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("load__entry")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("load__return")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("method__cache__clear")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("method__entry")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("method__return")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("object__create")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("parse__begin")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("parse__end")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("raise")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("require__entry")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("require__return")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("string__create")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("symbol__create")\n'
+            'process("/home/jirka/perun/experiments/ruby/ruby").mark("symbol__deconstruct")\n')
+
+
+def _mocked_trace_stack(_, __):
+    """Provides trace stack for exception output"""
+    trace_stack = {'func': {5983:
+        ([_TraceRecord(RecordType.FuncBegin, 0, 'ruby_init', 0, 5983, 0),
+          _TraceRecord(RecordType.FuncBegin, 1, 'ruby_setup', 3, 5983, 0),
+          _TraceRecord(RecordType.FuncBegin, 2, 'rb_define_global_function', 53036, 5983, 1),
+          _TraceRecord(RecordType.FuncBegin, 3, 'rb_define_module_function', 53041, 5983, 1),
+          _TraceRecord(RecordType.FuncBegin, 4, 'rb_define_private_method', 53045, 5983, 12),
+          _TraceRecord(RecordType.FuncBegin, 5, 'rb_intern', 53049, 5983, 63),
+          _TraceRecord(RecordType.FuncBegin, 6, 'rb_intern2', 53053, 5983, 70),
+          _TraceRecord(RecordType.FuncBegin, 7, 'rb_intern3', 53062, 5983, 70)], [])},
+                   'static': {5983: {
+                       'array__create': [_TraceRecord(RecordType.StaticSingle, 3,
+                                                      'array__create', 5023, 5983, 3)],
+                       'string__create': [_TraceRecord(RecordType.StaticSingle, 9,
+                                                       'string__create', 53135, 5983, 329)],
+                       'symbol__create': [_TraceRecord(RecordType.StaticSingle, 8,
+                                                       'symbol__create', 52637, 5983, 166)],
+                       'method__cache__clear': [_TraceRecord(RecordType.StaticSingle, 7,
+                                                             'method__cache__clear', 53006, 5983,
+                                                             57)]
+                   }}}
+    return trace_stack, {}
+
+
+def _mocked_parse_record(_):
+    raise KeyError
+
+
+def _mocked_stap_extraction_empty(_):
+    return 'Tip: /usr/share/doc/systemtap/README.Debian should help you get started.'
+
+
+def _get_latest_collect_script(script_dir):
+    """Return name of the latest collect script from given script directory
+
+    :param str script_dir: path to the directory where multiple (or single)
+                           collect scripts are located
+    :return str: path to the latest trace collector script
+    """
+    # Get all stap script in the directory and find the last one,
+    # which will be then analyzed for correctness
+    scripts = glob.glob(os.path.join(script_dir, 'collect_script_*.stp'))
+    # Find the newest script in the directory
+    latest = scripts[0]
+    # Extract timestamp from the first script
+    latest_timestamp = int(''.join(scripts[0][-23:-4].split('-')))
+    for script in scripts:
+        # Check every script file and find the biggest timestamp
+        timestamp = int(''.join(script[-23:-4].split('-')))
+        if timestamp >= latest_timestamp:
+            latest_timestamp = timestamp
+            latest = script
+    return latest
+
+
+def _compare_collect_scripts(new_script, reference_script):
+    """Compares collect script with its reference scripts
+
+    :param str new_script: path to the script to compare
+    :param str reference_script: path to the reference script
+    :return bool: True if scripts are the same (except machine specific values in the script),
+                  False otherwise
+    """
+    # Replace the machine-specific path to the binary with some generic text to allow for comparison
+    with open(new_script, 'r') as script:
+        content = script.read()
+    sub_content = re.sub(r'\(\".*?/tst(\\n)?\"\)', '("cmp")', content)
+    with open(reference_script, 'r') as cmp:
+        cmp_content = cmp.read()
+    return sub_content == cmp_content
+
+
+def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
+    """Test running the trace collector from the CLI with parameter handling
+
+    Expecting no errors
+    """
     monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
+    runner = CliRunner()
 
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target = os.path.join(script_dir, 'tst')
+    job_params = trace_collect_job[5]['collector_params']['trace']
 
-    cmd, args, work, collectors, posts, config = trace_collect_job
-    config['collector_params']['trace']['binary'] = os.path.join(os.path.dirname(__file__),
-                                                                 'collect_trace', 'tst')
-    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
+    func = ['-f{}'.format(func) for func in job_params['func']]
+    func_sampled = []
+    for f in job_params['func_sampled']:
+        func_sampled.append('-fs')
+        func_sampled.append(f[0])
+        func_sampled.append(f[1])
+    static = ['-s{}'.format(rule) for rule in job_params['static']]
+    binary = ['-b{}'.format(target)]
 
-    # Assert that nothing was removed
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    result = runner.invoke(cli.collect, ['-c{}'.format(target),
+                                         'trace'] + func + func_sampled + static + binary)
 
-    new_profile = profiles[0]
-    assert len(profiles) == 1
-    assert new_profile.endswith(".perf")
+    assert result.exit_code == 0
 
-    # Fixme: Add check that the profile was correctly generated
+    # Test running the job from the params using the job file
+    # Fixme: yaml parameters applied after the cli, thus cli reports missing parameters
+    # script_dir = os.path.split(__file__)[0]
+    # source_dir = os.path.join(script_dir, 'collect_trace')
+    # job_config_file = os.path.join(source_dir, 'job.yml')
+    # result = runner.invoke(cli.collect, ['-c{}'.format(target), '-p{}'.format(job_config_file),
+    #                                      'trace'])
+    # assert result.exit_code == 0
+
+    # Test running the job from the params using the yaml string
+    result = runner.invoke(cli.collect, ['-c{}'.format(target),
+                                         '-p\"global_sampling: 2\"',
+                                         'trace'] + func + func_sampled + static + binary)
+    assert result.exit_code == 0
+
+    # Try different template
+    result = runner.invoke(cli.collect, [
+        '-ot', '%collector%-profile',
+        '-c{}'.format(target),
+        '-p\"method: custom\"',
+        'trace',
+    ] + func + func_sampled + static + binary)
+    del config.runtime().data['format']
+    decorators.remove_from_function_args_cache("lookup_key_recursively")
+    assert result.exit_code == 0
+    pending_profiles = os.listdir(os.path.join(os.getcwd(), ".perun", "jobs"))
+    assert "trace-profile.perf" in pending_profiles
+
+    # Test duplicity detection and pairing
+    result = runner.invoke(cli.collect,
+                           ['-c{}'.format(target), 'trace', '-f', 'main', '-f', 'main', '-fs',
+                            'main', 2, '-fs', 'main', 2, '-s', 'BEFORE_CYCLE', '-ss',
+                            'BEFORE_CYCLE', 3, '-s', 'BEFORE_CYCLE_end', '-s',
+                            'BEFORE_CYCLE#BEFORE_CYCLE_end', '-ss', 'TEST_SINGLE', 4, '-s',
+                            'TEST_SINGLE2', '-fs', 'test', -3] + binary)
+    assert result.exit_code == 0
+    # Compare the created script with the correct one
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'cmp_script.txt'))
+
+    # Test negative global sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-g -2'] + binary)
+    assert result.exit_code == 0
+
+    # Try missing parameter -c
+    # Fixme: before fails but still produces 0?
+    result = runner.invoke(cli.collect, ['trace'] + binary)
+    assert result.exit_code == 0
+
+    # Try invalid parameter --method
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-minvalid'] + binary)
+    assert result.exit_code == 2
+
+    # Try binary parameter that is actually not executable ELF
+    target = os.path.join(script_dir, 'cpp_sources', 'tst.cpp')
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace'])
+    assert result.exit_code == 0
+    assert 'is not an executable ELF file.' in result.output
+
+
+def test_collect_trace_strategies(monkeypatch, pcs_full):
+    """Test various trace collector strategies
+
+    Expecting no errors and correctly generated scripts
+    """
+    monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
+    monkeypatch.setattr(strategy, '_load_static_probes', _mocked_stap_extraction)
+    runner = CliRunner()
+
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target = os.path.join(script_dir, 'tst')
+
+    # Test simple userspace strategy without external modification or sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy1_script.txt'))
+    # Test simple u_sampled strategy without external modification
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'u_sampled'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy2_script.txt'))
+    # Test simple all strategy without external modification or sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'all'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy3_script.txt'))
+    # Test simple a_sampled strategy with verbose trace and without external modification
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'a_sampled', '-vt'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy4_script.txt'))
+    # Change the mocked static extractor to empty one
+    monkeypatch.setattr(strategy, '_load_static_probes', _mocked_stap_extraction_empty)
+    # Test userspace strategy without static probes and added global_sampling
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace',
+                                         '--no-static', '-g', '10'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy5_script.txt'))
+    # Test u_sampled strategy without static probes and overriden global_sampling
+    # The output should be exactly the same as the previous
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'u_sampled',
+                                         '--no-static', '-g', '10'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy5_script.txt'))
+    # Test userspace strategy with overridden function, respecified function and invalid function
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '-fs',
+                                         'main', '4', '-f', '_Z12QuickSortBadPii', '-f', 'invalid'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy6_script.txt'))
+    # Test userspace strategy with invalid static probe (won't be detected as --no-static is used)
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace',
+                                         '--no-static', '-s', 'INVALID'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy7_script.txt'))
+    # Test u_sampled strategy with more static probes to check correct pairing
+    monkeypatch.setattr(strategy, '_load_static_probes', _mocked_stap_extraction2)
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'u_sampled'])
+    assert result.exit_code == 0
+    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
+                                    os.path.join(script_dir, 'strategy8_script.txt'))
 
 
 def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     """Test failed collecting using trace collector"""
     global _mocked_stap_code
     global _mocked_stap_file
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
 
     monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
+    monkeypatch.setattr(strategy, '_load_static_probes', _mocked_stap_extraction)
 
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+
+    runner = CliRunner()
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target = os.path.join(script_dir, 'tst')
 
     # Test malformed file that ends in unexpected way
     _mocked_stap_file = 'record_malformed.txt'
-    cmd, args, work, collectors, posts, config = trace_collect_job
-    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
-
-    # Assert that nothing was added
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 1', 'trace', '-m', 'userspace'])
+    # However, the collector should still be able to correctly process it
+    assert result.exit_code == 0
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count == after_object_count
+    assert before_object_count + 1 == after_object_count
+    before_object_count = after_object_count
 
     # Test malformed file that ends in another unexpected way
     _mocked_stap_file = 'record_malformed2.txt'
-    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
-
-    # Assert that nothing was added
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 2', 'trace', '-m', 'userspace'])
+    # Check if the collector managed to process the file
+    assert result.exit_code == 0
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count == after_object_count
+    assert before_object_count + 1 == after_object_count
+    before_object_count = after_object_count
+
+    # Test malformed file that has corrupted record
+    _mocked_stap_file = 'record_malformed3.txt'
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 3', 'trace', '-m', 'userspace'])
+    # Check if the collector managed to process the file
+    assert result.exit_code == 0
+    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    assert before_object_count + 1 == after_object_count
+    before_object_count = after_object_count
+
+    # Test malformed file that has misplaced data chunk
+    _mocked_stap_file = 'record_malformed4.txt'
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 4', 'trace', '-m', 'userspace'])
+    # Check if the collector managed to process the file
+    assert result.exit_code == 0
+    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    assert before_object_count + 1 == after_object_count
+    before_object_count = after_object_count
 
     # Simulate the failure of the systemTap
     _mocked_stap_code = 1
-    runner.run_single_job(cmd, args, work, collectors, posts, [head], **config)
-
+    runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace'])
     # Assert that nothing was added
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count == after_object_count
+    _mocked_stap_code = 0
+
+    # Simulate the failure during trace processing and stacks output
+    monkeypatch.setattr(stap, '_init_stack_and_map', _mocked_trace_stack)
+    monkeypatch.setattr(stap, '_parse_record', _mocked_parse_record)
+    result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 4', 'trace', '-m', 'userspace'])
+    assert 'Error while parsing the raw trace record' in result.output
 
 
 def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_collect_no_debug_job):
@@ -91,7 +372,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     memory_collect_job += ([head], )
 
-    runner.run_single_job(*memory_collect_job)
+    run.run_single_job(*memory_collect_job)
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
@@ -103,7 +384,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     assert new_profile.endswith(".perf")
 
     cmd, args, _, colls, posts, _ = memory_collect_job
-    runner.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
+    run.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
 
     profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
@@ -117,7 +398,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     # Fixme: Add check that the profile was correctly generated
 
     memory_collect_no_debug_job += ([head], )
-    runner.run_single_job(*memory_collect_no_debug_job)
+    run.run_single_job(*memory_collect_no_debug_job)
     last_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
     _, err = capsys.readouterr()
     assert after_second_object_count == last_object_count
@@ -129,7 +410,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
         'no_func': 'main'
     })
     job = Job('memory', [], str(target_bin), '', '')
-    _, prof = runner.run_collector(collector_unit, job)
+    _, prof = run.run_collector(collector_unit, job)
 
     assert len(list(query.all_resources_of(prof))) == 2
 
@@ -138,7 +419,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
         'no_source': 'memory_collect_test.c'
     })
     job = Job('memory', [], str(target_bin), '', '')
-    _, prof = runner.run_collector(collector_unit, job)
+    _, prof = run.run_collector(collector_unit, job)
 
     assert len(list(query.all_resources_of(prof))) == 0
 
@@ -149,7 +430,7 @@ def test_collect_memory_with_generator(pcs_full, memory_collect_job):
     collector = Unit('memory', {})
     integer_job = Job(collector, [], cmd, '', '')
     integer_generator = IntegerGenerator(integer_job, 1, 3, 1)
-    memory_profiles = list(integer_generator.generate(runner.run_collector))
+    memory_profiles = list(integer_generator.generate(run.run_collector))
     assert len(memory_profiles) == 1
 
 
@@ -159,7 +440,7 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
     head = vcs.get_minor_version_info(vcs.get_minor_head())
 
-    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
 
     # Assert outputs
     out, err = capsys.readouterr()
@@ -176,12 +457,12 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     assert new_profile.endswith(".perf")
 
     # Test running time with error
-    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
 
     def collect_raising_exception(**kwargs):
         raise Exception("Something happened lol!")
 
     monkeypatch.setattr("perun.collect.time.run.collect", collect_raising_exception)
-    runner.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
     _, err = capsys.readouterr()
     assert 'Something happened lol!' in err
