@@ -10,7 +10,7 @@ Postprocessors Overview
 Supported Postprocessors
 ------------------------
 
-Perun's tool suite currently contains the following two postprocessors:
+Perun's tool suite currently contains the following four postprocessors:
 
   1. :ref:`postprocessors-normalizer` scales the resources of the given profile to the
      interval (0, 1). The main intuition behind the usage of this postprocessor is to be able to
@@ -26,6 +26,11 @@ Perun's tool suite currently contains the following two postprocessors:
   3. :ref:`postprocessors-clusterizer` tries to classify resources to uniquely identified clusters,
      which can be used for further postprocessing (e.g. by regression analysis) or to group
      similar amounts of resources.
+
+  4. :ref:`postprocessors-regressogram` (authored by **Simon Stupinsky**) same as above
+     mentioned *regression analysis*, attempts to find the fitting model for the dependent variable
+     based on another independent one. Regressogram represents the simplest method of non-parametric
+     analysis, which can be described such as step function (i.e. constant function by parts).
 
 All of the listed postprocessors can be run from command line. For more information about command
 line interface for individual postprocessors refer to :ref:`cli-postprocess-units-ref`.
@@ -89,7 +94,7 @@ running time based on the structural size is best fitted by `linear` models.
 The next `scatter plot` displays the same data as previous, but regressed using the `initial guess`
 strategy. This strategy first does a computation of all models on small sample of data points. Such
 computation yields initial estimate of fitness of models (the initial sample is selected by
-random). The best fitted model is then chosen and fully computed on the rest of the data points. 
+random). The best fitted model is then chosen and fully computed on the rest of the data points.
 
 The picture shows only one model, namely `linear` which was fully computed to best fit the given
 data points. The rest of the models had worse estimation and hence was not computed at all.
@@ -140,6 +145,57 @@ we can see that the best model for the amount of allocated memory depending on c
 
 .. image:: /../examples/clusterizer-memory-scatter-with-models.*
 
+.. _postprocessors-regressogram:
+
+Regressogram method
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.postprocess.regressogram
+
+.. _postprocessors-regressogram-cli:
+
+Command Line Interface
+""""""""""""""""""""""
+
+.. click:: perun.postprocess.regressogram.run:regressogram
+   :prog: perun postprocessby regressogram
+
+.. _postprocessors-regressogram-examples:
+
+Examples
+""""""""
+
+    .. code-block:: json
+
+        {
+            "bin_stats": [
+                13.0,
+                25.5
+            ],
+            "uid": "linear::test2",
+            "bin_method": "doane",
+            "method": "regressogram",
+            "r_square": 0.7575757575757576,
+            "x_interval_end": 9.0,
+            "statistic": "mean",
+            "x_interval_start": 0.0
+        }
+
+The example above shows an example of profile post-processed by regressogram method (note
+that this is only an excerpt of the whole profile). Each such model of shows the computed
+values in the individual bins, that are represented by *bin_stats*. Further contains the
+name of the method (*bin_method*) by which was calculated the optimal number of bins and
+*coefficient of determination* (:math:`R^2`) for measuring the fitting of the model. The
+last fascinating value in this example is *statistic*, which represented the statistic to
+compute the value in each bin. Each such model can be used in the further interpretation
+of the models (either by :ref:`views-scatter` or :ref:`degradation-method-aat`).
+
+.. image:: /../examples/exp_data_regressogram.*
+
+The :ref:`views-scatter` above shows the interpreted model, computed using the **regressogram**
+method. In the picture, one can see that the depedency of running time based on the structural
+size is best fitted by `exponential` models.
+
 .. _postprocessors-custom:
 
 Creating your own Postprocessor
@@ -169,7 +225,7 @@ You can register your new postprocessor as follows:
             |-- __init__.py
 
     2. First, implement the ``__init__py`` file, including the module docstring with brief
-       postprocessor description and definitions of constants that are used for internal 
+       postprocessor description and definitions of constants that are used for internal
        checks which has the following structure:
 
     .. literalinclude:: /_static/templates/postprocess_init.py
