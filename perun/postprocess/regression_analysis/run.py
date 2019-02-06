@@ -30,10 +30,7 @@ def postprocess(profile, **configuration):
                        steps=configuration['steps'])
 
     # Store the results
-    if 'models' not in profile['global']:
-        profile['global']['models'] = analysis
-    else:
-        profile['global']['models'].extend(analysis)
+    tools.add_analysis_to_profile(profile, analysis)
 
     return PostprocessStatus.OK, "", {'profile': profile}
 

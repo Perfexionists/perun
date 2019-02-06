@@ -16,3 +16,6 @@ GitPython>=2.1.11
 pytest==3.6.3
 pytest-cov==2.5.1
 codecov==2.0.15
+numpy==1.14.1
+scikit-learn==0.19.0
+bkcharts==0.2
