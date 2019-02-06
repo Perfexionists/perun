@@ -100,11 +100,102 @@ def test_cli(pcs_full):
     assert result.exit_code == 0
 
 
+def test_regressogram_incorrect(pcs_full):
+    """
+    Test various failure scenarios for regressogram cli.
+
+    Expecting no exceptions, all tests should end with status code 2.
+    """
+    incorrect_tests = [
+        # Test the lack of arguments
+        {'params': [], 'output': 'Usage'},
+        # Test non-existing argument
+        {'params': ['-a'], 'output': 'no such option: -a'},
+        # Test malformed bins argument
+        {'params': ['--binss'], 'output': 'no such option: --binss'},
+        # Test missing bins value
+        {'params': ['-b'], 'output': '-b option requires an argument'},
+        # Test invalid bins value
+        {'params': ['-b', 'user'], 'output': 'Invalid value for "--bins"'},
+        # Test malformed statistic argument
+        {'params': ['--statistics'], 'output': 'no such option: --statistics'},
+        # Test missing statistic value
+        {'params': ['--statistic'], 'output': '-statistic option requires an argument'},
+        # Test invalid model name
+        {'params': ['--statistic', 'max'], 'output': 'Invalid value for "--statistic"'}
+    ]
+    # TODO: multiple values check
+
+    # Instantiate the runner fist
+    runner = CliRunner()
+
+    # Set stable parameters at all tests
+    regressogram_params = ['1@i', 'regressogram']
+    # Executing the testing
+    for incorrect_test in incorrect_tests:
+        result = runner.invoke(cli.postprocessby, regressogram_params + incorrect_test['params'])
+        assert result.exit_code == 2
+        assert incorrect_test['output'] in result.output
+
+
+def test_regressogram_correct(pcs_full):
+    """
+    Test correct usages of the regressogram cli.
+
+    Expecting no exceptions and errors, all tests should end with status code 0.
+    """
+    # Instantiate the runner first
+    runner = CliRunner()
+
+    result = runner.invoke(cli.status, [])
+    match = re.search(r'([0-9]+@i).*mixed', result.output)
+    assert match
+    cprof_idx = match.groups(1)[0]
+
+    correct_tests = [
+        # Test the help printout first
+        {'params': [cprof_idx, 'regressogram', '--help']},
+        # Test default values of parameters (bins, statistic)
+        {'params': []},
+        # Test first acceptable value for statistic parameter (mean)
+        {'params': ['--statistic', 'mean']},
+        # Test second acceptable value for statistic parameter (median)
+        {'params': ['-s', 'median']},
+        # Test integer variant as value for bins parameter
+        {'params': ['--bins', '10']},
+        # Test 'auto' method as value for bins parameter
+        {'params': ['-b', 'auto']},
+        # Test 'fd' method as value for bins parameter
+        {'params': ['-b', 'fd']},
+        # Test 'doane' method as value for bins parameter
+        {'params': ['--bins', 'doane']},
+        # Test 'scott' method as value for bins parameter
+        {'params': ['--bins', 'scott']},
+        # Test 'sturges' method as value for bins parameter
+        {'params': ['-b', 'sturges']},
+        # Test 'rice' method as value for bins parameter
+        {'params': ['-b', 'rice']},
+        # Test 'sqrt' method as value for bins parameter
+        {'params': ['--bins', 'sqrt']},
+        # Test complex variant for regressogram method
+        {'params': ['--bins', 'doane', '--statistic', 'mean']},
+    ]
+
+    # Set stable parameters at all tests
+    regressogram_params = [cprof_idx, 'regressogram']
+    # Performing tests
+    for idx, correct_test in enumerate(correct_tests):
+        result = runner.invoke(cli.postprocessby, regressogram_params + correct_test['params'])
+        assert result.exit_code == 0
+        assert 'Usage' if idx == 0 else 'Successfully postprocessed' in result.output
+
+
 def test_reg_analysis_incorrect(pcs_full):
     """Test various failure scenarios for regression analysis cli.
 
     Expecting no exceptions, all tests should end with status code 2.
     """
+    # TODO: Cycle and dictionary reduction?
 
     # Instantiate the runner fist
     runner = CliRunner()
@@ -188,6 +279,7 @@ def test_reg_analysis_correct(pcs_full):
 
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
+    # TODO: Cycle and dictionary reduction?
 
     # Instantiate the runner first
     runner = CliRunner()
@@ -361,6 +453,7 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException("", "")
+
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
     result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--configure'])
     assert result.exit_code == 1
@@ -371,6 +464,7 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
 
     def raiseexc(*_):
         raise PermissionError('')
+
     monkeypatch.setattr('perun.logic.config.write_config_to', raiseexc)
     result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
     assert result.exit_code == 1
@@ -381,6 +475,7 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
 
     def raiseexc(*_):
         raise exceptions.UnsupportedModuleFunctionException('git', 'shit')
+
     monkeypatch.setattr('perun.vcs.git._init', raiseexc)
     result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
     assert result.exit_code == 1
@@ -897,12 +992,14 @@ def test_config(pcs_full, monkeypatch):
     # Try to run the monkey-patched editor
     def donothing(*_):
         pass
+
     monkeypatch.setattr('perun.utils.run_external_command', donothing)
     result = runner.invoke(cli.config, ['--local', 'edit'])
     assert result.exit_code == 0
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
+
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
     result = runner.invoke(cli.config, ['--local', 'edit'])
     assert result.exit_code == 1
@@ -1084,12 +1181,14 @@ def test_utils_create(monkeypatch, tmpdir):
     # Try to run the monkey-patched editor
     def donothing(*_):
         pass
+
     monkeypatch.setattr('perun.utils.run_external_command', donothing)
     result = runner.invoke(cli.create, ['check', 'mydifferentcheck'])
     assert result.exit_code == 0
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
+
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
     result = runner.invoke(cli.create, ['check', 'mythirdcheck'])
     assert result.exit_code == 1
@@ -1205,4 +1304,3 @@ def test_error_runs(pcs_full, monkeypatch):
     result = runner.invoke(cli.run, ['matrix', '-q'])
     assert result.exit_code == 0
     assert "fokume does not exist" in result.output
-
