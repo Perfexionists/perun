@@ -27,10 +27,12 @@ Perun's tool suite currently contains the following four postprocessors:
      which can be used for further postprocessing (e.g. by regression analysis) or to group
      similar amounts of resources.
 
-  4. :ref:`postprocessors-regressogram` (authored by **Simon Stupinsky**) same as above
-     mentioned *regression analysis*, attempts to find the fitting model for the dependent variable
-     based on another independent one. Regressogram represents the simplest method of non-parametric
-     analysis, which can be described such as step function (i.e. constant function by parts).
+  4. :ref:`postprocessors-regressogram` (authored by **Simon Stupinsky**) also known as the binning
+     approach, is the simplest non-parametric estimator. This method trying to fit models through
+     data by dividing the interval into N equal-width bucket and the resultant value in each bucket
+     is equal to result of selected statistical aggregation function (mean/median) within the values
+     in the relevant bucket. In short, we can describe the regressogram as a render_step_function function
+     (i.e. constant function by parts).
 
 All of the listed postprocessors can be run from command line. For more information about command
 line interface for individual postprocessors refer to :ref:`cli-postprocess-units-ref`.
@@ -168,27 +170,29 @@ Examples
     .. code-block:: json
 
         {
-            "bin_stats": [
+            "bucket_stats": [
                 13.0,
                 25.5
             ],
             "uid": "linear::test2",
-            "bin_method": "doane",
+            "bucket_method": "doane",
             "method": "regressogram",
             "r_square": 0.7575757575757576,
             "x_interval_end": 9.0,
-            "statistic": "mean",
+            "statistic_function": "mean",
             "x_interval_start": 0.0
         }
 
-The example above shows an example of profile post-processed by regressogram method (note
-that this is only an excerpt of the whole profile). Each such model of shows the computed
-values in the individual bins, that are represented by *bin_stats*. Further contains the
-name of the method (*bin_method*) by which was calculated the optimal number of bins and
-*coefficient of determination* (:math:`R^2`) for measuring the fitting of the model. The
-last fascinating value in this example is *statistic*, which represented the statistic to
-compute the value in each bin. Each such model can be used in the further interpretation
-of the models (either by :ref:`views-scatter` or :ref:`degradation-method-aat`).
+.. _Doanes: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
+
+The example above shows an example of profile post-processed by regressogram method (note that
+this is only an excerpt of the whole profile). Each such model of shows the computed values in
+the individual buckets, that are represented by *bucket_stats*. The next value in this example
+is *statistic_function*, which represented the statistic to compute the value in each bucket. Further
+contains the name of the method (*bucket_method*) by which was calculated the optimal number of
+buckets, in this case specifically computed with Doanes_ formula, and *coefficient of determination*
+(:math:`R^2`) for measuring the fitting of the model. Each such model can be used in the further
+interpretation of the models (either by :ref:`views-scatter` or:ref:`degradation-method-aat`).
 
 .. image:: /../examples/exp_data_regressogram.*
 

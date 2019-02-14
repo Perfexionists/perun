@@ -6,9 +6,9 @@ import perun.logic.runner as runner
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
+import perun.postprocess.regression_analysis.methods as methods
+import perun.postprocess.regression_analysis.regression_models as reg_models
 from perun.utils.helpers import PostprocessStatus, pass_profile
-from perun.postprocess.regression_analysis.methods import get_supported_methods, compute
-from perun.postprocess.regression_analysis.regression_models import get_supported_models
 
 __author__ = 'Jiri Pavela'
 
@@ -25,22 +25,22 @@ def postprocess(profile, **configuration):
     tools.validate_dictionary_keys(configuration, ['method', 'regression_models', 'steps'], [])
 
     # Perform the regression analysis
-    analysis = compute(data_provider.data_provider_mapper(profile, **configuration),
-                       configuration['method'], configuration['regression_models'],
-                       steps=configuration['steps'])
+    analysis = methods.compute(data_provider.data_provider_mapper(profile, **configuration),
+                               configuration['method'], configuration['regression_models'],
+                               steps=configuration['steps'])
 
     # Store the results
-    tools.add_analysis_to_profile(profile, analysis)
+    profile = tools.add_models_to_profile(profile, analysis)
 
     return PostprocessStatus.OK, "", {'profile': profile}
 
 
 @click.command()
-@click.option('--method', '-m', type=click.Choice(get_supported_methods()),
+@click.option('--method', '-m', type=click.Choice(methods.get_supported_methods()),
               required=True, multiple=False,
               help='Will use the <method> to find the best fitting models for'
-              ' the given profile.')
-@click.option('--regression_models', '-r', type=click.Choice(get_supported_models()),
+                   ' the given profile.')
+@click.option('--regression_models', '-r', type=click.Choice(reg_models.get_supported_models()),
               required=False, multiple=True,
               help=('Restricts the list of regression models used by the'
                     ' specified <method> to fit the data. If omitted, all'

@@ -1,209 +1,15 @@
 {
   "global": {
-    "resources": [
-      {
-        "amount": 33,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 8.1,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 49,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 69.9,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 19,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 4.2,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 27,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 14.1,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 23,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 5.6,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 51,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 52.1,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 34,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 44.6,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 32,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 19.6,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 28,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 33,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 36,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 6.7,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 43,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 30.1,
-        "uid": "pow::test1"
-      },
-      {
-        "amount": 159.9,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 17.6,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 206.9,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 26.0,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 236.8,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 31.9,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 269.9,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 38.9,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 300.6,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 45.8,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 323.6,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 51.2,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 351.7,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 58.1,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 377.6,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 64.7,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 384.1,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 66.7,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 437.2,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 80.8,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 444.7,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 82.9,
-        "uid": "pow::test2"
-      },
-      {
-        "amount": 0,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 0,
-        "uid": "pow::test3"
-      },
-      {
-        "amount": 3,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 1,
-        "uid": "pow::test3"
-      },
-      {
-        "amount": 24,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 2,
-        "uid": "pow::test3"
-      },
-      {
-        "amount": 81,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 3,
-        "uid": "pow::test3"
-      },
-      {
-        "amount": 192,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 4,
-        "uid": "pow::test3"
-      },
-      {
-        "amount": 375,
-        "subtype": "time delta",
-        "type": "mixed",
-        "structure-unit-size": 5,
-        "uid": "pow::test3"
-      }
-    ],
     "models": [
       {
-        "r_square": 0.7031140196767394,
-        "statistics": "mean",
         "y_interval_start": 19,
-        "bin_stats": [
+        "r_square": 0.7031140196767394,
+        "x_interval_start": 4.2,
+        "x_interval_end": 69.9,
+        "method": "regressogram",
+        "buckets_method": "doane",
+        "uid": "pow::test1",
+        "bucket_stats": [
           27.75,
           27.0,
           32.0,
@@ -216,17 +22,17 @@
           0.0,
           49.0
         ],
-        "x_interval_start": 4.2,
-        "uid": "pow::test1",
-        "bins_method": "doane",
-        "method": "regressogram",
-        "x_interval_end": 69.9
+        "statistic_function": "mean"
       },
       {
-        "r_square": 0.9994266342574701,
-        "statistics": "mean",
         "y_interval_start": 159.9,
-        "bin_stats": [
+        "r_square": 0.9994266342574701,
+        "x_interval_start": 17.6,
+        "x_interval_end": 82.9,
+        "method": "regressogram",
+        "buckets_method": "doane",
+        "uid": "pow::test2",
+        "bucket_stats": [
           159.9,
           206.9,
           0.0,
@@ -242,31 +48,263 @@
           0.0,
           440.95
         ],
-        "x_interval_start": 17.6,
-        "uid": "pow::test2",
-        "bins_method": "doane",
-        "method": "regressogram",
-        "x_interval_end": 82.9
+        "statistic_function": "mean"
       },
       {
-        "r_square": 0.0,
-        "statistics": "mean",
         "y_interval_start": 0,
-        "bin_stats": [
+        "r_square": 0.0,
+        "x_interval_start": 0.0,
+        "x_interval_end": 5.0,
+        "method": "regressogram",
+        "buckets_method": "doane",
+        "uid": "pow::test3",
+        "bucket_stats": [
           112.5
         ],
-        "x_interval_start": 0.0,
+        "statistic_function": "mean"
+      }
+    ],
+    "resources": [
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 33,
+        "structure-unit-size": 8.1,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 49,
+        "structure-unit-size": 69.9,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 19,
+        "structure-unit-size": 4.2,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 27,
+        "structure-unit-size": 14.1,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 23,
+        "structure-unit-size": 5.6,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 51,
+        "structure-unit-size": 52.1,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 34,
+        "structure-unit-size": 44.6,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 32,
+        "structure-unit-size": 19.6,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 28,
+        "structure-unit-size": 33,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 36,
+        "structure-unit-size": 6.7,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test1",
+        "subtype": "time delta",
+        "amount": 43,
+        "structure-unit-size": 30.1,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 159.9,
+        "structure-unit-size": 17.6,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 206.9,
+        "structure-unit-size": 26.0,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 236.8,
+        "structure-unit-size": 31.9,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 269.9,
+        "structure-unit-size": 38.9,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 300.6,
+        "structure-unit-size": 45.8,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 323.6,
+        "structure-unit-size": 51.2,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 351.7,
+        "structure-unit-size": 58.1,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 377.6,
+        "structure-unit-size": 64.7,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 384.1,
+        "structure-unit-size": 66.7,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 437.2,
+        "structure-unit-size": 80.8,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test2",
+        "subtype": "time delta",
+        "amount": 444.7,
+        "structure-unit-size": 82.9,
+        "type": "mixed"
+      },
+      {
         "uid": "pow::test3",
-        "bins_method": "doane",
-        "method": "regressogram",
-        "x_interval_end": 5.0
+        "subtype": "time delta",
+        "amount": 0,
+        "structure-unit-size": 0,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test3",
+        "subtype": "time delta",
+        "amount": 3,
+        "structure-unit-size": 1,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test3",
+        "subtype": "time delta",
+        "amount": 24,
+        "structure-unit-size": 2,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test3",
+        "subtype": "time delta",
+        "amount": 81,
+        "structure-unit-size": 3,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test3",
+        "subtype": "time delta",
+        "amount": 192,
+        "structure-unit-size": 4,
+        "type": "mixed"
+      },
+      {
+        "uid": "pow::test3",
+        "subtype": "time delta",
+        "amount": 375,
+        "structure-unit-size": 5,
+        "type": "mixed"
       }
     ],
     "time": "0.00023s"
   },
+  "header": {
+    "workload": "",
+    "cmd": "complexity",
+    "params": "",
+    "units": {
+      "mixed(time delta)": "us"
+    },
+    "type": "mixed"
+  },
+  "postprocessors": [
+    {
+      "name": "regressogram",
+      "params": {
+        "bucket_number": null,
+        "per_key": "structure-unit-size",
+        "of_key": "amount",
+        "statistic_function": "mean",
+        "bucket_method": "doane"
+      }
+    }
+  ],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
   "collector_info": {
+    "name": "trace",
     "params": {
-      "internal_storage_size": 20000,
+      "sampling": [
+        {
+          "sample": 1,
+          "func": "SLList_insert"
+        },
+        {
+          "sample": 1,
+          "func": "func1"
+        }
+      ],
+      "internal_direct_output": false,
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
       "rules": [
         "SLList_init",
         "func1",
@@ -279,46 +317,9 @@
         "Remove",
         "Search"
       ],
-      "sampling": [
-        {
-          "sample": 1,
-          "func": "SLList_insert"
-        },
-        {
-          "sample": 1,
-          "func": "func1"
-        }
-      ],
-      "internal_direct_output": false,
-      "internal_data_filename": "trace.log",
       "target_dir": "/home/jirka/Git/complexity-repo/target",
-      "files": [
-        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
-        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
-        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
-      ]
-    },
-    "name": "trace"
-  },
-  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
-  "header": {
-    "cmd": "complexity",
-    "units": {
-      "mixed(time delta)": "us"
-    },
-    "params": "",
-    "type": "mixed",
-    "workload": ""
-  },
-  "postprocessors": [
-    {
-      "params": {
-        "statistic": "mean",
-        "of_key": "amount",
-        "bins": "doane",
-        "per_key": "structure-unit-size"
-      },
-      "name": "regressogram"
+      "internal_storage_size": 20000,
+      "internal_data_filename": "trace.log"
     }
-  ]
+  }
 }

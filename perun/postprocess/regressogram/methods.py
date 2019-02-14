@@ -1,17 +1,24 @@
 """
 Module with regressogram computational method and auxiliary methods at executing of this method.
 """
+import numpy as numpy
+import numpy.lib.function_base as numpy_bucket_selectors
+import scipy.stats
+import sklearn.metrics
 
-import numpy as np
-import numpy.lib.function_base as np_bin_selectors
-from click import BadParameter
-from scipy import stats
-from sklearn import metrics
-
-from perun.postprocess.regression_analysis.tools import validate_dictionary_keys
+import perun.postprocess.regression_analysis.tools as tools
 
 # required arguments at regressogram post-processor
-_REQUIRED_KEYS = ['bins', 'statistic']
+_REQUIRED_KEYS = ['bucket_method', 'statistic_function']
+
+
+def get_supported_methods():
+    """Provides all currently supported computational methods, to
+    estimate the optimal number of buckets, as a list of their names.
+
+    :returns list of str: the names of all supported methods
+    """
+    return [key for key in _BUCKET_SELECTORS.keys()]
 
 
 def compute(data_gen, configuration):
@@ -23,59 +30,64 @@ def compute(data_gen, configuration):
     :return: list of dict: the computation results
     """
     # checking the presence of specific keys in individual methods
-    validate_dictionary_keys(configuration, _REQUIRED_KEYS, [])
+    tools.validate_dictionary_keys(configuration, _REQUIRED_KEYS, [])
 
     # list of result of the analysis
     analysis = []
-    for chunk in data_gen:
-        result = regressogram(chunk[0], chunk[1], configuration['statistic'], configuration['bins'])
-        result['uid'] = chunk[2]
+    for x_pts, y_pts, uid in data_gen:
+        # Check whether the user gives as own number of buckets or select the method to its estimate
+        buckets = configuration['bucket_number'] if configuration.get('bucket_number') else configuration[
+            'bucket_method']
+        result = regressogram(x_pts, y_pts, configuration['statistic_function'], buckets)
+        result['uid'] = uid
         result['method'] = 'regressogram'
         # add partial result to the result list - create output dictionaries
         analysis.append(result)
     return analysis
 
 
-def regressogram(x_pts, y_pts, statistic, bins):
+def regressogram(x_pts, y_pts, statistic_function, buckets):
     """
     Compute the regressogram (binning approach) of a set of data.
 
     We can view regressogram it as:
         regressogram = regression + histogram
 
-    Regressogram is a piecewise constant regression function estimator. The x-observation
-    (independent variable) is covered by disjoint bins, and the value of a regressogram in
-    a bin is the mean/median of y-values (dependent variable) for the x-values inside that bin.
+    Regressogram is a piecewise constant regression function estimator. The x-observation is covered
+    by disjoint buckets, and the value of a regressogram in a bucket is the mean/median of y-values for
+    the x-values inside that bucket.
 
-    If the 'statistic' contains the int, then this number defines the number of bins. If the
-    'statistic' contains the string from the keys of <_BIN_SELECTORS>, then will be use the chosen
-    method to calculate the optimal bin width and consequently the number of bins.
+    If the 'statistic_function' contains the int, then this number defines the number of buckets. If the
+    'statistic_function' contains the string from the keys of <_BIN_SELECTORS>, then will be use the chosen
+    method to calculate the optimal bucket width and consequently the number of buckets.
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of x points coordinates
-    :param str statistic: the statistic to compute
-    :param str/int bins: the number of bins to calculate or the name of computational method
+    :param str statistic_function: the statistic_function to compute
+    :param str/int buckets: the number of buckets to calculate or the name of computational method
     :return dict: the output dictionary with result of analysis
     """
-    # Check whether the bins is given by number or by name of method to its compute
-    bins_cnt = bins if isinstance(bins, int) else _BIN_SELECTORS[bins](np.array(x_pts))
+    # Check whether the buckets is given by number or by name of method to its compute
+    buckets_num = buckets if isinstance(buckets, int) else _BUCKET_SELECTORS[buckets](numpy.array(x_pts))
     # Compute a binned statistic for the given data
-    bin_stats, bin_edges, bin_numbers = stats.binned_statistic(x_pts, y_pts, statistic, max(1, bins_cnt))
-    # Replace the NaN in empty bins with 0 for plotting
-    bin_stats = np.nan_to_num(bin_stats)
+    bucket_stats, bucket_edges, bucket_numbers = scipy.stats.binned_statistic(x_pts, y_pts, statistic_function,
+                                                                              max(1, buckets_num))
+    # Replace the NaN in empty buckets with 0 for plotting
+    bucket_stats = numpy.nan_to_num(bucket_stats)
     # Create output dictionaries
     return {
-        'bins_method': 'user' if isinstance(bins, int) else bins,
-        'statistics': statistic,
-        'bin_stats': bin_stats.tolist(),
-        'x_interval_start': np.min(bin_edges),
-        'x_interval_end': np.max(bin_edges),
+        'buckets_method': 'user' if isinstance(buckets, int) else buckets,
+        'statistic_function': statistic_function,
+        'bucket_stats': bucket_stats.tolist(),
+        'x_interval_start': numpy.min(bucket_edges),
+        'x_interval_end': numpy.max(bucket_edges),
         'y_interval_start': min(y_pts),
-        'r_square': metrics.r2_score(y_pts, [bin_stats[bin_number - 1] for bin_number in bin_numbers])
+        'r_square': sklearn.metrics.r2_score(y_pts,
+                                             [bucket_stats[bucket_number - 1] for bucket_number in bucket_numbers])
     }
 
 
-def step(graph, x_pts, y_pts, graph_params):
+def render_step_function(graph, x_pts, y_pts, graph_params):
     """
     Render step lines according to given coordinates and other parameters.
 
@@ -85,7 +97,7 @@ def step(graph, x_pts, y_pts, graph_params):
     :param dict graph_params: contains the specification of parameters for graph (color, line_width, legend)
     :returns charts.Graph: the modified graph with model of step function
     """
-    xx = np.sort(list(x_pts) + list(x_pts))
+    xx = numpy.sort(list(x_pts) + list(x_pts))
     xx = xx[:-1]
     yy = list(y_pts) + list(y_pts)
     yy[::2] = y_pts
@@ -96,40 +108,16 @@ def step(graph, x_pts, y_pts, graph_params):
     return graph
 
 
-def choose_bin_sizes(ctx, param, value):
-    """
-    Processing of '--bins/-b' parameter that represents the number of bins or method for its computation.
+# Code for calculating number of buckets for regressogram can be got from SciPy:
+# https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
 
-    If 'bins' is an int, it defines the number of bins.
-    If 'bins' is a string, it defines the method, that will use to compute the optimal number of bins.
-    If 'bins' is a string  but is not included in keys of <_BIN_SELECTORS>, then it's the error.
-
-    :param click.Context ctx: internal object that holds state relevant for the script execution at every single level
-    :param click.Option param: additive options from commands decorator
-    :param int/str value: the number of bins to calculate or the name of computational method
-    :raises click.BadParameter: in case the name of the method is unsupported
-    :return int: the number of bins selected by user or computed by given method
-    """
-    if value.isdigit():
-        return int(value)
-    elif value in _BIN_SELECTORS:
-        return value
-    else:
-        raise BadParameter(
-            '\nError: Invalid value for "--bins": invalid choice: {} '
-            '(choose from scott, sqrt, sturges, fd, auto, doane, rice) or integer'.format(value))
-
-
-# Code for calculating number of bins for regressogram can be got from SciPy:
-# https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bin_edges
-
-# supported methods to choose bin sizes for regressogram
-_BIN_SELECTORS = {
-    'auto': np_bin_selectors._hist_bin_auto,
-    'doane': np_bin_selectors._hist_bin_doane,
-    'fd': np_bin_selectors._hist_bin_fd,
-    'rice': np_bin_selectors._hist_bin_rice,
-    'scott': np_bin_selectors._hist_bin_scott,
-    'sqrt': np_bin_selectors._hist_bin_sqrt,
-    'sturges': np_bin_selectors._hist_bin_sturges,
+# supported methods to choose bucket sizes for regressogram
+_BUCKET_SELECTORS = {
+    'auto': numpy_bucket_selectors._hist_bin_auto,
+    'doane': numpy_bucket_selectors._hist_bin_doane,
+    'fd': numpy_bucket_selectors._hist_bin_fd,
+    'rice': numpy_bucket_selectors._hist_bin_rice,
+    'scott': numpy_bucket_selectors._hist_bin_scott,
+    'sqrt': numpy_bucket_selectors._hist_bin_sqrt,
+    'sturges': numpy_bucket_selectors._hist_bin_sturges,
 }

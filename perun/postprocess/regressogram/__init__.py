@@ -1,7 +1,7 @@
 """
-Postprocessing of input profiles using the non-parametric method - regressogram.
+Postprocessing of input profiles using the non-parametric method: regressogram.
 This method serves for finding fitting models for trends in the captured
-profiling resources using by constant function at the individual parts of
+profiling resources using the constant function at the individual parts of
 the whole interval.
 """
 

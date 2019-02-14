@@ -111,18 +111,24 @@ def test_regressogram_incorrect(pcs_full):
         {'params': [], 'output': 'Usage'},
         # Test non-existing argument
         {'params': ['-a'], 'output': 'no such option: -a'},
-        # Test malformed bins argument
-        {'params': ['--binss'], 'output': 'no such option: --binss'},
-        # Test missing bins value
-        {'params': ['-b'], 'output': '-b option requires an argument'},
-        # Test invalid bins value
-        {'params': ['-b', 'user'], 'output': 'Invalid value for "--bins"'},
-        # Test malformed statistic argument
-        {'params': ['--statistics'], 'output': 'no such option: --statistics'},
-        # Test missing statistic value
-        {'params': ['--statistic'], 'output': '-statistic option requires an argument'},
+        # Test malformed bucket_number argument
+        {'params': ['--buckets_numbers'], 'output': 'no such option: --buckets_numbers'},
+        # Test missing bucket_number value
+        {'params': ['-bn'], 'output': '-bn option requires an argument'},
+        # Test invalid bucket_number value
+        {'params': ['-bn', 'user'], 'output': 'Invalid value for "--bucket_number"'},
+        # Test malformed bucket_method argument
+        {'params': ['--buckets_methods'], 'output': 'no such option: --buckets_methods'},
+        # Test missing bucket_method value
+        {'params': ['--bucket_method'], 'output': '--bucket_method option requires an argument'},
+        # Test invalid bucket_method value
+        {'params': ['-bm', 'user'], 'output': 'Invalid value for "--bucket_method"'},
+        # Test malformed statistic_function argument
+        {'params': ['--statistic_functions'], 'output': 'no such option: --statistic_functions'},
+        # Test missing statistic_function value
+        {'params': ['--statistic_function'], 'output': '--statistic_function option requires an argument'},
         # Test invalid model name
-        {'params': ['--statistic', 'max'], 'output': 'Invalid value for "--statistic"'}
+        {'params': ['-sf', 'max'], 'output': 'Invalid value for "--statistic_function"'}
     ]
     # TODO: multiple values check
 
@@ -155,30 +161,32 @@ def test_regressogram_correct(pcs_full):
     correct_tests = [
         # Test the help printout first
         {'params': [cprof_idx, 'regressogram', '--help']},
-        # Test default values of parameters (bins, statistic)
+        # Test default values of parameters (buckets, statistic_function)
         {'params': []},
-        # Test first acceptable value for statistic parameter (mean)
-        {'params': ['--statistic', 'mean']},
-        # Test second acceptable value for statistic parameter (median)
-        {'params': ['-s', 'median']},
-        # Test integer variant as value for bins parameter
-        {'params': ['--bins', '10']},
-        # Test 'auto' method as value for bins parameter
-        {'params': ['-b', 'auto']},
-        # Test 'fd' method as value for bins parameter
-        {'params': ['-b', 'fd']},
-        # Test 'doane' method as value for bins parameter
-        {'params': ['--bins', 'doane']},
-        # Test 'scott' method as value for bins parameter
-        {'params': ['--bins', 'scott']},
-        # Test 'sturges' method as value for bins parameter
-        {'params': ['-b', 'sturges']},
-        # Test 'rice' method as value for bins parameter
-        {'params': ['-b', 'rice']},
-        # Test 'sqrt' method as value for bins parameter
-        {'params': ['--bins', 'sqrt']},
+        # Test first acceptable value for statistic_function parameter (mean)
+        {'params': ['--statistic_function', 'mean']},
+        # Test second acceptable value for statistic_function parameter (median)
+        {'params': ['-sf', 'median']},
+        # Test integer variant as value for bucket_number parameter
+        {'params': ['--bucket_number', '10']},
+        # Test 'auto' method as value for bucket_method parameter
+        {'params': ['-bm', 'auto']},
+        # Test 'fd' method as value for bucket_method parameter
+        {'params': ['-bm', 'fd']},
+        # Test 'doane' method as value for bucket_method parameter
+        {'params': ['--bucket_method', 'doane']},
+        # Test 'scott' method as value for bucket_method parameter
+        {'params': ['--bucket_method', 'scott']},
+        # Test 'sturges' method as value for bucket_method parameter
+        {'params': ['-bm', 'sturges']},
+        # Test 'rice' method as value for bucket_method parameter
+        {'params': ['-bm', 'rice']},
+        # Test 'sqrt' method as value for bucket_method parameter
+        {'params': ['--bucket_method', 'sqrt']},
         # Test complex variant for regressogram method
-        {'params': ['--bins', 'doane', '--statistic', 'mean']},
+        {'params': ['--bucket_method', 'doane', '--statistic_function', 'mean']},
+        # Test bucket_method and bucket_number parameters common
+        {'params': ['--bucket_method', 'sqrt', '--bucket_number', 10]},
     ]
 
     # Set stable parameters at all tests

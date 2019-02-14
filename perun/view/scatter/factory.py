@@ -7,7 +7,7 @@ from collections import defaultdict
 import perun.profile.query as query
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
-from perun.postprocess.regressogram.methods import step
+import perun.postprocess.regressogram.methods as rg_methods
 
 import demandimport
 
@@ -129,16 +129,16 @@ def create_regressogram_model(graph, model, colour):
     :param colour: the color of the current model to distinguish in the case of several models in the graph
     :return charts.Graph: the modified graph with new regressogram model
     """
-    # Evenly division of the interval by number of bins
-    x_pts = np.linspace(model['x_interval_start'], model['x_interval_end'], num=len(model['bin_stats']) + 1)
+    # Evenly division of the interval by number of buckets
+    x_pts = np.linspace(model['x_interval_start'], model['x_interval_end'], num=len(model['bucket_stats']) + 1)
     # Add the beginning of the first edge
-    y_pts = np.append(model['y_interval_start'], model['bin_stats'])
+    y_pts = np.append(model['y_interval_start'], model['bucket_stats'])
     # Create legend for the plotted model
-    legend = '{0}: bins={1}, stat: {2}, R^2={3:f}'.format(model['method'][:3], len(model['bin_stats']),
-                                                          model['statistics'], model['r_square'])
-    # Plot the step function for regressogram model
+    legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(model['method'][:3], len(model['bucket_stats']),
+                                                             model['statistic_function'], model['r_square'])
+    # Plot the render_step_function function for regressogram model
     graph_params = {'color': colour, 'line_width': 3.5, 'legend': legend}
-    return step(graph, x_pts, y_pts, graph_params)
+    return rg_methods.render_step_function(graph, x_pts, y_pts, graph_params)
 
 
 def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, graph_title,

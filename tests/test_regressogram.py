@@ -1,7 +1,7 @@
 """
 Tests of non-parametric method regressogram functionality.
 
-Every method to choose optimal width of bins is tested on a set
+Every method to choose optimal width of buckets is tested on a set
 of provided examples and the computation results are compared with
 the expected values. This ensures that the methods works correctly
 always.
@@ -12,9 +12,9 @@ from perun.postprocess.regressogram.run import postprocess
 from tests.test_regression_analysis import profile_filter, generate_models_by_uid, compare_results
 
 
-def test_bins_method(postprocess_profiles):
+def test_buckets_method(postprocess_profiles):
     """
-    Test the regressogram method with user choice of bins width.
+    Test the regressogram method with user choice of buckets width.
 
     Expects to pass all assertions.
     """
@@ -22,10 +22,12 @@ def test_bins_method(postprocess_profiles):
     test_model = profile_filter(postprocess_profiles, 'exp_model')
     assert test_model is not None
 
-    for bins_method in _EXPECTED_RESULTS.keys():
+    for current_method in _EXPECTED_RESULTS.keys():
         # Perform the non-parametric analysis using by regressogram
-        code, _, profile = postprocess(test_model, of_key='amount', statistic='mean',
-                                       bins=10 if bins_method == 'user' else bins_method, per_key='structure-unit-size')
+        code, _, profile = postprocess(test_model, of_key='amount', statistic_function='mean',
+                                       bucket_number=10 if current_method == 'user' else None,
+                                       bucket_method=current_method if current_method != 'user' else None,
+                                       per_key='structure-unit-size')
         # Expected successful analysis by non-parametric postprocessor
         assert code.value == 0
         # Obtaining generator of models from profile in the UID order
@@ -33,13 +35,13 @@ def test_bins_method(postprocess_profiles):
                                         key='method')
 
         # Test the expected result with each obtained model
-        for model, exp_result, interval_result in zip(models, _EXPECTED_RESULTS[bins_method], _COMMON_INTERVAL):
+        for model, exp_result, interval_result in zip(models, _EXPECTED_RESULTS[current_method], _COMMON_INTERVAL):
             # Concatenate expected results with interval results to one dict
             exp_result.update(interval_result)
             # Comparison each significant value
             for key in exp_result.keys():
-                # Comparison of bin_stats array length
-                if key == 'bin_stats':
+                # Comparison of bucket_stats array length
+                if key == 'bucket_stats':
                     assert len(model[0][key]) == exp_result[key]
                 # Double comparison of individual values (r_square, x_interval_start, x_interval_end)
                 else:
@@ -62,66 +64,66 @@ _COMMON_INTERVAL = [
 _EXPECTED_RESULTS = {
     'user': [
         # uid: exp::test1
-        {'r_square': 0.98007, 'bin_stats': 10},
+        {'r_square': 0.98007, 'bucket_stats': 10},
         # uid: exp::test2
-        {'r_square': 0.97567, 'bin_stats': 10},
+        {'r_square': 0.97567, 'bucket_stats': 10},
         # uid: exp::test3
-        {'r_square': 1.0, 'bin_stats': 10},
+        {'r_square': 1.0, 'bucket_stats': 10},
     ],
     'auto': [
         # uid: exp::test1
-        {'r_square': 0.99601, 'bin_stats': 22},
+        {'r_square': 0.99601, 'bucket_stats': 22},
         # uid: exp::test2
-        {'r_square': 0.99428, 'bin_stats': 19},
+        {'r_square': 0.99428, 'bucket_stats': 19},
         # uid: exp::test3
-        {'r_square': 0.0, 'bin_stats': 1},
+        {'r_square': 0.0, 'bucket_stats': 1},
     ],
     'doane': [
         # uid: exp::test1
-        {'r_square': 0.99601, 'bin_stats': 20},
+        {'r_square': 0.99601, 'bucket_stats': 20},
         # uid: exp::test2
-        {'r_square': 0.99428, 'bin_stats': 16},
+        {'r_square': 0.99428, 'bucket_stats': 16},
         # uid: exp::test3
-        {'r_square': 0.0, 'bin_stats': 1},
+        {'r_square': 0.0, 'bucket_stats': 1},
     ],
     'fd': [
         # uid: exp::test1
-        {'r_square': 1.0, 'bin_stats': 50},
+        {'r_square': 1.0, 'bucket_stats': 50},
         # uid: exp::test2
-        {'r_square': 1.0, 'bin_stats': 36},
+        {'r_square': 1.0, 'bucket_stats': 36},
         # uid: exp::test3
-        {'r_square': 0.66732, 'bin_stats': 3},
+        {'r_square': 0.66732, 'bucket_stats': 3},
     ],
     'rice': [
         # uid: exp::test1
-        {'r_square': 0.99601, 'bin_stats': 22},
+        {'r_square': 0.99601, 'bucket_stats': 22},
         # uid: exp::test2
-        {'r_square': 0.99428, 'bin_stats': 19},
+        {'r_square': 0.99428, 'bucket_stats': 19},
         # uid: exp::test3
-        {'r_square': 0.0, 'bin_stats': 1},
+        {'r_square': 0.0, 'bucket_stats': 1},
     ],
     'scott': [
         # uid: exp::test1
-        {'r_square': 1.0, 'bin_stats': 51},
+        {'r_square': 1.0, 'bucket_stats': 51},
         # uid: exp::test2
-        {'r_square': 1.0, 'bin_stats': 44},
+        {'r_square': 1.0, 'bucket_stats': 44},
         # uid: exp::test3
-        {'r_square': 0.67017, 'bin_stats': 4},
+        {'r_square': 0.67017, 'bucket_stats': 4},
     ],
     'sqrt': [
         # uid: exp::test1
-        {'r_square': 1.0, 'bin_stats': 29},
+        {'r_square': 1.0, 'bucket_stats': 29},
         # uid: exp::test2
-        {'r_square': 1.0, 'bin_stats': 25},
+        {'r_square': 1.0, 'bucket_stats': 25},
         # uid: exp::test3
-        {'r_square': 0.34687, 'bin_stats': 2},
+        {'r_square': 0.34687, 'bucket_stats': 2},
     ],
     'sturges': [
         # uid: exp::test1
-        {'r_square': 0.99601, 'bin_stats': 22},
+        {'r_square': 0.99601, 'bucket_stats': 22},
         # uid: exp::test2
-        {'r_square': 0.99428, 'bin_stats': 19},
+        {'r_square': 0.99428, 'bucket_stats': 19},
         # uid: exp::test3
-        {'r_square': 0.0, 'bin_stats': 1},
+        {'r_square': 0.0, 'bucket_stats': 1},
     ]
 }

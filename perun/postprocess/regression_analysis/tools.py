@@ -171,17 +171,17 @@ def as_plot_y_dict(plot_y):
     return dict(plot_y=plot_y)
 
 
-def add_analysis_to_profile(profile, analysis):
+def add_models_to_profile(profile, models):
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
     :param profile: profile to add the analysis
-    :param analysis: analysis executed by the individual postprocessor
+    :param models: analysis executed by the individual postprocessor
     :return: method has no return value
     """
     # Store the results into the original profile
     if 'models' not in profile['global']:
-        profile['global']['models'] = analysis
+        profile['global']['models'] = models
     else:
-        profile['global']['models'].extend(analysis)
+        profile['global']['models'].extend(models)
     return profile
