@@ -1,7 +1,7 @@
 """
 Module with regressogram computational method and auxiliary methods at executing of this method.
 """
-import numpy as numpy
+import numpy as np
 import numpy.lib.function_base as numpy_bucket_selectors
 import scipy.stats
 import sklearn.metrics
@@ -18,7 +18,7 @@ def get_supported_methods():
 
     :returns list of str: the names of all supported methods
     """
-    return [key for key in _BUCKET_SELECTORS.keys()]
+    return list(_BUCKET_SELECTORS.keys())
 
 
 def compute(data_gen, configuration):
@@ -68,19 +68,19 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
     :return dict: the output dictionary with result of analysis
     """
     # Check whether the buckets is given by number or by name of method to its compute
-    buckets_num = buckets if isinstance(buckets, int) else _BUCKET_SELECTORS[buckets](numpy.array(x_pts))
+    buckets_num = buckets if isinstance(buckets, int) else _BUCKET_SELECTORS[buckets](np.array(x_pts))
     # Compute a binned statistic for the given data
     bucket_stats, bucket_edges, bucket_numbers = scipy.stats.binned_statistic(x_pts, y_pts, statistic_function,
                                                                               max(1, buckets_num))
     # Replace the NaN in empty buckets with 0 for plotting
-    bucket_stats = numpy.nan_to_num(bucket_stats)
+    bucket_stats = np.nan_to_num(bucket_stats)
     # Create output dictionaries
     return {
         'buckets_method': 'user' if isinstance(buckets, int) else buckets,
         'statistic_function': statistic_function,
         'bucket_stats': bucket_stats.tolist(),
-        'x_interval_start': numpy.min(bucket_edges),
-        'x_interval_end': numpy.max(bucket_edges),
+        'x_interval_start': np.min(bucket_edges),
+        'x_interval_end': np.max(bucket_edges),
         'y_interval_start': min(y_pts),
         'r_square': sklearn.metrics.r2_score(y_pts,
                                              [bucket_stats[bucket_number - 1] for bucket_number in bucket_numbers])
@@ -97,7 +97,7 @@ def render_step_function(graph, x_pts, y_pts, graph_params):
     :param dict graph_params: contains the specification of parameters for graph (color, line_width, legend)
     :returns charts.Graph: the modified graph with model of step function
     """
-    xx = numpy.sort(list(x_pts) + list(x_pts))
+    xx = np.sort(list(x_pts) + list(x_pts))
     xx = xx[:-1]
     yy = list(y_pts) + list(y_pts)
     yy[::2] = y_pts
