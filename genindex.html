@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.15.4 documentation</title>
+    <title>Index &#8212; Perun 0.16 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.4',
+        VERSION:     '0.16',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -148,6 +148,13 @@
 </li>
       </ul></li>
       <li>
+    --version
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-version">perun command line option</a>
+</li>
+      </ul></li>
+      <li>
     --with-static, --no-static
 
       <ul>
@@ -280,8 +287,6 @@
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-f">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-f">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-f">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-f">[1]</a>
-</li>
       </ul></li>
       <li>
     -f, --force-dirty
@@ -339,8 +344,6 @@
         <li><a href="cli.html#cmdoption-perun-show-bars-gt">perun-show-bars command line option</a>, <a href="views.html#cmdoption-perun-show-bars-gt">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-gt">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-gt">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-gt">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-gt">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -418,6 +421,8 @@
         <li><a href="cli.html#cmdoption-perun-utils-create-nb">perun-utils-create command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -ne, --no-edit
 
@@ -425,8 +430,6 @@
         <li><a href="cli.html#cmdoption-perun-utils-create-ne">perun-utils-create command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -o, --of &lt;of_key&gt;
 
@@ -436,8 +439,6 @@
         <li><a href="cli.html#cmdoption-perun-show-bars-o">perun-show-bars command line option</a>, <a href="views.html#cmdoption-perun-show-bars-o">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-o">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-o">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-o">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-o">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -463,8 +464,6 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-show-bars-p">perun-show-bars command line option</a>, <a href="views.html#cmdoption-perun-show-bars-p">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-p">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-p">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -626,8 +625,6 @@
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-v">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-v">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-v">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-v">[1]</a>
-</li>
       </ul></li>
       <li>
     -w, --warm-up-repetition &lt;warmup&gt;
@@ -674,8 +671,6 @@
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-xl">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-xl">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-xl">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-xl">[1]</a>
-</li>
       </ul></li>
       <li>
     -yl, --y-axis-label &lt;y_axis_label&gt;
@@ -684,8 +679,6 @@
         <li><a href="cli.html#cmdoption-perun-show-bars-yl">perun-show-bars command line option</a>, <a href="views.html#cmdoption-perun-show-bars-yl">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-yl">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-yl">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-yl">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-yl">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -1219,6 +1212,8 @@
       <ul>
         <li><a href="cli.html#cmdoption-perun-no-pager">--no-pager</a>
 </li>
+        <li><a href="cli.html#cmdoption-perun-version">--version</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-v">-v, --verbose</a>
 </li>
       </ul></li>
@@ -1437,6 +1432,8 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-s">-s, --steps &lt;steps&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-s">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-rm command line option
 
@@ -1448,8 +1445,6 @@
         <li><a href="cli.html#cmdoption-perun-rm-arg-profile">&lt;profile&gt;</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-run command line option
 
@@ -1564,25 +1559,6 @@
 </li>
       </ul></li>
       <li>
-    perun-show-scatter command line option
-
-      <ul>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-f">-f, --filename &lt;filename&gt;</a>, <a href="views.html#cmdoption-perun-show-scatter-f">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-gt">-gt, --graph-title &lt;graph_title&gt;</a>, <a href="views.html#cmdoption-perun-show-scatter-gt">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-o">-o, --of &lt;of_key&gt;</a>, <a href="views.html#cmdoption-perun-show-scatter-o">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-p">-p, --per &lt;per_key&gt;</a>, <a href="views.html#cmdoption-perun-show-scatter-p">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-v">-v, --view-in-browser</a>, <a href="views.html#cmdoption-perun-show-scatter-v">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-xl">-xl, --x-axis-label &lt;x_axis_label&gt;</a>, <a href="views.html#cmdoption-perun-show-scatter-xl">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-show-scatter-yl">-yl, --y-axis-label &lt;y_axis_label&gt;</a>, <a href="views.html#cmdoption-perun-show-scatter-yl">[1]</a>
-</li>
-      </ul></li>
-      <li>
     perun-status command line option
 
       <ul>
@@ -1639,6 +1615,8 @@
       <li><a href="postprocessors.html#module-perun.postprocess.normalizer">perun.postprocess.normalizer (module)</a>
 </li>
       <li><a href="postprocessors.html#module-perun.postprocess.regression_analysis">perun.postprocess.regression_analysis (module)</a>
+</li>
+      <li><a href="postprocessors.html#module-perun.postprocess.regressogram">perun.postprocess.regressogram (module)</a>
 </li>
       <li><a href="profile.html#module-perun.profile.convert">perun.profile.convert (module)</a>
 </li>

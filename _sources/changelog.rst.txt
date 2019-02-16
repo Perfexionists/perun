@@ -6,6 +6,17 @@ HEAD
 
 **To be included in next release**
 
+0.16 (2019-02-16)
+-----------------
+
+`commit: 04cd6a2dc788f73d21c23554ff2ab8174af67dbd`
+
+**Add regressogram postprocessor**
+
+  - add --version option to perun cli, so it shows version of perun (d'oh!)
+  - extend scatterplot to support step function rendering (for regressogram)
+  - add regressogram postprocessor, one of the non-parametric analysis
+
 0.15.4 (2018-08-13)
 -------------------
 

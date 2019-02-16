@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Postprocessors Overview &#8212; Perun 0.15.4 documentation</title>
+    <title>Postprocessors Overview &#8212; Perun 0.16 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.15.4',
+        VERSION:     '0.16',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -80,7 +80,7 @@ techniques respectively. Internals of perun storage is described in
 </a>
 <div class="section" id="supported-postprocessors">
 <span id="postprocessors-list"></span><h2>Supported Postprocessors<a class="headerlink" href="#supported-postprocessors" title="Permalink to this headline">¶</a></h2>
-<p>Perun’s tool suite currently contains the following two postprocessors:</p>
+<p>Perun’s tool suite currently contains the following four postprocessors:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li><a class="reference internal" href="#postprocessors-normalizer"><span class="std std-ref">Normalizer Postprocessor</span></a> scales the resources of the given profile to the
@@ -95,6 +95,12 @@ depending on size of the data structure the function operates on.</li>
 <li><a class="reference internal" href="#postprocessors-clusterizer"><span class="std std-ref">Clusterizer</span></a> tries to classify resources to uniquely identified clusters,
 which can be used for further postprocessing (e.g. by regression analysis) or to group
 similar amounts of resources.</li>
+<li><a class="reference internal" href="#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a> (authored by <strong>Simon Stupinsky</strong>) also known as the binning
+approach, is the simplest non-parametric estimator. This method trying to fit models through
+data by dividing the interval into N equal-width bucket and the resultant value in each bucket
+is equal to result of selected statistical aggregation function (mean/median) within the values
+in the relevant bucket. In short, we can describe the regressogram as a render_step_function function
+(i.e. constant function by parts).</li>
 </ol>
 </div></blockquote>
 <p>All of the listed postprocessors can be run from command line. For more information about command
@@ -879,6 +885,48 @@ we can see that the best model for the amount of allocated memory depending on c
 <img alt="_images/clusterizer-memory-scatter-with-models.png" src="_images/clusterizer-memory-scatter-with-models.png" />
 </div>
 </div>
+<div class="section" id="module-perun.postprocess.regressogram">
+<span id="regressogram-method"></span><span id="postprocessors-regressogram"></span><h3>Regressogram method<a class="headerlink" href="#module-perun.postprocess.regressogram" title="Permalink to this headline">¶</a></h3>
+<p>Postprocessing of input profiles using the non-parametric method: regressogram.
+This method serves for finding fitting models for trends in the captured
+profiling resources using the constant function at the individual parts of
+the whole interval.</p>
+<div class="section" id="postprocessors-regressogram-cli">
+<span id="id5"></span><h4>Command Line Interface<a class="headerlink" href="#postprocessors-regressogram-cli" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="postprocessors-regressogram-examples">
+<span id="id6"></span><h4>Examples<a class="headerlink" href="#postprocessors-regressogram-examples" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;bucket_stats&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="mf">13.0</span><span class="p">,</span>
+        <span class="mf">25.5</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;uid&quot;</span><span class="p">:</span> <span class="s2">&quot;linear::test2&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;bucket_method&quot;</span><span class="p">:</span> <span class="s2">&quot;doane&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;regressogram&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;r_square&quot;</span><span class="p">:</span> <span class="mf">0.7575757575757576</span><span class="p">,</span>
+    <span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span> <span class="mf">9.0</span><span class="p">,</span>
+    <span class="nt">&quot;statistic_function&quot;</span><span class="p">:</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span> <span class="mf">0.0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The example above shows an example of profile post-processed by regressogram method (note that
+this is only an excerpt of the whole profile). Each such model of shows the computed values in
+the individual buckets, that are represented by <em>bucket_stats</em>. The next value in this example
+is <em>statistic_function</em>, which represented the statistic to compute the value in each bucket. Further
+contains the name of the method (<em>bucket_method</em>) by which was calculated the optimal number of
+buckets, in this case specifically computed with <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges">Doanes</a> formula, and <em>coefficient of determination</em>
+(<span class="math">\(R^2\)</span>) for measuring the fitting of the model. Each such model can be used in the further
+interpretation of the models (either by <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> or:ref:<cite>degradation-method-aat</cite>).</p>
+<img alt="_images/exp_data_regressogram.png" src="_images/exp_data_regressogram.png" />
+<p>The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the interpreted model, computed using the <strong>regressogram</strong>
+method. In the picture, one can see that the depedency of running time based on the structural
+size is best fitted by <cite>exponential</cite> models.</p>
+</div>
+</div>
 </div>
 <div class="section" id="creating-your-own-postprocessor">
 <span id="postprocessors-custom"></span><h2>Creating your own Postprocessor<a class="headerlink" href="#creating-your-own-postprocessor" title="Permalink to this headline">¶</a></h2>
@@ -1089,6 +1137,11 @@ following to set the job matrix and run the batch collection of profiles:</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#postprocessors-clusterizer-examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-perun.postprocess.regressogram">Regressogram method</a><ul>
+<li><a class="reference internal" href="#postprocessors-regressogram-cli">Command Line Interface</a></li>
+<li><a class="reference internal" href="#postprocessors-regressogram-examples">Examples</a></li>
 </ul>
 </li>
 </ul>
