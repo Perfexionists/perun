@@ -1,13 +1,16 @@
 """ Module with graphs creation and configuration functions. """
 
+import numpy as np
 from operator import itemgetter
 from collections import defaultdict
 
 import perun.profile.query as query
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.postprocess.regressogram.methods as rg_methods
 
 import demandimport
+
 with demandimport.enabled():
     import bkcharts as charts
     import bokeh.palettes as palettes
@@ -88,17 +91,54 @@ def draw_models(graph, models):
     # Get unique colors for the model curves
     colour_palette = palettes.viridis(len(models))
     for idx, model in enumerate(models):
-        # Convert the coefficients to points that can be plotted
-        model = convert.plot_data_from_coefficients_of(model)
-        # Create legend for the plotted model
-        coeffs = ', '.join('{}={:f}'.format(c['name'], c['value']) for c in model['coeffs'])
-        legend = '{0}: {1}, r^2={2:f}'.format(model['model'], coeffs, model['r_square'])
-        # Plot the model
-        graph.line(x=model['plot_x'], y=model['plot_y'],
-                   line_color='#000000', line_width=7.5, legend=legend)
-        graph.line(x=model['plot_x'], y=model['plot_y'],
-                   line_color=colour_palette[idx], line_width=3.5, legend=legend)
+        # Coefficients are part only of parametric models
+        if 'coeffs' in model:
+            graph = create_parametric_model(graph, model, colour_palette[idx])
+        # The non-parametric models do not contain the coefficients
+        elif model['method'] == 'regressogram':
+                graph = create_regressogram_model(graph, model, colour_palette[idx])
     return graph
+
+
+def create_parametric_model(graph, model, colour):
+    """
+    Rendering the parametric models according to its coefficients.
+
+    :param charts.Graph graph: the scatter plot to render new models
+    :param model: the parametric model to be render to the graph
+    :param colour: the color of the current model to distinguish in the case of several models in the graph
+    :return charts.Graph: the modified graph with new model curves
+    """
+    # Convert the coefficients to points that can be plotted
+    model = convert.plot_data_from_coefficients_of(model)
+    # Create legend for the plotted model
+    coeffs = ', '.join('{}={:f}'.format(c['name'], c['value']) for c in model['coeffs'])
+    legend = '{0}: {1}, r^2={2:f}'.format(model['model'], coeffs, model['r_square'])
+    # Plot the model
+    graph.line(x=model['plot_x'], y=model['plot_y'], line_color='#000000', line_width=7.5, legend=legend)
+    graph.line(x=model['plot_x'], y=model['plot_y'], line_color=colour, line_width=3.5, legend=legend)
+    return graph
+
+
+def create_regressogram_model(graph, model, colour):
+    """
+    Rendering the regressogram model according to its computed properties.
+
+    :param charts.Graph graph: the scatter plot to render new models
+    :param model: the regressogram model which to be rendered to the graph
+    :param colour: the color of the current model to distinguish in the case of several models in the graph
+    :return charts.Graph: the modified graph with new regressogram model
+    """
+    # Evenly division of the interval by number of buckets
+    x_pts = np.linspace(model['x_interval_start'], model['x_interval_end'], num=len(model['bucket_stats']) + 1)
+    # Add the beginning of the first edge
+    y_pts = np.append(model['y_interval_start'], model['bucket_stats'])
+    # Create legend for the plotted model
+    legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(model['method'][:3], len(model['bucket_stats']),
+                                                             model['statistic_function'], model['r_square'])
+    # Plot the render_step_function function for regressogram model
+    graph_params = {'color': colour, 'line_width': 3.5, 'legend': legend}
+    return rg_methods.render_step_function(graph, x_pts, y_pts, graph_params)
 
 
 def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, graph_title,
@@ -123,8 +163,8 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
         # Plot the points as a scatter plot
         scatter = charts.Scatter(data_slice, x=per_key, y=of_key, title=graph_title,
                                  xlabel=x_axis_label, ylabel=y_axis_label,
-                                 tools="pan,wheel_zoom,box_zoom,zoom_in,zoom_out,crosshair,"
-                                       "reset,save")
+                                 tools='pan,wheel_zoom,box_zoom,zoom_in,zoom_out,crosshair,'
+                                       'reset,save')
 
         # Configure the graph properties
         # Create the graph title as a combination of default parameter, uid, method and
@@ -141,4 +181,4 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
         # Plot all models
         scatter = draw_models(scatter, models_slice)
 
-        yield "{}".format(data_slice.uid.values[0]), scatter
+        yield '{}'.format(data_slice.uid.values[0]), scatter

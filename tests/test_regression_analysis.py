@@ -46,19 +46,20 @@ def compare_results(expected, actual, eps=0.0001):
     assert abs(abs(expected) - abs(actual)) < eps
 
 
-def generate_models_by_uid(profile, model, uid_sequence):
+def generate_models_by_uid(profile, value, uid_sequence, key='model'):
     """Provides computed models results for each uid in the specified uid sequence.
 
     Arguments:
         profile(dict): the whole profile with 'models' results
-        model(str): the model specification
+        value(str): the specification of value of given key for matching models
         uid_sequence(list of str): list of uid values to search for
+        key(str): the key for matching models
     Returns:
         generator: stream of lists with models dictionaries according to uid sequence
     """
     models = profile['profile']['global']['models']
     for uid in uid_sequence:
-        yield [m for m in models if m['uid'] == uid and m['model'] == model]
+        yield [m for m in models if m['uid'] == uid and m[key] == value]
 
 
 def test_incorrect_calls(postprocess_profiles):
