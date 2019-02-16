@@ -1,0 +1,98 @@
+"""
+Postprocessor module with non-parametric analysis using the regressogram method.
+"""
+import click
+
+import perun.logic.runner as runner
+import perun.postprocess.regression_analysis.data_provider as data_provider
+import perun.postprocess.regression_analysis.tools as tools
+import perun.postprocess.regressogram.methods as methods
+import perun.utils.cli_helpers as cli_helpers
+from perun.utils.helpers import PostprocessStatus, pass_profile
+
+__author__ = 'Simon Stupinsky'
+
+_DEFAULT_BUCKETS_METHOD = 'doane'
+_DEFAULT_STATISTIC = 'mean'
+
+
+# TODO: The possibility of before postprocessing phase
+
+def postprocess(profile, **configuration):
+    """
+    Invoked from perun core, handles the postprocess actions
+
+    :param dict profile: the profile to analyze
+    :param configuration: the perun and options context
+    """
+    # Perform the non-parametric analysis using the regressogram method
+    analysis = methods.compute(data_provider.data_provider_mapper(profile, **configuration), configuration)
+
+    # Store the results
+    profile = tools.add_models_to_profile(profile, analysis)
+
+    # Return the profile after the execution of regressogram method
+    return PostprocessStatus.OK, '', {'profile': profile}
+
+
+# TODO: The possibility of after postprocessing phase
+
+@click.command()
+@click.option('--bucket_number', '-bn', required=False, multiple=False,
+              type=click.IntRange(min=1, max=None, clamp=True),
+              help=('Restricts the number of buckets to which will be '
+                    'placed the values of the selected statistics.'))
+@click.option('--bucket_method', '-bm', required=False,
+              type=click.Choice(methods.get_supported_methods()),
+              default=_DEFAULT_BUCKETS_METHOD, multiple=False,
+              help='Specifies the method to estimate the optimal number of buckets.')
+@click.option('--statistic_function', '-sf', type=click.Choice(['mean', 'median']),
+              required=False, default=_DEFAULT_STATISTIC, multiple=False,
+              help='Will use the <statistic_function> to compute the values '
+                   'for points within each bucket of regressogram.')
+@click.option('--per', '-p', 'per_key', default='structure-unit-size',
+              nargs=1, metavar='<per_resource_key>', callback=cli_helpers.process_resource_key_param,
+              help='Sets the key that will be used as a source of variable (x-coordinates).')
+@click.option('--of', '-o', 'of_key', nargs=1, metavar='<of_resource_key>',
+              default='amount', callback=cli_helpers.process_resource_key_param,
+              help='Sets key for which we are finding the model (y-coordinates).')
+@pass_profile
+def regressogram(profile, **kwargs):
+    """
+    Execution of the interleaving of profiled resources by **regressogram** models.
+
+    \b
+      * **Limitations**: `none`
+      * **Dependencies**: `none`
+
+    Regressogram belongs to the simplest non-parametric methods and its properties are
+    the following:
+
+        **Regressogram**: can be described such as step function (i.e. constant function
+        by parts). Regressogram uses the same basic idea as a histogram for density estimate.
+        This idea is in dividing the set of values of the x-coordinates (`<per_key>`) into
+        intervals and the estimate of the point in concrete interval takes the mean/median of the
+        y-coordinates (`<of_resource_key>`), respectively of its value on this sub-interval.
+        We currently use the `coefficient of determination` (:math:`R^2`) to measure the fitness of
+        regressogram. The fitness of estimation of regressogram model depends primarily on the number
+        of buckets into which the interval will be divided. The user can choose number of buckets
+        manually (`<bucket_window>`) or use one of the following methods to estimate the optimal
+        number of buckets (`<bucket_method>`):
+
+            - **sqrt**: square root (of data size) estimator, used for its speed and simplicity
+            - **rice**: does not take variability into account, only data size and commonly overestimates
+            - **scott**: takes into account data variability and data size, less robust estimator
+            - **stone**: based on leave-one-out cross validation estimate of the integrated squared error
+            - **fd**: robust, takes into account data variability and data size, resilient to outliers
+            - **sturges**: only accounts for data size, underestimates for large non-gaussian data
+            - **doane**: generalization of Sturges' formula, works better with non-gaussian data
+            - **auto**: max of the Sturges' and 'fd' estimators, provides good all around performance
+
+        .. _Scipy: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
+
+        For more details about these methods to estimate the optimal number of buckets or to view the
+        code of these methods, you can visit SciPy_.
+
+    For more details about this approach of non-parametric analysis refer to :ref:`postprocessors-regressogram`.
+    """
+    runner.run_postprocessor_on_profile(profile, 'regressogram', kwargs)

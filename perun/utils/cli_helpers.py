@@ -8,6 +8,7 @@ import re
 import os
 import click
 
+import perun
 import perun.profile.factory as profiles
 import perun.logic.commands as commands
 import perun.logic.store as store
@@ -21,6 +22,13 @@ import perun.vcs as vcs
 from perun.utils.exceptions import VersionControlSystemException
 
 __author__ = 'Tomas Fiedor'
+
+
+def print_version(_, __, value):
+    """Prints current version of Perun and ends"""
+    if value:
+        print("Perun {}".format(perun.__version__))
+        exit(0)
 
 
 def process_bokeh_axis_title(ctx, param, value):

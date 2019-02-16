@@ -16,7 +16,7 @@ def get_supported_methods():
 
     :returns list of str: the names of all supported methods
     """
-    return [key for key in _METHODS.keys()]
+    return list(_METHODS.keys())
 
 
 def compute(data_gen, method, models, **kwargs):

@@ -75,7 +75,10 @@ __author__ = 'Tomas Fiedor'
 @click.option('--verbose', '-v', count=True, default=0,
               help='Increases the verbosity of the standard output. Verbosity '
               'is incremental, and each level increases the extent of output.')
-def cli(verbose=0, no_pager=False):
+@click.option('--version', help='Prints the current version of Perun.',
+              is_eager=True, is_flag=True, default=False,
+              callback=cli_helpers.print_version)
+def cli(verbose=0, no_pager=False, **_):
     """Perun is an open source light-weight Performance Versioning System.
 
     In order to initialize Perun in current directory run the following::

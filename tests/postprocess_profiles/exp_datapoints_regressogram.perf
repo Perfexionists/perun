@@ -1,0 +1,378 @@
+{
+  "global": {
+    "models": [
+      {
+        "x_interval_end": 110.0,
+        "uid": "exp::test1",
+        "x_interval_start": 0.0,
+        "r_square": 0.9960136674259681,
+        "statistic_function": "mean",
+        "buckets_method": "doane",
+        "method": "regressogram",
+        "y_interval_start": 0.2,
+        "bucket_stats": [
+          0.2,
+          0.2,
+          0.0,
+          0.2,
+          0.0,
+          0.2,
+          0.0,
+          0.3,
+          0.0,
+          0.4,
+          0.5,
+          0.0,
+          0.7,
+          0.0,
+          1.0,
+          0.0,
+          1.2,
+          1.4,
+          1.5,
+          1.7999999999999998
+        ]
+      },
+      {
+        "x_interval_end": 103.0,
+        "uid": "exp::test2",
+        "x_interval_start": 17.0,
+        "r_square": 0.9942763368555876,
+        "statistic_function": "mean",
+        "buckets_method": "doane",
+        "method": "regressogram",
+        "y_interval_start": 18,
+        "bucket_stats": [
+          21.0,
+          0.0,
+          19.0,
+          23.0,
+          36.0,
+          33.0,
+          0.0,
+          27.0,
+          32.0,
+          0.0,
+          0.0,
+          0.0,
+          62.0,
+          0.0,
+          0.0,
+          74.0
+        ]
+      },
+      {
+        "x_interval_end": 8.0,
+        "uid": "exp::test3",
+        "x_interval_start": 0.0,
+        "r_square": 0.0,
+        "statistic_function": "mean",
+        "buckets_method": "doane",
+        "method": "regressogram",
+        "y_interval_start": 1,
+        "bucket_stats": [
+          56.77777777777778
+        ]
+      }
+    ],
+    "time": "0.00023s",
+    "resources": [
+      {
+        "structure-unit-size": 0,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 10,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 20,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 30,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 40,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.3,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 50,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.4,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 60,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.5,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 70,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 0.7,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 80,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 1,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 90,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 1.2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 95,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 1.4,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 100,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 1.5,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 105,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 1.7,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 110,
+        "uid": "exp::test1",
+        "type": "mixed",
+        "amount": 1.9,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 45,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 33,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 99,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 72,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 31,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 19,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 57,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 27,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 37,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 23,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 85,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 62,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 21,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 24,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 64,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 32,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 17,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 18,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 41,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 36,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 103,
+        "uid": "exp::test2",
+        "type": "mixed",
+        "amount": 76,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 0,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 1,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 1,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 2,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 2,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 4,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 3,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 8,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 4,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 16,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 5,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 32,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 6,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 64,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 7,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 128,
+        "subtype": "time delta"
+      },
+      {
+        "structure-unit-size": 8,
+        "uid": "exp::test3",
+        "type": "mixed",
+        "amount": 256,
+        "subtype": "time delta"
+      }
+    ]
+  },
+  "collector_info": {
+    "name": "trace",
+    "params": {
+      "internal_storage_size": 20000,
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
+      "sampling": [
+        {
+          "sample": 1,
+          "func": "SLList_insert"
+        },
+        {
+          "sample": 1,
+          "func": "func1"
+        }
+      ],
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ],
+      "internal_direct_output": false,
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
+      "internal_data_filename": "trace.log"
+    }
+  },
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
+  "header": {
+    "workload": "",
+    "type": "mixed",
+    "params": "",
+    "cmd": "complexity",
+    "units": {
+      "mixed(time delta)": "us"
+    }
+  },
+  "postprocessors": [
+    {
+      "name": "regressogram",
+      "params": {
+        "of_key": "amount",
+        "per_key": "structure-unit-size",
+        "statistic_function": "mean",
+        "bucket_number": null,
+        "bucket_method": "doane"
+      }
+    }
+  ]
+}

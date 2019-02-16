@@ -95,12 +95,115 @@ def test_cli(pcs_full):
     log.VERBOSITY = log.VERBOSE_RELEASE
     log.SUPPRESS_PAGING = True
 
+    result = runner.invoke(cli.cli, ['--version'])
+    assert result.output.startswith('Perun')
+    assert result.exit_code == 0
+
+
+def test_regressogram_incorrect(pcs_full):
+    """
+    Test various failure scenarios for regressogram cli.
+
+    Expecting no exceptions, all tests should end with status code 2.
+    """
+    incorrect_tests = [
+        # Test the lack of arguments
+        {'params': [], 'output': 'Usage'},
+        # Test non-existing argument
+        {'params': ['-a'], 'output': 'no such option: -a'},
+        # Test malformed bucket_number argument
+        {'params': ['--buckets_numbers'], 'output': 'no such option: --buckets_numbers'},
+        # Test missing bucket_number value
+        {'params': ['-bn'], 'output': '-bn option requires an argument'},
+        # Test invalid bucket_number value
+        {'params': ['-bn', 'user'], 'output': 'Invalid value for "--bucket_number"'},
+        # Test malformed bucket_method argument
+        {'params': ['--buckets_methods'], 'output': 'no such option: --buckets_methods'},
+        # Test missing bucket_method value
+        {'params': ['--bucket_method'], 'output': '--bucket_method option requires an argument'},
+        # Test invalid bucket_method value
+        {'params': ['-bm', 'user'], 'output': 'Invalid value for "--bucket_method"'},
+        # Test malformed statistic_function argument
+        {'params': ['--statistic_functions'], 'output': 'no such option: --statistic_functions'},
+        # Test missing statistic_function value
+        {'params': ['--statistic_function'], 'output': '--statistic_function option requires an argument'},
+        # Test invalid model name
+        {'params': ['-sf', 'max'], 'output': 'Invalid value for "--statistic_function"'}
+    ]
+    # TODO: multiple values check
+
+    # Instantiate the runner fist
+    runner = CliRunner()
+
+    # Set stable parameters at all tests
+    regressogram_params = ['1@i', 'regressogram']
+    # Executing the testing
+    for incorrect_test in incorrect_tests:
+        result = runner.invoke(cli.postprocessby, regressogram_params + incorrect_test['params'])
+        assert result.exit_code == 2
+        assert incorrect_test['output'] in result.output
+
+
+def test_regressogram_correct(pcs_full):
+    """
+    Test correct usages of the regressogram cli.
+
+    Expecting no exceptions and errors, all tests should end with status code 0.
+    """
+    # Instantiate the runner first
+    runner = CliRunner()
+
+    result = runner.invoke(cli.status, [])
+    match = re.search(r'([0-9]+@i).*mixed', result.output)
+    assert match
+    cprof_idx = match.groups(1)[0]
+
+    correct_tests = [
+        # Test the help printout first
+        {'params': [cprof_idx, 'regressogram', '--help']},
+        # Test default values of parameters (buckets, statistic_function)
+        {'params': []},
+        # Test first acceptable value for statistic_function parameter (mean)
+        {'params': ['--statistic_function', 'mean']},
+        # Test second acceptable value for statistic_function parameter (median)
+        {'params': ['-sf', 'median']},
+        # Test integer variant as value for bucket_number parameter
+        {'params': ['--bucket_number', '10']},
+        # Test 'auto' method as value for bucket_method parameter
+        {'params': ['-bm', 'auto']},
+        # Test 'fd' method as value for bucket_method parameter
+        {'params': ['-bm', 'fd']},
+        # Test 'doane' method as value for bucket_method parameter
+        {'params': ['--bucket_method', 'doane']},
+        # Test 'scott' method as value for bucket_method parameter
+        {'params': ['--bucket_method', 'scott']},
+        # Test 'sturges' method as value for bucket_method parameter
+        {'params': ['-bm', 'sturges']},
+        # Test 'rice' method as value for bucket_method parameter
+        {'params': ['-bm', 'rice']},
+        # Test 'sqrt' method as value for bucket_method parameter
+        {'params': ['--bucket_method', 'sqrt']},
+        # Test complex variant for regressogram method
+        {'params': ['--bucket_method', 'doane', '--statistic_function', 'mean']},
+        # Test bucket_method and bucket_number parameters common
+        {'params': ['--bucket_method', 'sqrt', '--bucket_number', 10]},
+    ]
+
+    # Set stable parameters at all tests
+    regressogram_params = [cprof_idx, 'regressogram']
+    # Performing tests
+    for idx, correct_test in enumerate(correct_tests):
+        result = runner.invoke(cli.postprocessby, regressogram_params + correct_test['params'])
+        assert result.exit_code == 0
+        assert 'Usage' if idx == 0 else 'Successfully postprocessed' in result.output
+
 
 def test_reg_analysis_incorrect(pcs_full):
     """Test various failure scenarios for regression analysis cli.
 
     Expecting no exceptions, all tests should end with status code 2.
     """
+    # TODO: Cycle and dictionary reduction?
 
     # Instantiate the runner fist
     runner = CliRunner()
@@ -184,6 +287,7 @@ def test_reg_analysis_correct(pcs_full):
 
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
+    # TODO: Cycle and dictionary reduction?
 
     # Instantiate the runner first
     runner = CliRunner()
@@ -357,6 +461,7 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException("", "")
+
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
     result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--configure'])
     assert result.exit_code == 1
@@ -367,6 +472,7 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
 
     def raiseexc(*_):
         raise PermissionError('')
+
     monkeypatch.setattr('perun.logic.config.write_config_to', raiseexc)
     result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
     assert result.exit_code == 1
@@ -377,6 +483,7 @@ def test_init_correct_with_incorrect_edit(monkeypatch):
 
     def raiseexc(*_):
         raise exceptions.UnsupportedModuleFunctionException('git', 'shit')
+
     monkeypatch.setattr('perun.vcs.git._init', raiseexc)
     result = runner.invoke(cli.init, [dst, '--vcs-type=git'])
     assert result.exit_code == 1
@@ -893,12 +1000,14 @@ def test_config(pcs_full, monkeypatch):
     # Try to run the monkey-patched editor
     def donothing(*_):
         pass
+
     monkeypatch.setattr('perun.utils.run_external_command', donothing)
     result = runner.invoke(cli.config, ['--local', 'edit'])
     assert result.exit_code == 0
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
+
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
     result = runner.invoke(cli.config, ['--local', 'edit'])
     assert result.exit_code == 1
@@ -1080,12 +1189,14 @@ def test_utils_create(monkeypatch, tmpdir):
     # Try to run the monkey-patched editor
     def donothing(*_):
         pass
+
     monkeypatch.setattr('perun.utils.run_external_command', donothing)
     result = runner.invoke(cli.create, ['check', 'mydifferentcheck'])
     assert result.exit_code == 0
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
+
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
     result = runner.invoke(cli.create, ['check', 'mythirdcheck'])
     assert result.exit_code == 1
@@ -1201,4 +1312,3 @@ def test_error_runs(pcs_full, monkeypatch):
     result = runner.invoke(cli.run, ['matrix', '-q'])
     assert result.exit_code == 0
     assert "fokume does not exist" in result.output
-
