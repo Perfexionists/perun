@@ -1274,6 +1274,18 @@ def test_run(pcs_full, monkeypatch):
     assert result.exit_code == 1
 
 
+def test_fuzzing(pcs_full):
+    """Runs basic tests for fuzzing CLI """
+    runner = CliRunner()
+    result = runner.invoke(cli.fuzz_cmd, [
+        '--cmd', 'ls',
+        '--args', '-al',
+        '--initial-workload', '.',
+        '--collector', 'time'
+    ])
+    assert result.exit_code == 0
+
+
 def test_error_runs(pcs_full, monkeypatch):
     """Try various error states induced by job matrix"""
     matrix = config.Config('local', '', {

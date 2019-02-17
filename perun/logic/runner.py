@@ -45,8 +45,8 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
       }
     }
 
-    :param str cmd: binary that will be run
-    :param str args: lists of additional arguments to the job
+    :param list cmd: binary that will be run
+    :param list args: lists of additional arguments to the job
     :param list workload: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
@@ -437,8 +437,8 @@ def run_jobs_with_history(minor_version_list, job_matrix, number_of_jobs):
 def run_single_job(cmd, args, workload, collector, postprocessor, minor_version_list,
                    with_history=False, **kwargs):
     """
-    :param str cmd: cmdary that will be run
-    :param str args: lists of additional arguments to the job
+    :param list cmd: list of commands that will be run
+    :param list args: lists of additional arguments to the job
     :param list workload: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors

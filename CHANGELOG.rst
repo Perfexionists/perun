@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - add `perun fuzz` command which does a performance fuzzing
+
 0.16 (2019-02-16)
 -----------------
 
