@@ -355,7 +355,7 @@ def run_prephase_commands(phase, phase_colour='white'):
 
 @decorators.print_elapsed_time
 @decorators.phase_function('batch job run')
-def run_jobs_on_current_working_dir(job_matrix, number_of_jobs):
+def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
     """Runs the batch of jobs on current state of the VCS.
 
     This function expects no changes not commited in the repo, it excepts correct version
@@ -363,6 +363,7 @@ def run_jobs_on_current_working_dir(job_matrix, number_of_jobs):
 
     :param dict job_matrix: dictionary with jobs that will be run
     :param int number_of_jobs: number of jobs that will be run
+    :return: pair of job and generated profile
     """
     workload_generators_specs = workloads.load_generator_specifications()
 
@@ -395,12 +396,12 @@ def run_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                             break
                     else:
                         # Store the computed profile inside the job directory
-                        store_generated_profile(prof, job)
+                        yield prof, job
 
 
 @decorators.print_elapsed_time
 @decorators.phase_function('overall profiling')
-def run_jobs(minor_version_list, job_matrix, number_of_jobs):
+def generate_jobs(minor_version_list, job_matrix, number_of_jobs):
     """
     :param list minor_version_list: list of MinorVersion info
     :param dict job_matrix: dictionary with jobs that will be run
@@ -410,12 +411,12 @@ def run_jobs(minor_version_list, job_matrix, number_of_jobs):
         for minor_version in minor_version_list:
             vcs.checkout(minor_version.checksum)
             run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
-            run_jobs_on_current_working_dir(job_matrix, number_of_jobs)
+            yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
 
 @decorators.print_elapsed_time
 @decorators.phase_function('overall profiling')
-def run_jobs_with_history(minor_version_list, job_matrix, number_of_jobs):
+def generate_jobs_with_history(minor_version_list, job_matrix, number_of_jobs):
     """
     :param list minor_version_list: list of MinorVersion info
     :param dict job_matrix: dictionary with jobs that will be run
@@ -429,9 +430,29 @@ def run_jobs_with_history(minor_version_list, job_matrix, number_of_jobs):
                 history.finish_minor_version(minor_version, [])
                 vcs.checkout(minor_version.checksum)
                 run_prephase_commands('pre_run', COLLECT_PHASE_CMD)
-                run_jobs_on_current_working_dir(job_matrix, number_of_jobs)
+                yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
                 print("")
                 history.flush(with_border=True)
+
+
+def generate_profiles_for(cmd, args, workload, collector, postprocessor, minor_version_list,
+                          **kwargs):
+    """Helper generator, that takes job specification and continuously generates profiles
+
+    This is mainly used for fuzzing, which requires to handle the profiles without any storage,
+    since the generated profiles are not futher used.
+
+    :param list cmd: list of commands that will be run
+    :param list args: lists of additional arguments to the job
+    :param list workload: list of workloads
+    :param list collector: list of collectors
+    :param list postprocessor: list of postprocessors
+    :param list minor_version_list: list of MinorVersion info
+    :param dict kwargs: dictionary of additional params for postprocessor and collector
+    """
+    job_matrix, number_of_jobs = \
+        construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
+    yield from generate_jobs(minor_version_list, job_matrix, number_of_jobs)
 
 
 def run_single_job(cmd, args, workload, collector, postprocessor, minor_version_list,
@@ -448,8 +469,9 @@ def run_single_job(cmd, args, workload, collector, postprocessor, minor_version_
     """
     job_matrix, number_of_jobs = \
         construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
-    runner_function = run_jobs_with_history if with_history else run_jobs
-    runner_function(minor_version_list, job_matrix, number_of_jobs)
+    generator_function = generate_jobs_with_history if with_history else generate_jobs
+    for prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
+        store_generated_profile(prof, job)
 
 
 def run_matrix_job(minor_version_list, with_history=False):
@@ -458,5 +480,6 @@ def run_matrix_job(minor_version_list, with_history=False):
     :param bool with_history: if set to true, then we will print the history object
     """
     job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config())
-    runner_function = run_jobs_with_history if with_history else run_jobs
-    runner_function(minor_version_list, job_matrix, number_of_jobs)
+    generator_function = generate_jobs_with_history if with_history else generate_jobs
+    for prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
+        store_generated_profile(prof, job)

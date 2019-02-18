@@ -18,7 +18,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     :param list minor_version_list: list of minor version for which we are collecting
     :param dict kwargs: rest of the keyword arguments
     """
-    for workload in initial_workload:
-        run.run_single_job(
-            [cmd], [args], workload, [collector], postprocessor, minor_version_list, **kwargs
-        )
+    profile_generator = run.generate_profiles_for(
+        [cmd], [args], initial_workload, [collector], postprocessor, minor_version_list, **kwargs
+    )
+    for profile, _ in profile_generator:
+        assert profile
