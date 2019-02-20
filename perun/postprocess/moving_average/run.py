@@ -141,9 +141,6 @@ def simple_moving_median(profile, **kwargs):
         between these two methods are the way of computation the values in the individual sub-intervals.
         Simple Moving **Median** is not based on the computation of average, but as the name suggests, it
         based on the **median**.
-
-        For more details about this approach of non-parametric analysis refer to
-        :ref:`postprocessors-simple-moving-average`.
     """
     kwargs.update({'moving_method': 'smm'})
     runner.run_postprocessor_on_profile(profile, 'moving_average', kwargs)
