@@ -1,0 +1,221 @@
+"""
+Module with computational method of moving average and auxiliary methods at executing of this method.
+"""
+import click
+import numpy as np
+import pandas as pd
+import sklearn.metrics
+
+import perun.postprocess.regression_analysis.tools as tools
+
+# required precision for moving average models when the window width was not entered
+_MIN_R_SQUARE = .88
+# increase of the window width value in each loop, if it has not been reached the required precision
+_WINDOW_WIDTH_INCREASE = .15
+# starting window width as the part of the length from the whole current interval
+_INTERVAL_LENGTH = .05
+
+
+def get_supported_decay_params():
+    """Provides all names of currently supported parameters to specify
+    the relationship to determine the smoothing parameter at Exponential
+    Moving Average.
+
+    :returns list of str: the names of all supported parameters
+    """
+    return list(_DECAY_PARAMS_INFO.keys())
+
+
+def window_width_change(window_width, r_square):
+    """
+    Computation of window width change based on the difference of required and current
+    coefficient of determination (R^2) and possible change of the window width.
+
+    The minimal value of the resulting change cannot be less than 1.
+    The maximal value of the resulting change cannot be greater than 90% of current window_width.
+    The new value of the window with cannot be less than 1.
+    The formula to determine the change of the window width depends on the three values:
+        - difference between coefficient of determinations: required_R^2 - current_R^2
+        - possible change of the window width (minimal width is equal to 1): window_width - 1
+        - value of the increase constant of the window width: WINDOW_WIDTH_INCREASE
+    The resulting change of the window width is the product of multiplication of these values.
+
+    :param int window_width: current window width from the last run of computation
+    :param float r_square: coefficient of determination from the current moving average model
+    :return int: new value of window width for next run of iterative computation
+    """
+    return max(1, window_width - max(1, int(
+        min(.9 * window_width - 1, _WINDOW_WIDTH_INCREASE * (window_width - 1) * (_MIN_R_SQUARE - r_square)))))
+
+
+def compute(data_gen, configuration):
+    """
+    The moving average wrapper to execute the analysis on the individual chunks of resources.
+
+    :param iter data_gen: the generator object with collected data (data provider generators)
+    :param dict configuration: the perun and option context
+    :return: list of dict: the computation results
+    """
+    # checking the presence of specific keys in individual methods
+    tools.validate_dictionary_keys(configuration, _METHOD_REQUIRED_KEYS[configuration['moving_method']], [])
+
+    # list of result of the analysis
+    analysis = []
+    for x_pts, y_pts, uid in data_gen:
+        result = moving_average(x_pts, y_pts, configuration)
+        result['uid'] = uid
+        result['method'] = 'moving_average'
+        # add partial result to the result list - create output dictionaries
+        analysis.append(result)
+    return analysis
+
+
+def execute_computation(y_pts, config):
+    """
+    The computation wrapper of supported methods of moving average approach.
+
+    In this method is executing the main logic, or better said, are called the
+    relevant methods to compute the supported methods of moving average, so Simple
+    and Exponential Moving Averages. For computation of the Simple Moving average
+    is used the method `rolling()` from the pandas module. Method `ewm()`, also
+    from pandas, is used to compute Exponential Moving Average. Except for the
+    calculation of moving average statistics, is in this method computing the
+    coefficient of determination (R^2), using the method `r2_score` from
+    sklearn package.
+
+    For more details about these methods, you can see the Perun or Pandas documentation.
+
+    :param list y_pts: the tuple of y-coordinates for computation
+    :param dict config: the dictionary contains the needed parameters to compute the individual methods
+    :return tuple: pandas.Series with the computed result, coefficient of determination float value
+    """
+    # computation of Simple Moving Average and Simple Moving Median
+    if config['moving_method'] in ('sma', 'smm'):
+        bucket_stats = pd.Series(data=y_pts).rolling(window=config['window_width'], min_periods=config['min_periods'],
+                                                     center=config['center'], win_type=config.get('window_type'))
+        # computation of the individual values based on the selected methods
+        bucket_stats = bucket_stats.median() if config['moving_method'] == 'smm' else bucket_stats.mean()
+    # computation of Exponential Moving Average
+    elif config['moving_method'] == 'ema':
+        decay_dict = {config['decay']: config['window_width']}
+        bucket_stats = pd.Series(data=y_pts).ewm(com=decay_dict.get('com'), span=decay_dict.get('span'),
+                                                 halflife=decay_dict.get('halflife'), alpha=decay_dict.get('alpha'),
+                                                 min_periods=config['min_periods'] or config['window_width']).mean()
+    # computation of the coefficient of determination (R^2)
+    r_square = sklearn.metrics.r2_score(y_pts, np.nan_to_num(bucket_stats))
+    return bucket_stats, r_square
+
+
+def moving_average(x_pts, y_pts, configuration):
+    """
+    Compute the moving average of a set of data.
+
+    The main control method, that covers all actions needed at executing the
+    analysis using the moving average approach. Based on the specified parameters
+    obtains the result of the analysis, from which creates the relevant dictionary.
+    This dictionary contains the whole set of helpful keys and it is the result of
+    the whole moving average analysis.
+
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param dict configuration: the perun and option context with needed parameters
+    :return dict: the output dictionary with result of analysis
+    """
+    # Sort the points to the right order for computation
+    x_pts, y_pts = zip(*sorted(zip(x_pts, y_pts)))
+
+    # If has been specified the window width by user, then will be followed the direct computation
+    if configuration.get('window_width'):
+        bucket_stats, r_square = execute_computation(y_pts, configuration)
+    # If has not been specified the window width by user, then will be followed the iterative computation
+    else:
+        bucket_stats, r_square, configuration['window_width'] = iterative_analysis(x_pts, y_pts, configuration)
+
+    # Create output dictionaries
+    return {
+        'moving_method': configuration['moving_method'],
+        'window_width': configuration['window_width'],
+        'x_interval_start': min(x_pts),
+        'x_interval_end': max(x_pts),
+        'r_square': r_square,
+        'bucket_stats': [float(value) for value in bucket_stats.values],
+        'per_key': configuration['per_key']
+    }
+
+
+def iterative_analysis(x_pts, y_pts, config):
+    """
+    Compute the iterative analysis of a set of data by moving average methods.
+
+    In the case, when the user does not enter the value of window width, we try
+    approximate this value. Our goal is to achieve the appropriate value of the
+    `coefficient of determination` (:math:`R^2`), which guaranteed, that the resulting
+    models will have the desired smoothness. In first step of iterative analysis is
+    set the initial value of window width and then follows the interleaving of the
+    given dataset, which runs until the the value of `coefficient of determination`
+    will not reach the required level.
+
+    :param list x_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
+    :param dict config: the perun and option context with needed parameters
+    :return tuple: pandas.Series with the computed result, coefficient of determination float value, window width (int)
+    """
+    # set the initial value of window width by a few percents of the length of the interval
+    # - minimal window width is equal to 1
+    config['window_width'] = max(1, int(_INTERVAL_LENGTH * (max(x_pts) - min(x_pts))))
+    r_square, window_new_change = 0.0, 1
+    # executing the iterative analysis until the value of R^2 will not reach the required level
+    while r_square < _MIN_R_SQUARE and window_new_change:
+        # obtaining new results from moving average analysis
+        bucket_stats, r_square = execute_computation(y_pts, config)
+        # check whether the window width is still changing
+        window_new_change = config['window_width'] - window_width_change(config['window_width'], r_square)
+        # computation of the new window width, if yet have not been achieved the desired smoothness, for next run
+        config['window_width'] = window_width_change(config['window_width'], r_square)
+    return bucket_stats, r_square, config['window_width']
+
+
+def validate_decay_param(ctx, param, value):
+    """
+    Callback method for `decay` parameter at Exponential Moving Average.
+
+    Method to execute the validation of value entered with `decay` parameter.
+    According to name entered at this parameter the value must in the relevant
+    range. In the case of successful validation the original value will be returned.
+    In the case of unsuccessful validation will be raised the exception with the
+    relevant warning message about the entered value out of the acceptable range.
+
+    :param click.Context ctx: the current perun and option context
+    :param click.Option param:  additive options from relevant commands decorator
+    :param tuple value: the value of the parameter that invoked the callback method (name, value)
+    :raises click.BadOptionsUsage: in the case when was entered the value from the invalid range
+    :return float: returns value of the parameter after the executing successful validation
+    """
+    # calling the condition and then checking its validity
+    # - value[0] contains the name of the selected `decay` method (e.g. com)
+    # - value[1] contains the numeric value (e.g. 3)
+    if _DECAY_PARAMS_INFO[value[0]]['condition'](value[1]):
+        return value
+    else:  # value out of acceptable range
+        # obtaining the error message according to name of `decay` method
+        err_msg = _DECAY_PARAMS_INFO[value[0]]['err_msg']
+        raise click.BadOptionUsage('Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg))
+
+
+# dictionary contains the required keys to check before the access to this keys
+# - required keys are divided according to individual supported methods
+_METHOD_REQUIRED_KEYS = {
+    'sma': ['moving_method', 'center', 'window_type', 'min_periods', 'per_key'],
+    'smm': ['moving_method', 'center', 'min_periods', 'per_key'],
+    'ema': ['decay', 'min_periods', 'per_key']
+}
+
+# dictionary serves for validation values at `decay` parameter - validation of acceptable range
+# - dictionary contains the recognized `decay` method names as key
+# -- dictionary contains the validate condition and warning message as value
+_DECAY_PARAMS_INFO = {
+    'com': {'condition': lambda value: value >= .0, 'err_msg': '>= 0.0'},
+    'span': {'condition': lambda value: value >= 1.0, 'err_msg': '>= 1.0'},
+    'halflife': {'condition': lambda value: value > .0, 'err_msg': '> 0.0'},
+    'alpha': {'condition': lambda value: 0 < value <= 1.0, 'err_msg': '0.0 < alpha <= 1.0'}
+}
