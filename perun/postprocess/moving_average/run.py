@@ -19,7 +19,7 @@ _DEFAULT_CENTER = True
 # default computational method - Simple Moving Average
 _DEFAULT_MOVING_METHOD = 'sma'
 # specify decay in terms of Center of Mass (com) as default
-_DEFAULT_DECAY= ('com', 0)
+_DEFAULT_DECAY = ('com', 0)
 # default statistic function to compute - mean/average
 _DEFAULT_STATISTIC = 'mean'
 # recognized window types for Simple Moving Average/Median
@@ -37,13 +37,11 @@ def postprocess(profile, **configuration):
     :param configuration: the perun and options context
     """
     # Perform the non-parametric analysis using the moving average methods
-    moving_average_models = methods.compute(data_provider.data_provider_mapper(profile, **configuration), configuration)
-
-    # Store the results
-    profile = tools.add_models_to_profile(profile, moving_average_models)
+    moving_average_models = methods.compute_moving_average(data_provider.data_provider_mapper(profile, **configuration),
+                                                           configuration)
 
     # Return the profile after the execution of moving average method
-    return PostprocessStatus.OK, '', {'profile': profile}
+    return PostprocessStatus.OK, '', {'profile': tools.add_models_to_profile(profile, moving_average_models)}
 
 
 # TODO: The possibility of after postprocessing phase

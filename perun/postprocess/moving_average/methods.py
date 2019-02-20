@@ -48,7 +48,7 @@ def window_width_change(window_width, r_square):
         min(.9 * window_width - 1, _WINDOW_WIDTH_INCREASE * (window_width - 1) * (_MIN_R_SQUARE - r_square)))))
 
 
-def compute(data_gen, configuration):
+def compute_moving_average(data_gen, configuration):
     """
     The moving average wrapper to execute the analysis on the individual chunks of resources.
 

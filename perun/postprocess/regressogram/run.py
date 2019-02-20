@@ -26,13 +26,11 @@ def postprocess(profile, **configuration):
     :param configuration: the perun and options context
     """
     # Perform the non-parametric analysis using the regressogram method
-    regressogram_models = methods.compute(data_provider.data_provider_mapper(profile, **configuration), configuration)
-
-    # Store the results
-    profile = tools.add_models_to_profile(profile, regressogram_models)
+    regressogram_models = methods.compute_regressogram(data_provider.data_provider_mapper(profile, **configuration),
+                                                      configuration)
 
     # Return the profile after the execution of regressogram method
-    return PostprocessStatus.OK, '', {'profile': profile}
+    return PostprocessStatus.OK, '', {'profile': tools.add_models_to_profile(profile, regressogram_models)}
 
 
 # TODO: The possibility of after postprocessing phase

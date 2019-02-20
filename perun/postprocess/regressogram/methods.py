@@ -21,7 +21,7 @@ def get_supported_methods():
     return list(_BUCKET_SELECTORS.keys())
 
 
-def compute(data_gen, configuration):
+def compute_regressogram(data_gen, configuration):
     """
     The regressogram wrapper to execute the analysis on the individual chunks of resources.
 
