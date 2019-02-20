@@ -10,7 +10,7 @@ Postprocessors Overview
 Supported Postprocessors
 ------------------------
 
-Perun's tool suite currently contains the following four postprocessors:
+Perun's tool suite currently contains the following five postprocessors:
 
   1. :ref:`postprocessors-normalizer` scales the resources of the given profile to the
      interval (0, 1). The main intuition behind the usage of this postprocessor is to be able to
@@ -31,8 +31,17 @@ Perun's tool suite currently contains the following four postprocessors:
      approach, is the simplest non-parametric estimator. This method trying to fit models through
      data by dividing the interval into N equal-width bucket and the resultant value in each bucket
      is equal to result of selected statistical aggregation function (mean/median) within the values
-     in the relevant bucket. In short, we can describe the regressogram as a render_step_function function
+     in the relevant bucket. In short, we can describe the regressogram as a step function
      (i.e. constant function by parts).
+
+  5. :ref:`postprocessors-moving-average` (authored by **Simon Stupinsky**) also know as the rolling
+     average or running average, is the statistical analysis belongs to non-parametric approaches.
+     This method is based on the analysis of the given data points by creating a series of values based
+     on the specific aggregation function, most often average or possibly median. The resulting values
+     are derived from the different subsets of the full data set. We currently support the two main
+     methods of this approach and that the **Simple** Moving Average and the **Exponential** Moving
+     Average. In the first method is an available selection from two aggregation function: **mean**
+     or **median**.
 
 All of the listed postprocessors can be run from command line. For more information about command
 line interface for individual postprocessors refer to :ref:`cli-postprocess-units-ref`.
@@ -199,6 +208,33 @@ interpretation of the models (either by :ref:`views-scatter` or:ref:`degradation
 The :ref:`views-scatter` above shows the interpreted model, computed using the **regressogram**
 method. In the picture, one can see that the depedency of running time based on the structural
 size is best fitted by `exponential` models.
+
+
+.. _postprocessors-moving-average:
+
+Moving Average Methods
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.postprocess.moving_average
+
+.. _postprocessors-moving-average-cli:
+
+Command Line Interface
+""""""""""""""""""""""
+
+.. click:: perun.postprocess.moving_average.run:moving_average
+   :prog: perun postprocessby moving_average
+
+.. click:: perun.postprocess.moving_average.run:simple_moving_average
+   :prog: perun postprocessby moving_average sma
+
+.. click:: perun.postprocess.moving_average.run:exponential_moving_average
+   :prog: perun postprocessby moving_average ema
+
+.. _postprocessors-moving-average-examples:
+
+Examples
+""""""""
 
 .. _postprocessors-custom:
 
