@@ -201,7 +201,7 @@ def test_regressogram_correct(pcs_full):
                            correct_test.get('output', 'Successfully postprocessed'))
 
 
-def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_idx='1@i'):
+def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_idx):
     def call_test_runner(params, test_sample):
         run_non_param_test(runner, params, exit_code, test_sample.get('output', 'Successfully postprocessed'))
 
@@ -214,20 +214,19 @@ def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_i
         # tests moving average cli commands
         if idx < tests_edge[0]:
             call_test_runner(moving_average_params + test['params'], test)
-        # test common options for moving average commands: SMA, SMM and EMA
-        elif idx < tests_edge[1]:
-            for n in range(0, len(moving_average_methods)):
-                call_test_runner(moving_average_params + moving_average_methods[n] + test['params'], test)
         # test common options for SMA command and SMM command
-        elif idx < tests_edge[2]:
+        elif idx < tests_edge[1]:
             for n in range(0, len(moving_average_methods) - 1):
                 call_test_runner(moving_average_params + moving_average_methods[n] + test['params'], test)
         # test individual options for Simple Moving Average command: SMA
-        elif idx < tests_edge[3]:
+        elif idx < tests_edge[2]:
             call_test_runner(moving_average_params + moving_average_methods[0] + test['params'], test)
         # test individual options for Exponential Moving Average command: EMA
-        elif idx < tests_edge[4]:
+        elif idx < tests_edge[3]:
             call_test_runner(moving_average_params + moving_average_methods[2] + test['params'], test)
+        # test complex combinations of options and commands
+        elif idx < tests_edge[4]:
+            call_test_runner(moving_average_params + test['params'], test)
 
 
 def test_moving_average_incorrect(pcs_full):
@@ -242,8 +241,6 @@ def test_moving_average_incorrect(pcs_full):
         {'params': ['--abcd'], 'output': 'no such option: --abcd'},
         # 2. Test non-existing command
         {'params': ['cma'], 'output': 'No such command "cma"'},
-
-        # TESTS COMMON OPTIONS FOR SMA, SMM AND EMA
         # 3. Test non-existing argument
         {'params': ['-b'], 'output': 'no such option: -b'},
         # 4. Test malformed min_periods argument
@@ -281,9 +278,9 @@ def test_moving_average_incorrect(pcs_full):
         # 19. Test malformed no-center argument
         {'params': ['--mo-center'], 'output': 'no such option: --mo-center'},
         # 20. Test value for center argument
-        {'params': ['--center', 'True', '-dp', 'amount'], 'output': 'Got unexpected extra argument (True)'},
+        {'params': ['--center', 'True'], 'output': 'Got unexpected extra argument (True)'},
         # 21. Test value for no-center argument
-        {'params': ['--no-center', 'False', '-dp', 'amount'], 'output': 'Got unexpected extra argument (False)'},
+        {'params': ['--no-center', 'False'], 'output': 'Got unexpected extra argument (False)'},
 
         # TESTS SIMPLE MOVING AVERAGE COMMAND
         # 22. Test malformed window-type argument
@@ -312,19 +309,8 @@ def test_moving_average_incorrect(pcs_full):
         {'params': ['--decay', 'alpha', 0], 'output': ' Invalid value for alpha'},
     ]
     # edge of test groups for different commands group or individual commands
-    tests_edge = [2, 13, 21, 24, 32]
-    # Instantiate the runner first
-    runner = CliRunner()
-    # Perform the testing
-    moving_average_runner_test(runner, incorrect_tests, tests_edge, 2)
+    tests_edge = [13, 21, 24, 32]
 
-
-def test_moving_average_correct(pcs_full):
-    """
-
-    :param pcs_full:
-    :return:
-    """
     # Instantiate the runner first
     runner = CliRunner()
 
@@ -333,14 +319,22 @@ def test_moving_average_correct(pcs_full):
     assert match
     cprof_idx = match.groups(1)[0]
 
+    # Perform the testing
+    moving_average_runner_test(runner, incorrect_tests, tests_edge, 2, cprof_idx)
+
+
+def test_moving_average_correct(pcs_full):
+    """
+    Test correct usages of the moving average cli.
+
+    Expecting no exceptions and errors, all tests should end with status code 0.
+    """
     correct_tests = [
         # TESTS MOVING AVERAGE COMMAND AND OPTIONS
         # 1. Test the help printout first
         {'params': ['--help'], 'output': 'Usage'},
         # 2. Test default command
         {'params': []},
-
-        # TESTS COMMON OPTIONS FOR SMA, SMM AND EMA
         # 3. Test the help printout firsts
         {'params': ['--help'], 'output': 'Usage'},
         # 4. Test default value of parameters
@@ -382,11 +376,11 @@ def test_moving_average_correct(pcs_full):
         # 20. Test `barthann` as value for window-type parameter
         {'params': ['-wt', 'barthann']},
         # 21. Test complex combination of parameters no.1
-        {'params': ['--window_type', 'blackmanharris', '-ww', 10, '--min_periods', 5]},
+        {'params': ['--window_type', 'blackmanharris', '-ww', 10]},
         # 22. Test complex combination of parameters no.2
-        {'params': ['--no-center', '--min_periods', 1, '--window_type', 'triang']},
+        {'params': ['--no-center', '--window_type', 'triang']},
         # 23. Test complex combination of parameters no.3
-        {'params': ['--window_width', 5, '--center', '-wt', 'parzen', '-mp', 2]},
+        {'params': ['--window_width', 5, '--center', '-wt', 'parzen']},
 
         # TESTS EXPONENTIAL MOVING AVERAGE COMMAND
         # 24. Test valid value for `com` value in decay argument
@@ -397,12 +391,33 @@ def test_moving_average_correct(pcs_full):
         {'params': ['--decay', 'halflife', 2]},
         # 27. Test valid value for `com` value in decay argument
         {'params': ['--decay', 'alpha', .5]},
-        # 28. test complex combination of parameters no.1
-        {'params': ['--decay', 'alpha', .5, '-mp', 3]},
-        # 29. test complex combination of parameters no.2
-        {'params': ['--decay', 'com', 5, '--min_periods', 4, '-o', 'structure-unit-size', '-dp', 'amount']}
+
+        # COMPLEX TESTS - addition of 'min_periods' argument
+        # 28. test complex combination of parameters no.1 - EMA
+        {'params': ['--min_periods', 5, 'ema', '--decay', 'alpha', .5]},
+        # 29. test complex combination of parameters no.2 - EMA
+        {'params': ['-mp', 2, 'ema', '--decay', 'com', 5]},
+        # 30. Test complex combination of parameters no.1 - SMA
+        {'params': ['-mp', 1, 'sma', '--window_type', 'blackmanharris']},
+        # 31. Test complex combination of parameters no.2 - SMA
+        {'params': ['--min_periods', 1, 'sma', '--no-center', '--window_type', 'triang']},
+        # 32. Test complex combination of parameters no.3 - SMA
+        {'params': ['--min_periods', 3, 'sma', '--window_width', 5, '--center', '-wt', 'parzen']},
+        # 33. Test complex combination of parameters no.1 - SMM
+        {'params': ['-mp', 2, 'smm', '--window_width', 5, '--center']},
+        # 34. Test complex combination of parameters no.1 - SMM
+        {'params': ['--min_periods', 3, 'smm', '--no-center', '--window_width', 15]},
     ]
-    tests_edge = [2, 7, 10, 23, 29]
+    tests_edge = [7, 10, 23, 27, 33]
+
+    # Instantiate the runner first
+    runner = CliRunner()
+
+    result = runner.invoke(cli.status, [])
+    match = re.search(r'([0-9]+@i).*mixed', result.output)
+    assert match
+    cprof_idx = match.groups(1)[0]
+
     # Perform the testing
     moving_average_runner_test(runner, correct_tests, tests_edge, 0, cprof_idx)
 

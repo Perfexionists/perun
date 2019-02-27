@@ -46,28 +46,6 @@ def postprocess(profile, **configuration):
 
 # TODO: The possibility of after postprocessing phase
 
-
-def common_options(f):
-    """
-    The wrapper of common options for both supported commands at moving average postprocessor.
-
-    :param function f: the function in which the decorator of common options is currently applied
-    :return: returns sequence of the single options for the current function (f) as decorators
-    """
-    options = [
-        click.option('--min_periods', '-mp', type=click.IntRange(min=1, max=None, clamp=False),
-                     help='Provides the minimum number of observations in window required to have a value. '
-                          'If the number of possible observations smaller then result is NaN.'),
-        click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size',
-                     nargs=1, metavar='<depending_on>', callback=cli_helpers.process_resource_key_param,
-                     help='Sets the key that will be used as a source of independent variable.'),
-        click.option('--of', '-o', 'of_key', nargs=1, metavar='<of_resource_key>',
-                     default='amount', callback=cli_helpers.process_resource_key_param,
-                     help='Sets key for which we are finding the model.')
-    ]
-    return functools.reduce(lambda x, option: option(x), options, f)
-
-
 def common_sma_options(f):
     """
     The wrapper of common options for both supported commands represents simple
@@ -92,9 +70,8 @@ def common_sma_options(f):
               help='Provides the window type, if not set then all points are evenly weighted.'
                    'For further information about window types see the notes in the documentation.')
 @common_sma_options
-@common_options
-@pass_profile
-def simple_moving_average(profile, **kwargs):
+@click.pass_context
+def simple_moving_average(ctx, **kwargs):
     """ **Simple Moving Average**
 
         In the most of cases, it is an unweighted Moving Average, this means that the each x-coordinate
@@ -124,15 +101,14 @@ def simple_moving_average(profile, **kwargs):
 
             For more details about this window functions or for their visual view you can see SciPyWindow_.
     """
-    kwargs.update({'moving_method': 'sma'})
-    runner.run_postprocessor_on_profile(profile, 'moving_average', kwargs)
+    kwargs.update({'moving_method': 'sma'}), kwargs.update(ctx.parent.params)
+    runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
 
 
 @click.command(name='smm')
 @common_sma_options
-@common_options
-@pass_profile
-def simple_moving_median(profile, **kwargs):
+@click.pass_context
+def simple_moving_median(ctx, **kwargs):
     """ **Simple Moving Median**
 
         The second representative of Simple Moving Average methods is the Simple Moving **Median**. For
@@ -142,8 +118,8 @@ def simple_moving_median(profile, **kwargs):
         Simple Moving **Median** is not based on the computation of average, but as the name suggests, it
         based on the **median**.
     """
-    kwargs.update({'moving_method': 'smm'})
-    runner.run_postprocessor_on_profile(profile, 'moving_average', kwargs)
+    kwargs.update({'moving_method': 'smm'}), kwargs.update(ctx.parent.params)
+    runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
 
 
 @click.command(name='ema')
@@ -151,9 +127,8 @@ def simple_moving_median(profile, **kwargs):
               type=click.Tuple([click.Choice(methods.get_supported_decay_params()), float]),
               help='Exactly one of "com", "span", "halflife", "alpha" can be provided. Allowed values and '
                    'relationship between the parameters are specified in the documentation (e.g. --decay=com 3).')
-@common_options
-@pass_profile
-def exponential_moving_average(profile, **kwargs):
+@click.pass_context
+def exponential_moving_average(ctx, **kwargs):
     """ **Exponential Moving Average**
 
         This method is a type of moving average methods, also know as **Exponential** Weighted Moving Average,
@@ -177,10 +152,20 @@ def exponential_moving_average(profile, **kwargs):
         weighting factor or length of the average.
     """
     kwargs.update({'moving_method': 'ema', 'window_width': kwargs['decay'][1], 'decay': kwargs['decay'][0]})
-    runner.run_postprocessor_on_profile(profile, 'moving_average', kwargs)
+    kwargs.update(ctx.parent.params)
+    runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
 
 
 @click.group(invoke_without_command=True)
+@click.option('--min_periods', '-mp', type=click.IntRange(min=1, max=None, clamp=False),
+              help='Provides the minimum number of observations in window required to have a value. '
+                   'If the number of possible observations smaller then result is NaN.')
+@click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size',
+              nargs=1, metavar='<depending_on>', callback=cli_helpers.process_resource_key_param,
+              help='Sets the key that will be used as a source of independent variable.')
+@click.option('--of', '-o', 'of_key', nargs=1, metavar='<of_resource_key>',
+              default='amount', callback=cli_helpers.process_resource_key_param,
+              help='Sets key for which we are finding the model.')
 @click.pass_context
 def moving_average(ctx, **kwargs):
     """
