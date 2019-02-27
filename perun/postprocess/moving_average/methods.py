@@ -26,7 +26,7 @@ def get_supported_decay_params():
     return list(_DECAY_PARAMS_INFO.keys())
 
 
-def window_width_change(window_width, r_square):
+def compute_window_width_change(window_width, r_square):
     """
     Computation of window width change based on the difference of required and current
     coefficient of determination (R^2) and possible change of the window width.
@@ -59,15 +59,15 @@ def compute_moving_average(data_gen, configuration):
     # checking the presence of specific keys in individual methods
     tools.validate_dictionary_keys(configuration, _METHOD_REQUIRED_KEYS[configuration['moving_method']], [])
 
-    # list of result of the analysis
-    analysis = []
+    # list of resulting models of the analysis
+    moving_average_models = []
     for x_pts, y_pts, uid in data_gen:
-        result = moving_average(x_pts, y_pts, configuration)
-        result['uid'] = uid
-        result['method'] = 'moving_average'
-        # add partial result to the result list - create output dictionaries
-        analysis.append(result)
-    return analysis
+        moving_average_model = moving_average(x_pts, y_pts, configuration)
+        moving_average_model['uid'] = uid
+        moving_average_model['method'] = 'moving_average'
+        # add partial result to the model result list - create output dictionaries
+        moving_average_models.append(moving_average_model)
+    return moving_average_models
 
 
 def execute_computation(y_pts, config):
@@ -169,9 +169,9 @@ def iterative_analysis(x_pts, y_pts, config):
         # obtaining new results from moving average analysis
         bucket_stats, r_square = execute_computation(y_pts, config)
         # check whether the window width is still changing
-        window_new_change = config['window_width'] - window_width_change(config['window_width'], r_square)
+        window_new_change = config['window_width'] - compute_window_width_change(config['window_width'], r_square)
         # computation of the new window width, if yet have not been achieved the desired smoothness, for next run
-        config['window_width'] = window_width_change(config['window_width'], r_square)
+        config['window_width'] = compute_window_width_change(config['window_width'], r_square)
     return bucket_stats, r_square, config['window_width']
 
 

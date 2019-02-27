@@ -87,7 +87,7 @@ def draw_models(graph, models, profile):
 
     :param charts.Graph graph: the scatter plot without models
     :param list models: list of models to plot
-    :param profile: TODO
+    :param dict profile: dictionary with measured data to pairing model with resources
     :returns charts.Graph: the modified graph with model curves renderers
     """
     # Get unique colors for the model curves

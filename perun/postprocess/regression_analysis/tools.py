@@ -30,9 +30,13 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
     if not isinstance(dictionary, dict):
         raise exceptions.DictionaryKeysValidationFailed(dictionary, [], [])
     # Check all the required keys
-    [missing_keys.append(key) for key in required_keys if key not in dictionary]
+    for key in required_keys:
+        if key not in dictionary:
+            missing_keys.append(key)
     # Check all the forbidden keys
-    [excess_keys.append(key) for key in forbidden_keys if key in dictionary]
+    for key in forbidden_keys:
+        if key in dictionary:
+            excess_keys.append(key)
 
     # Raise exception if needed
     if missing_keys or excess_keys:
