@@ -10,7 +10,7 @@ import perun.postprocess.moving_average.methods as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
-from perun.utils.helpers import PostprocessStatus, pass_profile
+from perun.utils.helpers import PostprocessStatus
 
 __author__ = 'Simon Stupinsky'
 
@@ -101,7 +101,8 @@ def simple_moving_average(ctx, **kwargs):
 
             For more details about this window functions or for their visual view you can see SciPyWindow_.
     """
-    kwargs.update({'moving_method': 'sma'}), kwargs.update(ctx.parent.params)
+    kwargs.update({'moving_method': 'sma'})
+    kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
 
 
@@ -118,7 +119,8 @@ def simple_moving_median(ctx, **kwargs):
         Simple Moving **Median** is not based on the computation of average, but as the name suggests, it
         based on the **median**.
     """
-    kwargs.update({'moving_method': 'smm'}), kwargs.update(ctx.parent.params)
+    kwargs.update({'moving_method': 'smm'})
+    kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
 
 
@@ -205,4 +207,5 @@ def moving_average(ctx, **kwargs):
 # supported methods of moving average postprocessor
 _SUPPORTED_METHODS = [simple_moving_average, simple_moving_median, exponential_moving_average]
 # addition of sub-commands to main command represents by moving average postprocessor
-[moving_average.add_command(method) for method in _SUPPORTED_METHODS]
+for method in _SUPPORTED_METHODS:
+    moving_average.add_command(method)
