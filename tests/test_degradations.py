@@ -9,8 +9,6 @@ import perun.profile.factory as factory
 import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
-import perun.check.polynomial_regression as preg
-import perun.check.linear_regression as lreg
 
 __author__ = 'Tomas Fiedor'
 
@@ -95,7 +93,8 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     profiles = [
         factory.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True),
         factory.load_profile_from_file(os.path.join(pool_path, 'linear_base_degradated.perf'), True),
-        factory.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True)
+        factory.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True),
+        factory.load_profile_from_file(os.path.join(pool_path, 'zero.perf'), True)
     ]
     # Cannot detect degradation using BMOE strategy betwen these pairs of profiles,
     # since the best models are same with good confidence
@@ -123,6 +122,13 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     log.print_list_of_degradations(deg_list)
     out, _ = capsys.readouterr()
     assert 'with confidence' in out
+
+    # Try that nothing is wrong when the average is 0.0
+    result = list(aat.average_amount_threshold(profiles[3], profiles[3]))
+    # Assert that DegradationInfo was yield
+    assert result
+    # Assert there was no change
+    assert check.PerformanceChange.NoChange in [r.result for r in result]
 
 
 def test_strategies():

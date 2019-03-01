@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - fix minor issue in average amount threshold checker, when average is 0
+
 0.16.1 (2019-03-01)
 -------------------
 
