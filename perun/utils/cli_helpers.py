@@ -178,7 +178,7 @@ def minor_version_list_callback(ctx, _, value):
         for minor_version in value:
             massaged_version = vcs.massage_parameter(minor_version)
             # If we should crawl all of the parents, we collect them
-            if ctx.params['crawl_parents']:
+            if ctx.params.get('crawl_parents', False):
                 minors.extend(vcs.walk_minor_versions(massaged_version))
             # Otherwise we retrieve the minor version info for the param
             else:

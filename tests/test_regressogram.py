@@ -12,7 +12,7 @@ from perun.postprocess.regressogram.run import postprocess
 from tests.test_regression_analysis import profile_filter, generate_models_by_uid, compare_results
 
 
-def test_buckets_method(postprocess_profiles):
+def test_regressogram_method(postprocess_profiles):
     """
     Test the regressogram method with user choice of buckets width.
 

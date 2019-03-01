@@ -26,13 +26,11 @@ def postprocess(profile, **configuration):
     :param configuration: the perun and options context
     """
     # Perform the non-parametric analysis using the regressogram method
-    analysis = methods.compute(data_provider.data_provider_mapper(profile, **configuration), configuration)
-
-    # Store the results
-    profile = tools.add_models_to_profile(profile, analysis)
+    regressogram_models = methods.compute_regressogram(data_provider.data_provider_mapper(profile, **configuration),
+                                                      configuration)
 
     # Return the profile after the execution of regressogram method
-    return PostprocessStatus.OK, '', {'profile': profile}
+    return PostprocessStatus.OK, '', {'profile': tools.add_models_to_profile(profile, regressogram_models)}
 
 
 # TODO: The possibility of after postprocessing phase
@@ -88,7 +86,7 @@ def regressogram(profile, **kwargs):
             - **doane**: generalization of Sturges' formula, works better with non-gaussian data
             - **auto**: max of the Sturges' and 'fd' estimators, provides good all around performance
 
-        .. _Scipy: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
+        .. _SciPy: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
 
         For more details about these methods to estimate the optimal number of buckets or to view the
         code of these methods, you can visit SciPy_.

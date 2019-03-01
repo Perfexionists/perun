@@ -6,6 +6,18 @@ HEAD
 
 **To be included in next release**
 
+0.16.1 (2019-03-01)
+-------------------
+
+`commit: 04cd6a2dc788f73d21c23554ff2ab8174af67dbd`
+
+**Add moving average postprocessor**
+
+  - add moving average postprocessor, other of the non-parametric analysis
+  - minor fixes in regressogram (refactor and documentation)
+  - add `perun fuzz` command which does a performance fuzzing
+  - remodel runner functions to generators
+
 0.16 (2019-02-16)
 -----------------
 

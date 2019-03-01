@@ -49,6 +49,7 @@ import click
 
 import perun.collect
 import perun.check.factory as check
+import perun.fuzz.factory as fuzz
 import perun.logic.commands as commands
 import perun.logic.runner as runner
 import perun.logic.pcs as pcs
@@ -888,6 +889,36 @@ def job(ctx, **kwargs):
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
     kwargs.update({'with_history': True})
     runner.run_single_job(**kwargs)
+
+
+@cli.command('fuzz')
+@click.option('--cmd', '-b', nargs=1, required=True,
+              help='The command which will be fuzzed.')
+@click.option('--args', '-a', nargs=1, required=False, default='',
+              help='Arguments for the fuzzed command.')
+@click.option('--initial-workload', '-w', nargs=1, required=True, multiple=True,
+              help='Initial sample of workloads, that will be source of the fuzzing.')
+@click.option('--collector', '-c', nargs=1, default='time',
+              type=click.Choice(utils.get_supported_module_names('collect')),
+              help='Collector that will be used to collect performance data.')
+@click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
+              callback=cli_helpers.yaml_param_callback,
+              help='Additional parameters for the <collector> read from the'
+                   ' file in YAML format')
+@click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
+              type=click.Choice(utils.get_supported_module_names('postprocess')),
+              help='After each collection of data will run <postprocessor> to '
+                   'postprocess the collected resources.')
+@click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
+              callback=cli_helpers.yaml_param_callback,
+              help='Additional parameters for the <postprocessor> read from the'
+                   ' file in YAML format')
+@click.option('--minor-version', '-m', 'minor_version_list', nargs=1,
+              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
+              help='Specifies the head minor version, for which the fuzzing will be performed.')
+def fuzz_cmd(**kwargs):
+    """Performs fuzzing for the specified command according to the initial sample of workload."""
+    fuzz.run_fuzzing_for_command(**kwargs)
 
 
 @cli.group('check')
