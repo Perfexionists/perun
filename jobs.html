@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Automating Runs &#8212; Perun 0.16 documentation</title>
+    <title>Automating Runs &#8212; Perun 0.16.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16',
+        VERSION:     '0.16.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -286,26 +286,26 @@ profiling jobs and should reduce the profiling to a single <code class="docutils
 config and the specification of job matrix is based on <a class="reference external" href="http://yaml.org/">Yaml</a> format.</p>
 <p>Full example of one job matrix is as follows:</p>
 <blockquote>
-<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">cmds</span><span class="p p-Indicator">:</span>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">cmds</span><span class="p">:</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">perun</span>
 
-<span class="l l-Scalar l-Scalar-Plain">args</span><span class="p p-Indicator">:</span>
+<span class="nt">args</span><span class="p">:</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">log</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">log --short</span>
 
-<span class="l l-Scalar l-Scalar-Plain">workloads</span><span class="p p-Indicator">:</span>
+<span class="nt">workloads</span><span class="p">:</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">HEAD</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">HEAD~1</span>
 
-<span class="l l-Scalar l-Scalar-Plain">collectors</span><span class="p p-Indicator">:</span>
-   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">time</span>
+<span class="nt">collectors</span><span class="p">:</span>
+   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">time</span>
 
-<span class="l l-Scalar l-Scalar-Plain">postprocessors</span><span class="p p-Indicator">:</span>
-   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">normalizer</span>
-   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
-     <span class="l l-Scalar l-Scalar-Plain">params</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">full</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">steps</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="nt">postprocessors</span><span class="p">:</span>
+   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">normalizer</span>
+   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
+     <span class="nt">params</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">full</span>
+      <span class="p p-Indicator">-</span> <span class="nt">steps</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -328,7 +328,7 @@ can be set in the configuration:</p>
 <dd><p>List of names of commands which will be profiled by set of collectors. The commands should
 preferably not contain any parameters or workloads, since they can be set by different
 configuration resulting into finer specification of configuration.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">cmds</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">cmds</span><span class="p">:</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">perun</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ls</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">./myclientbinary</span>
@@ -343,7 +343,7 @@ configuration resulting into finer specification of configuration.</p>
 <dd><p>List of arguments (or parameters) which are supplied to profiled commands. It is advised to
 differentiate between arguments/parameters and workloads. While their semantics may seem close,
 separation of this concern results into more verbose performance history</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">args</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">args</span><span class="p">:</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">log</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">log --short</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">-al</span>
@@ -357,7 +357,7 @@ separation of this concern results into more verbose performance history</p>
 <code class="descname">workloads</code><a class="headerlink" href="#matrixunit-workloads" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of workloads which are supplied to profiled commands. Workloads represents program inputs
 and supplied files.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">workloads</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">workloads</span><span class="p">:</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">HEAD</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">HEAD~1</span>
    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">/usr/share</span>
@@ -378,11 +378,11 @@ by commands, arguments and workloads. Each collector is specified by its <cite>n
 <cite>params</cite> which corresponds to the dictionary of (key, value) parameters. Note that the same
 collector can be specified more than once (for cases, when one needs different collector
 configurations). For list of supported collectors refer to <a class="reference internal" href="collectors.html#collectors-list"><span class="std std-ref">Supported Collectors</span></a>.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">collectors</span><span class="p p-Indicator">:</span>
-   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">memory</span>
-     <span class="l l-Scalar l-Scalar-Plain">params</span><span class="p p-Indicator">:</span>
-         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">sampling</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
-   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">time</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">collectors</span><span class="p">:</span>
+   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">memory</span>
+     <span class="nt">params</span><span class="p">:</span>
+         <span class="p p-Indicator">-</span> <span class="nt">sampling</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">time</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -394,12 +394,12 @@ configurations). For list of supported collectors refer to <a class="reference i
 Each postprocessor is specified by its <cite>name</cite> and additional <cite>params</cite> which corresponds to the
 dictionary of (key, value) parameters. Note that the same postprocessor can be specified more
 than just once. For list of supported postprocessors refer to <a class="reference internal" href="postprocessors.html#postprocessors-list"><span class="std std-ref">Supported Postprocessors</span></a>.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">postprocessors</span><span class="p p-Indicator">:</span>
-   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">normalizer</span>
-   <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">name</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
-     <span class="l l-Scalar l-Scalar-Plain">params</span><span class="p p-Indicator">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">full</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">steps</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">postprocessors</span><span class="p">:</span>
+   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">normalizer</span>
+   <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
+     <span class="nt">params</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">full</span>
+      <span class="p p-Indicator">-</span> <span class="nt">steps</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -450,13 +450,13 @@ value by <code class="docutils literal"><span class="pre">step</span></code> (by
 <p>The following shows the example of integer generator, which continuously generates workloads
 10, 20, …, 90, 100:</p>
 <blockquote>
-<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer_generator</span>
-      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
-      <span class="l l-Scalar l-Scalar-Plain">min_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
-      <span class="l l-Scalar l-Scalar-Plain">max_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
-      <span class="l l-Scalar l-Scalar-Plain">step</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">generators</span><span class="p">:</span>
+  <span class="nt">workload</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer_generator</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+      <span class="nt">min_range</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="nt">max_range</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+      <span class="nt">step</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -478,13 +478,13 @@ the <code class="docutils literal"><span class="pre">max_len</span></code> (incl
 <p>The following shows the example of integer generator, which continuously generates workload strings
 of length 1, 2, …, 9, 10:</p>
 <blockquote>
-<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string_generator</span>
-      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
-      <span class="l l-Scalar l-Scalar-Plain">min_len</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
-      <span class="l l-Scalar l-Scalar-Plain">max_len</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
-      <span class="l l-Scalar l-Scalar-Plain">step_len</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">generators</span><span class="p">:</span>
+  <span class="nt">workload</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string_generator</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">string</span>
+      <span class="nt">min_len</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+      <span class="nt">max_len</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="nt">step_len</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -508,13 +508,13 @@ from the interval (<code class="docutils literal"><span class="pre">min_lines</s
 <p>The following shows the example of integer generator, which continuously generates workloads
 10, 20, …, 90, 100:</p>
 <blockquote>
-<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">textfile_generator</span>
-      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">textfile</span>
-      <span class="l l-Scalar l-Scalar-Plain">min_lines</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
-      <span class="l l-Scalar l-Scalar-Plain">max_lines</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
-      <span class="l l-Scalar l-Scalar-Plain">step</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">generators</span><span class="p">:</span>
+  <span class="nt">workload</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">textfile_generator</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">textfile</span>
+      <span class="nt">min_lines</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="nt">max_lines</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+      <span class="nt">step</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -602,7 +602,7 @@ be of maximal length (<code class="docutils literal"><span class="pre">max_chars
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/jobs.rst.txt"

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun Configuration files &#8212; Perun 0.16 documentation</title>
+    <title>Perun Configuration files &#8212; Perun 0.16.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16',
+        VERSION:     '0.16.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -265,8 +265,8 @@ mainly meant to execute compiling of the binaries and other stuff to ease the de
 that these commands are executed without shell, but any risks of commands executed by these
 commands fall entirely into the user hands and we have no responsibility for them.</p>
 <p>All of these list are as follows:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">execute</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">pre_run</span><span class="p p-Indicator">:</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">execute</span><span class="p">:</span>
+  <span class="nt">pre_run</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Running the code again&quot;</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">make</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">make install</span>
@@ -372,12 +372,12 @@ strategies.</p>
 <p>The following configuration will apply the <a class="reference internal" href="degradation.html#degradation-method-bmoe"><span class="std std-ref">Best Model Order Equality</span></a> method for all of the
 <cite>mixed</cite> types of the profiles, which were postprocessed using the
 <a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a> and <a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a> otherwise.</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">degradation</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">strategies</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mixed</span>
-      <span class="l l-Scalar l-Scalar-Plain">postprocessor</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
-      <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">aat</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">degradation</span><span class="p">:</span>
+  <span class="nt">strategies</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mixed</span>
+      <span class="nt">postprocessor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
+      <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
+    <span class="p p-Indicator">-</span> <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aat</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -390,16 +390,16 @@ strategies.</p>
 Integer generator, that generates the range of values). Further you can specify rest of the
 params, where each workload generator has different parameters. The specification can be as
 follows:</p>
-<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">generators</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">workload</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">gen1</span>
-      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
-      <span class="l l-Scalar l-Scalar-Plain">profile_for_each_workload</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">id</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">gen2</span>
-      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
-      <span class="l l-Scalar l-Scalar-Plain">min_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
-      <span class="l l-Scalar l-Scalar-Plain">max_range</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
-      <span class="l l-Scalar l-Scalar-Plain">step</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+<div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">generators</span><span class="p">:</span>
+  <span class="nt">workload</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gen1</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+      <span class="nt">profile_for_each_workload</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+    <span class="p p-Indicator">-</span> <span class="nt">id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gen2</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">integer</span>
+      <span class="nt">min_range</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+      <span class="nt">max_range</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+      <span class="nt">step</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
 </pre></div>
 </div>
 <p>This specifies two integer workload generators <code class="docutils literal"><span class="pre">gen1</span></code> and <code class="docutils literal"><span class="pre">gen2</span></code>. The first uses the
@@ -736,7 +736,7 @@ specified in the nearest perun configuration..</p>
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/config.rst.txt"

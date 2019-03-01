@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Detecting Performance Changes &#8212; Perun 0.16 documentation</title>
+    <title>Detecting Performance Changes &#8212; Perun 0.16.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16',
+        VERSION:     '0.16.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -264,16 +264,16 @@ setting the <a class="reference internal" href="config.html#confkey-degradation.
 <p>The example of configuration snippet that sets rules and strategies for one project can be as
 follows:</p>
 <blockquote>
-<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">degradation</span><span class="p p-Indicator">:</span>
-  <span class="l l-Scalar l-Scalar-Plain">apply</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">first</span>
-  <span class="l l-Scalar l-Scalar-Plain">strategies</span><span class="p p-Indicator">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mixed</span>
-      <span class="l l-Scalar l-Scalar-Plain">postprocessor</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
-      <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">cmd</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">mybin</span>
-      <span class="l l-Scalar l-Scalar-Plain">type</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">memory</span>
-      <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">method</span><span class="p p-Indicator">:</span> <span class="l l-Scalar l-Scalar-Plain">aat</span>
+<div><div class="highlight-yaml"><div class="highlight"><pre><span></span><span class="nt">degradation</span><span class="p">:</span>
+  <span class="nt">apply</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">first</span>
+  <span class="nt">strategies</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mixed</span>
+      <span class="nt">postprocessor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">regression_analysis</span>
+      <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
+    <span class="p p-Indicator">-</span> <span class="nt">cmd</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mybin</span>
+      <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">memory</span>
+      <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bmoe</span>
+    <span class="p p-Indicator">-</span> <span class="nt">method</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aat</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -585,7 +585,7 @@ is asked for confirmation by user.</li>
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/degradation.rst.txt"

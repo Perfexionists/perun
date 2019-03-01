@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.16 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.16.1 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16',
+        VERSION:     '0.16.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -144,6 +144,12 @@ following:</p>
 <dt>
 <code class="descname">config</code></dt>
 <dd><p>Manages the stored local and shared…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">fuzz</code></dt>
+<dd><p>Performs fuzzing for the specified command…</p>
 </dd></dl>
 
 <dl class="object">
@@ -1610,6 +1616,265 @@ to 110 to this cluster).</p>
 </dd></dl>
 
 </div>
+<div class="section" id="perun-postprocessby-regressogram">
+<h4>perun postprocessby regressogram<a class="headerlink" href="#perun-postprocessby-regressogram" title="Permalink to this headline">¶</a></h4>
+<p>Execution of the interleaving of profiled resources by <strong>regressogram</strong> models.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite></li>
+<li><strong>Dependencies</strong>: <cite>none</cite></li>
+</ul>
+</dd>
+</dl>
+<p>Regressogram belongs to the simplest non-parametric methods and its properties are
+the following:</p>
+<blockquote>
+<div><p><strong>Regressogram</strong>: can be described such as step function (i.e. constant function
+by parts). Regressogram uses the same basic idea as a histogram for density estimate.
+This idea is in dividing the set of values of the x-coordinates (<cite>&lt;per_key&gt;</cite>) into
+intervals and the estimate of the point in concrete interval takes the mean/median of the
+y-coordinates (<cite>&lt;of_resource_key&gt;</cite>), respectively of its value on this sub-interval.
+We currently use the <cite>coefficient of determination</cite> (<span class="math">\(R^2\)</span>) to measure the fitness of
+regressogram. The fitness of estimation of regressogram model depends primarily on the number
+of buckets into which the interval will be divided. The user can choose number of buckets
+manually (<cite>&lt;bucket_window&gt;</cite>) or use one of the following methods to estimate the optimal
+number of buckets (<cite>&lt;bucket_method&gt;</cite>):</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>sqrt</strong>: square root (of data size) estimator, used for its speed and simplicity</li>
+<li><strong>rice</strong>: does not take variability into account, only data size and commonly overestimates</li>
+<li><strong>scott</strong>: takes into account data variability and data size, less robust estimator</li>
+<li><strong>stone</strong>: based on leave-one-out cross validation estimate of the integrated squared error</li>
+<li><strong>fd</strong>: robust, takes into account data variability and data size, resilient to outliers</li>
+<li><strong>sturges</strong>: only accounts for data size, underestimates for large non-gaussian data</li>
+<li><strong>doane</strong>: generalization of Sturges’ formula, works better with non-gaussian data</li>
+<li><strong>auto</strong>: max of the Sturges’ and ‘fd’ estimators, provides good all around performance</li>
+</ul>
+</div></blockquote>
+<p>For more details about these methods to estimate the optimal number of buckets or to view the
+code of these methods, you can visit <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges">SciPy</a>.</p>
+</div></blockquote>
+<p>For more details about this approach of non-parametric analysis refer to <a class="reference internal" href="postprocessors.html#postprocessors-regressogram"><span class="std std-ref">Regressogram method</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby regressogram <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regressogram-bn">
+<code class="descname">-bn</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bucket_number</code><code class="descclassname"> &lt;bucket_number&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-bn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restricts the number of buckets to which will be placed the values of the selected statistics.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regressogram-bm">
+<code class="descname">-bm</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bucket_method</code><code class="descclassname"> &lt;bucket_method&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-bm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the method to estimate the optimal number of buckets.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regressogram-sf">
+<code class="descname">-sf</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--statistic_function</code><code class="descclassname"> &lt;statistic_function&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-sf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will use the &lt;statistic_function&gt; to compute the values for points within each bucket of regressogram.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regressogram-p">
+<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-regressogram-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-moving-average">
+<h4>perun postprocessby moving_average<a class="headerlink" href="#perun-postprocessby-moving-average" title="Permalink to this headline">¶</a></h4>
+<p>Execution of the interleaving of profiled resources by <em>moving average</em> models.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite></li>
+<li><strong>Dependencies</strong>: <cite>none</cite></li>
+</ul>
+</dd>
+</dl>
+<p>Moving average methods are the natural generalizations of regressogram method. This
+method uses the local averages/medians of y-coordinates (<cite>&lt;of_resource_key&gt;</cite>), but
+the estimate in the x-point (<cite>&lt;per_key&gt;</cite>) is based on the centered surroundings of
+this points, more precisely:</p>
+<blockquote>
+<div><strong>Moving Average</strong>: is a widely used estimator in the technical analysis, that helps
+smooth the dataset by filtering out the ‘noise’. Among the basic properties of this
+methods belongs the ability to reduce the effect of temporary variations in data, better
+improvement of the fitness of data to a line, so called smoothing, to show the data’s
+trend more clearly and highlight any value below or above the trend. The most important
+task with this type of non-parametric approach is the choice of the <cite>&lt;window-width&gt;</cite>.
+If the user does not choose it, we try approximate this value by using the value of
+<cite>coefficient of determination</cite> (<span class="math">\(R^2\)</span>). At the begin of the analysis is set the
+initial value of window width and then follows the interleaving of the current dataset,
+which runs until the value of <cite>coefficient of determination</cite> will not reach the required
+level. By this way is guaranteed the desired smoothness of the resulting models. The two
+basic and commonly used <cite>&lt;moving-methods&gt;</cite> are the <strong>simple</strong> moving average (<strong>sma</strong>) and
+the <em>exponential</em> moving average (<strong>ema</strong>).</div></blockquote>
+<p>For more details about this approach of non-parametric analysis refer to <a class="reference internal" href="postprocessors.html#postprocessors-moving-average"><span class="std std-ref">Moving Average Methods</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby moving_average <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-mp">
+<code class="descname">-mp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--min_periods</code><code class="descclassname"> &lt;min_periods&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-mp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the minimum number of observations in window required to have a value. If the number of possible observations smaller then result is NaN.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-dp">
+<code class="descname">-dp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--depending-on</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-dp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source of independent variable.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model.</p>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">ema</code></dt>
+<dd><p><strong>Exponential Moving Average</strong> This method is…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">sma</code></dt>
+<dd><p><strong>Simple Moving Average</strong> In the most of…</p>
+</dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">smm</code></dt>
+<dd><p><strong>Simple Moving Median</strong> The second…</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-moving-average-sma">
+<h4>perun postprocessby moving_average sma<a class="headerlink" href="#perun-postprocessby-moving-average-sma" title="Permalink to this headline">¶</a></h4>
+<p><strong>Simple Moving Average</strong></p>
+<p>In the most of cases, it is an unweighted Moving Average, this means that the each x-coordinate
+in the data set (profiled resources) has equal importance and is weighted equally. Then the <cite>mean</cite>
+is computed from the previous <cite>n data</cite> (<cite>&lt;no-center&gt;</cite>), where the <cite>n</cite> marks <cite>&lt;window-width&gt;</cite>.
+However, in science and engineering the mean is normally taken from an equal number of data on
+either side of a central value (<cite>&lt;center&gt;</cite>). This ensures that variations in the mean are aligned
+with the variations in the mean are aligned with variations in the data rather than being shifted
+in the x-axis direction. Since the window at the boundaries of the interval does not contain enough
+count of points usually, it is necessary to specify the value of <cite>&lt;min-periods&gt;</cite> to avoid the NaN
+result. The role of the weighted function in this approach belongs to <cite>&lt;window-type&gt;</cite>, which represents
+the suite of the following window functions for filtering:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>boxcar</strong>: known as rectangular or Dirichlet window, is equivalent to no window at all: –</li>
+<li><strong>triang</strong>: standard triangular window: /            - <strong>blackman</strong>: formed by using three terms of a summation of cosines, minimal leakage, close to optimal</li>
+<li><strong>hamming</strong>: formed by using a raised cosine with non-zero endpoints, minimize the nearest side lobe</li>
+<li><strong>bartlett</strong>: similar to triangular, endpoints are at zero, processing of tapering data sets</li>
+<li><strong>parzen</strong>: can be regarded as a generalization of k-nearest neighbor techniques</li>
+<li><strong>bohman</strong>: convolution of two half-duration cosine lobes</li>
+<li><strong>blackmanharris</strong>: minimum in the sense that its maximum side lobes are minimized (symmetric 4-term)</li>
+<li><strong>nuttall</strong>: minimum 4-term Blackman-Harris window according to Nuttall (so called ‘Nuttall4c’)</li>
+<li><strong>barthann</strong>: has a main lobe at the origin and asymptotically decaying side lobes on both sides</li>
+<li><strong>kaiser</strong>: formed by using a Bessel function, needs beta value (set to 14 - good starting point)</li>
+</ul>
+<p>For more details about this window functions or for their visual view you can see <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/signal.windows.html#module-scipy.signal.windows">SciPyWindow</a>.</p>
+</div></blockquote>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby moving_average sma <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-sma-wt">
+<code class="descname">-wt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--window_type</code><code class="descclassname"> &lt;window_type&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-sma-wt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the window type, if not set then all points are evenly weighted.For further information about window types see the notes in the documentation.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-sma-center">
+<code class="descname">--center</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-center</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-sma-center" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to False, the result is set to the right edge of the window, else is result set to the center of the window</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-sma-ww">
+<code class="descname">-ww</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--window_width</code><code class="descclassname"> &lt;window_width&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-sma-ww" title="Permalink to this definition">¶</a></dt>
+<dd><p>Size of the moving window. This is a number of observations used for calculating the statistic. Each window will be a fixed size.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-moving-average-smm">
+<h4>perun postprocessby moving_average smm<a class="headerlink" href="#perun-postprocessby-moving-average-smm" title="Permalink to this headline">¶</a></h4>
+<p><strong>Simple Moving Median</strong></p>
+<p>The second representative of Simple Moving Average methods is the Simple Moving <strong>Median</strong>. For
+this method are applicable to the same rules like in the first described method, except for the
+option for choosing the window type, which do not make sense in this approach. The only difference
+between these two methods are the way of computation the values in the individual sub-intervals.
+Simple Moving <strong>Median</strong> is not based on the computation of average, but as the name suggests, it
+based on the <strong>median</strong>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby moving_average smm <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-smm-center">
+<code class="descname">--center</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-center</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-smm-center" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to False, the result is set to the right edge of the window, else is result set to the center of the window</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-smm-ww">
+<code class="descname">-ww</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--window_width</code><code class="descclassname"> &lt;window_width&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-smm-ww" title="Permalink to this definition">¶</a></dt>
+<dd><p>Size of the moving window. This is a number of observations used for calculating the statistic. Each window will be a fixed size.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-moving-average-ema">
+<h4>perun postprocessby moving_average ema<a class="headerlink" href="#perun-postprocessby-moving-average-ema" title="Permalink to this headline">¶</a></h4>
+<p><strong>Exponential Moving Average</strong></p>
+<p>This method is a type of moving average methods, also know as <strong>Exponential</strong> Weighted Moving Average,
+that places a greater weight and significance on the most recent data points. The weighting for each
+far x-coordinate decreases exponentially and never reaching zero. This approach of moving average reacts
+more significantly to recent changes than a <em>Simple</em> Moving Average, which applies an equal weight to
+all observations in the period. To calculate an EMA must be first computing the <strong>Simple</strong> Moving Average
+(SMA) over a particular sub-interval. In the next step must be calculated the multiplier for smoothing
+(weighting) the EMA, which depends on the selected formula, the following options are supported (<cite>&lt;decay&gt;</cite>):</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>com</strong>: specify decay in terms of center of mass: <span class="math">\({\alpha}\)</span> = 1 / (1 + com), for com &gt;= 0</li>
+<li><strong>span</strong>: specify decay in terms of span: <span class="math">\({\alpha}\)</span> = 2 / (span + 1), for span &gt;= 1</li>
+<li><strong>halflife</strong>: specify decay in terms of half-life, <span class="math">\({\alpha}\)</span> = 1 - exp(log(0.5) / halflife), for halflife &gt; 0</li>
+<li><strong>alpha</strong>: specify smoothing factor <span class="math">\({\alpha}\)</span> directly: 0 &lt; <span class="math">\({\alpha}\)</span> &lt;= 1</li>
+</ul>
+</div></blockquote>
+<p>The computed coefficient <span class="math">\({\alpha}\)</span> represents the degree of weighting decrease, a constant smoothing
+factor, The higher value of <span class="math">\({\alpha}\)</span> discounts older observations faster, the small value to the
+contrary. Finally, to calculate the current value of EMA is used the relevant formula. It is important
+do not confuse <strong>Exponential</strong> Moving Average with <strong>Simple</strong> Moving Average. An <strong>Exponential</strong> Moving
+Average behaves quite differently from the second mentioned method, because it is the function of
+weighting factor or length of the average.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby moving_average ema <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-moving-average-ema-d">
+<code class="descname">-d</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--decay</code><code class="descclassname"> &lt;decay&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-ema-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exactly one of “com”, “span”, “halflife”, “alpha” can be provided. Allowed values and relationship between the parameters are specified in the documentation (e.g. –decay=com 3).</p>
+</dd></dl>
+
+</div>
 </div>
 </div>
 <div class="section" id="show-commands">
@@ -2009,6 +2274,99 @@ heat mode aims at showing the bottlenecks of allocations.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="perun-show-scatter">
+<h4>perun show scatter<a class="headerlink" href="#perun-show-scatter" title="Permalink to this headline">¶</a></h4>
+<p>Interactive visualization of resources and models in scatter plot format.</p>
+<p>Scatter plot shows resources as points according to the given parameters.
+The plot interprets &lt;per&gt; and &lt;of&gt; as x, y coordinates for the points. The
+scatter plot also displays models located in the profile as a curves/lines.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite>.</li>
+<li><strong>Interpretation style</strong>: graphical</li>
+<li><strong>Visualization backend</strong>: <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a></li>
+</ul>
+</dd>
+</dl>
+<p>Features in progress:</p>
+<blockquote>
+<div><ul class="simple">
+<li>uid filters</li>
+<li>models filters</li>
+<li>multiple graphs interpretation</li>
+</ul>
+</div></blockquote>
+<p>Graphs are displayed using the <a class="reference external" href="https://bokeh.pydata.org/en/latest/">Bokeh</a> library and can be further customized
+by adding custom labels for axis, custom graph title and different graph
+width.</p>
+<p>The example output of the scatter is as follows:</p>
+<pre class="literal-block">
+                          &lt;graph_title&gt;
+                  `                         o
+                  -                        /
+                  `                       /o       ```````````````````
+                  -                     _/         `  o o = &lt;points&gt; `
+                  `                   _- o         `    _             `
+    &lt;of&gt;          -               __--o            `  _-  = &lt;models&gt; `
+                  `    _______--o- o               `                 `
+                  -    o  o  o                     ```````````````````
+                  `
+                  +````||````||````||````||````
+
+                              &lt;per&gt;
+</pre>
+<p>Refer to <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> for more thorough description and example of
+<cite>scatter</cite> interpretation possibilities. For more thorough explanation of
+regression analysis and models refer to
+<a class="reference internal" href="postprocessors.html#postprocessors-regression-analysis"><span class="std std-ref">Regression Analysis</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun show scatter <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-o">
+<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data source for the scatter plot, i.e. what will be displayed on Y axis.  [default: amount]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-p">
+<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keys that will be displayed on X axis of the scatter plot.  [default: structure-unit-size]</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--filename</code><code class="descclassname"> &lt;filename&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs the graph to the file specified by filename.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-xl">
+<code class="descname">-xl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--x-axis-label</code><code class="descclassname"> &lt;x_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-xl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label on the X axis of the scatter plot.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-yl">
+<code class="descname">-yl</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--y-axis-label</code><code class="descclassname"> &lt;y_axis_label&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-yl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label on the Y axis of the scatter plot.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-gt">
+<code class="descname">-gt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--graph-title</code><code class="descclassname"> &lt;graph_title&gt;</code><a class="headerlink" href="#cmdoption-perun-show-scatter-gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Title of the scatter plot.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-show-scatter-v">
+<code class="descname">-v</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--view-in-browser</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-show-scatter-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will show the graph in browser.</p>
+</dd></dl>
+
+</div>
 </div>
 </div>
 <div class="section" id="utility-commands">
@@ -2138,6 +2496,11 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
 <li><a class="reference internal" href="#perun-postprocessby-normalizer">perun postprocessby normalizer</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-regression-analysis">perun postprocessby regression_analysis</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-clusterizer">perun postprocessby clusterizer</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-regressogram">perun postprocessby regressogram</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-moving-average">perun postprocessby moving_average</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-moving-average-sma">perun postprocessby moving_average sma</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-moving-average-smm">perun postprocessby moving_average smm</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-moving-average-ema">perun postprocessby moving_average ema</a></li>
 </ul>
 </li>
 </ul>
@@ -2149,6 +2512,7 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
 <li><a class="reference internal" href="#perun-show-flamegraph">perun show flamegraph</a></li>
 <li><a class="reference internal" href="#perun-show-flow">perun show flow</a></li>
 <li><a class="reference internal" href="#perun-show-heapmap">perun show heapmap</a></li>
+<li><a class="reference internal" href="#perun-show-scatter">perun show scatter</a></li>
 </ul>
 </li>
 </ul>
@@ -2196,7 +2560,7 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/cli.rst.txt"
