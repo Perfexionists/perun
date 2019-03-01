@@ -10,7 +10,7 @@ Postprocessors Overview
 Supported Postprocessors
 ------------------------
 
-Perun's tool suite currently contains the following four postprocessors:
+Perun's tool suite currently contains the following five postprocessors:
 
   1. :ref:`postprocessors-normalizer` scales the resources of the given profile to the
      interval (0, 1). The main intuition behind the usage of this postprocessor is to be able to
@@ -31,8 +31,17 @@ Perun's tool suite currently contains the following four postprocessors:
      approach, is the simplest non-parametric estimator. This method trying to fit models through
      data by dividing the interval into N equal-width bucket and the resultant value in each bucket
      is equal to result of selected statistical aggregation function (mean/median) within the values
-     in the relevant bucket. In short, we can describe the regressogram as a render_step_function function
+     in the relevant bucket. In short, we can describe the regressogram as a step function
      (i.e. constant function by parts).
+
+  5. :ref:`postprocessors-moving-average` (authored by **Simon Stupinsky**) also know as the rolling
+     average or running average, is the statistical analysis belongs to non-parametric approaches.
+     This method is based on the analysis of the given data points by creating a series of values based
+     on the specific aggregation function, most often average or possibly median. The resulting values
+     are derived from the different subsets of the full data set. We currently support the two main
+     methods of this approach and that the **Simple** Moving Average and the **Exponential** Moving
+     Average. In the first method is an available selection from two aggregation function: **mean**
+     or **median**.
 
 All of the listed postprocessors can be run from command line. For more information about command
 line interface for individual postprocessors refer to :ref:`cli-postprocess-units-ref`.
@@ -197,8 +206,80 @@ interpretation of the models (either by :ref:`views-scatter` or:ref:`degradation
 .. image:: /../examples/exp_data_regressogram.*
 
 The :ref:`views-scatter` above shows the interpreted model, computed using the **regressogram**
-method. In the picture, one can see that the depedency of running time based on the structural
+method. In the picture, one can see that the dependency of running time based on the structural
 size is best fitted by `exponential` models.
+
+
+.. _postprocessors-moving-average:
+
+Moving Average Methods
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.postprocess.moving_average
+
+.. _postprocessors-moving-average-cli:
+
+Command Line Interface
+""""""""""""""""""""""
+
+.. click:: perun.postprocess.moving_average.run:moving_average
+   :prog: perun postprocessby moving_average
+
+.. click:: perun.postprocess.moving_average.run:simple_moving_average
+   :prog: perun postprocessby moving_average sma
+
+.. click:: perun.postprocess.moving_average.run:simple_moving_median
+   :prog: perun postprocessby moving_average smm
+
+.. click:: perun.postprocess.moving_average.run:exponential_moving_average
+   :prog: perun postprocessby moving_average ema
+
+.. _postprocessors-moving-average-examples:
+
+Examples
+""""""""
+
+    .. code-block:: json
+
+        {
+            "bucket_stats": [
+              0.0,
+              3.0,
+              24.0,
+              81.0,
+              192.0,
+              375.0
+            ],
+            "per_key": "structure-unit-size",
+            "uid": "pow::test3",
+            "x_interval_end": 5,
+            "r_square": 1.0,
+            "method": "moving_average",
+            "moving_method": "sma",
+            "x_interval_start": 0,
+            "window_width": 1
+        }
+
+The example above shows an example of profile post-processed by moving average regressogram (note
+that this in only an excerpt of the whole profile). Each such model of moving average model shows
+the computed values, that are represented by *bucket_stats*. The important role has value *moving_method*,
+that represents the method, which was used to create this model. In this field may be one from the
+following shortcuts *SMA*, *SMM*, *EMA*, which represents above described methods. The value *r_square*
+serves to assess the suitability of the model and represents the *coefficient of determination*
+(:math:`R^2`). Another significant value in the context of the information about the moving average
+models is the *window_width*. This value represents the width of the window, that was used at creating
+this model. Since each model can be used in the further interpretation (either by :ref:`views-scatter`
+or :ref:`degradation-method-aat`), another values have auxiliary character and serves for a different
+purposes at its interpretation. Additional values that contain the information about postprocess parameters
+can be found in the whole profile, specifically in the part about used post-processors.
+
+
+.. image:: /../examples/exp_data_ema.*
+
+The :ref:`views-scatter` above shows the interpreted model, computed using the **exponential moving average**
+method, running with default values of parameters. In the picture, one can see that the dependency of running
+time based on the structural size is best fitted by `exponential` models.
+
 
 .. _postprocessors-custom:
 

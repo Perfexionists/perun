@@ -107,6 +107,21 @@ Postprocess units
 .. click:: perun.postprocess.clusterizer.run:clusterizer
    :prog: perun postprocessby clusterizer
 
+.. click:: perun.postprocess.regressogram.run:regressogram
+   :prog: perun postprocessby regressogram
+
+.. click:: perun.postprocess.moving_average.run:moving_average
+   :prog: perun postprocessby moving_average
+
+.. click:: perun.postprocess.moving_average.run:simple_moving_average
+   :prog: perun postprocessby moving_average sma
+
+.. click:: perun.postprocess.moving_average.run:simple_moving_median
+   :prog: perun postprocessby moving_average smm
+
+.. click:: perun.postprocess.moving_average.run:exponential_moving_average
+   :prog: perun postprocessby moving_average ema
+
 Show Commands
 -------------
 

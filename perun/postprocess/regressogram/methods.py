@@ -21,7 +21,7 @@ def get_supported_methods():
     return list(_BUCKET_SELECTORS.keys())
 
 
-def compute(data_gen, configuration):
+def compute_regressogram(data_gen, configuration):
     """
     The regressogram wrapper to execute the analysis on the individual chunks of resources.
 
@@ -62,7 +62,7 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
     method to calculate the optimal bucket width and consequently the number of buckets.
 
     :param list x_pts: the list of x points coordinates
-    :param list y_pts: the list of x points coordinates
+    :param list y_pts: the list of y points coordinates
     :param str statistic_function: the statistic_function to compute
     :param str/int buckets: the number of buckets to calculate or the name of computational method
     :return dict: the output dictionary with result of analysis

@@ -100,6 +100,12 @@ def test_cli(pcs_full):
     assert result.exit_code == 0
 
 
+def run_non_param_test(runner, test_params, expected_exit_code, expected_output):
+    result = runner.invoke(cli.postprocessby, test_params)
+    assert result.exit_code == expected_exit_code
+    assert expected_output in result.output
+
+
 def test_regressogram_incorrect(pcs_full):
     """
     Test various failure scenarios for regressogram cli.
@@ -139,9 +145,7 @@ def test_regressogram_incorrect(pcs_full):
     regressogram_params = ['1@i', 'regressogram']
     # Executing the testing
     for incorrect_test in incorrect_tests:
-        result = runner.invoke(cli.postprocessby, regressogram_params + incorrect_test['params'])
-        assert result.exit_code == 2
-        assert incorrect_test['output'] in result.output
+        run_non_param_test(runner, regressogram_params + incorrect_test['params'], 2, incorrect_test['output'])
 
 
 def test_regressogram_correct(pcs_full):
@@ -160,7 +164,7 @@ def test_regressogram_correct(pcs_full):
 
     correct_tests = [
         # Test the help printout first
-        {'params': [cprof_idx, 'regressogram', '--help']},
+        {'params': ['--help'], 'output': 'Usage'},
         # Test default values of parameters (buckets, statistic_function)
         {'params': []},
         # Test first acceptable value for statistic_function parameter (mean)
@@ -193,9 +197,229 @@ def test_regressogram_correct(pcs_full):
     regressogram_params = [cprof_idx, 'regressogram']
     # Performing tests
     for idx, correct_test in enumerate(correct_tests):
-        result = runner.invoke(cli.postprocessby, regressogram_params + correct_test['params'])
-        assert result.exit_code == 0
-        assert 'Usage' if idx == 0 else 'Successfully postprocessed' in result.output
+        run_non_param_test(runner, regressogram_params + correct_test['params'], 0,
+                           correct_test.get('output', 'Successfully postprocessed'))
+
+
+def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_idx):
+    def call_test_runner(params, test_sample):
+        run_non_param_test(runner, params, exit_code, test_sample.get('output', 'Successfully postprocessed'))
+
+    # Set stable parameters at all tests
+    moving_average_params = [cprof_idx, 'moving_average']
+    # Set the supported methods at moving average postprocessor
+    moving_average_methods = {0: ['sma'], 1: ['smm'], 2: ['ema']}
+    # Executing the testing
+    for idx, test in enumerate(tests_set):
+        # tests moving average cli commands
+        if idx < tests_edge[0]:
+            call_test_runner(moving_average_params + test['params'], test)
+        # test common options for SMA command and SMM command
+        elif idx < tests_edge[1]:
+            for n in range(0, len(moving_average_methods) - 1):
+                call_test_runner(moving_average_params + moving_average_methods[n] + test['params'], test)
+        # test individual options for Simple Moving Average command: SMA
+        elif idx < tests_edge[2]:
+            call_test_runner(moving_average_params + moving_average_methods[0] + test['params'], test)
+        # test individual options for Exponential Moving Average command: EMA
+        elif idx < tests_edge[3]:
+            call_test_runner(moving_average_params + moving_average_methods[2] + test['params'], test)
+        # test complex combinations of options and commands
+        elif idx < tests_edge[4]:
+            call_test_runner(moving_average_params + test['params'], test)
+
+
+def test_moving_average_incorrect(pcs_full):
+    """
+    Test various failure scenarios for moving average cli.
+
+    Expecting no exceptions, all tests should end with status code 2.
+    """
+    incorrect_tests = [
+        # TESTS MOVING AVERAGE COMMAND AND OPTIONS
+        # 1. Test non-existing argument
+        {'params': ['--abcd'], 'output': 'no such option: --abcd'},
+        # 2. Test non-existing command
+        {'params': ['cma'], 'output': 'No such command "cma"'},
+        # 3. Test non-existing argument
+        {'params': ['-b'], 'output': 'no such option: -b'},
+        # 4. Test malformed min_periods argument
+        {'params': ['--min_period'], 'output': 'no such option: --min_period'},
+        # 5. Test missing min_period value
+        {'params': ['-mp'], 'output': '-mp option requires an argument'},
+        # 6. Test invalid range min_periods value
+        {'params': ['--min_periods', 0], 'output': 'Invalid value for "--min_periods"'},
+        # 7. Test invalid value type min_periods value
+        {'params': ['-mp', 'A'], 'output': 'Invalid value for "--min_periods"'},
+        # 8. Test malformed per_key argument
+        {'params': ['--dependings-on'], 'output': 'no such option: --dependings-on'},
+        # 9. Test missing per_key value
+        {'params': ['-dp'], 'output': '-dp option requires an argument'},
+        # 10. Test invalid value per_key arguments
+        {'params': ['-dp', 'unknown'], 'output': 'Invalid value for "--depending-on"'},
+        # 11. Test malformed of_key argument
+        {'params': ['--off'], 'output': 'no such option: --off'},
+        # 12. Test missing of_key value
+        {'params': ['--of'], 'output': '-of option requires an argument'},
+        # 13. Test invalid value of_key arguments
+        {'params': ['-o', 'unknown'], 'output': 'Invalid value for "--of"'},
+
+        # TESTS SIMPLE MOVING AVERAGE COMMAND AND SIMPLE MOVING MEDIAN COMMAND
+        # 14. Test malformed window-width argument
+        {'params': ['--window_widh'], 'output': 'no such option: --window_widh'},
+        # 15. Test missing window-width value
+        {'params': ['-ww'], 'output': '-ww option requires an argument'},
+        # 16. Test invalid range window-width argument
+        {'params': ['-ww', -1], 'output': 'Invalid value for "--window_width"'},
+        # 17. Test invalid value type window-width argument
+        {'params': ['--window_width', 0.5], 'output': 'Invalid value for "--window_width"'},
+        # 18. Test malformed center argument
+        {'params': ['--centers'], 'output': 'no such option: --centers'},
+        # 19. Test malformed no-center argument
+        {'params': ['--mo-center'], 'output': 'no such option: --mo-center'},
+        # 20. Test value for center argument
+        {'params': ['--center', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        # 21. Test value for no-center argument
+        {'params': ['--no-center', 'False'], 'output': 'Got unexpected extra argument (False)'},
+
+        # TESTS SIMPLE MOVING AVERAGE COMMAND
+        # 22. Test malformed window-type argument
+        {'params': ['--windov_type'], 'output': 'no such option: --windov_type'},
+        # 23. Test missing window-type value
+        {'params': ['--window_type'], 'output': '--window_type option requires an argument'},
+        # 24. Test invalid range window-type argument
+        {'params': ['-wt', "boxcars"], 'output': 'Invalid value for "--window_type"'},
+
+        # TESTS EXPONENTIAL MOVING AVERAGE COMMAND
+        # 25. Test malformed decay argument
+        {'params': ['--decays'], 'output': 'no such option: --decays'},
+        # 26. Test missing decay value
+        {'params': ['-d'], 'output': '-d option requires 2 arguments'},
+        # 27. Test invalid type of first value in decay argument
+        {'params': ['--decay', 'spam', 3], 'output': 'Invalid value for "--decay"'},
+        # 28. Test invalid type of second value in decay argument
+        {'params': ['--decay', 'span', "A"], 'output': 'Invalid value for "--decay"'},
+        # 29. Test invalid range for `com` value in decay argument
+        {'params': ['--decay', 'com', -1], 'output': ' Invalid value for com'},
+        # 30. Test invalid range for `span` value in decay argument
+        {'params': ['--decay', 'span', 0], 'output': ' Invalid value for span'},
+        # 31. Test invalid range for `halflife` value in decay argument
+        {'params': ['--decay', 'halflife', 0], 'output': 'Invalid value for halflife'},
+        # 32. Test invalid range for `com` value in decay argument
+        {'params': ['--decay', 'alpha', 0], 'output': ' Invalid value for alpha'},
+    ]
+    # edge of test groups for different commands group or individual commands
+    tests_edge = [13, 21, 24, 32]
+
+    # Instantiate the runner first
+    runner = CliRunner()
+
+    result = runner.invoke(cli.status, [])
+    match = re.search(r'([0-9]+@i).*mixed', result.output)
+    assert match
+    cprof_idx = match.groups(1)[0]
+
+    # Perform the testing
+    moving_average_runner_test(runner, incorrect_tests, tests_edge, 2, cprof_idx)
+
+
+def test_moving_average_correct(pcs_full):
+    """
+    Test correct usages of the moving average cli.
+
+    Expecting no exceptions and errors, all tests should end with status code 0.
+    """
+    correct_tests = [
+        # TESTS MOVING AVERAGE COMMAND AND OPTIONS
+        # 1. Test the help printout first
+        {'params': ['--help'], 'output': 'Usage'},
+        # 2. Test default command
+        {'params': []},
+        # 3. Test the help printout firsts
+        {'params': ['--help'], 'output': 'Usage'},
+        # 4. Test default value of parameters
+        {'params': []},
+        # 5. Test the value of min_periods parameter
+        {'params': ['--min_periods', 1]},
+        # 6. Test the value of per_key parameter
+        {'params': ['--depending-on', 'amount']},
+        # 7. Test the value of of_key parameter
+        {'params': ['-o', 'structure-unit-size']},
+
+        # TESTS SIMPLE MOVING AVERAGE COMMAND AND SIMPLE MOVING MEDIAN COMMAND
+        # 8. Test the value of window_width_parameter
+        {'params': ['--window_width', 10]},
+        # 9. Test center parameter
+        {'params': ['--center']},
+        # 10. Test no-center parameter
+        {'params': ['--no-center']},
+
+        # TESTS SIMPLE MOVING AVERAGE COMMAND
+        # 11. Test `boxcar` as value for window-type parameter
+        {'params': ['--window_type', 'boxcar']},
+        # 12. Test `triang` as value for window-type parameter
+        {'params': ['-wt', 'triang']},
+        # 13. Test `blackman` as value for window-type parameter
+        {'params': ['-wt', 'blackman']},
+        # 14. Test `hamming` as value for window-type parameter
+        {'params': ['--window_type', 'hamming']},
+        # 15. Test `bartlett` as value for window-type parameter
+        {'params': ['--window_type', 'bartlett']},
+        # 16. Test `parzen` as value for window-type parameter
+        {'params': ['-wt', 'parzen']},
+        # 17. Test `blackmanharris` as value for window-type parameter
+        {'params': ['--window_type', 'blackmanharris']},
+        # 18. Test `bohman` as value for window-type parameter
+        {'params': ['-wt', 'bohman']},
+        # 19. Test `nuttall` as value for window-type parameter
+        {'params': ['--window_type', 'nuttall']},
+        # 20. Test `barthann` as value for window-type parameter
+        {'params': ['-wt', 'barthann']},
+        # 21. Test complex combination of parameters no.1
+        {'params': ['--window_type', 'blackmanharris', '-ww', 10]},
+        # 22. Test complex combination of parameters no.2
+        {'params': ['--no-center', '--window_type', 'triang']},
+        # 23. Test complex combination of parameters no.3
+        {'params': ['--window_width', 5, '--center', '-wt', 'parzen']},
+
+        # TESTS EXPONENTIAL MOVING AVERAGE COMMAND
+        # 24. Test valid value for `com` value in decay argument
+        {'params': ['--decay', 'com', 2]},
+        # 25. Test valid value for `span` value in decay argument
+        {'params': ['--decay', 'span', 2]},
+        # 26. Test valid value for `halflife` value in decay argument
+        {'params': ['--decay', 'halflife', 2]},
+        # 27. Test valid value for `com` value in decay argument
+        {'params': ['--decay', 'alpha', .5]},
+
+        # COMPLEX TESTS - addition of 'min_periods' argument
+        # 28. test complex combination of parameters no.1 - EMA
+        {'params': ['--min_periods', 5, 'ema', '--decay', 'alpha', .5]},
+        # 29. test complex combination of parameters no.2 - EMA
+        {'params': ['-mp', 2, 'ema', '--decay', 'com', 5]},
+        # 30. Test complex combination of parameters no.1 - SMA
+        {'params': ['-mp', 1, 'sma', '--window_type', 'blackmanharris']},
+        # 31. Test complex combination of parameters no.2 - SMA
+        {'params': ['--min_periods', 1, 'sma', '--no-center', '--window_type', 'triang']},
+        # 32. Test complex combination of parameters no.3 - SMA
+        {'params': ['--min_periods', 3, 'sma', '--window_width', 5, '--center', '-wt', 'parzen']},
+        # 33. Test complex combination of parameters no.1 - SMM
+        {'params': ['-mp', 2, 'smm', '--window_width', 5, '--center']},
+        # 34. Test complex combination of parameters no.1 - SMM
+        {'params': ['--min_periods', 3, 'smm', '--no-center', '--window_width', 15]},
+    ]
+    tests_edge = [7, 10, 23, 27, 33]
+
+    # Instantiate the runner first
+    runner = CliRunner()
+
+    result = runner.invoke(cli.status, [])
+    match = re.search(r'([0-9]+@i).*mixed', result.output)
+    assert match
+    cprof_idx = match.groups(1)[0]
+
+    # Perform the testing
+    moving_average_runner_test(runner, correct_tests, tests_edge, 0, cprof_idx)
 
 
 def test_reg_analysis_incorrect(pcs_full):
