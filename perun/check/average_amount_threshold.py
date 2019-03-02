@@ -37,6 +37,7 @@ confidence at all.
 
 import perun.profile.convert as convert
 import perun.check.factory as check
+import perun.postprocess.regression_analysis.tools as tools
 
 from perun.utils.structs import DegradationInfo
 
@@ -73,9 +74,9 @@ def average_amount_threshold(baseline_profile, target_profile):
     unit = list(baseline_profile['header']['units'].values())[0]
     resource_type = baseline_profile['header']['type']
     for target_uid, target_average in target_averages.items():
-        baseline_average = baseline_averages.get(target_uid, 0)
-        if baseline_average:
-            difference_ration = target_average / baseline_average
+        baseline_average = baseline_averages.get(target_uid, None)
+        if baseline_average is not None:
+            difference_ration = tools.safe_division(target_average, baseline_average)
             if difference_ration >= DEGRADATION_THRESHOLD:
                 change = check.PerformanceChange.Degradation
             elif difference_ration <= OPTIMIZATION_THRESHOLD:
