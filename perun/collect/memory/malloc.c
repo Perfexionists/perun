@@ -25,6 +25,16 @@
 static FILE *logFile = NULL;
 static bool profiling = false;
 
+/* Pointers to temporary and original allocation/free functions */
+static void *(*real_malloc)(size_t) = NULL;
+static void  (*real_free)(void*) = NULL;
+static void *(*real_realloc)(void*, size_t) = NULL;
+static void *(*real_calloc)(size_t, size_t)= NULL;
+static void *(*real_memalign)(size_t, size_t) = NULL;
+static int   (*real_posix_memalign)(void**, size_t, size_t) = NULL;
+static void *(*real_valloc)(size_t) = NULL;
+static void *(*real_aligned_alloc)(size_t, size_t) = NULL;
+
 /*
 GCC destructor attribute provides finalizing function which close log file properly
 after main program's execution finished
@@ -74,7 +84,6 @@ void ad_log(char *allocator, size_t size, void *ptr){
 //Redefinitions of the standard allocation functions
 void *malloc(size_t size){
 
-   static void *(*real_malloc)(size_t) = NULL;
    if(!real_malloc){
       real_malloc = dlsym(RTLD_NEXT, "malloc");
       if(real_malloc == NULL){
@@ -96,7 +105,6 @@ void *malloc(size_t size){
 
 void free(void *ptr){
 
-   static void(*real_free)(void*) = NULL;
    if(!real_free){
       real_free = dlsym(RTLD_NEXT, "free");
       if(real_free == NULL){
@@ -117,7 +125,6 @@ void free(void *ptr){
 void *realloc(void *ptr, size_t size){
 
    void *old_ptr = NULL;
-   static void *(*real_realloc)(void*, size_t) = NULL;
    if(!real_realloc){
       real_realloc = dlsym(RTLD_NEXT, "realloc");
       if(real_realloc == NULL){
@@ -141,7 +148,6 @@ void *realloc(void *ptr, size_t size){
 
 void *calloc(size_t nmemb, size_t size){
 
-   static void *(*real_calloc)(size_t, size_t)= NULL;
    if(!real_calloc){
       real_calloc = dlsym(RTLD_NEXT, "calloc");
       if(real_calloc == NULL){
@@ -163,7 +169,6 @@ void *calloc(size_t nmemb, size_t size){
 
 void *memalign(size_t alignment, size_t size){
 
-   static void *(*real_memalign)(size_t, size_t) = NULL;
    if(!real_memalign){
       real_memalign = dlsym(RTLD_NEXT, "memalign");
       if(real_memalign == NULL){
@@ -185,7 +190,6 @@ void *memalign(size_t alignment, size_t size){
 
 int posix_memalign(void** memptr, size_t alignment, size_t size){
 
-   static int (*real_posix_memalign)(void**, size_t, size_t) = NULL;
    if(!real_posix_memalign){
       real_posix_memalign = dlsym(RTLD_NEXT, "posix_memalign");
       if(real_posix_memalign == NULL){
@@ -207,7 +211,6 @@ int posix_memalign(void** memptr, size_t alignment, size_t size){
 
 void *valloc(size_t size){
 
-   static void *(*real_valloc)(size_t) = NULL;
    if(!real_valloc){
       real_valloc = dlsym(RTLD_NEXT, "valloc");
       if(real_valloc == NULL){
@@ -229,7 +232,6 @@ void *valloc(size_t size){
 
 void *aligned_alloc(size_t alignment, size_t size){
 
-   static void *(*real_aligned_alloc)(size_t, size_t) = NULL;
    if(!real_aligned_alloc){
       real_aligned_alloc = dlsym(RTLD_NEXT, "aligned_alloc");
       if(real_aligned_alloc == NULL){
