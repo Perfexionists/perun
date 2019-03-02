@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.16.2 (2019-03-02)
+-------------------
+
+`commit: 77bed5eb7654274687fc0fa7130f28a6ff282fba`
+
+**Fix and refactor the memory collector**
+
   - fix minor issue in average amount threshold checker, when average is 0
   - refactor memory collector
   - add proper documentation to memory collector
