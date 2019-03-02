@@ -31,10 +31,19 @@ static FILE *logFile = NULL;
 
 __thread unsigned int mutex = 0;
 
+/**
+ * Locks mutex for profiling, to prevent cycles if anything during profiling needs to allocate
+ * something.
+ *
+ * @return: value of the mutex
+ */
 int lock_mutex() {
     return __sync_fetch_and_add(&mutex, 1);
 }
 
+/**
+ * Unlocks the mutex
+ */
 void unlock_mutex() {
     __sync_fetch_and_sub(&mutex, 1);
 }
@@ -64,6 +73,13 @@ char tmpbuf[1024];
 unsigned long tmppos = 0;
 unsigned long tmpallocs = 0;
 
+/**
+ * Dummy static allocator used to allocate memory using malloc before libmalloc.so is properly
+ * loaded .
+ *
+ * @param size: size of allocated bytes
+ * @return: pointer to allocated data
+ */
 void* dummy_malloc(size_t size) {
     if (tmppos + size >= sizeof(tmpbuf)) exit(1);
     void *retptr = tmpbuf + tmppos;
@@ -72,16 +88,35 @@ void* dummy_malloc(size_t size) {
     return retptr;
 }
 
+/**
+ * Dummy static allocator used to allocate memory using calloc before libmalloc.so is properly
+ * loaded .
+ *
+ * @param nmemb: number of members in the allocated memory
+ * @param size: size of allocated bytes
+ * @return: pointer to allocated data
+ */
 void* dummy_calloc(size_t nmemb, size_t size) {
     void *ptr = dummy_malloc(nmemb * size);
     unsigned int i = 0;
     for (; i < nmemb * size; ++i)
-        *((char*)(ptr + i)) = '\0';
+        *((char*)((char*)ptr + i)) = '\0';
     return ptr;
 }
 
+/**
+ * Dummy static free. Does nothing.
+ */
 void dummy_free(void *ptr) {}
 
+/**
+ * Initialization of the shared library.
+ *
+ * During the initialization we first set allocators to its dummy version, in case dlsym() or other
+ * function needs to allocate any data. Then we try to use dlsym() to dynamically load original
+ * versions of allocators. If we are successful we set the real_ pointers to these original version.
+ * At last the log is initialized.
+ */
 __attribute__ ((constructor)) void initialize (void) {
     lock_mutex();
     real_malloc =         dummy_malloc;
@@ -126,10 +161,10 @@ __attribute__ ((constructor)) void initialize (void) {
     unlock_mutex();
 }
 
-/*
-GCC destructor attribute provides finalizing function which close log file properly
-after main program's execution finished
-*/
+/**
+ * GCC destructor attribute provides finalizing function which close log file properly after main
+ * program's execution finished
+ */
 __attribute__((destructor)) void finalize (void) {
     if(logFile != NULL){
         fprintf(logFile, "EXIT %fs\n", clock() / (double)CLOCKS_PER_SEC);
@@ -137,9 +172,13 @@ __attribute__((destructor)) void finalize (void) {
     }
 }
 
-/*
-Writes the allocation metadata to the log file
-*/
+/**
+ * Writes single allocation metadata to the log file.
+ *
+ * @param allocator: name of the allocator that did the allocation
+ * @param size: size of the allocated data
+ * @param ptr: pointer to the allocated data
+ **/
 void log_allocation(char *allocator, size_t size, void *ptr){
     unsigned int locked = lock_mutex();
     if(!locked && ptr != NULL) {
@@ -151,7 +190,7 @@ void log_allocation(char *allocator, size_t size, void *ptr){
     unlock_mutex();
 }
 
-//Redefinitions of the standard allocation functions
+/* Redefinitions of the standard allocation functions */
 void *malloc(size_t size){
     void *ptr = real_malloc(size);
     log_allocation("malloc", size, ptr);
