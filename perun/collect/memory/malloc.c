@@ -23,7 +23,7 @@
 // File name of the log file
 #define LOG_FILE_NAME "MemoryLog"
 // 0 - full backtrace log
-// 1 - omitting function ad_log() from backtrace log
+// 1 - omitting function log_allocation() from backtrace log
 // 2 - omitting allocation functions from backtrace log
 #define CALLS_TO_SKIP 1
 
@@ -80,14 +80,14 @@ void init_log_file(){
 /*
 Writes the allocation metadata to the log file
 */
-void ad_log(char *allocator, size_t size, void *ptr){
-    lock_mutex();
-
-    fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
-    fprintf(logFile, "%s %luB %li\n", allocator, (unsigned long) size, (long int)ptr);
-    backtrace(logFile, CALLS_TO_SKIP);
-    fprintf(logFile, "\n");
-
+void log_allocation(char *allocator, size_t size, void *ptr){
+    unsigned int locked = lock_mutex();
+    if(!locked && ptr != NULL) {
+        fprintf(logFile, "time %fs\n", clock() / (double)CLOCKS_PER_SEC);
+        fprintf(logFile, "%s %luB %li\n", allocator, (unsigned long) size, (long int)ptr);
+        backtrace(logFile, CALLS_TO_SKIP);
+        fprintf(logFile, "\n");
+    }
     unlock_mutex();
 }
 
@@ -104,9 +104,7 @@ void *malloc(size_t size){
 
     void *ptr = real_malloc(size);
 
-    if(!mutex && ptr != NULL){
-        ad_log("malloc", size, ptr);
-    }
+    log_allocation("malloc", size, ptr);
 
     return ptr;
 }
@@ -123,9 +121,7 @@ void free(void *ptr){
 
     real_free(ptr);
 
-    if(!mutex){
-        ad_log("free", 0, ptr);
-    }
+    log_allocation("free", 0, ptr);
 }
 
 void *realloc(void *ptr, size_t size){
@@ -141,9 +137,9 @@ void *realloc(void *ptr, size_t size){
     old_ptr = ptr;
     void *nptr = real_realloc(ptr, size);
 
-    if(!mutex && nptr != NULL){
-        ad_log("realloc", size, nptr);
-        ad_log("free", 0, old_ptr);
+    log_allocation("realloc", size, nptr);
+    if(nptr) {
+        log_allocation("free", 0, old_ptr);
     }
 
     return nptr;
@@ -161,9 +157,7 @@ void *calloc(size_t nmemb, size_t size){
 
     void *ptr = real_calloc(nmemb, size);
 
-    if(!mutex && ptr != NULL){
-        ad_log("calloc", size*nmemb, ptr);
-    }
+    log_allocation("calloc", size*nmemb, ptr);
 
     return ptr;
 }
@@ -180,9 +174,7 @@ void *memalign(size_t alignment, size_t size){
 
     void *ptr = real_memalign(alignment, size);
 
-    if(!mutex && ptr != NULL){
-        ad_log("memalign", size, ptr);
-    }
+    log_allocation("memalign", size, ptr);
 
     return ptr;
 }
@@ -199,8 +191,8 @@ int posix_memalign(void** memptr, size_t alignment, size_t size){
 
     int ret = real_posix_memalign(memptr, alignment, size);
 
-    if(!mutex && ret == 0){
-        ad_log("posix_memalign", size, *memptr);
+    if(ret == 0){
+        log_allocation("posix_memalign", size, *memptr);
     }
 
     return ret;
@@ -218,9 +210,7 @@ void *valloc(size_t size){
 
     void *ptr = real_valloc(size);
 
-    if(!mutex && ptr != NULL){
-        ad_log("valloc", size, ptr);
-    }
+    log_allocation("valloc", size, ptr);
 
     return ptr;
 }
@@ -237,9 +227,7 @@ void *aligned_alloc(size_t alignment, size_t size){
 
     void *ptr = real_aligned_alloc(alignment, size);
 
-    if(!mutex && ptr != NULL){
-        ad_log("aligned_alloc", size, ptr);
-    }
+    log_allocation("aligned_alloc", size, ptr);
 
     return ptr;
 }
