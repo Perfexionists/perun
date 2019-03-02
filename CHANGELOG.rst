@@ -7,6 +7,10 @@ HEAD
 **To be included in next release**
 
   - fix minor issue in average amount threshold checker, when average is 0
+  - refactor memory collector
+  - add proper documentation to memory collector
+  - fix an ubuntu 18.04 issue, when dlsym() needed some bytes before libmalloc.so is properly loaded resulting into crash
+  - add proper locking to memory collector
 
 0.16.1 (2019-03-01)
 -------------------
