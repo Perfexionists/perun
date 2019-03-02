@@ -39,7 +39,7 @@ void unlock_mutex() {
     __sync_fetch_and_sub(&mutex, 1);
 }
 
-/* Pointers to temporary and original allocation/free functions */
+/* Pointers to original allocation/free functions */
 static void *(*real_malloc)(size_t) = NULL;
 static void  (*real_free)(void*) = NULL;
 static void *(*real_realloc)(void*, size_t) = NULL;
@@ -49,22 +49,72 @@ static int   (*real_posix_memalign)(void**, size_t, size_t) = NULL;
 static void *(*real_valloc)(size_t) = NULL;
 static void *(*real_aligned_alloc)(size_t, size_t) = NULL;
 
+/* Pointers to temporary points */
+static void *(*temp_malloc)(size_t) = NULL;
+static void  (*temp_free)(void*) = NULL;
+static void *(*temp_realloc)(void*, size_t) = NULL;
+static void *(*temp_calloc)(size_t, size_t)= NULL;
+static void *(*temp_memalign)(size_t, size_t) = NULL;
+static int   (*temp_posix_memalign)(void**, size_t, size_t) = NULL;
+static void *(*temp_valloc)(size_t) = NULL;
+static void *(*temp_aligned_alloc)(size_t, size_t) = NULL;
+
+/* Helper functions, courtesy of https://github.com/jtolds/malloc_instrumentation */
+char tmpbuf[1024];
+unsigned long tmppos = 0;
+unsigned long tmpallocs = 0;
+
+void* dummy_malloc(size_t size) {
+    if (tmppos + size >= sizeof(tmpbuf)) exit(1);
+    void *retptr = tmpbuf + tmppos;
+    tmppos += size;
+    ++tmpallocs;
+    return retptr;
+}
+
+void* dummy_calloc(size_t nmemb, size_t size) {
+    void *ptr = dummy_malloc(nmemb * size);
+    unsigned int i = 0;
+    for (; i < nmemb * size; ++i)
+        *((char*)(ptr + i)) = '\0';
+    return ptr;
+}
+
+void dummy_free(void *ptr) {}
+
 __attribute__ ((constructor)) void initialize (void) {
     lock_mutex();
+    real_malloc =         dummy_malloc;
+    real_free =           dummy_free;
+    real_realloc =        NULL;
+    real_calloc =         dummy_calloc;
+    real_memalign =       NULL;
+    real_posix_memalign = NULL;
+    real_valloc =         NULL;
+    real_aligned_alloc =  NULL;
 
-    real_malloc =         dlsym(RTLD_NEXT, "malloc");
-    real_free =           dlsym(RTLD_NEXT, "free");
-    real_realloc =        dlsym(RTLD_NEXT, "realloc");
-    real_calloc =         dlsym(RTLD_NEXT, "calloc");
-    real_memalign =       dlsym(RTLD_NEXT, "memalign");
-    real_posix_memalign = dlsym(RTLD_NEXT, "posix_memalign");
-    real_valloc =         dlsym(RTLD_NEXT, "valloc");
-    real_aligned_alloc =  dlsym(RTLD_NEXT, "aligned_alloc");
+    temp_malloc =         dlsym(RTLD_NEXT, "malloc");
+    temp_free =           dlsym(RTLD_NEXT, "free");
+    temp_realloc =        dlsym(RTLD_NEXT, "realloc");
+    temp_calloc =         dlsym(RTLD_NEXT, "calloc");
+    temp_memalign =       dlsym(RTLD_NEXT, "memalign");
+    temp_posix_memalign = dlsym(RTLD_NEXT, "posix_memalign");
+    temp_valloc =         dlsym(RTLD_NEXT, "valloc");
+    temp_aligned_alloc =  dlsym(RTLD_NEXT, "aligned_alloc");
 
-    if(!real_malloc || !real_free || !real_realloc || !real_calloc || !real_memalign) {
+    if(!temp_malloc || !temp_free || !temp_realloc || !temp_calloc
+        || !temp_memalign || !temp_posix_memalign || !temp_valloc || !temp_aligned_alloc) {
         fprintf(stderr, "error: dlsym() failed for allocation function: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
+    real_malloc =         temp_malloc;// this will be needed
+    real_free =           temp_free; // this will be needed
+    real_realloc =        temp_realloc;
+    real_calloc =         temp_calloc; // this will be needed
+    real_memalign =       temp_memalign;
+    real_posix_memalign = temp_posix_memalign;
+    real_valloc =         temp_valloc;
+    real_aligned_alloc =  temp_aligned_alloc;
 
     if(!logFile) {
        logFile = fopen(LOG_FILE_NAME, "w");
