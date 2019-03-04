@@ -70,7 +70,7 @@ def extract_configuration(func, func_sampled, static, static_sampled, **kwargs):
     :return kwargs: the updated dictionary with post processed rules
     """
     # Do some strategy specific actions (e.g. extracting symbols)
-    kwargs['global_sampling'], extracted_func, extracted_static = _strategy_specifics(**kwargs)
+    kwargs['global_sampling'], extracted_func, extracted_static = _extract_strategy_specifics(kwargs['method'], **kwargs)
 
     # Create one dictionary of function probes specification
     kwargs['func'] = _merge_probes(func, func_sampled, extracted_func, kwargs['global_sampling'])
@@ -84,11 +84,11 @@ def extract_configuration(func, func_sampled, static, static_sampled, **kwargs):
     return kwargs
 
 
-def _strategy_specifics(method, binary, with_static, global_sampling, **_):
+def _extract_strategy_specifics(strategy, binary, with_static, global_sampling, **_):
     """Handle specific operations related to various strategies such as extracting function
     and static probe symbols.
 
-    :param str method: the collection strategy
+    :param str strategy: the collection strategy
     :param str binary: path to the binary file that is profiled
     :param bool with_static: True if static probes are being profiled
     :param int global_sampling: the global sampling value
@@ -96,12 +96,15 @@ def _strategy_specifics(method, binary, with_static, global_sampling, **_):
     :return tuple: updated global_sampling, extracted functions or {}, extracted static probes or {}
     """
     # Set the default sampling if sampled strategy is required but sampling is not provided
-    if method in ('u_sampled', 'a_sampled') and global_sampling == 1:
+    if strategy in ('u_sampled', 'a_sampled') and global_sampling == 1:
         global_sampling = _DEFAULT_SAMPLE
 
     # Extract the functions and static probes if needed
-    func = _extract_functions(binary, method, global_sampling) if method != 'custom' else {}
-    static = _extract_static(binary, global_sampling) if method != 'custom' and with_static else {}
+    func, static = {}, {}
+    if strategy != 'custom':
+        func = _extract_functions(binary, strategy, global_sampling)
+        if with_static:
+            static = _extract_static(binary, global_sampling)
 
     return global_sampling, func, static
 
@@ -118,11 +121,19 @@ def _merge_probes(specified, specified_sampled, extracted, global_sampling):
     :return dict: dict of probes in unified format (dictionaries with 'name' and 'sample' keys)
     """
     # Add global sampling (default 0) to the probes without sampling specification
-    probes = {probe: {'name': probe, 'sample': global_sampling} for probe in specified}
+    probes = {
+        probe: {
+            'name': probe,
+            'sample': global_sampling
+        } for probe in specified
+    }
 
     # Validate the sampling values and merge the lists
-    for prb in specified_sampled:
-        probes[prb[0]] = {'name': prb[0], 'sample': prb[1] if prb[1] > 1 else global_sampling}
+    for (prb_name, prb_sample) in specified_sampled:
+        probes[prb_name] = {
+            'name': prb_name,
+            'sample': prb_sample if prb_sample > 1 else global_sampling
+        }
 
     # 'Merge' the two dictionaries - user specification has bigger priority
     extracted.update(probes)
@@ -146,32 +157,40 @@ def _pair_rules(probes):
     result = dict()
 
     # Direct suffix pairs that should be paired
-    suffix_pairs = {'begin': 'end', 'entry': 'return', 'start': 'finish',
-                    'create': 'destroy', 'construct': 'deconstruct'}
+    suffix_pairs = {
+        'begin': 'end',
+        'entry': 'return',
+        'start': 'finish',
+        'create': 'destroy',
+        'construct': 'deconstruct'
+    }
     # Related suffixes that could still be paired together
-    related = (['end', 'return', 'finish'], ['destroy', 'deconstruct'])
+    related = (
+        ['end', 'return', 'finish'],
+        ['destroy', 'deconstruct']
+    )
 
     delimited, beginnings, endings = _classify_static_probes(probes, suffix_pairs)
 
     # First process the delimited probes
-    for k, v in delimited.items():
-        delimiter = v[1]
+    for prb_name, (prb_conf, delimiter) in delimited.items():
         # The key is the same as name
-        left, right = v[0]['name'][:delimiter], v[0]['name'][delimiter + 1:]
-        _add_paired_rule(left, right, v[0]['sample'], v[0]['sample'], result, False)
+        prb1, prb2 = prb_conf['name'][:delimiter], prb_conf['name'][delimiter + 1:]
+        _add_paired_rule(prb1, prb2, prb_conf['sample'], prb_conf['sample'], result, False)
 
     # Process the probes without pairing hints
     # Iterate all the names and try to pair them if possible
-    for k, v in beginnings.items():
-        if k in endings:
-            b_suffixes, e_suffixes = v['suffix'], endings[k]['suffix']
-            b_sample, e_sample = v['sample'], endings[k]['sample']
+    for prb_name, prb_conf in beginnings.items():
+        if prb_name in endings:
+            b_suffixes, e_suffixes = prb_conf['suffix'], endings[prb_name]['suffix']
+            b_sample, e_sample = prb_conf['sample'], endings[prb_name]['sample']
 
             # First check if the rule is simply <name>
             # TODO: take the first ending suffix as pair, change when multiple pairing is supported
             if not b_suffixes:
-                full_name = k + e_suffixes[0][1] + e_suffixes[0][0]
-                _add_paired_rule(k, full_name, b_sample, e_sample, result)
+                suffix, delimiter = e_suffixes[0][0], e_suffixes[0][1]
+                full_name = prb_name + delimiter + suffix
+                _add_paired_rule(prb_name, full_name, b_sample, e_sample, result)
                 continue
 
             # Try to create the proper pairs using suffix_pairs
@@ -181,15 +200,15 @@ def _pair_rules(probes):
             pairs += _pair_suffixes(b_suffixes, e_suffixes,
                                     lambda x: related[0] if x in related[0] else related[1])
             for pair in pairs:
-                _add_paired_rule(k + pair[0], k + pair[1], b_sample, e_sample, result)
+                _add_paired_rule(prb_name + pair[0], prb_name + pair[1], b_sample, e_sample, result)
 
             # Insert the rest of the suffix extensions
             if e_suffixes:
-                _add_suffix_rules(k, e_suffixes, e_sample, result)
+                _add_suffix_rules(prb_name, e_suffixes, e_sample, result)
             if b_suffixes:
-                _add_suffix_rules(k, b_suffixes, b_sample, result)
+                _add_suffix_rules(prb_name, b_suffixes, b_sample, result)
         else:
-            _add_suffix_rules(k, v['suffix'], v['sample'], result)
+            _add_suffix_rules(prb_name, prb_conf['suffix'], prb_conf['sample'], result)
     return result
 
 
@@ -206,25 +225,28 @@ def _classify_static_probes(probes, suffix_pairs):
     """
     # Split the probes into group with and without delimiter '#'
     delimited, basic = dict(), dict()
-    for k, v in probes.items():
-        delimiter = v['name'].find('#')
+    for prb_name, prb_conf in probes.items():
+        delimiter = prb_conf['name'].find('#')
         if delimiter != -1:
-            delimited[k] = (v, delimiter)
+            delimited[prb_name] = (prb_conf, delimiter)
         else:
-            basic[k] = v
+            basic[prb_name] = prb_conf
 
     # Process the basic probes - find endings and compare them
     beginnings, endings = dict(), dict()
-    for k, v in basic.items():
+    for prb_name, prb_conf in basic.items():
         # Classify the probe as starting or ending according to the known suffixes
-        if not _check_suffix(v, suffix_pairs.values(), endings):
-            if not _check_suffix(v, suffix_pairs.keys(), beginnings):
+        if not _check_suffix_of(prb_conf, suffix_pairs.values(), endings):
+            if not _check_suffix_of(prb_conf, suffix_pairs.keys(), beginnings):
                 # Not starting nor ending suffix, treat as regular probe name
-                beginnings.setdefault(v['name'], {'sample': v['sample'], 'suffix': []})
+                beginnings.setdefault(prb_conf['name'], {
+                                          'sample': prb_conf['sample'],
+                                          'suffix': []
+                                      })
     return delimited, beginnings, endings
 
 
-def _check_suffix(probe, suffix_group, cls):
+def _check_suffix_of(probe, suffix_group, cls):
     """Checks if the probe name contains any suffix from the suffix group and if yes, classifies it
     into the specified cls. Also stores the delimiter between the probe name and suffix, if any.
 
@@ -232,7 +254,10 @@ def _check_suffix(probe, suffix_group, cls):
     :param collection suffix_group: the collection of suffixes to check
     :param dict cls: the resulting class
     """
-    default = {'sample': probe['sample'], 'suffix': []}
+    default = {
+        'sample': probe['sample'],
+        'suffix': []
+    }
     # Iterate the suffixes from suffix group and check if the probe name ends with one of them
     for suffix in suffix_group:
         if probe['name'].lower().endswith(suffix):
@@ -247,26 +272,26 @@ def _check_suffix(probe, suffix_group, cls):
     return False
 
 
-def _pair_suffixes(b_suffixes, e_suffixes, pairing):
+def _pair_suffixes(b_suffixes, e_suffixes, pair_by):
     """Pairs the starting and ending suffixes of one probe according to the provided
     pairing function. Successfully paired suffixes are removed from the suffix lists.
 
     :param list b_suffixes: the list of beginning suffixes associated with the probe
     :param list e_suffixes: the list of ending suffixes
-    :param function pairing: function that takes beginning suffix (in lowercase) and should
+    :param function pair_by: function that takes beginning suffix (in lowercase) and should
                              return the expected ending suffix or collection of them
     :return list: the list of combined suffix pairs
     """
     # Check if the probe has matching starting and ending suffixes
     pairs = []
-    for suffix in list(b_suffixes):
-        pair_suffixes = pairing(suffix[0].lower())
+    for (b_suffix, b_delimiter) in list(b_suffixes):
+        pair_suffixes = pair_by(b_suffix.lower())
         # Can't use simple 'in' - we need case insensitive comparison and case sensitive result
-        for e_suffix in list(e_suffixes):
-            if e_suffix[0].lower() in pair_suffixes:
-                b_suffixes.remove(suffix)
-                e_suffixes.remove(e_suffix)
-                pairs.append((suffix[1] + suffix[0], e_suffix[1] + e_suffix[0]))
+        for (e_suffix, e_delimiter) in list(e_suffixes):
+            if e_suffix.lower() in pair_suffixes:
+                b_suffixes.remove((b_suffix, b_delimiter))
+                e_suffixes.remove((e_suffix, e_delimiter))
+                pairs.append((b_delimiter + b_suffix, e_delimiter + e_suffix))
                 break
     return pairs
 
@@ -286,14 +311,26 @@ def _add_paired_rule(probe_start, probe_end, start_sample, end_sample, result, a
     # Insert the created pair if both probes are unique (multiple pairing problem)
     if probe_start not in result and probe_end not in result:
         sampling = min(start_sample, end_sample)
-        result[probe_start] = {'name': probe_start, 'sample': sampling,
-                               'pair': (RecordType.StaticBegin, probe_end)}
-        result[probe_end] = {'name': probe_end, 'sample': sampling,
-                             'pair': (RecordType.StaticEnd, probe_start)}
+        result[probe_start] = {
+            'name': probe_start,
+            'sample': sampling,
+            'pair': (RecordType.StaticBegin, probe_end)
+        }
+        result[probe_end] = {
+            'name': probe_end,
+            'sample': sampling,
+            'pair': (RecordType.StaticEnd, probe_start)
+        }
     elif add_separate:
         # The probes are not unique, do the single insertion by setdefault
-        result.setdefault(probe_start, {'name': probe_start, 'sample': start_sample})
-        result.setdefault(probe_end, {'name': probe_end, 'sample': end_sample})
+        result.setdefault(probe_start, {
+            'name': probe_start,
+            'sample': start_sample
+        })
+        result.setdefault(probe_end, {
+            'name': probe_end,
+            'sample': end_sample
+        })
 
 
 def _add_suffix_rules(name, suffixes, sample, result):
@@ -305,23 +342,28 @@ def _add_suffix_rules(name, suffixes, sample, result):
     :param dict result: the static probe dictionary
     """
     if not suffixes:
-        result.setdefault(name, {'name': name, 'sample': sample})
-    for suffix in suffixes:
-        full_suffix = suffix[1] + suffix[0]
-        result.setdefault(name + full_suffix, {'name': name + full_suffix, 'sample': sample})
+        result.setdefault(name, {
+                              'name': name,
+                              'sample': sample
+                          })
+    for (suffix, delimiter) in suffixes:
+        result.setdefault(name + delimiter + suffix, {
+                              'name': name + delimiter + suffix,
+                              'sample': sample
+                          })
 
 
-def _extract_functions(binary, method, global_sampling, **_):
+def _extract_functions(binary, strategy, global_sampling, **_):
     """Extracts function symbols from the supplied binary.
 
     :param str binary: path to the binary file
-    :param str method: name of the applied extraction strategy
+    :param str strategy: name of the applied extraction strategy
     :param int global_sampling: the sampling value applied to all extracted function locations
 
     :return list: extracted function symbols stored as a probes = dictionaries
     """
     # Load userspace / all function symbols from the binary
-    user = method in ('userspace', 'u_sampled')
+    user = strategy in ('userspace', 'u_sampled')
     funcs = _load_function_names(binary, user)
 
     # There are no functions
@@ -329,10 +371,12 @@ def _extract_functions(binary, method, global_sampling, **_):
         return {}
 
     # Transform to the desired format
-    if user:
-        return {func: {'name': func, 'sample': global_sampling} for func in funcs.splitlines() if
-                _filter_user_symbol(func)}
-    return {func: {'name': func, 'sample': global_sampling} for func in funcs.splitlines()}
+    filt = _filter_user_symbol if user else lambda _: True
+    return {
+        func: {
+            'name': func,
+            'sample': global_sampling
+        } for func in funcs.splitlines() if filt(func)}
 
 
 def _extract_static(binary, global_sampling, **_):
@@ -352,8 +396,11 @@ def _extract_static(binary, global_sampling, **_):
         return {}
 
     # Transform
-    return {probe: {'name': probe, 'sample': global_sampling}
-            for probe in _static_probe_names(probes)}
+    return {
+        probe: {
+            'name': probe,
+            'sample': global_sampling
+        } for probe in _cut_out_static_name(probes)}
 
 
 def _load_function_names(binary, only_user):
@@ -388,7 +435,7 @@ def _load_static_probes(binary):
     return ''
 
 
-def _static_probe_names(static_list):
+def _cut_out_static_name(static_list):
     """Cut the static probe location name from the extract output.
 
     :param str static_list: the extraction output

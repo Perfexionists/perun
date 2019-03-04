@@ -392,13 +392,23 @@ def _init_stack_and_map(func, static):
     """
     # func: thread -> stack (stack list, faults list)
     # static: thread -> name -> stack
-    trace_stack = {'func': collections.defaultdict(lambda: ([], [])),
-                   'static': collections.defaultdict(lambda: collections.defaultdict(list))}
+    trace_stack = {
+        'func': collections.defaultdict(lambda: ([], [])),
+        'static': collections.defaultdict(lambda: collections.defaultdict(list))
+    }
     # name -> sequence values
-    sequence_map = {'func': {record['name']: {'seq': 0, 'sample': record['sample']}
-                             for record in func.values()},
-                    'static': {record['name']: {'seq': 0, 'sample': record['sample']}
-                               for record in static.values()}}
+    sequence_map = {
+        'func': {
+            record['name']: {
+                'seq': 0,
+                'sample': record['sample']
+            } for record in func.values()},
+        'static': {
+            record['name']: {
+                'seq': 0,
+                'sample': record['sample']
+            } for record in static.values()}
+    }
     return trace_stack, sequence_map
 
 
@@ -553,8 +563,8 @@ def _add_to_stack(trace_stack, sequence_map, record, global_sampling):
     :param namedtuple record: the _TraceRecord namedtuple representing the parsed record
     """
     trace_stack.append(record._replace(
-        sequence=sequence_map.setdefault(record.name,
-                                         {'seq': 0, 'sample': global_sampling})['seq']))
+        sequence=sequence_map.setdefault(
+            record.name, {'seq': 0, 'sample': global_sampling})['seq']))
     sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
 
 
@@ -569,13 +579,11 @@ def _parse_record(line):
     try:
         # Split the line into = 'type' 'timestamp' 'process(pid)' : 'offset' 'rule'
         left, _, right = line.partition(':')
+        rtype, timestamp, thread = left.split()
         # Parse the type = '0 - 9 decimal'
-        left = left.split()
-        rtype = RecordType(int(left[0]))
-        # Parse the timestamp
-        timestamp = left[1]
+        rtype = RecordType(int(rtype))
         # Parse the pid - find the rightmost '(' and read the number between braces
-        thread = int(left[2][left[2].rfind('(') + 1:-1])
+        thread = int(thread[thread.rfind('(') + 1:-1])
 
         # Parse the offset and rule name = 'offset-spaces rule\n'
         right = right.rstrip('\n')
