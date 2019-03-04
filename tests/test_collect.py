@@ -7,7 +7,8 @@ import perun.logic.runner as runner
 import perun.profile.query as query
 import perun.collect.trace.systemtap as stap
 
-from perun.utils.helpers import Unit, Job
+from perun.utils.helpers import Job
+from perun.utils.structs import Unit
 from perun.workload.integer_generator import IntegerGenerator
 
 __author__ = 'Tomas Fiedor'

@@ -279,6 +279,10 @@ def get_supported_module_names(package):
     which was shown to be completely uselessly slow than this hardcoded table. Since I assume, that
     new modules will be registered very rarely, I think it is ok to have it implemented like this.
 
+    Note: This is used in CLI, and as of Click 7.0 all subcommands have underscores (_)
+    replaced by (-). While this is useful in CLI, Perun needs the underscore,
+    so use Unit.sanitize_module_name to replace the dash back.
+
     :param str package: name of the package for which we want to obtain the supported modules
                         one of ('vcs', 'collect', 'postprocess')
     :return: list of names of supported modules for the given package
@@ -290,7 +294,8 @@ def get_supported_module_names(package):
     return {
         'vcs': ['git'],
         'collect': ['trace', 'memory', 'time'],
-        'postprocess': ['clusterizer', 'filter', 'normalizer', 'regression_analysis', 'regressogram', 'moving_average'],
+        'postprocess': ['clusterizer', 'filter', 'normalizer', 'regression-analysis',
+                        'regressogram', 'moving-average'],
         'view': ['bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
     }[package]
 

@@ -67,7 +67,6 @@ RAW_ATTRS = []
 
 # Job specific
 Job = namedlist.namedlist("Job", "collector postprocessors cmd workload args")
-Unit = collections.namedtuple("Unit", "name params")
 
 COLLECT_PHASE_CMD = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'

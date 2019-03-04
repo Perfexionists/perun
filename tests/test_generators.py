@@ -6,7 +6,8 @@ import perun.logic.config as config
 import perun.workload as workload
 import perun.logic.runner as runner
 
-from perun.utils.helpers import Job, CollectStatus, Unit
+from perun.utils.helpers import Job, CollectStatus
+from perun.utils.structs import Unit
 from perun.workload.integer_generator import IntegerGenerator
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.workload.string_generator import StringGenerator

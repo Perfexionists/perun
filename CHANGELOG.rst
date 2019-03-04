@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - update to Click version 7.0 (because underscores are replaced by dashes)
+
 0.16.2 (2019-03-02)
 -------------------
 
