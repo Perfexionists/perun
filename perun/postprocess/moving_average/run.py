@@ -162,12 +162,7 @@ def exponential_moving_average(ctx, **kwargs):
 @click.option('--min_periods', '-mp', type=click.IntRange(min=1, max=None, clamp=False),
               help='Provides the minimum number of observations in window required to have a value. '
                    'If the number of possible observations smaller then result is NaN.')
-@click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size',
-              nargs=1, metavar='<depending_on>', callback=cli_helpers.process_resource_key_param,
-              help='Sets the key that will be used as a source of independent variable.')
-@click.option('--of', '-o', 'of_key', nargs=1, metavar='<of_resource_key>',
-              default='amount', callback=cli_helpers.process_resource_key_param,
-              help='Sets key for which we are finding the model.')
+@cli_helpers.resources_key_options
 @click.pass_context
 def moving_average(ctx, **kwargs):
     """

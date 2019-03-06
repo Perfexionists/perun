@@ -48,12 +48,7 @@ def postprocess(profile, **configuration):
               required=False, default=_DEFAULT_STATISTIC, multiple=False,
               help='Will use the <statistic_function> to compute the values '
                    'for points within each bucket of regressogram.')
-@click.option('--per', '-p', 'per_key', default='structure-unit-size',
-              nargs=1, metavar='<per_resource_key>', callback=cli_helpers.process_resource_key_param,
-              help='Sets the key that will be used as a source of variable (x-coordinates).')
-@click.option('--of', '-o', 'of_key', nargs=1, metavar='<of_resource_key>',
-              default='amount', callback=cli_helpers.process_resource_key_param,
-              help='Sets key for which we are finding the model (y-coordinates).')
+@cli_helpers.resources_key_options
 @pass_profile
 def regressogram(profile, **kwargs):
     """

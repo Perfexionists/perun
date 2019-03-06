@@ -193,17 +193,17 @@ def test_moving_average_incorrect(pcs_full):
         # 7. Test invalid value type min_periods value
         {'params': ['-mp', 'A'], 'output': 'Invalid value for "--min_periods"'},
         # 8. Test malformed per_key argument
-        {'params': ['--dependings-on'], 'output': 'no such option: --dependings-on'},
+        {'params': ['--per-keys'], 'output': 'no such option: --per-keys'},
         # 9. Test missing per_key value
-        {'params': ['-dp'], 'output': '-dp option requires an argument'},
+        {'params': ['-per'], 'output': '-per option requires an argument'},
         # 10. Test invalid value per_key arguments
-        {'params': ['-dp', 'unknown'], 'output': 'Invalid value for "--depending-on"'},
+        {'params': ['--per-key', 'unknown'], 'output': 'Invalid value for "--per-key"'},
         # 11. Test malformed of_key argument
         {'params': ['--off'], 'output': 'no such option: --off'},
         # 12. Test missing of_key value
-        {'params': ['--of'], 'output': '-of option requires an argument'},
+        {'params': ['--of-key'], 'output': '--of-key option requires an argument'},
         # 13. Test invalid value of_key arguments
-        {'params': ['-o', 'unknown'], 'output': 'Invalid value for "--of"'},
+        {'params': ['-of', 'unknown'], 'output': 'Invalid value for "--of-key"'},
 
         # TESTS SIMPLE MOVING AVERAGE COMMAND AND SIMPLE MOVING MEDIAN COMMAND
         # 14. Test malformed window-width argument
@@ -283,9 +283,9 @@ def test_moving_average_correct(pcs_full):
         # 5. Test the value of min_periods parameter
         {'params': ['--min_periods', 1]},
         # 6. Test the value of per_key parameter
-        {'params': ['--depending-on', 'amount']},
+        {'params': ['--per-key', 'amount']},
         # 7. Test the value of of_key parameter
-        {'params': ['-o', 'structure-unit-size']},
+        {'params': ['-of', 'structure-unit-size']},
 
         # TESTS SIMPLE MOVING AVERAGE COMMAND AND SIMPLE MOVING MEDIAN COMMAND
         # 8. Test the value of window_width_parameter

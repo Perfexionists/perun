@@ -197,12 +197,7 @@ def kernel_ridge(ctx, **kwargs):
 
 
 @click.group(invoke_without_command=True)
-@click.option('--per', '-p', 'per_key', default='structure-unit-size',
-              nargs=1, metavar='<per_resource_key>', callback=cli_helpers.process_resource_key_param,
-              help='Sets the key that will be used as a source of variable (x-coordinates).')
-@click.option('--of', '-o', 'of_key', nargs=1, metavar='<of_resource_key>',
-              default='amount', callback=cli_helpers.process_resource_key_param,
-              help='Sets key for which we are finding the model (y-coordinates).')
+@cli_helpers.resources_key_options
 @click.pass_context
 def kernel_regression(ctx, **kwargs):
     """TODO: Write documentation of the CLI"""
