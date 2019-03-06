@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.16.1 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.16.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.1',
+        VERSION:     '0.16.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -125,80 +125,67 @@ following:</p>
 <dl class="object">
 <dt>
 <code class="descname">add</code></dt>
-<dd><p>Links profile to concrete minor version…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">check</code></dt>
-<dd><p>Applies for the points of version history…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">collect</code></dt>
-<dd><p>Generates performance profile using selected…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">config</code></dt>
-<dd><p>Manages the stored local and shared…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">fuzz</code></dt>
-<dd><p>Performs fuzzing for the specified command…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">init</code></dt>
-<dd><p>Initializes performance versioning system at…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">log</code></dt>
-<dd><p>Shows history of versions and associated…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">postprocessby</code></dt>
-<dd><p>Postprocesses the given stored or pending…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">rm</code></dt>
-<dd><p>Unlinks the profile from the given minor…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">run</code></dt>
-<dd><p>Generates batch of profiles w.r.t.</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">show</code></dt>
-<dd><p>Interprets the given profile using the…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">status</code></dt>
-<dd><p>Shows the status of vcs, associated profiles…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">utils</code></dt>
-<dd><p>Contains set of developer commands, wrappers…</p>
-</dd></dl>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="perun-commands">
@@ -338,26 +325,22 @@ vcs.type: git
 <dl class="object">
 <dt>
 <code class="descname">edit</code></dt>
-<dd><p>Edits the configuration file in the external…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">get</code></dt>
-<dd><p>Looks up the given <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> within the…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">reset</code></dt>
-<dd><p>Resets the configuration file to a sane…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">set</code></dt>
-<dd><p>Sets the value of the <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> to the given…</p>
-</dd></dl>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="perun-config-get">
@@ -684,14 +667,12 @@ user construct the job run using the set of parameters.</p>
 <dl class="object">
 <dt>
 <code class="descname">job</code></dt>
-<dd><p>Run specified batch of perun jobs to generate…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">matrix</code></dt>
-<dd><p>Runs the jobs matrix specified in the…</p>
-</dd></dl>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="perun-run-job">
@@ -872,20 +853,17 @@ method: bmoe</li>
 <dl class="object">
 <dt>
 <code class="descname">all</code></dt>
-<dd><p>Checks for changes in performance for the…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">head</code></dt>
-<dd><p>Checks for changes in performance between…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">profiles</code></dt>
-<dd><p>Checks for changes in performance between two…</p>
-</dd></dl>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="perun-check-head">
@@ -1192,6 +1170,12 @@ examples of <cite>trace</cite> collector.</p>
 <dd><p>Enable/disable the pre-cleanup of possibly running systemtap processes that could cause the corruption of the output file due to multiple writes.</p>
 </dd></dl>
 
+<dl class="option">
+<dt id="cmdoption-perun-collect-trace-vt">
+<code class="descname">-vt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--verbose-trace</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-trace-vt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the trace file output to be more verbose, useful for debugging.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="perun-collect-memory">
 <h4>perun collect memory<a class="headerlink" href="#perun-collect-memory" title="Permalink to this headline">¶</a></h4>
@@ -1351,7 +1335,7 @@ will be normalized to the interval &lt;0, 1&gt;:</p>
 <p>Example 2. The following command will postprocess the second profile stored
 in index of commit preceeding the current head using interval regression
 analysis:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">postprocessby</span> <span class="o">-</span><span class="n">m</span> <span class="n">HEAD</span><span class="o">~</span><span class="mi">1</span> <span class="mi">1</span><span class="nd">@i</span> <span class="n">regression_analysis</span> <span class="o">--</span><span class="n">method</span><span class="o">=</span><span class="n">interval</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perun</span> <span class="n">postprocessby</span> <span class="o">-</span><span class="n">m</span> <span class="n">HEAD</span><span class="o">~</span><span class="mi">1</span> <span class="mi">1</span><span class="nd">@i</span> <span class="n">regression</span><span class="o">-</span><span class="n">analysis</span> <span class="o">--</span><span class="n">method</span><span class="o">=</span><span class="n">interval</span>
 </pre></div>
 </div>
 <p>For a thorough list and description of supported postprocessors refer to
@@ -1747,20 +1731,17 @@ the <em>exponential</em> moving average (<strong>ema</strong>).</div></blockquot
 <dl class="object">
 <dt>
 <code class="descname">ema</code></dt>
-<dd><p><strong>Exponential Moving Average</strong> This method is…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">sma</code></dt>
-<dd><p><strong>Simple Moving Average</strong> In the most of…</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="object">
 <dt>
 <code class="descname">smm</code></dt>
-<dd><p><strong>Simple Moving Median</strong> The second…</p>
-</dd></dl>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="perun-postprocessby-moving-average-sma">
@@ -2382,8 +2363,7 @@ not the part of the main perun suite.</p>
 <dl class="object">
 <dt>
 <code class="descname">create</code></dt>
-<dd><p>According to the given &lt;template&gt; constructs…</p>
-</dd></dl>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="perun-utils-create">

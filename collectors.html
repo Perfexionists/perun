@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Collectors Overview &#8212; Perun 0.16.1 documentation</title>
+    <title>Collectors Overview &#8212; Perun 0.16.3 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.1',
+        VERSION:     '0.16.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -256,6 +256,12 @@ examples of <cite>trace</cite> collector.</p>
 <dt id="cmdoption-perun-collect-trace-cleanup">
 <code class="descname">--cleanup</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-cleanup</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-trace-cleanup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enable/disable the pre-cleanup of possibly running systemtap processes that could cause the corruption of the output file due to multiple writes.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-collect-trace-vt">
+<code class="descname">-vt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--verbose-trace</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-collect-trace-vt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the trace file output to be more verbose, useful for debugging.</p>
 </dd></dl>
 
 </div>
@@ -1106,7 +1112,7 @@ your collector. This function will is called from command line as <code class="d
          &#39;vcs&#39;: [&#39;git&#39;],
 <span class="gd">-        &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;],</span>
 <span class="gi">+        &#39;collect&#39;: [&#39;trace&#39;, &#39;memory&#39;, &#39;time&#39;, &#39;mycollector&#39;],</span>
-         &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression_analysis&#39;],
+         &#39;postprocess&#39;: [&#39;filter&#39;, &#39;normalizer&#39;, &#39;regression-analysis&#39;],
          &#39;view&#39;: [&#39;alloclist&#39;, &#39;bars&#39;, &#39;flamegraph&#39;, &#39;flow&#39;, &#39;heapmap&#39;, &#39;raw&#39;, &#39;scatter&#39;]
      }[package]
 </pre></div>
