@@ -8,7 +8,6 @@ import git
 import re
 import shutil
 import time
-import glob
 
 import pytest
 from click.testing import CliRunner
@@ -16,71 +15,13 @@ from click.testing import CliRunner
 import perun.cli as cli
 import perun.utils as utils
 import perun.utils.log as log
-import perun.utils.decorators as decorators
 import perun.logic.config as config
 import perun.logic.store as store
-import perun.collect.trace.systemtap as stap
-import perun.collect.trace.strategy as strategy
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
 
 __author__ = 'Tomas Fiedor'
-
-
-def _mocked_stap(**_):
-    """System tap mock, provide OK code and pre-fabricated collection output"""
-    return 0, os.path.join(os.path.dirname(__file__), 'collect_trace', 'tst_stap_record.txt')
-
-
-def _mocked_stap_extraction(_):
-    return ('process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE")\n'
-            'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE_end")\n'
-            'process("/home/jirka/perun/tests/collect_trace/tst").mark("INSIDE_CYCLE")\n')
-
-
-def _mocked_stap_extraction_empty(_):
-    return 'Tip: /usr/share/doc/systemtap/README.Debian should help you get started.'
-
-
-def _get_latest_collect_script(script_dir):
-    """Return name of the latest collect script from given script directory
-
-    :param str script_dir: path to the directory where multiple (or single)
-                           collect scripts are located
-    :return str: path to the latest trace collector script
-    """
-    # Get all stap script in the directory and find the last one,
-    # which will be then analyzed for correctness
-    scripts = glob.glob(os.path.join(script_dir, 'collect_script_*.stp'))
-    # Find the newest script in the directory
-    latest = scripts[0]
-    # Extract timestamp from the first script
-    latest_timestamp = int(''.join(scripts[0][-23:-4].split('-')))
-    for script in scripts:
-        # Check every script file and find the biggest timestamp
-        timestamp = int(''.join(script[-23:-4].split('-')))
-        if timestamp >= latest_timestamp:
-            latest_timestamp = timestamp
-            latest = script
-    return latest
-
-
-def _compare_collect_scripts(new_script, reference_script):
-    """Compares collect script with its reference scripts
-
-    :param str new_script: path to the script to compare
-    :param str reference_script: path to the reference script
-    :return bool: True if scripts are the same (except machine specific values in the script),
-                  False otherwise
-    """
-    # Replace the machine-specific path to the binary with some generic text to allow for comparison
-    with open(new_script, 'r') as script:
-        content = script.read()
-    sub_content = re.sub(r' process\(\".*?/tst\"\)\.', ' process("cmp").', content)
-    with open(reference_script, 'r') as cmp:
-        cmp_content = cmp.read()
-    return sub_content == cmp_content
 
 
 def test_cli(pcs_full):
@@ -206,7 +147,7 @@ def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_i
         run_non_param_test(runner, params, exit_code, test_sample.get('output', 'Successfully postprocessed'))
 
     # Set stable parameters at all tests
-    moving_average_params = [cprof_idx, 'moving_average']
+    moving_average_params = [cprof_idx, 'moving-average']
     # Set the supported methods at moving average postprocessor
     moving_average_methods = {0: ['sma'], 1: ['smm'], 2: ['ema']}
     # Executing the testing
@@ -433,74 +374,74 @@ def test_reg_analysis_incorrect(pcs_full):
     runner = CliRunner()
 
     # Test the lack of arguments
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis'])
     assert result.exit_code == 2
     assert 'Usage' in result.output
 
     # Test non-existing argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-f'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-f'])
     assert result.exit_code == 2
     assert 'no such option: -f' in result.output
 
     # Test malformed method argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--metod', 'full'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--metod', 'full'])
     assert result.exit_code == 2
     assert 'no such option: --metod' in result.output
 
     # Test missing method value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m'])
     assert result.exit_code == 2
     assert '-m option requires an argument' in result.output
 
     # Test invalid method name
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'extra'])
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'extra'])
     assert result.exit_code == 2
     assert 'Invalid value for "--method"' in result.output
 
     # Test malformed model argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'full',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'full',
                                                '--regresion_models'])
     assert result.exit_code == 2
     assert 'no such option: --regresion_models' in result.output
 
     # Test missing model value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '--method', 'full',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'full',
                                                '-r'])
     assert result.exit_code == 2
     assert '-r option requires an argument' in result.output
 
     # Test invalid model name
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full', '-r',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full', '-r',
                                                'ultimastic'])
     assert result.exit_code == 2
     assert 'Invalid value for "--regression_models"' in result.output
 
     # Test multiple models specification with one invalid value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'linear', '-r', 'fail'])
     assert result.exit_code == 2
     assert 'Invalid value for "--regression_models"' in result.output
 
     # Test malformed steps argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'all', '--seps'])
     assert result.exit_code == 2
     assert ' no such option: --seps' in result.output
 
     # Test missing steps value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'all', '-s'])
     assert result.exit_code == 2
     assert '-s option requires an argument' in result.output
 
     # Test invalid steps type
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-m', 'full', '-r',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full', '-r',
                                                'all', '-s', '0.5'])
     assert result.exit_code == 2
     assert '0.5 is not a valid integer' in result.output
 
     # Test multiple method specification resulting in extra argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression_analysis', '-dp', 'snapshots',
+    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-dp', 'snapshots',
                                                '-m', 'full', 'iterative'])
     assert result.exit_code == 2
     assert 'Got unexpected extra argument (iterative)' in result.output
@@ -522,97 +463,97 @@ def test_reg_analysis_correct(pcs_full):
     cprof_idx = match.groups(1)[0]
 
     # Test the help printout first
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '--help'])
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '--help'])
     assert result.exit_code == 0
     assert 'Usage' in result.output
 
     # Test multiple method specifications -> the last one is chosen
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full',
                                                '-m', 'iterative'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test the full computation method with all models set as a default value
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full'])
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test the iterative method with all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'iterative'])
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'iterative'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test the interval method with all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'interval'])
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'interval'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test the initial guess method with all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis',
                                                '-m', 'initial_guess'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test the bisection method with all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'bisection'])
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'bisection'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification on full computation
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full',
                                                '-r', 'all'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification for multiple models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full',
                                                '-r', 'linear', '-r', 'logarithmic', '-r',
                                                'exponential'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification for all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full',
                                                '-r', 'linear', '-r', 'logarithmic', '-r', 'power',
                                                '-r', 'exponential'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test explicit models specification for all models values (also with 'all' value)
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full',
                                                '-r', 'linear', '-r', 'logarithmic', '-r', 'power',
                                                '-r', 'exponential', '-r', 'all'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test steps specification for full computation which has no effect
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full',
                                                '-r', 'all', '-s', '100'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test reasonable steps value for iterative method
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'iterative',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'iterative',
                                                '-r', 'all', '-s', '4'])
     assert result.exit_code == 0
     assert result.output.count('Too few points') == 5
     assert 'Successfully postprocessed' in result.output
 
     # Test too many steps output
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'iterative',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'iterative',
                                                '-r', 'all', '-s', '1000'])
     assert result.exit_code == 0
     assert result.output.count('Too few points') == 7
     assert 'Successfully postprocessed' in result.output
 
     # Test steps value clamping with iterative method
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-m', 'iterative',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'iterative',
                                                '-r', 'all', '-s', '-1'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test different arguments positions
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression_analysis', '-s', '2',
+    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-s', '2',
                                                '-r', 'all', '-m', 'full'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
@@ -817,153 +758,6 @@ def test_collect_correct(pcs_full):
     runner = CliRunner()
     result = runner.invoke(cli.collect, ['-c echo', '-w hello', 'time'])
     assert result.exit_code == 0
-
-
-def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
-    """Test running the trace collector from the CLI with parameter handling
-
-    Expecting no errors
-    """
-    monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
-    runner = CliRunner()
-
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
-    target = os.path.join(script_dir, 'tst')
-    job_params = trace_collect_job[5]['collector_params']['trace']
-
-    func = ['-f{}'.format(func) for func in job_params['func']]
-    func_sampled = []
-    for f in job_params['func_sampled']:
-        func_sampled.append('-fs')
-        func_sampled.append(f[0])
-        func_sampled.append(f[1])
-    static = ['-s{}'.format(rule) for rule in job_params['static']]
-    binary = ['-b{}'.format(target)]
-
-    result = runner.invoke(cli.collect, ['-c{}'.format(target),
-                                         'trace'] + func + func_sampled + static + binary)
-
-    assert result.exit_code == 0
-
-    # Test running the job from the params using the job file
-    # Fixme: yaml parameters applied after the cli, thus cli reports missing parameters
-    # script_dir = os.path.split(__file__)[0]
-    # source_dir = os.path.join(script_dir, 'collect_trace')
-    # job_config_file = os.path.join(source_dir, 'job.yml')
-    # result = runner.invoke(cli.collect, ['-c{}'.format(target), '-p{}'.format(job_config_file),
-    #                                      'trace'])
-    # assert result.exit_code == 0
-
-    # Test running the job from the params using the yaml string
-    result = runner.invoke(cli.collect, ['-c{}'.format(target),
-                                         '-p\"global_sampling: 2\"',
-                                         'trace'] + func + func_sampled + static + binary)
-    assert result.exit_code == 0
-
-    # Try different template
-    result = runner.invoke(cli.collect, [
-        '-ot', '%collector%-profile',
-        '-c{}'.format(target),
-        '-p\"method: custom\"',
-        'trace',
-    ] + func + func_sampled + static + binary)
-    del config.runtime().data['format']
-    decorators.remove_from_function_args_cache("lookup_key_recursively")
-    assert result.exit_code == 0
-    pending_profiles = os.listdir(os.path.join(os.getcwd(), ".perun", "jobs"))
-    assert "trace-profile.perf" in pending_profiles
-
-    # Test duplicity detection and pairing
-    result = runner.invoke(cli.collect,
-                           ['-c{}'.format(target), 'trace', '-f', 'main', '-f', 'main', '-fs',
-                            'main', 2, '-fs', 'main', 2, '-s', 'BEFORE_CYCLE', '-ss',
-                            'BEFORE_CYCLE', 3, '-s', 'BEFORE_CYCLE_end', '-s',
-                            'BEFORE_CYCLE#BEFORE_CYCLE_end', '-ss', 'TEST_SINGLE', 4, '-s',
-                            'TEST_SINGLE2', '-fs', 'test', -3] + binary)
-    assert result.exit_code == 0
-    # Compare the created script with the correct one
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'cmp_script.txt'))
-
-    # Test negative global sampling
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-g -2'] + binary)
-    assert result.exit_code == 0
-
-    # Try missing parameter -c
-    # Fixme: before fails but still produces 0?
-    result = runner.invoke(cli.collect, ['trace'] + binary)
-    assert result.exit_code == 0
-
-    # Try invalid parameter --method
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-minvalid'] + binary)
-    assert result.exit_code == 2
-
-    # Try binary parameter that is actually not executable ELF
-    target = os.path.join(script_dir, 'cpp_sources', 'tst.cpp')
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace'])
-    assert result.exit_code == 0
-    assert 'is not an executable ELF file.' in result.output
-
-
-def test_collect_trace_strategies(monkeypatch, pcs_full):
-    """Test various trace collector strategies
-
-    Expecting no errors and correctly generated scripts
-    """
-    monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
-    monkeypatch.setattr(strategy, '_static_stap_extractor', _mocked_stap_extraction)
-    runner = CliRunner()
-
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
-    target = os.path.join(script_dir, 'tst')
-
-    # Test simple userspace strategy without external modification or sampling
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy1_script.txt'))
-    # Test simple u_sampled strategy without external modification
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'u_sampled'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy2_script.txt'))
-    # Test simple all strategy without external modification or sampling
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'all'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy3_script.txt'))
-    # Test simple a_sampled strategy without external modification
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'a_sampled'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy4_script.txt'))
-    # Change the mocked static extractor to empty one
-    monkeypatch.setattr(strategy, '_static_stap_extractor', _mocked_stap_extraction_empty)
-    # Test userspace strategy without static probes and added global_sampling
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace',
-                                         '--no-static', '-g', '10'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy5_script.txt'))
-    # Test u_sampled strategy without static probes and overriden global_sampling
-    # The output should be exactly the same as the previous
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'u_sampled',
-                                         '--no-static', '-g', '10'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy5_script.txt'))
-    # Test userspace strategy with overridden function, respecified function and invalid function
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace', '-fs',
-                                         'main', '4', '-f', '_Z12QuickSortBadPii', '-f', 'invalid'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy6_script.txt'))
-    # Test userspace strategy with invalid static probe (won't be detected as --no-static is used)
-    result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace',
-                                         '--no-static', '-s', 'INVALID'])
-    assert result.exit_code == 0
-    assert _compare_collect_scripts(_get_latest_collect_script(script_dir),
-                                    os.path.join(script_dir, 'strategy7_script.txt'))
 
 
 def test_show_help(pcs_full):

@@ -29,7 +29,8 @@ import perun.utils.log as perun_log
 from perun.utils import get_module
 from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException, \
     MissingConfigSectionException
-from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Unit, Job
+from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Job
+from perun.utils.structs import Unit
 
 __author__ = 'Tomas Fiedor'
 

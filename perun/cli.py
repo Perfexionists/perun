@@ -689,7 +689,7 @@ def postprocessby(ctx, profile, **_):
     in index of commit preceeding the current head using interval regression
     analysis::
 
-        perun postprocessby -m HEAD~1 1@i regression_analysis --method=interval
+        perun postprocessby -m HEAD~1 1@i regression-analysis --method=interval
 
     For a thorough list and description of supported postprocessors refer to
     :ref:`postprocessors-list`. For a more subtle running of profiling jobs and

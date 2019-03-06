@@ -199,7 +199,7 @@ def validate_decay_param(ctx, param, value):
     else:  # value out of acceptable range
         # obtaining the error message according to name of `decay` method
         err_msg = _DECAY_PARAMS_INFO[value[0]]['err_msg']
-        raise click.BadOptionUsage('Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg))
+        raise click.BadOptionUsage(param.name, 'Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg))
 
 
 # dictionary contains the required keys to check before the access to this keys

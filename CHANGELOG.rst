@@ -9,6 +9,18 @@ HEAD
 0.16.2 (2019-03-02)
 -------------------
 
+`commit: de699ab66d8438166d0ad2d55c74bf43a59d1fc4`
+
+**Overhaul the trace collector**
+
+  - update to Click version 7.0 (because underscores are replaced by dashes)
+  - add automatic pairing of the static probes in trace collector
+  - add fault-tolerant system to trace collector (now it does collect some profile even if it contains some corruption)
+  - rework the internal format of traces
+
+0.16.2 (2019-03-02)
+-------------------
+
 `commit: 77bed5eb7654274687fc0fa7130f28a6ff282fba`
 
 **Fix and refactor the memory collector**

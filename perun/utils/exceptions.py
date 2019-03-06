@@ -261,26 +261,6 @@ class InvalidBinaryException(Exception):
         return self.msg
 
 
-class TraceStackException(Exception):
-    """Raised when trace stack processing encounters error"""
-    def __init__(self, record, trace_stack):
-        """
-        :param namedtuple record: the record that was being processed
-        :param list trace_stack: the actual trace stack
-        """
-        super().__init__("")
-        self.record = record
-        self.call_stack = trace_stack
-        self.msg = 'Trace stack corruption, record: ' + str(record)
-        if not trace_stack:
-            self.msg += '\nstack: \n  empty'
-        else:
-            self.msg += '\nstack:' + '\n  '.join(map(str, trace_stack))
-
-    def __str__(self):
-        return self.msg
-
-
 class HardTimeoutException(Exception):
     """Raised when various sleep calls exceed specified hard timeout threshold"""
     def __init__(self, msg):

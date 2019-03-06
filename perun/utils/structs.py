@@ -13,6 +13,48 @@ PerformanceChange = Enum(
     'Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization'
 )
 
+class Unit(object):
+    """Specification of the unit that is part of run process
+
+    :ivar str name: name of the unit
+    :ivar dict params: parameters for the unit
+    """
+    def __init__(self, name, params):
+        """Constructs the unit, with name being sanitized
+
+        :param str name: name of the unit
+        :param dict params: parameters for the unit
+        """
+        self.name = Unit.sanitize_unit_name(name)
+        self.params = params
+
+
+    @classmethod
+    def desanitize_unit_name(cls, unit_name):
+        """Replace the underscors in the unit name so it is CLI compatible.
+
+        In Click 7.0 all subcommands have automatically replaced underscores (_) with dashes (-).
+        We have to sanitize/desanitize the unit name through the Perun.
+
+        :param str unit_name: name of the unit that is desanitized
+        :return:
+        """
+        return unit_name.replace('_', '-')
+
+    @classmethod
+    def sanitize_unit_name(cls, unit_name):
+        """Sanitizes module name so it is usable and uniform in the perun.
+
+        As of Click 7.0 in all subcommands underscores (_) are automatically replaced by dashes (-).
+        While this is surely nice feature, Perun works with the Python function names that actually DO
+        have underscores. So we basically support both formats, and in CLI we use only -, but use this
+        fecking function to make sure the CLI names are replaced back to underscores. Rant over.
+
+        :param str unit_name: module name that we are sanitizing
+        :return: sanitized module name usable inside the perun (with underscores instead of dashes)
+        """
+        return unit_name.replace('-', '_')
+
 
 class DegradationInfo(object):
     """The returned results for performance check methods

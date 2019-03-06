@@ -12,6 +12,8 @@ import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
 
+from perun.utils.structs import Unit
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -73,7 +75,8 @@ def assert_all_registered_cli_units(package_name, package, must_have_function_na
         )
 
         # Each module has to be registered in get_supported_module_names
-        assert unit_name in registered_modules and "{} was not registered properly".format(
+        # Note: As of Click 7.0 we have to (de)sanitize _ and -
+        assert Unit.desanitize_unit_name(unit_name) in registered_modules and "{} was not registered properly".format(
             module_name
         )
 
