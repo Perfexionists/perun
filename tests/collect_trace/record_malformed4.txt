@@ -653,235 +653,6 @@ begin /home/jirka/perun/experiments/quicksort
 0   3954 quicksort(14060):   _Z4SwapRiS_
 1   3958 quicksort(14060):   
 0   3963 quicksort(14060):   _Z4SwapRiS_
-1   3967 quicksort(14060):   
-0   3972 quicksort(14060):   _Z4SwapRiS_
-1   3976 quicksort(14060):   
-0   3981 quicksort(14060):   _Z4SwapRiS_
-1   3985 quicksort(14060):   
-0   3990 quicksort(14060):   _Z4SwapRiS_
-1   3994 quicksort(14060):   
-0   3999 quicksort(14060):   _Z4SwapRiS_
-1   4003 quicksort(14060):   
-0   4008 quicksort(14060):   _Z4SwapRiS_
-1   4012 quicksort(14060):   
-0   4017 quicksort(14060):   _Z4SwapRiS_
-1   4021 quicksort(14060):   
-0   4026 quicksort(14060):   _Z4SwapRiS_
-1   4028 quicksort(14060):   
-0   4032 quicksort(14060):   _Z4SwapRiS_
-1   4035 quicksort(14060):   
-0   4039 quicksort(14060):   _Z4SwapRiS_
-1   4042 quicksort(14060):   
-0   4046 quicksort(14060):   _Z4SwapRiS_
-1   4049 quicksort(14060):   
-1   4051 quicksort(14060):  
-0   4055 quicksort(14060):  _Z12BadPartitionPiii
-0   4061 quicksort(14060):   _Z4SwapRiS_
-1   4064 quicksort(14060):   
-1   4065 quicksort(14060):  
-0   4069 quicksort(14060):  _Z12BadPartitionPiii
-0   4075 quicksort(14060):   _Z4SwapRiS_
-1   4078 quicksort(14060):   
-0   4082 quicksort(14060):   _Z4SwapRiS_
-1   4085 quicksort(14060):   
-0   4089 quicksort(14060):   _Z4SwapRiS_
-1   4092 quicksort(14060):   
-0   4096 quicksort(14060):   _Z4SwapRiS_
-1   4099 quicksort(14060):   
-0   4103 quicksort(14060):   _Z4SwapRiS_
-1   4106 quicksort(14060):   
-0   4110 quicksort(14060):   _Z4SwapRiS_
-1   4113 quicksort(14060):   
-0   4117 quicksort(14060):   _Z4SwapRiS_
-1   4120 quicksort(14060):   
-0   4124 quicksort(14060):   _Z4SwapRiS_
-1   4127 quicksort(14060):   
-0   4131 quicksort(14060):   _Z4SwapRiS_
-1   4134 quicksort(14060):   
-0   4138 quicksort(14060):   _Z4SwapRiS_
-1   4141 quicksort(14060):   
-0   4144 quicksort(14060):   _Z4SwapRiS_
-1   4148 quicksort(14060):   
-0   4151 quicksort(14060):   _Z4SwapRiS_
-1   4154 quicksort(14060):   
-0   4158 quicksort(14060):   _Z4SwapRiS_
-1   4161 quicksort(14060):   
-0   4165 quicksort(14060):   _Z4SwapRiS_
-1   4168 quicksort(14060):   
-0   4172 quicksort(14060):   _Z4SwapRiS_
-1   4175 quicksort(14060):   
-0   4179 quicksort(14060):   _Z4SwapRiS_
-1   4182 quicksort(14060):   
-0   4186 quicksort(14060):   _Z4SwapRiS_
-1   4189 quicksort(14060):   
-0   4193 quicksort(14060):   _Z4SwapRiS_
-1   4196 quicksort(14060):   
-1   4198 quicksort(14060):  
-0   4202 quicksort(14060):  _Z12BadPartitionPiii
-0   4207 quicksort(14060):   _Z4SwapRiS_
-1   4210 quicksort(14060):   
-1   4212 quicksort(14060):  
-0   4216 quicksort(14060):  _Z12BadPartitionPiii
-0   4221 quicksort(14060):   _Z4SwapRiS_
-1   4224 quicksort(14060):   
-0   4228 quicksort(14060):   _Z4SwapRiS_
-1   4231 quicksort(14060):   
-0   4235 quicksort(14060):   _Z4SwapRiS_
-1   4238 quicksort(14060):   
-0   4242 quicksort(14060):   _Z4SwapRiS_
-1   4245 quicksort(14060):   
-0   4249 quicksort(14060):   _Z4SwapRiS_
-1   4252 quicksort(14060):   
-0   4267 quicksort(14060):   _Z4SwapRiS_
-1   4269 quicksort(14060):   
-0   4272 quicksort(14060):   _Z4SwapRiS_
-1   4274 quicksort(14060):   
-0   4276 quicksort(14060):   _Z4SwapRiS_
-1   4278 quicksort(14060):   
-0   4281 quicksort(14060):   _Z4SwapRiS_
-1   4282 quicksort(14060):   
-0   4285 quicksort(14060):   _Z4SwapRiS_
-1   4287 quicksort(14060):   
-0   4289 quicksort(14060):   _Z4SwapRiS_
-1   4291 quicksort(14060):   
-0   4294 quicksort(14060):   _Z4SwapRiS_
-1   4296 quicksort(14060):   
-0   4298 quicksort(14060):   _Z4SwapRiS_
-1   4300 quicksort(14060):   
-0   4303 quicksort(14060):   _Z4SwapRiS_
-1   4305 quicksort(14060):   
-0   4307 quicksort(14060):   _Z4SwapRiS_
-1   4309 quicksort(14060):   
-0   4312 quicksort(14060):   _Z4SwapRiS_
-1   4314 quicksort(14060):   
-1   4315 quicksort(14060):  
-0   4317 quicksort(14060):  _Z12BadPartitionPiii
-0   4321 quicksort(14060):   _Z4SwapRiS_
-1   4322 quicksort(14060):   
-1   4324 quicksort(14060):  
-0   4326 quicksort(14060):  _Z12BadPartitionPiii
-0   4329 quicksort(14060):   _Z4SwapRiS_
-1   4331 quicksort(14060):   
-0   4334 quicksort(14060):   _Z4SwapRiS_
-1   4336 quicksort(14060):   
-0   4338 quicksort(14060):   _Z4SwapRiS_
-1   4340 quicksort(14060):   
-0   4343 quicksort(14060):   _Z4SwapRiS_
-1   4345 quicksort(14060):   
-0   4347 quicksort(14060):   _Z4SwapRiS_
-1   4349 quicksort(14060):   
-0   4352 quicksort(14060):   _Z4SwapRiS_
-1   4354 quicksort(14060):   
-0   4356 quicksort(14060):   _Z4SwapRiS_
-1   4358 quicksort(14060):   
-0   4361 quicksort(14060):   _Z4SwapRiS_
-1   4362 quicksort(14060):   
-0   4398 quicksort(14060):   _Z4SwapRiS_
-1   4400 quicksort(14060):   
-0   4403 quicksort(14060):   _Z4SwapRiS_
-1   4405 quicksort(14060):   
-0   4408 quicksort(14060):   _Z4SwapRiS_
-1   4410 quicksort(14060):   
-0   4423 quicksort(14060):   _Z4SwapRiS_
-1   4425 quicksort(14060):   
-0   4428 quicksort(14060):   _Z4SwapRiS_
-1   4429 quicksort(14060):   
-0   4432 quicksort(14060):   _Z4SwapRiS_
-1   4434 quicksort(14060):   
-1   4435 quicksort(14060):  
-0   4438 quicksort(14060):  _Z12BadPartitionPiii
-0   4441 quicksort(14060):   _Z4SwapRiS_
-1   4443 quicksort(14060):   
-1   4444 quicksort(14060):  
-0   4447 quicksort(14060):  _Z12BadPartitionPiii
-0   4450 quicksort(14060):   _Z4SwapRiS_
-1   4452 quicksort(14060):   
-0   4454 quicksort(14060):   _Z4SwapRiS_
-1   4456 quicksort(14060):   
-0   4459 quicksort(14060):   _Z4SwapRiS_
-1   4461 quicksort(14060):   
-0   4463 quicksort(14060):   _Z4SwapRiS_
-1   4465 quicksort(14060):   
-0   4468 quicksort(14060):   _Z4SwapRiS_
-1   4470 quicksort(14060):   
-0   4472 quicksort(14060):   _Z4SwapRiS_
-1   4474 quicksort(14060):   
-0   4477 quicksort(14060):   _Z4SwapRiS_
-1   4479 quicksort(14060):   
-0   4481 quicksort(14060):   _Z4SwapRiS_
-1   4483 quicksort(14060):   
-0   4486 quicksort(14060):   _Z4SwapRiS_
-1   4488 quicksort(14060):   
-0   4490 quicksort(14060):   _Z4SwapRiS_
-1   4492 quicksort(14060):   
-0   4495 quicksort(14060):   _Z4SwapRiS_
-1   4497 quicksort(14060):   
-0   4499 quicksort(14060):   _Z4SwapRiS_
-1   4501 quicksort(14060):   
-1   4502 quicksort(14060):  
-0   4505 quicksort(14060):  _Z12BadPartitionPiii
-0   4508 quicksort(14060):   _Z4SwapRiS_
-1   4510 quicksort(14060):   
-1   4511 quicksort(14060):  
-0   4514 quicksort(14060):  _Z12BadPartitionPiii
-0   4517 quicksort(14060):   _Z4SwapRiS_
-1   4519 quicksort(14060):   
-0   4522 quicksort(14060):   _Z4SwapRiS_
-1   4523 quicksort(14060):   
-0   4526 quicksort(14060):   _Z4SwapRiS_
-1   4528 quicksort(14060):   
-0   4530 quicksort(14060):   _Z4SwapRiS_
-1   4532 quicksort(14060):   
-0   4535 quicksort(14060):   _Z4SwapRiS_
-1   4537 quicksort(14060):   
-0   4539 quicksort(14060):   _Z4SwapRiS_
-1   4541 quicksort(14060):   
-0   4544 quicksort(14060):   _Z4SwapRiS_
-1   4546 quicksort(14060):   
-0   4548 quicksort(14060):   _Z4SwapRiS_
-1   4550 quicksort(14060):   
-0   4553 quicksort(14060):   _Z4SwapRiS_
-1   4555 quicksort(14060):   
-0   4557 quicksort(14060):   _Z4SwapRiS_
-1   4559 quicksort(14060):   
-1   4560 quicksort(14060):  
-0   4563 quicksort(14060):  _Z12BadPartitionPiii
-0   4566 quicksort(14060):   _Z4SwapRiS_
-1   4568 quicksort(14060):   
-1   4569 quicksort(14060):  
-0   4572 quicksort(14060):  _Z12BadPartitionPiii
-0   4575 quicksort(14060):   _Z4SwapRiS_
-1   4577 quicksort(14060):   
-0   4580 quicksort(14060):   _Z4SwapRiS_
-1   4581 quicksort(14060):   
-0   4584 quicksort(14060):   _Z4SwapRiS_
-1   4586 quicksort(14060):   
-0   4588 quicksort(14060):   _Z4SwapRiS_
-1   4590 quicksort(14060):   
-0   4593 quicksort(14060):   _Z4SwapRiS_
-1   4595 quicksort(14060):   
-0   4597 quicksort(14060):   _Z4SwapRiS_
-1   4599 quicksort(14060):   
-0   4602 quicksort(14060):   _Z4SwapRiS_
-1   4604 quicksort(14060):   
-0   4606 quicksort(14060):   _Z4SwapRiS_
-1   4608 quicksort(14060):   
-1   4609 quicksort(14060):  
-0   4612 quicksort(14060):  _Z12BadPartitionPiii
-0   4615 quicksort(14060):   _Z4SwapRiS_
-1   4617 quicksort(14060):   
-1   4618 quicksort(14060):  
-0   4621 quicksort(14060):  _Z12BadPartitionPiii
-0   4624 quicksort(14060):   _Z4SwapRiS_
-1   4626 quicksort(14060):   
-0   4628 quicksort(14060):   _Z4SwapRiS_
-1   4630 quicksort(14060):   
-0   4633 quicksort(14060):   _Z4SwapRiS_
-1   4635 quicksort(14060):   
-0   4637 quicksort(14060):   _Z4SwapRiS_
-1   4639 quicksort(14060):   
-0   4642 quicksort(14060):   _Z4SwapRiS_
-1   4644 quicksort(14060):   
 0   4646 quicksort(14060):   _Z4SwapRiS_
 1   4648 quicksort(14060):   
 1   4649 quicksort(14060):  
@@ -1430,6 +1201,234 @@ begin /home/jirka/perun/experiments/quicksort
 0   5870 quicksort(14060):   _Z4SwapRiS_
 1   5872 quicksort(14060):   
 0   5875 quicksort(14060):   _Z4SwapRiS_
+0   3972 quicksort(14060):   _Z4SwapRiS_
+1   3976 quicksort(14060):   
+0   3981 quicksort(14060):   _Z4SwapRiS_
+1   3985 quicksort(14060):   
+0   3990 quicksort(14060):   _Z4SwapRiS_
+1   3994 quicksort(14060):   
+0   3999 quicksort(14060):   _Z4SwapRiS_
+1   4003 quicksort(14060):   
+0   4008 quicksort(14060):   _Z4SwapRiS_
+1   4012 quicksort(14060):   
+0   4017 quicksort(14060):   _Z4SwapRiS_
+1   4021 quicksort(14060):   
+0   4026 quicksort(14060):   _Z4SwapRiS_
+1   4028 quicksort(14060):   
+0   4032 quicksort(14060):   _Z4SwapRiS_
+1   4035 quicksort(14060):   
+0   4039 quicksort(14060):   _Z4SwapRiS_
+1   4042 quicksort(14060):   
+0   4046 quicksort(14060):   _Z4SwapRiS_
+1   4049 quicksort(14060):   
+1   4051 quicksort(14060):  
+0   4055 quicksort(14060):  _Z12BadPartitionPiii
+0   4061 quicksort(14060):   _Z4SwapRiS_
+1   4064 quicksort(14060):   
+1   4065 quicksort(14060):  
+0   4069 quicksort(14060):  _Z12BadPartitionPiii
+0   4075 quicksort(14060):   _Z4SwapRiS_
+1   4078 quicksort(14060):   
+0   4082 quicksort(14060):   _Z4SwapRiS_
+1   4085 quicksort(14060):   
+0   4089 quicksort(14060):   _Z4SwapRiS_
+1   4092 quicksort(14060):   
+0   4096 quicksort(14060):   _Z4SwapRiS_
+1   4099 quicksort(14060):   
+0   4103 quicksort(14060):   _Z4SwapRiS_
+1   4106 quicksort(14060):   
+0   4110 quicksort(14060):   _Z4SwapRiS_
+1   4113 quicksort(14060):   
+0   4117 quicksort(14060):   _Z4SwapRiS_
+1   4120 quicksort(14060):   
+0   4124 quicksort(14060):   _Z4SwapRiS_
+1   4127 quicksort(14060):   
+0   4131 quicksort(14060):   _Z4SwapRiS_
+1   4134 quicksort(14060):   
+0   4138 quicksort(14060):   _Z4SwapRiS_
+1   4141 quicksort(14060):   
+0   4144 quicksort(14060):   _Z4SwapRiS_
+1   4148 quicksort(14060):   
+0   4151 quicksort(14060):   _Z4SwapRiS_
+1   4154 quicksort(14060):   
+0   4158 quicksort(14060):   _Z4SwapRiS_
+1   4161 quicksort(14060):   
+0   4165 quicksort(14060):   _Z4SwapRiS_
+1   4168 quicksort(14060):   
+0   4172 quicksort(14060):   _Z4SwapRiS_
+1   4175 quicksort(14060):   
+0   4179 quicksort(14060):   _Z4SwapRiS_
+1   4182 quicksort(14060):   
+0   4186 quicksort(14060):   _Z4SwapRiS_
+1   4189 quicksort(14060):   
+0   4193 quicksort(14060):   _Z4SwapRiS_
+1   4196 quicksort(14060):   
+1   4198 quicksort(14060):  
+0   4202 quicksort(14060):  _Z12BadPartitionPiii
+0   4207 quicksort(14060):   _Z4SwapRiS_
+1   4210 quicksort(14060):   
+1   4212 quicksort(14060):  
+0   4216 quicksort(14060):  _Z12BadPartitionPiii
+0   4221 quicksort(14060):   _Z4SwapRiS_
+1   4224 quicksort(14060):   
+0   4228 quicksort(14060):   _Z4SwapRiS_
+1   4231 quicksort(14060):   
+0   4235 quicksort(14060):   _Z4SwapRiS_
+1   4238 quicksort(14060):   
+0   4242 quicksort(14060):   _Z4SwapRiS_
+1   4245 quicksort(14060):   
+0   4249 quicksort(14060):   _Z4SwapRiS_
+1   4252 quicksort(14060):   
+0   4267 quicksort(14060):   _Z4SwapRiS_
+1   4269 quicksort(14060):   
+0   4272 quicksort(14060):   _Z4SwapRiS_
+1   4274 quicksort(14060):   
+0   4276 quicksort(14060):   _Z4SwapRiS_
+1   4278 quicksort(14060):   
+0   4281 quicksort(14060):   _Z4SwapRiS_
+1   4282 quicksort(14060):   
+0   4285 quicksort(14060):   _Z4SwapRiS_
+1   4287 quicksort(14060):   
+0   4289 quicksort(14060):   _Z4SwapRiS_
+1   4291 quicksort(14060):   
+0   4294 quicksort(14060):   _Z4SwapRiS_
+1   4296 quicksort(14060):   
+0   4298 quicksort(14060):   _Z4SwapRiS_
+1   4300 quicksort(14060):   
+0   4303 quicksort(14060):   _Z4SwapRiS_
+1   4305 quicksort(14060):   
+0   4307 quicksort(14060):   _Z4SwapRiS_
+1   4309 quicksort(14060):   
+0   4312 quicksort(14060):   _Z4SwapRiS_
+1   4314 quicksort(14060):   
+1   4315 quicksort(14060):  
+0   4317 quicksort(14060):  _Z12BadPartitionPiii
+0   4321 quicksort(14060):   _Z4SwapRiS_
+1   4322 quicksort(14060):   
+1   4324 quicksort(14060):  
+0   4326 quicksort(14060):  _Z12BadPartitionPiii
+0   4329 quicksort(14060):   _Z4SwapRiS_
+1   4331 quicksort(14060):   
+0   4334 quicksort(14060):   _Z4SwapRiS_
+1   4336 quicksort(14060):   
+0   4338 quicksort(14060):   _Z4SwapRiS_
+1   4340 quicksort(14060):   
+0   4343 quicksort(14060):   _Z4SwapRiS_
+1   4345 quicksort(14060):   
+0   4347 quicksort(14060):   _Z4SwapRiS_
+1   4349 quicksort(14060):   
+0   4352 quicksort(14060):   _Z4SwapRiS_
+1   4354 quicksort(14060):   
+0   4356 quicksort(14060):   _Z4SwapRiS_
+1   4358 quicksort(14060):   
+0   4361 quicksort(14060):   _Z4SwapRiS_
+1   4362 quicksort(14060):   
+0   4398 quicksort(14060):   _Z4SwapRiS_
+1   4400 quicksort(14060):   
+0   4403 quicksort(14060):   _Z4SwapRiS_
+1   4405 quicksort(14060):   
+0   4408 quicksort(14060):   _Z4SwapRiS_
+1   4410 quicksort(14060):   
+0   4423 quicksort(14060):   _Z4SwapRiS_
+1   4425 quicksort(14060):   
+0   4428 quicksort(14060):   _Z4SwapRiS_
+1   4429 quicksort(14060):   
+0   4432 quicksort(14060):   _Z4SwapRiS_
+1   4434 quicksort(14060):   
+1   4435 quicksort(14060):  
+0   4438 quicksort(14060):  _Z12BadPartitionPiii
+0   4441 quicksort(14060):   _Z4SwapRiS_
+1   4443 quicksort(14060):   
+1   4444 quicksort(14060):  
+0   4447 quicksort(14060):  _Z12BadPartitionPiii
+0   4450 quicksort(14060):   _Z4SwapRiS_
+1   4452 quicksort(14060):   
+0   4454 quicksort(14060):   _Z4SwapRiS_
+1   4456 quicksort(14060):   
+0   4459 quicksort(14060):   _Z4SwapRiS_
+1   4461 quicksort(14060):   
+0   4463 quicksort(14060):   _Z4SwapRiS_
+1   4465 quicksort(14060):   
+0   4468 quicksort(14060):   _Z4SwapRiS_
+1   4470 quicksort(14060):   
+0   4472 quicksort(14060):   _Z4SwapRiS_
+1   4474 quicksort(14060):   
+0   4477 quicksort(14060):   _Z4SwapRiS_
+1   4479 quicksort(14060):   
+0   4481 quicksort(14060):   _Z4SwapRiS_
+1   4483 quicksort(14060):   
+0   4486 quicksort(14060):   _Z4SwapRiS_
+1   4488 quicksort(14060):   
+0   4490 quicksort(14060):   _Z4SwapRiS_
+1   4492 quicksort(14060):   
+0   4495 quicksort(14060):   _Z4SwapRiS_
+1   4497 quicksort(14060):   
+0   4499 quicksort(14060):   _Z4SwapRiS_
+1   4501 quicksort(14060):   
+1   4502 quicksort(14060):  
+0   4505 quicksort(14060):  _Z12BadPartitionPiii
+0   4508 quicksort(14060):   _Z4SwapRiS_
+1   4510 quicksort(14060):   
+1   4511 quicksort(14060):  
+0   4514 quicksort(14060):  _Z12BadPartitionPiii
+0   4517 quicksort(14060):   _Z4SwapRiS_
+1   4519 quicksort(14060):   
+0   4522 quicksort(14060):   _Z4SwapRiS_
+1   4523 quicksort(14060):   
+0   4526 quicksort(14060):   _Z4SwapRiS_
+1   4528 quicksort(14060):   
+0   4530 quicksort(14060):   _Z4SwapRiS_
+1   4532 quicksort(14060):   
+0   4535 quicksort(14060):   _Z4SwapRiS_
+1   4537 quicksort(14060):   
+0   4539 quicksort(14060):   _Z4SwapRiS_
+1   4541 quicksort(14060):   
+0   4544 quicksort(14060):   _Z4SwapRiS_
+1   4546 quicksort(14060):   
+0   4548 quicksort(14060):   _Z4SwapRiS_
+1   4550 quicksort(14060):   
+0   4553 quicksort(14060):   _Z4SwapRiS_
+1   4555 quicksort(14060):   
+0   4557 quicksort(14060):   _Z4SwapRiS_
+1   4559 quicksort(14060):   
+1   4560 quicksort(14060):  
+0   4563 quicksort(14060):  _Z12BadPartitionPiii
+0   4566 quicksort(14060):   _Z4SwapRiS_
+1   4568 quicksort(14060):   
+1   4569 quicksort(14060):  
+0   4572 quicksort(14060):  _Z12BadPartitionPiii
+0   4575 quicksort(14060):   _Z4SwapRiS_
+1   4577 quicksort(14060):   
+0   4580 quicksort(14060):   _Z4SwapRiS_
+1   4581 quicksort(14060):   
+0   4584 quicksort(14060):   _Z4SwapRiS_
+1   4586 quicksort(14060):   
+0   4588 quicksort(14060):   _Z4SwapRiS_
+1   4590 quicksort(14060):   
+0   4593 quicksort(14060):   _Z4SwapRiS_
+1   4595 quicksort(14060):   
+0   4597 quicksort(14060):   _Z4SwapRiS_
+1   4599 quicksort(14060):   
+0   4602 quicksort(14060):   _Z4SwapRiS_
+1   4604 quicksort(14060):   
+0   4606 quicksort(14060):   _Z4SwapRiS_
+1   4608 quicksort(14060):   
+1   4609 quicksort(14060):  
+0   4612 quicksort(14060):  _Z12BadPartitionPiii
+0   4615 quicksort(14060):   _Z4SwapRiS_
+1   4617 quicksort(14060):   
+1   4618 quicksort(14060):  
+0   4621 quicksort(14060):  _Z12BadPartitionPiii
+0   4624 quicksort(14060):   _Z4SwapRiS_
+1   4626 quicksort(14060):   
+0   4628 quicksort(14060):   _Z4SwapRiS_
+1   4630 quicksort(14060):   
+0   4633 quicksort(14060):   _Z4SwapRiS_
+1   4635 quicksort(14060):   
+0   4637 quicksort(14060):   _Z4SwapRiS_
+1   4639 quicksort(14060):   
+0   4642 quicksort(14060):   _Z4SwapRiS_
+1   4644 quicksort(14060):   
 1   5877 quicksort(14060):   
 1   5878 quicksort(14060):  
 0   5880 quicksort(14060):  _Z12BadPartitionPiii

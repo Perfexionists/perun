@@ -13,68 +13,69 @@ probe process("cmp").begin {
 	samp_0[10] = 19
 	samp_0[11] = 19
 	samp_0[12] = 19
+	printf("cmp")
 }
 
-probe process("cmp").function("main").call? {
+probe process("cmp").function("_Z10BubbleSortPii").call? {
 	samp_0[0] ++
 	if(samp_0[0] == 20) {
-		printf("0 %s main\n", thread_indent(1))
+		printf("0 %s_Z10BubbleSortPii\n", thread_indent(1))
 		samp_0[0] = 0
 	}
 }
-probe process("cmp").function("main").return? {
+probe process("cmp").function("_Z10BubbleSortPii").return? {
 	if(samp_0[0] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z10BubbleSortPii").call? {
+probe process("cmp").function("_Z10InsertSortPii").call? {
 	samp_0[1] ++
 	if(samp_0[1] == 20) {
-		printf("0 %s _Z10BubbleSortPii\n", thread_indent(1))
+		printf("0 %s_Z10InsertSortPii\n", thread_indent(1))
 		samp_0[1] = 0
 	}
 }
-probe process("cmp").function("_Z10BubbleSortPii").return? {
+probe process("cmp").function("_Z10InsertSortPii").return? {
 	if(samp_0[1] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z10InsertSortPii").call? {
+probe process("cmp").function("_Z12BadPartitionPiii").call? {
 	samp_0[2] ++
 	if(samp_0[2] == 20) {
-		printf("0 %s _Z10InsertSortPii\n", thread_indent(1))
+		printf("0 %s_Z12BadPartitionPiii\n", thread_indent(1))
 		samp_0[2] = 0
 	}
 }
-probe process("cmp").function("_Z10InsertSortPii").return? {
+probe process("cmp").function("_Z12BadPartitionPiii").return? {
 	if(samp_0[2] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z12BadPartitionPiii").call? {
+probe process("cmp").function("_Z12QuickSortBadPii").call? {
 	samp_0[3] ++
 	if(samp_0[3] == 20) {
-		printf("0 %s _Z12BadPartitionPiii\n", thread_indent(1))
+		printf("0 %s_Z12QuickSortBadPii\n", thread_indent(1))
 		samp_0[3] = 0
 	}
 }
-probe process("cmp").function("_Z12BadPartitionPiii").return? {
+probe process("cmp").function("_Z12QuickSortBadPii").return? {
 	if(samp_0[3] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z12QuickSortBadPii").call? {
+probe process("cmp").function("_Z4SwapRiS_").call? {
 	samp_0[4] ++
 	if(samp_0[4] == 20) {
-		printf("0 %s _Z12QuickSortBadPii\n", thread_indent(1))
+		printf("0 %s_Z4SwapRiS_\n", thread_indent(1))
 		samp_0[4] = 0
 	}
 }
-probe process("cmp").function("_Z12QuickSortBadPii").return? {
+probe process("cmp").function("_Z4SwapRiS_").return? {
 	if(samp_0[4] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
@@ -83,7 +84,7 @@ probe process("cmp").function("_Z12QuickSortBadPii").return? {
 probe process("cmp").function("_Z4swapPiii").call? {
 	samp_0[5] ++
 	if(samp_0[5] == 20) {
-		printf("0 %s _Z4swapPiii\n", thread_indent(1))
+		printf("0 %s_Z4swapPiii\n", thread_indent(1))
 		samp_0[5] = 0
 	}
 }
@@ -93,66 +94,66 @@ probe process("cmp").function("_Z4swapPiii").return? {
 	}
 }
 
-probe process("cmp").function("_Z4SwapRiS_").call? {
+probe process("cmp").function("_Z8HeapSortPii").call? {
 	samp_0[6] ++
 	if(samp_0[6] == 20) {
-		printf("0 %s _Z4SwapRiS_\n", thread_indent(1))
+		printf("0 %s_Z8HeapSortPii\n", thread_indent(1))
 		samp_0[6] = 0
 	}
 }
-probe process("cmp").function("_Z4SwapRiS_").return? {
+probe process("cmp").function("_Z8HeapSortPii").return? {
 	if(samp_0[6] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z8HeapSortPii").call? {
+probe process("cmp").function("_Z9PartitionPiii").call? {
 	samp_0[7] ++
 	if(samp_0[7] == 20) {
-		printf("0 %s _Z8HeapSortPii\n", thread_indent(1))
+		printf("0 %s_Z9PartitionPiii\n", thread_indent(1))
 		samp_0[7] = 0
 	}
 }
-probe process("cmp").function("_Z8HeapSortPii").return? {
+probe process("cmp").function("_Z9PartitionPiii").return? {
 	if(samp_0[7] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z9PartitionPiii").call? {
+probe process("cmp").function("_Z9QuickSortPii").call? {
 	samp_0[8] ++
 	if(samp_0[8] == 20) {
-		printf("0 %s _Z9PartitionPiii\n", thread_indent(1))
+		printf("0 %s_Z9QuickSortPii\n", thread_indent(1))
 		samp_0[8] = 0
 	}
 }
-probe process("cmp").function("_Z9PartitionPiii").return? {
+probe process("cmp").function("_Z9QuickSortPii").return? {
 	if(samp_0[8] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z9QuickSortPii").call? {
+probe process("cmp").function("_Z9repairTopPiii").call? {
 	samp_0[9] ++
 	if(samp_0[9] == 20) {
-		printf("0 %s _Z9QuickSortPii\n", thread_indent(1))
+		printf("0 %s_Z9repairTopPiii\n", thread_indent(1))
 		samp_0[9] = 0
 	}
 }
-probe process("cmp").function("_Z9QuickSortPii").return? {
+probe process("cmp").function("_Z9repairTopPiii").return? {
 	if(samp_0[9] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
 }
 
-probe process("cmp").function("_Z9repairTopPiii").call? {
+probe process("cmp").function("main").call? {
 	samp_0[10] ++
 	if(samp_0[10] == 20) {
-		printf("0 %s _Z9repairTopPiii\n", thread_indent(1))
+		printf("0 %smain\n", thread_indent(1))
 		samp_0[10] = 0
 	}
 }
-probe process("cmp").function("_Z9repairTopPiii").return? {
+probe process("cmp").function("main").return? {
 	if(samp_0[10] == 0) {
 		printf("1 %s\n", thread_indent(-1))
 	}
@@ -161,13 +162,13 @@ probe process("cmp").function("_Z9repairTopPiii").return? {
 probe process("cmp").mark("BEFORE_CYCLE") {
 	samp_0[11] ++
 	if(samp_0[11] == 20) {
-		printf("3 %s BEFORE_CYCLE\n", thread_indent(0))
+		printf("3 %sBEFORE_CYCLE\n", thread_indent(0))
 		samp_0[11] = 0
 	}
 }
 probe process("cmp").mark("BEFORE_CYCLE_end") {
 	if(samp_0[11] == 0) {
-		printf("4 %s BEFORE_CYCLE_end\n", thread_indent(0))
+		printf("4 %sBEFORE_CYCLE_end\n", thread_indent(0))
 	}
 }
 
@@ -179,5 +180,5 @@ probe process("cmp").mark("INSIDE_CYCLE") {
 	}
 }
 probe process("cmp").end {
-	printf("end\n")
+	printf("cmp")
 }
