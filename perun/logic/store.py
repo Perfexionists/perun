@@ -15,7 +15,7 @@ import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
 
-from perun.utils.helpers import IndexEntry, LINE_PARSING_REGEX
+from perun.utils.helpers import LINE_PARSING_REGEX
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException, \
     MalformedIndexFileException
@@ -32,6 +32,37 @@ INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")
 PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
 PENDING_TAG_RANGE_REGEX = re.compile(r"^(\d+)@p-(\d+)@p$")
 
+class BasicIndexEntry(object):
+    """Class representation of one index entry
+
+    This corresponds to the basic version of the index called the Slow Lorris.
+    The issue with this entry is that it is very minimalistic, and requires loading profiles
+    for status and log.
+
+    :ivar time: modification timestamp of the entry profile
+    :ivar checksum: checksum of the object, i.e. the path to its real content
+    :ivar path: the original path to the profile
+    :ivar offset: offset of the entry within the index
+    """
+    def __init__(self, time, checksum, path, offset):
+        """
+        :param time: modification timestamp of the entry profile
+        :param checksum: checksum of the object, i.e. the path to its real content
+        :param path: the original path to the profile
+        :param offset: offset of the entry within the index
+        """
+        self.time = time
+        self.checksum = checksum
+        self.path = path
+        self.offset = offset
+
+    def __eq__(self, other):
+        """Compares two IndexEntries simply by checking the equality of its internal dictionaries
+
+        :param other: other object to be compared
+        :return: whether this object is the same as other
+        """
+        return self.__dict__ == other.__dict__
 
 def touch_file(touched_filename, times=None):
     """
@@ -237,11 +268,11 @@ def walk_index(index_handle):
     """Iterator through index entries
 
     Reads the beginning of the file, verifying the version and type of the index. Then it iterates
-    through all of the index entries and returns them as a IndexEntry structure for further
+    through all of the index entries and returns them as a BasicIndexEntry structure for further
     processing.
 
     :param file index_handle: handle to file containing index
-    :returns IndexEntry: Index entry named tuple
+    :returns BasicIndexEntry: Index entry named tuple
     """
     # Get end of file position
     index_handle.seek(0, 2)
@@ -262,24 +293,22 @@ def walk_index(index_handle):
     number_of_objects = read_int_from_handle(index_handle)
     loaded_objects = 0
 
-    def read_entry():
+    def read_entry_generator():
         """
-        :returns IndexEntry: one read index entry
+        :returns BasicIndexEntry: one read index entry
         """
         # Rather nasty hack, but nothing better comes to my mind currently
-        if index_handle.tell() + 24 >= last_position:
-            return ''
+        while index_handle.tell() + 24 < last_position:
+            file_offset = index_handle.tell()
+            file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
+            file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
+            file_path, byte = "", read_char_from_handle(index_handle)
+            while byte != '\0':
+                file_path += byte
+                byte = read_char_from_handle(index_handle)
+            yield BasicIndexEntry(file_time, file_sha, file_path, file_offset)
 
-        file_offset = index_handle.tell()
-        file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
-        file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
-        file_path, byte = "", read_char_from_handle(index_handle)
-        while byte != '\0':
-            file_path += byte
-            byte = read_char_from_handle(index_handle)
-        return IndexEntry(file_time, file_sha, file_path, file_offset)
-
-    for entry in iter(read_entry, ''):
+    for entry in read_entry_generator():
         loaded_objects += 1
         if loaded_objects > number_of_objects:
             perun_log.error("fatal: malformed index file")
@@ -407,7 +436,7 @@ def write_entry(index_handle, file_entry):
     """Writes entry at current location in the index_handle
 
     :param file index_handle: file handle of the index
-    :param IndexEntry file_entry: entry to be written at current position
+    :param BasicIndexEntry file_entry: entry to be written at current position
     """
     timestamps.write_timestamp(index_handle, timestamps.str_to_timestamp(file_entry.time))
     index_handle.write(bytearray.fromhex(file_entry.checksum))
@@ -422,7 +451,7 @@ def write_entry_to_index(index_file, file_entry):
     and then incrementing the number of entries within the index.
 
     :param str index_file: path to the index file
-    :param IndexEntry file_entry: index entry that will be written to the file
+    :param BasicIndexEntry file_entry: index entry that will be written to the file
     """
     with open(index_file, 'rb+') as index_handle:
         # Lookup the position of the registered file within the index
@@ -468,7 +497,7 @@ def write_entry_to_index(index_file, file_entry):
 def remove_entry_from_index(index_handle, file_entry):
     """
     :param file index_handle: opened file handle of index
-    :param IndexEntry file_entry: removed entry
+    :param BasicIndexEntry file_entry: removed entry
     """
     index_handle.seek(file_entry.offset)
 
@@ -477,8 +506,8 @@ def lookup_entry_within_index(index_handle, predicate):
     """Looks up the first entry within index that satisfies the predicate
 
     :param file index_handle: file handle of the index
-    :param function predicate: predicate that tests given entry in index IndexEntry -> bool
-    :returns IndexEntry: index entry satisfying the given predicate
+    :param function predicate: predicate that tests given entry in index BasicIndexEntry -> bool
+    :returns BasicIndexEntry: index entry satisfying the given predicate
     """
     for entry in walk_index(index_handle):
         if predicate(entry):
@@ -490,9 +519,9 @@ def lookup_entry_within_index(index_handle, predicate):
 def lookup_all_entries_within_index(index_handle, predicate):
     """
     :param file index_handle: file handle of the index
-    :param function predicate: predicate that tests given entry in index IndexEntry -> bool
+    :param function predicate: predicate that tests given entry in index BasicIndexEntry -> bool
 
-    :returns [IndexEntry]: list of index entries satisfying given predicate
+    :returns [BasicIndexEntry]: list of index entries satisfying given predicate
     """
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
 
@@ -515,7 +544,7 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
 
     modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
     entry_name = os.path.split(registered_file)[-1]
-    entry = IndexEntry(modification_stamp, registered_file_checksum, entry_name, -1)
+    entry = BasicIndexEntry(modification_stamp, registered_file_checksum, entry_name, -1)
     write_entry_to_index(minor_index_file, entry)
 
     reg_rel_path = os.path.relpath(registered_file)

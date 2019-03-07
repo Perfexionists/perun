@@ -467,8 +467,8 @@ class ProfileInfo(object):
         self._is_raw_profile = is_raw_profile
         self.source = path
         self.realpath = os.path.relpath(real_path, os.getcwd())
-        self.type = loaded_profile['header']['type']
         self.time = mtime
+        self.type = loaded_profile['header']['type']
         self.cmd = loaded_profile['header']['cmd']
         self.args = loaded_profile['header']['params']
         self.workload = loaded_profile['header']['workload']

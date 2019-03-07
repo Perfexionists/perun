@@ -821,9 +821,6 @@ def load_profile_from_args(profile_name, minor_version):
 
     # Peek the type if the profile is correct and load the json
     _, profile_name = store.split_object_name(pcs.get_object_directory(), chosen_profile.checksum)
-    profile_type = store.peek_profile_type(profile_name)
-    if profile_type == PROFILE_MALFORMED:
-        perun_log.error("malformed profile {}".format(profile_name))
     loaded_profile = profile.load_profile_from_file(profile_name, False)
 
     return loaded_profile
