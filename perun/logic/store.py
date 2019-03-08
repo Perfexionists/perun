@@ -318,6 +318,56 @@ def read_number_of_entries_from_handle(index_handle):
     return number_of_entries
 
 
+def write_list_to_handle(file_handle, list_content, separator=' '):
+    """Writes list to the opened handle
+
+    :param File file_handle: opened file handle of the index
+    :param list list_content: list to be written in the handle
+    :param str separator: separator of the list
+    """
+    string_list = separator.join(list_content)
+    write_string_to_handle(file_handle, string_list)
+
+
+def read_list_from_handle(file_handle, separator=' '):
+    """Reads list from the opened file index handle
+
+    :param File file_handle: opened file handle of the index
+    :param str separator: separator of the list
+    :return: read list
+    """
+    string_list = read_string_from_handle(file_handle)
+    return string_list.split(separator)
+
+
+def write_string_to_handle(file_handle, content):
+    """Writes string to the opened file index handle.
+
+    First we write the number of bytes to the index, and then the actual bytes.
+
+    :param File file_handle: opened file handle of the index
+    :param str content: string content to be written
+    """
+    binary_content = bytes(content, 'utf-8')
+    content_len = len(binary_content)
+    binary_len = struct.pack('<I', content_len)
+    file_handle.write(binary_len)
+    file_handle.write(binary_content)
+
+
+def read_string_from_handle(file_handle):
+    """Reads string from the opened file handle.
+
+    Reads first one integer that states the number of stored bytes, then the bytes.
+
+    :param File file_handle: opened file handle of the index
+    :return: read data
+    """
+    content_len = read_int_from_handle(file_handle)
+    binary_content = file_handle.read(content_len).decode('utf-8')
+    return binary_content
+
+
 def walk_index(index_handle):
     """Iterator through index entries
 

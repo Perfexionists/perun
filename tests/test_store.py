@@ -49,3 +49,21 @@ def test_versions(tmpdir):
     with pytest.raises(SystemExit):
         with open(index_file, 'rb+') as index_handle:
             store.BasicIndexEntry.read_from(index_handle, store.IndexVersion.FastSloth)
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_helpers(tmpdir):
+    index_file = os.path.join(str(tmpdir), "index")
+    store.touch_index(index_file)
+
+    with open(index_file, 'rb+') as index_handle:
+        store.write_string_to_handle(index_handle, "Hello Dolly!")
+        index_handle.seek(0)
+        stored_string = store.read_string_from_handle(index_handle)
+        assert stored_string == "Hello Dolly!"
+
+        current_position = index_handle.tell()
+        store.write_list_to_handle(index_handle, ['hello', 'dolly'])
+        index_handle.seek(current_position)
+        stored_list = store.read_list_from_handle(index_handle)
+        assert stored_list == ['hello', 'dolly']
