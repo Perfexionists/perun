@@ -43,6 +43,8 @@ def test_cli(pcs_full):
 
 def run_non_param_test(runner, test_params, expected_exit_code, expected_output):
     result = runner.invoke(cli.postprocessby, test_params)
+    if result.exit_code != expected_exit_code:
+        print(result.output)
     assert result.exit_code == expected_exit_code
     assert expected_output in result.output
 
@@ -143,31 +145,21 @@ def test_regressogram_correct(pcs_full):
 
 
 def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_idx):
-    def call_test_runner(params, test_sample):
-        run_non_param_test(runner, params, exit_code, test_sample.get('output', 'Successfully postprocessed'))
-
     # Set stable parameters at all tests
     moving_average_params = [cprof_idx, 'moving-average']
     # Set the supported methods at moving average postprocessor
-    moving_average_methods = {0: ['sma'], 1: ['smm'], 2: ['ema']}
+    moving_average_methods = {0: [], 1: ['smm'], 2: ['sma'], 3: ['ema'], 4: []}
     # Executing the testing
+    method_idx = 0
     for idx, test in enumerate(tests_set):
-        # tests moving average cli commands
-        if idx < tests_edge[0]:
-            call_test_runner(moving_average_params + test['params'], test)
-        # test common options for SMA command and SMM command
-        elif idx < tests_edge[1]:
-            for n in range(0, len(moving_average_methods) - 1):
-                call_test_runner(moving_average_params + moving_average_methods[n] + test['params'], test)
-        # test individual options for Simple Moving Average command: SMA
-        elif idx < tests_edge[2]:
-            call_test_runner(moving_average_params + moving_average_methods[0] + test['params'], test)
-        # test individual options for Exponential Moving Average command: EMA
-        elif idx < tests_edge[3]:
-            call_test_runner(moving_average_params + moving_average_methods[2] + test['params'], test)
-        # test complex combinations of options and commands
-        elif idx < tests_edge[4]:
-            call_test_runner(moving_average_params + test['params'], test)
+        if method_idx == 1:
+            for n in range(method_idx, 3):
+                run_non_param_test(runner, moving_average_params + moving_average_methods[n] + test['params'],
+                                   exit_code, test.get('output', 'Successfully postprocessed'))
+        else:
+            run_non_param_test(runner, moving_average_params + moving_average_methods[method_idx] + test['params'],
+                               exit_code, test.get('output', 'Successfully postprocessed'))
+        method_idx += 1 if idx + 1 == tests_edge[method_idx] else 0
 
 
 def test_moving_average_incorrect(pcs_full):
@@ -349,7 +341,7 @@ def test_moving_average_correct(pcs_full):
         # 34. Test complex combination of parameters no.1 - SMM
         {'params': ['--min_periods', 3, 'smm', '--no-center', '--window_width', 15]},
     ]
-    tests_edge = [7, 10, 23, 27, 33]
+    tests_edge = [7, 10, 23, 27, 34]
 
     # Instantiate the runner first
     runner = CliRunner()
@@ -361,6 +353,352 @@ def test_moving_average_correct(pcs_full):
 
     # Perform the testing
     moving_average_runner_test(runner, correct_tests, tests_edge, 0, cprof_idx)
+
+
+def kernel_regression_runner_test(runner, tests_set, tests_edge, exit_code, cprof_idx):
+    # Set stable parameters at all tests
+    kernel_regression_params = [cprof_idx, 'kernel-regression']
+    # Set the supported methods at moving average postprocessor
+    kernel_regression_modes = {0: [], 1: ['estimator-settings'], 2: ['method-selection'], 3: ['user-selection'],
+                               4: ['kernel-ridge'], 5: ['kernel-smoothing']}
+    # Executing the testing
+    mode_idx = 0
+    for idx, test in enumerate(tests_set):
+        run_non_param_test(runner, kernel_regression_params + kernel_regression_modes[mode_idx] + test['params'],
+                           exit_code, test.get('output', 'Successfully postprocessed'))
+        mode_idx += 1 if idx + 1 == tests_edge[mode_idx] else 0
+
+
+def test_kernel_regression_incorrect(pcs_full):
+    """
+    Test various failure scenarios for kernel regression cli.
+
+    Expecting no exceptions, all tests should end with status code 2.
+    """
+    incorrect_tests = [
+        # TEST COMMON OPTIONS OF KERNEL-REGRESSION CLI AND IT COMMANDS
+        # 1. Test non-existing argument
+        {'params': ['--ajax'], 'output': 'no such option: --ajax'},
+        # 2. Test non-existing command
+        {'params': ['my-selection'], 'output': 'No such command "my-selection"'},
+        # 3. Test non-existing argument
+        {'params': ['-c'], 'output': 'no such option: -c'},
+        # 4. Test malformed per-key argument
+        {'params': ['--per-keys'], 'output': 'no such option: --per-keys'},
+        # 5. Test missing per-key value
+        {'params': ['-per'], 'output': '-per option requires an argument'},
+        # 6. Test invalid value for per-key argument
+        {'params': ['--per-key', 'randomize'], 'output': 'Invalid value for "--per-key"'},
+        # 7. Test malformed of-key argument
+        {'params': ['--off-key'], 'output': 'no such option: --off-key'},
+        # 8. Test missing of-key value
+        {'params': ['-of'], 'output': '-of option requires an argument'},
+        # 9. Test invalid value for per-key argument
+        {'params': ['-of', 'invalid'], 'output': 'Invalid value for "--of-key"'},
+        # 10. Test malformed estimator-settings command
+        {'params': ['estimator-setting'], 'output': 'No such command "estimator-setting"'},
+        # 11. Test malformed user-selection command
+        {'params': ['user_selection'], 'output': 'No such command "user_selection"'},
+        # 12. Test malformed method-selection command
+        {'params': ['method-selections'], 'output': 'No such command "method-selections"'},
+        # 13. Test malformed kernel-smoothing command
+        {'params': ['krnel-smoothing'], 'output': 'No such command "krnel-smoothing"'},
+        # 14. Test malformed kernel-ridge command
+        {'params': ['kernel-rigde'], 'output': 'No such command "kernel-rigde"'},
+
+        # TEST OPTIONS OF ESTIMATOR-SETTINGS MODES IN KERNEL-REGRESSION CLI
+        # 15. Test malformed reg-type argument
+        {'params': ['--reg-types'], 'output': 'no such option: --reg-types'},
+        # 16. Test missing reg-type value
+        {'params': ['-rt'], 'output': '-rt option requires an argument'},
+        # 17. Test invalid value for reg-type argument
+        {'params': ['--reg-type', 'lp'], 'output': 'Invalid value for "--reg-type"'},
+        # 18. Test malformed bandwidth-method argument
+        {'params': ['--bandwidht-method'], 'output': 'no such option: --bandwidht-method'},
+        # 19. Test missing bandwidth-value value
+        {'params': ['-bw'], 'output': '-bw option requires an argument'},
+        # 20. Test invalid value for bandwidth-value argument
+        {'params': ['-bw', 'cv-ls'], 'output': 'Invalid value for "--bandwidth-method"'},
+        # 21. Test malformed n-sub argument
+        {'params': ['--n-sbu'], 'output': 'no such option: --n-sbu'},
+        # 22. Test missing n-sub argument
+        {'params': ['-ns'], 'output': '-ns option requires an argument'},
+        # 23. Test invalid value for n-sub argument
+        {'params': ['-ns', 0], 'output': 'Invalid value for "--n-sub"'},
+        # 24. Test malformed n-res argument
+        {'params': ['--n-rez'], 'output': 'no such option: --n-rez'},
+        # 25. Test missing n-sub argument
+        {'params': ['-nr'], 'output': '-nr option requires an argument'},
+        # 26. Test invalid value for n-sub argument
+        {'params': ['--n-res', 0], 'output': 'Invalid value for "--n-res"'},
+        # 27. Test malformed efficient argument
+        {'params': ['--eficient'], 'output': 'no such option: --eficient'},
+        # 28. Test malformed no-efficient argument
+        {'params': ['--no-eficient'], 'output': 'no such option: --no-eficient'},
+        # 29. Test value for efficient argument
+        {'params': ['--efficient', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        # 30. Test value for no-efficient argument
+        {'params': ['--no-efficient', 'False'], 'output': 'Got unexpected extra argument (False)'},
+        # 31. Test malformed randomize argument
+        {'params': ['--randomized'], 'output': 'no such option: --randomized'},
+        # 32. Test malformed no-randomize argument
+        {'params': ['--no-randomized'], 'output': 'no such option: --no-randomized'},
+        # 33. Test value for randomize argument
+        {'params': ['--randomize', 'False'], 'output': 'Got unexpected extra argument (False)'},
+        # 34. Test value for no-randomize argument
+        {'params': ['--no-randomize', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        # 35. Test malformed return-median argument
+        {'params': ['--returns-median'], 'output': 'no such option: --returns-median'},
+        # 36. Test malformed return-mean argument
+        {'params': ['--returns-mean'], 'output': 'no such option: --returns-mean'},
+        # 37. Test value for return-median argument
+        {'params': ['--return-median', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        # 38. Test value for return-mean argument
+        {'params': ['--return-mean', 'False'], 'output': 'Got unexpected extra argument (False)'},
+
+        # TEST OPTIONS OF METHOD-SELECTION MODES IN KERNEL-REGRESSION CLI
+        # 39. Test malformed reg-type argument
+        {'params': ['--reg-types'], 'output': 'no such option: --reg-types'},
+        # 40. Test missing reg-type value
+        {'params': ['-rt'], 'output': '-rt option requires an argument'},
+        # 41. Test invalid value for reg-type argument
+        {'params': ['--reg-type', 'lb'], 'output': 'Invalid value for "--reg-type"'},
+        # 42. Test malformed bandwidth-method argument
+        {'params': ['--bandwidth-methods'], 'output': 'no such option: --bandwidth-methods'},
+        # 43. Test missing bandwidth-method value
+        {'params': ['-bm'], 'output': '-bm option requires an argument'},
+        # 44. Test invalid value for bandwidth-method argument
+        {'params': ['-bm', 'goldman'], 'output': 'Invalid value for "--bandwidth-method"'},
+
+        # TEST OPTIONS OF USER-SELECTION MODES IN KERNEL-REGRESSION CLI
+        # 45. Test malformed reg-type argument
+        {'params': ['--reg-types'], 'output': 'no such option: --reg-types'},
+        # 46. Test missing reg-type value
+        {'params': ['-rt'], 'output': '-rt option requires an argument'},
+        # 47. Test invalid value for reg-type argument
+        {'params': ['--reg-type', 'pp'], 'output': 'Invalid value for "--reg-type"'},
+        # 48. Test malformed bandwidth-value argument
+        {'params': ['--bandwidth-values'], 'output': 'no such option: --bandwidth-values'},
+        # 49. Test missing bandwidth-value value
+        {'params': ['-bv'], 'output': '-bv option requires an argument'},
+        # 50. Test invalid value for bandwidth-value argument
+        {'params': ['--bandwidth-value', -2], 'output': 'Invalid value for "--bandwidth-value"'},
+
+        # TEST OPTIONS OF KERNEL-RIDGE MODES IN KERNEL-REGRESSION CLI
+        # 51. Test malformed gamma-range argument
+        {'params': ['--gama-range'], 'output': 'no such option: --gama-range'},
+        # 52. Test missing gamma-range value
+        {'params': ['-gr'], 'output': '-gr option requires 2 arguments'},
+        # 53. Test wrong count of value gamma-range argument
+        {'params': ['--gamma-range', 2], 'output': '--gamma-range option requires 2 arguments'},
+        # 54. Test wrong type of values gamma-range argument
+        {'params': ['-gr', 'A', 'A'], 'output': 'Invalid value for "--gamma-range"'},
+        # 55. Test invalid values gamma-range argument
+        {'params': ['-gr', 2, 2], 'output': 'Invalid values: 1.value must be < then the 2.value'},
+        # 56. Test malformed gamma-step argument
+        {'params': ['--gamma-steps'], 'output': 'no such option: --gamma-steps'},
+        # 57. Test missing gamma-step value
+        {'params': ['-gs'], 'output': '-gs option requires an argument'},
+        # 58. Test invalid value gamma-step argument no.1
+        {'params': ['--gamma-step', 0], 'output': 'Invalid value for "--gamma-step"'},
+        # 59. Test invalid value gamma-step argument no.2
+        {'params': ['--gamma-step', 10], 'output': 'Invalid values: step must be < then the length of the range'},
+
+        # TEST OPTIONS OF KERNEL-SMOOTHING MODES IN KERNEL-REGRESSION CLI
+        # 60. Test malformed kernel-type argument
+        {'params': ['--kernel-typse'], 'output': 'no such option: --kernel-typse'},
+        # 61. Test missing kernel-type value
+        {'params': ['-kt'], 'output': '-kt option requires an argument'},
+        # 62. Test invalid value of kernel-type argument
+        {'params': ['--kernel-type', 'epanechnikov5'], 'output': 'Invalid value for "--kernel-type"'},
+        # 63. Test malformed smoothing-method argument
+        {'params': ['--smothing-method'], 'output': 'no such option: --smothing-method'},
+        # 64. Test missing smoothing-method value
+        {'params': ['-sm'], 'output': '-sm option requires an argument'},
+        # 65. Test invalid value of smoothing method argument
+        {'params': ['-sm', 'local-constant'], 'output': 'Invalid value for "--smoothing-method"'},
+        # 66. Test malformed bandwidth-value argument
+        {'params': ['--bandwith-value'], 'output': 'no such option: --bandwith-value'},
+        # 67. Test missing bandwidth-value value
+        {'params': ['-bv'], 'output': '-bv option requires an argument'},
+        # 68. Test invalid value for bandwidth-value argument
+        {'params': ['-bv', -100], 'output': 'Invalid value for "--bandwidth-value"'},
+        # 69. Test malformed bandwidth-method argument
+        {'params': ['--bandwidht-method'], 'output': 'no such option: --bandwidht-method'},
+        # 70. Test missing bandwidth-method value
+        {'params': ['-bm'], 'output': '-bm option requires an argument'},
+        # 71. Test invalid value for bandwidth-method argument
+        {'params': ['--bandwidth-method', 'sccot'], 'output': 'Invalid value for "--bandwidth-method"'},
+        # 72. Test malformed polynomial-order argument
+        {'params': ['--polynomila-order'], 'output': 'no such option: --polynomila-order'},
+        # 73. Test missing value for polynomial-order argument
+        {'params': ['-q'], 'output': '-q option requires an argument'},
+        # 74. Test invalid value for polynomial-order argument
+        {'params': ['-q', 0], 'output': 'Invalid value for "--polynomial-order"'},
+    ]
+    tests_edge = [14, 38, 44, 50, 59, 74]
+
+    # Instantiate the runner first
+    runner = CliRunner()
+
+    result = runner.invoke(cli.status, [])
+    match = re.search(r'([0-9]+@i).*mixed', result.output)
+    assert match
+    cprof_idx = match.groups(1)[0]
+
+    # Perform the testing
+    kernel_regression_runner_test(runner, incorrect_tests, tests_edge, 2, cprof_idx)
+
+
+def test_kernel_regression_correct(pcs_full):
+    """
+    Test correct usages of the kernel regression cli.
+
+    Expecting no exceptions and errors, all tests should end with status code 0.
+    """
+    correct_tests = [
+        # TEST KERNEL-REGRESSION COMMON OPTIONS
+        # 1. Test the help printout first
+        {'params': ['--help'], 'output': 'Usage'},
+        # 2. Test default command
+        {'params': []},
+        # 3. Test the value of per_key parameter
+        {'params': ['-per', 'amount']},
+        # 4. Test the value of of_key parameter
+        {'params': ['--of-key', 'structure-unit-size']},
+        # 5. Test the whole set of options (per-key, of-key)
+        {'params': ['-of', 'structure-unit-size', '--per-key', 'amount']},
+
+        # TEST ESTIMATOR SETTINGS OPTIONS
+        # 6. Test the help printout first
+        {'params': ['--help'], 'output': 'Usage'},
+        # 7. Test the default values of whole set of options
+        {'params': []},
+        # 8. Test the `ll` as value for reg-type parameter
+        {'params': ['--reg-type', 'll']},
+        # 9. Test the `lc` as value for reg-type parameter
+        {'params': ['-rt', 'lc']},
+        # 10. Test the `cv_ls as value for bandwidth-method argument
+        {'params': ['-bw', 'cv_ls']},
+        # 11. Test the `aic` as value for bandwidth-method argument
+        {'params': ['--bandwidth-method', 'aic']},
+        # 12. Test the valid value for n-sub argument
+        {'params': ['--n-sub', 20]},
+        # 13. Test the valid value for n-res argument
+        {'params': ['--n-res', 10]},
+        # 14. Test the efficient argument - ON
+        {'params': ['--efficient']},
+        # 15. Test the no-efficient argument - OFF
+        {'params': ['--no-efficient']},
+        # 16. Test the randomize argument - ON
+        {'params': ['--randomize']},
+        # 17. Test the no-randomize argument - OFF
+        {'params': ['--no-randomize']},
+        # 18. Test the return-mean argument
+        {'params': ['--return-mean']},
+        # 19. Test the return-median argument
+        {'params': ['--return-median']},
+        # 20. Test the complex combinations of options - no.1
+        {'params': ['--reg-type', 'll', '--bandwidth-method', 'cv_ls', '--efficient', '--randomize', '--n-sub', 20]},
+        # 21. Test the complex combinations of options - no.2
+        {'params': ['-bw', 'aic', '-nr', 10, '-ns', 50, '--randomize', '--efficient']},
+        # 22. Test the complex combinations of options - no.3
+        {'params': ['-rt', 'lc', '--return-median', '--randomize', '--n-res', 5]},
+
+        # TEST METHOD-SELECTION OPTIONS
+        # 23. Test the help printout first
+        {'params': ['--help'], 'output': 'Usage'},
+        # 24. Test the default values of whole set of options
+        {'params': []},
+        # 25. Test `ll` as value for reg-type argument
+        {'params': ['-rt', 'll']},
+        # 26. Test `lc` a value for reg-type argument
+        {'params': ['--reg-type', 'lc']},
+        # 27. Test `scott` method as value for bandwidth-method argument
+        {'params': ['--bandwidth-method', 'scott']},
+        # 28. Test `silverman` method as value for bandwidth-method argument
+        {'params': ['-bm', 'silverman']},
+        # 29. Test complex combination of options - no.1
+        {'params': ['--reg-type', 'll', '--bandwidth-method', 'scott']},
+        # 30. Test complex combination of options - no.2
+        {'params': ['-rt', 'lc', '-bm', 'silverman']},
+
+        # TEST USER-SELECTION OPTIONS
+        # 31. Test the help printout first
+        {'params': ['--help'], 'output': 'Usage'},
+        # 32. Test valid value for bandwidth-value argument
+        {'params': ['--bandwidth-value', .7582]},
+        # 33. Test complex combination of options - no.1
+        {'params': ['--reg-type', 'lc', '-bv', 2]},
+        # 34. Test complex combination of option - no.2
+        {'params': ['--bandwidth-value', 3e-2, '-rt', 'll']},
+
+        # TEST KERNEL-RIDGE OPTIONS
+        # 35. Test the help printout first
+        {'params': ['--help'], 'output': 'Usage'},
+        # 36. Test the default values of whole set of options
+        {'params': []},
+        # 37. Test valid range values for gamma-range argument
+        {'params': ['--gamma-range', 1e-5, 1e-1]},
+        # 38. Test valid value for gamma-step argument
+        {'params': ['--gamma-step', 3e-2]},
+        # 39. Test complex combination of options - no.1
+        {'params': ['--gamma-range', 1e-4, 1e-2, '--gamma-step', 1e-5]},
+        # 40. Test complex combination of options - no.2
+        {'params': ['-gs', 1e-2, '--gamma-range', 1e-4, 1e-1]},
+
+        # TEST KERNEL-SMOOTHING OPTIONS
+        # 41. Test the help printout first
+        {'params': ['--help'], 'output': 'Usage'},
+        # 42. Test the default values of whole set of options
+        {'params': []},
+        # 43. Test `normal` kernel for kernel-type argument
+        {'params': ['--kernel-type', 'normal']},
+        # 44. Test `normal4` kernel for kernel-type argument
+        {'params': ['--kernel-type', 'normal4']},
+        # 45. Test `tricube` kernel for kernel-type argument
+        {'params': ['-kt', 'tricube']},
+        # 46. Test `epanechnikov` kernel for kernel-type argument
+        {'params': ['-kt', 'epanechnikov']},
+        # 47. Test `epanechnikov4` kernel for kernel-type argument
+        {'params': ['--kernel-type', 'epanechnikov']},
+        # 48. Test `local-polynomial` method for smoothing-method argument
+        {'params': ['--smoothing-method', 'local-polynomial']},
+        # 49. Test `local-linear` method for smoothing-method argument
+        {'params': ['--smoothing-method', 'local-linear']},
+        # 50. Test `spatial-average` method for smoothing-method argument
+        {'params': ['-sm', 'spatial-average']},
+        # 51. Test `scott` method as value for bandwidth-method argument
+        {'params': ['-bm', 'scott']},
+        # 52. Test `silverman` method as value for bandwidth-method argument
+        {'params': ['--bandwidth-method', 'silverman']},
+        # 53. Test valid value for bandwidth-value argument
+        {'params': ['-bv', .7582]},
+        # 54. Test valid value for polynomial-order argument
+        {'params': ['--smoothing-method', 'local-polynomial', '--polynomial-order', 5]},
+        # 55. Test complex combination of options - no.1
+        {'params': ['--kernel-type', 'epanechnikov', '--smoothing-method', 'local-linear', '-bm', 'silverman']},
+        # 56. Test complex combination of options - no.2
+        {'params': ['-kt', 'normal', '-sm', 'local-polynomial', '--polynomial-order', 8, '-bv', 1]},
+        # 57. Test complex combination of options - no.3
+        {'params': ['--kernel-type', 'normal', '-sm', 'local-linear', '--bandwidth-value', .5]},
+        # 58. Test complex combination of options - no.5
+        {'params': ['--kernel-type', 'normal', '-sm', 'local-polynomial', '--bandwidth-value', 1e-10]},
+        # 59. Test complex combination of options - no.4
+        {'params': ['--smoothing-method', 'spatial-average', '--bandwidth-method', 'scott', '--kernel-type', 'tricube']}
+    ]
+    tests_edge = [5, 22, 30, 34, 40, 59]
+
+    # Instantiate the runner first
+    runner = CliRunner()
+
+    result = runner.invoke(cli.status, [])
+    match = re.search(r'([0-9]+@i).*mixed', result.output)
+    assert match
+    cprof_idx = match.groups(1)[0]
+
+    # Perform the testing
+    kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, cprof_idx)
 
 
 def test_reg_analysis_incorrect(pcs_full):

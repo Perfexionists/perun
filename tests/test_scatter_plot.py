@@ -39,13 +39,13 @@ def test_scatter_plot_regression_models(postprocess_profiles):
             assert False
 
 
-def test_scatter_plot_regressogram_and_moving_average(postprocess_profiles):
+def test_scatter_plot_non_param_methods(postprocess_profiles):
     """ Test the scatter plot on complexity profiles with regressogram.
 
     Expecting no errors or exceptions.
     """
     # Filter the postprocess profiles with regressogram
-    tested_profiles = [p for p in list(postprocess_profiles) if 'rg_ma' in p[0]]
+    tested_profiles = [p for p in list(postprocess_profiles) if 'rg_ma_kr' in p[0]]
     assert len(tested_profiles) == 3
 
     for profile in tested_profiles:
@@ -56,9 +56,9 @@ def test_scatter_plot_regressogram_and_moving_average(postprocess_profiles):
         results = list(map(operator.itemgetter(0), graphs))
 
         # Check if scatter plot generated expected amount of graphs for each profile
-        if 'exp_datapoints_rg_ma.perf' in profile[0] or 'pow_datapoints_rg_ma.perf' in profile[0]:
+        if 'exp_datapoints_rg_ma_kr.perf' in profile[0] or 'pow_datapoints_rg_ma_kr.perf' in profile[0]:
             assert len(results) == 3
-        elif 'lin_datapoints_rg_ma.perf' in profile[0]:
+        elif 'lin_datapoints_rg_ma_kr.perf' in profile[0]:
             assert len(results) == 2
         else:
             assert False
