@@ -36,8 +36,7 @@ def postprocess(profile, **configuration):
 # TODO: The possibility of after postprocessing phase
 
 @click.command()
-@click.option('--bucket_number', '-bn', required=False, multiple=False,
-              type=click.IntRange(min=1, max=None, clamp=True),
+@click.option('--bucket_number', '-bn', required=False, multiple=False, type=click.IntRange(min=1, max=None),
               help=('Restricts the number of buckets to which will be '
                     'placed the values of the selected statistics.'))
 @click.option('--bucket_method', '-bm', required=False,
