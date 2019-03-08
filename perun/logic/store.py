@@ -11,6 +11,8 @@ import string
 import struct
 import zlib
 
+from enum import Enum
+
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
@@ -27,6 +29,10 @@ with demandimport.enabled():
 __author__ = 'Tomas Fiedor'
 
 
+IndexVersion = Enum(
+    'IndexVersion',
+    'SlowLorris FastSloth'
+)
 INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
 INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")
 PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
@@ -44,6 +50,8 @@ class BasicIndexEntry(object):
     :ivar path: the original path to the profile
     :ivar offset: offset of the entry within the index
     """
+    version = IndexVersion.SlowLorris
+
     def __init__(self, time, checksum, path, offset):
         """
         :param time: modification timestamp of the entry profile
@@ -74,9 +82,11 @@ class BasicIndexEntry(object):
         TODO: add check for index version
 
         :param File index_handle: opened index handle
-        :param int index_version: version of the opened index
+        :param IndexVersion index_version: version of the opened index
         :return: one read BasicIndexEntry
         """
+        if BasicIndexEntry.version.value < index_version.value:
+            perun_log.error("internal error: called read_from() for BasicIndexEntry")
         file_offset = index_handle.tell()
         file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
         file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
@@ -338,7 +348,7 @@ def walk_index(index_handle):
     loaded_objects = 0
 
     while index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects:
-        entry = BasicIndexEntry.read_from(index_handle, index_version)
+        entry = BasicIndexEntry.read_from(index_handle, IndexVersion(index_version))
         loaded_objects += 1
         yield entry
 

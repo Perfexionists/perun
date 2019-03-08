@@ -4,6 +4,7 @@ import pytest
 import perun.logic.store as store
 import perun.utils.helpers as helpers
 import perun.utils.exceptions as exceptions
+import perun.utils.timestamps as timestamps
 
 __author__ = 'Tomas Fiedor'
 
@@ -33,3 +34,18 @@ def test_correct_index(tmpdir):
     index_file = os.path.join(str(tmpdir), "index")
     store.touch_index(index_file)
     store.print_index(index_file)
+
+@pytest.mark.usefixtures('cleandir')
+def test_versions(tmpdir):
+    """Test correct working with index"""
+    index_file = os.path.join(str(tmpdir), "index")
+    store.touch_index(index_file)
+
+    st = timestamps.timestamp_to_str(os.stat(index_file).st_mtime)
+    sha = store.compute_checksum("Wow, such checksum".encode('utf-8'))
+    basic_entry = store.BasicIndexEntry(st, sha, index_file, -1)
+    store.write_entry_to_index(index_file, basic_entry)
+
+    with pytest.raises(SystemExit):
+        with open(index_file, 'rb+') as index_handle:
+            store.BasicIndexEntry.read_from(index_handle, store.IndexVersion.FastSloth)
