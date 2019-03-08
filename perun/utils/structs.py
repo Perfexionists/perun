@@ -88,6 +88,7 @@ class DegradationInfo(object):
             optimized or degraded
         :param str tt: value or model representing the target, i.e. to which the new version was
             optimized or degraded
+        :param int rd: quantified rate of the degradation, i.e. how much exactly it degrades
         :param str ct: type of the confidence we have in the detected degradation, e.g. r^2
         :param float cr: value of the confidence we have in the detected degradation
         """
@@ -105,12 +106,13 @@ class DegradationInfo(object):
 
         :return: string representation of the degradation as a stored record in the file
         """
-        return "{} {} {} {} {} {} {}".format(
+        return "{} {} {} {} {} {} {} {}".format(
             self.location,
             self.result,
             self.type,
             self.from_baseline,
             self.to_target,
+            self.rate_degradation,
             self.confidence_type,
             self.confidence_rate
         )

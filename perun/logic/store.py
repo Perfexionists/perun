@@ -64,6 +64,50 @@ class BasicIndexEntry(object):
         """
         return self.__dict__ == other.__dict__
 
+    @classmethod
+    def read_from(cls, index_handle, index_version):
+        """Reads the entry from the index handle
+
+        This is basic version, which stores only the information of timestamp, sha and path of the
+        file.
+
+        TODO: add check for index version
+
+        :param File index_handle: opened index handle
+        :param int index_version: version of the opened index
+        :return: one read BasicIndexEntry
+        """
+        file_offset = index_handle.tell()
+        file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
+        file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
+        file_path, byte = "", read_char_from_handle(index_handle)
+        while byte != '\0':
+            file_path += byte
+            byte = read_char_from_handle(index_handle)
+        return BasicIndexEntry(file_time, file_sha, file_path, file_offset)
+
+    def write_to(self, index_handle):
+        """Writes entry at current location in the index_handle
+
+        :param file index_handle: file handle of the index
+        """
+        timestamps.write_timestamp(index_handle, timestamps.str_to_timestamp(self.time))
+        index_handle.write(bytearray.fromhex(self.checksum))
+        index_handle.write(bytes(self.path, 'utf-8'))
+        index_handle.write(struct.pack('B', 0))
+
+    def __str__(self):
+        """Converts the entry to one string representation
+
+        :return:  string representation of the entry
+        """
+        return " @{3} {2} -> {1} ({0})".format(
+            self.time,
+            self.checksum,
+            self.path,
+            self.offset
+        )
+
 def touch_file(touched_filename, times=None):
     """
     Corresponding implementation of touch inside python.
@@ -293,29 +337,14 @@ def walk_index(index_handle):
     number_of_objects = read_int_from_handle(index_handle)
     loaded_objects = 0
 
-    def read_entry_generator():
-        """
-        :returns BasicIndexEntry: one read index entry
-        """
-        # Rather nasty hack, but nothing better comes to my mind currently
-        while index_handle.tell() + 24 < last_position:
-            file_offset = index_handle.tell()
-            file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
-            file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
-            file_path, byte = "", read_char_from_handle(index_handle)
-            while byte != '\0':
-                file_path += byte
-                byte = read_char_from_handle(index_handle)
-            yield BasicIndexEntry(file_time, file_sha, file_path, file_offset)
-
-    for entry in read_entry_generator():
+    while index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects:
+        entry = BasicIndexEntry.read_from(index_handle, index_version)
         loaded_objects += 1
-        if loaded_objects > number_of_objects:
-            perun_log.error("fatal: malformed index file")
         yield entry
 
     if loaded_objects != number_of_objects:
-        perun_log.error("fatal: malformed index file")
+        perun_log.error("fatal: "
+                        "malformed index file: too many or too few objects registered in index")
 
 
 def print_index(index_file):
@@ -341,12 +370,7 @@ def print_index_from_handle(index_handle):
     ))
 
     for entry in walk_index(index_handle):
-        print(" @{3} {2} -> {1} ({0})".format(
-            entry.time,
-            entry.checksum,
-            entry.path,
-            entry.offset
-        ))
+        print(str(entry))
 
 
 def get_profile_list_for_minor(base_dir, minor_version):
@@ -378,7 +402,7 @@ def get_profile_number_for_minor(base_dir, minor_version):
             profile_type: 0 for profile_type in helpers.SUPPORTED_PROFILE_TYPES
         }
 
-        # Fixme: Maybe this could be done more efficiently?
+        # Fixme: Remove the peek_profile_type dependency if possible
         with open(minor_index_file, 'rb') as index_handle:
             # Read the overall
             index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
@@ -432,18 +456,6 @@ def modify_number_of_entries_in_index(index_handle, modify):
     index_handle.write(struct.pack('i', modify(number_of_entries)))
 
 
-def write_entry(index_handle, file_entry):
-    """Writes entry at current location in the index_handle
-
-    :param file index_handle: file handle of the index
-    :param BasicIndexEntry file_entry: entry to be written at current position
-    """
-    timestamps.write_timestamp(index_handle, timestamps.str_to_timestamp(file_entry.time))
-    index_handle.write(bytearray.fromhex(file_entry.checksum))
-    index_handle.write(bytes(file_entry.path, 'utf-8'))
-    index_handle.write(struct.pack('B', 0))
-
-
 def write_entry_to_index(index_file, file_entry):
     """Writes the file_entry to its appropriate position within the index.
 
@@ -488,18 +500,10 @@ def write_entry_to_index(index_file, file_entry):
         index_handle.seek(offset_in_file)
 
         # Write the index_file entry to index
-        write_entry(index_handle, file_entry)
+        file_entry.write_to(index_handle)
 
         # Write the stuff stored in buffer
         index_handle.write(buffer)
-
-
-def remove_entry_from_index(index_handle, file_entry):
-    """
-    :param file index_handle: opened file handle of index
-    :param BasicIndexEntry file_entry: removed entry
-    """
-    index_handle.seek(file_entry.offset)
 
 
 def lookup_entry_within_index(index_handle, predicate):
@@ -600,7 +604,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
         for entry in all_entries:
             if entry in removed_entries:
                 continue
-            write_entry(index_handle, entry)
+            entry.write_to(index_handle)
 
         index_handle.truncate()
 
@@ -654,6 +658,7 @@ def parse_changelog_line(line):
         tokens.group('location'),
         tokens.group('from'),
         tokens.group('to'),
+        tokens.group('drate'),
         tokens.group('ctype'),
         float(tokens.group('crate'))
     )

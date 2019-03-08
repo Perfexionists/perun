@@ -76,10 +76,10 @@ def average_amount_threshold(baseline_profile, target_profile):
     for target_uid, target_average in target_averages.items():
         baseline_average = baseline_averages.get(target_uid, None)
         if baseline_average is not None:
-            difference_ration = tools.safe_division(target_average, baseline_average)
-            if difference_ration >= DEGRADATION_THRESHOLD:
+            difference_ratio = tools.safe_division(target_average, baseline_average)
+            if difference_ratio >= DEGRADATION_THRESHOLD:
                 change = check.PerformanceChange.Degradation
-            elif difference_ration <= OPTIMIZATION_THRESHOLD:
+            elif difference_ratio <= OPTIMIZATION_THRESHOLD:
                 change = check.PerformanceChange.Optimization
             else:
                 change = check.PerformanceChange.NoChange
@@ -87,5 +87,6 @@ def average_amount_threshold(baseline_profile, target_profile):
             yield DegradationInfo(
                 change, resource_type, target_uid,
                 "{}{}".format(baseline_average.round(2), unit),
-                "{}{}".format(target_average.round(2), unit)
+                "{}{}".format(target_average.round(2), unit),
+                difference_ratio,
             )

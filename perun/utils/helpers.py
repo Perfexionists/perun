@@ -109,6 +109,7 @@ LINE_PARSING_REGEX = re.compile(
     r"(?P<type>\S+)\s"
     r"(?P<from>\S+)\s"
     r"(?P<to>\S+)\s"
+    r"(?P<drate>\S+)\s"
     r"(?P<ctype>\S+)\s"
     r"(?P<crate>\S+)\s"
     r"(?P<minor>\S+)\s"

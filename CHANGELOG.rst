@@ -6,7 +6,10 @@ HEAD
 
 **To be included in next release**
 
-0.16.4 (2019-03-22)
+  - fix minor bug in storing changes
+  - extracted index entry specific functions to isolate class (in order to create new versions)
+
+0.16.5 (2019-03-22)
 -------------------
 
 `commit: a2bd359479920178cfed1a0de779ef6fa5f4d4ac`
