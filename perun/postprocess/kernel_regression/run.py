@@ -87,9 +87,9 @@ def postprocess(profile, **configuration):
                     'of size <n_sub> from the full sample. If set to False (default), is performed by '
                     'slicing the full sample in sub-samples of <n_sub> size, so that all samples are '
                     'used once.'))
-@click.option('--n-sub', '-ns', type=click.IntRange(min=1, max=None, clamp=True), default=_DEFAULT_N_SUB,
+@click.option('--n-sub', '-ns', type=click.IntRange(min=1, max=None), default=_DEFAULT_N_SUB,
               help='Size of the sub-samples (default is 50).')
-@click.option('--n-res', '-nr', type=click.IntRange(min=1, max=None, clamp=True), default=_DEFAULT_N_RES,
+@click.option('--n-res', '-nr', type=click.IntRange(min=1, max=None), default=_DEFAULT_N_RES,
               help=('The number of random re-samples used to bandwidth estimation. '
                     'It has effect only if <randomize> is set to True. Default values is 25.'))
 @click.option('--return-median/--return-mean', default=_DEFAULT_RETURN_MEDIAN,
@@ -110,7 +110,7 @@ def estimator_settings(ctx, **kwargs):
               help=('Provides the type for regression estimator. Supported types are: "lc": local-constant '
                     '(Nadaraya-Watson) and "ll": local-linear estimator. Default is "ll". For more information '
                     'about these types you can visit Perun Documentation.'))
-@click.option('--bandwidth-value', '-bv', type=click.FLOAT, required=True,
+@click.option('--bandwidth-value', '-bv', type=click.FloatRange(min=1e-10, max=None), required=True,
               help='The float value of <bandwidth> defined by user, which will be used at kernel regression.')
 @click.pass_context
 def user_selection(ctx, **kwargs):
@@ -127,7 +127,8 @@ def user_selection(ctx, **kwargs):
               help=('Provides the type for regression estimator. Supported types are: "lc": local-constant '
                     '(Nadaraya-Watson) and "ll": local-linear estimator. Default is "ll". For more information '
                     'about these types you can visit Perun Documentation.'))
-@click.option('--bandwidth-method', '-bm', type=click.Choice(methods.BW_SELECTION_METHODS), required=True,
+@click.option('--bandwidth-method', '-bm', type=click.Choice(methods.BW_SELECTION_METHODS),
+              default=methods.BW_SELECTION_METHODS[0],
               help='Provides the helper method to determine the kernel bandwidth. The <method_name> '
                    'will be used to compute the bandwidth, which will be used at kernel regression.')
 @click.pass_context
@@ -156,10 +157,10 @@ def method_selection(ctx, **kwargs):
                     'will be used to compute the bandwidth, which will be used at kernel-smoothing regression. '
                     'Cannot be entered in combination with <bandwidth-value>, then will be ignored and will be '
                     'accepted value from <bandwidth-value>.'))
-@click.option('--bandwidth-value', '-bv', type=click.FLOAT,
+@click.option('--bandwidth-value', '-bv', type=click.FloatRange(min=1e-10, max=None),
               help=('The float value of <bandwidth> defined by user, which will be used at kernel regression. '
                     'If is entered in the combination with <bandwidth-method>, then method will be ignored.'))
-@click.option('--polynomial-order', '-q', type=click.IntRange(min=1, max=None, clamp=True),
+@click.option('--polynomial-order', '-q', type=click.IntRange(min=1, max=None),
               default=_DEFAULT_POLYNOMIAL_ORDER,
               help=('Provides order of the polynomial to fit. Default value of the order is equal to 3. Is '
                     'accepted only by `local-polynomial` <smoothing-method>, another methods ignoring it.'))
@@ -180,7 +181,7 @@ def kernel_smoothing(ctx, **kwargs):
                     'cross-validation. One value from these range will be selected with minimizing the '
                     'mean-squared error of leave-one-out cross-validation. The first value will be taken '
                     'as the lower bound of the range and cannot be greater than the second value.'))
-@click.option('--gamma-step', '-gs', type=click.FloatRange(min=0, max=None, clamp=True), default=_DEFAULT_GAMMA_STEP,
+@click.option('--gamma-step', '-gs', type=click.FloatRange(min=1e-10, max=None), default=_DEFAULT_GAMMA_STEP,
               help='Provides the size of the step, with which will be executed the iteration over the '
                    'given <gamma-range>. Cannot be greater than length of <gamma-range>, else will be set'
                    'to value of the lower bound of the <gamma_range>.')

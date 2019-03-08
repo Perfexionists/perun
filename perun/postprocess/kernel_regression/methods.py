@@ -11,6 +11,8 @@ import statsmodels.nonparametric.api as nparam
 import perun.postprocess.regression_analysis.tools as tools
 from perun.postprocess.kernel_regression.kernel_ridge import KernelRidge
 
+np.seterr(divide='ignore', invalid='ignore')
+
 # Supported helper methods for determines the kernel bandwidth
 # - scott: Scott's Rule of Thumb (default method)
 # - silverman: Silverman's Rule of Thumb
@@ -91,7 +93,7 @@ def iterative_computation(x_pts, y_pts, kernel_estimate, **kwargs):
         except np.linalg.LinAlgError:
             kernel_estimate = smooth.NonParamRegression(x_pts, y_pts, bandwidth=kernel_estimate.bandwidth[0][0] + 1,
                                                         kernel=kwargs.get('kernel'), method=kwargs.get('method'))
-    return kernel_values
+    return kernel_estimate
 
 
 def kernel_smoothing(x_pts, y_pts, config):
@@ -115,15 +117,15 @@ def kernel_smoothing(x_pts, y_pts, config):
     else:
         covariance = smooth.npr_methods.kde.scotts_covariance(x_pts) if config['bandwidth_method'] == 'scott' else \
             smooth.npr_methods.kde.silverman_covariance(x_pts)
-        kernel_estimate = smooth.NonParamRegression(x_pts, y_pts, covariance=covariance, method=method, kernel=kernel)
+        kernel_estimate = smooth.NonParamRegression(x_pts, y_pts, method=method, kernel=kernel, covariance=covariance)
 
     kernel_estimate.fit()
-    kernel_values = iterative_computation(x_pts, y_pts, kernel_estimate, method=method, kernel=kernel)
+    kernel_estimate = iterative_computation(x_pts, y_pts, kernel_estimate, method=method, kernel=kernel)
 
     return {
         'bandwidth': kernel_estimate.bandwidth[0][0],
-        'r_square': metrics.r2_score(y_pts, kernel_values),
-        'kernel_stats': list(kernel_values),
+        'r_square': metrics.r2_score(y_pts, kernel_estimate(x_pts)),
+        'kernel_stats': list(kernel_estimate(x_pts)),
     }
 
 
@@ -169,7 +171,13 @@ def execute_kernel_regression(x_pts, y_pts, config):
         'per_key': config['per_key'],
     }
 
-    if config['kernel_mode'] in ('estimator-settings', 'method-selection', 'user-selection'):
+    if len(x_pts) == 1 and len(y_pts) == 1:
+        kernel_model.update({
+            "bandwidth": 1,
+            'r_square': 1,
+            'kernel_stats': y_pts,
+        })
+    elif config['kernel_mode'] in ('estimator-settings', 'method-selection', 'user-selection'):
         kernel_model.update(kernel_regression(x_pts, y_pts, config))
     elif config['kernel_mode'] == 'kernel-smoothing':
         kernel_model.update(kernel_smoothing(x_pts, y_pts, config))
