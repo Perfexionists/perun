@@ -52,7 +52,7 @@ class BasicIndexEntry(object):
     """
     version = IndexVersion.SlowLorris
 
-    def __init__(self, time, checksum, path, offset):
+    def __init__(self, time, checksum, path, offset, *_):
         """
         :param time: modification timestamp of the entry profile
         :param checksum: checksum of the object, i.e. the path to its real content
@@ -540,7 +540,7 @@ def lookup_all_entries_within_index(index_handle, predicate):
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
 
 
-def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum):
+def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum, profile):
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -550,6 +550,7 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     :param str minor_version: sha-1 representation of the minor version of vcs (like e.g. commit)
     :param path registered_file: filename that is registered
     :param str registered_file_checksum: sha-1 representation fo the registered file
+    :param dict profile: profile to be registered
     """
     # Create the directory and index (if it does not exist)
     minor_dir, minor_index_file = split_object_name(base_dir, minor_version)
@@ -558,7 +559,7 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
 
     modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
     entry_name = os.path.split(registered_file)[-1]
-    entry = BasicIndexEntry(modification_stamp, registered_file_checksum, entry_name, -1)
+    entry = BasicIndexEntry(modification_stamp, registered_file_checksum, entry_name, -1, profile)
     write_entry_to_index(minor_index_file, entry)
 
     reg_rel_path = os.path.relpath(registered_file)
