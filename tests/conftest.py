@@ -10,6 +10,7 @@ import git
 import perun.utils.log as log
 import perun.logic.pcs as pcs
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.cli as cli
 import pytest
 
@@ -60,9 +61,9 @@ class Helpers(object):
         file_number = 0
         dir_number = 0
         for _, dirs, files in os.walk(path):
-            for _ in files:
+            for __ in files:
                 file_number += 1
-            for _ in dirs:
+            for __ in dirs:
                 dir_number += 1
         return file_number, dir_number
 
@@ -90,7 +91,7 @@ class Helpers(object):
             index_handle(file): handle for the index
             pred(lambda): predicate over the index entry
         """
-        for entry in store.walk_index(index_handle):
+        for entry in index.walk_index(index_handle):
             if pred(entry):
                 return True
         return False

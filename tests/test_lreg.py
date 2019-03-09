@@ -7,7 +7,6 @@ are tested to the three types of changes.
 import os
 
 import perun.profile.factory as factory
-import perun.check.factory as check
 import perun.check.linear_regression as lreg
 
 from perun.utils.structs import PerformanceChange

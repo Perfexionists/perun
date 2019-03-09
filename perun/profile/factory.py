@@ -23,6 +23,7 @@ import operator
 import perun.logic.pcs as pcs
 import perun.logic.config as config
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.vcs as vcs
 import perun.profile.query as query
 import perun.utils.log as perun_log
@@ -171,6 +172,7 @@ def load_profile_from_file(file_name, is_raw_profile):
     :returns: JSON dictionary w.r.t. :ref:`profile-spec`
     :raises IncorrectProfileFormatException: raised, when **filename** contains
         data, which cannot be converted to valid :ref:`profile-spec`
+    Fixme: Add cache! Really badly!
     """
     if not os.path.exists(file_name):
         raise IncorrectProfileFormatException(file_name, "file '{}' not found")
@@ -217,7 +219,7 @@ def load_list_for_minor_version(minor_version):
     :returns list: list of ProfileInfo parsed from index of the given minor_version
     """
     # Compute the
-    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
+    profiles = index.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
     profile_info_list = []
     for index_entry in profiles:
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)

@@ -77,6 +77,7 @@ def parse_resources(allocation, workload):
 
     :param list allocation: list of raw allocation data
     :param str workload: workload of the resource
+    :param str workload: workload of the memory collector
     :returns structure: formatted structure representing resources of one allocation
     """
     data = {'workload': workload}
@@ -122,6 +123,7 @@ def parse_log(filename, cmd, snapshots_interval, workload):
     :param string filename: name of the log file
     :param string cmd: profiled binary
     :param Decimal snapshots_interval: interval of snapshots [s]
+    :param str workload: workload of the memory
     :returns structure: formatted structure representing section "snapshots" and "global" in memory profile
     """
     interval = snapshots_interval

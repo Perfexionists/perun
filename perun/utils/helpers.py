@@ -29,12 +29,6 @@ TEXT_ATTRS = []
 TEXT_EMPH_COLOUR = 'green'
 TEXT_WARN_COLOUR = 'red'
 
-# List of current versions of format and magic constants
-INDEX_ENTRIES_START_OFFSET = 12
-INDEX_NUMBER_OF_ENTRIES_OFFSET = 8
-INDEX_MAGIC_PREFIX = b'pidx'
-# Index Version 1.0 Slow Lorris
-INDEX_VERSION = 1
 
 # Minor Version specific things
 MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")

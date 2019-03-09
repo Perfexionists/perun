@@ -17,6 +17,7 @@ import termcolor
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
@@ -27,9 +28,8 @@ from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
-    PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
-    HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    PROFILE_DELIMITER, MinorVersion
+    PROFILE_TYPE_COLOURS, SUPPORTED_PROFILE_TYPES, HEADER_ATTRS, HEADER_COMMIT_COLOUR, \
+    HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, PROFILE_DELIMITER, MinorVersion
 from perun.utils.log import cprint, cprintln
 
 # Init colorama for multiplatform colours
@@ -267,7 +267,7 @@ def add(profile_names, minor_version, keep_profile=False):
         store.add_loose_object_to_dir(object_dir, profile_sum, compressed_content)
 
         # Register in the minor_version index
-        store.register_in_index(
+        index.register_in_index(
             object_dir, minor_version, profile_name, profile_sum, unpacked_profile
         )
 
@@ -297,7 +297,7 @@ def remove(profile_generator, minor_version, **kwargs):
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     object_directory = pcs.get_object_directory()
-    store.remove_from_index(object_directory, minor_version, profile_generator, **kwargs)
+    index.remove_from_index(object_directory, minor_version, profile_generator, **kwargs)
     perun_log.info("successfully removed {} from index".format(len(profile_generator)))
 
 
@@ -400,7 +400,7 @@ def log(minor_version, short=False, **_):
             :param MinorVersion minor_v: minor version for which we are retrieving the stats
             :return: dictionary with stats for minor version
             """
-            return store.get_profile_number_for_minor(
+            return index.get_profile_number_for_minor(
                 pcs.get_object_directory(), minor_v.checksum
             )
 
@@ -427,7 +427,7 @@ def log(minor_version, short=False, **_):
         for minor in vcs.walk_minor_versions(minor_version):
             cprintln("Minor Version {}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
             base_dir = pcs.get_object_directory()
-            tracked_profiles = store.get_profile_number_for_minor(base_dir, minor.checksum)
+            tracked_profiles = index.get_profile_number_for_minor(base_dir, minor.checksum)
             print_profile_numbers(tracked_profiles, 'tracked')
             print_minor_version_info(minor, indent=1)
 
@@ -505,7 +505,7 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
                 limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
                 if attr_type == 'stats':
-                    tracked_profiles = store.get_profile_number_for_minor(
+                    tracked_profiles = index.get_profile_number_for_minor(
                         pcs.get_object_directory(), minor_version.checksum
                     )
                     if tracked_profiles['all']:
@@ -555,7 +555,7 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
 
 def print_minor_version_info(head_minor_version, indent=0):
     """
-    :param str head_minor_version: identification of the commit (preferably sha1)
+    :param MinorVersion head_minor_version: identification of the commit (preferably sha1)
     :param int indent: indent of the description part
     """
     print("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
@@ -812,7 +812,7 @@ def load_profile_from_args(profile_name, minor_version):
             return None
         with open(minor_index_file, 'rb') as minor_handle:
             lookup_pred = lambda entry: entry.path == profile_name
-            profiles = store.lookup_all_entries_within_index(minor_handle, lookup_pred)
+            profiles = index.lookup_all_entries_within_index(minor_handle, lookup_pred)
     else:
         profiles = [profile_name]
 

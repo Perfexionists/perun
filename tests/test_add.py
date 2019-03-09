@@ -9,6 +9,7 @@ import os
 
 import git
 import perun.logic.store as store
+import perun.logic.index as index
 import pytest
 import termcolor
 
@@ -37,7 +38,7 @@ def assert_before_add(helpers, path, commit, valid_profile):
             """Helper function for looking up the profile"""
             return entry.path == valid_profile
 
-        store.print_index_from_handle(index_handle)
+        index.print_index_from_handle(index_handle)
         before_entries_count = store.read_number_of_entries_from_handle(index_handle)
         assert not helpers.exists_profile_in_index_such_that(index_handle, compare_profiles)
     return before_entries_count
@@ -89,7 +90,7 @@ def successfully_added_profile_in(index_handle, valid_profile):
     profile_name = os.path.split(valid_profile)[-1]
     try:
         profile_entry \
-            = store.lookup_entry_within_index(index_handle,
+            = index.lookup_entry_within_index(index_handle,
                                               lambda entry: entry.path == profile_name)
         assert profile_entry.path == profile_name
         assert profile_entry.time == profile_timestamp
