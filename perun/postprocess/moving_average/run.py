@@ -193,7 +193,6 @@ def moving_average(ctx, **kwargs):
 
     For more details about this approach of non-parametric analysis refer to :ref:`postprocessors-moving-average`.
     """
-    ctx.params['profile'] = ctx.obj
     # run default simple moving average command
     if ctx.invoked_subcommand is None:
         ctx.invoke(simple_moving_average)
