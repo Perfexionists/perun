@@ -8,6 +8,9 @@ HEAD
 
   - fix minor bug in storing changes
   - extracted index entry specific functions to isolate class (in order to create new versions)
+  - implement index v2.0, codename FastSloth
+  - switch to working with index v2.0 (index v1.0 is still supported, however, everything is saved as 2.0)
+  - minor refactors
 
 0.16.5 (2019-03-22)
 -------------------

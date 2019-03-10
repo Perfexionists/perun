@@ -59,6 +59,7 @@ def test_versions(tmpdir, monkeypatch):
         index_handle.seek(index.INDEX_ENTRIES_START_OFFSET)
         entry = index.BasicIndexEntry.read_from(index_handle, index.IndexVersion.SlowLorris)
         assert entry == basic_entry
+    index.print_index(index_file)
 
     # Test version 2 index
     monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.IndexVersion.FastSloth.value)

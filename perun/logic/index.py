@@ -24,8 +24,8 @@ __author__ = 'Tomas Fiedor'
 INDEX_ENTRIES_START_OFFSET = 12
 INDEX_NUMBER_OF_ENTRIES_OFFSET = 8
 INDEX_MAGIC_PREFIX = b'pidx'
-# Index Version 1.0 Slow Lorris
-INDEX_VERSION = 1
+# Index Version 2.0 FastSloth
+INDEX_VERSION = 2
 
 IndexVersion = Enum(
     'IndexVersion',
@@ -434,7 +434,9 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
 
     modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
     entry_name = os.path.split(registered_file)[-1]
-    entry = BasicIndexEntry(modification_stamp, registered_file_checksum, entry_name, -1, profile)
+    entry = _IndexEntryConstructors[INDEX_VERSION-1](
+        modification_stamp, registered_file_checksum, entry_name, -1, profile
+    )
     write_entry_to_index(minor_index_file, entry)
 
     reg_rel_path = os.path.relpath(registered_file)
