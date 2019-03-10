@@ -412,7 +412,9 @@ def lookup_any_profile_callback(ctx, _, value):
 
 def resources_key_options(f):
     """
-    TODO: documentation for `common_sma_options()`
+    This method creates Click decorator for common options for  all non-parametric
+    postprocessor: `regressogram`, `moving average` and `kernel-regression`.
+
 
     :param function f: the function in which the decorator of common options is currently applied
     :return: returns sequence of the single options for the current function (f) as decorators

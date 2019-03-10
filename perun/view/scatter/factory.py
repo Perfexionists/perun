@@ -170,7 +170,7 @@ def create_non_param_model(graph, model, profile, colour):
         legend = '{0}: window={1}, R^2={2:f}'.format(model['moving_method'], model['window_width'], model['r_square'])
     elif model['method'] == 'kernel_regression':
         # Create legend for the plotted kernel models
-        legend = 'kernel: bw={0}, R^2={1:f}'.format(model['bandwidth'], model['r_square'])
+        legend = '{0}: bw={1}, R^2={2:f}'.format(model['kernel_mode'], model['bandwidth'], model['r_square'])
     # Render kernel models to the current graph
     return draw_model(y_pts=model.get('kernel_stats', model.get('bucket_stats')))
 

@@ -1,6 +1,8 @@
-"""TODO: Write short docstring of the new postprocessor
+"""A postprocessor that executing the kernel regression over the resources.
 
-TODO: Write long docstring of the new postprocessor
+Postprocessing of inputs profiles using the kernel regression. Postprocessor,
+implementing kernel regression offers several computational methods with
+different approaches and different strategies to find optimal parameters.
 """
 
 # TODO: Is it correct to support all types of profiles?
