@@ -258,7 +258,7 @@ def walk_index(index_handle):
         raise MalformedIndexFileException("read blob is not an index file")
 
     index_version = store.read_int_from_handle(index_handle)
-    if index_version != INDEX_VERSION:
+    if index_version > INDEX_VERSION:
         raise MalformedIndexFileException("read index file is in format of different index version"
                                           " (read index file = {}".format(index_version) +
                                           ", supported = {})".format(INDEX_VERSION))

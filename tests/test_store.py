@@ -15,7 +15,7 @@ def test_malformed_indexes(tmpdir, monkeypatch):
     index_file = os.path.join(str(tmpdir), "index")
     index.touch_index(index_file)
 
-    monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.INDEX_VERSION + 1)
+    monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.INDEX_VERSION - 1)
     with open(index_file, 'rb') as index_handle:
         with pytest.raises(exceptions.MalformedIndexFileException):
             index.print_index_from_handle(index_handle)
