@@ -27,10 +27,10 @@ import perun.logic.index as index
 import perun.vcs as vcs
 import perun.profile.query as query
 import perun.utils.log as perun_log
+
 from perun.utils import get_module
-from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException, \
-    MissingConfigSectionException
-from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Job
+from perun.utils.exceptions import InvalidParameterException, MissingConfigSectionException
+from perun.utils.helpers import Job
 from perun.utils.structs import Unit
 
 __author__ = 'Tomas Fiedor'
@@ -160,56 +160,6 @@ def generate_profile_name(profile):
                         "Run perun config to modify the formatting pattern. "
                         "Refer to documentation for more information about formatting patterns")
     return "".join(tokens) + ".perf"
-
-
-def load_profile_from_file(file_name, is_raw_profile):
-    """Loads profile w.r.t :ref:`profile-spec` from file.
-
-    :param str file_name: file path, where the profile is stored
-    :param bool is_raw_profile: if set to true, then the profile was loaded
-        from the file system and is thus in the JSON already and does not have
-        to be decompressed and unpacked to JSON format.
-    :returns: JSON dictionary w.r.t. :ref:`profile-spec`
-    :raises IncorrectProfileFormatException: raised, when **filename** contains
-        data, which cannot be converted to valid :ref:`profile-spec`
-    Fixme: Add cache! Really badly!
-    """
-    if not os.path.exists(file_name):
-        raise IncorrectProfileFormatException(file_name, "file '{}' not found")
-
-    with open(file_name, 'rb') as file_handle:
-        return load_profile_from_handle(file_name, file_handle, is_raw_profile)
-
-
-def load_profile_from_handle(file_name, file_handle, is_raw_profile):
-    """
-    Fixme: Add check that the loaded profile is in valid format!!!
-
-    :param str file_name: name of the file opened in the handle
-    :param file file_handle: opened file handle
-    :param bool is_raw_profile: true if the profile is in json format already
-    :returns dict: JSON representation of the profile
-    :raises IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
-        or when the profile is not in correct supported format or when the profile is malformed
-    """
-    if is_raw_profile:
-        body = file_handle.read().decode('utf-8')
-    else:
-        # Read deflated contents and split to header and body
-        contents = store.read_and_deflate_chunk(file_handle)
-        header, body = contents.split('\0')
-        prefix, profile_type, profile_size = header.split(' ')
-
-        # Check the header, if the body is not malformed
-        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
-                len(body) != int(profile_size):
-            raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")
-
-    # Try to load the json, if there is issue with the profile
-    try:
-        return json.loads(body)
-    except ValueError:
-        raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
 
 
 def load_list_for_minor_version(minor_version):
@@ -464,7 +414,7 @@ class ProfileInfo(object):
             compressed
         """
         # Load the data from JSON, which contains additional information about profile
-        loaded_profile = load_profile_from_file(real_path, is_raw_profile)
+        loaded_profile = store.load_profile_from_file(real_path, is_raw_profile)
 
         self._is_raw_profile = is_raw_profile
         self.source = path
@@ -492,7 +442,7 @@ class ProfileInfo(object):
 
         :return: loaded profile in dictionary format, w.r.t :ref:`profile-spec`
         """
-        return load_profile_from_file(self.realpath, self._is_raw_profile)
+        return store.load_profile_from_file(self.realpath, self._is_raw_profile)
 
     valid_attributes = [
         "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "source"

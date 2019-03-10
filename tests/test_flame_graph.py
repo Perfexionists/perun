@@ -5,7 +5,7 @@ import os
 from click.testing import CliRunner
 
 import perun.cli as cli
-import perun.profile.factory as profiles
+import perun.logic.store as store
 import perun.view.flamegraph.flamegraph as flamegraphs
 
 __author__ = 'Tomas Fiedor'
@@ -19,7 +19,7 @@ def test_flame_graph(pcs_full, valid_profile_pool):
     runner = CliRunner()
 
     for valid_profile in valid_profile_pool:
-        memory_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
+        memory_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
         if memory_profile['header']['type'] != 'memory':
             continue
 

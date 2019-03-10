@@ -155,9 +155,9 @@ def degradation_between_profiles(baseline_profile, target_profile):
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     if not isinstance(baseline_profile, dict):
-        baseline_profile = profiles.load_profile_from_file(baseline_profile.realpath, False)
+        baseline_profile = store.load_profile_from_file(baseline_profile.realpath, False)
     if not isinstance(target_profile, dict):
-        target_profile = profiles.load_profile_from_file(target_profile.realpath, False)
+        target_profile = store.load_profile_from_file(target_profile.realpath, False)
 
     # We run all of the degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for(baseline_profile):

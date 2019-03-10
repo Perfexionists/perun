@@ -4,6 +4,7 @@ Store is a collection of helper functions that can be used to pack content, comp
 or load and store into the directories or filenames.
 """
 
+import json
 import re
 import os
 import string
@@ -12,9 +13,9 @@ import zlib
 
 import perun.utils.helpers as helpers
 
-from perun.utils.helpers import LINE_PARSING_REGEX
+from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
 from perun.utils.structs import PerformanceChange, DegradationInfo
-from perun.utils.exceptions import NotPerunRepositoryException
+from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
 
 import demandimport
 with demandimport.enabled():
@@ -355,3 +356,54 @@ def load_degradation_list_for(base_dir, minor_version):
         parsed_triple = parse_changelog_line(line.strip())
         degradation_list.append(parsed_triple)
     return degradation_list
+
+
+def load_profile_from_file(file_name, is_raw_profile):
+    """Loads profile w.r.t :ref:`profile-spec` from file.
+
+    :param str file_name: file path, where the profile is stored
+    :param bool is_raw_profile: if set to true, then the profile was loaded
+        from the file system and is thus in the JSON already and does not have
+        to be decompressed and unpacked to JSON format.
+    :returns: JSON dictionary w.r.t. :ref:`profile-spec`
+    :raises IncorrectProfileFormatException: raised, when **filename** contains
+        data, which cannot be converted to valid :ref:`profile-spec`
+    Fixme: Add cache! Really badly!
+    """
+    if not os.path.exists(file_name):
+        raise IncorrectProfileFormatException(file_name, "file '{}' not found")
+
+    with open(file_name, 'rb') as file_handle:
+        return load_profile_from_handle(file_name, file_handle, is_raw_profile)
+
+
+def load_profile_from_handle(file_name, file_handle, is_raw_profile):
+    """
+    Fixme: Add check that the loaded profile is in valid format!!!
+
+    :param str file_name: name of the file opened in the handle
+    :param file file_handle: opened file handle
+    :param bool is_raw_profile: true if the profile is in json format already
+    :returns dict: JSON representation of the profile
+    :raises IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
+        or when the profile is not in correct supported format or when the profile is malformed
+    """
+    if is_raw_profile:
+        body = file_handle.read().decode('utf-8')
+    else:
+        # Read deflated contents and split to header and body
+        contents = read_and_deflate_chunk(file_handle)
+        header, body = contents.split('\0')
+        prefix, profile_type, profile_size = header.split(' ')
+
+        # Check the header, if the body is not malformed
+        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
+                        len(body) != int(profile_size):
+            raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")
+
+    # Try to load the json, if there is issue with the profile
+    try:
+        return json.loads(body)
+    except ValueError:
+        raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
+

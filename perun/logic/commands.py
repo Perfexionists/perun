@@ -238,7 +238,7 @@ def add(profile_names, minor_version, keep_profile=False):
 
         # Load profile content
         # Unpack to JSON representation
-        unpacked_profile = profile.load_profile_from_file(profile_name, True)
+        unpacked_profile = store.load_profile_from_file(profile_name, True)
 
         if unpacked_profile['origin'] != minor_version:
             error_msg = "cannot add profile '{}' to minor index of '{}':".format(
@@ -823,6 +823,6 @@ def load_profile_from_args(profile_name, minor_version):
 
     # Peek the type if the profile is correct and load the json
     _, profile_name = store.split_object_name(pcs.get_object_directory(), chosen_profile.checksum)
-    loaded_profile = profile.load_profile_from_file(profile_name, False)
+    loaded_profile = store.load_profile_from_file(profile_name, False)
 
     return loaded_profile

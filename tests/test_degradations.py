@@ -5,7 +5,7 @@ import git
 
 import perun.utils.log as log
 import perun.logic.config as config
-import perun.profile.factory as factory
+import perun.logic.store as store
 import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
@@ -91,10 +91,10 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     """
     pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
     profiles = [
-        factory.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True),
-        factory.load_profile_from_file(os.path.join(pool_path, 'linear_base_degradated.perf'), True),
-        factory.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True),
-        factory.load_profile_from_file(os.path.join(pool_path, 'zero.perf'), True)
+        store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True),
+        store.load_profile_from_file(os.path.join(pool_path, 'linear_base_degradated.perf'), True),
+        store.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True),
+        store.load_profile_from_file(os.path.join(pool_path, 'zero.perf'), True)
     ]
     # Cannot detect degradation using BMOE strategy betwen these pairs of profiles,
     # since the best models are same with good confidence
@@ -137,7 +137,7 @@ def test_strategies():
     Expects correct behaviour
     """
     pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
-    profile = factory.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True)
+    profile = store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True)
     rule = {
         'method': 'average_amount_threshold',
         'collector': 'complexity',

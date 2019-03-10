@@ -109,7 +109,7 @@ class Helpers(object):
 
         # Prepare origin for the current version
         copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
-        copied_profile = perun_profile.load_profile_from_file(copied_filename, is_raw_profile=True)
+        copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
         copied_profile['origin'] = origin
         perun_profile.store_profile_at(copied_profile, copied_filename)
         shutil.copystat(profile, copied_filename)
@@ -311,7 +311,7 @@ def get_loaded_profiles(profile_type):
         generator: stream of profiles of the given type
     """
     for valid_profile in filter(lambda p: 'err' not in p, all_profiles_in("to_add_profiles", True)):
-        loaded_profile = perun_profile.load_profile_from_file(valid_profile, is_raw_profile=True)
+        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] == profile_type:
             yield loaded_profile
 
@@ -335,7 +335,7 @@ def load_all_profiles_in(directory):
         generator: stream of loaded profiles as tuple (profile_name, dictionary)
     """
     for profile in list(all_profiles_in(directory)):
-        yield (profile, perun_profile.load_profile_from_file(profile, True))
+        yield (profile, store.load_profile_from_file(profile, True))
 
 
 @pytest.fixture(scope="function")

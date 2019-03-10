@@ -389,12 +389,12 @@ def lookup_any_profile_callback(ctx, _, value):
         index_profile = commands.get_nth_profile_of(
             int(index_tag_match.group(1)), ctx.params['minor']
         )
-        return profiles.load_profile_from_file(index_profile, is_raw_profile=False)
+        return store.load_profile_from_file(index_profile, is_raw_profile=False)
 
     pending_tag_match = store.PENDING_TAG_REGEX.match(value)
     if pending_tag_match:
         pending_profile = lookup_nth_pending_filename(int(pending_tag_match.group(1)))
-        return profiles.load_profile_from_file(pending_profile, is_raw_profile=True)
+        return store.load_profile_from_file(pending_profile, is_raw_profile=True)
 
     # 1) Check the index, if this is registered
     profile_from_index = commands.load_profile_from_args(value, ctx.params['minor'])
@@ -407,7 +407,7 @@ def lookup_any_profile_callback(ctx, _, value):
     if not os.path.exists(abs_path):
         log.error("could not find the file '{}'".format(abs_path))
 
-    return profiles.load_profile_from_file(abs_path, is_raw_profile=True)
+    return store.load_profile_from_file(abs_path, is_raw_profile=True)
 
 
 def resources_key_options(f):

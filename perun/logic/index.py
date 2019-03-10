@@ -12,6 +12,7 @@ import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
 import perun.logic.store as store
+import perun.logic.pcs as pcs
 
 from perun.utils.exceptions import EntryNotFoundException, MalformedIndexFileException
 
@@ -79,7 +80,9 @@ class BasicIndexEntry(object):
         :return: one read BasicIndexEntry
         """
         if BasicIndexEntry.version.value < index_version.value:
-            perun_log.error("internal error: called read_from() for BasicIndexEntry")
+            perun_log.error("internal error: called read_from() for BasicIndexEntry {}".format(
+                index_version.value
+            ))
         file_offset = index_handle.tell()
         file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
         file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
@@ -112,6 +115,128 @@ class BasicIndexEntry(object):
         )
 
 
+class ExtendedIndexEntry(BasicIndexEntry):
+    """
+
+    """
+    version = IndexVersion.FastSloth
+
+    def __init__(self, time, checksum, path, offset, profile):
+        super().__init__(time, checksum, path, offset)
+        self.type = profile['header']['type']
+        self.cmd = profile['header']['cmd']
+        # Fixme: This is sooo fucking wrong
+        self.args = profile['header'].get('params', '')
+        self.workload = profile['header'].get('workload', '')
+        self.collector = profile['collector_info']['name']
+        self.postprocessors = [
+            postprocessor['name'] for postprocessor in profile['postprocessors']
+        ]
+
+    def __eq__(self, other):
+        """Compares two IndexEntries simply by checking the equality of its internal dictionaries
+
+        :param other: other object to be compared
+        :return: whether this object is the same as other
+        """
+        return self.__dict__ == other.__dict__
+
+    @classmethod
+    def read_from(cls, index_handle, index_version):
+        """Reads the entry from the index handle
+
+        :param File index_handle: opened index handle
+        :param IndexVersion index_version: version of the opened index
+        :return: one read ExtendedIndexEntry
+        """
+        if ExtendedIndexEntry.version.value > index_version.value:
+            # Since we are reading from the older index, we will have to fix some stuff
+            return ExtendedIndexEntry._read_from_older_index(index_handle, index_version)
+        else:
+            return ExtendedIndexEntry._read_from_same_index(index_handle, index_version)
+
+    @classmethod
+    def _read_from_older_index(cls, index_handle, index_version):
+        """Reads the ExtendedIndexEntry from older version of index.
+
+        This means, that not everything was stored in the index, and the profile itself has to be
+        loaded to extract additional details.
+
+        :param index_handle:
+        :param index_version:
+        :return:
+        """
+        basic_entry = super().read_from(index_handle, index_version)
+        _, profile_name = store.split_object_name(pcs.get_object_directory(), basic_entry.checksum)
+        profile = store.load_profile_from_file(profile_name, is_raw_profile=False)
+        return ExtendedIndexEntry(
+            basic_entry.time, basic_entry.checksum, basic_entry.path, basic_entry.offset, profile
+        )
+
+
+    @classmethod
+    def _read_from_same_index(cls, index_handle, index_version):
+        """
+
+        :param index_handle:
+        :return:
+        """
+        basic_entry = BasicIndexEntry.read_from(index_handle, get_older_version(index_version))
+        profile = {'header': {}, 'collector_info': {}, 'postprocessors': []}
+
+        profile['header']['type'] = store.read_string_from_handle(index_handle)
+        profile['header']['cmd'] = store.read_string_from_handle(index_handle)
+        profile['header']['params'] = store.read_string_from_handle(index_handle)
+        profile['header']['workload'] = store.read_string_from_handle(index_handle)
+        profile['collector_info']['name'] = store.read_string_from_handle(index_handle)
+        profile['postprocessors'] = [
+            {'name': post} for post in store.read_list_from_handle(index_handle)
+        ]
+
+        # Read the rest of the stored profile
+        return ExtendedIndexEntry(
+            basic_entry.time, basic_entry.checksum, basic_entry.path, basic_entry.offset, profile
+        )
+
+    def write_to(self, index_handle):
+        """Writes entry at current location in the index_handle
+
+        :param file index_handle: file handle of the index
+        """
+        super().write_to(index_handle)
+        store.write_string_to_handle(index_handle, self.type)
+        store.write_string_to_handle(index_handle, self.cmd)
+        store.write_string_to_handle(index_handle, self.args)
+        store.write_string_to_handle(index_handle, self.workload)
+        store.write_string_to_handle(index_handle, self.collector)
+        store.write_list_to_handle(index_handle, self.postprocessors)
+
+    def __str__(self):
+        """Converts the entry to one string representation
+
+        :return:  string representation of the entry
+        """
+        return " @{3} {2} -> {1} ({0}) {4}; {5}; {6} {7}".format(
+            self.time,
+            self.checksum,
+            self.path,
+            self.offset,
+            self.type,
+            " ".join([self.cmd, self.args, self.workload]),
+            self.collector,
+            " ".join(self.postprocessors)
+        )
+
+
+def get_older_version(index_version):
+    """Returns older version of the index
+
+    :param IndexVersion index_version:
+    :return: older version of the index
+    """
+    return IndexVersion(index_version.value-1)
+
+
 def walk_index(index_handle):
     """Iterator through index entries
 
@@ -140,9 +265,10 @@ def walk_index(index_handle):
 
     number_of_objects = store.read_int_from_handle(index_handle)
     loaded_objects = 0
+    entry_constructor = _IndexEntryConstructors[INDEX_VERSION-1]
 
     while index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects:
-        entry = BasicIndexEntry.read_from(index_handle, IndexVersion(index_version))
+        entry = entry_constructor.read_from(index_handle, IndexVersion(index_version))
         loaded_objects += 1
         yield entry
 
@@ -413,4 +539,7 @@ def get_profile_number_for_minor(base_dir, minor_version):
     else:
         return {'all': 0}
 
-
+_IndexEntryConstructors = [
+    BasicIndexEntry,
+    ExtendedIndexEntry
+]
