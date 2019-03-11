@@ -267,7 +267,7 @@ def add(profile_names, minor_version, keep_profile=False):
         store.add_loose_object_to_dir(object_dir, profile_sum, compressed_content)
 
         # Register in the minor_version index
-        index.register_in_index(
+        index.register_in_minor_index(
             object_dir, minor_version, profile_name, profile_sum, unpacked_profile
         )
 

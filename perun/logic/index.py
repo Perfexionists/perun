@@ -415,7 +415,24 @@ def lookup_all_entries_within_index(index_handle, predicate):
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
 
 
-def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum, profile):
+def register_in_pending_index(registered_file, profile):
+    """Registers file in the index corresponding to the minor_version
+
+    If the index for the minor_version does not exist, then it is touched and initialized
+    with empty prefix. Then the entry is added to the file.
+
+    :param path registered_file: filename that is registered
+    :param dict profile: profile to be registered
+    """
+    # Create the directory and index (if it does not exist)
+    index_filename = pcs.get_job_index()
+    touch_index(index_filename)
+    registered_checksum = store.compute_checksum(registered_file.encode('utf-8'))
+
+    register_in_index(index_filename, registered_file, registered_checksum, profile)
+
+
+def register_in_minor_index(base_dir, minor_version, registered_file, registered_file_checksum, profile):
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -432,12 +449,23 @@ def register_in_index(base_dir, minor_version, registered_file, registered_file_
     store.touch_dir(minor_dir)
     touch_index(minor_index_file)
 
+    register_in_index(minor_index_file, registered_file, registered_file_checksum, profile)
+
+
+def register_in_index(index_filename, registered_file, registered_file_checksum, profile):
+    """Registers file in the index corresponding to either minor_version or pending profiles
+
+    :param str index_filename: source index filename
+    :param path registered_file: filename that is registered
+    :param str registered_file_checksum: sha-1 representation fo the registered file
+    :param dict profile: profile to be registered
+    """
     modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
     entry_name = os.path.split(registered_file)[-1]
     entry = _IndexEntryConstructors[INDEX_VERSION-1](
         modification_stamp, registered_file_checksum, entry_name, -1, profile
     )
-    write_entry_to_index(minor_index_file, entry)
+    write_entry_to_index(index_filename, entry)
 
     reg_rel_path = os.path.relpath(registered_file)
     perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))

@@ -156,6 +156,15 @@ class Helpers(object):
         for valid_profile in untracked_profiles:
             shutil.copy2(valid_profile, jobs_dir)
 
+    @staticmethod
+    def index_filter(file):
+        """Index filtering function
+
+        :param str file: name of the file
+        :return: true if the file is not index
+        """
+        return file != '.index'
+
 
 @pytest.fixture(scope="session")
 def helpers():

@@ -8,6 +8,7 @@ import perun.vcs as vcs
 import perun.logic.pcs as pcs
 import perun.logic.config as config
 import perun.logic.commands as commands
+import perun.logic.index as index
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as log
@@ -297,6 +298,9 @@ def store_generated_profile(prof, job):
         # We either store the profile according to the origin, or we use the current head
         dst = prof.get('origin', vcs.get_minor_head())
         commands.add([full_profile_path], dst, keep_profile=False)
+    else:
+        # Else we register the profile in pending index
+        index.register_in_pending_index(full_profile_path, prof)
 
 
 def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params, skip_store=False):

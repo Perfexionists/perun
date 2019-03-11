@@ -1245,30 +1245,30 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     """
     helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
-    assert len(os.listdir(pending_dir)) == 2
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 2
 
     runner = CliRunner()
     result = runner.invoke(cli.postprocessby, ['0@p', 'normalizer'])
     assert result.exit_code == 0
-    assert len(os.listdir(pending_dir)) == 3
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try incorrect tag -> expect failure and return code 2 (click error)
     result = runner.invoke(cli.postprocessby, ['666@p', 'normalizer'])
     assert result.exit_code == 2
-    assert len(os.listdir(pending_dir)) == 3
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try correct index tag
     result = runner.invoke(cli.postprocessby, ['1@i', 'normalizer'])
     assert result.exit_code == 0
-    assert len(os.listdir(pending_dir)) == 4
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try incorrect index tag -> expect failure and return code 2 (click error)
     result = runner.invoke(cli.postprocessby, ['1337@i', 'normalizer'])
     assert result.exit_code == 2
-    assert len(os.listdir(pending_dir)) == 4
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try absolute postprocessing
-    first_in_jobs = os.listdir(pending_dir)[0]
+    first_in_jobs = list(filter(helpers.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, 'normalizer'])
     assert result.exit_code == 0

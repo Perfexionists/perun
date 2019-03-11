@@ -100,6 +100,16 @@ def get_job_directory():
     return jobs_directory
 
 
+@singleton
+def get_job_index():
+    """Returns the name of the index, where pending profiles are registered
+
+    :returns str: filename, where job outputs are registered
+    """
+    jobs_directory = get_job_directory()
+    return os.path.join(jobs_directory, ".index")
+
+
 @singleton_with_args
 def get_config_file(config_type):
     """Returns the config file for the given config type

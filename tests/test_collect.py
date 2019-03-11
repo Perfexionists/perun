@@ -497,7 +497,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     # However, the collector should still be able to correctly process it
     assert result.exit_code == 0
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
+    assert before_object_count + 2 == after_object_count
     before_object_count = after_object_count
 
     # Test malformed file that ends in another unexpected way
@@ -553,9 +553,9 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
+    assert before_object_count + 2 == after_object_count
 
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
@@ -563,7 +563,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     cmd, args, _, colls, posts, _ = memory_collect_job
     run.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
 
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
     assert len(profiles) == 2
     assert new_smaller_profile.endswith(".perf")
@@ -625,10 +625,11 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     assert 'Successfully collected data from echo' in out
 
     # Assert that just one profile was created
+    # + 1 for index
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
+    assert before_object_count + 2 == after_object_count
 
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")

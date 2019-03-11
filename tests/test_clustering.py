@@ -24,7 +24,7 @@ def test_from_cli(pcs_full):
 
     # Test that something was created
     object_no_after = len(os.listdir(object_dir))
-    assert object_no_after == object_no + 1
+    assert object_no_after == object_no + 2
 
     # Test verbosity of printing the groups
     log.VERBOSITY = log.VERBOSE_DEBUG
