@@ -172,9 +172,21 @@ def load_list_for_minor_version(minor_version):
     profiles = index.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
     profile_info_list = []
     for index_entry in profiles:
+        inside_info = {
+            'header': {
+                'type': index_entry.type,
+                'cmd': index_entry.cmd,
+                'params': index_entry.args,
+                'workload': index_entry.workload
+            },
+            'collector_info': {'name': index_entry.collector},
+            'postprocessors': [
+                {'name': p} for p in index_entry.postprocessors
+            ]
+        }
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
         profile_info \
-            = ProfileInfo(index_entry.path, profile_name, index_entry.time)
+            = ProfileInfo(index_entry.path, profile_name, index_entry.time, inside_info)
         profile_info_list.append(profile_info)
 
     return profile_info_list
@@ -404,7 +416,7 @@ class ProfileInfo(object):
     This is mainly used for formatted output of the profile list using
     the command line interface
     """
-    def __init__(self, path, real_path, mtime, is_raw_profile=False):
+    def __init__(self, path, real_path, mtime, profile_info, is_raw_profile=False):
         """
         :param str path: contains the name of the file, which identifies it in the index
         :param str real_path: real path to the profile, i.e. how can it really be accessed
@@ -413,20 +425,18 @@ class ProfileInfo(object):
         :param bool is_raw_profile: true if the stored profile is raw, i.e. in json and not
             compressed
         """
-        # Load the data from JSON, which contains additional information about profile
-        loaded_profile = store.load_profile_from_file(real_path, is_raw_profile)
 
         self._is_raw_profile = is_raw_profile
         self.source = path
         self.realpath = os.path.relpath(real_path, os.getcwd())
         self.time = mtime
-        self.type = loaded_profile['header']['type']
-        self.cmd = loaded_profile['header']['cmd']
-        self.args = loaded_profile['header']['params']
-        self.workload = loaded_profile['header']['workload']
-        self.collector = loaded_profile['collector_info']['name']
+        self.type = profile_info['header']['type']
+        self.cmd = profile_info['header']['cmd']
+        self.args = profile_info['header']['params']
+        self.workload = profile_info['header']['workload']
+        self.collector = profile_info['collector_info']['name']
         self.postprocessors = [
-            postprocessor['name'] for postprocessor in loaded_profile['postprocessors']
+            postprocessor['name'] for postprocessor in profile_info['postprocessors']
         ]
         self.checksum = None
         self.config_tuple = (

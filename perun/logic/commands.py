@@ -740,8 +740,13 @@ def get_untracked_profiles():
             real_path = os.path.join(pcs.get_job_directory(), untracked_path)
             time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
 
+            # Load the data from JSON, which contains additional information about profile
+            loaded_profile = store.load_profile_from_file(real_path, is_raw_profile=True)
+
             # Update the list of profiles and counters of types
-            profile_info = profile.ProfileInfo(untracked_path, real_path, time, is_raw_profile=True)
+            profile_info = profile.ProfileInfo(
+                untracked_path, real_path, time, loaded_profile, is_raw_profile=True
+            )
             profile_list.append(profile_info)
 
     return profile_list
