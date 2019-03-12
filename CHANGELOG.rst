@@ -11,6 +11,8 @@ HEAD
   - implement index v2.0, codename FastSloth
   - switch to working with index v2.0 (index v1.0 is still supported, however, everything is saved as 2.0)
   - minor refactors
+  - optimize loading of the profile info for both registered and pending profiles (yields huge performance boost)
+  - add `--force` option to `perun add` which will force the add (d'oh)
 
 0.16.5 (2019-03-22)
 -------------------

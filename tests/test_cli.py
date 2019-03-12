@@ -1146,7 +1146,7 @@ def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
     assert "Ref 'tag2' did not resolve to object"
 
 
-def test_add_tag(helpers, pcs_full, valid_profile_pool):
+def test_add_tag(monkeypatch, helpers, pcs_full, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should
@@ -1158,7 +1158,7 @@ def test_add_tag(helpers, pcs_full, valid_profile_pool):
     first_sha = os.path.relpath(helpers.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0], head)
     )
-    os.path.relpath(helpers.prepare_profile(
+    second_sha = os.path.relpath(helpers.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[1], parent)
     )
 
@@ -1171,6 +1171,13 @@ def test_add_tag(helpers, pcs_full, valid_profile_pool):
     result = runner.invoke(cli.add, ['0@p'])
     assert result.exit_code == 1
     assert "originates from minor version '{}'".format(parent) in result.output
+
+    # Check that force work as intented
+    monkeypatch.setattr('click.confirm', lambda _: True)
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['--force', '0@p'])
+    assert result.exit_code == 0
+    assert "'{}' successfully registered".format(second_sha) in result.output
 
     result = runner.invoke(cli.add, ['10@p'])
     assert result.exit_code == 2
@@ -1303,7 +1310,7 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
     assert result.exit_code == 2
 
     # Try absolute showing
-    first_in_jobs = os.listdir(pending_dir)[0]
+    first_in_jobs = list(filter(helpers.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.show, [absolute_first_in_jobs, 'raw'])
     assert result.exit_code == 0

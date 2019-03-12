@@ -324,9 +324,32 @@ def touch_index(index_path):
 
         # create the index
         with open(index_path, 'wb') as index_handle:
-            index_handle.write(INDEX_MAGIC_PREFIX)
-            index_handle.write(struct.pack('i', INDEX_VERSION))
-            index_handle.write(struct.pack('i', 0))
+            initialize_index_in_handle(index_handle)
+
+
+def initialize_index_in_handle(index_handle):
+    """Initialize the index prefix in the handle.
+
+    First the magic bytes are written, then the version of the index and at last the
+    number of the registered entries.
+
+    :param index_handle:
+    :return:
+    """
+    index_handle.write(INDEX_MAGIC_PREFIX)
+    index_handle.write(struct.pack('i', INDEX_VERSION))
+    index_handle.write(struct.pack('i', 0))
+
+
+def update_index_version(index_handle):
+    """Updates the index handle to newer version
+
+    :param File index_handle: opened index handle
+    """
+    previous_position = index_handle.tell()
+    index_handle.seek(4)
+    index_handle.write(struct.pack('i', INDEX_VERSION))
+    index_handle.seek(previous_position)
 
 
 def modify_number_of_entries_in_index(index_handle, modify):
@@ -389,6 +412,27 @@ def write_entry_to_index(index_file, file_entry):
 
         # Write the stuff stored in buffer
         index_handle.write(buffer)
+
+        # Finally update the index version, if it was the older one
+        update_index_version(index_handle)
+
+
+def write_list_of_entries(index_file, entry_list):
+    """Rewrites the index file to contain the list of entries only
+
+    Clears the index and writes list of entries into the index
+
+    :param str index_file:
+    :param list of ExtendedIndexEntry entry_list:
+    """
+    # First delete the index
+    with open(index_file, 'wb+') as index_handle:
+        index_handle.truncate(0)
+        initialize_index_in_handle(index_handle)
+        modify_number_of_entries_in_index(index_handle, lambda x: len(entry_list))
+        index_handle.seek(INDEX_ENTRIES_START_OFFSET)
+        for entry in entry_list:
+            entry.write_to(index_handle)
 
 
 def lookup_entry_within_index(index_handle, predicate):
@@ -535,8 +579,14 @@ def get_profile_list_for_minor(base_dir, minor_version):
     _, minor_index_file = store.split_object_name(base_dir, minor_version)
 
     if os.path.exists(minor_index_file):
-        with open(minor_index_file, 'rb') as index_handle:
-            return [entry for entry in walk_index(index_handle)]
+        with open(minor_index_file, 'rb+') as index_handle:
+            index_handle.seek(4)
+            index_version = store.read_int_from_handle(index_handle)
+            result = [entry for entry in walk_index(index_handle)]
+        # Update the version of the index
+        if index_version < INDEX_VERSION:
+            write_list_of_entries(minor_index_file, result)
+        return result
     else:
         return []
 

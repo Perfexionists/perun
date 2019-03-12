@@ -1,6 +1,9 @@
 import os
 import pytest
+import git
+import binascii
 
+import perun.logic.commands as commands
 import perun.logic.store as store
 import perun.logic.index as index
 import perun.utils.exceptions as exceptions
@@ -61,6 +64,20 @@ def test_versions(tmpdir, monkeypatch):
         assert entry == basic_entry
     index.print_index(index_file)
 
+    # Test update to version 2.0 index
+    with open(index_file, 'rb+') as index_handle:
+        index_handle.seek(4)
+        version = store.read_int_from_handle(index_handle)
+        assert version == index.IndexVersion.SlowLorris.value
+    monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.IndexVersion.FastSloth.value)
+    monkeypatch.setattr('perun.logic.store.split_object_name', lambda _, __: (None, index_file))
+    monkeypatch.setattr('perun.logic.index.walk_index', lambda _: [])
+    index.get_profile_list_for_minor(os.getcwd(), index_file)
+    with open(index_file, 'rb+') as index_handle:
+        index_handle.seek(4)
+        version = store.read_int_from_handle(index_handle)
+        assert version == index.IndexVersion.FastSloth.value
+
     # Test version 2 index
     monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.IndexVersion.FastSloth.value)
     index_v2_file = os.path.join(str(tmpdir), "index_v2")
@@ -84,7 +101,6 @@ def test_versions(tmpdir, monkeypatch):
         index_handle.seek(index.INDEX_ENTRIES_START_OFFSET)
         stored = index.ExtendedIndexEntry.read_from(index_handle, index.IndexVersion.SlowLorris)
         assert stored.__dict__ == extended_entry.__dict__
-
 
 @pytest.mark.usefixtures('cleandir')
 def test_helpers(tmpdir):

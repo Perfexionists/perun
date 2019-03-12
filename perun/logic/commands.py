@@ -221,13 +221,15 @@ def init(dst, configuration_template='master', **kwargs):
 
 
 @lookup_minor_version
-def add(profile_names, minor_version, keep_profile=False):
+def add(profile_names, minor_version, keep_profile=False, force=False):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     :param generator profile_names: generator of profiles that will be stored for the minor version
     :param str minor_version: SHA-1 representation of the minor version
     :param bool keep_profile: if true, then the profile that is about to be added will be not
         deleted, and will be kept as it is. By default false, i.e. profile is deleted.
+    :param bool force: if set to true, then the add will be forced, i.e. the check for origin will
+        not be performed.
     """
     added_profile_count = 0
     for profile_name in profile_names:
@@ -240,7 +242,7 @@ def add(profile_names, minor_version, keep_profile=False):
         # Unpack to JSON representation
         unpacked_profile = store.load_profile_from_file(profile_name, True)
 
-        if unpacked_profile['origin'] != minor_version:
+        if not force and unpacked_profile['origin'] != minor_version:
             error_msg = "cannot add profile '{}' to minor index of '{}':".format(
                 profile_name, minor_version
             )
@@ -733,21 +735,67 @@ def get_untracked_profiles():
 
     :returns list: list of ProfileInfo parsed from .perun/jobs directory
     """
+    saved_entries = []
     profile_list = []
-    # Transform each profile of the path to the ProfileInfo object
-    for untracked_path in sorted(os.listdir(pcs.get_job_directory())):
-        if untracked_path.endswith('perf'):
-            real_path = os.path.join(pcs.get_job_directory(), untracked_path)
-            time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
+    # First load untracked files from the ./jobs/ directory
+    untracked_list = sorted(
+        list(filter(lambda f: f.endswith('perf'), os.listdir(pcs.get_job_directory())))
+    )
 
-            # Load the data from JSON, which contains additional information about profile
-            loaded_profile = store.load_profile_from_file(real_path, is_raw_profile=True)
+    # Second load registered files in job index
+    job_index = pcs.get_job_index()
+    index.touch_index(job_index)
+    with open(job_index, 'rb+') as index_handle:
+        pending_index_entries = list(index.walk_index(index_handle))
 
-            # Update the list of profiles and counters of types
+    # Iterate through the index and check if it is still in the ./jobs directory
+    # In case it is still valid, we extract it into ProfileInfo and remove it from the list
+    #   of files in ./jobs directory
+    for index_entry in pending_index_entries:
+        if index_entry.path in untracked_list:
+            real_path = os.path.join(pcs.get_job_directory(), index_entry.path)
+            index_info = {
+                'header': {
+                    'type': index_entry.type,
+                    'cmd': index_entry.cmd,
+                    'params': index_entry.args,
+                    'workload': index_entry.workload
+                },
+                'collector_info': {'name': index_entry.collector},
+                'postprocessors': [
+                    {'name': p} for p in index_entry.postprocessors
+                    ]
+            }
             profile_info = profile.ProfileInfo(
-                untracked_path, real_path, time, loaded_profile, is_raw_profile=True
+                index_entry.path, real_path, index_entry.time, index_info, is_raw_profile=True
             )
             profile_list.append(profile_info)
+            saved_entries.append(index_entry)
+            untracked_list.remove(index_entry.path)
+
+    # Now for every non-registered file in the ./jobs/ directory, we load the profile,
+    #   extract the info and register it in the index
+    for untracked_path in untracked_list:
+        real_path = os.path.join(pcs.get_job_directory(), untracked_path)
+        time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
+
+        # Load the data from JSON, which contains additional information about profile
+        loaded_profile = store.load_profile_from_file(real_path, is_raw_profile=True)
+        registered_checksum = store.compute_checksum(real_path.encode('utf-8'))
+
+        # Update the list of profiles and counters of types
+        profile_info = profile.ProfileInfo(
+            untracked_path, real_path, time, loaded_profile, is_raw_profile=True
+        )
+        untracked_entry = index._IndexEntryConstructors[index.INDEX_VERSION-1](
+            time, registered_checksum, untracked_path, -1, loaded_profile
+        )
+
+        profile_list.append(profile_info)
+        saved_entries.append(untracked_entry)
+
+    # We write all of the entries that are valid in the ./jobs/ directory in the index
+    index.write_list_of_entries(job_index, saved_entries)
 
     return profile_list
 

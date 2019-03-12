@@ -376,6 +376,10 @@ def init(dst, configure, config_template, **kwargs):
 @click.option('--keep-profile', is_flag=True, required=False, default=False,
               help='Keeps the profile in filesystem after registering it in'
               ' Perun storage. Otherwise it is deleted.')
+@click.option('--force', '-f', is_flag=True, default=False, required=False,
+              help='If set to true, then the profile will be registered in the <hash> minor version'
+                   'index, even if its origin <hash> is different. WARNING: This can screw the '
+                   'performance history of your project.')
 def add(profile, minor, **kwargs):
     """Links profile to concrete minor version storing its content in the
     ``.perun`` dir and registering the profile in internal minor version index.
@@ -434,7 +438,11 @@ def add(profile, minor, **kwargs):
     See :doc:`internals` for information how perun handles profiles internally.
     """
     try:
-        commands.add(profile, minor, **kwargs)
+        warning_message = 'Warning: Are you sure you want to force the add?' \
+                          'This will make the performance history of your project imprecise ' \
+                          'or simply wrong.'
+        if not kwargs['force'] or click.confirm(warning_message):
+            commands.add(profile, minor, **kwargs)
     except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
         perun_log.error(str(exception))
 
