@@ -75,6 +75,17 @@ class EntryNotFoundException(Exception):
         return msg + " found in the index{}".format(": " + self.cause if self.cause else '')
 
 
+class StatsFileNotFoundException(Exception):
+    """Raised when the looked up stats file does not exist"""
+    def __init__(self, filename):
+        super().__init__("")
+        self.path = filename
+        self.msg = "The requested stats file '{}' does not exist".format(self.path)
+
+    def __str__(self):
+        return self.msg
+
+
 class VersionControlSystemException(Exception):
     """Raised when there is an issue with wrapped version control system.
 
