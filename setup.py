@@ -13,7 +13,7 @@ setup(
     install_requires=[
         'click', 'termcolor', 'colorama', 'ruamel.yaml', 'GitPython', 'bokeh', 'pandas',
         'demandimport', 'Sphinx', 'sphinx-click', 'Jinja2', 'python-magic', 'scipy', 'faker',
-        'namedlist'
+        'namedlist', 'distribute==0.7.3', 'PyQt-Fit==1.3.4'
     ],
 
     entry_points='''
