@@ -4,7 +4,6 @@ import os
 import re
 import subprocess
 import perun.utils.log as log
-import operator
 
 PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
