@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Perun’s Profile Format &#8212; Perun 0.16.3 documentation</title>
+    <title>Perun’s Profile Format &#8212; Perun 0.16.4 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.3',
+        VERSION:     '0.16.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -410,33 +410,6 @@ uncompressed format).</p>
 (implemented in <code class="docutils literal"><span class="pre">perun.profile.convert</span></code> module) or <a class="reference internal" href="#profile-query-api"><span class="std std-ref">Profile Query API</span></a>
 (implemented in <code class="docutils literal"><span class="pre">perun.profile.query</span> <span class="pre">module</span></code>). For full specification how to
 handle the JSON objects in Python refer to <a class="reference external" href="https://docs.python.org/3.7/library/json.html">Python JSON library</a>.</p>
-<dl class="function">
-<dt id="perun.profile.factory.load_profile_from_file">
-<code class="descclassname">perun.profile.factory.</code><code class="descname">load_profile_from_file</code><span class="sig-paren">(</span><em>file_name</em>, <em>is_raw_profile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profile/factory.html#load_profile_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.profile.factory.load_profile_from_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads profile w.r.t <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a> from file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>file_name</strong> (<em>str</em>) – file path, where the profile is stored</li>
-<li><strong>is_raw_profile</strong> (<em>bool</em>) – if set to true, then the profile was loaded
-from the file system and is thus in the JSON already and does not have
-to be decompressed and unpacked to JSON format.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">JSON dictionary w.r.t. <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>IncorrectProfileFormatException</strong> – raised, when <strong>filename</strong> contains
-data, which cannot be converted to valid <a class="reference internal" href="#profile-spec"><span class="std std-ref">Specification of Profile Format</span></a></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="function">
 <dt id="perun.profile.factory.store_profile_at">
 <code class="descclassname">perun.profile.factory.</code><code class="descname">store_profile_at</code><span class="sig-paren">(</span><em>profile</em>, <em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/perun/profile/factory.html#store_profile_at"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#perun.profile.factory.store_profile_at" title="Permalink to this definition">¶</a></dt>

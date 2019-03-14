@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Postprocessors Overview &#8212; Perun 0.16.3 documentation</title>
+    <title>Postprocessors Overview &#8212; Perun 0.16.4 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.3',
+        VERSION:     '0.16.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -964,15 +964,15 @@ code of these methods, you can visit <a class="reference external" href="https:/
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-regressogram-p">
-<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-p" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
+<dt id="cmdoption-perun-postprocessby-regressogram-of">
+<code class="descname">-of</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of-key</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-regressogram-o">
-<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-o" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
+<dt id="cmdoption-perun-postprocessby-regressogram-per">
+<code class="descname">-per</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per-key</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-per" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
 </dd></dl>
 
 </div>
@@ -1059,15 +1059,15 @@ the <em>exponential</em> moving average (<strong>ema</strong>).</div></blockquot
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-moving-average-dp">
-<code class="descname">-dp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--depending-on</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-dp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the key that will be used as a source of independent variable.</p>
+<dt id="cmdoption-perun-postprocessby-moving-average-of">
+<code class="descname">-of</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of-key</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-moving-average-o">
-<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-o" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets key for which we are finding the model.</p>
+<dt id="cmdoption-perun-postprocessby-moving-average-per">
+<code class="descname">-per</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per-key</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-per" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
@@ -1224,7 +1224,7 @@ weighting factor or length of the average.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>The example above shows an example of profile post-processed by moving average regressogram (note
+<p>The example above shows an example of profile post-processed by moving average postprocessor (note
 that this in only an excerpt of the whole profile). Each such model of moving average model shows
 the computed values, that are represented by <em>bucket_stats</em>. The important role has value <em>moving_method</em>,
 that represents the method, which was used to create this model. In this field may be one from the
@@ -1240,6 +1240,65 @@ can be found in the whole profile, specifically in the part about used post-proc
 <p>The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the interpreted model, computed using the <strong>exponential moving average</strong>
 method, running with default values of parameters. In the picture, one can see that the dependency of running
 time based on the structural size is best fitted by <cite>exponential</cite> models.</p>
+</div>
+</div>
+<div class="section" id="module-perun.postprocess.kernel_regression">
+<span id="kernel-regression-methods"></span><span id="postprocessors-kernel-regression"></span><h3>Kernel Regression Methods<a class="headerlink" href="#module-perun.postprocess.kernel_regression" title="Permalink to this headline">¶</a></h3>
+<p>A postprocessor that executing the kernel regression over the resources.</p>
+<p>Postprocessing of inputs profiles using the kernel regression. Postprocessor,
+implementing kernel regression offers several computational methods with
+different approaches and different strategies to find optimal parameters.</p>
+<div class="section" id="postprocessors-kernel-regression-cli">
+<span id="id9"></span><h4>Command Line Interface<a class="headerlink" href="#postprocessors-kernel-regression-cli" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="postprocessors-kernel-regression-examples">
+<span id="id10"></span><h4>Examples<a class="headerlink" href="#postprocessors-kernel-regression-examples" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;per_key&quot;</span><span class="p">:</span> <span class="s2">&quot;structure-unit-size&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;uid&quot;</span><span class="p">:</span> <span class="s2">&quot;quad::test1&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;kernel_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;estimator&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;r_square&quot;</span><span class="p">:</span> <span class="mf">0.9990518378010778</span><span class="p">,</span>
+    <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;kernel_regression&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;x_interval_start&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="nt">&quot;bandwidth&quot;</span><span class="p">:</span> <span class="mf">2.672754640321602</span><span class="p">,</span>
+    <span class="nt">&quot;x_interval_end&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+    <span class="nt">&quot;kernel_stats&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="mf">115.6085941489687</span><span class="p">,</span>
+          <span class="mf">155.95838478107163</span><span class="p">,</span>
+          <span class="mf">190.27598428091824</span><span class="p">,</span>
+          <span class="mf">219.36576520977312</span><span class="p">,</span>
+          <span class="mf">252.80699243117965</span><span class="p">,</span>
+          <span class="mf">268.4600214673941</span><span class="p">,</span>
+          <span class="mf">283.3744716372719</span><span class="p">,</span>
+          <span class="mf">282.7535719770607</span><span class="p">,</span>
+          <span class="mf">276.27153279181573</span><span class="p">,</span>
+          <span class="mf">269.69580474542016</span><span class="p">,</span>
+          <span class="mf">244.451017529157</span><span class="p">,</span>
+          <span class="mf">226.98819185034756</span><span class="p">,</span>
+          <span class="mf">180.72465187812492</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The example above shows an example of profile post-processed by <em>kernel regression</em> (note that this
+is only an excerpt of the whole profile). Each such kernel model shows the values of resulting kernel
+estimate, that are part of <em>kernel_stats</em> list. Another fascinating value is stored in <em>kernel_mode</em>
+field and means the relevant mode, which executing the <em>kernel regression</em> over this model. In this
+field may be one from the following words, which represents the individual modes of kernel regression
+postprocessor. The value <em>r_square</em> serves to assess the suitability of the kernel model and represents
+the <em>coefficient of determination</em> (<span class="math">\(R^2\)</span>). In the context of another kernel estimates for decreasing
+or increasing the resulting accuracy is important the field <em>bandwidth</em>, which represents the kernel
+bandwidth in the current kernel model. Since each model can be used in the further interpretation
+(either by <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> or <a class="reference internal" href="degradation.html#degradation-method-aat"><span class="std std-ref">Average Amount Threshold</span></a>), another values have auxiliary character
+and serves for a different purposes at its interpretation. Additional values that contain the information
+about selected parameters at kernel regression postprocessor and its modes, can be found in the whole profile,
+specifically in the part about used post-processors.</p>
+<img alt="_images/example_kernel.png" src="_images/example_kernel.png" />
+<p>The <a class="reference internal" href="views.html#views-scatter"><span class="std std-ref">Scatter Plot</span></a> above shows the interpreted model, computed using the <em>kernel regression</em> postprocessor,
+concretely with default value of parameters in <strong>estimator-settings</strong> mode of this postprocessor. In the picture, can
+be see that the dependency of running time based on the structural size.</p>
 </div>
 </div>
 </div>
@@ -1471,6 +1530,11 @@ following to set the job matrix and run the batch collection of profiles:</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#postprocessors-moving-average-examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-perun.postprocess.kernel_regression">Kernel Regression Methods</a><ul>
+<li><a class="reference internal" href="#postprocessors-kernel-regression-cli">Command Line Interface</a></li>
+<li><a class="reference internal" href="#postprocessors-kernel-regression-examples">Examples</a></li>
 </ul>
 </li>
 </ul>

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.16.3 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.16.4 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.3',
+        VERSION:     '0.16.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -486,6 +486,12 @@ perun, if &lt;profile&gt; points to incorrect profile (i.e. not w.r.t.
 <dt id="cmdoption-perun-add-keep-profile">
 <code class="descname">--keep-profile</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-add-keep-profile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Keeps the profile in filesystem after registering it in Perun storage. Otherwise it is deleted.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-add-f">
+<code class="descname">-f</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--force</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-add-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>If set to true, then the profile will be registered in the &lt;hash&gt; minor versionindex, even if its origin &lt;hash&gt; is different. WARNING: This can screw the performance history of your project.</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
@@ -1663,15 +1669,15 @@ code of these methods, you can visit <a class="reference external" href="https:/
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-regressogram-p">
-<code class="descname">-p</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-p" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
+<dt id="cmdoption-perun-postprocessby-regressogram-of">
+<code class="descname">-of</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of-key</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-regressogram-o">
-<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-o" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
+<dt id="cmdoption-perun-postprocessby-regressogram-per">
+<code class="descname">-per</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per-key</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-per" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
 </dd></dl>
 
 </div>
@@ -1716,15 +1722,15 @@ the <em>exponential</em> moving average (<strong>ema</strong>).</div></blockquot
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-moving-average-dp">
-<code class="descname">-dp</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--depending-on</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-dp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the key that will be used as a source of independent variable.</p>
+<dt id="cmdoption-perun-postprocessby-moving-average-of">
+<code class="descname">-of</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of-key</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
 </dd></dl>
 
 <dl class="option">
-<dt id="cmdoption-perun-postprocessby-moving-average-o">
-<code class="descname">-o</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-o" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets key for which we are finding the model.</p>
+<dt id="cmdoption-perun-postprocessby-moving-average-per">
+<code class="descname">-per</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per-key</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-per" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>

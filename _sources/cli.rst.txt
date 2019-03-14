@@ -122,6 +122,24 @@ Postprocess units
 .. click:: perun.postprocess.moving_average.run:exponential_moving_average
    :prog: perun postprocessby moving_average ema
 
+.. click:: perun.postprocess.kernel_regression.run:kernel_regression
+   :prog: perun postprocessby kernel-regression
+
+.. click:: perun.postprocess.kernel_regression.run:estimator_settings
+   :prog: perun postprocessby kernel-regression estimator-settings
+
+.. click:: perun.postprocess.kernel_regression.run:user_selection
+   :prog: perun postprocessby kernel-regression user-selection
+
+.. click:: perun.postprocess.kernel_regression.run:method_selection
+   :prog: perun postprocessby kernel-regression method-selection
+
+.. click:: perun.postprocess.kernel_regression.run:kernel_smoothing
+   :prog: perun postprocessby kernel-regression kernel-smoothing
+
+.. click:: perun.postprocess.kernel_regression.run:kernel_ridge
+   :prog: perun postprocessby kernel-regression kernel-ridge
+
 Show Commands
 -------------
 

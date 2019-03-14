@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.16.3 documentation</title>
+    <title>Index &#8212; Perun 0.16.4 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.3',
+        VERSION:     '0.16.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -55,7 +55,6 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
- | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -297,8 +296,6 @@
     -dp, --depending-on &lt;per_key&gt;
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-dp">perun-postprocessby-moving_average command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-dp">[1]</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-dp">perun-postprocessby-regression_analysis command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-dp">[1]</a>
 </li>
       </ul></li>
@@ -320,6 +317,13 @@
         <li><a href="cli.html#cmdoption-perun-show-flow-f">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-f">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-scatter-f">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-f">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -f, --force
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-add-f">perun-add command line option</a>
 </li>
       </ul></li>
       <li>
@@ -477,17 +481,22 @@
     -o, --of &lt;of_key&gt;
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-o">perun-postprocessby-moving_average command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-o">[1]</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-o">perun-postprocessby-regression_analysis command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-o">[1]</a>
-</li>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-o">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-o">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-bars-o">perun-show-bars command line option</a>, <a href="views.html#cmdoption-perun-show-bars-o">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-flow-o">perun-show-flow command line option</a>, <a href="views.html#cmdoption-perun-show-flow-o">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-scatter-o">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-o">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -of, --of-key &lt;of_key&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-of">perun-postprocessby-moving_average command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-of">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-of">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-of">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -512,8 +521,6 @@
     -p, --per &lt;per_key&gt;
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-p">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-p">[1]</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-show-bars-p">perun-show-bars command line option</a>, <a href="views.html#cmdoption-perun-show-bars-p">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-show-scatter-p">perun-show-scatter command line option</a>, <a href="views.html#cmdoption-perun-show-scatter-p">[1]</a>
@@ -524,6 +531,15 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-run-job-p">perun-run-job command line option</a>, <a href="jobs.html#cmdoption-perun-run-job-p">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -per, --per-key &lt;per_key&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-per">perun-postprocessby-moving_average command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-per">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-per">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-per">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -1190,14 +1206,6 @@
   </ul></td>
 </tr></table>
 
-<h2 id="L">L</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="profile.html#perun.profile.factory.load_profile_from_file">load_profile_from_file() (in module perun.profile.factory)</a>
-</li>
-  </ul></td>
-</tr></table>
-
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1311,6 +1319,8 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-add-keep-profile">--keep-profile</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-add-f">-f, --force</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-add-m">-m, --minor &lt;minor&gt;</a>
 </li>
@@ -1512,11 +1522,11 @@
     perun-postprocessby-moving_average command line option
 
       <ul>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-dp">-dp, --depending-on &lt;per_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-dp">[1]</a>
-</li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-mp">-mp, --min_periods &lt;min_periods&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-mp">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-o">-o, --of &lt;of_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-o">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-of">-of, --of-key &lt;of_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-of">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-per">-per, --per-key &lt;per_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-per">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -1571,9 +1581,9 @@
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-bn">-bn, --bucket_number &lt;bucket_number&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-bn">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-o">-o, --of &lt;of_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-o">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-of">-of, --of-key &lt;of_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-of">[1]</a>
 </li>
-        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-p">-p, --per &lt;per_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-p">[1]</a>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-per">-per, --per-key &lt;per_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-per">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-sf">-sf, --statistic_function &lt;statistic_function&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-sf">[1]</a>
 </li>
@@ -1774,6 +1784,8 @@
       <li><a href="postprocessors.html#module-perun.postprocess">perun.postprocess (module)</a>
 </li>
       <li><a href="postprocessors.html#module-perun.postprocess.clusterizer">perun.postprocess.clusterizer (module)</a>
+</li>
+      <li><a href="postprocessors.html#module-perun.postprocess.kernel_regression">perun.postprocess.kernel_regression (module)</a>
 </li>
       <li><a href="postprocessors.html#module-perun.postprocess.moving_average">perun.postprocess.moving_average (module)</a>
 </li>
