@@ -39,11 +39,11 @@
         "kernel_mode": "estimator-settings",
         "bandwidth_method": "cv_ls",
         "randomize": false,
-        "n_sub": 50,
+        "n_sub_samples": 50,
         "reg_type": "ll",
         "of_key": "amount",
         "per_key": "structure-unit-size",
-        "n_res": 25
+        "n_re_samples": 25
       }
     }
   ],

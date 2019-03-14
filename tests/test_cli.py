@@ -420,25 +420,25 @@ def test_kernel_regression_incorrect(pcs_full):
         # 20. Test invalid value for bandwidth-value argument
         {'params': ['-bw', 'cv-ls'], 'output': 'Invalid value for "--bandwidth-method"'},
         # 21. Test malformed n-sub argument
-        {'params': ['--n-sbu'], 'output': 'no such option: --n-sbu'},
+        {'params': ['--n-sub-sample'], 'output': 'no such option: --n-sub-sample'},
         # 22. Test missing n-sub argument
-        {'params': ['-ns'], 'output': '-ns option requires an argument'},
+        {'params': ['-nsub'], 'output': '-nsub option requires an argument'},
         # 23. Test invalid value for n-sub argument
-        {'params': ['-ns', 0], 'output': 'Invalid value for "--n-sub"'},
+        {'params': ['-nsub', 0], 'output': 'Invalid value for "--n-sub-samples"'},
         # 24. Test malformed n-res argument
-        {'params': ['--n-rez'], 'output': 'no such option: --n-rez'},
+        {'params': ['--n-re-sample'], 'output': 'no such option: --n-re-sample'},
         # 25. Test missing n-sub argument
-        {'params': ['-nr'], 'output': '-nr option requires an argument'},
+        {'params': ['-nres'], 'output': '-nres option requires an argument'},
         # 26. Test invalid value for n-sub argument
-        {'params': ['--n-res', 0], 'output': 'Invalid value for "--n-res"'},
+        {'params': ['--n-re-samples', 0], 'output': 'Invalid value for "--n-re-samples"'},
         # 27. Test malformed efficient argument
         {'params': ['--eficient'], 'output': 'no such option: --eficient'},
-        # 28. Test malformed no-efficient argument
-        {'params': ['--no-eficient'], 'output': 'no such option: --no-eficient'},
+        # 28. Test malformed no-uniformly argument
+        {'params': ['--uniformlys'], 'output': 'no such option: --uniformlys'},
         # 29. Test value for efficient argument
         {'params': ['--efficient', 'True'], 'output': 'Got unexpected extra argument (True)'},
-        # 30. Test value for no-efficient argument
-        {'params': ['--no-efficient', 'False'], 'output': 'Got unexpected extra argument (False)'},
+        # 30. Test value for uniformly argument
+        {'params': ['--uniformly', 'False'], 'output': 'Got unexpected extra argument (False)'},
         # 31. Test malformed randomize argument
         {'params': ['--randomized'], 'output': 'no such option: --randomized'},
         # 32. Test malformed no-randomize argument
@@ -583,13 +583,13 @@ def test_kernel_regression_correct(pcs_full):
         # 11. Test the `aic` as value for bandwidth-method argument
         {'params': ['--bandwidth-method', 'aic']},
         # 12. Test the valid value for n-sub argument
-        {'params': ['--n-sub', 20]},
+        {'params': ['--n-sub-samples', 20]},
         # 13. Test the valid value for n-res argument
-        {'params': ['--n-res', 10]},
+        {'params': ['--n-re-samples', 10]},
         # 14. Test the efficient argument - ON
         {'params': ['--efficient']},
-        # 15. Test the no-efficient argument - OFF
-        {'params': ['--no-efficient']},
+        # 15. Test the uniformly argument - OFF
+        {'params': ['--uniformly']},
         # 16. Test the randomize argument - ON
         {'params': ['--randomize']},
         # 17. Test the no-randomize argument - OFF
@@ -599,11 +599,13 @@ def test_kernel_regression_correct(pcs_full):
         # 19. Test the return-median argument
         {'params': ['--return-median']},
         # 20. Test the complex combinations of options - no.1
-        {'params': ['--reg-type', 'll', '--bandwidth-method', 'cv_ls', '--efficient', '--randomize', '--n-sub', 20]},
+        {'params': ['-rt', 'lc', '--return-median', '--randomize', '--n-re-samples', 5]},
         # 21. Test the complex combinations of options - no.2
-        {'params': ['-bw', 'aic', '-nr', 10, '-ns', 50, '--randomize', '--efficient']},
+        {'params': ['-bw', 'aic', '-nres', 10, '-nsub', 50, '--randomize', '--efficient']},
         # 22. Test the complex combinations of options - no.3
-        {'params': ['-rt', 'lc', '--return-median', '--randomize', '--n-res', 5]},
+        {'params': [
+            '--reg-type', 'll', '--bandwidth-method', 'cv_ls', '--efficient', '--randomize', '--n-sub-samples', 20
+        ]},
 
         # TEST METHOD-SELECTION OPTIONS
         # 23. Test the help printout first

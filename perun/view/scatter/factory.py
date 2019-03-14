@@ -157,7 +157,10 @@ def create_non_param_model(graph, model, profile, colour):
     """
     def draw_model(y_pts):
         # Obtains the x-coordinates with the required uid to pair with current model
-        params = {'of_key': 'amount', 'per_key': model['per_key']}
+        params = {
+            'of_key': 'amount',
+            'per_key': model['per_key']
+        }
         for x_pts, _, uid in data_provider.data_provider_mapper(profile, **params):
             if uid == model['uid']:
                 # Plot the model

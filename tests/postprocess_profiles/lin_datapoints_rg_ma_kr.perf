@@ -347,8 +347,8 @@
       "params": {
         "return_median": false,
         "bandwidth_method": "cv_ls",
-        "n_sub": 50,
-        "n_res": 25,
+        "n_sub_samples": 50,
+        "n_re_samples": 25,
         "randomize": false,
         "reg_type": "ll",
         "efficient": false,

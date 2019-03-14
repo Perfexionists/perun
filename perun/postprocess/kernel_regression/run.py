@@ -76,19 +76,19 @@ def postprocess(profile, **configuration):
               help='Provides the method for bandwidth selection. Supported values are: "cv-ls": least-squares'
                    'cross validation and "aic": AIC Hurvich bandwidth estimation. Default is "cv-ls". For more '
                    'information about these methods you can visit Perun Documentation.')
-@click.option('--efficient/--no-efficient', default=_DEFAULT_EFFICIENT,
+@click.option('--efficient/--uniformly', default=_DEFAULT_EFFICIENT,
               help=('If True, is executing the efficient bandwidth estimation - by taking smaller '
                     'sub-samples and estimating the scaling factor of each sub-sample. It is useful '
                     'for large samples and/or multiple variables. If False (default), all data is '
                     'used at the same time.'))
 @click.option('--randomize/--no-randomize', default=_DEFAULT_RANDOMIZE,
               help=('If True, the bandwidth estimation is performed by taking <n_res> random re-samples '
-                    'of size <n_sub> from the full sample. If set to False (default), is performed by '
-                    'slicing the full sample in sub-samples of <n_sub> size, so that all samples are '
+                    'of size <n-sub-samples> from the full sample. If set to False (default), is performed by '
+                    'slicing the full sample in sub-samples of <n-sub-samples> size, so that all samples are '
                     'used once.'))
-@click.option('--n-sub', '-ns', type=click.IntRange(min=1, max=None), default=_DEFAULT_N_SUB,
+@click.option('--n-sub-samples', '-nsub', type=click.IntRange(min=1, max=None), default=_DEFAULT_N_SUB,
               help='Size of the sub-samples (default is 50).')
-@click.option('--n-res', '-nr', type=click.IntRange(min=1, max=None), default=_DEFAULT_N_RES,
+@click.option('--n-re-samples', '-nres', type=click.IntRange(min=1, max=None), default=_DEFAULT_N_RES,
               help=('The number of random re-samples used to bandwidth estimation. '
                     'It has effect only if <randomize> is set to True. Default values is 25.'))
 @click.option('--return-median/--return-mean', default=_DEFAULT_RETURN_MEDIAN,

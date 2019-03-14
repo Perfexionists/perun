@@ -463,11 +463,11 @@
     {
       "name": "kernel_regression",
       "params": {
-        "n_sub": 50,
+        "n_sub_samples": 50,
         "per_key": "structure-unit-size",
         "return_median": false,
         "randomize": false,
-        "n_res": 25,
+        "n_re_samples": 25,
         "reg_type": "ll",
         "efficient": false,
         "of_key": "amount",
