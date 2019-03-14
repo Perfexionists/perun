@@ -284,7 +284,7 @@ time based on the structural size is best fitted by `exponential` models.
 .. _postprocessors-kernel-regression:
 
 Kernel Regression Methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: perun.postprocess.kernel_regression
 

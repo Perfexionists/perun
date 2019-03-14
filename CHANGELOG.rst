@@ -6,9 +6,18 @@ HEAD
 
 **To be included in next release**
 
-  - fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+
+0.16.4 (2019-03-14)
+-------------------
 
-0.16.2 (2019-03-02)
+`commit: 983b02ca54faa66941dcea06f990c8033eaf98f6`
+
+**Add kernel non-parametric regression**
+
+  - fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+
+  - add three kernel non-parametrikjc regression models (see :ref:`_postprocessors-kernel-regression`)
+  - fix minor issues in moving average and regressogram
+
+0.16.3 (2019-03-02)
 -------------------
 
 `commit: de699ab66d8438166d0ad2d55c74bf43a59d1fc4`
