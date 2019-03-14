@@ -295,7 +295,7 @@ def get_supported_module_names(package):
         'vcs': ['git'],
         'collect': ['trace', 'memory', 'time'],
         'postprocess': ['clusterizer', 'filter', 'normalizer', 'regression-analysis',
-                        'regressogram', 'moving-average'],
+                        'regressogram', 'moving-average', 'kernel-regression'],
         'view': ['bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
     }[package]
 

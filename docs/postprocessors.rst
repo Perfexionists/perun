@@ -260,7 +260,7 @@ Examples
             "window_width": 1
         }
 
-The example above shows an example of profile post-processed by moving average regressogram (note
+The example above shows an example of profile post-processed by moving average postprocessor (note
 that this in only an excerpt of the whole profile). Each such model of moving average model shows
 the computed values, that are represented by *bucket_stats*. The important role has value *moving_method*,
 that represents the method, which was used to create this model. In this field may be one from the
@@ -280,6 +280,100 @@ The :ref:`views-scatter` above shows the interpreted model, computed using the *
 method, running with default values of parameters. In the picture, one can see that the dependency of running
 time based on the structural size is best fitted by `exponential` models.
 
+
+.. _postprocessors-kernel-regression:
+
+Kernel Regression Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.postprocess.kernel_regression
+
+.. _postprocessors-kernel_regression-cli:
+
+Command Line Interface
+""""""""""""""""""""""
+
+.. click:: perun.postprocess.kernel_regression.run:kernel_regression
+   :prog: perun postprocessby kernel-regression
+
+.. _postprocessors-kernel-regression-estimator_settings:
+
+.. click:: perun.postprocess.kernel_regression.run:estimator_settings
+   :prog: perun postprocessby kernel-regression estimator-settings
+
+.. _postprocessors-kernel-regression-user_selection:
+
+.. click:: perun.postprocess.kernel_regression.run:user_selection
+   :prog: perun postprocessby kernel-regression user-selection
+
+.. _postprocessors-kernel-regression-method_selection:
+
+.. click:: perun.postprocess.kernel_regression.run:method_selection
+   :prog: perun postprocessby kernel-regression method-selection
+
+.. _postprocessors-kernel-regression-kernel_smoothing:
+
+.. click:: perun.postprocess.kernel_regression.run:kernel_smoothing
+   :prog: perun postprocessby kernel-regression kernel-smoothing
+
+.. _postprocessors-kernel-regression-kernel_ridge:
+
+.. click:: perun.postprocess.kernel_regression.run:kernel_ridge
+   :prog: perun postprocessby kernel-regression kernel-ridge
+
+.. _postprocessors-kernel-regression-examples:
+
+Examples
+""""""""
+
+    .. code-block:: json
+
+        {
+            "per_key": "structure-unit-size",
+            "uid": "quad::test1",
+            "kernel_mode": "estimator",
+            "r_square": 0.9990518378010778,
+            "method": "kernel_regression",
+            "x_interval_start": 10,
+            "bandwidth": 2.672754640321602,
+            "x_interval_end": 64,
+            "kernel_stats": [
+                  115.6085941489687,
+                  155.95838478107163,
+                  190.27598428091824,
+                  219.36576520977312,
+                  252.80699243117965,
+                  268.4600214673941,
+                  283.3744716372719,
+                  282.7535719770607,
+                  276.27153279181573,
+                  269.69580474542016,
+                  244.451017529157,
+                  226.98819185034756,
+                  180.72465187812492
+            ]
+        }
+
+The example above shows an example of profile post-processed by *kernel regression* (note that this
+is only an excerpt of the whole profile). Each such kernel model shows the values of resulting kernel
+estimate, that are part of *kernel_stats* list. Another fascinating value is stored in *kernel_mode*
+field and means the relevant mode, which executing the *kernel regression* over this model. In this
+field may be one from the following words, which represents the individual modes of kernel regression
+postprocessor. The value *r_square* serves to assess the suitability of the kernel model and represents
+the *coefficient of determination* (:math:`R^2`). In the context of another kernel estimates for decreasing
+or increasing the resulting accuracy is important the field *bandwidth*, which represents the kernel
+bandwidth in the current kernel model. Since each model can be used in the further interpretation
+(either by :ref:`views-scatter` or :ref:`degradation-method-aat`), another values have auxiliary character
+and serves for a different purposes at its interpretation. Additional values that contain the information
+about selected parameters at kernel regression postprocessor and its modes, can be found in the whole profile,
+specifically in the part about used post-processors.
+
+
+.. image:: /../examples/example_kernel.*
+
+The :ref:`views-scatter` above shows the interpreted model, computed using the *kernel regression* postprocessor,
+concretely with default value of parameters in **estimator-settings** mode of this postprocessor. In the picture, can
+be see that the dependency of running time based on the structural size.
 
 .. _postprocessors-custom:
 

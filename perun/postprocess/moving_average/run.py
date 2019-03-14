@@ -55,7 +55,7 @@ def common_sma_options(f):
     :return: returns sequence of the single options for the current function (f) as decorators
     """
     options = [
-        click.option('--window_width', '-ww', type=click.IntRange(min=1, max=None, clamp=False),
+        click.option('--window_width', '-ww', type=click.IntRange(min=1, max=None),
                      help='Size of the moving window. This is a number of observations used '
                           'for calculating the statistic. Each window will be a fixed size.'),
         click.option('--center/--no-center', default=_DEFAULT_CENTER,
@@ -159,15 +159,10 @@ def exponential_moving_average(ctx, **kwargs):
 
 
 @click.group(invoke_without_command=True)
-@click.option('--min_periods', '-mp', type=click.IntRange(min=1, max=None, clamp=False),
+@click.option('--min_periods', '-mp', type=click.IntRange(min=1, max=None),
               help='Provides the minimum number of observations in window required to have a value. '
                    'If the number of possible observations smaller then result is NaN.')
-@click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size',
-              nargs=1, metavar='<depending_on>', callback=cli_helpers.process_resource_key_param,
-              help='Sets the key that will be used as a source of independent variable.')
-@click.option('--of', '-o', 'of_key', nargs=1, metavar='<of_resource_key>',
-              default='amount', callback=cli_helpers.process_resource_key_param,
-              help='Sets key for which we are finding the model.')
+@cli_helpers.resources_key_options
 @click.pass_context
 def moving_average(ctx, **kwargs):
     """
@@ -198,7 +193,6 @@ def moving_average(ctx, **kwargs):
 
     For more details about this approach of non-parametric analysis refer to :ref:`postprocessors-moving-average`.
     """
-    ctx.params['profile'] = ctx.obj
     # run default simple moving average command
     if ctx.invoked_subcommand is None:
         ctx.invoke(simple_moving_average)

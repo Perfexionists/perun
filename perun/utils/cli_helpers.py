@@ -4,9 +4,10 @@ Contains functions for click api, for processing parameters from command line, v
 and returning default values.
 """
 
-import re
-import os
 import click
+import functools
+import os
+import re
 
 import perun
 import perun.profile.factory as profiles
@@ -407,3 +408,23 @@ def lookup_any_profile_callback(ctx, _, value):
         log.error("could not find the file '{}'".format(abs_path))
 
     return profiles.load_profile_from_file(abs_path, is_raw_profile=True)
+
+
+def resources_key_options(f):
+    """
+    This method creates Click decorator for common options for  all non-parametric
+    postprocessor: `regressogram`, `moving average` and `kernel-regression`.
+
+
+    :param function f: the function in which the decorator of common options is currently applied
+    :return: returns sequence of the single options for the current function (f) as decorators
+    """
+    options = [
+        click.option('--per-key', '-per', 'per_key', default='structure-unit-size',
+                     nargs=1, metavar='<per_resource_key>', callback=process_resource_key_param,
+                     help='Sets the key that will be used as a source of variable (x-coordinates).'),
+        click.option('--of-key', '-of', 'of_key', nargs=1, metavar='<of_resource_key>',
+                     default='amount', callback=process_resource_key_param,
+                     help='Sets key for which we are finding the model (y-coordinates).')
+    ]
+    return functools.reduce(lambda x, option: option(x), options, f)

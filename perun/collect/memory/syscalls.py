@@ -52,7 +52,8 @@ def build_address_to_line_cache(addresses, binary_name):
     """
     global address_to_line_cache
 
-    list_of_addresses = list(addresses)
+    list_of_addresses = [a[0] for a in addresses]
+
     if not all(map(PATTERN_HEXADECIMAL.match, list_of_addresses)):
         log.error("incorrect values in address translations")
     else:

@@ -99,8 +99,8 @@ def draw_models(graph, models, profile):
         # The non-parametric models do not contain the coefficients
         elif model['method'] == 'regressogram':
                 graph = create_regressogram_model(graph, model, colour_palette[idx])
-        elif model['method'] == 'moving_average':
-                graph = create_moving_average_model(graph, model, profile, colour_palette[idx])
+        elif model['method'] in ('moving_average', 'kernel_regression'):
+                graph = create_non_param_model(graph, model, profile, colour_palette[idx])
     return graph
 
 
@@ -145,7 +145,7 @@ def create_regressogram_model(graph, model, colour):
     return rg_methods.render_step_function(graph, x_pts, y_pts, graph_params)
 
 
-def create_moving_average_model(graph, model, profile, colour):
+def create_non_param_model(graph, model, profile, colour):
     """
     Rendering the moving average model according to its computed properties.
 
@@ -155,15 +155,27 @@ def create_moving_average_model(graph, model, profile, colour):
     :param colour: the color of the current model to distinguish in the case of several models in the graph
     :return charts.Graph: the modified graph with new moving average model
     """
-    # Create legend for the plotted model
-    legend = '{0}: window={1}, R^2={2:f}'.format(model['moving_method'], model['window_width'], model['r_square'])
-    # Obtains the x-coordinates with the required uid to pair with current model
-    params = {'of_key': 'amount', 'per_key': model['per_key']}
-    for x_pts, _, uid in data_provider.data_provider_mapper(profile, **params):
-        if uid == model['uid']:
-            # Plot the model
-            graph.line(x=sorted(x_pts), y=model['bucket_stats'], line_color=colour, line_width=3.5, legend=legend)
-    return graph
+    def draw_model(y_pts):
+        # Obtains the x-coordinates with the required uid to pair with current model
+        params = {
+            'of_key': 'amount',
+            'per_key': model['per_key']
+        }
+        for x_pts, _, uid in data_provider.data_provider_mapper(profile, **params):
+            if uid == model['uid']:
+                # Plot the model
+                graph.line(x=sorted(x_pts), y=y_pts, line_color=colour, line_width=3.5, legend=legend)
+        return graph
+
+    legend = ""
+    if model['method'] == 'moving_average':
+        # Create legend for the plotted moving_average model
+        legend = '{0}: window={1}, R^2={2:f}'.format(model['moving_method'], model['window_width'], model['r_square'])
+    elif model['method'] == 'kernel_regression':
+        # Create legend for the plotted kernel models
+        legend = '{0}: bw={1}, R^2={2:f}'.format(model['kernel_mode'], model['bandwidth'], model['r_square'])
+    # Render kernel models to the current graph
+    return draw_model(y_pts=model.get('kernel_stats', model.get('bucket_stats')))
 
 
 def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, graph_title,
