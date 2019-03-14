@@ -76,6 +76,7 @@ def parse_resources(allocation, workload):
     """ Parse resources of one allocation
 
     :param list allocation: list of raw allocation data
+    :param str workload: workload of the resource
     :returns structure: formatted structure representing resources of one allocation
     """
     data = {'workload': workload}
@@ -129,14 +130,9 @@ def parse_log(filename, cmd, snapshots_interval, workload):
     # allocations are splitted by empty line
     log = log.split('\n\n')
 
+    # Check that there is exit, and the Memory Log is thus not malformed
     glob = log.pop().strip()
-    if glob.find('EXIT') > -1:
-        # in some cases there is '.' instead of ',' in timestamp
-        index = glob.find(',')
-        if index > 0:
-            glob = glob.replace(',', '.')
-        glob = [{'time': PATTERN_TIME.search(glob).group()}]
-    else:
+    if glob.find('EXIT') == -1:
         raise ValueError
 
     allocations = []
@@ -147,9 +143,9 @@ def parse_log(filename, cmd, snapshots_interval, workload):
     names, ips = set(), set()
     for allocation in allocations:
         for resource in allocation[2:]:
-            name, ip = resource.split(' ')
+            name, ip, offset = resource.split(' ')
             names.add(name)
-            ips.add(ip)
+            ips.add((ip, offset))
 
     # Build caches for demangle and addr2line for further calls
     syscalls.build_demangle_cache(names)

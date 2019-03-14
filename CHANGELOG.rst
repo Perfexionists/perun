@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+
+
 0.16.2 (2019-03-02)
 -------------------
 

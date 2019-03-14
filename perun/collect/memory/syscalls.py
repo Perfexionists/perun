@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import perun.utils.log as log
+import operator
 
 PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
@@ -52,7 +53,8 @@ def build_address_to_line_cache(addresses, binary_name):
     """
     global address_to_line_cache
 
-    list_of_addresses = list(addresses)
+    list_of_addresses = [a[0] for a in addresses]
+
     if not all(map(PATTERN_HEXADECIMAL.match, list_of_addresses)):
         log.error("incorrect values in address translations")
     else:

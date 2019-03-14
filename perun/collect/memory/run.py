@@ -1,6 +1,7 @@
 """This module contains methods needed by Perun logic"""
 
 import os
+import traceback
 
 import click
 
@@ -100,11 +101,11 @@ def after(cmd, workload, sampling=DEFAULT_SAMPLING, **kwargs):
     exclude_funcs = kwargs.get('no_func', None)
     exclude_sources = kwargs.get('no_source', None)
 
-    print("Generating profile: ", end='')
     try:
         profile = parser.parse_log(_tmp_log_filename, cmd, sampling, workload)
     except IndexError as i_err:
         log.failed()
+        traceback.print_exc()
         return CollectStatus.ERROR, 'Info missing in log file: {}'.format(str(i_err)), {}
     except ValueError as v_err:
         log.failed()
