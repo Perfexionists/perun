@@ -181,7 +181,7 @@ def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
     ], [])
     runner = CliRunner()
     result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
-                                         'complexity',
+                                         '-a test', '-w input', 'complexity',
                                          '-t{}'.format(job_params['target_dir']),
                                          ] + files + rules + samplings)
     assert result.exit_code == 0

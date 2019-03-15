@@ -131,20 +131,8 @@ def run_profiled_command(cmd, args, workload, timeout, **_):
     :param int timeout: if the process does not end before the specified timeout,
                         the process is terminated
     """
-    # The args / workload could actually be a list or str, create str from list if needed
-    if isinstance(args, list):
-        args = ' '.join([])
-    if isinstance(workload, list):
-        workload = workload[0]
-
-    # Build the command
-    full_command = shlex.quote(cmd)
-    if args:
-        full_command += ' ' + args
-    if workload:
-        full_command += ' ' + workload
-
     # Run the profiled command and block it with wait if timeout is specified
+    full_command = utils.build_command_str(shlex.quote(cmd), args, workload)
     process = utils.start_nonblocking_process(full_command)
     try:
         process.wait(timeout=timeout)

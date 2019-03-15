@@ -385,3 +385,26 @@ def check_dependency(command):
         warn(("Missing dependency utility '{util}'".format(util=command)))
         return False
     return True
+
+
+def build_command_str(cmd, args, workload):
+    """Creates the full command as concatenation of the cmd, args and workload values
+
+    :param str cmd: the command itself
+    :param list or str args: the arguments of the command
+    :param list or str workload: the workload parameter of the command, behaves the same as args
+
+    :return str: the full command with all the arguments appended
+    """
+    # The args / workload could actually be a list or str, create str from list if needed
+    if isinstance(args, list):
+        args = ' '.join([])
+    if isinstance(workload, list):
+        workload = workload[0]
+
+    # Build the command
+    if args:
+        cmd += ' ' + args
+    if workload:
+        cmd += ' ' + workload
+    return cmd

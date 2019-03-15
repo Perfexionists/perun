@@ -46,7 +46,7 @@ def before(**kwargs):
     information about the available functions for profiling) and the collector executable
     (used for the data collection itself)
 
-    :param dict kwargs: the configuration settings for the complexity collector
+    :param kwargs: the configuration settings for the complexity collector
 
     :return tuple:  int as a status code, nonzero values for errors
                     string as a status message, mainly for error states
@@ -93,7 +93,7 @@ def before(**kwargs):
 def collect(**kwargs):
     """ Runs the collector executable and extracts the performance data
 
-    :param dict kwargs: the configuration settings for the complexity collector
+    :param kwargs: the configuration settings for the complexity collector
 
     :return tuple:  int as a status code, nonzero values for errors
                     string as a status message, mainly for error states
@@ -101,7 +101,8 @@ def collect(**kwargs):
     """
     log.cprint('Running the collector...', 'white')
     collect_dir = os.path.dirname(kwargs['cmd'])
-    returncode = utils.run_external_command([kwargs['cmd']], cwd=collect_dir)
+    cmd = utils.build_command_str(kwargs['cmd'], kwargs['args'], kwargs['workload'])
+    returncode = utils.run_external_command([cmd], cwd=collect_dir)
     if returncode != 0:
         log.failed()
     else:
@@ -112,7 +113,7 @@ def collect(**kwargs):
 def after(**kwargs):
     """ Performs the transformation of the raw data output into the profile format
 
-    :param dict kwargs: the configuration settings for the complexity collector
+    :param kwargs: the configuration settings for the complexity collector
 
     :return tuple:  int as a status code, nonzero values for errors
                     string as a status message, mainly for error states
