@@ -147,6 +147,65 @@ def _compare_collect_scripts(new_script, reference_script):
     return sub_content == cmp_content
 
 
+def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
+    """Test collecting the profile using complexity collector"""
+    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+
+    cmd, args, work, collectors, posts, config = complexity_collect_job
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    run.run_single_job(cmd, args, work, collectors, posts, [head], **config)
+
+    # Assert that nothing was removed
+    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    assert before_object_count + 1 == after_object_count
+    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+
+    new_profile = profiles[0]
+    assert len(profiles) == 1
+    assert new_profile.endswith(".perf")
+
+    # Fixme: Add check that the profile was correctly generated
+
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    job_params = complexity_collect_job[5]['collector_params']['complexity']
+
+    files = [
+        '-f{}'.format(os.path.abspath(os.path.join(script_dir, file)))
+        for file in job_params['files']
+    ]
+    rules = [
+        '-r{}'.format(rule) for rule in job_params['rules']
+    ]
+    samplings = sum([
+        ['-s {}'.format(sample['func']), sample['sample']] for sample in job_params['sampling']
+    ], [])
+    runner = CliRunner()
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+                                         'complexity',
+                                         '-t{}'.format(job_params['target_dir']),
+                                         ] + files + rules + samplings)
+    assert result.exit_code == 0
+
+    # Test running the job from the params using the job file
+    # TODO: troubles with paths in job.yml, needs some proper solving
+    # script_dir = os.path.split(__file__)[0]
+    # source_dir = os.path.join(script_dir, 'collect_complexity')
+    # job_config_file = os.path.join(source_dir, 'job.yml')
+    # result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+    #                                      '-p{}'.format(job_config_file), 'complexity'])
+    # assert result.exit_code == 0
+
+    # Try missing parameters --target-dir and --files
+    # TODO: the exit code is 0 even though an exception was raised
+    result = runner.invoke(cli.collect, ['complexity'])
+    assert result.exit_code == 0
+    assert '--target-dir parameter must be supplied' in result.output
+
+    result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
+    assert result.exit_code == 0
+    assert '--files parameter must be supplied' in result.output
+
+
 def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
     """Test running the trace collector from the CLI with parameter handling
 

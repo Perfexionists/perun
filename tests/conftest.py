@@ -208,6 +208,30 @@ def memory_collect_no_debug_job():
 
 
 @pytest.fixture(scope="session")
+def complexity_collect_job():
+    """
+
+
+    Returns:
+        tuple: 'bin', '', [''], 'memory', [], {}
+    """
+    # Load the configuration from the job file
+    script_dir = os.path.split(__file__)[0]
+    source_dir = os.path.join(script_dir, 'collect_complexity')
+    target_dir = os.path.join(source_dir, 'target')
+    job_config_file = os.path.join(source_dir, 'job.yml')
+    job_config = streams.safely_load_yaml_from_file(job_config_file)
+
+    # Change the target dir to this location
+    assert 'target_dir' in job_config.keys()
+    job_config['target_dir'] = target_dir
+
+    return [target_dir], '', [''], ['complexity'], [], {'collector_params': {
+        'complexity': job_config
+    }}
+
+
+@pytest.fixture(scope="session")
 def trace_collect_job():
     """
 
