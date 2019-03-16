@@ -240,7 +240,7 @@ def _find_argument_list_boundary(func):
     :return tuple: start, end position as ints, -1 if no argument list was found
     """
     # Find the argument braces in the prototype
-    arg_brace = [i for i, char in enumerate(func) if char == '(' or char == ')']
+    arg_brace = _find_all_braces(func, '(', ')')
 
     if len(arg_brace) == 2 and func[arg_brace[0]] == '(' and func[arg_brace[1]] == ')':
         # Braces found
@@ -251,6 +251,18 @@ def _find_argument_list_boundary(func):
     else:
         # Unexpected number or order in parentheses
         raise exceptions.UnexpectedPrototypeSyntaxError("In prototype: " + func)
+
+
+def _find_all_braces(target, opening, ending):
+    """Finds all indices of the given 'opening':'ending' brace pairs
+
+     :param str target: the string where to find the braces
+     :param char opening: the opening brace
+     :param char ending: the ending brace
+
+     :return list: the list of brace indices
+     """
+    return [i for i, char in enumerate(target) if char == opening or char == ending]
 
 
 def _split_prototype(function_prototype):
@@ -289,7 +301,7 @@ def _remove_templates(function_part):
     :return str: the function part without template specifications
     """
     # Find all template braces
-    braces = [i for i, br in enumerate(function_part) if br == '<' or br == '>']
+    braces = _find_all_braces(function_part, '<', '>')
     if not braces:
         return function_part
 
@@ -384,24 +396,30 @@ def _prepare_profile_rules(profile_rules):
         body_scope, body_template = _check_rule_specification_detail(function_body)
         arg_scope, arg_template = _check_rule_specification_detail(function_arg)
 
-        parts = []
-        # Set the rule specification detail for its body part
-        if body_template:
-            parts.append('full_body')
-        elif body_scope:
-            parts.append('scoped_body')
-        else:
-            parts.append('identifier')
-        # Set the rule specification detail for its argument part
+        # Get the body and args PrototypeParts value
+        parts = [_specification_detail_to_parts(body_template, body_scope, 'body')]
         if function_arg:
-            if arg_template:
-                parts.append('full_args')
-            elif arg_scope:
-                parts.append('scoped_args')
-            else:
-                parts.append('args')
+            parts.append(_specification_detail_to_parts(arg_template, arg_scope, 'args'))
+
         details[unified_func] = parts
     return details
+
+
+def _specification_detail_to_parts(template, scope, section):
+    """Transforms the specification detail to members of the PrototypeParts namedtuple
+
+    :param bool template: true if template was part of the specification
+    :param bool scope: true if the rule was scoped
+    :param str section: the currently inspected rule section ('body' or 'args')
+
+    :return str: the resulting PrototypeParts value
+    """
+    if template:
+        return 'full_{}'.format(section)
+    elif scope:
+        return 'scoped_{}'.format(section)
+    else:
+        return 'identifier' if section == 'body' else 'args'
 
 
 def _check_rule_specification_detail(rule_part):
