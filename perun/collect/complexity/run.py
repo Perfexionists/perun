@@ -7,7 +7,7 @@ collection and postprocessing of collection data.
 
 import collections
 import os
-import subprocess
+from subprocess import CalledProcessError
 
 import click
 
@@ -84,7 +84,7 @@ def before(**kwargs):
         return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
     # The "expected" exception types
-    except (OSError, ValueError, subprocess.CalledProcessError,
+    except (OSError, ValueError, CalledProcessError,
             UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as exception:
         log.failed()
         return 1, repr(exception), kwargs

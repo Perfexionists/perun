@@ -20,7 +20,7 @@
 """
 
 import os
-import subprocess
+from subprocess import DEVNULL, CalledProcessError
 
 import perun.utils.log as log
 import perun.utils as utils
@@ -105,13 +105,12 @@ def build_executable(cmake_path, target_name):
     cmake_dir = os.path.dirname(cmake_path)
 
     # Try to execute the build commands
-    returncode = utils.run_external_command(['cmake', '.'], cwd=cmake_dir,
-                                            stdout=subprocess.DEVNULL)
+    returncode = utils.run_external_command(['cmake', '.'], cwd=cmake_dir, stdout=DEVNULL)
     if returncode != 0:
-        raise subprocess.CalledProcessError(returncode, 'cmake')
-    returncode = utils.run_external_command(['make'], cwd=cmake_dir, stdout=subprocess.DEVNULL)
+        raise CalledProcessError(returncode, 'cmake')
+    returncode = utils.run_external_command(['make'], cwd=cmake_dir, stdout=DEVNULL)
     if returncode != 0:
-        raise subprocess.CalledProcessError(returncode, 'make')
+        raise CalledProcessError(returncode, 'make')
 
     # Get the executable path
     return os.path.realpath(os.path.join(cmake_dir, CMAKE_BIN_TARGET, target_name))
@@ -133,6 +132,10 @@ def _init_cmake(cmake_file):
 
     :param file cmake_file: file handle to the opened cmake file
     """
+    # Check if -no-pie is supported by the compiler
+    cc_flags = '-std=c++11 -g -fno-pic'
+    if _is_flag_support('-no-pie'):
+        cc_flags += ' -no-pie'
     # Sets the cmake version, paths and compiler config
     cmake_file.write('cmake_minimum_required(VERSION {0})\n\n'
                      '# set the paths\n'
@@ -140,9 +143,8 @@ def _init_cmake(cmake_file):
                      'set(EXECUTABLE_OUTPUT_PATH ${{CMAKE_BINARY_DIR}})\n\n'
                      '# set the compiler\n'
                      'set(CMAKE_CXX_COMPILER "g++")\n'
-                     'set(CMAKE_CXX_FLAGS "${{CMAKE_CXX_FLAGS}} -std=c++11 -g -fno-pic -no-pie")'
-                     '\n\n'
-                     .format(CMAKE_VERSION, CMAKE_BIN_TARGET))
+                     'set(CMAKE_CXX_FLAGS "${{CMAKE_CXX_FLAGS}} {2}")\n\n'
+                     .format(CMAKE_VERSION, CMAKE_BIN_TARGET, cc_flags))
 
 
 def _add_profile_instructions(cmake_file, exclude_list):
@@ -237,3 +239,14 @@ def _get_libs_path():
         log.cprintln('Unable to locate the directory with profiling libraries automatically, '
                      'please supply them manually into the "--target-dir" location', 'white')
         return '${CMAKE_SOURCE_DIR}'
+
+
+def _is_flag_support(flag):
+    """Checks if the specified flag is supported by the default g++ version
+
+    :param str flag: the flag to be tested
+
+    :return bool: true if flag is supported, false otherwise
+    """
+    out, err = utils.run_safely_external_command('g++ {}'.format(flag), False)
+    return flag not in out.decode('utf-8') and flag not in err.decode('utf-8')

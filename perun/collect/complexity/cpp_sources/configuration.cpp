@@ -89,10 +89,9 @@ bool Configuration::Next_token(Token_t &type, std::string &value)
     value.clear();
     type = Token_t::Default;
     FSM_token_states FSM_token = FSM_token_states::Init;
-    char c;
 
     while(position < file_contents.length()) {
-        c = file_contents[position++];
+        char c = file_contents[position++];
         if(FSM_token == FSM_token_states::Init) {
             // Get rid of a whitespace
             if(isspace(c)) {
@@ -283,7 +282,6 @@ void Configuration::Parse_sample() {
     Token_t tok_type;
     std::string tok_val;
     void *func_p;
-    int sample_val;
 
     Test_next_token_type(Token_t::Op_colon, tok_val);
     Test_next_token_type(Token_t::Br_square_begin, tok_val);
@@ -305,7 +303,7 @@ void Configuration::Parse_sample() {
         Test_next_token_type(Token_t::Op_colon, tok_val);
         Test_next_token_type(Token_t::Number_value, tok_val);
         // Convert the sample to a integer
-        sample_val = std::stoi(tok_val);
+        int sample_val = std::stoi(tok_val);
 
         // Search for the function configuration record
         auto func_record = func_config.find(func_p);
