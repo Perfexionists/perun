@@ -229,16 +229,26 @@ def _get_libs_path():
     try:
         # Get the path to the 'lib' dir within the complexity collector
         libs_dir = os.path.join(os.path.dirname(__file__), 'lib')
-        if (not os.path.exists(os.path.join(libs_dir, 'libprofapi.so')) or
-                not os.path.exists(os.path.join(libs_dir, 'libprofile.so'))):
-            log.cprintln('One or more required libraries are missing - please compile them, '
+        if not _libraries_exist(libs_dir):
+            log.cprintln('\nOne or more required libraries are missing - please compile them, '
                          'otherwise the data collection will not work.', 'white')
         return libs_dir
     except NameError:
         # If the __file__ is not available, the user has to supply the libraries manually
-        log.cprintln('Unable to locate the directory with profiling libraries automatically, '
+        log.cprintln('\nUnable to locate the directory with profiling libraries automatically, '
                      'please supply them manually into the "--target-dir" location', 'white')
         return '${CMAKE_SOURCE_DIR}'
+
+
+def _libraries_exist(libs_dir):
+    """Checks if the required libraries are present in the given directory
+
+     :param str libs_dir: the path to the libraries location
+
+     :return bool: True if both libraries exist in the path
+     """
+    return (os.path.exists(os.path.join(libs_dir, 'libprofapi.so')) and
+            os.path.exists(os.path.join(libs_dir, 'libprofile.so')))
 
 
 def _is_flag_support(flag):

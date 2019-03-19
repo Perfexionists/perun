@@ -102,11 +102,9 @@ def collect(**kwargs):
     log.cprint('Running the collector...', 'white')
     collect_dir = os.path.dirname(kwargs['cmd'])
     cmd = utils.build_command_str(kwargs['cmd'], kwargs['args'], kwargs['workload'])
+    # Run the command and evaluate the returncode
     returncode = utils.run_external_command([cmd], cwd=collect_dir)
-    if returncode != 0:
-        log.failed()
-    else:
-        log.done()
+    log.failed() if returncode != 0 else log.done()
     return returncode, _COLLECTOR_STATUS_MSG[returncode], dict(kwargs)
 
 

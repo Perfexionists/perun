@@ -163,6 +163,8 @@ def _finalize_exclude_lists(exclude_list, include_list):
     exclude_list, runtime_filter = _find_exclude_collisions(exclude_list, include_list)
 
     # Transform the exclude dict to the list of identifiers
+    # operator is the default excluded function since it probably cannot be easily filtered and
+    # clutters the performance output
     final_exclude_list = ['operator']
     for func_identifier in (getattr(exclude_list[func], 'identifier') for func in exclude_list):
         final_exclude_list.append(func_identifier)

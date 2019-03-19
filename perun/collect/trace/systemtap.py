@@ -126,7 +126,7 @@ def run_profiled_command(cmd, args, workload, timeout, **_):
     """Runs the profiled external command with arguments.
 
     :param str cmd: the external command
-    :param list args: the command arguments
+    :param str args: the command arguments
     :param str workload: the workload input
     :param int timeout: if the process does not end before the specified timeout,
                         the process is terminated

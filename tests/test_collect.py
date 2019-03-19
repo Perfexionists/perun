@@ -14,6 +14,10 @@ import perun.collect.trace.systemtap as stap
 import perun.collect.trace.strategy as strategy
 import perun.utils.decorators as decorators
 import perun.logic.config as config
+import perun.utils as utils
+import perun.collect.complexity.makefiles as makefiles
+import perun.collect.complexity.symbols as symbols
+import perun.collect.complexity.run as complexity
 
 from perun.utils.helpers import Job
 from perun.utils.structs import Unit
@@ -107,6 +111,44 @@ def _mocked_stap_extraction_empty(_):
     return 'Tip: /usr/share/doc/systemtap/README.Debian should help you get started.'
 
 
+def _mocked_external_command(_, **__):
+    return 1
+
+
+def _mocked_flag_support(_):
+    return True
+
+
+def _mocked_libs_existence_fails(_):
+    return False
+
+
+def _mocked_libs_existence_exception(_):
+    raise NameError
+
+
+def _mocked_record_processing(_, __, ___, ____):
+    return 1
+
+
+def _mocked_symbols_extraction(_):
+    return ['_Z13SLList_insertP6SLListi', 'main', '_fini', '_init', '_Z13SLList_removeP6SLListi',
+            '_ZN9SLListclsD1Ev', '_ZN9SLListclsD2Ev', '_ZN9SLListclsC1Ev', '_ZN9SLListclsC2Ev',
+            '_ZN9SLListcls6InsertEi', '__libc_csu_fini', '_Z14SLList_destroyP6SLList', '_start',
+            '_ZN9SLListcls10SLLelemclsC1Ei', '_Z13SLList_searchP6SLListi', '__libc_csu_init',
+            '_Z11SLList_initP6SLList', '_ZN9SLListcls10SLLelemclsC2Ei', '_ZN9SLListcls6SearchEi',
+            'deregister_tm_clones', 'register_tm_clones', '__do_global_dtors_aux', 'frame_dummy',
+            '_dl_relocate_static_pie', '_Z14SLList_destroyP6SLList', '_ZN9SLListclsD1Ev', 'main',
+            '_ZN9SLListclsD2Ev', '_fini', '_ZN9SLListcls6SearchEi', '_start',
+            '_Z11SLList_initP6SLList', '_ZN9SLListcls10SLLelemclsC1Ei', '_init',
+            '_ZN9SLListcls6InsertEi', '_ZN9SLListcls10SLLelemclsC2Ei', '_Z13SLList_insertP6SLListi',
+            '_ZN9SLListclsC2Ev', '_Z13SLList_searchP6SLListi', '__libc_csu_init', '__libc_csu_fini',
+            '_ZN9SLListclsC1Ev', '_Z13SLList_removeP6SLListi',
+            '_ZNSt8__detail12_Insert_baseIiSt4pairIKiSt6vectorI5ColorSaIS4_EEESaIS7_ENS_10_'
+            'Select1stESt8equal_toIiESt4hashIiENS_18_Mod_range_hashingENS_20_Default_ranged_hash'
+            'ENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEEEC1Ev']
+
+
 def _get_latest_collect_script(script_dir):
     """Return name of the latest collect script from given script directory
 
@@ -147,7 +189,7 @@ def _compare_collect_scripts(new_script, reference_script):
     return sub_content == cmp_content
 
 
-def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
+def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
 
@@ -195,8 +237,41 @@ def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
     #                                      '-p{}'.format(job_config_file), 'complexity'])
     # assert result.exit_code == 0
 
+    # test some scoped and templatized prototypes taken from a more difficult project
+    monkeypatch.setattr(symbols, 'extract_symbols', _mocked_symbols_extraction)
+    more_rules = ['Gif::Ctable::Ctable(Gif::Ctable&&)',
+                  'std::tuple<int&&>&& std::forward<std::tuple<int&&> >(std::remove_reference<std::tuple<int&&> >::type&)']
+    rules.extend(['-r{}'.format(rule) for rule in more_rules])
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']), 'complexity',
+                                         '-t{}'.format(job_params['target_dir']),
+                                         ] + files + rules + samplings)
+    assert result.exit_code == 0
+    assert 'stored profile' in result.output
+
+
+def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
+    """Test various scenarios where something goes wrong during the collection process.
+    """
+    # Get the job.yml parameters
+    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    job_params = complexity_collect_job[5]['collector_params']['complexity']
+
+    files = [
+        '-f{}'.format(os.path.abspath(os.path.join(script_dir, file)))
+        for file in job_params['files']
+    ]
+    rules = [
+        '-r{}'.format(rule) for rule in job_params['rules']
+    ]
+    samplings = sum([
+        ['-s {}'.format(sample['func']), sample['sample']] for sample in job_params['sampling']
+    ], [])
+
+    # prepare the runner
+    runner = CliRunner()
+
     # Try missing parameters --target-dir and --files
-    # TODO: the exit code is 0 even though an exception was raised
+    # TODO: the exit code is 0 even though an exception is raised or non-zero value returned
     result = runner.invoke(cli.collect, ['complexity'])
     assert result.exit_code == 0
     assert '--target-dir parameter must be supplied' in result.output
@@ -204,6 +279,48 @@ def test_collect_complexity(helpers, pcs_full, complexity_collect_job):
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
     assert result.exit_code == 0
     assert '--files parameter must be supplied' in result.output
+
+    # Try supplying invalid directory path, which is a file instead
+    invalid_target = os.path.join(os.path.dirname(script_dir), 'job.yml')
+    result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(invalid_target)])
+    assert result.exit_code == 0
+    assert 'already exists' in result.output
+
+    # Simulate the failure of 'cmake' utility
+    old_run = utils.run_external_command
+    monkeypatch.setattr(utils, 'run_external_command', _mocked_external_command)
+    command = ['-c{}'.format(job_params['target_dir']), 'complexity',
+               '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
+    result = runner.invoke(cli.collect, command)
+    assert 'CalledProcessError(1, \'cmake\')' in result.output
+    monkeypatch.setattr(utils, 'run_external_command', old_run)
+
+    # Simulate that the flag is supported, which leads to failure in build process for older g++
+    old_flag = makefiles._is_flag_support
+    monkeypatch.setattr(makefiles, '_is_flag_support', _mocked_flag_support)
+    result = runner.invoke(cli.collect, command)
+    assert 'stored profile' in result.output or 'CalledProcessError(2, \'make\')' in result.output
+    monkeypatch.setattr(makefiles, '_is_flag_support', old_flag)
+
+    # Simulate that some required library is missing
+    old_libs_existence = makefiles._libraries_exist
+    monkeypatch.setattr(makefiles, '_libraries_exist', _mocked_libs_existence_fails)
+    result = runner.invoke(cli.collect, command)
+    assert 'libraries are missing' in result.output
+
+    # Simulate that the libraries directory path cannot be found
+    monkeypatch.setattr(makefiles, '_libraries_exist', _mocked_libs_existence_exception)
+    result = runner.invoke(cli.collect, command)
+    print(result.output)
+    assert 'Unable to locate' in result.output
+    monkeypatch.setattr(makefiles, '_libraries_exist', old_libs_existence)
+
+    # Simulate the failure of output processing
+    old_record_processing = complexity._process_file_record
+    monkeypatch.setattr(complexity, '_process_file_record', _mocked_record_processing)
+    result = runner.invoke(cli.collect, command)
+    assert 'Call stack error' in result.output
+    monkeypatch.setattr(complexity, '_process_file_record', old_record_processing)
 
 
 def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
