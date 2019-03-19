@@ -349,7 +349,7 @@ def execute_kernel_regression(x_pts, y_pts, config):
     return kernel_model
 
 
-def valid_range_values(ctx, param, value):
+def valid_range_values(_, param, value):
     """
     This method represents click callback option method.
 
@@ -357,7 +357,7 @@ def valid_range_values(ctx, param, value):
     must be in logical order, that is, the first value is smaller than
     the second value.
 
-    :param click.Context ctx: the perun and option context contains the entered options and commands
+    :param click.Context _: the perun and option context contains the entered options and commands
     :param click.Option param: additive options from relevant commands decorator
     :param tuple value: the value of the parameter that invoked the callback method (name, value)
     :raises click.BadOptionsUsage: in the case when was not entered the first value smaller than the second value

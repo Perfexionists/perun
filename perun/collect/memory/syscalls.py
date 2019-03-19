@@ -87,9 +87,9 @@ def run(cmd, params, workload):
         ret = subprocess.call(sys_call, shell=True, stderr=error_log)
 
     with open('ErrorCollectLog', 'r') as error_log:
-        log = error_log.readlines()
+        error_log = error_log.readlines()
 
-    return ret, "".join(log)
+    return ret, "".join(error_log)
 
 
 def init():
