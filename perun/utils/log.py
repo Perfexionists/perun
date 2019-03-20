@@ -139,6 +139,17 @@ def quiet_info(msg):
     msg_to_stdout(msg, VERBOSE_RELEASE)
 
 
+def extract_stack_frame_info(frame):
+    """Helper function for returning name and filename from frame.
+
+    Note that this is needed because of fecking differences between Python 3.4 and 3.5
+
+    :param object frame: some fecking frame object
+    :return: tuple of filename and function name
+    """
+    return (frame[0], frame[1]) if isinstance(frame, tuple) else (frame.filename, frame.name)
+
+
 def print_current_stack(colour='red'):
     """Prints the information about stack track leading to an event
 
@@ -149,17 +160,18 @@ def print_current_stack(colour='red'):
     :param str colour: colour of the printed stack trace
     """
     reduced_trace = []
-    for trace in traceback.extract_stack():
+    for frame in traceback.extract_stack():
+        frame_file, frame_name = extract_stack_frame_info(frame)
         filtering_conditions = [
-            # We filter traces that are outside of perun's scope
-            'perun' not in trace.filename,
+            # We filter frames that are outside of perun's scope
+            'perun' not in frame_file,
             # We filter the first load entry of the module
-            trace.name == '<module>',
+            frame_name == '<module>',
             # We filter these error and stack handlers ;)
-            trace.filename.endswith('log.py') and trace.name in ('error', 'print_current_stack')
+            frame_file.endswith('log.py') and frame_name in ('error', 'print_current_stack')
         ]
         if not any(filtering_conditions):
-            reduced_trace.append(trace)
+            reduced_trace.append(frame)
     print(termcolor.colored(
         ''.join(traceback.format_list(reduced_trace)), colour
     ), file=sys.stderr)
