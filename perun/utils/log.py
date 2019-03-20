@@ -9,6 +9,7 @@ import itertools
 import io
 import pydoc
 import functools
+import traceback
 
 import termcolor
 
@@ -138,12 +139,40 @@ def quiet_info(msg):
     msg_to_stdout(msg, VERBOSE_RELEASE)
 
 
+def print_current_stack(colour='red'):
+    """Prints the information about stack track leading to an event
+
+    Be default this is used in error traces, so the colour of the printed trace is red.
+    Moreover, we filter out some of the events (in particular those outside of perun, or
+    those that takes care of the actual trace).
+
+    :param str colour: colour of the printed stack trace
+    """
+    reduced_trace = []
+    for trace in traceback.extract_stack():
+        filtering_conditions = [
+            # We filter traces that are outside of perun's scope
+            'perun' not in trace.filename,
+            # We filter the first load entry of the module
+            trace.name == '<module>',
+            # We filter these error and stack handlers ;)
+            trace.filename.endswith('log.py') and trace.name in ('error', 'print_current_stack')
+        ]
+        if not any(filtering_conditions):
+            reduced_trace.append(trace)
+    print(termcolor.colored(
+        ''.join(traceback.format_list(reduced_trace)), colour
+    ), file=sys.stderr)
+
+
 def error(msg, recoverable=False):
     """
-    :param str msg: error message printe to standard output
+    :param str msg: error message printed to standard output
     :param bool recoverable: whether we can recover from the error
     """
     print(termcolor.colored("fatal: {}".format(msg), 'red'), file=sys.stderr)
+    if is_verbose_enough(VERBOSE_DEBUG):
+        print_current_stack()
 
     # If we cannot recover from this error, we end
     if not recoverable:

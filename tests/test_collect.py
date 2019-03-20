@@ -18,6 +18,7 @@ import perun.utils as utils
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
+import perun.utils.log as log
 
 from perun.utils.helpers import Job
 from perun.utils.structs import Unit
@@ -574,12 +575,15 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
 
     # Fixme: Add check that the profile was correctly generated
 
+    log.VERBOSITY = log.VERBOSE_DEBUG
     memory_collect_no_debug_job += ([head], )
     run.run_single_job(*memory_collect_no_debug_job)
     last_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
     _, err = capsys.readouterr()
     assert after_second_object_count == last_object_count
     assert 'debug info' in err
+    assert 'File "' in err
+    log.VERBOSITY = log.VERBOSE_RELEASE
 
     target_bin = memory_collect_job[0][0]
     collector_unit = Unit('memory', {
