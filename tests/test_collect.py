@@ -392,12 +392,11 @@ def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
 
     # Test negative global sampling
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-g -2'] + binary)
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
     # Try missing parameter -c
-    # Fixme: before fails but still produces 0?
     result = runner.invoke(cli.collect, ['trace'] + binary)
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
     # Try invalid parameter --method
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-minvalid'] + binary)
@@ -406,7 +405,7 @@ def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
     # Try binary parameter that is actually not executable ELF
     target = os.path.join(script_dir, 'cpp_sources', 'tst.cpp')
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert 'is not an executable ELF file.' in result.output
 
 

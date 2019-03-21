@@ -17,6 +17,7 @@ import perun.utils as utils
 import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.store as store
+import perun.logic.runner as perun_runner
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
@@ -1682,10 +1683,18 @@ def test_error_runs(pcs_full, monkeypatch):
     matrix.data['cmds'] = ['ls']
 
     result = runner.invoke(cli.run, ['matrix', '-q'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert "tome does not exist" in result.output
     matrix.data['collectors'][0]['name'] = 'time'
 
     result = runner.invoke(cli.run, ['matrix', '-q'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert "fokume does not exist" in result.output
+
+    monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: perun_runner.CollectStatus.ERROR)
+    result = runner.invoke(cli.run, ['job', '--cmd', 'ls',
+        '--args', '-al', '--workload', '.',
+        '--collector', 'time'
+    ])
+    assert result.exit_code == 1
+

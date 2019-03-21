@@ -238,9 +238,10 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
         cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
         minor_versions = ctx.obj['minor_version_list']
         collector_params.update(ctx.obj['params'])
-        run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **{
+        if run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **{
             'collector_params': {collector_name: collector_params}
-        })
+        }) != CollectStatus.OK:
+            log.error("collection of profiles was unsuccessful")
     except KeyError as collector_exception:
         log.error("missing parameter: {}".format(str(collector_exception)))
 
@@ -277,7 +278,8 @@ def run_postprocessor(postprocessor, job, prof):
 
     if post_status != PostprocessStatus.OK:
         log.error(post_msg)
-    print("Successfully postprocessed data by {}".format(postprocessor.name))
+    else:
+        print("Successfully postprocessed data by {}".format(postprocessor.name))
 
     return post_status, prof
 
@@ -372,6 +374,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
     workload_generators_specs = workloads.load_generator_specifications()
 
     log.print_job_progress.current_job = 1
+    collective_status = CollectStatus.OK
     print("")
     for job_cmd, workloads_per_cmd in job_matrix.items():
         log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
@@ -387,6 +390,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                     # Run the collector and check if the profile was successfully collected
                     # In case, the status was not OK, then we skip the postprocessing
                     if c_status != CollectStatus.OK or not prof:
+                        collective_status = CollectStatus.ERROR
                         continue
 
                     # Temporary nasty hack
@@ -397,10 +401,11 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                         # Run postprocess and check if the profile was successfully postprocessed
                         p_status, prof = run_postprocessor(postprocessor, job, prof)
                         if p_status != PostprocessStatus.OK or not prof:
+                            collective_status = CollectStatus.ERROR
                             break
                     else:
                         # Store the computed profile inside the job directory
-                        yield prof, job
+                        yield collective_status, prof, job
 
 
 @decorators.print_elapsed_time
@@ -470,20 +475,32 @@ def run_single_job(cmd, args, workload, collector, postprocessor, minor_version_
     :param list minor_version_list: list of MinorVersion info
     :param bool with_history: if set to true, then we will print the history object
     :param dict kwargs: dictionary of additional params for postprocessor and collector
+    :return: CollectStatus.OK if all jobs were successfully collected, CollectStatus.ERROR if any
+        of collections or postprocessing failed
     """
     job_matrix, number_of_jobs = \
         construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
     generator_function = generate_jobs_with_history if with_history else generate_jobs
-    for prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
+    status = CollectStatus.OK
+    finished_jobs = 0
+    for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
         store_generated_profile(prof, job)
+        finished_jobs += 1
+    return status if finished_jobs > 0 else CollectStatus.ERROR
 
 
 def run_matrix_job(minor_version_list, with_history=False):
     """
     :param list minor_version_list: list of MinorVersion info
     :param bool with_history: if set to true, then we will print the history object
+    :return: CollectStatus.OK if all jobs were successfully collected, CollectStatus.ERROR if any
+        of collections or postprocessing failed
     """
     job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config())
     generator_function = generate_jobs_with_history if with_history else generate_jobs
-    for prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
+    status = CollectStatus.OK
+    finished_jobs = 0
+    for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
         store_generated_profile(prof, job)
+        finished_jobs += 1
+    return status if finished_jobs > 0 else CollectStatus.ERROR

@@ -811,7 +811,8 @@ def matrix(ctx, quiet, **kwargs):
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
     kwargs.update({'with_history': not quiet})
-    runner.run_matrix_job(**kwargs)
+    if runner.run_matrix_job(**kwargs) != runner.CollectStatus.OK:
+        perun_log.error("job specification failed in one of the phases")
 
 
 @run.command()
@@ -896,7 +897,8 @@ def job(ctx, **kwargs):
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
     kwargs.update({'with_history': True})
-    runner.run_single_job(**kwargs)
+    if runner.run_single_job(**kwargs) != runner.CollectStatus.OK:
+        perun_log.error("job specification failed in one of the phases")
 
 
 @cli.command('fuzz')
