@@ -1684,12 +1684,12 @@ def test_error_runs(pcs_full, monkeypatch):
 
     result = runner.invoke(cli.run, ['matrix', '-q'])
     assert result.exit_code == 1
-    assert "tome does not exist" in result.output
+    assert "tome collector does not exist" in result.output
     matrix.data['collectors'][0]['name'] = 'time'
 
     result = runner.invoke(cli.run, ['matrix', '-q'])
     assert result.exit_code == 1
-    assert "fokume does not exist" in result.output
+    assert "fokume postprocessor does not exist" in result.output
 
     monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: perun_runner.CollectStatus.ERROR)
     result = runner.invoke(cli.run, ['job', '--cmd', 'ls',

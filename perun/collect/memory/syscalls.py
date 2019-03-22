@@ -26,7 +26,7 @@ def build_demangle_cache(names):
 
     list_of_names = list(names)
     if not all(map(PATTERN_WORD.match, list_of_names)):
-        log.error("incorrect values in demangled names")
+        log.error("demangled names contain incorrect values: {}".format(list_of_names))
     else:
         sys_call = ['c++filt'] + list_of_names
         output = subprocess.check_output(sys_call).decode("utf-8").strip()
@@ -55,7 +55,8 @@ def build_address_to_line_cache(addresses, binary_name):
     list_of_addresses = [a[0] for a in addresses]
 
     if not all(map(PATTERN_HEXADECIMAL.match, list_of_addresses)):
-        log.error("incorrect values in address translations")
+        log.error("could not build address to line cache: incorrect format: "
+                  "addresses ({}) should be hexadecimal.".format(list_of_addresses))
     else:
         sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
         output = subprocess.check_output(sys_call).decode("utf-8").strip()

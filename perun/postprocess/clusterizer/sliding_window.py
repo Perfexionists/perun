@@ -30,10 +30,10 @@ def compute_window_width(_, window_width, width_measure, resource_number):
         return window_width
     elif width_measure == 'relative':
         return resource_number * window_width
-    elif width_measure == 'weighted':
-        log.error("not supported window width measure")
     else:
-        log.error("not supported window width measure")
+        log.error("'{}' is not supported window width measure".format(
+            width_measure
+        ))
 
 
 def compute_window_height(resource_amount, window_height, height_measure):
@@ -54,7 +54,9 @@ def compute_window_height(resource_amount, window_height, height_measure):
     elif height_measure == 'relative':
         return resource_amount * (1 + window_height)
     else:
-        log.error("not supported window width measure")
+        log.error("'{}' is not supported window width measure".format(
+            height_measure
+        ))
 
 
 def clusterize(sorted_resources, window_width, width_measure, window_height, height_measure, **_):

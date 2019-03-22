@@ -207,8 +207,7 @@ def run_collector(collector, job):
     try:
         collector_module = get_module('perun.collect.{0}.run'.format(collector.name))
     except ImportError:
-        err_msg = "{} does not exist".format(collector.name)
-        log.error(err_msg, recoverable=True)
+        log.error("{} collector does not exist".format(collector.name), recoverable=True)
         return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
@@ -217,7 +216,9 @@ def run_collector(collector, job):
         = run_all_phases_for(collector_module, 'collector', job_params)
 
     if collection_status != CollectStatus.OK:
-        log.error(collection_msg, recoverable=True)
+        log.error("while collecting by {}: {}".format(
+            collector.name, collection_msg
+        ), recoverable=True)
     else:
         print("Successfully collected data from {}".format(job.cmd))
 
@@ -267,8 +268,7 @@ def run_postprocessor(postprocessor, job, prof):
     try:
         postprocessor_module = get_module('perun.postprocess.{0}.run'.format(postprocessor.name))
     except ImportError:
-        err_msg = "{} does not exist".format(postprocessor.name)
-        log.error(err_msg, recoverable=True)
+        log.error("{} postprocessor does not exist".format(postprocessor.name), recoverable=True)
         return PostprocessStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
@@ -277,7 +277,9 @@ def run_postprocessor(postprocessor, job, prof):
         = run_all_phases_for(postprocessor_module, 'postprocessor', job_params)
 
     if post_status != PostprocessStatus.OK:
-        log.error(post_msg)
+        log.error("while postprocessing by {}: {}".format(
+            postprocessor.name, post_msg
+        ))
     else:
         print("Successfully postprocessed data by {}".format(postprocessor.name))
 
@@ -354,7 +356,7 @@ def run_prephase_commands(phase, phase_colour='white'):
             error_command = str(exception.cmd)
             error_code = exception.returncode
             error_output = exception.output
-            log.error("error in {} phase while running '{}' exited with: {} ({})".format(
+            log.error("error during {} phase while running '{}' exited with: {} ({})".format(
                 phase, error_command, error_code, error_output
             ))
 

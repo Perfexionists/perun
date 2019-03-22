@@ -211,7 +211,7 @@ def generate_header_for_profile(job):
     try:
         collector = get_module('.'.join(['perun.collect', job.collector.name]))
     except ImportError:
-        perun_log.error("could not find package for collector {}".format(job.collector.name))
+        perun_log.error("could not find the package for collector {}".format(job.collector.name))
 
     return {
         'type': collector.COLLECTOR_TYPE,

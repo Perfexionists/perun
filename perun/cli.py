@@ -192,7 +192,9 @@ def config_get(ctx, key):
     try:
         commands.config_get(ctx.obj['store_type'], key)
     except MissingConfigSectionException as mcs_err:
-        perun_log.error(str(mcs_err))
+        perun_log.error("error while getting key '{}': {}".format(
+            key, str(mcs_err))
+        )
 
 
 @config.command('set')
@@ -358,7 +360,7 @@ def init(dst, configure, config_template, **kwargs):
             msg += "\n" + (" "*4) + ".perun/local.yml\n"
             perun_log.quiet_info(msg)
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
-        perun_log.error(str(unsup_module_exp))
+        perun_log.error("error while initializing perun: {}".format(str(unsup_module_exp)))
     except PermissionError:
         perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
@@ -444,7 +446,7 @@ def add(profile, minor, **kwargs):
         if not kwargs['force'] or click.confirm(warning_message):
             commands.add(profile, minor, **kwargs)
     except (NotPerunRepositoryException, IncorrectProfileFormatException) as exception:
-        perun_log.error(str(exception))
+        perun_log.error("error while adding profile:{}".format(str(exception)))
 
 
 @cli.command('rm')
@@ -502,7 +504,7 @@ def remove(profile, minor, **kwargs):
     try:
         commands.remove(profile, minor, **kwargs)
     except (NotPerunRepositoryException, EntryNotFoundException) as exception:
-        perun_log.error(str(exception))
+        perun_log.error("could not remove profiles: {}".format(str(exception)))
 
 
 @cli.command()
@@ -534,7 +536,7 @@ def log(head, **kwargs):
     try:
         commands.log(head, **kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException) as exception:
-        perun_log.error(str(exception))
+        perun_log.error("could not print the repository history: {}".format(str(exception)))
 
 
 @cli.command()
@@ -580,7 +582,7 @@ def status(**kwargs):
         commands.status(**kwargs)
     except (NotPerunRepositoryException, UnsupportedModuleException,
             MissingConfigSectionException) as exception:
-        perun_log.error(str(exception))
+        perun_log.error("could not print status of repository: {}".format(str(exception)))
 
 
 @cli.group()

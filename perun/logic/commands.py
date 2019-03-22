@@ -235,7 +235,7 @@ def add(profile_names, minor_version, keep_profile=False, force=False):
     for profile_name in profile_names:
         # Test if the given profile exists (This should hold always, or not?)
         if not os.path.exists(profile_name):
-            perun_log.error("{} does not exists".format(profile_name), recoverable=True)
+            perun_log.error("profile {} does not exists".format(profile_name), recoverable=True)
             continue
 
         # Load profile content
@@ -281,8 +281,10 @@ def add(profile_names, minor_version, keep_profile=False, force=False):
 
     profile_names_len = len(profile_names)
     if added_profile_count != profile_names_len:
-        perun_log.error("only {}/{} profiles were successfully registered in index".format(
-            added_profile_count, profile_names_len
+        perun_log.error("could not register {}{} profile{} in index: {} failed".format(
+            "all " if added_profile_count > 1 else "",
+            added_profile_count, "s" if added_profile_count > 1 else "",
+            added_profile_count - profile_names_len
         ))
     perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
 

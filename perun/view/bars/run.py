@@ -133,6 +133,6 @@ def bars(profile, filename, view_in_browser, **kwargs):
             bars_factory, profile, filename, view_in_browser, **kwargs
         )
     except AttributeError as attr_error:
-        log.error("while creating graph: {}".format(str(attr_error)))
+        log.error("while creating bar graph: {}".format(str(attr_error)))
     except InvalidParameterException as ip_error:
-        log.error(str(ip_error))
+        log.error("while creating bar graph: {}".format(str(ip_error)))

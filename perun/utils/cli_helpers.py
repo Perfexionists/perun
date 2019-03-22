@@ -52,11 +52,10 @@ def process_bokeh_axis_title(ctx, param, value):
         elif 'through_key' in ctx.params.keys():
             return ctx.params['through_key']
         else:
-            log.error("internal perun error")
+            log.error("internal perun error: you need 'per_key' or 'through_key' in params")
+
     elif param.human_readable_name.startswith('y'):
         return ctx.params['of_key']
-    else:
-        log.error("internal perun error")
 
 
 def process_resource_key_param(ctx, param, value):
@@ -405,7 +404,7 @@ def lookup_any_profile_callback(ctx, _, value):
     # 2) Else lookup filenames and load the profile
     abs_path = lookup_profile_in_filesystem(value)
     if not os.path.exists(abs_path):
-        log.error("could not find the file '{}'".format(abs_path))
+        log.error("could not lookup the profile '{}'".format(abs_path))
 
     return store.load_profile_from_file(abs_path, is_raw_profile=True)
 

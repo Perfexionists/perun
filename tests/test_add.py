@@ -120,7 +120,7 @@ def test_add_on_empty_repo(helpers, pcs_with_empty_git, valid_profile_pool, caps
 
     # Assert that the error message is OK
     _, err = capsys.readouterr()
-    expected = "fatal: could not obtain head minor version: " \
+    expected = "fatal: while fetching head minor version: " \
                "Reference at 'refs/heads/master' does not exist"
     assert err.strip() == termcolor.colored(expected, 'red')
 
