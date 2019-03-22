@@ -21,12 +21,13 @@ def get_stats_filename_as_source(profile, ignore_timestamp, minor_version=None):
     :param str profile: the profile identification, can be given as tag, sha value,
                         sha-path (path to tracked profile in obj) or source-path
     :param bool ignore_timestamp: if set to True, removes the 'date' component in the source name
-    :param str minor_version: representation of the minor version
+    :param str minor_version: representation of the minor version or None for HEAD
 
     :return str: the generated stats filename (not path!)
     """
     profile_index_entry = _find_profile_entry(profile, minor_version)
     if ignore_timestamp:
+        # Remove the timestamp entry in the profile name
         return PROFILE_TIMESTAMP_REGEX.sub("", profile_index_entry.path)
     return profile_index_entry.path
 
@@ -37,69 +38,126 @@ def get_stats_filename_as_sha(profile, minor_version=None):
 
     :param str profile: the profile identification, can be given as tag, sha value,
                         sha-path (path to tracked profile in obj) or source-path
-    :param bool ignore_timestamp: if set to True, removes the 'date' component in the source name
-    :param str minor_version: representation of the minor version
+    :param str minor_version: representation of the minor version or None for HEAD
 
     :return str: the generated stats filename (not path!)
     """
-    profile_index_entry = _find_profile_entry(profile, minor_version)
-    return profile_index_entry.checksum
+    return _find_profile_entry(profile, minor_version).checksum
 
 
-def get_stats_file_path(stats_filename, minor_version=None):
-    target_dir = _touch_minor_stats_directory(minor_version)
-    stats_filename = os.path.basename(stats_filename.rstrip(os.sep))
-    return os.path.join(target_dir, stats_filename)
+def get_stats_file_path(stats_filename, minor_version=None, check_existence=False):
+    """Create full path for the given minor version and the stats file name.
+
+    Note: the existence of the file is checked only if the corresponding parameter is set to True.
+    If set to True and the file does not exist, StatsFileNotFoundException is raised.
+
+    :param str stats_filename: the name of the stats file to generate the path for
+    :param str minor_version: the minor version representation or None for HEAD
+    :param bool check_existence: the existence of the generated path is checked if set to True
+
+    :return str: the full path to the file under the given minor version
+    """
+    stats_dir = _touch_minor_stats_directory(minor_version)
+    stats_file = os.path.join(stats_dir, os.path.basename(stats_filename.rstrip(os.sep)))
+    # Check if the file exists
+    if check_existence and os.path.exists(stats_file):
+        raise exceptions.StatsFileNotFoundException(stats_file)
+    return stats_file
 
 
 def add_stats(stats_id, stats_content, stats_filename, minor_version=None):
+    """ Save some stats represented by an ID into the provided stats filename under a specific
+    minor version.
+
+    :param str stats_id: a string that serves as a unique identification of the stored stats
+    :param dict stats_content: the stats data to save
+    :param str stats_filename: the name of the stats file where the data will be stored
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return str: the path to the stats file containing the stored data
+    """
 
     def add_to_dict(dictionary):
+        """ A helper function that stores the stats content in the given dict under the ID
+
+        :param dict dictionary: the dictionary where the content will be stored
+        """
         dictionary[stats_id] = stats_content
 
-    target_file = get_stats_file_path(stats_filename, minor_version)
-    _modify_stats_file(target_file, "wb+", add_to_dict)
+    stats_file = get_stats_file_path(stats_filename, minor_version)
+    _modify_stats_file(stats_file, "wb+", add_to_dict)
 
-    return target_file
+    return stats_file
 
 
 def update_stats(stats_id, extension, stats_filename, minor_version=None):
-    target_file = get_stats_file_path(stats_filename, minor_version)
+    """ Updates the stats represented by an ID in the given stats filename under a specific
+    minor version. The stats dictionary will be extended by the supplied extension.
 
-    _modify_stats_file(target_file, "wb+", lambda r: r[stats_id].update(extension))
+    :param str stats_id: a string that serves as a unique identification of the stored stats
+    :param dict extension: the dict with the new / updated values
+    :param str stats_filename: the name of the stats file where to update the stats
+    :param str minor_version: the minor version representation or None for HEAD
+    """
+    stats_file = get_stats_file_path(stats_filename, minor_version)
+    _modify_stats_file(stats_file, "wb+", lambda r: r[stats_id].update(extension))
 
 
 def delete_stats(stats_id, stats_filename, minor_version=None):
-    target_file = get_stats_file_path(stats_filename, minor_version)
+    """ Deletes the stats represented by an ID in the stats filename under a specific
+    minor version. Raises StatsFileNotFoundException if the given file does not exist.
 
-    if os.path.exists(target_file):
-        raise exceptions.StatsFileNotFoundException(target_file)
-
-    _modify_stats_file(target_file, "wb", lambda r: r.pop(stats_id, []))
+    :param str stats_id: a string that serves as a unique identification of the stored stats
+    :param str stats_filename: the name of the stats file where to delete the stats
+    :param str minor_version: the minor version representation or None for HEAD
+    """
+    stats_file = get_stats_file_path(stats_filename, minor_version, True)
+    _modify_stats_file(stats_file, "wb", lambda r: r.pop(stats_id, []))
 
 
 def delete_stats_file(stats_filename, minor_version=None):
-    target_file = get_stats_file_path(stats_filename, minor_version)
-    if not os.path.exists(target_file):
-        raise exceptions.StatsFileNotFoundException(target_file)
-    os.remove(target_file)
+    """ Deletes the whole stats file with all its content.
+    Raises StatsFileNotFoundException if the given file does not exist.
+
+    :param str stats_filename: the name of the stats file to delete
+    :param str minor_version: the minor version representation or None for HEAD
+    """
+    stats_file = get_stats_file_path(stats_filename, minor_version, True)
+    os.remove(stats_file)
 
 
 def get_stats_of(stats_filename, stats_id=None, minor_version=None):
-    target_file = get_stats_file_path(stats_filename, minor_version)
+    """ Gets the stats content represented by an ID (or the whole content if stats_id is None)
+    from the stats filename under a specific minor version.
+    Raises StatsFileNotFoundException if the given file does not exist.
 
-    if not os.path.exists(target_file):
-        raise exceptions.StatsFileNotFoundException(target_file)
+    :param str stats_filename: the name of the stats file where to search for the stats
+    :param str stats_id: a string that serves as a unique identification of the stored stats
+    :param str minor_version: the minor version representation or None for HEAD
 
-    with open(target_file, "rb") as stats_handle:
+    :return dict: the stats content of the ID (or the whole file) or empty dict in case the
+                  ID was not found in the stats file
+    """
+    # TODO: extract the file finding / existence checking into a function
+    stats_file = get_stats_file_path(stats_filename, minor_version, True)
+
+    # Load the whole stats content and filter the ID if present
+    with open(stats_file, "rb") as stats_handle:
         if stats_id is None:
             return _load_stats_from(stats_handle)
-        return _load_stats_from(stats_handle).get(stats_id, None)
+        return _load_stats_from(stats_handle).get(stats_id, {})
 
 
 def list_stats_for_minor(minor_version=None):
+    """ Returns all the stats files stored under the given minor version.
+
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return list: all the stats filenames in the minor version
+    """
     minor_exists, target_dir = _find_minor_stats_directory(minor_version)
     if minor_exists:
+        # We assume that all the files in the minor version stats directory are actually stats
         _, _, files = next(os.walk(target_dir))
         return files
     return []
@@ -107,6 +165,13 @@ def list_stats_for_minor(minor_version=None):
 
 @commands.lookup_minor_version
 def _touch_minor_stats_directory(minor_version):
+    """ Touches the stats directories - upper (first byte of the minor version SHA) and lower (the
+    rest of the SHA bytes) levels.
+
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return str: the full path of the minor version directory for stats
+    """
     # Obtain path to the directory for the given minor version
     upper_level_dir, lower_level_dir = store.split_object_name(pcs.get_stats_directory(),
                                                                minor_version)
@@ -118,12 +183,25 @@ def _touch_minor_stats_directory(minor_version):
 
 @commands.lookup_minor_version
 def _find_minor_stats_directory(minor_version):
+    """ Finds the stats directory for the given minor version and checks its existence.
+
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return tuple: (bool representing the existence of directory, the directory path)
+    """
     _, minor_dir = store.split_object_name(pcs.get_stats_directory(), minor_version)
     return os.path.exists(minor_dir), minor_dir
 
 
 # TODO: make public in store?
 def _find_minor_index(minor_version):
+    """ Finds the corresponding index for the minor version or raises EntryNotFoundException if
+    the index was not found.
+
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return str: path to the index file
+    """
     # Find the index file
     _, index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
     if not os.path.exists(index_file):
@@ -134,6 +212,14 @@ def _find_minor_index(minor_version):
 # TODO: make public in store?
 @commands.lookup_minor_version
 def _find_profile_entry(profile, minor_version):
+    """ Finds the profile entry within the index file of the minor version.
+
+    :param str profile: the profile identification, can be given as tag, sha value,
+                        sha-path (path to tracked profile in obj) or source-path
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return IndexEntry: the profile entry from the index file
+    """
     minor_index = _find_minor_index(minor_version)
 
     # If profile is given as tag, obtain the sha-path of the file
@@ -154,6 +240,12 @@ def _find_profile_entry(profile, minor_version):
 
 
 def _load_stats_from(stats_handle):
+    """ Loads and unzips the contents of the opened stats file.
+
+    :param file stats_handle: the handle of the stats file
+
+    :return dict: the stats file contents
+    """
     try:
         return json.loads(store.read_and_deflate_chunk(stats_handle))
     except (ValueError, zlib.error):
@@ -162,19 +254,36 @@ def _load_stats_from(stats_handle):
 
 
 def _save_stats_to(stats_handle, stats_records):
+    """ Saves and zips the stats contents (records) to the file.
+
+    :param file stats_handle: the handle of the stats file
+    :param dict stats_records: the contents to save
+    """
     compressed = store.pack_content(json.dumps(stats_records, indent=2).encode('utf-8'))
     stats_handle.write(compressed)
 
 
-def _modify_stats_file(status_filepath, file_mode, modify_function):
-    with open(status_filepath, file_mode) as stats_handle:
+def _modify_stats_file(stats_filepath, file_mode, modify_function):
+    """ Modifies the contents of the given stats file by the provided modification function
+
+    :param str stats_filepath: the path to the stats file
+    :param str file_mode: the file opening mode
+    :param function modify_function: function that takes the stats contents as a parameter and
+                                     modifies it accordingly
+    """
+    with open(stats_filepath, file_mode) as stats_handle:
         stats_records = _load_stats_from(stats_handle)
         modify_function(stats_records)
         _save_stats_to(stats_handle, stats_records)
 
 
-# TODO: make general publicly-accessible version? Like lookup_minor_version but not decorator
+# TODO: make general publicly-accessible version? Like lookup_minor_version but not a decorator
 def _lookup_minor_version(minor_version):
+    """Looks up the given minor version and checks its existence.
+
+    :param str minor_version: the minor version representation or None for HEAD
+    :return str: the minor version representation
+    """
     if minor_version is None:
         minor_version = vcs.get_minor_head()
     else:
@@ -184,6 +293,12 @@ def _lookup_minor_version(minor_version):
 
 # TODO: make public?
 def _sha_path_to_sha(sha_path):
+    """ Transforms the path of the minor version directory (represented by the SHA value) to the
+    actual SHA value as a string.
+
+    :param str sha_path: path to the minor version directory
+    :return str: the SHA value of the minor version
+    """
     rest, lower_level = os.path.split(sha_path.rstrip(os.sep))
     _, upper_level = os.path.split(rest.rstrip(os.sep))
     return upper_level + lower_level
