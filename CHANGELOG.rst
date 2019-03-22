@@ -6,6 +6,21 @@ HEAD
 
 **To be included in next release**
 
+0.16.4 (2019-03-22)
+-------------------
+
+`commit: a2bd359479920178cfed1a0de779ef6fa5f4d4ac`
+
+**Revive complexity collector**
+
+  - revive the complexity collector
+  - increase the test coverage of complexity collector
+  - update the complexity collector to comply with latest version of Perun
+
+`commit: 983b02ca54faa66941dcea06f990c8033eaf98f6`
+
+**Add kernel non-parametric regression**
+
 0.16.4 (2019-03-14)
 -------------------
 
