@@ -114,22 +114,23 @@ def get_project_elf_executables(root='.', only_not_stripped=False):
     return binaries
 
 
-def run_external_command(cmd_args):
+def run_external_command(cmd_args, **subprocess_kwargs):
     """Runs external command with parameters.
 
     :param list cmd_args: list of external command and its arguments to be run
+    :param subprocess_kwargs: additional parameters to the subprocess object
     :return: return value of the external command that was run
     """
-    process = subprocess.Popen(cmd_args)
+    process = subprocess.Popen(cmd_args, **subprocess_kwargs)
     process.wait()
     return process.returncode
 
 
-def start_nonblocking_process(cmd, **kwargs):
+def start_nonblocking_process(cmd, **subprocess_kwargs):
     """Safely start non-blocking process using subprocess without shell
 
     :param str cmd: string with command that should be executed
-    :param kwargs: additional arguments to the Popen subprocess
+    :param subprocess_kwargs: additional arguments to the Popen subprocess
     :return: Popen object representing the process
 
     """
@@ -137,11 +138,11 @@ def start_nonblocking_process(cmd, **kwargs):
     parsed_cmd = shlex.split(cmd)
 
     # Do not allow shell=True
-    if 'shell' in kwargs:
-        del kwargs['shell']
+    if 'shell' in subprocess_kwargs:
+        del subprocess_kwargs['shell']
 
     # Start the process and do not block it (user can tho)
-    proc = subprocess.Popen(parsed_cmd, shell=False, **kwargs)
+    proc = subprocess.Popen(parsed_cmd, shell=False, **subprocess_kwargs)
     return proc
 
 
@@ -293,7 +294,7 @@ def get_supported_module_names(package):
         ))
     return {
         'vcs': ['git'],
-        'collect': ['trace', 'memory', 'time'],
+        'collect': ['trace', 'memory', 'time', 'complexity'],
         'postprocess': ['clusterizer', 'filter', 'normalizer', 'regression-analysis',
                         'regressogram', 'moving-average', 'kernel-regression'],
         'view': ['bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
@@ -384,3 +385,21 @@ def check_dependency(command):
         warn(("Missing dependency utility '{util}'".format(util=command)))
         return False
     return True
+
+
+def build_command_str(cmd, args, workload):
+    """Creates the full command as concatenation of the cmd, args and workload values
+
+    :param str cmd: the command itself
+    :param str args: the arguments of the command
+    :param str workload: the workload parameter of the command, behaves the same as args
+
+    :return str: the full command with all the arguments appended
+    """
+    # Build the command, the args and workload should be only str as multiple options get
+    # get sliced and iterated by perun
+    if args:
+        cmd += ' ' + args
+    if workload:
+        cmd += ' ' + workload
+    return cmd
