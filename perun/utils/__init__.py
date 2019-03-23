@@ -146,13 +146,14 @@ def start_nonblocking_process(cmd, **subprocess_kwargs):
     return proc
 
 
-def run_safely_external_command(cmd, check_results=True):
+def run_safely_external_command(cmd, check_results=True, **kwargs):
     """Safely runs the piped command, without executing of the shell
 
     Courtesy of: https://blog.avinetworks.com/tech/python-best-practices
 
     :param str cmd: string with command that we are executing
     :param bool check_results: check correct command exit code and raise exception in case of fail
+    :param dict kwargs: additional args to subprocess call
     :return: returned standard output and error
     :raises subprocess.CalledProcessError: when any of the piped commands fails
     """
@@ -171,7 +172,8 @@ def run_safely_external_command(cmd, check_results=True):
 
         # run the piped command and close the previous one
         piped_command = subprocess.Popen(executed_command, shell=False,
-                                         stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
+                                         stdin=stdin, stdout=subprocess.PIPE, stderr=stderr,
+                                         **kwargs)
         if i != 0:
             objects[i-1].stdout.close()
         objects.append(piped_command)

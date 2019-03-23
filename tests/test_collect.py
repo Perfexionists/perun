@@ -196,12 +196,13 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
     head = vcs.get_minor_version_info(vcs.get_minor_head())
-    run.run_single_job(cmd, args, work, collectors, posts, [head], **config)
+    result = run.run_single_job(cmd, args, work, collectors, posts, [head], **config)
+    assert result == run.CollectStatus.OK
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    assert before_object_count + 2 == after_object_count
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
 
     new_profile = profiles[0]
     assert len(profiles) == 1
@@ -249,6 +250,16 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     assert result.exit_code == 0
     assert 'stored profile' in result.output
 
+    monkeypatch.setattr(
+        "perun.utils.build_command_str", lambda *_: "nonexistent"
+    )
+    runner = CliRunner()
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+                                         '-a test', '-w input', 'complexity',
+                                         '-t{}'.format(job_params['target_dir']),
+                                         ] + files + rules + samplings)
+    assert result.exit_code == 1
+
 
 def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
     """Test various scenarios where something goes wrong during the collection process.
@@ -272,19 +283,18 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     runner = CliRunner()
 
     # Try missing parameters --target-dir and --files
-    # TODO: the exit code is 0 even though an exception is raised or non-zero value returned
     result = runner.invoke(cli.collect, ['complexity'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert '--target-dir parameter must be supplied' in result.output
 
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert '--files parameter must be supplied' in result.output
 
     # Try supplying invalid directory path, which is a file instead
     invalid_target = os.path.join(os.path.dirname(script_dir), 'job.yml')
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(invalid_target)])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert 'already exists' in result.output
 
     # Simulate the failure of 'cmake' utility

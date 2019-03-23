@@ -28,7 +28,8 @@ _COLLECTOR_STATUS_MSG = {
     1:  'Err: profile output file cannot be opened.',
     2:  'Err: profile output file closed unexpectedly.',
     11: 'Err: runtime configuration file does not exists.',
-    12: 'Err: runtime configuration file syntax error.'
+    12: 'Err: runtime configuration file syntax error.',
+    21: 'Err: command could not be run.'
 }
 
 # The collector subtypes
@@ -103,9 +104,13 @@ def collect(**kwargs):
     collect_dir = os.path.dirname(kwargs['cmd'])
     cmd = utils.build_command_str(kwargs['cmd'], kwargs['args'], kwargs['workload'])
     # Run the command and evaluate the returncode
-    returncode = utils.run_external_command([cmd], cwd=collect_dir)
-    log.failed() if returncode != 0 else log.done()
-    return returncode, _COLLECTOR_STATUS_MSG[returncode], dict(kwargs)
+    try:
+        utils.run_safely_external_command(cmd, cwd=collect_dir)
+        log.done()
+        return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+    except (CalledProcessError, IOError) as err:
+        log.failed()
+        return 21, _COLLECTOR_STATUS_MSG[21] + ": {}".format(str(err)), dict(kwargs)
 
 
 def after(**kwargs):
