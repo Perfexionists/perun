@@ -37,7 +37,7 @@ def show(profile, coloured=False, **_):
 
     # Construct the header
     header = profile['header']
-    for header_item in ['type', 'cmd', 'params', 'workload']:
+    for header_item in ['type', 'cmd', 'args', 'workload']:
         if header_item in header.keys():
             print("{}: {}".format(
                 process_object(header_item, RAW_KEY_COLOUR, coloured),

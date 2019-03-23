@@ -220,7 +220,7 @@
     "units": {
       "mixed (time delta)": "us"
     },
-    "params": "",
+    "args": "",
     "type": "mixed",
     "workload": "/mnt/g/some.txt"
   }

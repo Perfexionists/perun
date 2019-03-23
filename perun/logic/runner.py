@@ -141,7 +141,7 @@ def is_status_ok(returned_status, expected_status):
     :param Enum expected_status: expected status
     :returns bool: true if the status was 0, CollectStatus.OK or PostprocessStatus.OK
     """
-    return returned_status == expected_status or returned_status == expected_status.value
+    return returned_status in (expected_status, expected_status.value)
 
 
 def run_all_phases_for(runner, runner_type, runner_params):
@@ -240,7 +240,9 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
         minor_versions = ctx.obj['minor_version_list']
         collector_params.update(ctx.obj['params'])
         if run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **{
-            'collector_params': {collector_name: collector_params}
+            'collector_params': {
+                collector_name: collector_params
+            }
         }) != CollectStatus.OK:
             log.error("collection of profiles was unsuccessful")
     except KeyError as collector_exception:

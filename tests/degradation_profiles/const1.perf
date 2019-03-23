@@ -7162,7 +7162,7 @@
     }
   ],
   "header": {
-    "params": "",
+    "args": "",
     "cmd": "cmd",
     "type": "mixed",
     "workload": "wl",

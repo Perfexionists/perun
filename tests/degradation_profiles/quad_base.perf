@@ -227,7 +227,7 @@
   "header": {
     "cmd": "target",
     "workload": "workload.in",
-    "params": "",
+    "args": "",
     "units": {
       "mixed(time delta)": "ms"
     },

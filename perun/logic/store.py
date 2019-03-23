@@ -11,15 +11,16 @@ import string
 import struct
 import zlib
 
+import demandimport
+with demandimport.enabled():
+    import hashlib
+
 import perun.utils.helpers as helpers
 
 from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
 
-import demandimport
-with demandimport.enabled():
-    import hashlib
 
 __author__ = 'Tomas Fiedor'
 
@@ -144,8 +145,7 @@ def peek_profile_type(profile_name):
         # Return that the stored profile is malformed
         if prefix != 'profile' or profile_type not in helpers.SUPPORTED_PROFILE_TYPES:
             return helpers.PROFILE_MALFORMED
-        else:
-            return profile_type
+        return profile_type
 
 
 def read_and_deflate_chunk(file_handle, chunk_size=-1):
@@ -406,4 +406,3 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
         return json.loads(body)
     except ValueError:
         raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
-

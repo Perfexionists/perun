@@ -264,7 +264,7 @@
   "postprocessors": [],
   "header": {
     "type": "mixed",
-    "params": "",
+    "args": "",
     "cmd": "complexity",
     "workload": "",
     "units": {

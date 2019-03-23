@@ -14,6 +14,7 @@ HEAD
   - optimize loading of the profile info for both registered and pending profiles (yields huge performance boost)
   - add `--force` option to `perun add` which will force the add (d'oh)
   - add printing of trace if `perun -vv` is set in cli (i.e. the verbosity is of level 2+)
+  - rename 'params' in profile to 'args' since it complies to other parts of code
 
 0.16.5 (2019-03-22)
 -------------------

@@ -26,7 +26,7 @@ def draw_flame_graph(profile, output_file, height):
     profile_type = header['type']
     title = "{} consumption of {} {} {}".format(profile_type,
                                                 header['cmd'],
-                                                header['params'],
+                                                header['args'],
                                                 header['workload'])
     units = header['units'][profile_type]
 

@@ -418,7 +418,7 @@
     "units": {
       "mixed(time delta)": "ms"
     },
-    "params": "",
+    "args": "",
     "type": "mixed",
     "cmd": "complexity"
   },

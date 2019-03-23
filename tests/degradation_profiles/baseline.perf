@@ -7145,7 +7145,7 @@
     "units": {
       "mixed(time delta)": "ms"
     },
-    "params": "",
+    "args": "",
     "workload": "wl",
     "cmd": "cmd"
   },

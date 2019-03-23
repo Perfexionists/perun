@@ -265,7 +265,7 @@
     "units": {
       "mixed(time delta)": "ms"
     },
-    "params": "",
+    "args": "",
     "workload": "",
     "cmd": "complexity",
     "type": "mixed"

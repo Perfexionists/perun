@@ -760,7 +760,7 @@ def get_untracked_profiles():
                 'header': {
                     'type': index_entry.type,
                     'cmd': index_entry.cmd,
-                    'params': index_entry.args,
+                    'args': index_entry.args,
                     'workload': index_entry.workload
                 },
                 'collector_info': {'name': index_entry.collector},

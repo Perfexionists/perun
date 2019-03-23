@@ -2,7 +2,7 @@
   "header": {
     "workload": "workload.in",
     "type": "mixed",
-    "params": "",
+    "args": "",
     "units": {
       "mixed(time delta)": "ms"
     },

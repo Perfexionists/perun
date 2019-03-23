@@ -240,7 +240,7 @@
       "mixed(time delta)": "ms"
     },
     "type": "mixed",
-    "params": ""
+    "args": ""
   },
   "postprocessors": [
     {

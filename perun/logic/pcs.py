@@ -118,5 +118,4 @@ def get_config_file(config_type):
     """
     if config_type in ('shared', 'global'):
         return os.path.join(config.lookup_shared_config_dir(), 'shared.yml')
-    else:
-        return os.path.join(get_path(), 'local.yml')
+    return os.path.join(get_path(), 'local.yml')

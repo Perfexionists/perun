@@ -4,7 +4,7 @@
       "mixed(time delta)": "ms"
     },
     "cmd": "cmd",
-    "params": "",
+    "args": "",
     "type": "mixed",
     "workload": "wl"
   },

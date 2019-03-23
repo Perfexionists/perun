@@ -126,7 +126,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         self.type = profile['header']['type']
         self.cmd = profile['header']['cmd']
         # Fixme: This is sooo fucking wrong
-        self.args = profile['header'].get('params', '')
+        self.args = profile['header'].get('args', '')
         self.workload = profile['header'].get('workload', '')
         self.collector = profile['collector_info']['name']
         self.postprocessors = [
@@ -186,7 +186,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
 
         profile['header']['type'] = store.read_string_from_handle(index_handle)
         profile['header']['cmd'] = store.read_string_from_handle(index_handle)
-        profile['header']['params'] = store.read_string_from_handle(index_handle)
+        profile['header']['args'] = store.read_string_from_handle(index_handle)
         profile['header']['workload'] = store.read_string_from_handle(index_handle)
         profile['collector_info']['name'] = store.read_string_from_handle(index_handle)
         profile['postprocessors'] = [

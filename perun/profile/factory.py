@@ -176,7 +176,7 @@ def load_list_for_minor_version(minor_version):
             'header': {
                 'type': index_entry.type,
                 'cmd': index_entry.cmd,
-                'params': index_entry.args,
+                'args': index_entry.args,
                 'workload': index_entry.workload
             },
             'collector_info': {'name': index_entry.collector},
@@ -216,7 +216,7 @@ def generate_header_for_profile(job):
     return {
         'type': collector.COLLECTOR_TYPE,
         'cmd': job.cmd,
-        'params': job.args,
+        'args': job.args,
         'workload': job.workload,
         'units': generate_units(collector)
     }
@@ -321,10 +321,10 @@ def extract_job_from_profile(profile):
         posts.append(Unit(postprocessor['name'], postprocessor['params']))
 
     cmd = profile['header']['cmd']
-    params = profile['header']['params']
+    args = profile['header']['args']
     workload = profile['header']['workload']
 
-    return Job(collector, posts, cmd, workload, params)
+    return Job(collector, posts, cmd, workload, args)
 
 
 def is_key_aggregatable_by(profile, func, key, keyname):
@@ -432,7 +432,7 @@ class ProfileInfo(object):
         self.time = mtime
         self.type = profile_info['header']['type']
         self.cmd = profile_info['header']['cmd']
-        self.args = profile_info['header']['params']
+        self.args = profile_info['header']['args']
         self.workload = profile_info['header']['workload']
         self.collector = profile_info['collector_info']['name']
         self.postprocessors = [
