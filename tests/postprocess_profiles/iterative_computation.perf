@@ -43,7 +43,7 @@
     "units": {
       "mixed(time delta)": "ms"
     },
-    "params": "",
+    "args": "",
     "cmd": "complexity"
   },
   "global": {

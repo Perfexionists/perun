@@ -7147,7 +7147,7 @@
     },
     "cmd": "cmd",
     "type": "mixed",
-    "params": "",
+    "args": "",
     "workload": "wl"
   }
 }

@@ -21,5 +21,5 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     profile_generator = run.generate_profiles_for(
         [cmd], [args], initial_workload, [collector], postprocessor, minor_version_list, **kwargs
     )
-    for profile, _ in profile_generator:
+    for _, profile, __ in profile_generator:
         assert profile

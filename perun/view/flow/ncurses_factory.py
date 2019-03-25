@@ -10,7 +10,7 @@ import perun.profile.factory as profiles
 __author__ = 'Radim Podola'
 
 
-class FlowGraphVisualization(object):
+class FlowGraphVisualization:
     """ Class providing visualization of the allocation flow.
 
         Visualization is implemented over curses module.

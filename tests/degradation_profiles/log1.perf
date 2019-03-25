@@ -7158,7 +7158,7 @@
     "type": "mixed",
     "cmd": "cmd",
     "workload": "wl",
-    "params": "",
+    "args": "",
     "units": {
       "mixed(time delta)": "ms"
     }

@@ -175,7 +175,7 @@ def iterative_analysis(x_pts, y_pts, config):
     return bucket_stats, r_square, config['window_width']
 
 
-def validate_decay_param(ctx, param, value):
+def validate_decay_param(_, param, value):
     """
     Callback method for `decay` parameter at Exponential Moving Average.
 
@@ -185,7 +185,7 @@ def validate_decay_param(ctx, param, value):
     In the case of unsuccessful validation will be raised the exception with the
     relevant warning message about the entered value out of the acceptable range.
 
-    :param click.Context ctx: the current perun and option context
+    :param click.Context _: the current perun and option context
     :param click.Option param:  additive options from relevant commands decorator
     :param tuple value: the value of the parameter that invoked the callback method (name, value)
     :raises click.BadOptionsUsage: in the case when was entered the value from the invalid range

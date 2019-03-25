@@ -23,13 +23,14 @@ import operator
 import perun.logic.pcs as pcs
 import perun.logic.config as config
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.vcs as vcs
 import perun.profile.query as query
 import perun.utils.log as perun_log
+
 from perun.utils import get_module
-from perun.utils.exceptions import IncorrectProfileFormatException, InvalidParameterException, \
-    MissingConfigSectionException
-from perun.utils.helpers import SUPPORTED_PROFILE_TYPES, Job
+from perun.utils.exceptions import InvalidParameterException, MissingConfigSectionException
+from perun.utils.helpers import Job
 from perun.utils.structs import Unit
 
 __author__ = 'Tomas Fiedor'
@@ -126,7 +127,7 @@ def generate_profile_name(profile):
         ),
         (r"%postprocessors%", lambda scanner, token:
             ("after-" + "-and-".join(map(lambda p: p['name'], profile['postprocessors'])))
-                if len(profile['postprocessors']) else '_'
+                if profile['postprocessors'] else '_'
         ),
         (r"%[^.]+\.[^%]+%", lambda scanner, token:
             lookup_param(profile, *token[1:-1].split('.', maxsplit=1))
@@ -161,55 +162,6 @@ def generate_profile_name(profile):
     return "".join(tokens) + ".perf"
 
 
-def load_profile_from_file(file_name, is_raw_profile):
-    """Loads profile w.r.t :ref:`profile-spec` from file.
-
-    :param str file_name: file path, where the profile is stored
-    :param bool is_raw_profile: if set to true, then the profile was loaded
-        from the file system and is thus in the JSON already and does not have
-        to be decompressed and unpacked to JSON format.
-    :returns: JSON dictionary w.r.t. :ref:`profile-spec`
-    :raises IncorrectProfileFormatException: raised, when **filename** contains
-        data, which cannot be converted to valid :ref:`profile-spec`
-    """
-    if not os.path.exists(file_name):
-        raise IncorrectProfileFormatException(file_name, "file '{}' not found")
-
-    with open(file_name, 'rb') as file_handle:
-        return load_profile_from_handle(file_name, file_handle, is_raw_profile)
-
-
-def load_profile_from_handle(file_name, file_handle, is_raw_profile):
-    """
-    Fixme: Add check that the loaded profile is in valid format!!!
-
-    :param str file_name: name of the file opened in the handle
-    :param file file_handle: opened file handle
-    :param bool is_raw_profile: true if the profile is in json format already
-    :returns dict: JSON representation of the profile
-    :raises IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
-        or when the profile is not in correct supported format or when the profile is malformed
-    """
-    if is_raw_profile:
-        body = file_handle.read().decode('utf-8')
-    else:
-        # Read deflated contents and split to header and body
-        contents = store.read_and_deflate_chunk(file_handle)
-        header, body = contents.split('\0')
-        prefix, profile_type, profile_size = header.split(' ')
-
-        # Check the header, if the body is not malformed
-        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
-                len(body) != int(profile_size):
-            raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")
-
-    # Try to load the json, if there is issue with the profile
-    try:
-        return json.loads(body)
-    except ValueError:
-        raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
-
-
 def load_list_for_minor_version(minor_version):
     """Returns profiles assigned to the given minor version.
 
@@ -217,12 +169,24 @@ def load_list_for_minor_version(minor_version):
     :returns list: list of ProfileInfo parsed from index of the given minor_version
     """
     # Compute the
-    profiles = store.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
+    profiles = index.get_profile_list_for_minor(pcs.get_object_directory(), minor_version)
     profile_info_list = []
     for index_entry in profiles:
+        inside_info = {
+            'header': {
+                'type': index_entry.type,
+                'cmd': index_entry.cmd,
+                'args': index_entry.args,
+                'workload': index_entry.workload
+            },
+            'collector_info': {'name': index_entry.collector},
+            'postprocessors': [
+                {'name': p} for p in index_entry.postprocessors
+            ]
+        }
         _, profile_name = store.split_object_name(pcs.get_object_directory(), index_entry.checksum)
         profile_info \
-            = ProfileInfo(index_entry.path, profile_name, index_entry.time)
+            = ProfileInfo(index_entry.path, profile_name, index_entry.time, inside_info)
         profile_info_list.append(profile_info)
 
     return profile_info_list
@@ -247,12 +211,12 @@ def generate_header_for_profile(job):
     try:
         collector = get_module('.'.join(['perun.collect', job.collector.name]))
     except ImportError:
-        perun_log.error("could not find package for collector {}".format(job.collector.name))
+        perun_log.error("could not find the package for collector {}".format(job.collector.name))
 
     return {
         'type': collector.COLLECTOR_TYPE,
         'cmd': job.cmd,
-        'params': job.args,
+        'args': job.args,
         'workload': job.workload,
         'units': generate_units(collector)
     }
@@ -357,10 +321,10 @@ def extract_job_from_profile(profile):
         posts.append(Unit(postprocessor['name'], postprocessor['params']))
 
     cmd = profile['header']['cmd']
-    params = profile['header']['params']
+    args = profile['header']['args']
     workload = profile['header']['workload']
 
-    return Job(collector, posts, cmd, workload, params)
+    return Job(collector, posts, cmd, workload, args)
 
 
 def is_key_aggregatable_by(profile, func, key, keyname):
@@ -446,13 +410,13 @@ def merge_resources_of(lhs, rhs):
     return lhs
 
 
-class ProfileInfo(object):
+class ProfileInfo:
     """Structure for storing information about profiles.
 
     This is mainly used for formatted output of the profile list using
     the command line interface
     """
-    def __init__(self, path, real_path, mtime, is_raw_profile=False):
+    def __init__(self, path, real_path, mtime, profile_info, is_raw_profile=False):
         """
         :param str path: contains the name of the file, which identifies it in the index
         :param str real_path: real path to the profile, i.e. how can it really be accessed
@@ -461,20 +425,18 @@ class ProfileInfo(object):
         :param bool is_raw_profile: true if the stored profile is raw, i.e. in json and not
             compressed
         """
-        # Load the data from JSON, which contains additional information about profile
-        loaded_profile = load_profile_from_file(real_path, is_raw_profile)
 
         self._is_raw_profile = is_raw_profile
         self.source = path
         self.realpath = os.path.relpath(real_path, os.getcwd())
-        self.type = loaded_profile['header']['type']
         self.time = mtime
-        self.cmd = loaded_profile['header']['cmd']
-        self.args = loaded_profile['header']['params']
-        self.workload = loaded_profile['header']['workload']
-        self.collector = loaded_profile['collector_info']['name']
+        self.type = profile_info['header']['type']
+        self.cmd = profile_info['header']['cmd']
+        self.args = profile_info['header']['args']
+        self.workload = profile_info['header']['workload']
+        self.collector = profile_info['collector_info']['name']
         self.postprocessors = [
-            postprocessor['name'] for postprocessor in loaded_profile['postprocessors']
+            postprocessor['name'] for postprocessor in profile_info['postprocessors']
         ]
         self.checksum = None
         self.config_tuple = (
@@ -490,7 +452,7 @@ class ProfileInfo(object):
 
         :return: loaded profile in dictionary format, w.r.t :ref:`profile-spec`
         """
-        return load_profile_from_file(self.realpath, self._is_raw_profile)
+        return store.load_profile_from_file(self.realpath, self._is_raw_profile)
 
     valid_attributes = [
         "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "source"

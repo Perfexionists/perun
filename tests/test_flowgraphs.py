@@ -7,7 +7,7 @@ from click.testing import CliRunner
 
 import perun.cli as cli
 import perun.profile.convert as convert
-import perun.profile.factory as profiles
+import perun.logic.store as store
 import perun.view.flow.bokeh_factory as bokeh_graphs
 import perun.view.flow.ncurses_factory as curses_graphs
 
@@ -31,7 +31,7 @@ def test_flow_cli(pcs_full, valid_profile_pool):
     """
     runner = CliRunner()
     for valid_profile in valid_profile_pool:
-        loaded_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
+        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] != 'memory':
             continue
 
@@ -58,7 +58,7 @@ def test_flow_cli_errors(helpers, pcs_full, valid_profile_pool):
     """
     runner = CliRunner()
     for valid_profile in valid_profile_pool:
-        loaded_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
+        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] != 'memory':
             continue
 

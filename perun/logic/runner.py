@@ -8,6 +8,7 @@ import perun.vcs as vcs
 import perun.logic.pcs as pcs
 import perun.logic.config as config
 import perun.logic.commands as commands
+import perun.logic.index as index
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as log
@@ -140,7 +141,7 @@ def is_status_ok(returned_status, expected_status):
     :param Enum expected_status: expected status
     :returns bool: true if the status was 0, CollectStatus.OK or PostprocessStatus.OK
     """
-    return returned_status == expected_status or returned_status == expected_status.value
+    return returned_status in (expected_status, expected_status.value)
 
 
 def run_all_phases_for(runner, runner_type, runner_params):
@@ -206,8 +207,7 @@ def run_collector(collector, job):
     try:
         collector_module = get_module('perun.collect.{0}.run'.format(collector.name))
     except ImportError:
-        err_msg = "{} does not exist".format(collector.name)
-        log.error(err_msg, recoverable=True)
+        log.error("{} collector does not exist".format(collector.name), recoverable=True)
         return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
@@ -216,7 +216,9 @@ def run_collector(collector, job):
         = run_all_phases_for(collector_module, 'collector', job_params)
 
     if collection_status != CollectStatus.OK:
-        log.error(collection_msg, recoverable=True)
+        log.error("while collecting by {}: {}".format(
+            collector.name, collection_msg
+        ), recoverable=True)
     else:
         print("Successfully collected data from {}".format(job.cmd))
 
@@ -237,9 +239,12 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
         cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
         minor_versions = ctx.obj['minor_version_list']
         collector_params.update(ctx.obj['params'])
-        run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **{
-            'collector_params': {collector_name: collector_params}
-        })
+        if run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **{
+            'collector_params': {
+                collector_name: collector_params
+            }
+        }) != CollectStatus.OK:
+            log.error("collection of profiles was unsuccessful")
     except KeyError as collector_exception:
         log.error("missing parameter: {}".format(str(collector_exception)))
 
@@ -265,8 +270,7 @@ def run_postprocessor(postprocessor, job, prof):
     try:
         postprocessor_module = get_module('perun.postprocess.{0}.run'.format(postprocessor.name))
     except ImportError:
-        err_msg = "{} does not exist".format(postprocessor.name)
-        log.error(err_msg, recoverable=True)
+        log.error("{} postprocessor does not exist".format(postprocessor.name), recoverable=True)
         return PostprocessStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
@@ -275,8 +279,11 @@ def run_postprocessor(postprocessor, job, prof):
         = run_all_phases_for(postprocessor_module, 'postprocessor', job_params)
 
     if post_status != PostprocessStatus.OK:
-        log.error(post_msg)
-    print("Successfully postprocessed data by {}".format(postprocessor.name))
+        log.error("while postprocessing by {}: {}".format(
+            postprocessor.name, post_msg
+        ))
+    else:
+        print("Successfully postprocessed data by {}".format(postprocessor.name))
 
     return post_status, prof
 
@@ -297,6 +304,9 @@ def store_generated_profile(prof, job):
         # We either store the profile according to the origin, or we use the current head
         dst = prof.get('origin', vcs.get_minor_head())
         commands.add([full_profile_path], dst, keep_profile=False)
+    else:
+        # Else we register the profile in pending index
+        index.register_in_pending_index(full_profile_path, prof)
 
 
 def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params, skip_store=False):
@@ -348,7 +358,7 @@ def run_prephase_commands(phase, phase_colour='white'):
             error_command = str(exception.cmd)
             error_code = exception.returncode
             error_output = exception.output
-            log.error("error in {} phase while running '{}' exited with: {} ({})".format(
+            log.error("error during {} phase while running '{}' exited with: {} ({})".format(
                 phase, error_command, error_code, error_output
             ))
 
@@ -368,6 +378,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
     workload_generators_specs = workloads.load_generator_specifications()
 
     log.print_job_progress.current_job = 1
+    collective_status = CollectStatus.OK
     print("")
     for job_cmd, workloads_per_cmd in job_matrix.items():
         log.print_current_phase("Collecting profiles for {}", job_cmd, COLLECT_PHASE_CMD)
@@ -383,6 +394,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                     # Run the collector and check if the profile was successfully collected
                     # In case, the status was not OK, then we skip the postprocessing
                     if c_status != CollectStatus.OK or not prof:
+                        collective_status = CollectStatus.ERROR
                         continue
 
                     # Temporary nasty hack
@@ -393,10 +405,11 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                         # Run postprocess and check if the profile was successfully postprocessed
                         p_status, prof = run_postprocessor(postprocessor, job, prof)
                         if p_status != PostprocessStatus.OK or not prof:
+                            collective_status = CollectStatus.ERROR
                             break
                     else:
                         # Store the computed profile inside the job directory
-                        yield prof, job
+                        yield collective_status, prof, job
 
 
 @decorators.print_elapsed_time
@@ -466,20 +479,32 @@ def run_single_job(cmd, args, workload, collector, postprocessor, minor_version_
     :param list minor_version_list: list of MinorVersion info
     :param bool with_history: if set to true, then we will print the history object
     :param dict kwargs: dictionary of additional params for postprocessor and collector
+    :return: CollectStatus.OK if all jobs were successfully collected, CollectStatus.ERROR if any
+        of collections or postprocessing failed
     """
     job_matrix, number_of_jobs = \
         construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs)
     generator_function = generate_jobs_with_history if with_history else generate_jobs
-    for prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
+    status = CollectStatus.OK
+    finished_jobs = 0
+    for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
         store_generated_profile(prof, job)
+        finished_jobs += 1
+    return status if finished_jobs > 0 else CollectStatus.ERROR
 
 
 def run_matrix_job(minor_version_list, with_history=False):
     """
     :param list minor_version_list: list of MinorVersion info
     :param bool with_history: if set to true, then we will print the history object
+    :return: CollectStatus.OK if all jobs were successfully collected, CollectStatus.ERROR if any
+        of collections or postprocessing failed
     """
     job_matrix, number_of_jobs = construct_job_matrix(**load_job_info_from_config())
     generator_function = generate_jobs_with_history if with_history else generate_jobs
-    for prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
+    status = CollectStatus.OK
+    finished_jobs = 0
+    for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
         store_generated_profile(prof, job)
+        finished_jobs += 1
+    return status if finished_jobs > 0 else CollectStatus.ERROR

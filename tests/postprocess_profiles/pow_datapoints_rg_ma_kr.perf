@@ -435,7 +435,7 @@
     "units": {
       "mixed(time delta)": "us"
     },
-    "params": ""
+    "args": ""
   },
   "postprocessors": [
     {

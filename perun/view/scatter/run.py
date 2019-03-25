@@ -25,6 +25,7 @@ def process_title(ctx, _, value):
     result, as the scatter plot might produce more than one graph.
 
     :param click.Context ctx: called context of the process
+    :param object _: unused parameter
     :param object value: value that is being processed ad add to parameter
     :returns object: either value (if it is non-None) or default title of the graph
     """

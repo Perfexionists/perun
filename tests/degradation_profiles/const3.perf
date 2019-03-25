@@ -1,6 +1,6 @@
 {
   "header": {
-    "params": "",
+    "args": "",
     "workload": "wl",
     "units": {
       "mixed(time delta)": "ms"

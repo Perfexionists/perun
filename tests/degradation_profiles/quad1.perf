@@ -10,7 +10,7 @@
     }
   ],
   "header": {
-    "params": "",
+    "args": "",
     "cmd": "cmd",
     "units": {
       "mixed(time delta)": "ms"

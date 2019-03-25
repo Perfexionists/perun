@@ -1,14 +1,14 @@
 """This module contains the BAR graphs creating functions"""
 
+import demandimport
+with demandimport.enabled():
+    import bkcharts as charts
+
 import perun.profile.factory as profiles
 
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
-
-import demandimport
-with demandimport.enabled():
-    import bkcharts as charts
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
@@ -59,7 +59,7 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
     elif cummulation_type == 'grouped':
         bar_graph = create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key)
     else:
-        log.error("unknown cummulation type '{}'".format(cummulation_type))
+        log.error("unknown aggregation type '{}'".format(cummulation_type))
 
     # Call basic configuration of the graph
     bokeh_helpers.configure_graph(

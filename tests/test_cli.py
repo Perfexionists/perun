@@ -17,6 +17,7 @@ import perun.utils as utils
 import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.store as store
+import perun.logic.runner as perun_runner
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
@@ -1146,7 +1147,7 @@ def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
     assert "Ref 'tag2' did not resolve to object"
 
 
-def test_add_tag(helpers, pcs_full, valid_profile_pool):
+def test_add_tag(monkeypatch, helpers, pcs_full, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should
@@ -1158,7 +1159,7 @@ def test_add_tag(helpers, pcs_full, valid_profile_pool):
     first_sha = os.path.relpath(helpers.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0], head)
     )
-    os.path.relpath(helpers.prepare_profile(
+    second_sha = os.path.relpath(helpers.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[1], parent)
     )
 
@@ -1171,6 +1172,13 @@ def test_add_tag(helpers, pcs_full, valid_profile_pool):
     result = runner.invoke(cli.add, ['0@p'])
     assert result.exit_code == 1
     assert "originates from minor version '{}'".format(parent) in result.output
+
+    # Check that force work as intented
+    monkeypatch.setattr('click.confirm', lambda _: True)
+    runner = CliRunner()
+    result = runner.invoke(cli.add, ['--force', '0@p'])
+    assert result.exit_code == 0
+    assert "'{}' successfully registered".format(second_sha) in result.output
 
     result = runner.invoke(cli.add, ['10@p'])
     assert result.exit_code == 2
@@ -1245,30 +1253,30 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     """
     helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
-    assert len(os.listdir(pending_dir)) == 2
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 2
 
     runner = CliRunner()
     result = runner.invoke(cli.postprocessby, ['0@p', 'normalizer'])
     assert result.exit_code == 0
-    assert len(os.listdir(pending_dir)) == 3
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try incorrect tag -> expect failure and return code 2 (click error)
     result = runner.invoke(cli.postprocessby, ['666@p', 'normalizer'])
     assert result.exit_code == 2
-    assert len(os.listdir(pending_dir)) == 3
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try correct index tag
     result = runner.invoke(cli.postprocessby, ['1@i', 'normalizer'])
     assert result.exit_code == 0
-    assert len(os.listdir(pending_dir)) == 4
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try incorrect index tag -> expect failure and return code 2 (click error)
     result = runner.invoke(cli.postprocessby, ['1337@i', 'normalizer'])
     assert result.exit_code == 2
-    assert len(os.listdir(pending_dir)) == 4
+    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try absolute postprocessing
-    first_in_jobs = os.listdir(pending_dir)[0]
+    first_in_jobs = list(filter(helpers.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, 'normalizer'])
     assert result.exit_code == 0
@@ -1303,7 +1311,7 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
     assert result.exit_code == 2
 
     # Try absolute showing
-    first_in_jobs = os.listdir(pending_dir)[0]
+    first_in_jobs = list(filter(helpers.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.show, [absolute_first_in_jobs, 'raw'])
     assert result.exit_code == 0
@@ -1675,10 +1683,18 @@ def test_error_runs(pcs_full, monkeypatch):
     matrix.data['cmds'] = ['ls']
 
     result = runner.invoke(cli.run, ['matrix', '-q'])
-    assert result.exit_code == 0
-    assert "tome does not exist" in result.output
+    assert result.exit_code == 1
+    assert "tome collector does not exist" in result.output
     matrix.data['collectors'][0]['name'] = 'time'
 
     result = runner.invoke(cli.run, ['matrix', '-q'])
-    assert result.exit_code == 0
-    assert "fokume does not exist" in result.output
+    assert result.exit_code == 1
+    assert "fokume postprocessor does not exist" in result.output
+
+    monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: perun_runner.CollectStatus.ERROR)
+    result = runner.invoke(cli.run, ['job', '--cmd', 'ls',
+        '--args', '-al', '--workload', '.',
+        '--collector', 'time'
+    ])
+    assert result.exit_code == 1
+

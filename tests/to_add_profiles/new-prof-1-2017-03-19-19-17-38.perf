@@ -2,7 +2,7 @@
   "header": {
     "type": "time",
     "cmd": "echo",
-    "params": "-e",
+    "args": "-e",
     "units": {
      "time": "s"
     },

@@ -2,7 +2,7 @@
   "header": {
     "type": "mixed",
     "cmd": "complexity",
-    "params": "",
+    "args": "",
     "workload": "",
     "units": {
       "mixed(time delta)": "us"

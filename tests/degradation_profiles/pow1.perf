@@ -7133,7 +7133,7 @@
     "cmd": "cmd",
     "workload": "wl",
     "type": "mixed",
-    "params": ""
+    "args": ""
   },
   "collector_info": {
     "name": "complexity",

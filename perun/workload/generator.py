@@ -16,7 +16,7 @@ from perun.utils.helpers import CollectStatus
 __author__ = 'Tomas Fiedor'
 
 
-class Generator(object):
+class Generator:
     """Generator is a base object of all generators and contains generic options for all generators.
 
     :ivar bool profile_for_each_workload: if set to true, then we will generate one profile

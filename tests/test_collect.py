@@ -18,6 +18,7 @@ import perun.utils as utils
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
+import perun.utils.log as log
 
 from perun.utils.helpers import Job
 from perun.utils.structs import Unit
@@ -195,12 +196,13 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
     head = vcs.get_minor_version_info(vcs.get_minor_head())
-    run.run_single_job(cmd, args, work, collectors, posts, [head], **config)
+    result = run.run_single_job(cmd, args, work, collectors, posts, [head], **config)
+    assert result == run.CollectStatus.OK
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    assert before_object_count + 2 == after_object_count
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
 
     new_profile = profiles[0]
     assert len(profiles) == 1
@@ -248,6 +250,16 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     assert result.exit_code == 0
     assert 'stored profile' in result.output
 
+    monkeypatch.setattr(
+        "perun.utils.build_command_str", lambda *_: "nonexistent"
+    )
+    runner = CliRunner()
+    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
+                                         '-a test', '-w input', 'complexity',
+                                         '-t{}'.format(job_params['target_dir']),
+                                         ] + files + rules + samplings)
+    assert result.exit_code == 1
+
 
 def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
     """Test various scenarios where something goes wrong during the collection process.
@@ -271,19 +283,18 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     runner = CliRunner()
 
     # Try missing parameters --target-dir and --files
-    # TODO: the exit code is 0 even though an exception is raised or non-zero value returned
     result = runner.invoke(cli.collect, ['complexity'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert '--target-dir parameter must be supplied' in result.output
 
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert '--files parameter must be supplied' in result.output
 
     # Try supplying invalid directory path, which is a file instead
     invalid_target = os.path.join(os.path.dirname(script_dir), 'job.yml')
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(invalid_target)])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert 'already exists' in result.output
 
     # Simulate the failure of 'cmake' utility
@@ -391,12 +402,11 @@ def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
 
     # Test negative global sampling
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-g -2'] + binary)
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
     # Try missing parameter -c
-    # Fixme: before fails but still produces 0?
     result = runner.invoke(cli.collect, ['trace'] + binary)
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
     # Try invalid parameter --method
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-minvalid'] + binary)
@@ -405,7 +415,7 @@ def test_collect_trace(monkeypatch, pcs_full, trace_collect_job):
     # Try binary parameter that is actually not executable ELF
     target = os.path.join(script_dir, 'cpp_sources', 'tst.cpp')
     result = runner.invoke(cli.collect, ['-c{}'.format(target), 'trace'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert 'is not an executable ELF file.' in result.output
 
 
@@ -497,7 +507,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     # However, the collector should still be able to correctly process it
     assert result.exit_code == 0
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
+    assert before_object_count + 2 == after_object_count
     before_object_count = after_object_count
 
     # Test malformed file that ends in another unexpected way
@@ -553,9 +563,9 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
+    assert before_object_count + 2 == after_object_count
 
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
@@ -563,7 +573,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     cmd, args, _, colls, posts, _ = memory_collect_job
     run.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
 
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
     assert len(profiles) == 2
     assert new_smaller_profile.endswith(".perf")
@@ -574,12 +584,15 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
 
     # Fixme: Add check that the profile was correctly generated
 
+    log.VERBOSITY = log.VERBOSE_DEBUG
     memory_collect_no_debug_job += ([head], )
     run.run_single_job(*memory_collect_no_debug_job)
     last_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
     _, err = capsys.readouterr()
     assert after_second_object_count == last_object_count
     assert 'debug info' in err
+    assert 'File "' in err
+    log.VERBOSITY = log.VERBOSE_RELEASE
 
     target_bin = memory_collect_job[0][0]
     collector_unit = Unit('memory', {
@@ -625,10 +638,11 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     assert 'Successfully collected data from echo' in out
 
     # Assert that just one profile was created
+    # + 1 for index
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
-    assert before_object_count + 1 == after_object_count
+    assert before_object_count + 2 == after_object_count
 
-    profiles = os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))
+    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")

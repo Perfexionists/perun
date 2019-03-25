@@ -6,7 +6,24 @@ HEAD
 
 **To be included in next release**
 
-0.16.4 (2019-03-22)
+0.16.6 (2019-03-25)
+-------------------
+
+`commit: 18870d9d5853726d5cc966962d275111e451ab06`
+
+**Improve the quality of life of Perun**
+  - fix minor bug in storing changes
+  - extracted index entry specific functions to isolate class (in order to create new versions)
+  - implement index v2.0, codename FastSloth
+  - switch to working with index v2.0 (index v1.0 is still supported, however, everything is saved as 2.0)
+  - minor refactors
+  - optimize loading of the profile info for both registered and pending profiles (yields huge performance boost)
+  - add `--force` option to `perun add` which will force the add (d'oh)
+  - add printing of trace if `perun -vv` is set in cli (i.e. the verbosity is of level 2+)
+  - rename 'params' in profile to 'args' since it complies to other parts of code
+  - refactor minor issues, enhance error messages and exception handling
+
+0.16.5 (2019-03-22)
 -------------------
 
 `commit: a2bd359479920178cfed1a0de779ef6fa5f4d4ac`

@@ -100,12 +100,15 @@ def best_model_order_equality(baseline_profile, target_profile):
                     change = check.PerformanceChange.Optimization
                 else:
                     change = check.PerformanceChange.Degradation
+                degradation_rate = target_ordering - baseline_ordering
             else:
                 change = check.PerformanceChange.NoChange
+                degradation_rate = 0
 
             yield DegradationInfo(
                 change, "model", uid,
                 best_baseline_model[0],
                 best_model[0],
+                degradation_rate,
                 "r_square", confidence
             )

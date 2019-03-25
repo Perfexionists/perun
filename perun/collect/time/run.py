@@ -20,8 +20,10 @@ TIME_TYPES = ('real', 'user', 'sys')
 def collect(repeat=10, warmup=3, **kwargs):
     """Times the runtime of the given command, with stated repeats.
 
-    :param dict kwargs: dictionary with key, value options
+    :param int warmup: number of warm-up pahses, i.e. number of times the binary will be run, but
+        the resulting collection will not be stored
     :param int repeat: number of repeats of the the timing, by default 10
+    :param dict kwargs: dictionary with key, value options
     :return:
     """
     print('Executing the warmup-phase ', end='')

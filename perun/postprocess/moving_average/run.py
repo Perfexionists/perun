@@ -164,7 +164,7 @@ def exponential_moving_average(ctx, **kwargs):
                    'If the number of possible observations smaller then result is NaN.')
 @cli_helpers.resources_key_options
 @click.pass_context
-def moving_average(ctx, **kwargs):
+def moving_average(ctx, **_):
     """
     Execution of the interleaving of profiled resources by *moving average* models.
 

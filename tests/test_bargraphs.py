@@ -7,7 +7,7 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
-import perun.profile.factory as profiles
+import perun.logic.store as store
 import perun.view.bars.factory as bargraphs
 
 __author__ = 'Tomas Fiedor'
@@ -34,7 +34,7 @@ def test_bars_cli(pcs_full, valid_profile_pool):
     """
     runner = CliRunner()
     for valid_profile in valid_profile_pool:
-        loaded_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
+        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] != 'memory':
             continue
 
@@ -58,7 +58,7 @@ def test_bars_cli_errors(helpers, pcs_full, valid_profile_pool):
     """
     runner = CliRunner()
     for valid_profile in valid_profile_pool:
-        loaded_profile = profiles.load_profile_from_file(valid_profile, is_raw_profile=True)
+        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] != 'memory':
             continue
 

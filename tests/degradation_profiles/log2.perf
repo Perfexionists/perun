@@ -7129,7 +7129,7 @@
     "units": {
       "mixed(time delta)": "ms"
     },
-    "params": ""
+    "args": ""
   },
   "postprocessors": [],
   "collector_info": {

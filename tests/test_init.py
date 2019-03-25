@@ -272,12 +272,13 @@ def test_unsupported_vcs():
     pcs_path = os.getcwd()
 
     # Try to call init with inexistent version control system type
-    with pytest.raises(UnsupportedModuleException):
+    with pytest.raises(UnsupportedModuleException) as exc:
         commands.init(pcs_path, **{
             'vcs_type': 'bogusvcs',
             'vcs_path': None,
             'vcs_params': None
         })
+    assert "'bogusvcs' is not supported" in str(exc.value)
 
     dir_content = os.listdir(pcs_path)
     assert '.git' not in dir_content

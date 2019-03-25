@@ -252,7 +252,9 @@ def _find_argument_list_boundary(func):
         return -1, -1
     else:
         # Unexpected number or order in parentheses
-        raise exceptions.UnexpectedPrototypeSyntaxError("In prototype: " + func)
+        raise exceptions.UnexpectedPrototypeSyntaxError(
+            func, "unexpected number or order of parenthesis"
+        )
 
 
 def _find_all_braces(target, opening, ending):
