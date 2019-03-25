@@ -6,6 +6,12 @@ HEAD
 
 **To be included in next release**
 
+0.16.6 (2019-03-25)
+-------------------
+
+`commit: 18870d9d5853726d5cc966962d275111e451ab06`
+
+**Improve the quality of life of Perun**
   - fix minor bug in storing changes
   - extracted index entry specific functions to isolate class (in order to create new versions)
   - implement index v2.0, codename FastSloth
