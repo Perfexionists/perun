@@ -127,7 +127,7 @@ def generate_profile_name(profile):
         ),
         (r"%postprocessors%", lambda scanner, token:
             ("after-" + "-and-".join(map(lambda p: p['name'], profile['postprocessors'])))
-                if len(profile['postprocessors']) else '_'
+                if profile['postprocessors'] else '_'
         ),
         (r"%[^.]+\.[^%]+%", lambda scanner, token:
             lookup_param(profile, *token[1:-1].split('.', maxsplit=1))
@@ -410,7 +410,7 @@ def merge_resources_of(lhs, rhs):
     return lhs
 
 
-class ProfileInfo(object):
+class ProfileInfo:
     """Structure for storing information about profiles.
 
     This is mainly used for formatted output of the profile list using

@@ -4,10 +4,10 @@ Contains functions for click api, for processing parameters from command line, v
 and returning default values.
 """
 
-import click
 import functools
 import os
 import re
+import click
 
 import perun
 import perun.profile.factory as profiles
@@ -53,7 +53,6 @@ def process_bokeh_axis_title(ctx, param, value):
             return ctx.params['through_key']
         else:
             log.error("internal perun error: you need 'per_key' or 'through_key' in params")
-
     elif param.human_readable_name.startswith('y'):
         return ctx.params['of_key']
 
@@ -409,21 +408,21 @@ def lookup_any_profile_callback(ctx, _, value):
     return store.load_profile_from_file(abs_path, is_raw_profile=True)
 
 
-def resources_key_options(f):
+def resources_key_options(func):
     """
     This method creates Click decorator for common options for  all non-parametric
     postprocessor: `regressogram`, `moving average` and `kernel-regression`.
 
 
-    :param function f: the function in which the decorator of common options is currently applied
+    :param function func: the function in which the decorator of common options is currently applied
     :return: returns sequence of the single options for the current function (f) as decorators
     """
     options = [
         click.option('--per-key', '-per', 'per_key', default='structure-unit-size',
                      nargs=1, metavar='<per_resource_key>', callback=process_resource_key_param,
-                     help='Sets the key that will be used as a source of variable (x-coordinates).'),
+                     help='Sets the key that will be used as a source variable (x-coordinates).'),
         click.option('--of-key', '-of', 'of_key', nargs=1, metavar='<of_resource_key>',
                      default='amount', callback=process_resource_key_param,
                      help='Sets key for which we are finding the model (y-coordinates).')
     ]
-    return functools.reduce(lambda x, option: option(x), options, f)
+    return functools.reduce(lambda x, option: option(x), options, func)

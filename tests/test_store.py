@@ -20,15 +20,17 @@ def test_malformed_indexes(tmpdir, monkeypatch):
 
     monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.INDEX_VERSION - 1)
     with open(index_file, 'rb') as index_handle:
-        with pytest.raises(exceptions.MalformedIndexFileException):
+        with pytest.raises(exceptions.MalformedIndexFileException) as exc:
             index.print_index_from_handle(index_handle)
+        assert "different index version" in str(exc.value)
 
     index_file = os.path.join(str(tmpdir), "index2")
     index.touch_index(index_file)
     monkeypatch.setattr('perun.logic.index.INDEX_MAGIC_PREFIX', index.INDEX_MAGIC_PREFIX.upper())
     with open(index_file, 'rb') as index_handle:
-        with pytest.raises(exceptions.MalformedIndexFileException):
+        with pytest.raises(exceptions.MalformedIndexFileException) as exc:
             index.print_index_from_handle(index_handle)
+        assert "not an index file" in str(exc.value)
 
 
 @pytest.mark.usefixtures('cleandir')

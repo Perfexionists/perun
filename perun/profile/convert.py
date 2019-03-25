@@ -15,14 +15,15 @@ complex queries and statistical tests over the profiles.
 import copy
 import operator
 
-import perun.utils.helpers as helpers
-import perun.profile.query as query
-import perun.postprocess.regression_analysis.transform as transform
-
 import demandimport
 with demandimport.enabled():
     import numpy
     import pandas
+
+import perun.utils.helpers as helpers
+import perun.profile.query as query
+import perun.postprocess.regression_analysis.transform as transform
+
 
 __author__ = 'Radim Podola'
 __coauthors__ = ['Tomas Fiedor', 'Jirka Pavela']
@@ -358,7 +359,7 @@ def add_stats(snapshots):
     glob_min_amount = []
 
     for snap in snapshots:
-        if not len(snap['map']):
+        if not snap['map']:
             continue
         else:
             snap['max_address'] \

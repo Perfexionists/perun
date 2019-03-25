@@ -37,7 +37,7 @@ def is_valid_key(key):
     return valid_key_pattern.match(key) is not None
 
 
-class Config(object):
+class Config:
     """Config represents one instance of configuration of given type.
 
     Configurations are represented by their type and dictionary containing (possibly nested)
@@ -268,9 +268,7 @@ def _ascend_by_section_safely(section_iterator, section_key):
         configuration object.
     """
     if section_key not in section_iterator:
-        raise exceptions.MissingConfigSectionException(
-            "missing section '{}' in the config file".format(section_key)
-        )
+        raise exceptions.MissingConfigSectionException(section_key)
     return section_iterator[section_key]
 
 
@@ -348,12 +346,12 @@ def local(path):
     """
     if os.path.isdir(path):
         return load_config(path, 'local')
-    else:
-        warn_msg = "local configuration file at {} does not exist.\n\n".format(path)
-        warn_msg += "Creating an empty configuration. Run ``perun config --local --edit``" \
-                    " to initialized or modify the local configuration in text editor."
-        perun_log.warn(warn_msg)
-        return Config('local', path, {})
+
+    warn_msg = "local configuration file at {} does not exist.\n\n".format(path)
+    warn_msg += "Creating an empty configuration. Run ``perun config --local --edit``" \
+                " to initialized or modify the local configuration in text editor."
+    perun_log.warn(warn_msg)
+    return Config('local', path, {})
 
 
 @decorators.singleton
@@ -410,7 +408,6 @@ def lookup_key_recursively(key, default=None):
     :param str key: key we are looking up
     :param str default: default value, if key is not located in the hierarchy
     """
-    # Fixme: this should contain recursive lookup for other instances and also the temporary config
     for config_instance in get_hierarchy():
         try:
             return config_instance.get(key)
@@ -419,7 +416,7 @@ def lookup_key_recursively(key, default=None):
     # If we have provided default value of the key return this, otherwise we raise an exception
     if default:
         return default
-    raise exceptions.MissingConfigSectionException
+    raise exceptions.MissingConfigSectionException(key)
 
 
 def gather_key_recursively(key):
@@ -434,7 +431,7 @@ def gather_key_recursively(key):
     for config_instance in get_hierarchy():
         try:
             value = config_instance.get(key)
-            if isinstance(value, list) or isinstance(value, comments.CommentedSeq):
+            if isinstance(value, (list, comments.CommentedSeq)):
                 gathered_values.extend(value)
             else:
                 gathered_values.append(value)

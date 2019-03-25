@@ -459,7 +459,7 @@ class HeapMapVisualization(object):
 
                 acc_iterator \
                     = [accesses[int(curr_add) + i - min_address] for i in range(field_range)]
-                if len(acc_iterator) > 0:
+                if acc_iterator:
                     access_number = max(acc_iterator)
                 else:
                     access_number = 0

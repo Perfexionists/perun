@@ -1,14 +1,14 @@
 """This module contains the BAR graphs creating functions"""
 
+import demandimport
+with demandimport.enabled():
+    import bkcharts as charts
+
 import perun.profile.factory as profiles
 
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
-
-import demandimport
-with demandimport.enabled():
-    import bkcharts as charts
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'

@@ -9,9 +9,9 @@ general methods.
 """
 
 import collections
-import numpy as np
-
 from enum import Enum
+
+import numpy as np
 
 import perun.utils as utils
 import perun.check as check
@@ -187,7 +187,7 @@ def general_detection(baseline_profile, target_profile,
         threshold_b0 = abs(0.05 * baseline_model.b0)
         threshold_b1 = abs(0.05 * baseline_model.b1)
         if (abs(target_model.b0 - baseline_model.b0) <= threshold_b0
-            and abs(target_model.b1 - baseline_model.b1) <= threshold_b1):
+                and abs(target_model.b1 - baseline_model.b1) <= threshold_b1):
             change = PerformanceChange.NoChange
         else:  # some change between profile was occurred
             if classification_method == ClassificationMethod.PolynomialRegression:

@@ -8,6 +8,8 @@ import os
 import binascii
 import struct
 
+from enum import Enum
+
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
@@ -16,7 +18,6 @@ import perun.logic.pcs as pcs
 
 from perun.utils.exceptions import EntryNotFoundException, MalformedIndexFileException
 
-from enum import Enum
 
 __author__ = 'Tomas Fiedor'
 
@@ -32,26 +33,26 @@ IndexVersion = Enum(
     'SlowLorris FastSloth'
 )
 
-class BasicIndexEntry(object):
+class BasicIndexEntry:
     """Class representation of one index entry
 
     This corresponds to the basic version of the index called the Slow Lorris.
     The issue with this entry is that it is very minimalistic, and requires loading profiles
     for status and log.
 
-    :ivar time: modification timestamp of the entry profile
-    :ivar checksum: checksum of the object, i.e. the path to its real content
-    :ivar path: the original path to the profile
-    :ivar offset: offset of the entry within the index
+    :ivar str time: modification timestamp of the entry profile
+    :ivar str checksum: checksum of the object, i.e. the path to its real content
+    :ivar str path: the original path to the profile
+    :ivar int offset: offset of the entry within the index
     """
     version = IndexVersion.SlowLorris
 
     def __init__(self, time, checksum, path, offset, *_):
         """
-        :param time: modification timestamp of the entry profile
-        :param checksum: checksum of the object, i.e. the path to its real content
-        :param path: the original path to the profile
-        :param offset: offset of the entry within the index
+        :param str time: modification timestamp of the entry profile
+        :param str checksum: checksum of the object, i.e. the path to its real content
+        :param str path: the original path to the profile
+        :param int offset: offset of the entry within the index
         """
         self.time = time
         self.checksum = checksum
@@ -116,16 +117,35 @@ class BasicIndexEntry(object):
 
 
 class ExtendedIndexEntry(BasicIndexEntry):
-    """
+    """Class representation of one extended index entry
 
+    This corresponds to the extended version of the index called the Fast Sloth.
+    It contains additional informations about profile, so one do not have to load
+    the profiles everytime it wants to print some basic information.
+
+    :ivar str time: modification timestamp of the entry profile
+    :ivar str checksum: checksum of the object, i.e. the path to its real content
+    :ivar str path: the original path to the profile
+    :ivar int offset: offset of the entry within the index
+    :ivar str cmd: command for which we collected data
+    :ivar str args: arguments of the command
+    :ivar str workload: workload of the command
+    :ivar str collector: collector used to collect data
+    :ivar list postprocessors: list of postprocessors used to postprocess data
     """
     version = IndexVersion.FastSloth
 
     def __init__(self, time, checksum, path, offset, profile):
+        """
+        :param str time: modification timestamp of the entry profile
+        :param str checksum: checksum of the object, i.e. the path to its real content
+        :param str path: the original path to the profile
+        :param int offset: offset of the entry within the index
+        :param dict profile: basic information for profiles
+        """
         super().__init__(time, checksum, path, offset)
         self.type = profile['header']['type']
         self.cmd = profile['header']['cmd']
-        # Fixme: This is sooo fucking wrong
         self.args = profile['header'].get('args', '')
         self.workload = profile['header'].get('workload', '')
         self.collector = profile['collector_info']['name']
@@ -152,8 +172,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         if ExtendedIndexEntry.version.value > index_version.value:
             # Since we are reading from the older index, we will have to fix some stuff
             return ExtendedIndexEntry._read_from_older_index(index_handle, index_version)
-        else:
-            return ExtendedIndexEntry._read_from_same_index(index_handle, index_version)
+        return ExtendedIndexEntry._read_from_same_index(index_handle, index_version)
 
     @classmethod
     def _read_from_older_index(cls, index_handle, index_version):
@@ -265,7 +284,7 @@ def walk_index(index_handle):
 
     number_of_objects = store.read_int_from_handle(index_handle)
     loaded_objects = 0
-    entry_constructor = _IndexEntryConstructors[INDEX_VERSION-1]
+    entry_constructor = INDEX_ENTRY_CONSTRUCTORS[INDEX_VERSION - 1]
 
     while index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects:
         entry = entry_constructor.read_from(index_handle, IndexVersion(index_version))
@@ -382,7 +401,9 @@ def write_entry_to_index(index_file, file_entry):
                         entry.path == file_entry.path and entry.time >= file_entry.time
                     )
                 )
-                looked_up_entry = lookup_entry_within_index(index_handle, predicate)
+                looked_up_entry = lookup_entry_within_index(
+                    index_handle, predicate, file_entry.path
+                )
 
                 # If there is an exact match, we do not add the entry to the index
                 if looked_up_entry.path == file_entry.path and \
@@ -435,18 +456,19 @@ def write_list_of_entries(index_file, entry_list):
             entry.write_to(index_handle)
 
 
-def lookup_entry_within_index(index_handle, predicate):
+def lookup_entry_within_index(index_handle, predicate, looked_up_entry_name):
     """Looks up the first entry within index that satisfies the predicate
 
     :param file index_handle: file handle of the index
     :param function predicate: predicate that tests given entry in index BasicIndexEntry -> bool
+    :param str looked_up_entry_name: name of the entry we are looking up (for exception)
     :returns BasicIndexEntry: index entry satisfying the given predicate
     """
     for entry in walk_index(index_handle):
         if predicate(entry):
             return entry
 
-    raise EntryNotFoundException(predicate.__name__)
+    raise EntryNotFoundException(looked_up_entry_name)
 
 
 def lookup_all_entries_within_index(index_handle, predicate):
@@ -476,7 +498,7 @@ def register_in_pending_index(registered_file, profile):
     register_in_index(index_filename, registered_file, registered_checksum, profile)
 
 
-def register_in_minor_index(base_dir, minor_version, registered_file, registered_file_checksum, profile):
+def register_in_minor_index(base_dir, minor_version, registered_file, registered_checksum, profile):
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -485,7 +507,7 @@ def register_in_minor_index(base_dir, minor_version, registered_file, registered
     :param str base_dir: base directory of the minor version
     :param str minor_version: sha-1 representation of the minor version of vcs (like e.g. commit)
     :param path registered_file: filename that is registered
-    :param str registered_file_checksum: sha-1 representation fo the registered file
+    :param str registered_checksum: sha-1 representation fo the registered file
     :param dict profile: profile to be registered
     """
     # Create the directory and index (if it does not exist)
@@ -493,7 +515,7 @@ def register_in_minor_index(base_dir, minor_version, registered_file, registered
     store.touch_dir(minor_dir)
     touch_index(minor_index_file)
 
-    register_in_index(minor_index_file, registered_file, registered_file_checksum, profile)
+    register_in_index(minor_index_file, registered_file, registered_checksum, profile)
 
 
 def register_in_index(index_filename, registered_file, registered_file_checksum, profile):
@@ -506,7 +528,7 @@ def register_in_index(index_filename, registered_file, registered_file_checksum,
     """
     modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
     entry_name = os.path.split(registered_file)[-1]
-    entry = _IndexEntryConstructors[INDEX_VERSION-1](
+    entry = INDEX_ENTRY_CONSTRUCTORS[INDEX_VERSION - 1](
         modification_stamp, registered_file_checksum, entry_name, -1, profile
     )
     write_entry_to_index(index_filename, entry)
@@ -531,7 +553,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
     _, minor_version_index = store.split_object_name(base_dir, minor_version)
 
     if not os.path.exists(minor_version_index):
-        raise EntryNotFoundException(minor_version_index)
+        raise EntryNotFoundException("", "empty index")
 
     # Lookup all entries for the given function
     with open(minor_version_index, 'rb+') as index_handle:
@@ -553,7 +575,9 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
                     lookup_all_entries_within_index(index_handle, lookup_function)
                 )
             else:
-                removed_entries.extend([lookup_entry_within_index(index_handle, lookup_function)])
+                removed_entries.extend([
+                    lookup_entry_within_index(index_handle, lookup_function, removed_file)
+                ])
             perun_log.info("deregistered: {}".format(removed_file))
 
         # Update number of entries
@@ -578,6 +602,7 @@ def get_profile_list_for_minor(base_dir, minor_version):
     """
     _, minor_index_file = store.split_object_name(base_dir, minor_version)
 
+    result = []
     if os.path.exists(minor_index_file):
         with open(minor_index_file, 'rb+') as index_handle:
             index_handle.seek(4)
@@ -586,9 +611,7 @@ def get_profile_list_for_minor(base_dir, minor_version):
         # Update the version of the index
         if index_version < INDEX_VERSION:
             write_list_of_entries(minor_index_file, result)
-        return result
-    else:
-        return []
+    return result
 
 
 def get_profile_number_for_minor(base_dir, minor_version):
@@ -604,7 +627,6 @@ def get_profile_number_for_minor(base_dir, minor_version):
             profile_type: 0 for profile_type in helpers.SUPPORTED_PROFILE_TYPES
             }
 
-        # Fixme: Remove the peek_profile_type dependency if possible
         with open(minor_index_file, 'rb') as index_handle:
             # Read the overall
             index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
@@ -612,14 +634,12 @@ def get_profile_number_for_minor(base_dir, minor_version):
 
             # Check the types of the entry
             for entry in walk_index(index_handle):
-                _, entry_file = store.split_object_name(base_dir, entry.checksum)
-                entry_profile_type = store.peek_profile_type(entry_file)
-                profile_numbers_per_type[entry_profile_type] += 1
+                profile_numbers_per_type[entry.type] += 1
             return profile_numbers_per_type
     else:
         return {'all': 0}
 
-_IndexEntryConstructors = [
+INDEX_ENTRY_CONSTRUCTORS = [
     BasicIndexEntry,
     ExtendedIndexEntry
 ]

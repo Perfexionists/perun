@@ -7,7 +7,7 @@ import time
 __author__ = 'Radim Podola'
 
 
-class HeapMapColors(object):
+class HeapMapColors:
     """ Class providing operations with colors used in the heap map.
 
         Another colors module can be add

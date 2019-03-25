@@ -89,9 +89,9 @@ def successfully_added_profile_in(index_handle, valid_profile):
     profile_timestamp = timestamps.timestamp_to_str(os.stat(valid_profile).st_mtime)
     profile_name = os.path.split(valid_profile)[-1]
     try:
-        profile_entry \
-            = index.lookup_entry_within_index(index_handle,
-                                              lambda entry: entry.path == profile_name)
+        profile_entry = index.lookup_entry_within_index(
+                index_handle, lambda entry: entry.path == profile_name, profile_name
+        )
         assert profile_entry.path == profile_name
         assert profile_entry.time == profile_timestamp
         return True
@@ -133,8 +133,9 @@ def test_add_on_no_vcs(helpers, pcs_without_vcs, valid_profile_pool):
     """
     before_count = helpers.count_contents_on_path(pcs_without_vcs.get_path())
     assert pcs_without_vcs.get_vcs_type() == 'pvcs'
-    with pytest.raises(UnsupportedModuleException):
+    with pytest.raises(UnsupportedModuleException) as exc:
         commands.add([valid_profile_pool[0]], None, keep_profile=True)
+    assert "'pvcs' is not supported" in str(exc.value)
 
     # Assert that nothing was added (rather weak, but should be enough)
     after_count = helpers.count_contents_on_path(pcs_without_vcs.get_path())
@@ -236,8 +237,9 @@ def test_add_wrong_profile(helpers, pcs_full, error_profile_pool, capsys):
 
     for error_profile in error_profile_pool:
         before_entries_count = assert_before_add(helpers, pcs_full.get_path(), head, error_profile)
-        with pytest.raises(IncorrectProfileFormatException):
+        with pytest.raises(IncorrectProfileFormatException) as exc:
             commands.add([error_profile], None, keep_profile=True)
+        assert "not in profile format" in str(exc.value)
 
         # Assert that the profile was not added into the index
         after_entries_count = assert_after_invalid_add(helpers, pcs_full.get_path(), head, error_profile)

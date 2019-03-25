@@ -4,11 +4,12 @@ import re
 import operator
 import collections
 import namedlist
+import click
 
 from enum import Enum
+
 from perun.utils.structs import PerformanceChange
 
-import click
 
 __author__ = 'Tomas Fiedor'
 

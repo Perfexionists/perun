@@ -423,7 +423,7 @@ def print_list_of_degradations(degradation_list):
     print("")
 
 
-class History(object):
+class History:
     """Helper with wrapper, which is used when one wants to visualize the version control history
     of the project, printing specific stuff corresponding to a git history
 
@@ -435,7 +435,7 @@ class History(object):
     :ivar function _saved_print: original print function which is replaced with flushed function
         and is restored when leaving the history
     """
-    class Edge(object):
+    class Edge:
         """Represents one edge of the history
 
         :ivar str next: the parent of the edge, i.e. the previously processed sha
@@ -579,7 +579,7 @@ class History(object):
         ), end='')
 
     def progress_to_next_minor_version(self, minor_version_info):
-        """Progresses the history of the VCS to next minor version
+        r"""Progresses the history of the VCS to next minor version
 
         This flushes the current caught buffer, resolves the fork points (i.e. when we forked the
         history from the minor_version), prints the information about minor version and the resolves
@@ -675,7 +675,7 @@ class History(object):
                     edge.colour = 'green'
 
     def _process_merge_point(self, merged_at, merged_parents):
-        """Updates the printed tree after we merged list of parents in the given merge_at index.
+        r"""Updates the printed tree after we merged list of parents in the given merge_at index.
 
         This prints up to merged_at unresolved parents, and then creates a merge point (|\) that
         branches of to the length of the merged_parents columns.

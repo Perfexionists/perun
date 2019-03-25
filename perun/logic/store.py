@@ -15,8 +15,6 @@ import demandimport
 with demandimport.enabled():
     import hashlib
 
-import perun.utils.helpers as helpers
-
 from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
@@ -127,25 +125,6 @@ def pack_content(content):
     :returns str: packed content
     """
     return zlib.compress(content)
-
-
-def peek_profile_type(profile_name):
-    """Retrieves from the binary file the type of the profile from the header.
-
-    Peeks inside the binary file of the profile_name and returns the type of the
-    profile, without reading it whole.
-
-    :param str profile_name: filename of the profile
-    :returns str: type of the profile
-    """
-    with open(profile_name, 'rb') as profile_handle:
-        profile_chunk = read_and_deflate_chunk(profile_handle, helpers.READ_CHUNK_SIZE)
-        prefix, profile_type, *_ = profile_chunk.split(" ")
-
-        # Return that the stored profile is malformed
-        if prefix != 'profile' or profile_type not in helpers.SUPPORTED_PROFILE_TYPES:
-            return helpers.PROFILE_MALFORMED
-        return profile_type
 
 
 def read_and_deflate_chunk(file_handle, chunk_size=-1):

@@ -8,8 +8,8 @@ import importlib
 import shlex
 import subprocess
 import os
-import magic
 import shutil
+import magic
 
 from .log import error, cprint, warn
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
@@ -53,6 +53,7 @@ def _is_nested(path, templates):
     for template in templates:
         if template in path:
             return True
+    return False
 
 
 def get_directory_elf_executables(root='.', only_not_stripped=False):
@@ -87,6 +88,7 @@ def is_executable_elf(file, only_not_stripped=False):
         if only_not_stripped:
             return 'not stripped' in file_magic
         return True
+    return False
 
 
 def get_project_elf_executables(root='.', only_not_stripped=False):
@@ -217,7 +219,9 @@ def get_stdout_from_external_command(command, stdin=None):
     :param handle stdin: the command input as a file handle
     :return: string representation of output of command
     """
-    output = subprocess.check_output([c for c in command if c is not ''], stderr=subprocess.STDOUT, stdin=stdin)
+    output = subprocess.check_output(
+        [c for c in command if c is not ''], stderr=subprocess.STDOUT, stdin=stdin
+    )
     return output.decode('utf-8')
 
 

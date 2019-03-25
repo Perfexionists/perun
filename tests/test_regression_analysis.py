@@ -69,10 +69,11 @@ def test_incorrect_calls(postprocess_profiles):
     assert const_model is not None
 
     # Try calling postprocess, while missing keys
-    with pytest.raises(exceptions.DictionaryKeysValidationFailed):
+    with pytest.raises(exceptions.DictionaryKeysValidationFailed) as exc:
         postprocess(
             const_model, method='full', steps=7, of_key='amount', per_key='structure-unit-size'
         )
+    assert 'is missing required key' in str(exc.value)
 
 
 def test_const_model(postprocess_profiles):

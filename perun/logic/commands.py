@@ -390,8 +390,8 @@ def log(minor_version, short=False, **_):
     if short:
         minor_versions = list(vcs.walk_minor_versions(minor_version))
         # Reduce the descriptions of minor version to one liners
-        for mv_no, minor_version in enumerate(minor_versions):
-            minor_versions[mv_no] = minor_version._replace(desc=minor_version.desc.split("\n")[0])
+        for mv_no, minor in enumerate(minor_versions):
+            minor_versions[mv_no] = minor._replace(desc=minor.desc.split("\n")[0])
         minor_version_maxima = calculate_maximal_lengths_for_object_list(
             minor_versions, MinorVersion._fields
         )
@@ -789,7 +789,7 @@ def get_untracked_profiles():
         profile_info = profile.ProfileInfo(
             untracked_path, real_path, time, loaded_profile, is_raw_profile=True
         )
-        untracked_entry = index._IndexEntryConstructors[index.INDEX_VERSION-1](
+        untracked_entry = index.INDEX_ENTRY_CONSTRUCTORS[index.INDEX_VERSION - 1](
             time, registered_checksum, untracked_path, -1, loaded_profile
         )
 

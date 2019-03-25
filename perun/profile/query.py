@@ -54,14 +54,15 @@ def all_resources_of(profile):
         for resource in resources:
             yield len(snapshots), resource
 
-    except AttributeError:
+    except AttributeError as attr_error:
         # Element is not dict-like type with get method
         raise exceptions.IncorrectProfileFormatException(
-            'profile', "Expected dictionary, got different type.") from None
-    except KeyError:
+            'profile', "Expected dictionary, got different type:".format(str(attr_error))
+        ) from None
+    except KeyError as key_error:
         # Dictionary does not contain specified key
         raise exceptions.IncorrectProfileFormatException(
-            'profile', "Missing key in dictionary.") from None
+            'profile', "Missing key in dictionary: {}".format(str(key_error))) from None
 
 
 def flattened_values(root_key, root_value):
@@ -378,5 +379,3 @@ def _unique_values_generator(profile, key, blocks_gen):
             if value not in unique_values:
                 unique_values.append(value)
                 yield value
-
-# Todo: add optimized version for multiple key search in one go? Need to discuss interface etc.
