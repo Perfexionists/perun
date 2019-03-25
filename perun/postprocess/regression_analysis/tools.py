@@ -20,6 +20,7 @@ APPROX_ZERO = 0.000001
 def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
+    :param dict dictionary: validated dictionary
     :param list of str required_keys: keys that must be present in the inspected dictionary
     :param list of str forbidden_keys: keys that must not be in the inspected dictionary
     :raises DictionaryKeysValidationFailed: if the dictionary inspection fails

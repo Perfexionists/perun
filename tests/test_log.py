@@ -44,8 +44,9 @@ def test_log_on_no_vcs(pcs_without_vcs):
     Expecting error, as this will call a wrapper over custom "repo" called pvcs, which
     is not supported but is simply a sane default
     """
-    with pytest.raises(UnsupportedModuleException):
+    with pytest.raises(UnsupportedModuleException) as exc:
         commands.log(None)
+    assert "'pvcs' is not supported" in str(exc.value)
 
 
 def test_log_short_error(pcs_full, capsys, monkeypatch):

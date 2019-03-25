@@ -99,6 +99,7 @@ def test_coefficients_to_points_corrupted_model(postprocess_profiles):
 
     # Get all models and perform the conversion on all of them
     models = list(query.all_models_of(models_profile))
-    with pytest.raises(exceptions.InvalidModelException):
+    with pytest.raises(exceptions.InvalidModelException) as exc:
         for model in models:
             convert.plot_data_from_coefficients_of(model[1])
+    assert 'Invalid or unsupported regression model: invalid_model.' in str(exc.value)

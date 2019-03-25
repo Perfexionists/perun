@@ -2,6 +2,10 @@
 
 import click
 
+import demandimport
+with demandimport.enabled():
+    import bokeh.core.enums as enums
+
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
@@ -10,10 +14,6 @@ import perun.view.flow.bokeh_factory as flow_factory
 import perun.view.flow.ncurses_factory as curses_graphs
 from perun.utils.exceptions import InvalidParameterException
 from perun.utils.helpers import pass_profile
-
-import demandimport
-with demandimport.enabled():
-    import bokeh.core.enums as enums
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
@@ -29,6 +29,7 @@ def process_title(ctx, _, value):
       Func of 'of-key' through 'through-key' for each 'by-key' (stacked)
 
     :param click.Context ctx: called context of the process
+    :param object _: unused parameter
     :param object value: value that is being processed ad add to parameter
     :returns object: either value (if it is non-None) or default title of the graph
     """
@@ -143,4 +144,4 @@ def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
         except AttributeError as attr_error:
             log.error("while creating flow graph: {}".format(str(attr_error)))
         except InvalidParameterException as ip_error:
-            log.error(str(ip_error))
+            log.error("while creating flow graph: {}".format(str(ip_error)))

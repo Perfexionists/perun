@@ -5,7 +5,7 @@
     "units": {
       "memory": "B"
     },
-    "params": "",
+    "args": "",
     "type": "memory"
   },
   "collector_info": {

@@ -23,7 +23,7 @@
     },
     "workload": "wl",
     "type": "mixed",
-    "params": "",
+    "args": "",
     "cmd": "cmd"
   },
   "postprocessors": [

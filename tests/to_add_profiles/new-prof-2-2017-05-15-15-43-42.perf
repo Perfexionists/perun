@@ -1814,7 +1814,7 @@
   ],
   "postprocessors": [],
   "header": {
-    "params": "",
+    "args": "",
     "workload": "test",
     "type": "memory",
     "cmd": "./test",

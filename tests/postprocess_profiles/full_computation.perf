@@ -407,7 +407,7 @@
   },
   "postprocessors": [],
   "header": {
-    "params": "",
+    "args": "",
     "units": {
       "mixed(time delta)": "ms"
     },

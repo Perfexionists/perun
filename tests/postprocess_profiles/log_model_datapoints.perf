@@ -147,7 +147,7 @@
   },
   "header": {
     "type": "mixed",
-    "params": "",
+    "args": "",
     "units": {
       "mixed(time delta)": "ms"
     },

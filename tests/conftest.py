@@ -10,6 +10,7 @@ import git
 import perun.utils.log as log
 import perun.logic.pcs as pcs
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.cli as cli
 import pytest
 
@@ -60,9 +61,9 @@ class Helpers(object):
         file_number = 0
         dir_number = 0
         for _, dirs, files in os.walk(path):
-            for _ in files:
+            for __ in files:
                 file_number += 1
-            for _ in dirs:
+            for __ in dirs:
                 dir_number += 1
         return file_number, dir_number
 
@@ -90,7 +91,7 @@ class Helpers(object):
             index_handle(file): handle for the index
             pred(lambda): predicate over the index entry
         """
-        for entry in store.walk_index(index_handle):
+        for entry in index.walk_index(index_handle):
             if pred(entry):
                 return True
         return False
@@ -108,7 +109,7 @@ class Helpers(object):
 
         # Prepare origin for the current version
         copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
-        copied_profile = perun_profile.load_profile_from_file(copied_filename, is_raw_profile=True)
+        copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
         copied_profile['origin'] = origin
         perun_profile.store_profile_at(copied_profile, copied_filename)
         shutil.copystat(profile, copied_filename)
@@ -154,6 +155,15 @@ class Helpers(object):
         jobs_dir = os.path.join(pcs_path, 'jobs')
         for valid_profile in untracked_profiles:
             shutil.copy2(valid_profile, jobs_dir)
+
+    @staticmethod
+    def index_filter(file):
+        """Index filtering function
+
+        :param str file: name of the file
+        :return: true if the file is not index
+        """
+        return file != '.index'
 
 
 @pytest.fixture(scope="session")
@@ -310,7 +320,7 @@ def get_loaded_profiles(profile_type):
         generator: stream of profiles of the given type
     """
     for valid_profile in filter(lambda p: 'err' not in p, all_profiles_in("to_add_profiles", True)):
-        loaded_profile = perun_profile.load_profile_from_file(valid_profile, is_raw_profile=True)
+        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
         if loaded_profile['header']['type'] == profile_type:
             yield loaded_profile
 
@@ -334,7 +344,7 @@ def load_all_profiles_in(directory):
         generator: stream of loaded profiles as tuple (profile_name, dictionary)
     """
     for profile in list(all_profiles_in(directory)):
-        yield (profile, perun_profile.load_profile_from_file(profile, True))
+        yield (profile, store.load_profile_from_file(profile, True))
 
 
 @pytest.fixture(scope="function")

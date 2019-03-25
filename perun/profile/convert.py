@@ -15,14 +15,15 @@ complex queries and statistical tests over the profiles.
 import copy
 import operator
 
-import perun.utils.helpers as helpers
-import perun.profile.query as query
-import perun.postprocess.regression_analysis.transform as transform
-
 import demandimport
 with demandimport.enabled():
     import numpy
     import pandas
+
+import perun.utils.helpers as helpers
+import perun.profile.query as query
+import perun.postprocess.regression_analysis.transform as transform
+
 
 __author__ = 'Radim Podola'
 __coauthors__ = ['Tomas Fiedor', 'Jirka Pavela']
@@ -199,24 +200,26 @@ def to_heat_map_format(profile):
             'unit': profile['header']['units']['memory']}
 
 
-def get_heat_map(resources, min_add, max_add):
+def get_heat_map(resources, min_address, max_address):
     """ Parse resources from the memory profile to HEAT map representation
 
+    :param int min_address: minimal address in the heat map
+    :param int max_address: maximal address in the heat map
     :param list resources: list of the resources from the memory profile
     :returns list: list of the number of access to address
     """
-    address_count = max_add - min_add
+    address_count = max_address - min_address
     add_map = [0 for _ in range(address_count)]
 
     for res in resources:
-        if res['address'] > max_add:
+        if res['address'] > max_address:
             continue
 
         address = res['address']
         amount = res['amount']
 
         for add in range(amount):
-            add_map[address + add - min_add] += 1
+            add_map[address + add - min_address] += 1
 
     return add_map
 
@@ -356,7 +359,7 @@ def add_stats(snapshots):
     glob_min_amount = []
 
     for snap in snapshots:
-        if not len(snap['map']):
+        if not snap['map']:
             continue
         else:
             snap['max_address'] \

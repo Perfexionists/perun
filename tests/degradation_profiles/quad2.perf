@@ -7132,7 +7132,7 @@
       "mixed(time delta)": "ms"
     },
     "cmd": "cmd",
-    "params": "",
+    "args": "",
     "workload": "wl"
   },
   "collector_info": {

@@ -4,34 +4,28 @@ Store is a collection of helper functions that can be used to pack content, comp
 or load and store into the directories or filenames.
 """
 
-import binascii
+import json
 import re
 import os
 import string
 import struct
 import zlib
 
-import perun.utils.timestamps as timestamps
-import perun.utils.log as perun_log
-import perun.utils.helpers as helpers
-
-from perun.utils.helpers import IndexEntry, LINE_PARSING_REGEX
-from perun.utils.structs import PerformanceChange, DegradationInfo
-from perun.utils.exceptions import EntryNotFoundException, NotPerunRepositoryException, \
-    MalformedIndexFileException
-
 import demandimport
 with demandimport.enabled():
     import hashlib
 
-__author__ = 'Tomas Fiedor'
+from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
+from perun.utils.structs import PerformanceChange, DegradationInfo
+from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
 
+
+__author__ = 'Tomas Fiedor'
 
 INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
 INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")
 PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
 PENDING_TAG_RANGE_REGEX = re.compile(r"^(\d+)@p-(\d+)@p$")
-
 
 def touch_file(touched_filename, times=None):
     """
@@ -133,26 +127,6 @@ def pack_content(content):
     return zlib.compress(content)
 
 
-def peek_profile_type(profile_name):
-    """Retrieves from the binary file the type of the profile from the header.
-
-    Peeks inside the binary file of the profile_name and returns the type of the
-    profile, without reading it whole.
-
-    :param str profile_name: filename of the profile
-    :returns str: type of the profile
-    """
-    with open(profile_name, 'rb') as profile_handle:
-        profile_chunk = read_and_deflate_chunk(profile_handle, helpers.READ_CHUNK_SIZE)
-        prefix, profile_type, *_ = profile_chunk.split(" ")
-
-        # Return that the stored profile is malformed
-        if prefix != 'profile' or profile_type not in helpers.SUPPORTED_PROFILE_TYPES:
-            return helpers.PROFILE_MALFORMED
-        else:
-            return profile_type
-
-
 def read_and_deflate_chunk(file_handle, chunk_size=-1):
     """
     :param file file_handle: opened file handle
@@ -233,347 +207,54 @@ def read_number_of_entries_from_handle(index_handle):
     return number_of_entries
 
 
-def walk_index(index_handle):
-    """Iterator through index entries
+def write_list_to_handle(file_handle, list_content, separator=' '):
+    """Writes list to the opened handle
 
-    Reads the beginning of the file, verifying the version and type of the index. Then it iterates
-    through all of the index entries and returns them as a IndexEntry structure for further
-    processing.
-
-    :param file index_handle: handle to file containing index
-    :returns IndexEntry: Index entry named tuple
+    :param File file_handle: opened file handle of the index
+    :param list list_content: list to be written in the handle
+    :param str separator: separator of the list
     """
-    # Get end of file position
-    index_handle.seek(0, 2)
-    last_position = index_handle.tell()
-
-    # Move to the begging of the handle
-    index_handle.seek(0)
-    magic_bytes = index_handle.read(4)
-    if magic_bytes != helpers.INDEX_MAGIC_PREFIX:
-        raise MalformedIndexFileException("read blob is not an index file")
-
-    index_version = read_int_from_handle(index_handle)
-    if index_version != helpers.INDEX_VERSION:
-        raise MalformedIndexFileException("read index file is in format of different index version"
-                                          " (read index file = {}".format(index_version) +
-                                          ", supported = {})".format(helpers.INDEX_VERSION))
-
-    number_of_objects = read_int_from_handle(index_handle)
-    loaded_objects = 0
-
-    def read_entry():
-        """
-        :returns IndexEntry: one read index entry
-        """
-        # Rather nasty hack, but nothing better comes to my mind currently
-        if index_handle.tell() + 24 >= last_position:
-            return ''
-
-        file_offset = index_handle.tell()
-        file_time = timestamps.timestamp_to_str(timestamps.read_timestamp_from_file(index_handle))
-        file_sha = binascii.hexlify(index_handle.read(20)).decode('utf-8')
-        file_path, byte = "", read_char_from_handle(index_handle)
-        while byte != '\0':
-            file_path += byte
-            byte = read_char_from_handle(index_handle)
-        return IndexEntry(file_time, file_sha, file_path, file_offset)
-
-    for entry in iter(read_entry, ''):
-        loaded_objects += 1
-        if loaded_objects > number_of_objects:
-            perun_log.error("fatal: malformed index file")
-        yield entry
-
-    if loaded_objects != number_of_objects:
-        perun_log.error("fatal: malformed index file")
+    string_list = separator.join(list_content)
+    write_string_to_handle(file_handle, string_list)
 
 
-def print_index(index_file):
-    """Helper function for printing the contents of the index
+def read_list_from_handle(file_handle, separator=' '):
+    """Reads list from the opened file index handle
 
-    :param str index_file: path to the index file
+    :param File file_handle: opened file handle of the index
+    :param str separator: separator of the list
+    :return: read list
     """
-    with open(index_file, 'rb') as index_handle:
-        print_index_from_handle(index_handle)
+    string_list = read_string_from_handle(file_handle)
+    return string_list.split(separator)
 
 
-def print_index_from_handle(index_handle):
-    """Helper funciton for printing the contents of index inside the handle.
+def write_string_to_handle(file_handle, content):
+    """Writes string to the opened file index handle.
 
-    :param file index_handle: opened file handle
+    First we write the number of bytes to the index, and then the actual bytes.
+
+    :param File file_handle: opened file handle of the index
+    :param str content: string content to be written
     """
-    index_prefix = index_handle.read(4)
-    index_version = read_int_from_handle(index_handle)
-    number_of_entries = read_int_from_handle(index_handle)
-
-    print("{}, index version {} with {} entries\n".format(
-        index_prefix, index_version, number_of_entries
-    ))
-
-    for entry in walk_index(index_handle):
-        print(" @{3} {2} -> {1} ({0})".format(
-            entry.time,
-            entry.checksum,
-            entry.path,
-            entry.offset
-        ))
+    binary_content = bytes(content, 'utf-8')
+    content_len = len(binary_content)
+    binary_len = struct.pack('<I', content_len)
+    file_handle.write(binary_len)
+    file_handle.write(binary_content)
 
 
-def get_profile_list_for_minor(base_dir, minor_version):
-    """Read the list of entries corresponding to the minor version from its index.
+def read_string_from_handle(file_handle):
+    """Reads string from the opened file handle.
 
-    :param str base_dir: base directory of the models
-    :param str minor_version: representation of minor version
-    :returns list: list of IndexEntries
+    Reads first one integer that states the number of stored bytes, then the bytes.
+
+    :param File file_handle: opened file handle of the index
+    :return: read data
     """
-    _, minor_index_file = split_object_name(base_dir, minor_version)
-
-    if os.path.exists(minor_index_file):
-        with open(minor_index_file, 'rb') as index_handle:
-            return [entry for entry in walk_index(index_handle)]
-    else:
-        return []
-
-
-def get_profile_number_for_minor(base_dir, minor_version):
-    """
-    :param str base_dir: base directory of the profiles
-    :param str minor_version: representation of minor version
-    :returns dict: dictionary of number of profiles inside the index of the minor_version of types
-    """
-    _, minor_index_file = split_object_name(base_dir, minor_version)
-
-    if os.path.exists(minor_index_file):
-        profile_numbers_per_type = {
-            profile_type: 0 for profile_type in helpers.SUPPORTED_PROFILE_TYPES
-        }
-
-        # Fixme: Maybe this could be done more efficiently?
-        with open(minor_index_file, 'rb') as index_handle:
-            # Read the overall
-            index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
-            profile_numbers_per_type['all'] = read_int_from_handle(index_handle)
-
-            # Check the types of the entry
-            for entry in walk_index(index_handle):
-                _, entry_file = split_object_name(base_dir, entry.checksum)
-                entry_profile_type = peek_profile_type(entry_file)
-                profile_numbers_per_type[entry_profile_type] += 1
-            return profile_numbers_per_type
-    else:
-        return {'all': 0}
-
-
-def touch_index(index_path):
-    """Initializes and creates the index if it does not exists
-
-    The Version 1 index is of following form:
-      -  4B magic prefix 'pidx' (perun index) for quick identification of the file
-      -  4B version number (currently 1)
-      -  4B number of index entries
-
-    Followed by the entries of profiles of form:
-      -  4B time of the file creation
-      - 20B SHA-1 representation of the object
-      -  ?B Variable length path
-      -  ?B zero byte padding
-
-    :param str index_path: path to the index
-    """
-    if not os.path.exists(index_path):
-        touch_file(index_path)
-
-        # create the index
-        with open(index_path, 'wb') as index_handle:
-            index_handle.write(helpers.INDEX_MAGIC_PREFIX)
-            index_handle.write(struct.pack('i', helpers.INDEX_VERSION))
-            index_handle.write(struct.pack('i', 0))
-
-
-def modify_number_of_entries_in_index(index_handle, modify):
-    """Helper function of inplace modification of number of entries in index
-
-    :param file index_handle: handle of the opened index
-    :param function modify: function that will modify the value of number of entries
-    """
-    index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
-    number_of_entries = read_int_from_handle(index_handle)
-    index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
-    index_handle.write(struct.pack('i', modify(number_of_entries)))
-
-
-def write_entry(index_handle, file_entry):
-    """Writes entry at current location in the index_handle
-
-    :param file index_handle: file handle of the index
-    :param IndexEntry file_entry: entry to be written at current position
-    """
-    timestamps.write_timestamp(index_handle, timestamps.str_to_timestamp(file_entry.time))
-    index_handle.write(bytearray.fromhex(file_entry.checksum))
-    index_handle.write(bytes(file_entry.path, 'utf-8'))
-    index_handle.write(struct.pack('B', 0))
-
-
-def write_entry_to_index(index_file, file_entry):
-    """Writes the file_entry to its appropriate position within the index.
-
-    Given the file entry, writes the entry within the file, moving everything by the given offset
-    and then incrementing the number of entries within the index.
-
-    :param str index_file: path to the index file
-    :param IndexEntry file_entry: index entry that will be written to the file
-    """
-    with open(index_file, 'rb+') as index_handle:
-        # Lookup the position of the registered file within the index
-        if file_entry.offset == -1:
-            try:
-                predicate = (
-                    lambda entry: entry.path > file_entry.path or (
-                        entry.path == file_entry.path and entry.time >= file_entry.time
-                    )
-                )
-                looked_up_entry = lookup_entry_within_index(index_handle, predicate)
-
-                # If there is an exact match, we do not add the entry to the index
-                if looked_up_entry.path == file_entry.path and \
-                        looked_up_entry.time == file_entry.time:
-                    perun_log.msg_to_stdout("{0.path} ({0.time}) already registered in {1}".format(
-                        file_entry, index_file
-                    ), 0)
-                    return
-                offset_in_file = looked_up_entry.offset
-            except EntryNotFoundException:
-                # Move to end of the file and set the offset to the end of the file
-                index_handle.seek(0, 2)
-                offset_in_file = index_handle.tell()
-        else:
-            offset_in_file = file_entry.offset
-
-        # Modify the number of entries in index and return to position
-        modify_number_of_entries_in_index(index_handle, lambda x: x + 1)
-        index_handle.seek(offset_in_file)
-
-        # Read previous entries to buffer and return back to the position
-        buffer = index_handle.read()
-        index_handle.seek(offset_in_file)
-
-        # Write the index_file entry to index
-        write_entry(index_handle, file_entry)
-
-        # Write the stuff stored in buffer
-        index_handle.write(buffer)
-
-
-def remove_entry_from_index(index_handle, file_entry):
-    """
-    :param file index_handle: opened file handle of index
-    :param IndexEntry file_entry: removed entry
-    """
-    index_handle.seek(file_entry.offset)
-
-
-def lookup_entry_within_index(index_handle, predicate):
-    """Looks up the first entry within index that satisfies the predicate
-
-    :param file index_handle: file handle of the index
-    :param function predicate: predicate that tests given entry in index IndexEntry -> bool
-    :returns IndexEntry: index entry satisfying the given predicate
-    """
-    for entry in walk_index(index_handle):
-        if predicate(entry):
-            return entry
-
-    raise EntryNotFoundException(predicate.__name__)
-
-
-def lookup_all_entries_within_index(index_handle, predicate):
-    """
-    :param file index_handle: file handle of the index
-    :param function predicate: predicate that tests given entry in index IndexEntry -> bool
-
-    :returns [IndexEntry]: list of index entries satisfying given predicate
-    """
-    return [entry for entry in walk_index(index_handle) if predicate(entry)]
-
-
-def register_in_index(base_dir, minor_version, registered_file, registered_file_checksum):
-    """Registers file in the index corresponding to the minor_version
-
-    If the index for the minor_version does not exist, then it is touched and initialized
-    with empty prefix. Then the entry is added to the file.
-
-    :param str base_dir: base directory of the minor version
-    :param str minor_version: sha-1 representation of the minor version of vcs (like e.g. commit)
-    :param path registered_file: filename that is registered
-    :param str registered_file_checksum: sha-1 representation fo the registered file
-    """
-    # Create the directory and index (if it does not exist)
-    minor_dir, minor_index_file = split_object_name(base_dir, minor_version)
-    touch_dir(minor_dir)
-    touch_index(minor_index_file)
-
-    modification_stamp = timestamps.timestamp_to_str(os.stat(registered_file).st_mtime)
-    entry_name = os.path.split(registered_file)[-1]
-    entry = IndexEntry(modification_stamp, registered_file_checksum, entry_name, -1)
-    write_entry_to_index(minor_index_file, entry)
-
-    reg_rel_path = os.path.relpath(registered_file)
-    perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
-
-
-def remove_from_index(base_dir, minor_version, removed_file_generator, remove_all=False):
-    """Removes stream of removed files from the index.
-
-    Iterates through all of the removed files, and removes their partial/full occurence from the
-    index. The index is walked just once.
-
-    :param str base_dir: base directory of the minor version
-    :param str minor_version: sha-1 representation of the minor version of vcs (like e..g commit)
-    :param generator removed_file_generator: generator of filenames, that will be removed from the
-        tracking
-    :param bool remove_all: true if all of the entries should be removed
-    """
-    # Get directory and index
-    _, minor_version_index = split_object_name(base_dir, minor_version)
-
-    if not os.path.exists(minor_version_index):
-        raise EntryNotFoundException(minor_version_index)
-
-    # Lookup all entries for the given function
-    with open(minor_version_index, 'rb+') as index_handle:
-        # Gather all of the entries from the index
-        all_entries = [entry for entry in walk_index(index_handle)]
-        all_entries.sort(key=lambda unsorted_entry: unsorted_entry.offset)
-        removed_entries = []
-
-        for removed_file in removed_file_generator:
-            def lookup_function(entry):
-                """Helper lookup function according to the type of the removed file"""
-                if is_sha1(removed_file):
-                    return entry.checksum == removed_file
-                else:
-                    return entry.path == removed_file
-
-            if remove_all:
-                removed_entries.append(
-                    lookup_all_entries_within_index(index_handle, lookup_function)
-                )
-            else:
-                removed_entries.extend([lookup_entry_within_index(index_handle, lookup_function)])
-            perun_log.info("deregistered: {}".format(removed_file))
-
-        # Update number of entries
-        index_handle.seek(helpers.INDEX_NUMBER_OF_ENTRIES_OFFSET)
-        index_handle.write(struct.pack('i', len(all_entries) - len(removed_entries)))
-
-        # For each entry remove from the index, starting from the greatest offset
-        for entry in all_entries:
-            if entry in removed_entries:
-                continue
-            write_entry(index_handle, entry)
-
-        index_handle.truncate()
+    content_len = read_int_from_handle(file_handle)
+    binary_content = file_handle.read(content_len).decode('utf-8')
+    return binary_content
 
 
 def save_degradation_list_for(base_dir, minor_version, degradation_list):
@@ -625,6 +306,7 @@ def parse_changelog_line(line):
         tokens.group('location'),
         tokens.group('from'),
         tokens.group('to'),
+        tokens.group('drate'),
         tokens.group('ctype'),
         float(tokens.group('crate'))
     )
@@ -653,3 +335,53 @@ def load_degradation_list_for(base_dir, minor_version):
         parsed_triple = parse_changelog_line(line.strip())
         degradation_list.append(parsed_triple)
     return degradation_list
+
+
+def load_profile_from_file(file_name, is_raw_profile):
+    """Loads profile w.r.t :ref:`profile-spec` from file.
+
+    :param str file_name: file path, where the profile is stored
+    :param bool is_raw_profile: if set to true, then the profile was loaded
+        from the file system and is thus in the JSON already and does not have
+        to be decompressed and unpacked to JSON format.
+    :returns: JSON dictionary w.r.t. :ref:`profile-spec`
+    :raises IncorrectProfileFormatException: raised, when **filename** contains
+        data, which cannot be converted to valid :ref:`profile-spec`
+    Fixme: Add cache! Really badly!
+    """
+    if not os.path.exists(file_name):
+        raise IncorrectProfileFormatException(file_name, "file '{}' not found")
+
+    with open(file_name, 'rb') as file_handle:
+        return load_profile_from_handle(file_name, file_handle, is_raw_profile)
+
+
+def load_profile_from_handle(file_name, file_handle, is_raw_profile):
+    """
+    Fixme: Add check that the loaded profile is in valid format!!!
+
+    :param str file_name: name of the file opened in the handle
+    :param file file_handle: opened file handle
+    :param bool is_raw_profile: true if the profile is in json format already
+    :returns dict: JSON representation of the profile
+    :raises IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
+        or when the profile is not in correct supported format or when the profile is malformed
+    """
+    if is_raw_profile:
+        body = file_handle.read().decode('utf-8')
+    else:
+        # Read deflated contents and split to header and body
+        contents = read_and_deflate_chunk(file_handle)
+        header, body = contents.split('\0')
+        prefix, profile_type, profile_size = header.split(' ')
+
+        # Check the header, if the body is not malformed
+        if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
+                        len(body) != int(profile_size):
+            raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")
+
+    # Try to load the json, if there is issue with the profile
+    try:
+        return json.loads(body)
+    except ValueError:
+        raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")

@@ -49,5 +49,4 @@ def safely_load_yaml(yaml_source):
     """
     if os.path.exists(yaml_source):
         return safely_load_yaml_from_file(yaml_source)
-    else:
-        return safely_load_yaml_from_stream(yaml_source)
+    return safely_load_yaml_from_stream(yaml_source)

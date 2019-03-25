@@ -8,7 +8,7 @@ from click.testing import CliRunner
 import perun.cli as cli
 import perun.utils.log as log
 import perun.postprocess.clusterizer.run as clusterizer
-import perun.profile.factory as factory
+import perun.logic.store as store
 import perun.profile.query as query
 
 __author__ = 'Tomas Fiedor'
@@ -24,7 +24,7 @@ def test_from_cli(pcs_full):
 
     # Test that something was created
     object_no_after = len(os.listdir(object_dir))
-    assert object_no_after == object_no + 1
+    assert object_no_after == object_no + 2
 
     # Test verbosity of printing the groups
     log.VERBOSITY = log.VERBOSE_DEBUG
@@ -60,7 +60,7 @@ def test_sliding_window(pcs_full):
     assert result.exit_code == 0
 
     pool_path = os.path.join(os.path.split(__file__)[0], 'clustering_profiles')
-    clustered_profile = factory.load_profile_from_file(os.path.join(pool_path, 'clustering-workload.perf'), True)
+    clustered_profile = store.load_profile_from_file(os.path.join(pool_path, 'clustering-workload.perf'), True)
 
     postprocessed_profile = copy.deepcopy(clustered_profile)
     params = {

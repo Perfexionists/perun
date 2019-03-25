@@ -7,7 +7,7 @@
     },
     "workload": "wl",
     "cmd": "cmd",
-    "params": ""
+    "args": ""
   },
   "collector_info": {
     "params": {

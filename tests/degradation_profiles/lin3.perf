@@ -3,7 +3,7 @@
     "units": {
       "mixed(time delta)": "ms"
     },
-    "params": "",
+    "args": "",
     "type": "mixed",
     "cmd": "cmd",
     "workload": "wl"

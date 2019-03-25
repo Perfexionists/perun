@@ -32,7 +32,7 @@
     "type": "time",
     "workload": "10",
     "cmd": "factor",
-    "params": "",
+    "args": "",
     "units": {
       "time": "s"
     }

@@ -6,7 +6,7 @@
     },
     "cmd": "cmd",
     "type": "mixed",
-    "params": ""
+    "args": ""
   },
   "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae",
   "collector_info": {

@@ -17,6 +17,7 @@ import termcolor
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.profile.factory as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
@@ -27,9 +28,8 @@ from perun.utils.exceptions import NotPerunRepositoryException, \
     ExternalEditorErrorException, MissingConfigSectionException
 from perun.utils.helpers import \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
-    PROFILE_TYPE_COLOURS, PROFILE_MALFORMED, SUPPORTED_PROFILE_TYPES, \
-    HEADER_ATTRS, HEADER_COMMIT_COLOUR, HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, \
-    PROFILE_DELIMITER, MinorVersion
+    PROFILE_TYPE_COLOURS, SUPPORTED_PROFILE_TYPES, HEADER_ATTRS, HEADER_COMMIT_COLOUR, \
+    HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, PROFILE_DELIMITER, MinorVersion
 from perun.utils.log import cprint, cprintln
 
 # Init colorama for multiplatform colours
@@ -221,26 +221,28 @@ def init(dst, configuration_template='master', **kwargs):
 
 
 @lookup_minor_version
-def add(profile_names, minor_version, keep_profile=False):
+def add(profile_names, minor_version, keep_profile=False, force=False):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     :param generator profile_names: generator of profiles that will be stored for the minor version
     :param str minor_version: SHA-1 representation of the minor version
     :param bool keep_profile: if true, then the profile that is about to be added will be not
         deleted, and will be kept as it is. By default false, i.e. profile is deleted.
+    :param bool force: if set to true, then the add will be forced, i.e. the check for origin will
+        not be performed.
     """
     added_profile_count = 0
     for profile_name in profile_names:
         # Test if the given profile exists (This should hold always, or not?)
         if not os.path.exists(profile_name):
-            perun_log.error("{} does not exists".format(profile_name), recoverable=True)
+            perun_log.error("profile {} does not exists".format(profile_name), recoverable=True)
             continue
 
         # Load profile content
         # Unpack to JSON representation
-        unpacked_profile = profile.load_profile_from_file(profile_name, True)
+        unpacked_profile = store.load_profile_from_file(profile_name, True)
 
-        if unpacked_profile['origin'] != minor_version:
+        if not force and unpacked_profile['origin'] != minor_version:
             error_msg = "cannot add profile '{}' to minor index of '{}':".format(
                 profile_name, minor_version
             )
@@ -267,7 +269,9 @@ def add(profile_names, minor_version, keep_profile=False):
         store.add_loose_object_to_dir(object_dir, profile_sum, compressed_content)
 
         # Register in the minor_version index
-        store.register_in_index(object_dir, minor_version, profile_name, profile_sum)
+        index.register_in_minor_index(
+            object_dir, minor_version, profile_name, profile_sum, unpacked_profile
+        )
 
         # Remove the file
         if not keep_profile:
@@ -277,8 +281,10 @@ def add(profile_names, minor_version, keep_profile=False):
 
     profile_names_len = len(profile_names)
     if added_profile_count != profile_names_len:
-        perun_log.error("only {}/{} profiles were successfully registered in index".format(
-            added_profile_count, profile_names_len
+        perun_log.error("could not register {}{} profile{} in index: {} failed".format(
+            "all " if added_profile_count > 1 else "",
+            added_profile_count, "s" if added_profile_count > 1 else "",
+            added_profile_count - profile_names_len
         ))
     perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
 
@@ -295,7 +301,7 @@ def remove(profile_generator, minor_version, **kwargs):
     perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
 
     object_directory = pcs.get_object_directory()
-    store.remove_from_index(object_directory, minor_version, profile_generator, **kwargs)
+    index.remove_from_index(object_directory, minor_version, profile_generator, **kwargs)
     perun_log.info("successfully removed {} from index".format(len(profile_generator)))
 
 
@@ -384,8 +390,8 @@ def log(minor_version, short=False, **_):
     if short:
         minor_versions = list(vcs.walk_minor_versions(minor_version))
         # Reduce the descriptions of minor version to one liners
-        for mv_no, minor_version in enumerate(minor_versions):
-            minor_versions[mv_no] = minor_version._replace(desc=minor_version.desc.split("\n")[0])
+        for mv_no, minor in enumerate(minor_versions):
+            minor_versions[mv_no] = minor._replace(desc=minor.desc.split("\n")[0])
         minor_version_maxima = calculate_maximal_lengths_for_object_list(
             minor_versions, MinorVersion._fields
         )
@@ -398,7 +404,7 @@ def log(minor_version, short=False, **_):
             :param MinorVersion minor_v: minor version for which we are retrieving the stats
             :return: dictionary with stats for minor version
             """
-            return store.get_profile_number_for_minor(
+            return index.get_profile_number_for_minor(
                 pcs.get_object_directory(), minor_v.checksum
             )
 
@@ -425,7 +431,7 @@ def log(minor_version, short=False, **_):
         for minor in vcs.walk_minor_versions(minor_version):
             cprintln("Minor Version {}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
             base_dir = pcs.get_object_directory()
-            tracked_profiles = store.get_profile_number_for_minor(base_dir, minor.checksum)
+            tracked_profiles = index.get_profile_number_for_minor(base_dir, minor.checksum)
             print_profile_numbers(tracked_profiles, 'tracked')
             print_minor_version_info(minor, indent=1)
 
@@ -503,7 +509,7 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
                 limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
                 if attr_type == 'stats':
-                    tracked_profiles = store.get_profile_number_for_minor(
+                    tracked_profiles = index.get_profile_number_for_minor(
                         pcs.get_object_directory(), minor_version.checksum
                     )
                     if tracked_profiles['all']:
@@ -553,7 +559,7 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
 
 def print_minor_version_info(head_minor_version, indent=0):
     """
-    :param str head_minor_version: identification of the commit (preferably sha1)
+    :param MinorVersion head_minor_version: identification of the commit (preferably sha1)
     :param int indent: indent of the description part
     """
     print("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
@@ -731,16 +737,67 @@ def get_untracked_profiles():
 
     :returns list: list of ProfileInfo parsed from .perun/jobs directory
     """
+    saved_entries = []
     profile_list = []
-    # Transform each profile of the path to the ProfileInfo object
-    for untracked_path in sorted(os.listdir(pcs.get_job_directory())):
-        if untracked_path.endswith('perf'):
-            real_path = os.path.join(pcs.get_job_directory(), untracked_path)
-            time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
+    # First load untracked files from the ./jobs/ directory
+    untracked_list = sorted(
+        list(filter(lambda f: f.endswith('perf'), os.listdir(pcs.get_job_directory())))
+    )
 
-            # Update the list of profiles and counters of types
-            profile_info = profile.ProfileInfo(untracked_path, real_path, time, is_raw_profile=True)
+    # Second load registered files in job index
+    job_index = pcs.get_job_index()
+    index.touch_index(job_index)
+    with open(job_index, 'rb+') as index_handle:
+        pending_index_entries = list(index.walk_index(index_handle))
+
+    # Iterate through the index and check if it is still in the ./jobs directory
+    # In case it is still valid, we extract it into ProfileInfo and remove it from the list
+    #   of files in ./jobs directory
+    for index_entry in pending_index_entries:
+        if index_entry.path in untracked_list:
+            real_path = os.path.join(pcs.get_job_directory(), index_entry.path)
+            index_info = {
+                'header': {
+                    'type': index_entry.type,
+                    'cmd': index_entry.cmd,
+                    'args': index_entry.args,
+                    'workload': index_entry.workload
+                },
+                'collector_info': {'name': index_entry.collector},
+                'postprocessors': [
+                    {'name': p} for p in index_entry.postprocessors
+                    ]
+            }
+            profile_info = profile.ProfileInfo(
+                index_entry.path, real_path, index_entry.time, index_info, is_raw_profile=True
+            )
             profile_list.append(profile_info)
+            saved_entries.append(index_entry)
+            untracked_list.remove(index_entry.path)
+
+    # Now for every non-registered file in the ./jobs/ directory, we load the profile,
+    #   extract the info and register it in the index
+    for untracked_path in untracked_list:
+        real_path = os.path.join(pcs.get_job_directory(), untracked_path)
+        time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
+
+        # Load the data from JSON, which contains additional information about profile
+        loaded_profile = store.load_profile_from_file(real_path, is_raw_profile=True)
+        registered_checksum = store.compute_checksum(real_path.encode('utf-8'))
+
+        # Update the list of profiles and counters of types
+        profile_info = profile.ProfileInfo(
+            untracked_path, real_path, time, loaded_profile, is_raw_profile=True
+        )
+        untracked_entry = index.INDEX_ENTRY_CONSTRUCTORS[index.INDEX_VERSION - 1](
+            time, registered_checksum, untracked_path, -1, loaded_profile
+        )
+
+        profile_list.append(profile_info)
+        saved_entries.append(untracked_entry)
+
+    # We write all of the entries that are valid in the ./jobs/ directory in the index
+    index.write_list_of_entries(job_index, saved_entries)
 
     return profile_list
 
@@ -810,7 +867,7 @@ def load_profile_from_args(profile_name, minor_version):
             return None
         with open(minor_index_file, 'rb') as minor_handle:
             lookup_pred = lambda entry: entry.path == profile_name
-            profiles = store.lookup_all_entries_within_index(minor_handle, lookup_pred)
+            profiles = index.lookup_all_entries_within_index(minor_handle, lookup_pred)
     else:
         profiles = [profile_name]
 
@@ -821,9 +878,6 @@ def load_profile_from_args(profile_name, minor_version):
 
     # Peek the type if the profile is correct and load the json
     _, profile_name = store.split_object_name(pcs.get_object_directory(), chosen_profile.checksum)
-    profile_type = store.peek_profile_type(profile_name)
-    if profile_type == PROFILE_MALFORMED:
-        perun_log.error("malformed profile {}".format(profile_name))
-    loaded_profile = profile.load_profile_from_file(profile_name, False)
+    loaded_profile = store.load_profile_from_file(profile_name, False)
 
     return loaded_profile

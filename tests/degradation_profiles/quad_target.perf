@@ -7155,7 +7155,7 @@
     }
   ],
   "header": {
-    "params": "",
+    "args": "",
     "cmd": "cmd",
     "workload": "wl",
     "type": "mixed",

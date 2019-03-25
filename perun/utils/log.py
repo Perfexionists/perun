@@ -9,6 +9,7 @@ import itertools
 import io
 import pydoc
 import functools
+import traceback
 
 import termcolor
 
@@ -138,12 +139,52 @@ def quiet_info(msg):
     msg_to_stdout(msg, VERBOSE_RELEASE)
 
 
+def extract_stack_frame_info(frame):
+    """Helper function for returning name and filename from frame.
+
+    Note that this is needed because of fecking differences between Python 3.4 and 3.5
+
+    :param object frame: some fecking frame object
+    :return: tuple of filename and function name
+    """
+    return (frame[0], frame[1]) if isinstance(frame, tuple) else (frame.filename, frame.name)
+
+
+def print_current_stack(colour='red'):
+    """Prints the information about stack track leading to an event
+
+    Be default this is used in error traces, so the colour of the printed trace is red.
+    Moreover, we filter out some of the events (in particular those outside of perun, or
+    those that takes care of the actual trace).
+
+    :param str colour: colour of the printed stack trace
+    """
+    reduced_trace = []
+    for frame in traceback.extract_stack():
+        frame_file, frame_name = extract_stack_frame_info(frame)
+        filtering_conditions = [
+            # We filter frames that are outside of perun's scope
+            'perun' not in frame_file,
+            # We filter the first load entry of the module
+            frame_name == '<module>',
+            # We filter these error and stack handlers ;)
+            frame_file.endswith('log.py') and frame_name in ('error', 'print_current_stack')
+        ]
+        if not any(filtering_conditions):
+            reduced_trace.append(frame)
+    print(termcolor.colored(
+        ''.join(traceback.format_list(reduced_trace)), colour
+    ), file=sys.stderr)
+
+
 def error(msg, recoverable=False):
     """
-    :param str msg: error message printe to standard output
+    :param str msg: error message printed to standard output
     :param bool recoverable: whether we can recover from the error
     """
     print(termcolor.colored("fatal: {}".format(msg), 'red'), file=sys.stderr)
+    if is_verbose_enough(VERBOSE_DEBUG):
+        print_current_stack()
 
     # If we cannot recover from this error, we end
     if not recoverable:
@@ -382,7 +423,7 @@ def print_list_of_degradations(degradation_list):
     print("")
 
 
-class History(object):
+class History:
     """Helper with wrapper, which is used when one wants to visualize the version control history
     of the project, printing specific stuff corresponding to a git history
 
@@ -394,7 +435,7 @@ class History(object):
     :ivar function _saved_print: original print function which is replaced with flushed function
         and is restored when leaving the history
     """
-    class Edge(object):
+    class Edge:
         """Represents one edge of the history
 
         :ivar str next: the parent of the edge, i.e. the previously processed sha
@@ -538,7 +579,7 @@ class History(object):
         ), end='')
 
     def progress_to_next_minor_version(self, minor_version_info):
-        """Progresses the history of the VCS to next minor version
+        r"""Progresses the history of the VCS to next minor version
 
         This flushes the current caught buffer, resolves the fork points (i.e. when we forked the
         history from the minor_version), prints the information about minor version and the resolves
@@ -634,7 +675,7 @@ class History(object):
                     edge.colour = 'green'
 
     def _process_merge_point(self, merged_at, merged_parents):
-        """Updates the printed tree after we merged list of parents in the given merge_at index.
+        r"""Updates the printed tree after we merged list of parents in the given merge_at index.
 
         This prints up to merged_at unresolved parents, and then creates a merge point (|\) that
         branches of to the length of the merged_parents columns.

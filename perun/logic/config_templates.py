@@ -255,14 +255,13 @@ def get_predefined_configuration(name, kwargs):
     return template.render(dict(vars(options), **kwargs))
 
 
-class MasterConfiguration(object):
+class MasterConfiguration:
     """Basic configuration, that contains no set options at all, everything is hence commented out.
 
     Moreover, Master is sane default for most of the functions, except for CLI calling.
     """
     def __init__(self):
         """Initialization of keys used for jinja2 template"""
-        pass
 
 
 class DeveloperConfiguration(MasterConfiguration):

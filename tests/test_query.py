@@ -156,16 +156,18 @@ def test_resources_corrupted(query_profiles):
     assert corrupted_profile is not None
 
     # Get all resources in profile that has corrupted global structure
-    with pytest.raises(exceptions.IncorrectProfileFormatException):
+    with pytest.raises(exceptions.IncorrectProfileFormatException) as exc:
         list(query.all_resources_of(corrupted_profile))
+    assert 'Expected dictionary' in str(exc.value)
 
     # Acquire the query profile with corrupted global section
     corrupted_profile = profile_filter(query_profiles_copy, 'corrupted-snapshots.perf')
     assert corrupted_profile is not None
 
     # Get all resources in profile that has corrupted snapshots structure
-    with pytest.raises(exceptions.IncorrectProfileFormatException):
+    with pytest.raises(exceptions.IncorrectProfileFormatException) as exc:
         list(query.all_resources_of(corrupted_profile))
+    assert 'Missing key in ' in str(exc.value)
 
 
 def test_all_models(query_profiles):
@@ -206,8 +208,9 @@ def test_all_models_corrupted(query_profiles):
     assert corrupted_profile is not None
 
     # Get all models in profile that has corrupted structure
-    with pytest.raises(exceptions.IncorrectProfileFormatException):
+    with pytest.raises(exceptions.IncorrectProfileFormatException) as exc:
         list(query.all_models_of(corrupted_profile))
+    assert 'is not a dictionary' in str(exc.value)
 
 
 def test_all_items_of_memory_resources(query_profiles):

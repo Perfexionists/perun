@@ -53,13 +53,15 @@ def load_generator_specifications():
             spec_map[spec['id']] = GeneratorSpec(constructor, spec)
             print(".", end='')
         except (ImportError, AttributeError):
-            warnings.append("incorrect workload generator '{}': '{}' is not valid workload type".format(
-                spec['id'], spec['type']
-            ))
+            warnings.append(
+                "incorrect workload generator '{}': '{}' is not valid workload type".format(
+                    spec['id'], spec['type']
+                )
+            )
             print("F", end='')
 
     # Print the warnings and badge
-    if len(warnings):
+    if warnings:
         log.failed()
         print("\n".join(warnings))
     else:

@@ -1,20 +1,19 @@
 """ Module with graphs creation and configuration functions. """
 
-import numpy as np
 from operator import itemgetter
 from collections import defaultdict
+
+import demandimport
+with demandimport.enabled():
+    import bkcharts as charts
+    import bokeh.palettes as palettes
+import numpy as np
 
 import perun.profile.query as query
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regressogram.methods as rg_methods
-
-import demandimport
-
-with demandimport.enabled():
-    import bkcharts as charts
-    import bokeh.palettes as palettes
 
 __author__ = 'Jiri Pavela'
 
@@ -98,9 +97,9 @@ def draw_models(graph, models, profile):
             graph = create_parametric_model(graph, model, colour_palette[idx])
         # The non-parametric models do not contain the coefficients
         elif model['method'] == 'regressogram':
-                graph = create_regressogram_model(graph, model, colour_palette[idx])
+            graph = create_regressogram_model(graph, model, colour_palette[idx])
         elif model['method'] in ('moving_average', 'kernel_regression'):
-                graph = create_non_param_model(graph, model, profile, colour_palette[idx])
+            graph = create_non_param_model(graph, model, profile, colour_palette[idx])
     return graph
 
 
@@ -110,17 +109,24 @@ def create_parametric_model(graph, model, colour):
 
     :param charts.Graph graph: the scatter plot to render new models
     :param model: the parametric model to be render to the graph
-    :param colour: the color of the current model to distinguish in the case of several models in the graph
+    :param colour: the color of the current model to distinguish in the case of several models
+        in the graph
     :return charts.Graph: the modified graph with new model curves
     """
     # Convert the coefficients to points that can be plotted
     model = convert.plot_data_from_coefficients_of(model)
+
     # Create legend for the plotted model
     coeffs = ', '.join('{}={:f}'.format(c['name'], c['value']) for c in model['coeffs'])
     legend = '{0}: {1}, r^2={2:f}'.format(model['model'], coeffs, model['r_square'])
+
     # Plot the model
-    graph.line(x=model['plot_x'], y=model['plot_y'], line_color='#000000', line_width=7.5, legend=legend)
-    graph.line(x=model['plot_x'], y=model['plot_y'], line_color=colour, line_width=3.5, legend=legend)
+    graph.line(
+        x=model['plot_x'], y=model['plot_y'], line_color='#000000', line_width=7.5, legend=legend
+    )
+    graph.line(
+        x=model['plot_x'], y=model['plot_y'], line_color=colour, line_width=3.5, legend=legend
+    )
     return graph
 
 
@@ -130,16 +136,21 @@ def create_regressogram_model(graph, model, colour):
 
     :param charts.Graph graph: the scatter plot to render new models
     :param model: the regressogram model which to be rendered to the graph
-    :param colour: the color of the current model to distinguish in the case of several models in the graph
+    :param colour: the color of the current model to distinguish in the case of
+        several models in the graph
     :return charts.Graph: the modified graph with new regressogram model
     """
+    bucket_no = len(model['bucket_stats'])
     # Evenly division of the interval by number of buckets
-    x_pts = np.linspace(model['x_interval_start'], model['x_interval_end'], num=len(model['bucket_stats']) + 1)
+    x_pts = np.linspace(
+        model['x_interval_start'], model['x_interval_end'], num=bucket_no+ 1
+    )
     # Add the beginning of the first edge
     y_pts = np.append(model['y_interval_start'], model['bucket_stats'])
     # Create legend for the plotted model
-    legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(model['method'][:3], len(model['bucket_stats']),
-                                                             model['statistic_function'], model['r_square'])
+    legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(
+        model['method'][:3], bucket_no, model['statistic_function'], model['r_square']
+    )
     # Plot the render_step_function function for regressogram model
     graph_params = {'color': colour, 'line_width': 3.5, 'legend': legend}
     return rg_methods.render_step_function(graph, x_pts, y_pts, graph_params)
@@ -152,7 +163,8 @@ def create_non_param_model(graph, model, profile, colour):
     :param charts.Graph graph: the scatter plot to render new models
     :param model: the moving average model which to be rendered to the graph
     :param dict profile: the profile to obtains the x-coordinates
-    :param colour: the color of the current model to distinguish in the case of several models in the graph
+    :param colour: the color of the current model to distinguish in the case of
+        several models in the graph
     :return charts.Graph: the modified graph with new moving average model
     """
     def draw_model(y_pts):
@@ -164,16 +176,22 @@ def create_non_param_model(graph, model, profile, colour):
         for x_pts, _, uid in data_provider.data_provider_mapper(profile, **params):
             if uid == model['uid']:
                 # Plot the model
-                graph.line(x=sorted(x_pts), y=y_pts, line_color=colour, line_width=3.5, legend=legend)
+                graph.line(
+                    x=sorted(x_pts), y=y_pts, line_color=colour, line_width=3.5, legend=legend
+                )
         return graph
 
     legend = ""
     if model['method'] == 'moving_average':
         # Create legend for the plotted moving_average model
-        legend = '{0}: window={1}, R^2={2:f}'.format(model['moving_method'], model['window_width'], model['r_square'])
+        legend = '{0}: window={1}, R^2={2:f}'.format(
+            model['moving_method'], model['window_width'], model['r_square']
+        )
     elif model['method'] == 'kernel_regression':
         # Create legend for the plotted kernel models
-        legend = '{0}: bw={1}, R^2={2:f}'.format(model['kernel_mode'], model['bandwidth'], model['r_square'])
+        legend = '{0}: bw={1}, R^2={2:f}'.format(
+            model['kernel_mode'], model['bandwidth'], model['r_square']
+        )
     # Render kernel models to the current graph
     return draw_model(y_pts=model.get('kernel_stats', model.get('bucket_stats')))
 

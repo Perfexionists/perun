@@ -2,6 +2,10 @@
 
 import click
 
+import demandimport
+with demandimport.enabled():
+    import bokeh.core.enums as enums
+
 import perun.view.bars.factory as bars_factory
 import perun.utils.log as log
 import perun.utils.cli_helpers as cli_helpers
@@ -9,10 +13,6 @@ import perun.utils.bokeh_helpers as bokeh_helpers
 
 from perun.utils.helpers import pass_profile
 from perun.utils.exceptions import InvalidParameterException
-
-import demandimport
-with demandimport.enabled():
-    import bokeh.core.enums as enums
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
@@ -28,6 +28,7 @@ def process_title(ctx, _, value):
       Func of 'of-key' per 'per-key' 'cummulated' by 'by-key'
 
     :param click.Context ctx: called context of the process
+    :param object _: unused parameter
     :param object value: value that is being processed ad add to parameter
     :returns object: either value (if it is non-None) or default title of the graph
     """
@@ -45,7 +46,8 @@ def process_title(ctx, _, value):
                 type=click.Choice(list(map(str, enums.Aggregation))))
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Sets key that is source of the data for the bars, i.e. what will be displayed on Y axis.")
+              help="Sets key that is source of the data for the bars,"
+                   " i.e. what will be displayed on Y axis.")
 @click.option('--per', '-p', 'per_key', default='snapshots', nargs=1, metavar="<per_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Sets key that is source of values displayed on X axis of the bar graph.")
@@ -132,6 +134,6 @@ def bars(profile, filename, view_in_browser, **kwargs):
             bars_factory, profile, filename, view_in_browser, **kwargs
         )
     except AttributeError as attr_error:
-        log.error("while creating graph: {}".format(str(attr_error)))
+        log.error("while creating bar graph: {}".format(str(attr_error)))
     except InvalidParameterException as ip_error:
-        log.error(str(ip_error))
+        log.error("while creating bar graph: {}".format(str(ip_error)))

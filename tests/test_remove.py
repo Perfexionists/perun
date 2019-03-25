@@ -52,8 +52,9 @@ def test_rm_no_profiles(helpers, pcs_full, capsys):
     git_repo.index.add([file])
     git_repo.index.commit("new commit")
 
-    with pytest.raises(EntryNotFoundException):
+    with pytest.raises(EntryNotFoundException) as exc:
         commands.remove(['nonexistent.perf'], None)
+    assert "none of the entries found in the index" in str(exc.value)
 
     out, _ = capsys.readouterr()
     assert out == ''
@@ -69,8 +70,9 @@ def test_rm_nonexistent(helpers, pcs_full, capsys):
     Expecting error message and nothing removed at all
     """
     before_count = helpers.count_contents_on_path(pcs_full.get_path())
-    with pytest.raises(EntryNotFoundException):
+    with pytest.raises(EntryNotFoundException) as exc:
         commands.remove(['nonexistent.perf'], None)
+    assert "'nonexistent.perf' not found in the index" in str(exc.value)
 
     out, _ = capsys.readouterr()
     assert out == ''

@@ -679,7 +679,7 @@
   "origin": "74288675e4074f1ad5bbb0d3b3253911ab42267a",
   "header": {
     "cmd": "./mct",
-    "params": "",
+    "args": "",
     "units": {
       "memory": "B"
     },

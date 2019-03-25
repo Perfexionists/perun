@@ -31,9 +31,11 @@ def test_transformation_data():
     assert data
 
     # Test invalid model
-    with pytest.raises(exceptions.InvalidModelException):
+    with pytest.raises(exceptions.InvalidModelException) as exc:
         models.get_transformation_data_for('invalid', 'plot_model')
+    assert 'Invalid or unsupported regression model: invalid.' in str(exc.value)
 
     # Test invalid transformation
-    with pytest.raises(exceptions.InvalidTransformationException):
+    with pytest.raises(exceptions.InvalidTransformationException) as exc:
         models.get_transformation_data_for('linear', 'invalid')
+    assert 'Invalid or unsupported transformation: invalid for model: linear.' in str(exc.value)

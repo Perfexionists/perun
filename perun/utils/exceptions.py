@@ -23,8 +23,12 @@ class InvalidParameterException(Exception):
 
 class MissingConfigSectionException(Exception):
     """Raised when the section in config is missing"""
-    pass
+    def __init__(self, section_key):
+        super().__init__("")
+        self.section_key = section_key
 
+    def __str__(self):
+        return "key '{}' is not specified in configuration.\nSee docs/config.rst for more details."
 
 class ExternalEditorErrorException(Exception):
     """Raised when there is an error while invoking the external editor"""
@@ -58,15 +62,17 @@ class MalformedIndexFileException(Exception):
 
 class EntryNotFoundException(Exception):
     """Raised when the looked up entry is not within the index"""
-    def __init__(self, entry):
+    def __init__(self, entry, cause=""):
         """
         :param str entry: entry we are looking up in the index
         """
         super().__init__("")
         self.entry = entry
+        self.cause = cause
 
     def __str__(self):
-        return "Entry satisfying '{}' predicate not found".format(self.entry)
+        msg = "entry '{}' not".format(self.entry) if self.entry else "none of the entries"
+        return msg + " found in the index{}".format(": " + self.cause if self.cause else '')
 
 
 class VersionControlSystemException(Exception):
@@ -186,9 +192,6 @@ class GenericRegressionExceptionBase(Exception):
         super().__init__("")
         self.msg = msg
 
-    def __str__(self):
-        return self.msg
-
 
 class InvalidPointsException(GenericRegressionExceptionBase):
     """Raised when regression data points count is too low or
@@ -278,4 +281,13 @@ class HardTimeoutException(Exception):
 
 class UnexpectedPrototypeSyntaxError(Exception):
     """Raised when the function prototype syntax is somehow different than expected"""
-    pass
+    def __init__(self, prototype_name, syntax_error="unknown cause"):
+        """
+        :param str prototype_name: name of the prototype where the issue happened
+        """
+        super().__init__("")
+        self.prototype_name = prototype_name
+        self.cause = syntax_error
+
+    def __str__(self):
+        return "prototype of function '{}' is wrong: {}".format(self.prototype_name, self.cause)

@@ -1,12 +1,13 @@
 """Collection of helper functions for working with bokeh graphs"""
 
-import perun.utils.log as log
-
 import demandimport
 with demandimport.enabled():
     import bokeh.layouts as layouts
     import bokeh.palettes as palettes
     import bokeh.plotting as plotting
+
+import perun.utils.log as log
+
 
 __author__ = 'Tomas Fiedor'
 
@@ -15,7 +16,7 @@ GRAPH_B_PADDING = 100
 GRAPH_T_PADDING = 50
 
 
-class ColourSort(object):
+class ColourSort:
     """Enumeration of sort modes"""
     No = 0
     Reverse = 1

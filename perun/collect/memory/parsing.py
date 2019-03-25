@@ -35,11 +35,11 @@ def parse_stack(stack):
 
         # parsing instruction pointer,
         # it's the first hexadecimal number in the call record
-        ip = PATTERN_HEXADECIMAL.search(call).group()
+        instruction_pointer = PATTERN_HEXADECIMAL.search(call).group()
 
         # getting information of instruction pointer,
         # the source file and line number in the source file
-        ip_info = syscalls.address_to_line(ip)
+        ip_info = syscalls.address_to_line(instruction_pointer)
         if ip_info[0] in ["?", "??"]:
             ip_info[0] = "unreachable"
         if ip_info[1] in ["?", "??"]:
@@ -77,6 +77,7 @@ def parse_resources(allocation, workload):
 
     :param list allocation: list of raw allocation data
     :param str workload: workload of the resource
+    :param str workload: workload of the memory collector
     :returns structure: formatted structure representing resources of one allocation
     """
     data = {'workload': workload}
@@ -122,7 +123,9 @@ def parse_log(filename, cmd, snapshots_interval, workload):
     :param string filename: name of the log file
     :param string cmd: profiled binary
     :param Decimal snapshots_interval: interval of snapshots [s]
-    :returns structure: formatted structure representing section "snapshots" and "global" in memory profile
+    :param str workload: workload of the memory
+    :returns structure: formatted structure representing section "snapshots" and "global"
+        in memory profile
     """
     interval = snapshots_interval
     with open(filename) as logfile:
@@ -143,9 +146,9 @@ def parse_log(filename, cmd, snapshots_interval, workload):
     names, ips = set(), set()
     for allocation in allocations:
         for resource in allocation[2:]:
-            name, ip, offset = resource.split(' ')
+            name, instruction_pointer, offset = resource.split(' ')
             names.add(name)
-            ips.add((ip, offset))
+            ips.add((instruction_pointer, offset))
 
     # Build caches for demangle and addr2line for further calls
     syscalls.build_demangle_cache(names)

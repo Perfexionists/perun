@@ -34,7 +34,7 @@ def get_minor_head():
         )
     except ValueError as value_error:
         perun_log.error(
-            "could not obtain head minor version: {}".format(value_error)
+            "while fetching head minor version: {}".format(value_error)
         )
 
 

@@ -13,7 +13,7 @@ PerformanceChange = Enum(
     'Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization'
 )
 
-class Unit(object):
+class Unit:
     """Specification of the unit that is part of run process
 
     :ivar str name: name of the unit
@@ -46,17 +46,18 @@ class Unit(object):
         """Sanitizes module name so it is usable and uniform in the perun.
 
         As of Click 7.0 in all subcommands underscores (_) are automatically replaced by dashes (-).
-        While this is surely nice feature, Perun works with the Python function names that actually DO
-        have underscores. So we basically support both formats, and in CLI we use only -, but use this
-        fecking function to make sure the CLI names are replaced back to underscores. Rant over.
+        While this is surely nice feature, Perun works with the Python function names that actually
+        DO have underscores. So we basically support both formats, and in CLI we use only -, but use
+        this fecking function to make sure the CLI names are replaced back to underscores. Rant
+        over.
 
         :param str unit_name: module name that we are sanitizing
-        :return: sanitized module name usable inside the perun (with underscores instead of dashes)
+        :return: sanitized module name usable inside the Perun (with underscores instead of dashes)
         """
         return unit_name.replace('-', '_')
 
 
-class DegradationInfo(object):
+class DegradationInfo:
     """The returned results for performance check methods
 
     :ivar PerformanceChange result: result of the performance change, either can be optimization,
@@ -88,6 +89,7 @@ class DegradationInfo(object):
             optimized or degraded
         :param str tt: value or model representing the target, i.e. to which the new version was
             optimized or degraded
+        :param int rd: quantified rate of the degradation, i.e. how much exactly it degrades
         :param str ct: type of the confidence we have in the detected degradation, e.g. r^2
         :param float cr: value of the confidence we have in the detected degradation
         """
@@ -105,12 +107,13 @@ class DegradationInfo(object):
 
         :return: string representation of the degradation as a stored record in the file
         """
-        return "{} {} {} {} {} {} {}".format(
+        return "{} {} {} {} {} {} {} {}".format(
             self.location,
             self.result,
             self.type,
             self.from_baseline,
             self.to_target,
+            self.rate_degradation,
             self.confidence_type,
             self.confidence_rate
         )

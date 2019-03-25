@@ -11,6 +11,8 @@ from perun.utils.helpers import RAW_ATTRS, RAW_ITEM_COLOUR, RAW_KEY_COLOUR, pass
 
 __author__ = 'Tomas Fiedor'
 
+RAW_INDENT = 4
+
 
 def process_object(item, colour, coloured):
     """
@@ -32,11 +34,10 @@ def show(profile, coloured=False, **_):
     :param dict _: additional keyword for the non coloured show
     :returns str: string representation of the profile
     """
-    RAW_INDENT = 4
 
     # Construct the header
     header = profile['header']
-    for header_item in ['type', 'cmd', 'params', 'workload']:
+    for header_item in ['type', 'cmd', 'args', 'workload']:
         if header_item in header.keys():
             print("{}: {}".format(
                 process_object(header_item, RAW_KEY_COLOUR, coloured),
@@ -59,10 +60,10 @@ def show(profile, coloured=False, **_):
                 ))
 
 
-def show_coloured(profile, **kwargs):
+def show_coloured(profile, **_):
     """
     :param dict profile: dictionary profile
-    :param dict kwargs: additional parameters for the coloured show
+    :param dict _: additional parameters for the coloured show
     :returns str: string representation of the profile with colours
     """
     show(profile, True)

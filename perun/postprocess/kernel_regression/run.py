@@ -485,7 +485,7 @@ def kernel_ridge(ctx, **kwargs):
 @click.group(invoke_without_command=True)
 @cli_helpers.resources_key_options
 @click.pass_context
-def kernel_regression(ctx, **kwargs):
+def kernel_regression(ctx, **_):
     """
     Execution of the interleaving of profiles resources by *kernel* models.
 
