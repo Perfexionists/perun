@@ -36,8 +36,8 @@ def compute_regressogram(data_gen, configuration):
     analysis = []
     for x_pts, y_pts, uid in data_gen:
         # Check whether the user gives as own number of buckets or select the method to its estimate
-        buckets = configuration['bucket_number'] if configuration.get('bucket_number') else configuration[
-            'bucket_method']
+        buckets = configuration['bucket_number'] if configuration.get('bucket_number') \
+            else configuration['bucket_method']
         result = regressogram(x_pts, y_pts, configuration['statistic_function'], buckets)
         result['uid'] = uid
         result['method'] = 'regressogram'
@@ -54,12 +54,13 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
         regressogram = regression + histogram
 
     Regressogram is a piecewise constant regression function estimator. The x-observation is covered
-    by disjoint buckets, and the value of a regressogram in a bucket is the mean/median of y-values for
-    the x-values inside that bucket.
+    by disjoint buckets, and the value of a regressogram in a bucket is the mean/median of y-values
+    for the x-values inside that bucket.
 
-    If the 'statistic_function' contains the int, then this number defines the number of buckets. If the
-    'statistic_function' contains the string from the keys of <_BIN_SELECTORS>, then will be use the chosen
-    method to calculate the optimal bucket width and consequently the number of buckets.
+    If the 'statistic_function' contains the int, then this number defines the number of buckets.
+    If the 'statistic_function' contains the string from the keys of <_BIN_SELECTORS>, then will be
+    use the chosen method to calculate the optimal bucket width and consequently the number of
+    buckets.
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
@@ -68,10 +69,12 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
     :return dict: the output dictionary with result of analysis
     """
     # Check whether the buckets is given by number or by name of method to its compute
-    buckets_num = buckets if isinstance(buckets, int) else _BUCKET_SELECTORS[buckets](np.array(x_pts))
+    buckets_num = buckets if isinstance(buckets, int) \
+        else _BUCKET_SELECTORS[buckets](np.array(x_pts))
     # Compute a binned statistic for the given data
-    bucket_stats, bucket_edges, bucket_numbers = scipy.stats.binned_statistic(x_pts, y_pts, statistic_function,
-                                                                              max(1, buckets_num))
+    bucket_stats, bucket_edges, bucket_numbers = scipy.stats.binned_statistic(
+        x_pts, y_pts, statistic_function, max(1, buckets_num)
+    )
     # Replace the NaN in empty buckets with 0 for plotting
     bucket_stats = np.nan_to_num(bucket_stats)
     # Create output dictionaries
@@ -82,8 +85,9 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
         'x_interval_start': np.min(bucket_edges),
         'x_interval_end': np.max(bucket_edges),
         'y_interval_start': min(y_pts),
-        'r_square': sklearn.metrics.r2_score(y_pts,
-                                             [bucket_stats[bucket_number - 1] for bucket_number in bucket_numbers])
+        'r_square': sklearn.metrics.r2_score(
+            y_pts, [bucket_stats[bucket_number - 1] for bucket_number in bucket_numbers]
+        )
     }
 
 
@@ -94,16 +98,17 @@ def render_step_function(graph, x_pts, y_pts, graph_params):
     :param charts.Graph graph: the scatter plot
     :param x_pts: the x-coordinates for the points of the line
     :param y_pts: the y-coordinates for the points of the line
-    :param dict graph_params: contains the specification of parameters for graph (color, line_width, legend)
+    :param dict graph_params: contains the specification of parameters for graph
+        (color, line_width, legend)
     :returns charts.Graph: the modified graph with model of step function
     """
-    xx = np.sort(list(x_pts) + list(x_pts))
-    xx = xx[:-1]
-    yy = list(y_pts) + list(y_pts)
-    yy[::2] = y_pts
-    yy[1::2] = y_pts
-    yy = yy[1:]
-    graph.line(xx, yy, color=graph_params.get('color'), line_width=graph_params.get('line_width'),
+    x_x = np.sort(list(x_pts) + list(x_pts))
+    x_x = x_x[:-1]
+    y_y = list(y_pts) + list(y_pts)
+    y_y[::2] = y_pts
+    y_y[1::2] = y_pts
+    y_y = y_y[1:]
+    graph.line(x_x, y_y, color=graph_params.get('color'), line_width=graph_params.get('line_width'),
                legend=graph_params.get('legend'))
     return graph
 

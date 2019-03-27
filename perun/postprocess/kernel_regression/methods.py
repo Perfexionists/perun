@@ -45,8 +45,9 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         """
         Initialization method for `KernelRidge` class.
 
-        :param np.ndarray/float gamma: parameter for the `rbf` kernel represent kernel bandwidth, if the np.ndarray
-            is given, then is executing the selection with minimizing the `mse` of leave-one-out cross-validation
+        :param np.ndarray/float gamma: parameter for the `rbf` kernel represent kernel bandwidth,
+                if the np.ndarray is given, then is executing the selection with minimizing the
+                `mse` of leave-one-out cross-validation
         """
         self.x_pts, self.y_pts = [], []
         self.kernel = 'rbf'
@@ -98,7 +99,8 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         for i, gamma in enumerate(gamma_values):
             kernel = kernels.pairwise_kernels(self.x_pts, self.x_pts, self.kernel, gamma=gamma)
             np.fill_diagonal(kernel, 0)
-            mse[i] = (((kernel * self.y_pts[:, np.newaxis]).sum(axis=0) / kernel.sum(axis=0) - self.y_pts) ** 2).mean()
+            err = (kernel * self.y_pts[:, np.newaxis]).sum(axis=0) / kernel.sum(axis=0) - self.y_pts
+            mse[i] = (err ** 2).mean()
 
         self.gamma = gamma_values[np.nanargmin(mse)]
 
@@ -118,7 +120,9 @@ def compute_kernel_regression(data_gen, config):
     """
     # checking the presence of specific keys according to selected modes of kernel regression
     tools.validate_dictionary_keys(
-        config, _MODES_REQUIRED_KEYS[config['kernel_mode']] + _MODES_REQUIRED_KEYS['common_keys'], []
+        config,
+        _MODES_REQUIRED_KEYS[config['kernel_mode']] + _MODES_REQUIRED_KEYS['common_keys'],
+        []
     )
 
     # list of resulting models computed by kernel analysis
@@ -128,7 +132,7 @@ def compute_kernel_regression(data_gen, config):
         kernel_model = execute_kernel_regression(x_pts, y_pts, config)
         kernel_model['uid'] = uid
         kernel_model['method'] = 'kernel_regression'
-        # add partial result (kernel model) to the model result list - create output dictionary with kernel models
+        # add partial result to the model result list - create output dictionary with kernel models
         kernel_models.append(kernel_model)
     return kernel_models
 
@@ -156,33 +160,36 @@ def kernel_regression(x_pts, y_pts, config):
     if config['kernel_mode'] == 'estimator-settings':
         # Set the method to determine kernel bandwidth with EstimatorSettings
         # - Possible values `bw` in this branch are: `cv_ls`, `aic`
-        bw = config.get('bandwidth_method')
+        bw_value = config.get('bandwidth_method')
     else:
         # If was entered the bandwidth value by user, then will be set as `bw` in the required shape
-        # - If was entered the bandwidth method to determination, then will be computing the optimal bandwidth
-        # - Possible values of bandwidth method in this branch are: `scott`, `silverman`
-        bw = np.array(
+        # - If was entered the bandwidth method to determination, then will be computing
+        # -- Possible values of bandwidth method in this branch are: `scott`, `silverman`
+        bw_value = np.array(
             config.get('bandwidth_value', nparam.bandwidths.select_bandwidth(
                 x_pts, config.get('method_name', BW_SELECTION_METHODS[0]), kernel=None))
         ).reshape((1, -1))
 
-    # Set specify settings for estimator object, if was selected the necessary mode: `estimator-settings`
+    # Set specify settings for estimator object, if was selected the mode: `estimator-settings`
     # - When was not selected `estimator-settings` mode, then this object is not used at analysis
     estimator_settings = nparam.EstimatorSettings(
-        n_res=config.get('n_re_samples'), efficient=config.get('efficient'), randomize=config.get('randomize'),
-        n_sub=config.get('n_sub_samples'), return_median=config.get('return_median')
+        n_res=config.get('n_re_samples'), efficient=config.get('efficient'),
+        randomize=config.get('randomize'), n_sub=config.get('n_sub_samples'),
+        return_median=config.get('return_median')
     )
 
     # Set parameters for non-parametric kernel regression class
     kernel_estimate = nparam.KernelReg(
-        endog=[y_pts], exog=[x_pts], reg_type=config['reg_type'], var_type='c', bw=bw, defaults=estimator_settings
+        endog=[y_pts], exog=[x_pts], reg_type=config['reg_type'],
+        var_type='c', bw=bw_value, defaults=estimator_settings
     )
     # Returns the mean and marginal effects at the data_predict points
     kernel_stats, _ = kernel_estimate.fit()
 
     # Set parameter for resulting kernel model
     return {
-        "bandwidth": bw[0][0] if config['kernel_mode'] != 'estimator-settings' else kernel_estimate.bw[0],
+        "bandwidth": bw_value[0][0] if config['kernel_mode'] != 'estimator-settings'
+                     else kernel_estimate.bw[0],
         'r_square': kernel_estimate.r_squared(),
         'kernel_stats': list(kernel_stats),
         'kernel_mode': 'estimator',
@@ -200,7 +207,8 @@ def iterative_computation(x_pts, y_pts, kernel_estimate, **kwargs):
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
-    :param pyqt_fit.NonParamRegression kernel_estimate: class performing kernel-based non-parametric regression
+    :param pyqt_fit.NonParamRegression kernel_estimate: class performing kernel-based
+                non-parametric regression
     :param kwargs: key args contain another required parameters: `kernel` and `model`
     :return pyqt_fit.NonParamRegression: returns the kernel estimate with optimized bandwidth
     """
@@ -209,7 +217,8 @@ def iterative_computation(x_pts, y_pts, kernel_estimate, **kwargs):
     while kernel_values is None:
         try:  # Try fitting the current kernel estimate on the original data (x-coordinates)
             kernel_values = kernel_estimate(x_pts)
-        except np.linalg.LinAlgError:  # Inappropriate bandwidth cause LinAlgError (`Matrix is singular`)
+        # Inappropriate bandwidth cause LinAlgError (`Matrix is singular`)
+        except np.linalg.LinAlgError:
             # Compute the new kernel estimate with increased bandwidth value
             kernel_estimate = smooth.NonParamRegression(
                 x_pts, y_pts, bandwidth=kernel_estimate.bandwidth[0][0] + 1,
@@ -254,15 +263,21 @@ def kernel_smoothing(x_pts, y_pts, config):
         )
     else:  # User entered the method for bandwidth selection or did not choose any option
         # Compute the optimal kernel bandwidth according to selected method
-        covariance = smooth.npr_methods.kde.scotts_covariance(x_pts) if config['bandwidth_method'] == 'scott' else \
-            smooth.npr_methods.kde.silverman_covariance(x_pts)
+        if config['bandwidth_method'] == 'scott':
+            covariance = smooth.npr_methods.kde.scotts_covariance(x_pts)
+        else:
+            covariance = smooth.npr_methods.kde.silverman_covariance(x_pts)
         # Perform the non-parametric kernel regression with method-computed kernel bandwidth
-        kernel_estimate = smooth.NonParamRegression(x_pts, y_pts, method=method, kernel=kernel, covariance=covariance)
+        kernel_estimate = smooth.NonParamRegression(
+            x_pts, y_pts, method=method, kernel=kernel, covariance=covariance
+        )
 
     # Call the method to fit the parameters of the fitting
     kernel_estimate.fit()
     # Ensuring the achievement of the desired outcome
-    kernel_estimate = iterative_computation(x_pts, y_pts, kernel_estimate, method=method, kernel=kernel)
+    kernel_estimate = iterative_computation(
+        x_pts, y_pts, kernel_estimate, method=method, kernel=kernel
+    )
 
     # Set parameter for resulting kernel model
     return {
@@ -299,7 +314,9 @@ def kernel_ridge(x_pts, y_pts, config):
     low_boundary = config['gamma_range'][0]
     high_boundary = config['gamma_range'][1]
     # Executing the kernel regression with automatic bandwidth selection
-    kernel_estimate = KernelRidge(gamma=np.arange(low_boundary, high_boundary, config['gamma_step']))
+    kernel_estimate = KernelRidge(
+        gamma=np.arange(low_boundary, high_boundary, config['gamma_step'])
+    )
     # Fitting the obtained kernel estimate to the original data (x-coordinates)
     kernel_values = kernel_estimate.fit(x_pts, y_pts).predict(x_pts)
 
@@ -332,7 +349,11 @@ def execute_kernel_regression(x_pts, y_pts, config):
     x_pts, y_pts = zip(*sorted(zip(x_pts, y_pts)))
 
     # Create the initial dictionary, that contains the common items for all modes
-    kernel_model = {'x_interval_start': min(x_pts), 'x_interval_end': max(x_pts), 'per_key': config['per_key']}
+    kernel_model = {
+        'x_interval_start': min(x_pts),
+        'x_interval_end': max(x_pts),
+        'per_key': config['per_key']
+    }
 
     # If the coordinates lists contain only one resource, then the computation will be not executing
     # - It is protection before the failure of the method to determine tha optimal kernel bandwidth
@@ -360,14 +381,17 @@ def valid_range_values(_, param, value):
     :param click.Context _: the perun and option context contains the entered options and commands
     :param click.Option param: additive options from relevant commands decorator
     :param tuple value: the value of the parameter that invoked the callback method (name, value)
-    :raises click.BadOptionsUsage: in the case when was not entered the first value smaller than the second value
-    :return tuple(double, double): returns values (range) if the first value is lower than the second value
+    :raises click.BadOptionsUsage: in the case when was not entered the first value smaller than
+                the second value
+    :return tuple(double, double): returns values (range) if the first value is lower than
+                the second value
     """
     if value[0] < value[1]:
         return value
     else:
         raise click.BadOptionUsage(
-            param.name, 'Invalid values: 1.value must be < then the 2.value (%g >= %g)' % (value[0], value[1])
+            param.name, 'Invalid values: 1.value must be < then the 2.value (%g >= %g)'
+            % (value[0], value[1])
         )
 
 
@@ -381,15 +405,16 @@ def valid_step_size(step, range_length):
 
     :param step: value of the entered step to move around the gamma range
     :param range_length: length of the entered gamma range
-    :raises click.BadOptionsUsage: in the case when the step is not smaller than the length of the given range
+    :raises click.BadOptionsUsage: in the case when the step is not smaller than the length of
+                the given range
     :return bool: return True if the control was successful
     """
     if step < range_length:
         return True
     else:
         raise click.BadOptionUsage(
-            "--gamma-step/-gs", 'Invalid values: step must be < then the length of the range ' '(%g >= %g)'
-            % (step, range_length)
+            "--gamma-step/-gs", 'Invalid values: step must be < then the length of the range'
+                                '(%g >= %g)' % (step, range_length)
         )
 
 
@@ -397,16 +422,19 @@ def valid_step_size(step, range_length):
 # - required keys are divided according to individual supported modes of this postprocessor
 _MODES_REQUIRED_KEYS = {
     'estimator-settings': [
-        'efficient', 'randomize', 'n_sub_samples', 'n_re_samples', 'return_median', 'reg_type', 'bandwidth_method'
+        'efficient', 'randomize', 'n_sub_samples', 'n_re_samples',
+        'return_median', 'reg_type', 'bandwidth_method'
     ],
-    'kernel-smoothing': ['kernel_type', 'smoothing_method', 'bandwidth_method', 'bandwidth_value', 'polynomial_order'],
+    'kernel-smoothing': [
+        'kernel_type', 'smoothing_method', 'bandwidth_method', 'bandwidth_value', 'polynomial_order'
+    ],
     'kernel-ridge': ['gamma_range', 'gamma_step'],
     'user-selection': ['bandwidth_value', 'reg_type'],
     'method-selection': ['bandwidth_method', 'reg_type'],
     'common_keys': ['per_key', 'of_key'],
 }
 
-# dictionary contains the supported kernel types for `kernel-smoothing` mode, respectively its instances
+# dict contains the supported kernel types for `kernel-smoothing` mode, respectively its instances
 # - more information about individual types of kernel are described in Perun documentation
 _KERNEL_TYPES_MAPS = {
     'normal': smooth.kernels.normal_kernel(dim=1),
@@ -416,7 +444,7 @@ _KERNEL_TYPES_MAPS = {
     'normal4': smooth.kernels.normal_order4(),
 }
 
-# dictionary contains the regression methods for `kernel-smoothing` mode, respectively instances of this methods
+# dict contains the regression methods for `kernel-smoothing` mode, respectively their instances
 # - using lambda expressions are used due to unification at calling this dictionary
 # -- more information about individual types of kernel are described in Perun documentation
 _SMOOTHING_METHODS_MAPS = {
