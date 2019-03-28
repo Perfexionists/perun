@@ -1,10 +1,9 @@
 """Module for automatic recognizing file type and choosing appropriate fuzzing rules."""
 
+import yaml
+import re
 import binaryornot.check as binaryornot
 import mimetypes
-import random
-import re
-
 
 __author__ = 'Matus Liscinsky'
 
@@ -13,20 +12,18 @@ def custom_rules(regex_rules, fuzzing_methods):
     """ Adds custom rules specified by regexps, and read from the file in YAML format.
     Format:
         del: add
-        ([0-9]{6}),([0-9]{2}): \\1.\\2
-        (\\w+)=(\\w+): \\2=\\1
+        ([0-9]{6}),([0-9]{2}): $1.$2
+        (\\w+)=(\\w+): $2=$1
 
-    :param dict regex_rules: dict of custom regex rules
-    :param list fuzzing_methods: list of functions, fuzzing (mutation) strategies
+    :param dict rules_file: dict of custom regex rules
     """
     for key, value in regex_rules.items():
         def custom_rule(lines):
             comp_regexp = re.compile(key, flags=re.IGNORECASE)
-            rand = random.randrange(len(lines))
-            lines[rand] = comp_regexp.sub(value, lines[rand])
+            for i in range(len(lines)):
+                lines[i] = comp_regexp.sub(value, lines[i])
 
-        fuzzing_methods.append(
-            (custom_rule, "User rule: \"" + key + "\" -> \"" + value + "\""))
+        fuzzing_methods.append((custom_rule, "User rule: \"" + key + "\" -> \"" + value + "\""))
 
 
 def get_filetype(file):
@@ -35,18 +32,17 @@ def get_filetype(file):
     :param str file: file name
     :return tuple: is_file_binary, file_type
     """
-    try:
-        filetype = (mimetypes.guess_type(file))[0].split("/")[-1]
-    except AttributeError:
-        filetype = None
-    return binaryornot.is_binary(file), filetype
 
+    try:
+        type = (mimetypes.guess_type(file))[0].split("/")[-1]
+    except AttributeError:
+        type = None
+    return binaryornot.is_binary(file), type
 
 def choose_methods(file, regex_rules=None):
     """ Automatically collects appropriate fuzz methods according to file type.
 
     :param str file: path to file
-    :param dict regex_rules: dict of custom regex rules
     :return list: list of tuples fuzz_method_function, description
     """
     fuzzing_methods = []
@@ -58,9 +54,10 @@ def choose_methods(file, regex_rules=None):
         from perun.fuzz.methods.binary import fuzzing_methods as binary_fm
         fuzzing_methods.extend(binary_fm)
     else:
-        if filetype in ["xml", "html", "svg", "xhtml", "xul"]:
+        if filetype in ["xml", "html", "csv"]:
             from perun.fuzz.methods.xml import fuzzing_methods as markup_fm
             fuzzing_methods.extend(markup_fm)
         from perun.fuzz.methods.textfile import fuzzing_methods as text_fm
         fuzzing_methods.extend(text_fm)
     return fuzzing_methods
+

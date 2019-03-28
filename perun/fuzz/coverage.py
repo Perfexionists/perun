@@ -10,9 +10,9 @@ import os.path as path
 import subprocess
 import statistics
 
-__author__ = 'Matus Liscinsky'
+import perun.utils as utils
 
-GCOV_VERSION_W_INTERMEDIATE_FORMAT = 4.9
+__author__ = 'Matus Liscinsky'
 
 ProgramErrorSignals = {"8": "SIGFPE",
                        "4": "SIGILL",
@@ -44,30 +44,24 @@ def prepare_workspace(source_path):
             os.remove(path.join(source_path, f))
 
 
-def execute_bin(command, timeout=None, stdin=None):
+def execute_bin(command, timeout=15, stdin=None):
     """Executes command with certain timeout.
 
     :param list command: command to be executed
     :param int timeout: if the process does not end before the specified timeout,
                         the process is terminated
     :param handle stdin: the command input as a file handle
-    :return dict: exit code and output string
     """
     command = list(filter(None, command))
-    try:
-        process = subprocess.Popen(
-            command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        output, _ = process.communicate(timeout=timeout)
-        exit_code = process.wait()
-
-    except subprocess.TimeoutExpired:
-        process.terminate()
-        raise
+    process.communicate(timeout=timeout)
+    exit_code = process.wait()
 
     if exit_code != 0 and str(-exit_code) in ProgramErrorSignals:
-        return {"exit_code": (-exit_code), "output": ProgramErrorSignals[str(-exit_code)]}
-    return {"exit_code": 0, "output": output.decode('utf-8')}
+        return (-exit_code)
+    return
 
 
 def get_src_files(source_path):
@@ -107,7 +101,6 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
 
     :param str gcno_path: path to .gcno files, created within building the project (--coverage flag)
     :param str source_path: path to project source files
-    :param int timeout: specified timeout for run of target application
     :param str cmd: string with command that will be executed
     :param str args: additional parameters to command
     :param list seeds: initial sample files
@@ -115,10 +108,6 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
     """
     # get source files (.c, .cc, .cpp, .h)
     source_files = get_src_files(source_path)
-
-    # get gcov version
-    gcov_output = execute_bin(["gcov", "--version"])
-    gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
 
     coverages = []
 
@@ -130,16 +119,16 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
         command = " ".join([path.abspath(cmd), args, file["path"]]).split(' ')
 
         exit_report = execute_bin(command, timeout)
-        if exit_report["exit_code"] != 0:
+        if exit_report != None:
             print("Initial testing with file " +
-                  file["path"] + " causes " + exit_report["output"])
+                  file["path"] + " causes " + ProgramErrorSignals[str(exit_report)] )
             exit(1)
         file["cov"], gcov_files = get_coverage_info(
-            gcov_version, source_files, gcno_path, os.getcwd(), None)
+            source_files, gcno_path, os.getcwd(), None)
 
         coverages.append(file["cov"])
 
-    return int(statistics.median(coverages)), gcov_version, gcov_files, source_files
+    return int(statistics.median(coverages)), gcov_files, source_files
 
 
 def test(*args, **kwargs):
@@ -159,87 +148,85 @@ def test(*args, **kwargs):
     command = " ".join([args[0], args[1], workload["path"]]).split(' ')
 
     exit_report = execute_bin(command, kwargs["hang_timeout"])
-    if exit_report["exit_code"] != 0:
+    if exit_report != None:
         print("Testing with file " +
-              workload["path"] + " causes " + exit_report["output"])
+              workload["path"] + " causes " + ProgramErrorSignals[str(exit_report)] )
         raise subprocess.CalledProcessError(exit_report, command)
 
-    workload["cov"], _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],
-                                           gcno_path, os.getcwd(), kwargs["gcov_files"])
-    return set_cond(kwargs["base_cov"], workload["cov"], kwargs["parent"]["cov"],  kwargs["icovr"])
+    workload["cov"], _ = get_coverage_info(
+        kwargs["source_files"], gcno_path, os.getcwd(), kwargs["gcov_files"])
+
+    return set_cond(kwargs["base_cov"], workload["cov"], kwargs["icovr"])
 
 
-def get_gcov_files(directory):
-    """ Searches for gcov files in `directory`.
-    :param str directory: path of a directory, where searching will be provided
-    :return list: absolute paths of found gcov files
-    """
-    gcov_files = []
-    for f in os.listdir("."):
-        if path.isfile(f) and f.endswith("gcov"):
-            gcov_file = path.abspath(path.join(".", f))
-            gcov_files.append(gcov_file)
-    return gcov_files
-
-
-def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
+def get_coverage_info(source_files, gcno_path, cwd, gcov_files):
     """ Executes gcov utility with source files, and gathers all output .gcov files.
 
     First of all, it changes current working directory to directory specified by
     `source_path` and then executes utility gcov over all source files.
-    By execution, .gcov files was created as output in intermediate text format("-i") if possible.
-    Otherwise, standard gcov output file format  will be parsed.
-    Current working directory is now changed back.
+    By execution, .gcov files was created as output in intermediate text format("-i").
+    These files are collected together for further processing by function
+    get_coverage. Current working directory is now changed back.
 
-    :param int gcov_version: version of gcov
+    Opens every .gcov file, which in intermediate text format, and reads the
+        number of executions of every line. Searches for line where "lcount" appears,
+        reads the second number (first is line number, second is the number of executions
+        of this line) and adds it to total count stored in `execs`.
+
+        Example of .gcov file in intermediate text format:
+            file:wordcount.c
+            function:29,244,print_tab
+            function:37,1,main
+            lcount:29,244
+            lcount:31,244
+            lcount:32,244
+            lcount:37,1
+            lcount:41,1
+            lcount:43,1
+            branch:43,nottaken
+            branch:43,taken
+            lcount:45,0
+            lcount:46,0
+            lcount:49,1
+            lcount:52,1
+            lcount:57,1
+
+        In this case, `execs` would be equal to 738.
+
     :param str gcno_path: path to the directory with files containing coverage information
     :param str source_files: source files of the target project
     :param str cwd: current working directory for changing back
-    :param list gcov_files: paths to gcov files
     :return list: absolute paths of generated .gcov files
     """
     os.chdir(gcno_path)
-
-    if gcov_version > GCOV_VERSION_W_INTERMEDIATE_FORMAT:
-        command = ["gcov", "-i", "-o", "."]
-    else:
-        command = ["gcov", "-o", "."]
+    command = ["gcov", "-i", "-o", "."]
     command.extend(source_files)
     execute_bin(command)
 
-    # searching for gcov files, if they are not already known
     if gcov_files == None:
-        gcov_files = get_gcov_files(".")
-
+        gcov_files = []
+        for f in os.listdir("."):
+            if path.isfile(f) and f.endswith("gcov"):
+                gcov_file = path.abspath(path.join(".", f))
+                gcov_files.append(gcov_file)
     execs = 0
     for gcov_file in gcov_files:
         fp = open(gcov_file, "r")
-        if gcov_version > GCOV_VERSION_W_INTERMEDIATE_FORMAT:
-            # intermediate text format
-            for line in fp:
-                if "lcount" in line:
-                    execs += int(line.split(",")[1])
-        else:
-            # standard gcov file format
-            for line in fp:
-                try:
-                    execs += int(line.split(":")[0])
-
-                except ValueError:
-                    continue
+        for line in fp:
+            if "lcount" in line:
+                execs += int(line.split(",")[1])
         fp.close()
     os.chdir(cwd)
     return execs, gcov_files
 
 
-def set_cond(base_cov, cov, parent_cov,  increase_ratio=1.5):
+def set_cond(base_cov, cov, increase_ratio=1.5):
     """ Condition for adding mutated input to set of canditates(parents).
 
     :param int base_cov: base coverage
     :param int cov: measured coverage
-    :param int parent_cov: coverage of mutation parent
-    :param int increase_ratio: desired coverage increase ration between `base_cov` and `cov`
+    :param int cov: desired coverage increase ration between `base_cov` and `cov`
     :return bool: True if `cov` is greater than `base_cov` * `deg_ratio`, False otherwise
     """
     tresh_cov = int(base_cov * increase_ratio)
-    return True if cov > tresh_cov and cov > parent_cov else False
+    return True if cov > tresh_cov else False

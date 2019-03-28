@@ -4,250 +4,165 @@ import random
 
 __author__ = 'Matus Liscinsky'
 
-RULE_ITERATIONS = 10
-WS_MIN = 100
-WS_MAX = 1000
-
-
-def change_char(lines):
-    """ Changes a random character of a line.
-
-    Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</a!uthor>                    "
-
-    :param list lines: lines of the workload, which has been choosen for mutating
-    """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        index = random.randrange(len(lines[rand]))
-        lines[rand] = lines[rand][:index] + \
-            chr(random.randint(0, 255)) + lines[rand][index + 1:]
-
-
-def divide_line(lines):
-    """ Divides a line by inserting newline to random position.
-
-    Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</au"
-                                                   "thor>                    "
-
-    :param list lines: lines of the workload, which has been choosen for mutating
-    """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        index = random.randrange(len(lines[rand]))
-        lines[rand] = lines[rand][:index] + "\n" + lines[rand][index:]
-
-
-def fuzz_insert_ws(lines):
-    """ Inserts 100-1000 spaces to random position in a line.
-
-    Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>
-                                                                            "
-
-    :param list lines: lines of the workload, which has been choosen for mutating
-    """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        index = random.randrange(len(lines[rand]))
-        lines[rand] = lines[rand][:index] + " " * \
-            random.randint(WS_MIN, WS_MAX) + lines[rand][index:]
-
 
 def fuzz_double_line(lines):
-    """ Doubles the size of a line by its duplicating.
+    """ Doubles the size of a line by its duplicating, 1-10 times.
 
     Example:
         "The quick brown fox." -> "The quick brown fox.The quick brown fox."
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
-        lines[rand] = lines[rand][:-1] * 2 + lines[rand][-1:]
-
+        lines[rand] = lines[rand][:-1] *2 + lines[rand][-1:]
 
 def fuzz_append_ws(lines):
-    """ Appends 100-1000 spaces to a line.
+    """ Appends 100 spaces at to a line, 1-10 times.
 
     Example:
         "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>
                                                                             "
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
-        lines[rand] = lines[rand][:-1] + " " * \
-            random.randint(WS_MIN, WS_MAX) + lines[rand][-1:]
-
+        lines[rand] = lines[rand][:-1] + " "*100 + lines[rand][-1:]
 
 def fuzz_bloat_word(lines):
-    """ Creates big words by removing whitespaces of a line.
+    """ Creates big words by removing spaces of a line, 1-10 times.
 
     Example:
         "The quick brown fox." -> "Thequickbrownfox."
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
-        lines[rand] = "".join(lines[rand].split())+"\n"
-
+        lines[rand] = lines[rand].replace(" ","")
 
 def multiplicate_ws(lines):
-    """ Replaces white spaces with more white spaces.
+    """ Replaces every single white space with 10 white spaces, 1-10 times.
 
     Example:
         "The quick brown fox." -> "The quick brown fox.,
 
                     The quick brown fox."
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
-        lines[rand] = lines[rand].replace(" ", " "*10, 100)
-
+        lines[rand] = lines[rand].replace(" "," "*10, 10)
 
 def prepend_ws(lines):
-    """ Prepends a line with 100-1000 white spaces.
+    """ Prepend a line with 100 white spaces, 1-10 times.
 
     Example:
         "The quick brown fox." -> "
                                                            The quick brown fox."
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
-        lines[rand] = " "*random.randint(WS_MIN, WS_MAX) + lines[rand]
-
+        lines[rand] = " "*100 + lines[rand]
 
 def fuzz_duplicate_line(lines):
-    """ Duplicates random line in file.
+    """ Duplicate random line in file, 1-10 times.
 
     Example:
         "The quick brown fox." -> "The quick brown fox."
                                   "The quick brown fox."
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
-        lines.insert(rand, lines[random.randint(0, len(lines)-1)])
-
+        lines.insert(rand, lines[random.randint(0,len(lines)-1)])
 
 def fuzz_sort_line(lines):
-    """ Sorts the words or numbers.
+    """ Sorts the words of a line alphabetically, 1-10 times.
 
     Example:
         "The quick brown fox." -> "brown fox quick The"
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
         words = lines[rand].split()
-        try:
-            lines[rand] = " ".join(sorted(words, key=int))
-        except ValueError:
-            lines[rand] = " ".join(sorted(words))
-
-
-def fuzz_rsort_line(lines):
-    """ Reversely sorts the words or numbers.
-
-    Example:
-        "The quick brown fox." -> "brown fox quick The"
-
-    :param list lines: lines of the workload, which has been choosen for mutating
-    """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        words = lines[rand].split()
-        try:
-            lines[rand] = " ".join(sorted(words, reverse=True, key=int))
-        except ValueError:
-            lines[rand] = " ".join(sorted(words, reverse=True))
-
+        lines[rand] = " ".join(sorted(words))
 
 def repeat_word(lines):
-    """ 100 times repeats a random word and append it to a line.
-        The length of a word is limited to 100, to prevent from DoS.
+    """ 10 times repeats a random word and append it to a line, 1-10 times.
+
     Example:
         "The quick brown fox." -> "The quick brown fox.brown brown brown brown
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    REPETITIONS = 100
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
         try:
             word = random.choice(lines[rand].split())
-            lines[rand] = lines[rand][:-1] + \
-                (" " + (word[100]))*(REPETITIONS) + lines[rand][-1:]
+            lines[rand] = lines[rand][:-1] + (" "+word)*10 + lines[rand][-1:]
         except IndexError:
             pass
 
-
 def del_line(lines):
-    """ Deletes random line.
+    """ Deletes random line, 1-10 times.
     Example:
         "The quick brown fox." -> ""
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         if len(lines):
             del lines[random.randint(0, len(lines)-1)]
 
-
 def del_word(lines):
-    """ Deletes random word of line.
+    """ Deletes random word of line, 1-10 times.
     Example:
         "The quick brown fox." -> " quick brown fox."
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
         try:
             word = random.choice(lines[rand].split())
-            lines[rand] = lines[rand].replace(word, "")
+            lines[rand] = lines[rand].replace(word,"")
         except IndexError:
             pass
 
-
 def del_char(lines):
-    """ Deletes random character from random line.
+    """ Deletes random character from random line, 1-10 times.
     Example:
         "The quick brown fox." -> "The quick brown fo."
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+    :param list lines: lines of the input file, which was chosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(random.randint(1,10)):
         rand = random.randrange(len(lines))
         try:
-            index = random.randrange(len(lines[rand]))
-            lines[rand] = lines[rand][:index] + lines[rand][index + 1:]
+            char = lines[rand][random.randrange(len(lines[rand]))]
+            lines[rand] = lines[rand].replace(char, "")
         except ValueError:
             pass
 
 
-fuzzing_methods = [(change_char, "Change random characters at random places"),
-                   (fuzz_insert_ws, "Insert whitespaces at random places"),
-                   (divide_line, "Divide a random line"),
-                   (fuzz_double_line, "Double the size of random line"),
-                   (fuzz_append_ws, "Append WS at the end of the line"),
-                   (fuzz_bloat_word, "Remove WS of random line"),
-                   (multiplicate_ws, "Multiplicate WS of random line"),
-                   (prepend_ws, "Prepend WS to random line"),
-                   (fuzz_duplicate_line, "Duplicate random line"),
-                   (fuzz_sort_line, "Sort words of random line"),
-                   (fuzz_rsort_line, "Reversely sort words of random line"),
-                   (repeat_word, "Multiplicate word of random line"),
-                   (del_line, "Remove random line"),
-                   (del_word, "Remove random word of line"),
-                   (del_char, "Remove random character of line "), ]
+fuzzing_methods = [ (fuzz_double_line, "Double the size of random line"),
+                    (fuzz_append_ws, "Append WS at the end of the line"),
+                    (fuzz_bloat_word, "Remove WS of random line"),
+                    (multiplicate_ws, "Multiplicate WS of random line"),
+                    (prepend_ws, "Prepend WS to random line"),
+                    (fuzz_duplicate_line, "Duplicate random line"),
+                    (fuzz_sort_line, "Sort words of random line"),
+                    (repeat_word, "Multiplicate word of random line"),
+                    (del_line, "Remove random line"),
+                    (del_word, "Remove random word of line"),
+                    (del_char, "Remove random character of line ")]
+
+
