@@ -245,7 +245,8 @@ def config_edit(ctx):
     try:
         commands.config_edit(ctx.obj['store_type'])
     except (ExternalEditorErrorException, MissingConfigSectionException) as editor_exception:
-        perun_log.error("could not invoke external editor: {}".format(str(editor_exception)))
+        perun_log.error("could not invoke external editor: {}".format(
+            str(editor_exception)))
 
 
 @config.command('reset')
@@ -362,7 +363,8 @@ def init(dst, configure, config_template, **kwargs):
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error("error while initializing perun: {}".format(str(unsup_module_exp)))
     except PermissionError:
-        perun_log.error("writing to shared config 'shared.yml' requires root permissions")
+        perun_log.error(
+            "writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
         err_msg = "cannot launch default editor for configuration.\n"
         err_msg += "Please set 'general.editor' key to a valid text editor (e.g. vim)."
@@ -699,7 +701,7 @@ def postprocessby(ctx, profile, **_):
     in index of commit preceeding the current head using interval regression
     analysis::
 
-        perun postprocessby -m HEAD~1 1@i regression-analysis --method=interval
+        perun postprocessby -m HEAD~1 1@i regression_analysis --method=interval
 
     For a thorough list and description of supported postprocessors refer to
     :ref:`postprocessors-list`. For a more subtle running of profiling jobs and
@@ -711,7 +713,8 @@ def postprocessby(ctx, profile, **_):
 
 @cli.group()
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
-              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
+              callback=cli_helpers.minor_version_list_callback, default=[
+                  'HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
 @click.option('--crawl-parents', '-cp', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
@@ -770,7 +773,8 @@ def collect(ctx, **kwargs):
               ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
               ' details about the format of the template.')
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
-              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
+              callback=cli_helpers.minor_version_list_callback, default=[
+                  'HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
 @click.option('--crawl-parents', '-c', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
@@ -836,7 +840,8 @@ def matrix(ctx, quiet, **kwargs):
               help='Additional parameters for the <collector> read from the'
               ' file in YAML format')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
-              type=click.Choice(utils.get_supported_module_names('postprocess')),
+              type=click.Choice(
+                  utils.get_supported_module_names('postprocess')),
               help='After each collection of data will run <postprocessor> to '
               'postprocess the collected resources.')
 @click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
@@ -918,7 +923,8 @@ def job(ctx, **kwargs):
               help='Additional parameters for the <collector> read from the'
                    ' file in YAML format')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
-              type=click.Choice(utils.get_supported_module_names('postprocess')),
+              type=click.Choice(
+                  utils.get_supported_module_names('postprocess')),
               help='After each collection of data will run <postprocessor> to '
                    'postprocess the collected resources.')
 @click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
@@ -926,8 +932,58 @@ def job(ctx, **kwargs):
               help='Additional parameters for the <postprocessor> read from the'
                    ' file in YAML format')
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1,
-              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
+              callback=cli_helpers.minor_version_list_callback, default=[
+                  'HEAD'],
               help='Specifies the head minor version, for which the fuzzing will be performed.')
+@click.option('--source-path', '-s', nargs=1, required=False,
+              type=click.Path(exists=True, readable=True), metavar='<path>',
+              help='The path to the directory of the project source files.')
+@click.option('--gcno-path', '-g', nargs=1, required=False,
+              type=click.Path(exists=True, writable=True), metavar='<path>',
+              help='The path to the directory where .gcno files are stored.')
+@click.option('--output-dir', '-o', nargs=1, required=True,
+              type=click.Path(exists=True, writable=True), metavar='<path>',
+              help='The path to the directory where generated outputs will be stored.')
+@click.option('--timeout', '-t', nargs=1, required=False, default=1800,
+              type=click.IntRange(1, None, False), metavar='<int>',
+              help='Time limit for fuzzing (in seconds).  Default value is 1800s.')
+@click.option('--hang-timeout', '-h', nargs=1, required=False, default=10,
+              type=click.IntRange(1, None, False), metavar='<int>',
+              help='The time limit before input is classified as a hang (in seconds).'
+              ' Default value is 30s.')
+@click.option('--max', '-N', nargs=1, required=False,
+              type=click.IntRange(1, None, False), metavar='<int>',
+              help='The maximum size limit of the generated input file.'
+              ' Value should be larger than any of the initial workload,'
+              ' otherwise it will be adjusted, see \033[1m-a\033[0m resp. \033[1m-p\033[0m')
+@click.option('--max-size-adjunct', '-ma', nargs=1, required=False,default=1000000,
+              type=click.IntRange(0, None, False), metavar='<int>', 
+              help='Max size expressed by adjunct. Using this option, max size of generated input'
+              ' file will be set to (size of the largest workload + value).' 
+              'Default value is 1 000 000 B = 1MB.')
+@click.option('--max-size-percentual', '-mp', nargs=1, required=False,
+              type=click.FloatRange(1, None, False), metavar='<float>',
+              help='Max size expressed by percentage. Using this option, max size of generated' 
+              ' input file will be set to (size of the largest workload * value).'
+              ' E.g. 1.5, max_size=largest_workload_size * 1.5')
+@click.option('--execs', '-e', nargs=1, required=False, default=100,
+              type=click.IntRange(1, None, False), metavar='<int>',
+              help='Defines maximum number executions while gathering interesiting inputs.')
+@click.option('--interesting-files-limit', '-l', nargs=1, required=False,
+              type=click.IntRange(1, None, False), metavar='<int>', default=20,
+              help='Defines minimum number of gathered interesting inputs before perun testing.')
+@click.option('--icovr', '-cr', nargs=1, required=False, default=1.5,
+              type=click.FloatRange(0, None, False), metavar='<int>',
+              help='Represents threshold of coverage increase against base coverage.'
+              '  E.g 1.5, base coverage = 100 000, so threshold = 150 000.')
+@click.option('--mut-count-strategy', '-mcs', nargs=1, required=False, default='mixed',
+              type=click.Choice(['unitary', 'proportional', 'probabilistic', 'mixed']), metavar='<str>',
+              help='Strategy which determines how many mutations will be generated by ceratain'
+              ' fuzzing rule in one iteration: unitary|proportional|probabilistic|mixed')     
+@click.option('--regex-rules', '-r', nargs=1, required=False, multiple=True,
+              callback=cli_helpers.single_yaml_param_callback, metavar='<file>',
+              help='Option for adding custom rules specified by regular expressions,'
+              ' written in YAML format file.')
 def fuzz_cmd(**kwargs):
     """Performs fuzzing for the specified command according to the initial sample of workload."""
     fuzz.run_fuzzing_for_command(**kwargs)
@@ -980,21 +1036,24 @@ def check_group(**_):
       2. Average Amount Threshold (AAT)
     """
     should_precollect = dutils.strtobool(str(
-        perun_config.lookup_key_recursively('degradation.collect_before_check', 'false')
+        perun_config.lookup_key_recursively(
+            'degradation.collect_before_check', 'false')
     ))
     precollect_to_log = dutils.strtobool(str(
         perun_config.lookup_key_recursively('degradation.log_collect', 'false')
     ))
     if should_precollect:
         print("{} is set to {}. ".format(
-            termcolor.colored('degradation.collect_before_check', 'white', attrs=['bold']),
+            termcolor.colored('degradation.collect_before_check',
+                              'white', attrs=['bold']),
             termcolor.colored('true', 'green', attrs=['bold'])
         ), end='')
         print("Missing profiles will be freshly collected with respect to the ", end='')
         print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
         if precollect_to_log:
             print("The progress of the pre-collect phase will be stored in logs at {}.".format(
-                termcolor.colored(pcs.get_log_directory(), 'white', attrs=['bold'])
+                termcolor.colored(pcs.get_log_directory(),
+                                  'white', attrs=['bold'])
             ))
         else:
             print("The progress of the pre-collect phase will be redirected to {}.".format(
@@ -1115,7 +1174,8 @@ def create(template_type, **kwargs):
     try:
         scripts.create_unit_from_template(template_type, **kwargs)
     except ExternalEditorErrorException as editor_exception:
-        perun_log.error("while invoking external editor: {}".format(str(editor_exception)))
+        perun_log.error("while invoking external editor: {}".format(
+            str(editor_exception)))
 
 
 def init_unit_commands(lazy_init=True):
@@ -1125,7 +1185,8 @@ def init_unit_commands(lazy_init=True):
     like e.g. show has different forms (raw, graphs, etc.).
     """
     for (unit, cli_cmd, cli_arg) in [(perun.view, show, 'show'),
-                                     (perun.postprocess, postprocessby, 'postprocessby'),
+                                     (perun.postprocess,
+                                      postprocessby, 'postprocessby'),
                                      (perun.collect, collect, 'collect')]:
         if lazy_init and cli_arg not in sys.argv:
             continue
