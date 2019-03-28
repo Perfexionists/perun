@@ -5,7 +5,7 @@ import curses.textpad
 import math
 import sys
 
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 
 __author__ = 'Radim Podola'
 

@@ -1,10 +1,10 @@
 import pytest
 import git
 
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 import perun.logic.commands as commands
 import perun.logic.config as config
-import perun.profile.factory as factory
+import perun.profile.helpers as factory
 
 __author__ = 'Tomas Fiedor'
 

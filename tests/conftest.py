@@ -15,7 +15,7 @@ import perun.cli as cli
 import pytest
 
 import perun.logic.commands as commands
-import perun.profile.factory as perun_profile
+import perun.profile.helpers as perun_profile
 import perun.utils.decorators as decorators
 import perun.utils.streams as streams
 import perun.vcs as vcs

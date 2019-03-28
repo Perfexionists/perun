@@ -9,7 +9,7 @@
 
 import distutils.util as dutils
 import perun.utils.log as log
-import perun.profile.factory as profile
+import perun.profile.helpers as profile
 
 from perun.utils.helpers import CollectStatus
 

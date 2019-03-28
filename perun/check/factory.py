@@ -9,7 +9,7 @@ from perun.utils.structs import PerformanceChange
 
 import perun.utils.exceptions as exceptions
 import perun.utils.log as log
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 import perun.logic.runner as runner
 import perun.logic.config as config
 import perun.logic.pcs as pcs

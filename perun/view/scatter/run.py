@@ -2,7 +2,7 @@
 
 import click
 
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.view.scatter.factory as scatter_factory
