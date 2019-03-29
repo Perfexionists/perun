@@ -5,7 +5,7 @@ import curses.textpad
 import math
 import sys
 
-import perun.profile.helpers as profiles
+import perun.utils.streams as streams
 
 __author__ = 'Radim Podola'
 
@@ -288,7 +288,7 @@ class FlowGraphVisualization:
                         data['peak'] = 0
                     self.__graph_data.append(data)
 
-        profiles.store_json(self.__graph_data, 'partial.graf')
+        streams.store_json(self.__graph_data, 'partial.graf')
 
     def print_partial_view(self, move):
         """ Draws the heap map screen to represent the specified snapshot
@@ -386,7 +386,7 @@ class FlowGraphVisualization:
                 else:
                     data['peak'] = 0
                 self.__graph_data.append(data)
-        profiles.store_json(self.__graph_data, 'complete.graf')
+        streams.store_json(self.__graph_data, 'complete.graf')
 
     def __get_graph_size(self):
         """ Calculates the true graph's size.

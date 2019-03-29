@@ -310,16 +310,6 @@ def finalize_profile_for_job(profile, job):
     return profile
 
 
-def store_json(profile, file_path):
-    """Stores profile w.r.t. :ref:`profile-spec` to output file.
-
-    :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
-    :param str file_path: output path, where the `profile` will be stored
-    """
-    with open(file_path, 'w') as profile_handle:
-        json.dump(profile, profile_handle, indent=2)
-
-
 def to_string(profile):
     """Converts profile from dictionary to string
 

@@ -15,7 +15,6 @@ import perun.cli as cli
 import pytest
 
 import perun.logic.commands as commands
-import perun.profile.helpers as perun_profile
 import perun.utils.decorators as decorators
 import perun.utils.streams as streams
 import perun.vcs as vcs
@@ -111,7 +110,7 @@ class Helpers(object):
         copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
         copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
         copied_profile['origin'] = origin
-        perun_profile.store_json(copied_profile.serialize(), copied_filename)
+        streams.store_json(copied_profile.serialize(), copied_filename)
         shutil.copystat(profile, copied_filename)
         return copied_filename
 

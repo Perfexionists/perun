@@ -4,12 +4,22 @@ Some of the stuff are stored in the stream, like e.g. yaml and are reused in sev
 This module encapulates such functions, so they can be used in CLI, in tests, in configs.
 """
 
+import json
 import os
 from ruamel.yaml import YAML
 
 import perun.utils.log as log
 
 __author__ = 'Tomas Fiedor'
+
+def store_json(profile, file_path):
+    """Stores profile w.r.t. :ref:`profile-spec` to output file.
+
+    :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
+    :param str file_path: output path, where the `profile` will be stored
+    """
+    with open(file_path, 'w') as profile_handle:
+        json.dump(profile, profile_handle, indent=2)
 
 
 def safely_load_yaml_from_file(yaml_file):

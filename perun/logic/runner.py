@@ -12,6 +12,7 @@ import perun.logic.index as index
 import perun.profile.helpers as profile
 import perun.profile.factory as profile_factory
 import perun.utils as utils
+import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.workload as workloads
@@ -304,7 +305,7 @@ def store_generated_profile(prof, job):
     full_profile_name = profile.generate_profile_name(full_profile)
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
-    profile.store_json(full_profile.serialize(), full_profile_path)
+    streams.store_json(full_profile.serialize(), full_profile_path)
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
