@@ -351,7 +351,6 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     :param dict kwargs: rest of the keyword arguments
     """
 
-
     # Initialization
     interesting_inputs = []
     parents_fitness_values = []
@@ -377,9 +376,11 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     # Init testing with seeds
     if coverage_testing:
         try:
-            base_cov, gcov_files, source_files = init_testing("coverage", cmd, args, parents,
-                                                              collector, postprocessor,
-                                                              minor_version_list, **kwargs)
+            base_cov, gcov_version, gcov_files, source_files = init_testing("coverage", cmd, args,
+                                                                            parents, collector,
+                                                                            postprocessor,
+                                                                            minor_version_list,
+                                                                            **kwargs)
         except subprocess.TimeoutExpired:
             print(
                 "Timeout ({}s) reached when testing with initial files. Adjust hang timeout using"
@@ -432,7 +433,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                         # testing for coverage
                         result = testing(method, cmd, args, mutations[i], collector,
                                          postprocessor, minor_version_list, base_cov=base_cov,
-                                         source_files=source_files, gcov_files=gcov_files, **kwargs)
+                                         source_files=source_files, gcov_version=gcov_version,
+                                         gcov_files=gcov_files, **kwargs)
                     except subprocess.CalledProcessError:
                         move_mutation_to(mutations[i]["path"], faults_dir)
                         continue
