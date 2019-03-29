@@ -1752,7 +1752,7 @@ def test_fuzzing_correct(pcs_full):
         '--execs', '1'
     ])
     assert result.exit_code == 0
-    # assert 'SIGABRT' in result.output
+    assert 'SIGABRT' in result.output
 
     # Testing for hang during init testing
     process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/hang-init"])
@@ -1786,7 +1786,7 @@ def test_fuzzing_correct(pcs_full):
         '--execs', '1'
     ])
     assert result.exit_code == 0
-    # assert 'Timeout' in result.output
+    assert 'Timeout' in result.output
 
 
 def test_fuzzing_incorrect(pcs_full):
