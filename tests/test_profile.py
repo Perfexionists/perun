@@ -6,6 +6,8 @@ import perun.logic.commands as commands
 import perun.logic.config as config
 import perun.profile.helpers as factory
 
+from perun.profile.factory import Profile
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -19,7 +21,7 @@ def test_loading(helpers, pcs_full, valid_profile_pool):
     assert len(untracked) != 0
 
     first_untracked = untracked[0].load()
-    assert isinstance(first_untracked, dict)
+    assert isinstance(first_untracked, Profile)
     assert 'header' in first_untracked.keys()
 
     git_repo = git.Repo(pcs_full.get_vcs_path())
@@ -28,8 +30,8 @@ def test_loading(helpers, pcs_full, valid_profile_pool):
     minor_version_profiles = profiles.load_list_for_minor_version(head)
     assert len(minor_version_profiles) != 0
     first_indexed = minor_version_profiles[0].load()
-    assert isinstance(first_indexed, dict)
-    assert 'header' in first_indexed.keys()
+    assert isinstance(first_indexed, Profile)
+    assert 'header' in [key for key in first_indexed]
 
 
 def test_name_generation(capsys):

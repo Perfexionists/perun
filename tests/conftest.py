@@ -111,7 +111,7 @@ class Helpers(object):
         copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
         copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
         copied_profile['origin'] = origin
-        perun_profile.store_profile_at(copied_profile, copied_filename)
+        perun_profile.store_json(copied_profile.serialize(), copied_filename)
         shutil.copystat(profile, copied_filename)
         return copied_filename
 

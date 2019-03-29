@@ -297,24 +297,23 @@ def generate_postprocessor_info(job):
     ]
 
 
-def finalize_profile_for_job(collected_data, job):
+def finalize_profile_for_job(profile, job):
     """
-    :param dict collected_data: collected profile through some collector
+    :param Profile profile: collected profile through some collector
     :param Job job: job with informations about the computed profile
     :returns dict: valid profile JSON file
     """
-    profile = {'origin': vcs.get_minor_head()}
-    profile.update(collected_data)
+    profile.update({'origin': vcs.get_minor_head()})
     profile.update({'header': generate_header_for_profile(job)})
     profile.update({'collector_info': generate_collector_info(job)})
     profile.update({'postprocessors': generate_postprocessor_info(job)})
     return profile
 
 
-def store_profile_at(profile, file_path):
+def store_json(profile, file_path):
     """Stores profile w.r.t. :ref:`profile-spec` to output file.
 
-    :param dict profile: dictionary with profile w.r.t. :ref:`profile-spec`
+    :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
     :param str file_path: output path, where the `profile` will be stored
     """
     with open(file_path, 'w') as profile_handle:
@@ -324,10 +323,10 @@ def store_profile_at(profile, file_path):
 def to_string(profile):
     """Converts profile from dictionary to string
 
-    :param dict profile: profile we are converting to string
+    :param Profile profile: profile we are converting to string
     :returns str: string representation of profile
     """
-    return json.dumps(profile)
+    return json.dumps(profile.serialize())
 
 
 def to_config_tuple(profile):

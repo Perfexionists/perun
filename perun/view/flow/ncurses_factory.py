@@ -288,7 +288,7 @@ class FlowGraphVisualization:
                         data['peak'] = 0
                     self.__graph_data.append(data)
 
-        profiles.store_profile_at(self.__graph_data, 'partial.graf')
+        profiles.store_json(self.__graph_data, 'partial.graf')
 
     def print_partial_view(self, move):
         """ Draws the heap map screen to represent the specified snapshot
@@ -386,7 +386,7 @@ class FlowGraphVisualization:
                 else:
                     data['peak'] = 0
                 self.__graph_data.append(data)
-        profiles.store_profile_at(self.__graph_data, 'complete.graf')
+        profiles.store_json(self.__graph_data, 'complete.graf')
 
     def __get_graph_size(self):
         """ Calculates the true graph's size.

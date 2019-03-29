@@ -14,6 +14,7 @@ import zlib
 from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
+from perun.profile.factory import Profile
 
 import demandimport
 with demandimport.enabled():
@@ -361,7 +362,7 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
     :param str file_name: name of the file opened in the handle
     :param file file_handle: opened file handle
     :param bool is_raw_profile: true if the profile is in json format already
-    :returns dict: JSON representation of the profile
+    :returns Profile: JSON representation of the profile
     :raises IncorrectProfileFormatException: when the profile cannot be parsed by json.loads(body)
         or when the profile is not in correct supported format or when the profile is malformed
     """
@@ -380,6 +381,6 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
 
     # Try to load the json, if there is issue with the profile
     try:
-        return json.loads(body)
+        return Profile(json.loads(body))
     except ValueError:
         raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
