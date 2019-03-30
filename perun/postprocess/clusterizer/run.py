@@ -20,7 +20,9 @@ import perun.profile.convert as convert
 import perun.utils as utils
 import perun.utils.log as log
 import perun.logic.runner as runner
-from perun.utils.helpers import PostprocessStatus, pass_profile
+
+from perun.utils.helpers import PostprocessStatus
+from perun.profile.factory import pass_profile
 
 
 def resource_sort_key(resource):

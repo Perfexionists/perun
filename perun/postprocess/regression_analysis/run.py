@@ -8,7 +8,8 @@ import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
 import perun.postprocess.regression_analysis.methods as methods
 import perun.postprocess.regression_analysis.regression_models as reg_models
-from perun.utils.helpers import PostprocessStatus, pass_profile
+from perun.utils.helpers import PostprocessStatus
+from perun.profile.factory import pass_profile
 
 __author__ = 'Jiri Pavela'
 

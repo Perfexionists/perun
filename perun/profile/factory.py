@@ -7,6 +7,7 @@ regions and flatten the format.
 """
 
 import collections
+import click
 
 __author__ = 'Tomas Fiedor'
 
@@ -73,3 +74,7 @@ class Profile(collections.MutableMapping):
         :return: serializable representation (i.e. the actual storage)
         """
         return self._storage
+
+# Click helper
+pass_profile = click.make_pass_decorator(Profile)
+

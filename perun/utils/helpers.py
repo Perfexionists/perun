@@ -4,11 +4,9 @@ import re
 import operator
 import collections
 import namedlist
-import click
 
 from enum import Enum
 
-from perun.profile.factory import Profile
 from perun.utils.structs import PerformanceChange
 
 
@@ -70,9 +68,6 @@ COLLECT_PHASE_POSTPROCESS = 'yellow'
 COLLECT_PHASE_ERROR = 'red'
 COLLECT_PHASE_ATTRS = []
 COLLECT_PHASE_ATTRS_HIGH = []
-
-# Show specific
-pass_profile = click.make_pass_decorator(Profile)
 
 # Degradation specific
 CHANGE_CMD_COLOUR = 'magenta'
