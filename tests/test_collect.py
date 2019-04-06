@@ -9,7 +9,6 @@ from click.testing import CliRunner
 import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
-import perun.profile.query as query
 import perun.collect.trace.systemtap as stap
 import perun.collect.trace.strategy as strategy
 import perun.utils.decorators as decorators
@@ -602,7 +601,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     job = Job('memory', [], str(target_bin), '', '')
     _, prof = run.run_collector(collector_unit, job)
 
-    assert len(list(query.all_resources_of(prof))) == 2
+    assert len(list(prof.all_resources())) == 2
 
     collector_unit = Unit('memory', {
         'all': False,
@@ -611,7 +610,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     job = Job('memory', [], str(target_bin), '', '')
     _, prof = run.run_collector(collector_unit, job)
 
-    assert len(list(query.all_resources_of(prof))) == 0
+    assert len(list(prof.all_resources())) == 0
 
 
 def test_collect_memory_with_generator(pcs_full, memory_collect_job):

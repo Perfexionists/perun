@@ -400,7 +400,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                 for c_status, prof in generator(job, **params).generate(run_collector):
                     # Run the collector and check if the profile was successfully collected
                     # In case, the status was not OK, then we skip the postprocessing
-                    if c_status != CollectStatus.OK or not prof:
+                    if c_status != CollectStatus.OK:
                         collective_status = CollectStatus.ERROR
                         continue
 

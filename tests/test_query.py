@@ -3,9 +3,6 @@
 Contains tests for query results of various valid / invalid profiles.
 """
 
-import pytest
-import itertools
-import perun.utils.exceptions as exceptions
 import perun.profile.query as query
 
 
@@ -19,12 +16,17 @@ _COMPLEXITY_RESOURCES_COUNT = 26
 # number of models expected in models profile
 _MODELS_COUNT = 10
 # number of resource items in memory profile
-_MEMORY_RESOURCE_ITEMS_COUNT = 9
+_MEMORY_RESOURCE_ITEMS_COUNT = 11
 # index of trace record in sorted memory resources
 _MEMORY_TRACE_IDX = 3
 # index of uid record in sorted memory resources
 _MEMORY_UID_IDX = 5
 
+# unique resource fields in memory
+_MEMORY_RESOURCE_FIELDS = {
+    'amount', 'subtype', 'address', 'snapshot', 'type', 'uid', 'trace', 'time',
+    'uid:source', 'uid:function', 'uid:line'
+}
 # number of unique values in 'amount' key in memory profile
 _MEMORY_AMOUNT_COUNT = 6
 # expected 'amount' list of memory profile
@@ -59,7 +61,7 @@ def profile_filter(generator, rule):
         rule(str): string to search in the name
 
     Returns:
-        dict: first profile with name containing the rule
+        Profile: first profile with name containing the rule
     """
     # Loop the generator and test the rule
     for profile in generator:
@@ -90,7 +92,7 @@ def sort_flattened_structure(structure):
 
 
 def test_memory_prof_resources(query_profiles):
-    """Test 'all_resources_of' on memory profile that has some.
+    """Test 'all_resources' on memory profile that has some.
 
     Expected _MEMORY_RESOURCES_COUNT resources.
     """
@@ -99,12 +101,12 @@ def test_memory_prof_resources(query_profiles):
     assert mem_profile is not None
 
     # Get all resource fields of the memory profile
-    resources = list(query.all_resources_of(mem_profile))
+    resources = list(mem_profile.all_resources())
     assert len(resources) == _MEMORY_RESOURCES_COUNT
 
 
 def test_memory_prof_resources_empty(query_profiles):
-    """Test 'all_resources_of' on memory profile that has none.
+    """Test 'all_resources' on memory profile that has none.
 
     Expected 0 resources.
     """
@@ -113,12 +115,12 @@ def test_memory_prof_resources_empty(query_profiles):
     assert mem_profile is not None
 
     # Get all resource fields of the memory profile
-    resources = list(query.all_resources_of(mem_profile))
+    resources = list(mem_profile.all_resources())
     assert not resources
 
 
 def test_complexity_prof_resources(query_profiles):
-    """Test 'all_resources_of' on complexity profile that has some.
+    """Test 'all_resources' on complexity profile that has some.
 
     Expected _COMPLEXITY_RESOURCES_COUNT resources.
     """
@@ -127,12 +129,12 @@ def test_complexity_prof_resources(query_profiles):
     assert complexity_profile is not None
 
     # Get all resource fields of the complexity profile
-    resources = list(query.all_resources_of(complexity_profile))
+    resources = list(complexity_profile.all_resources())
     assert len(resources) == _COMPLEXITY_RESOURCES_COUNT
 
 
 def test_complexity_prof_resources_empty(query_profiles):
-    """Test 'all_resources_of' on complexity profile that has none.
+    """Test 'all_resources' on complexity profile that has none.
 
     Expected 0 resources.
     """
@@ -141,33 +143,8 @@ def test_complexity_prof_resources_empty(query_profiles):
     assert complexity_profile is not None
 
     # Get all resource fields of the complexity profile
-    resources = list(query.all_resources_of(complexity_profile))
+    resources = list(complexity_profile.all_resources())
     assert not resources
-
-
-def test_resources_corrupted(query_profiles):
-    """Test 'all_resources_of' on corrupted profiles.
-
-    Expected IncorrectProfileFormatException-s.
-    """
-    query_profiles, query_profiles_copy = itertools.tee(query_profiles)
-    # Acquire the query profile with corrupted global section
-    corrupted_profile = profile_filter(query_profiles, 'corrupted-global.perf')
-    assert corrupted_profile is not None
-
-    # Get all resources in profile that has corrupted global structure
-    with pytest.raises(exceptions.IncorrectProfileFormatException) as exc:
-        list(query.all_resources_of(corrupted_profile))
-    assert 'Expected dictionary' in str(exc.value)
-
-    # Acquire the query profile with corrupted global section
-    corrupted_profile = profile_filter(query_profiles_copy, 'corrupted-snapshots.perf')
-    assert corrupted_profile is not None
-
-    # Get all resources in profile that has corrupted snapshots structure
-    with pytest.raises(exceptions.IncorrectProfileFormatException) as exc:
-        list(query.all_resources_of(corrupted_profile))
-    assert 'Missing key in ' in str(exc.value)
 
 
 def test_all_models(query_profiles):
@@ -180,7 +157,7 @@ def test_all_models(query_profiles):
     assert models_profile is not None
 
     # Get all models in profile that contains them
-    models = list(query.all_models_of(models_profile))
+    models = list(models_profile.all_models())
     assert len(models) == _MODELS_COUNT
 
 
@@ -194,23 +171,8 @@ def test_all_models_empty(query_profiles):
     assert models_profile is not None
 
     # Get all models in profile that has none
-    models = list(query.all_models_of(models_profile))
+    models = list(models_profile.all_models())
     assert not models
-
-
-def test_all_models_corrupted(query_profiles):
-    """Test 'all_models_of' on corrupted profile.
-
-    Expected IncorrectProfileFormatException.
-    """
-    # Acquire the query profile with corrupted global section
-    corrupted_profile = profile_filter(query_profiles, 'corrupted-global.perf')
-    assert corrupted_profile is not None
-
-    # Get all models in profile that has corrupted structure
-    with pytest.raises(exceptions.IncorrectProfileFormatException) as exc:
-        list(query.all_models_of(corrupted_profile))
-    assert 'is not a dictionary' in str(exc.value)
 
 
 def test_all_items_of_memory_resources(query_profiles):
@@ -223,7 +185,7 @@ def test_all_items_of_memory_resources(query_profiles):
     assert mem_profile is not None
 
     # Get the first resource in the profile
-    _, resources = next(query.all_resources_of(mem_profile))
+    _, resources = next(mem_profile.all_resources())
     items = list(query.all_items_of(resources))
 
     # Sort the resources and flattened key to allow comparison
@@ -235,8 +197,8 @@ def test_all_items_of_memory_resources(query_profiles):
     # TODO: compare
     assert len(items) == _MEMORY_RESOURCE_ITEMS_COUNT
 
-
-# TODO: Speed up the pull request, add more advanced tests later
+    resources = query.all_resource_fields_of(mem_profile)
+    assert set(resources) == _MEMORY_RESOURCE_FIELDS
 
 
 def test_unique_resource_values(query_profiles):

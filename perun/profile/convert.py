@@ -56,7 +56,7 @@ def resources_to_pandas_dataframe(profile):
         0  main:../memo...:22         main        22   ../memory_collect_test.c
         1  main:../memo...:27         main        27   ../memory_collect_test.c
 
-    :param dict profile: dictionary with profile w.r.t. :ref:`profile-spec`
+    :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
     :returns: converted profile to ``pandas.DataFramelist`` with resources
         flattened as a pandas dataframe
     """
@@ -64,7 +64,7 @@ def resources_to_pandas_dataframe(profile):
     values = {key: [] for key in resource_keys}
     values['snapshots'] = []
 
-    for (snapshot, resource) in query.all_resources_of(profile):
+    for (snapshot, resource) in profile.all_resources():
         values['snapshots'].append(snapshot)
         flattened_resource = dict(list(query.all_items_of(resource)))
         for resource_key in resource_keys:
@@ -118,12 +118,22 @@ def to_heap_map_format(profile):
     snapshots) and is meant for detecting inefficient allocations or
     fragmentations of memory space.
 
-    :param dict profile: profile w.r.t. :ref:`profile-spec` of **memory**
+    :param Profile profile: profile w.r.t. :ref:`profile-spec` of **memory**
         `type`
     :returns: dictionary containing heap map representation usable for
         :ref:`views-heapmap` visualization module.
     """
-    snapshots = [a for a in profile['snapshots']]
+    stored_snapshots = list(profile.all_snapshots())
+    time_sampling = max([
+        float(snap[-1].get('time', 0.0)) for (_, snap) in stored_snapshots if snap
+    ]) / len(stored_snapshots)
+    snapshots = [
+        {
+            'time': (time_sampling + 1) * no,
+            'snapshot': no,
+            'resources': snapshot
+        } for (no, snapshot) in stored_snapshots
+    ]
 
     # modifying the memory profile to heap map representation
     for snap in snapshots:
@@ -141,11 +151,13 @@ def to_heap_map_format(profile):
     elif glob_stats['max_address'] - glob_stats['min_address'] > 1000000:
         glob_stats['max_address'] = glob_stats['min_address'] + 1000000
 
-    return {'type': 'heap',
-            'snapshots': snapshots,
-            'info': chunks,
-            'stats': glob_stats,
-            'unit': profile['header']['units']['memory']}
+    return {
+        'type': 'heap',
+        'snapshots': snapshots,
+        'info': chunks,
+        'stats': glob_stats,
+        'unit': profile['header']['units']['memory']
+    }
 
 
 def to_heat_map_format(profile):
@@ -172,14 +184,14 @@ def to_heat_map_format(profile):
     snapshots represented by value representing the colours. The `warmer` the
     colour the more it was allocated on the concrete address.
 
-    :param dict profile: profile w.r.t. :ref:`profile-spec` of **memory**
+    :param Profile profile: profile w.r.t. :ref:`profile-spec` of **memory**
         `type`
     :returns: dictionary containing heat map representation usable for
         :ref:`views-heapmap` visualization module.
     """
     resources = []
-    for snap in profile['snapshots']:
-        resources.extend(snap['resources'])
+    for _, snapshot in profile.all_snapshots():
+        resources.extend(snapshot)
 
     # adding statistics
     max_address = max(item.get('address', 0) + item.get('amount', 0)
@@ -408,12 +420,12 @@ def to_flame_graph_format(profile):
     allocated memory) preceeded by its trace (i.e. functions or other unique
     identifiers joined using ``;`` character.
 
-    :param dict profile: the memory profile
+    :param Profile profile: the memory profile
     :returns: list of lines, each representing one allocation call stack
     """
     stacks = []
-    for snap in profile['snapshots']:
-        for alloc in snap['resources']:
+    for _, snapshot in profile.all_snapshots():
+        for alloc in snapshot:
             if alloc['subtype'] != 'free':
                 stack_str = ""
                 for frame in alloc['trace']:

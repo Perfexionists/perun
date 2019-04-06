@@ -17,52 +17,10 @@ complex queries and statistical tests over the profiles.
 
 import operator
 import numbers
-import perun.utils.exceptions as exceptions
 import perun.utils.helpers as helpers
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = "Jiri Pavela"
-
-
-def all_resources_of(profile):
-    """Generator for iterating through all of the resources contained in the
-    performance profile.
-
-    Generator iterates through all of the snapshots, and subsequently yields
-    collected resources. For more thorough description of format of resources
-    refer to :pkey:`resources`. Resources are not flattened and, thus, can
-    contain nested dictionaries (e.g. for `traces` or `uids`).
-
-    :param dict profile: performance profile w.r.t :ref:`profile-spec`
-    :returns: iterable stream of resources represented as pair ``(int, dict)``
-        of snapshot number and the resources w.r.t. the specification of the
-        :pkey:`resources`
-    :raises AttributeError: when the profile is not in the format as given
-        by :ref:`profile-spec`
-    :raises KeyError: when the profile misses some expected key, as given
-        by :ref:`profile-spec`
-    """
-    try:
-        # Get snapshot resources
-        snapshots = profile.get('snapshots', [])
-        for snap_no, snapshot in enumerate(snapshots):
-            for resource in snapshot['resources']:
-                yield snap_no, resource
-
-        # Get global resources
-        resources = profile.get('global', {}).get('resources', [])
-        for resource in resources:
-            yield len(snapshots), resource
-
-    except AttributeError as attr_error:
-        # Element is not dict-like type with get method
-        raise exceptions.IncorrectProfileFormatException(
-            'profile', "Expected dictionary, got different type:".format(str(attr_error))
-        ) from None
-    except KeyError as key_error:
-        # Dictionary does not contain specified key
-        raise exceptions.IncorrectProfileFormatException(
-            'profile', "Missing key in dictionary: {}".format(str(key_error))) from None
 
 
 def flattened_values(root_key, root_value):
@@ -162,11 +120,11 @@ def all_resource_fields_of(profile):
             'type', 'amount', 'structure-unit-size', 'subtype', 'uid'
         ]
 
-    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :param Profile profile: performance profile w.r.t :ref:`profile-spec`
     :returns: iterable stream of resource field keys represented as `str`
     """
     resource_fields = set()
-    for (_, resource) in all_resources_of(profile):
+    for (_, resource) in profile.all_resources():
         for key, __ in all_items_of(resource):
             if key not in resource_fields:
                 resource_fields.add(key)
@@ -190,13 +148,13 @@ def all_numerical_resource_fields_of(profile):
         time_num_resource_fields = ['amount']
         complexity_num_resource_fields = ['amount', 'structure-unit-size']
 
-    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :param Profile profile: performance profile w.r.t :ref:`profile-spec`
     :returns: iterable stream of resource fields key as `str`, that takes
         integer values
     """
     resource_fields = set()
     exclude_fields = set()
-    for (_, resource) in all_resources_of(profile):
+    for (_, resource) in profile.all_resources():
         for key, value in all_items_of(resource):
             # Instances that are not numbers are removed from the resource fields (i.e. there was
             # some inconsistency between value) and added to exclude for future usages
@@ -234,12 +192,12 @@ def unique_resource_values_of(profile, resource_key):
         ['SLList_init(SLList*)', 'SLList_search(SLList*, int)',
          'SLList_insert(SLList*, int)', 'SLList_destroy(SLList*)']
 
-    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :param Profile profile: performance profile w.r.t :ref:`profile-spec`
     :param str resource_key: the resources key identifier whose unique values
         will be iterated
     :returns: iterable stream of unique resource key values
     """
-    for value in _unique_values_generator(profile, resource_key, all_resources_of):
+    for value in _unique_values_generator(resource_key, profile.all_resources):
         yield value
 
 
@@ -288,48 +246,6 @@ def all_key_values_of(resource, resource_key):
     yield resource
 
 
-def all_models_of(profile):
-    """Generator of all 'models' records from the performance profile w.r.t.
-    :ref:`profile-spec`.
-
-    Takes a profile, postprocessed by :ref:`postprocessors-regression-analysis`
-    and iterates through all of its models (for more details about models refer
-    to :pkey:`models` or :ref:`postprocessors-regression-analysis`).
-
-    E.g. given some trace profile ``complexity_prof``, we can iterate its
-    models as follows:
-
-        >>> gen = query.all_models_of(complexity_prof)
-        >>> gen.__next__()
-        (0, {'x_interval_start': 0, 'model': 'constant', 'method': 'full',
-        'coeffs': [{'name': 'b0', 'value': 0.5644496762801648}, {'name': 'b1',
-        'value': 0.0}], 'uid': 'SLList_insert(SLList*, int)', 'r_square': 0.0,
-        'x_interval_end': 11892})
-        >>> gen.__next__()
-        (1, {'x_interval_start': 0, 'model': 'exponential', 'method': 'full',
-        'coeffs': [{'name': 'b0', 'value': 0.9909792049684152}, {'name': 'b1',
-        'value': 1.000004056250301}], 'uid': 'SLList_insert(SLList*, int)',
-        'r_square': 0.007076437903106431, 'x_interval_end': 11892})
-
-
-    :param dict profile: performance profile w.r.t :ref:`profile-spec`
-    :returns: iterable stream of ``(int, dict)`` pairs, where first yields the
-        positional number of model and latter correponds to one 'models'
-        record (for more details about models refer to :pkey:`models` or
-        :ref:`postprocessors-regression-analysis`)
-    """
-    # Get models if any
-    try:
-        models = profile.get('global', {}).get('models', [])
-    except AttributeError:
-        # global is not dict-like type with get method
-        raise exceptions.IncorrectProfileFormatException(
-            'profile', "'global' is not a dictionary") from None
-
-    for model_idx, model in enumerate(models):
-        yield model_idx, model
-
-
 def unique_model_values_of(profile, model_key):
     """Generator of all unique key values occurring in the models in the
     resources of given performance profile w.r.t. :ref:`profile-spec`.
@@ -344,35 +260,35 @@ def unique_model_values_of(profile, model_key):
     E.g. given some trace profile ``complexity_prof``, we can obtain
     unique values of keys from `models` as follows:
 
-        >>> list(query.unique_model_values_of(complexity_prof, 'model')
+        >>> list(query.unique_model_values_of('model')
         ['constant', 'exponential', 'linear', 'logarithmic', 'quadratic']
-        >>> list(query.unique_model_values_of(cprof, 'r_square'))
+        >>> list(query.unique_model_values_of('r_square'))
         [0.0, 0.007076437903106431, 0.0017560012128507133,
          0.0008704119815403224, 0.003480627284909902, 0.001977866710139782,
          0.8391363620083871, 0.9840099999298596, 0.7283427343995424,
          0.9709120064750161, 0.9305786182556899]
 
-    :param dict profile: performance profile w.r.t :ref:`profile-spec`
+    :param Profile profile: performance profile w.r.t :ref:`profile-spec`
     :param str model_key: key identifier from `models` for which we query
         its unique values
     :returns: iterable stream of unique model key values
     """
-    for value in _unique_values_generator(profile, model_key, all_models_of):
+    for value in _unique_values_generator(model_key, profile.all_models):
         yield value
 
 
-def _unique_values_generator(profile, key, blocks_gen):
+def _unique_values_generator(key, blocks_gen):
     """Generator of all unique values of 'key' occurring in the profile blocks generated by
     'blocks_gen'.
 
     :param dict profile: valid profile with models
     :param str key: the key identifier whose unique values are returned
-    :param iterable blocks_gen: the data blocks generator (e.g. all_resources_of)
+    :param iterable blocks_gen: the data blocks generator (e.g. all_resources of Profile)
     :returns iterable: stream of unique key values
     """
     # value can be dict, list, set etc and not only simple type, thus the list
     unique_values = list()
-    for (_, resource) in blocks_gen(profile):
+    for (_, resource) in blocks_gen():
         # Get all values the key contains
         for value in all_key_values_of(resource, key):
             # Return only the unique ones

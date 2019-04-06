@@ -1,5 +1,6 @@
 """Normalizer is a simple postprocessor that normalizes the values."""
 
+import operator
 import click
 
 import perun.logic.runner as runner
@@ -48,16 +49,11 @@ def normalize_resources(resources):
 
 def postprocess(profile, **_):
     """
-    :param dict profile: json-like profile that will be preprocessed by normalizer
+    :param Profile profile: json-like profile that will be preprocessed by normalizer
     """
-    # Normalize global profile
-    if 'global' in profile.keys():
-        normalize_resources(profile['global']['resources'])
-
-    # Normalize each snapshot
-    if 'snapshots' in profile.keys():
-        for snapshot in profile['snapshots']:
-            normalize_resources(snapshot['resources'])
+    resources = list(map(operator.itemgetter(1), profile.all_resources()))
+    normalize_resources(resources)
+    profile.update_resources(resources, clear_existing_resources=True)
 
     return PostprocessStatus.OK, "", {'profile': profile}
 

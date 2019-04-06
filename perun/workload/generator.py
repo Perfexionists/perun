@@ -10,6 +10,7 @@
 import distutils.util as dutils
 import perun.utils.log as log
 import perun.profile.helpers as profile
+import perun.profile.factory as factory
 
 from perun.utils.helpers import CollectStatus
 
@@ -39,7 +40,7 @@ class Generator:
 
         :return: tuple of collection status and collected profile
         """
-        collective_profile, collective_status = {}, CollectStatus.OK
+        collective_profile, collective_status = factory.Profile(), CollectStatus.OK
 
         for workload in self._generate_next_workload():
             self.job.collector.params['workload'] = str(workload)
@@ -53,7 +54,7 @@ class Generator:
                     CollectStatus.ERROR if collective_status == CollectStatus.ERROR else c_status
                 collective_profile = profile.merge_resources_of(collective_profile, prof)
 
-        if collective_profile:
+        if not self.for_each:
             yield collective_status, collective_profile
 
     def _generate_next_workload(self):

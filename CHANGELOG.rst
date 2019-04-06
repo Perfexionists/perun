@@ -6,6 +6,10 @@ HEAD
 
 **To be included in next release**
 
+  - make profile format more compact
+  - fix minor issue in fast check
+  - extract selected functions from query to profile object
+
 0.16.9-hotfix (2019-06-18)
 --------------------------
 
@@ -94,7 +98,7 @@ HEAD
 **Add kernel non-parametric regression**
 
   - fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+
-  - add three kernel non-parametrikjc regression models (see :ref:`_postprocessors-kernel-regression`)
+  - add three kernel non-parametrik regression models (see :ref:`_postprocessors-kernel-regression`)
   - fix minor issues in moving average and regressogram
 
 0.16.3 (2019-03-02)

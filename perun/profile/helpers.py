@@ -428,23 +428,15 @@ def sort_profiles(profile_list, reverse_profiles=True):
 def merge_resources_of(lhs, rhs):
     """Merges the resources of lhs and rhs profiles
 
-    :param dict lhs: left operator of the profile merge
-    :param dict rhs: right operator of the profile merge
+    :param Profile lhs: left operator of the profile merge
+    :param Profile rhs: right operator of the profile merge
     :return: profile with merged resources
     """
     # Return lhs/rhs if rhs/lhs is empty
-    if not rhs:
-        return lhs
-    if not lhs:
-        return rhs
-
-    # Note that we assume  that lhs and rhs are the same type ;)
-    if 'global' in lhs.keys() and lhs['global']:
-        lhs['global']['resources'].extend(rhs['global']['resources'])
-        lhs['global']['timestamp'] += rhs['global']['timestamp']
-
-    if 'snapshots' in lhs.keys():
-        lhs['snapshots'].extend(rhs['snapshots'])
+    lhs_res = [res[1] for res in lhs.all_resources()] if lhs else []
+    rhs_res = [res[1] for res in rhs.all_resources()] if rhs else []
+    lhs_res.extend(rhs_res)
+    lhs.update_resources(lhs_res, clear_existing_resources=True)
 
     return lhs
 

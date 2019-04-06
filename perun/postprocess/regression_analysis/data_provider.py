@@ -2,7 +2,6 @@
 
 from operator import itemgetter
 
-import perun.profile.query as query
 import perun.profile.convert as convert
 
 
@@ -29,7 +28,7 @@ def resource_sort_key(resource):
 def generic_profile_provider(profile, of_key, per_key, **_):
     """Data provider for trace collector profiling output.
 
-    :param dict profile: the trace profile dictionary
+    :param Profile profile: the trace profile dictionary
     :param str of_key: key for which we are finding the model
     :param str per_key: key of the independent variable
     :param dict _: rest of the key arguments
@@ -37,7 +36,7 @@ def generic_profile_provider(profile, of_key, per_key, **_):
         name
     """
     # Get the file resources contents
-    resources = list(map(itemgetter(1), query.all_resources_of(profile)))
+    resources = list(map(itemgetter(1), profile.all_resources()))
 
     # Sort the dictionaries by function name for easier traversing
     resources = sorted(resources, key=resource_sort_key)

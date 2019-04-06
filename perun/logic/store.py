@@ -383,4 +383,8 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
     try:
         return Profile(json.loads(body))
     except ValueError:
-        raise IncorrectProfileFormatException(file_name, "profile '{}' is not in profile format")
+        raise IncorrectProfileFormatException(
+            file_name, "profile '{}' is not in profile format".format(
+                file_name
+            )
+        )

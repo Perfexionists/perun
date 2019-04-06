@@ -8,13 +8,23 @@ regions and flatten the format.
 
 import collections
 import click
+import operator
+import itertools
+
+import perun.profile.convert as convert
 
 __author__ = 'Tomas Fiedor'
 
 class Profile(collections.MutableMapping):
     """
     :ivar dict _storage: internal storage of the profile
+    :ivar dict _tuple_to_resource_type_map: map of tuple of persistent records of resources to
+        unique identifier of those resources
+    :ivar Counter _uid_counter: counter of how many resources type uid has
     """
+    collectable = ('amount', 'structure-unit-size', 'address')
+    persistent = ('trace', 'type', 'subtype', 'uid')
+
     def __init__(self, *args, **kwargs):
         """Initializes the internal storage
 
@@ -22,13 +32,106 @@ class Profile(collections.MutableMapping):
         :param kwargs kwargs: keyword arguments for dictionary
         """
         super().__init__()
-        self._storage = dict(*args, **kwargs)
+        initialization_data = dict(*args, **kwargs)
+        global_data = initialization_data.get('global', {'models': []})
+        self._storage = {
+            'resources': {},
+            'resource_type_map': {},
+            'models': global_data.get('models', []) if isinstance(global_data, dict) else []
+        }
+        self._tuple_to_resource_type_map = {}
+        self._uid_counter = collections.Counter()
+
+        for key, value in initialization_data.items():
+            if key in ('resources', 'snapshots', 'global'):
+                self.update_resources(value, key)
+            else:
+                self._storage[key] = value
+
+    def update_resources(self, resource_list, resource_type='list', clear_existing_resources=False):
+        """Given by @p resource_type updates the storage with new flattened resources
+
+        This calls appropriate functions to translate older formats of resources to the
+        new more efficient representation.
+
+        :param list resource_list: either list or dict
+        :param str resource_type: type of the resources in the resources list,
+            can either be snapshots (then it is list of different snapshots), global
+            then it is old type of profile) or it can be resource l
+        :param bool clear_existing_resources: if set to true, then the actual storage will be cleared
+            before updating the resources
+        :return:
+        """
+        if clear_existing_resources:
+            self._storage['resources'].clear()
+        if resource_type == 'global' and isinstance(resource_list, dict) and resource_list:
+            # Resources are in type of {'time': _, 'resources': []}
+            self._translate_resources(resource_list['resources'], {
+                'time': resource_list.get('time', '0.0')
+            })
+        elif resource_type == 'snapshots':
+            # Resources are in type of [{'time': _, 'resources': []}
+            for i, snapshot in enumerate(resource_list):
+                self._translate_resources(snapshot['resources'], {
+                    'snapshot': i,
+                    'time': snapshot.get('time', '0.0')}
+                )
+        elif isinstance(resource_list, (dict, Profile)):
+            self._storage['resources'].update(resource_list)
+        else:
+            self._translate_resources(resource_list, {})
+
+    def _translate_resources(self, resource_list, additional_params):
+        """Translate the list of resources to efficient format
+
+        Given a list of resources, this is all flattened into a new format: a dictionary that
+        maps unique resource identifiers (set of persistent properties) to list of collectable
+        properties (such as ammounts, addresses, etc.)
+
+        :param resource_list:
+        :param additional_params:
+        :return:
+        """
+        # Fixme: what if there is already something? Test update
+        for resource in resource_list:
+            persistent_properties = [
+                (key, value) for (key, value) in resource.items() if key not in Profile.collectable
+            ]
+            persistent_properties.extend(list(additional_params.items()))
+            persistent_properties.sort(key=operator.itemgetter(0))
+            collectable_properties = [
+                (key, value) for (key, value) in resource.items() if key in Profile.collectable
+            ]
+            resource_type = self.register_resource_type(resource['uid'], tuple(persistent_properties))
+            if resource_type not in self._storage['resources'].keys():
+                self._storage['resources'][resource_type] = {
+                    key: [] for (key, _) in collectable_properties
+                }
+            for (key, value) in collectable_properties:
+                self._storage['resources'][resource_type][key].append(value)
+
+    def register_resource_type(self, uid, persistent_properties):
+        """Registers tuple of persistent properties under new key or return existing one
+
+        :param str uid: uid of the resource that will be used to describe the resource type
+        :param tuple persistent_properties: tuple or persistent properties
+        :return: uid corresponding to the tuple of persistent properties
+        """
+        property_key = str(convert.flatten(persistent_properties))
+        uid_key = convert.flatten(uid)
+        if property_key not in self._tuple_to_resource_type_map.keys():
+            new_type = "{}#{}".format(uid_key, self._uid_counter[uid_key])
+            self._tuple_to_resource_type_map[property_key] = new_type
+            self._uid_counter[uid_key] += 1
+            self._storage['resource_type_map'][new_type] = {
+                key: value for (key, value) in persistent_properties
+            }
+        return self._tuple_to_resource_type_map[property_key]
 
     def __getitem__(self, item):
         """Returns the item stored in profile
 
-        This does a translation from the internal storage, which keeps some
-        regions as chunks either in resource or config map.
+        Note: No translation of resources is performed! Use all_resources instead!
 
         :param str item: key of the item we are getting
         :return: item stored in the profile
@@ -40,6 +143,8 @@ class Profile(collections.MutableMapping):
 
         Internally this finds a similar regions and registers them in either
         resource or config map.
+
+        Note: No translation of resources is performed! Use update_resources instead!
 
         :param str key: key of the value
         :param object value:  object we are setting in the profile
@@ -74,6 +179,79 @@ class Profile(collections.MutableMapping):
         :return: serializable representation (i.e. the actual storage)
         """
         return self._storage
+
+    def all_resources(self):
+        """Generator for iterating through all of the resources contained in the
+        performance profile.
+
+        Generator iterates through all of the snapshots, and subsequently yields
+        collected resources. For more thorough description of format of resources
+        refer to :pkey:`resources`. Resources are not flattened and, thus, can
+        contain nested dictionaries (e.g. for `traces` or `uids`).
+
+        :returns: iterable stream of resources represented as pair ``(int, dict)``
+            of snapshot number and the resources w.r.t. the specification of the
+            :pkey:`resources`
+        """
+        for resource_type, resources in self._storage['resources'].items():
+            # uid: {...}
+            persistent_properties = self._storage['resource_type_map'][resource_type]
+            resource_keys = resources.keys()
+            for resource_values in zip(*resources.values()):
+                collectable_properties = dict(zip(resource_keys, resource_values))
+                collectable_properties.update(persistent_properties)
+                snapshot_number = collectable_properties.get('snapshot', 0)
+                yield snapshot_number, collectable_properties
+
+    def all_models(self):
+        """Generator of all 'models' records from the performance profile w.r.t.
+        :ref:`profile-spec`.
+
+        Form a profile, postprocessed by e.g. :ref:`postprocessors-regression-analysis`
+        and iterates through all of its models (for more details about models refer
+        to :pkey:`models` or :ref:`postprocessors-regression-analysis`).
+
+        E.g. given some trace profile ``complexity_prof``, we can iterate its
+        models as follows:
+
+            >>> gen = complexity_prof.all_models()
+            >>> gen.__next__()
+            (0, {'x_interval_start': 0, 'model': 'constant', 'method': 'full',
+            'coeffs': [{'name': 'b0', 'value': 0.5644496762801648}, {'name': 'b1',
+            'value': 0.0}], 'uid': 'SLList_insert(SLList*, int)', 'r_square': 0.0,
+            'x_interval_end': 11892})
+            >>> gen.__next__()
+            (1, {'x_interval_start': 0, 'model': 'exponential', 'method': 'full',
+            'coeffs': [{'name': 'b0', 'value': 0.9909792049684152}, {'name': 'b1',
+            'value': 1.000004056250301}], 'uid': 'SLList_insert(SLList*, int)',
+            'r_square': 0.007076437903106431, 'x_interval_end': 11892})
+
+
+        :param dict profile: performance profile w.r.t :ref:`profile-spec`
+        :returns: iterable stream of ``(int, dict)`` pairs, where first yields the
+            positional number of model and latter correponds to one 'models'
+            record (for more details about models refer to :pkey:`models` or
+            :ref:`postprocessors-regression-analysis`)
+        """
+        for model_idx, model in enumerate(self._storage['models']):
+            yield model_idx, model
+
+    def all_snapshots(self):
+        """Iterates through all the snapshots in resources
+
+        Note this is required e.g. for heap map, which needs to group the resources by
+        snapshots.
+
+        :return: iterable of snapshot numbers and snapshot resources
+        """
+        all_resources = list(self.all_resources())
+        all_resources.sort(key=operator.itemgetter(0))
+        snapshot_map = collections.defaultdict(list)
+        for no, res in itertools.groupby(all_resources, operator.itemgetter(0)):
+            snapshot_map[no] = list(map(operator.itemgetter(1), res))
+        maximal_snapshot = max(snapshot_map.keys())
+        for i in range(0, maximal_snapshot+1):
+            yield i, snapshot_map[i]
 
 # Click helper
 pass_profile = click.make_pass_decorator(Profile)
