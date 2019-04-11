@@ -6,6 +6,7 @@ This module encapulates such functions, so they can be used in CLI, in tests, in
 
 import json
 import os
+import re
 from ruamel.yaml import YAML
 
 import perun.utils.log as log
@@ -19,7 +20,9 @@ def store_json(profile, file_path):
     :param str file_path: output path, where the `profile` will be stored
     """
     with open(file_path, 'w') as profile_handle:
-        json.dump(profile, profile_handle, indent=2)
+        serialized_profile = json.dumps(profile, indent=2)
+        serialized_profile = re.sub(r",\s+(\d+)",  r", \1", serialized_profile)
+        profile_handle.write(serialized_profile)
 
 
 def safely_load_yaml_from_file(yaml_file):
