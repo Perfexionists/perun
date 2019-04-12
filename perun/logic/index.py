@@ -15,8 +15,10 @@ import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
 import perun.logic.store as store
 import perun.logic.pcs as pcs
+import perun.logic.commands as commands
 
-from perun.utils.exceptions import EntryNotFoundException, MalformedIndexFileException
+from perun.utils.exceptions import (EntryNotFoundException, MalformedIndexFileException,
+                                    IndexNotFoundException)
 
 
 __author__ = 'Tomas Fiedor'
@@ -479,6 +481,62 @@ def lookup_all_entries_within_index(index_handle, predicate):
     :returns [BasicIndexEntry]: list of index entries satisfying given predicate
     """
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
+
+
+def find_minor_index(minor_version):
+    """ Finds the corresponding index for the minor version or raises EntryNotFoundException if
+    the index was not found.
+
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return str: path to the index file
+    """
+    # Find the index file
+    _, index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
+    if not os.path.exists(index_file):
+        raise IndexNotFoundException(index_file)
+    return index_file
+
+
+@commands.lookup_minor_version
+def find_profile_entry(profile, minor_version):
+    """ Finds the profile entry within the index file of the minor version.
+
+    :param str profile: the profile identification, can be given as tag, sha value,
+                        sha-path (path to tracked profile in obj) or source-name
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return IndexEntry: the profile entry from the index file
+    """
+
+    def sha_path_to_sha(sha_path):
+        """ Transforms the path of the minor version directory (represented by the SHA value) to
+        the actual SHA value as a string.
+
+        :param str sha_path: path to the minor version directory
+        :return str: the SHA value of the minor version
+        """
+        rest, lower_level = os.path.split(sha_path.rstrip(os.sep))
+        _, upper_level = os.path.split(rest.rstrip(os.sep))
+        return upper_level + lower_level
+
+    minor_index = find_minor_index(minor_version)
+
+    # If profile is given as tag, obtain the sha-path of the file
+    tag_match = store.INDEX_TAG_REGEX.match(profile)
+    if tag_match:
+        profile = commands.get_nth_profile_of(int(tag_match.group(1)), minor_version)
+    # Transform the sha-path (obtained or given) to the sha value
+    if not store.is_sha1(profile) and not profile.endswith('.perf'):
+        profile = sha_path_to_sha(profile)
+
+    # Search the minor index for the requested profile
+    with open(minor_index, 'rb') as index_handle:
+        # The profile can be only sha value or source path now
+        if store.is_sha1(profile):
+            return lookup_entry_within_index(index_handle, lambda x: x.checksum == profile, profile)
+        else:
+            return lookup_entry_within_index(index_handle, lambda x: x.path == profile, profile)
 
 
 def register_in_pending_index(registered_file, profile):

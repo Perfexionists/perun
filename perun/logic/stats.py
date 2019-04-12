@@ -60,7 +60,7 @@ def build_stats_filename_as_profile_source(profile, ignore_timestamp, minor_vers
 
     :return str: the generated stats filename (not path!)
     """
-    profile_index_entry = _find_profile_entry(profile, minor_version)
+    profile_index_entry = index.find_profile_entry(profile, minor_version)
     stats_name = profile_index_entry.path
     if ignore_timestamp:
         # Remove the timestamp entry in the profile name
@@ -81,7 +81,7 @@ def build_stats_filename_as_profile_sha(profile, minor_version=None):
 
     :return str: the generated stats filename (not path!)
     """
-    return _find_profile_entry(profile, minor_version).checksum
+    return index.find_profile_entry(profile, minor_version).checksum
 
 
 def get_stats_file_path(stats_filename, minor_version=None, check_existence=False):
@@ -211,6 +211,20 @@ def _add_to_dict(dictionary, sid, content):
     dictionary[sid] = content
 
 
+def _update_or_add_to_dict(dictionary, sid, extension):
+    """ A helper function that updates the stats content in the given dict under the ID or creates
+    the new ID with the 'extension' content if it does not exist
+
+    :param dict dictionary: the dictionary where the content will be stored
+    :param str sid: a string that serves as a unique identification of the stored stats
+    :param dict extension: the stats data to save
+    """
+    if sid in dictionary:
+        dictionary[sid].update(extension)
+    else:
+        _add_to_dict(dictionary, sid, extension)
+
+
 @commands.lookup_minor_version
 def _touch_minor_stats_directory(minor_version):
     """ Touches the stats directories - upper (first byte of the minor version SHA) and lower (the
@@ -239,52 +253,6 @@ def _find_minor_stats_directory(minor_version):
     """
     _, minor_dir = store.split_object_name(pcs.get_stats_directory(), minor_version)
     return os.path.exists(minor_dir), minor_dir
-
-
-def _find_minor_index(minor_version):
-    """ Finds the corresponding index for the minor version or raises EntryNotFoundException if
-    the index was not found.
-
-    :param str minor_version: the minor version representation or None for HEAD
-
-    :return str: path to the index file
-    """
-    # Find the index file
-    _, index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
-    if not os.path.exists(index_file):
-        raise exceptions.IndexNotFoundException(index_file)
-    return index_file
-
-
-@commands.lookup_minor_version
-def _find_profile_entry(profile, minor_version):
-    """ Finds the profile entry within the index file of the minor version.
-
-    :param str profile: the profile identification, can be given as tag, sha value,
-                        sha-path (path to tracked profile in obj) or source-name
-    :param str minor_version: the minor version representation or None for HEAD
-
-    :return IndexEntry: the profile entry from the index file
-    """
-    minor_index = _find_minor_index(minor_version)
-
-    # If profile is given as tag, obtain the sha-path of the file
-    tag_match = store.INDEX_TAG_REGEX.match(profile)
-    if tag_match:
-        profile = commands.get_nth_profile_of(int(tag_match.group(1)), minor_version)
-    # Transform the sha-path (obtained or given) to the sha value
-    if not store.is_sha1(profile) and not profile.endswith('.perf'):
-        profile = _sha_path_to_sha(profile)
-
-    # Search the minor index for the requested profile
-    with open(minor_index, 'rb') as index_handle:
-        # The profile can be only sha value or source path now
-        if store.is_sha1(profile):
-            return index.lookup_entry_within_index(index_handle, lambda x: x.checksum == profile,
-                                                   profile)
-        else:
-            return index.lookup_entry_within_index(index_handle, lambda x: x.path == profile,
-                                                   profile)
 
 
 def _load_stats_from(stats_handle):
@@ -330,15 +298,3 @@ def _modify_stats_file(stats_filepath, stats_ids, stats_contents, modify_functio
         for idx in range(min(len(stats_ids), len(stats_contents))):
             modify_function(stats_records, stats_ids[idx], stats_contents[idx])
         _save_stats_to(stats_handle, stats_records)
-
-
-def _sha_path_to_sha(sha_path):
-    """ Transforms the path of the minor version directory (represented by the SHA value) to the
-    actual SHA value as a string.
-
-    :param str sha_path: path to the minor version directory
-    :return str: the SHA value of the minor version
-    """
-    rest, lower_level = os.path.split(sha_path.rstrip(os.sep))
-    _, upper_level = os.path.split(rest.rstrip(os.sep))
-    return upper_level + lower_level
