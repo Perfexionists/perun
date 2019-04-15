@@ -502,6 +502,33 @@ def pcs_with_empty_git():
 
 
 @pytest.fixture(scope="function")
+def pcs_with_git_root_commit():
+    """
+    """
+    # Change working dir into the temporary directory
+    pcs_path = tempfile.mkdtemp()
+    os.chdir(pcs_path)
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
+
+    # Initialize git
+    vcs.init({})
+
+    # Populate repo with commits
+    repo = git.Repo(pcs_path)
+
+    # Create first commit
+    file1 = os.path.join(pcs_path, "file1")
+    store.touch_file(file1)
+    repo.index.add([file1])
+    repo.index.commit("root")
+
+    yield pcs
+
+    # clean up the directory
+    shutil.rmtree(pcs_path)
+
+
+@pytest.fixture(scope="function")
 def pcs_without_vcs():
     """
     """

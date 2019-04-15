@@ -6,6 +6,14 @@ HEAD
 
 **To be included in next release**
 
+0.16.7 (2019-04-15)
+-------------------
+
+`commit: 4152091bc4c2e5d1553ebccfef059d8153255aba`
+
+**Extend perun instances with stats**
+  - add new logic module that allows to store stats for profiles in separate directory (.perun/stats)
+
 0.16.6 (2019-03-25)
 -------------------
 

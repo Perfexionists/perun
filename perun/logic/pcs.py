@@ -110,6 +110,17 @@ def get_job_index():
     return os.path.join(jobs_directory, ".index")
 
 
+@singleton
+def get_stats_directory():
+    """Returns the name of the directory where statistics are stored
+
+    :return str: path to the statistics directory
+    """
+    stats_directory = os.path.join(get_path(), 'stats')
+    store.touch_dir(stats_directory)
+    return stats_directory
+
+
 @singleton_with_args
 def get_config_file(config_type):
     """Returns the config file for the given config type
