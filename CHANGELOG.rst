@@ -6,12 +6,22 @@ HEAD
 
 **To be included in next release**
 
+0.16.7-hotfix (2019-04-15)
+--------------------------
+
+`commit: 686ea87a64d845b215474193f879db0240c05732`
+
+**Hotfix Jinja potential vulnerability**
+
+  - hotfix Jinja potential vulnerability
+
 0.16.7 (2019-04-15)
 -------------------
 
 `commit: 4152091bc4c2e5d1553ebccfef059d8153255aba`
 
 **Extend perun instances with stats**
+
   - add new logic module that allows to store stats for profiles in separate directory (.perun/stats)
 
 0.16.6 (2019-03-25)
@@ -20,6 +30,7 @@ HEAD
 `commit: 18870d9d5853726d5cc966962d275111e451ab06`
 
 **Improve the quality of life of Perun**
+
   - fix minor bug in storing changes
   - extracted index entry specific functions to isolate class (in order to create new versions)
   - implement index v2.0, codename FastSloth

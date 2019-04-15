@@ -15,4 +15,4 @@ Perun currently exists as CLI application, with GUI application being in develop
 """
 
 __author__ = 'Tomas Fiedor'
-__version__ = '0.16.7'
+__version__ = '0.16.7-hotfix'
