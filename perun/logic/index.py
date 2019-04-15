@@ -16,7 +16,8 @@ import perun.utils.helpers as helpers
 import perun.logic.store as store
 import perun.logic.pcs as pcs
 
-from perun.utils.exceptions import EntryNotFoundException, MalformedIndexFileException
+from perun.utils.exceptions import (EntryNotFoundException, MalformedIndexFileException,
+                                    IndexNotFoundException)
 
 
 __author__ = 'Tomas Fiedor'
@@ -479,6 +480,21 @@ def lookup_all_entries_within_index(index_handle, predicate):
     :returns [BasicIndexEntry]: list of index entries satisfying given predicate
     """
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
+
+
+def find_minor_index(minor_version):
+    """ Finds the corresponding index for the minor version or raises EntryNotFoundException if
+    the index was not found.
+
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return str: path to the index file
+    """
+    # Find the index file
+    _, index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
+    if not os.path.exists(index_file):
+        raise IndexNotFoundException(index_file)
+    return index_file
 
 
 def register_in_pending_index(registered_file, profile):
