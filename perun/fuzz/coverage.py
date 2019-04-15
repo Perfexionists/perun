@@ -160,8 +160,7 @@ def test(*args, **kwargs):
 
     workload["cov"], _ = get_coverage_info(kwargs["gcov_version"],
                                            kwargs["source_files"], gcno_path, os.getcwd(), kwargs["gcov_files"])
-
-    return set_cond(kwargs["base_cov"], workload["cov"], kwargs["icovr"])
+    return set_cond(kwargs["base_cov"], workload["cov"], kwargs["parent"]["cov"],  kwargs["icovr"])
 
 
 def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
@@ -214,7 +213,7 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     return execs, gcov_files
 
 
-def set_cond(base_cov, cov, increase_ratio=1.5):
+def set_cond(base_cov, cov, parent_cov,  increase_ratio=1.5):
     """ Condition for adding mutated input to set of canditates(parents).
 
     :param int base_cov: base coverage
@@ -223,4 +222,4 @@ def set_cond(base_cov, cov, increase_ratio=1.5):
     :return bool: True if `cov` is greater than `base_cov` * `deg_ratio`, False otherwise
     """
     tresh_cov = int(base_cov * increase_ratio)
-    return True if cov > tresh_cov else False
+    return True if cov > tresh_cov and cov > parent_cov else False

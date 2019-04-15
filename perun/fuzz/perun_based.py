@@ -36,7 +36,7 @@ def init(cmd, args, seeds, collector, postprocessor,
             [cmd], [args], [file["path"]], [collector], postprocessor, minor_version_list, **kwargs
         )
         base_pg_copy, base_pg = itertools.tee(base_pg)
-        target_pg_copy, target_pg_copy = itertools.tee(target_pg)
+        target_pg_copy, target_pg = itertools.tee(target_pg)
 
         for base_prof, target_prof in zip(base_pg_copy, target_pg_copy):
             checks = 0

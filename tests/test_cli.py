@@ -1788,6 +1788,26 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 0
     assert 'Timeout' in result.output
 
+    # Testing UBT 
+    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/UBT"])
+    process.communicate()
+    process.wait()
+    ubt_test = os.path.dirname(examples) + "/UBT/build/ubt"
+    result = runner.invoke(cli.fuzz_cmd, [
+        '--cmd', ubt_test,
+        '--output-dir', '.',
+        '--initial-workload', os.path.dirname(examples) + '/UBT/input.txt',
+        '--timeout', '5',
+        '--hang-timeout', '2',
+        '--source-path', os.path.dirname(examples) + '/UBT/src',
+        '--gcno-path', os.path.dirname(examples) + '/UBT/build',
+        '--max-size-percentual', '1',
+        '--mut-count-strategy', 'unitary', 
+        '--execs', '12'
+
+    ])
+    assert result.exit_code == 0
+    assert 'Fuzzing successfully finished' in result.output
 
 def test_fuzzing_incorrect(pcs_full):
     """Runs basic tests for fuzzing CLI """

@@ -5,6 +5,62 @@ import random
 __author__ = 'Matus Liscinsky'
 
 
+def add_char(lines):
+    """ Inserts a random character to random position of a line, 1-10 times.
+    
+    Example:
+        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</a!uthor>                    
+
+    :param list lines: lines of the input file, which was chosen for mutating
+    """
+    for _ in range(random.randint(1,10)):
+        rand = random.randrange(len(lines))
+        index = random.randrange(len(lines[rand]))
+        lines[rand] = lines[rand][:index] + chr(random.randint(0, 255)) + lines[rand][index:]
+        
+def divide_line(lines):
+    """ Divides a line by inserting newline to random position, 1-10 times.
+    
+    Example:
+        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</au"
+                                                   "thor>"                    
+
+    :param list lines: lines of the input file, which was chosen for mutating
+    """
+    for _ in range(random.randint(1,10)):
+        rand = random.randrange(len(lines))
+        index = random.randrange(len(lines[rand]))
+        lines[rand] = lines[rand][:index] + "\n" + lines[rand][index:]
+
+def join_lines(lines):
+    """ Joins two following lines together, 1-10 times.
+    
+    Example:
+        "<author>Joe, Loc</author>"
+        "<son>Nash, Rick</son>" -> "<author>Joe, Loc</author><son>Nash, Rick</son>"
+
+    :param list lines: lines of the input file, which was chosen for mutating
+    """
+    for _ in range(random.randint(1,10)):
+        rand = random.randrange(len(lines))
+        lines[rand] = lines[rand][:-1]
+
+
+def fuzz_insert_ws(lines):
+    """ Inserts 100 spaces to random position of a line, 1-10 times.
+    
+    Example:
+        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>                    
+                                                                            "
+
+    :param list lines: lines of the input file, which was chosen for mutating
+    """
+    for _ in range(random.randint(1,10)):
+        rand = random.randrange(len(lines))
+        index = random.randrange(len(lines[rand]))
+        lines[rand] = lines[rand][:index] + " "*100 + lines[rand][index:]
+    
+    
 def fuzz_double_line(lines):
     """ Doubles the size of a line by its duplicating, 1-10 times.
     
@@ -18,7 +74,7 @@ def fuzz_double_line(lines):
         lines[rand] = lines[rand][:-1] *2 + lines[rand][-1:]
 
 def fuzz_append_ws(lines):
-    """ Appends 100 spaces at to a line, 1-10 times.
+    """ Appends 100 spaces to a line, 1-10 times.
     
     Example:
         "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>                    
@@ -153,8 +209,12 @@ def del_char(lines):
             pass
 
 
-fuzzing_methods = [ (fuzz_double_line, "Double the size of random line"), 
-                    (fuzz_append_ws, "Append WS at the end of the line"), 
+fuzzing_methods = [ (add_char, "Adds random characters to random places"),
+                    (fuzz_insert_ws, "Inserts whitespaces at random places"),
+                    (divide_line, "Divides a random line"), 
+                    (join_lines, "Put two lines together"),
+                    (fuzz_double_line, "Double the size of random line"), 
+                    (fuzz_append_ws, "Append WS at the end of the line"),
                     (fuzz_bloat_word, "Remove WS of random line"), 
                     (multiplicate_ws, "Multiplicate WS of random line"), 
                     (prepend_ws, "Prepend WS to random line"), 
@@ -163,6 +223,6 @@ fuzzing_methods = [ (fuzz_double_line, "Double the size of random line"),
                     (repeat_word, "Multiplicate word of random line"), 
                     (del_line, "Remove random line"), 
                     (del_word, "Remove random word of line"), 
-                    (del_char, "Remove random character of line ")]
+                    (del_char, "Remove random character of line "),]
 
 

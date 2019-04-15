@@ -4,7 +4,9 @@ __author__ = 'Tomas Fiedor, Matus Liscinsky'
 
 import click
 import copy
+import difflib
 import itertools
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import os.path as path
@@ -13,11 +15,14 @@ import signal
 import subprocess
 import sys
 import time
+import threading
 from uuid import uuid4
 
 import perun.check.factory as check
 import perun.fuzz.coverage as coverage
 import perun.utils.decorators as decorators
+import perun.fuzz.filesystem as filesystem
+import perun.fuzz.interpret as interpret
 import perun.logic.runner as run
 import perun.utils as utils
 from perun.fuzz.filetype import choose_methods, get_filetype
@@ -26,26 +31,9 @@ from perun.utils.structs import PerformanceChange
 # to ignore numpy division warnings
 np.seterr(divide='ignore', invalid='ignore')
 
-
-def get_corpus(workloads):
-    """ Iteratively search for files to fill input corpus.
-
-    :param list workloads: list of paths to sample files or directories of sample files
-    :return list: list of dictonaries, dictionary contains information about file
-    """
-    init_seeds = []
-
-    for w in workloads:
-        if path.isdir(w) and os.access(w, os.R_OK):
-            for root, _, files in os.walk(w):
-                if files:
-                    init_seeds.extend(
-                        [{"path": path.abspath(root) + "/" + filename, "history": [], "cov": 0,
-                          "deg_ratio": 0} for filename in files])
-        else:
-            init_seeds.append({"path": path.abspath(w), "history": [],
-                               "cov": 0, "deg_ratio": 0})
-    return init_seeds
+FP_ALLOWED_ERROR = 0.00001
+RATIO_INCR_CONST = 0.05
+RATIO_DECR_CONST = 0.01
 
 
 def get_max_size(seeds, max_size, max_percentual, max_adjunct):
@@ -112,7 +100,23 @@ def fuzz_question(strategy, fuzz_stats, index):
         return int(fuzz_stats[index])+1 if rand <= probability else 0
 
 
-def fuzz(parent, fuzz_history, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
+def same_lines(lines, fuzzed_lines, is_binary):
+    """Compares two string list and check if they are equal.
+
+    :param list lines: lines of original file
+    :param list fuzzed_lines: lines fo fuzzed file
+    :param is_binary bool: determines whether a files are binaries or not
+    :return bool: True if lines are the same, False otherwise
+    """
+    if is_binary:
+        delta = difflib.unified_diff([line.decode('utf-8', errors='ignore') for line in lines],
+                                     [f_line.decode('utf-8', errors='ignore') for f_line in fuzzed_lines])
+    else:
+        delta = difflib.unified_diff(lines, fuzzed_lines)
+    return len(list(delta)) == 0
+
+
+def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
     """ Provides fuzzing on input parent using all the implemented methods. 
 
     Reads the file and store the lines in list. Makes a copy of the list to send it to every 
@@ -130,16 +134,14 @@ def fuzz(parent, fuzz_history, max_bytes, fuzz_stats, output_dir, fuzzing_method
     lines = []
     mutations = []
 
-    is_binary, _ = get_filetype(parent)
-
+    is_binary, _ = get_filetype(parent["path"])
     if is_binary:
-        fp_in = open(parent, "rb")
+        fp_in = open(parent["path"], "rb")
     else:
-        fp_in = open(parent, "r")
+        fp_in = open(parent["path"], "r")
 
     # reads the file
-    for line in fp_in:
-        lines.append(line)
+    lines = fp_in.readlines()
     fp_in.close()
 
     # "blank file"
@@ -147,7 +149,7 @@ def fuzz(parent, fuzz_history, max_bytes, fuzz_stats, output_dir, fuzzing_method
         return []
 
     # split the file to name and extension
-    _, file = path.split(parent)
+    _, file = path.split(parent["path"])
     file, file_extension = path.splitext(file)
 
     # fuzzing
@@ -157,15 +159,21 @@ def fuzz(parent, fuzz_history, max_bytes, fuzz_stats, output_dir, fuzzing_method
             # calling specific fuzz method with copy of parent
             fuzzing_methods[i][0](fuzzed_lines)
 
+            # compare, whether new lines are the same
+            if same_lines(lines, fuzzed_lines, is_binary):
+                continue
+
             # new mutation filename and fuzz history
             filename = output_dir + "/" +\
                 file.split("-")[0] + "-" + \
                 str(uuid4().hex) + file_extension
-            new_fh = copy.copy(fuzz_history)
+            new_fh = copy.copy(parent["history"])
             new_fh.append(i)
 
+            predecessor = parent if parent["predecessor"] is None else parent["predecessor"]
             mutations.append(
-                {"path": filename, "history": new_fh, "cov": 0, "deg_ratio": 0})
+                {"path": filename, "history": new_fh, "cov": 0,
+                 "deg_ratio": 0, "predecessor": predecessor})
 
             if is_binary:
                 fp_out = open(filename, "wb")
@@ -190,32 +198,11 @@ def print_legend(fuzz_stats, fuzzing_methods):
 
 
 def print_results(timeout, fuzz_stats, fuzzing_methods):
-    """ Prints results of fuzzing.
+    """Prints results of fuzzing.
     """
     print_msg("="*35 + " RESULTS " + "="*35)
     print("exec time: " + "%.2f" % timeout + "s")
     print_legend(fuzz_stats, fuzzing_methods)
-
-
-def move_mutation_to(mutation, dir):
-    """ Useful function for moving mutation file to special directory in case of fault or hang.
-
-    :param str mutation: path to a mutation file
-    :param str dir: path of destination directory, where `mutation` should be moved
-    """
-    _, file = path.split(mutation)
-    os.rename(mutation, dir + "/" + file)
-
-
-def make_output_dirs(output_dir):
-    """ Creates special directories for mutations causing fault or hang.
-
-    :param str output_dir: path to user-specified output directory
-    :return tuple: paths to newly created directories 
-    """
-    os.makedirs(output_dir + "/hangs", exist_ok=True)
-    os.makedirs(output_dir + "/faults", exist_ok=True)
-    return output_dir + "/hangs", output_dir + "/faults"
 
 
 def init_testing(method, *args, **kwargs):
@@ -244,19 +231,6 @@ def testing(method, *args, **kwargs):
     return result
 
 
-def del_temp_files(final_results, output_dir):
-    """ Deletes temporary files that are not positive results of fuzz testing
-
-    :param list final_results: succesfully mutated files causing degradation, yield of testing
-    :param str output_dir: path to directory, where fuzzed files are stored
-    """
-    final_results_paths = [mutation["path"] for mutation in final_results]
-    for file in os.listdir(output_dir):
-        f = path.abspath(path.join(output_dir, file))
-        if path.isfile(f) and f not in final_results_paths:
-            os.remove(f)
-
-
 def rate_parent(parents_fitness_values, parent, base_cov=1):
     """ Rate the `parent` with fitness function and adds it to list with fitness values.
 
@@ -275,13 +249,19 @@ def rate_parent(parents_fitness_values, parent, base_cov=1):
     if not parents_fitness_values or fitness_value > parents_fitness_values[-1]["value"]:
         parents_fitness_values.append(
             {"value": fitness_value, "mut": parent})
-
+        return 0
     else:
         for index, mut in enumerate(parents_fitness_values):
             if fitness_value < mut["value"]:
                 parents_fitness_values.insert(
                     index, {"value": fitness_value, "mut": parent})
-                break
+                return 0
+            # if the same file was generated before
+            elif abs(fitness_value - mut["value"]) <= FP_ALLOWED_ERROR:
+                # additional file comparing
+                if same_lines(open(mut["mut"]["path"]).readlines(),
+                              open(parent["path"]).readlines(), get_filetype(parent["path"])[0]):
+                    return 1
 
 
 def choose_parent(parents_fitness_values, num_intervals=5):
@@ -326,7 +306,7 @@ def choose_parent(parents_fitness_values, num_intervals=5):
 
 
 def print_msg(msg):
-    """ Temporary solution for printing fuzzing messages to the output.
+    """Temporary solution for printing fuzzing messages to the output.
 
     :param msg: message to be printed
     """
@@ -358,11 +338,11 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     base_cov = 1
 
     output_dir = path.abspath(kwargs["output_dir"])
-    hangs_dir, faults_dir = make_output_dirs(output_dir)
+    hangs_dir, faults_dir, diffs_dir = filesystem.make_output_dirs(output_dir)
     coverage_testing = (kwargs.get("source_path")
                         and kwargs.get("gcno_path")) != None
 
-    parents = get_corpus(initial_workload)
+    parents = filesystem.get_corpus(initial_workload)
 
     fuzzing_methods = choose_methods(
         parents[0]["path"], kwargs["regex_rules"])
@@ -399,13 +379,42 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
 
     print_msg("INITIAL TESTING COMPLETED")
     execs = 0
-    icovr = kwargs['icovr']
 
+    # Time series plotting
+    degs = 0
+    time_data = [0]
+    degradations = [0]
+
+    maximum_coverage = base_cov / base_cov
+    max_covs = [maximum_coverage]
+    time_for_cov = [0]
+
+    SAMPLING = 1.0
+
+    def save_state():
+        # if number of degradations has NOT changed
+        if len(degradations) > 1 and degs == degradations[-2]:
+            time_data[-1] += SAMPLING
+        else:
+            time_data.append(time_data[-1] + SAMPLING)
+            degradations.append(degs)
+
+        if len(max_covs) > 1 and maximum_coverage == max_covs[-2]:
+            time_for_cov[-1] += SAMPLING
+        else:
+            time_for_cov.append(time_for_cov[-1] + SAMPLING)
+            max_covs.append(maximum_coverage)
+
+        t = threading.Timer(SAMPLING, save_state,)
+        t.daemon = True
+        t.start()
+
+    save_state()
     start = time.time()
-    # SIGINT (CTRL-C) signal handler
 
+    # SIGINT (CTRL-C) signal handler
     def signal_handler(sig, frame):
-        del_temp_files(final_results, output_dir)
+        filesystem.del_temp_files(final_results, output_dir)
         print_results(time.time() - start, fuzz_stats, fuzzing_methods)
         sys.exit(0)
     signal.signal(signal.SIGINT, signal_handler)
@@ -417,13 +426,12 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
             print_msg("Coverage based fuzzing")
             method = "coverage"
             execs = 0
-
+            print("icovr", kwargs["icovr"])
             while len(interesting_inputs) < kwargs["interesting_files_limit"] and \
                     execs < kwargs["execs"]:
 
                 current_input = choose_parent(parents_fitness_values)
-                mutations = fuzz(current_input["path"],
-                                 current_input["history"], max_bytes, fuzz_stats,
+                mutations = fuzz(current_input, max_bytes, fuzz_stats,
                                  output_dir, fuzzing_methods, kwargs["mut_count_strategy"])
 
                 for i in range(len(mutations)):
@@ -433,42 +441,50 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                         result = testing(method, cmd, args, mutations[i], collector,
                                          postprocessor, minor_version_list, base_cov=base_cov,
                                          source_files=source_files, gcov_version=gcov_version,
-                                         gcov_files=gcov_files, **kwargs)
+                                         gcov_files=gcov_files, parent=current_input, **kwargs)
                     except subprocess.CalledProcessError:
-                        move_mutation_to(mutations[i]["path"], faults_dir)
+                        filesystem.move_file_to(
+                            mutations[i]["path"], faults_dir)
                         continue
                     except subprocess.TimeoutExpired:
                         print("Timeout ({}s) reached when testing. See {}.".format(
                             kwargs["hang_timeout"], hangs_dir))
-                        move_mutation_to(mutations[i]["path"], hangs_dir)
+                        filesystem.move_file_to(
+                            mutations[i]["path"], hangs_dir)
                         continue
 
                     execs += 1
 
                     if result:
-                        print("Increase of coverage, cov:",
-                              result, mutations[i])
-                        parents.append(mutations[i])
-                        interesting_inputs.append(mutations[i])
-                        rate_parent(parents_fitness_values,
-                                    mutations[i], base_cov)
-                        fuzz_stats[(mutations[i]["history"])[-1]] += 1
-                        fuzz_stats[-1] += 1
+                        if rate_parent(parents_fitness_values,
+                                       mutations[i], base_cov):
+                            try:
+                                os.remove(mutations[i]["path"])
+                            except FileNotFoundError:
+                                pass
+                        else:
+                            # print("Increase of coverage",
+                                #   result, mutations[i])
+                            print("|", end=' ')
+                            maximum_coverage = parents_fitness_values[-1]["mut"]["cov"] / base_cov
+                            parents.append(mutations[i])
+                            interesting_inputs.append(mutations[i])
+                            fuzz_stats[(mutations[i]["history"])[-1]] += 1
+                            fuzz_stats[-1] += 1
                     else:
                         try:
                             os.remove(mutations[i]["path"])
                         except FileNotFoundError:
                             pass
             if interesting_inputs:
-                icovr += 0.01
+                kwargs["icovr"] += RATIO_INCR_CONST
             else:
-                if icovr > 0.01:
-                    icovr -= 0.01
+                if kwargs["icovr"] > RATIO_DECR_CONST:
+                    kwargs["icovr"] -= RATIO_DECR_CONST
 
         else:
             current_input = choose_parent(parents_fitness_values)
-            interesting_inputs = fuzz(current_input["path"],
-                                      current_input["history"], max_bytes, fuzz_stats,
+            interesting_inputs = fuzz(current_input, max_bytes, fuzz_stats,
                                       output_dir, fuzzing_methods, kwargs["mut_count_strategy"])
         method = "perun_based"
 
@@ -494,8 +510,9 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                 if not coverage_testing:
                     parents.append(interesting_inputs[i])
                     rate_parent(parents_fitness_values,
-                                interesting_inputs[i])
+                                interesting_inputs[i], base_cov)
                 final_results.append(interesting_inputs[i])
+                degs += 1
             else:
                 if not coverage_testing:
                     try:
@@ -505,10 +522,16 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
         # deletes interesting inputs for next run
         del interesting_inputs[:]
 
-    # deletes parents which are not final results, good parents but not causing deg
-    del_temp_files(final_results, output_dir)
-    for r in final_results:
-        print(r["cov"]/base_cov+r["deg_ratio"], r["path"], r["history"])
     # print info about fuzzing
     print_results(time.time()-start, fuzz_stats, fuzzing_methods)
     print_msg("Fuzzing successfully finished.")
+
+    # plotting
+    interpret.plot_fuzz_time_series(
+        time_data, degradations, "degradations_ts.pdf")
+    interpret.plot_fuzz_time_series(time_for_cov, max_covs, "coverage_ts.pdf")
+    # diffs
+    interpret.files_diff(final_results, diffs_dir)
+
+    # deletes parents which are not final results, good parents but not causing deg
+    filesystem.del_temp_files(final_results, output_dir)
