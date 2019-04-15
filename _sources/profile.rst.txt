@@ -79,7 +79,7 @@ thus links the resources to the changes of this commit.
                 "time": "s"
             },
             "cmd": "perun",
-            "params": "status",
+            "args": "status",
             "workload": "--short",
         }
     }
@@ -115,7 +115,7 @@ their own binaries and thus do not require the command to be specified at all (l
 :ref:`collectors-trace` and will thus omit the actual usage of the command), however, this key
 can still be used e.g. for tagging the profiles.
 
-.. perfkey:: params
+.. perfkey:: args
 
 Specifies list of arguments (or parameters) for command :pkey:`cmd`. This is used for more fine
 distinguishing of profiles regarding its parameters (e.g. when we run command with different

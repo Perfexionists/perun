@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Command Line Interface &#8212; Perun 0.16.4 documentation</title>
+    <title>Command Line Interface &#8212; Perun 0.16.7 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.4',
+        VERSION:     '0.16.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -1677,7 +1677,7 @@ code of these methods, you can visit <a class="reference external" href="https:/
 <dl class="option">
 <dt id="cmdoption-perun-postprocessby-regressogram-per">
 <code class="descname">-per</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per-key</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-regressogram-per" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
+<dd><p>Sets the key that will be used as a source variable (x-coordinates).</p>
 </dd></dl>
 
 </div>
@@ -1730,7 +1730,7 @@ the <em>exponential</em> moving average (<strong>ema</strong>).</div></blockquot
 <dl class="option">
 <dt id="cmdoption-perun-postprocessby-moving-average-per">
 <code class="descname">-per</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per-key</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-per" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the key that will be used as a source of variable (x-coordinates).</p>
+<dd><p>Sets the key that will be used as a source variable (x-coordinates).</p>
 </dd></dl>
 
 <p class="rubric">Commands</p>
@@ -1859,6 +1859,497 @@ weighting factor or length of the average.</p>
 <dt id="cmdoption-perun-postprocessby-moving-average-ema-d">
 <code class="descname">-d</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--decay</code><code class="descclassname"> &lt;decay&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-moving-average-ema-d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exactly one of “com”, “span”, “halflife”, “alpha” can be provided. Allowed values and relationship between the parameters are specified in the documentation (e.g. –decay=com 3).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-kernel-regression">
+<h4>perun postprocessby kernel-regression<a class="headerlink" href="#perun-postprocessby-kernel-regression" title="Permalink to this headline">¶</a></h4>
+<p>Execution of the interleaving of profiles resources by <em>kernel</em> models.</p>
+<dl class="docutils">
+<dt></dt>
+<dd><ul class="first last simple">
+<li><strong>Limitations</strong>: <cite>none</cite></li>
+<li><strong>Dependencies</strong>: <cite>none</cite></li>
+</ul>
+</dd>
+</dl>
+<p>In statistics, the kernel regression is a non-parametric approach to estimate the
+conditional expectation of a random variable. Generally, the main goal of this approach
+is to find non-parametric relation between a pair of random variables X &lt;per-key&gt; and
+Y &lt;of-key&gt;. Different from parametric techniques (e.g. linear regression), kernel
+regression does not assume any underlying distribution (e.g. linear, exponential, etc.)
+to estimate the regression function. The main idea of kernel regression is putting the
+<strong>kernel</strong>, that have the role of weighted function, to each observation point in the dataset.
+Subsequently, the kernel will assign weight to each point in depends on the distance from the
+current data point. The kernel basis formula depends only to the <em>bandwidth</em> from the current
+(‘local’) data point X to a set of neighboring data points X.</p>
+<blockquote>
+<div><p><strong>Kernel Selection</strong> does not important from an asymptotic point of view. It is appropriate
+to choose the <strong>optimal</strong> kernel since this group of the kernels are continuously on the whole
+definition field and then the estimated regression function inherit smoothness of the kernel.
+For example, a suitable kernels can be the <strong>epanechnikov</strong> or <strong>normal</strong> kernel. This
+postprocessor offers the <strong>kernel selection</strong> in the <strong>kernel-smoothing</strong> mode, where are available
+five different types of kernels. For more information about these kernels or this kernel regression
+mode you can see <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-kernel-smoothing"><span class="std std-ref">perun postprocessby kernel-regression kernel-smoothing</span></a>.</p>
+<p><strong>Bandwidth Selection</strong> is the most important factor at each approach of kernel regression, since
+this value significantly affects the smoothness of the resulting estimate. In case, when is choose the
+inappropriate value, in the most cases can be expected the following two situations. The <strong>small</strong>
+bandwidth value reproduce estimated data and vice versa, the <strong>large</strong> value leads to over-leaving, so
+to average of the estimated data. Therefore are used the methods to determine the bandwidth value.
+One of the most widespread and most commonly used methods is the <strong>cross-validation</strong> method. This
+method is based on the estimate of the regression function in which will be omitted <em>i-th</em> observation.
+In this postprocessor is this method available in the <strong>estimator-setting</strong> mode. Another methods to
+determine the bandwidth, which are available in the remaining modes of this postprocessor are <strong>scott</strong>
+and <strong>silverman</strong> method. More information about these methods and its definition you cas see in the
+part <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-method-selection"><span class="std std-ref">perun postprocessby kernel-regression method-selection</span></a>.</p>
+</div></blockquote>
+<p>This postprocessor in summary offers five different modes, which does not differ in the resulting estimate,
+but in the way of computation the resulting estimate. Better said, it means, that the result of each mode
+is the <strong>kernel estimate</strong> with relevant parameters, selected according to the concrete mode. In short we
+will describe the individual methods, for more information about it, you can visit the relevant parts of
+documentation:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Estimator-Settings</strong>: Nadaraya-Watson kernel regression with specific settings for estimate</li>
+<li><strong>User-Selection</strong>: Nadaraya-Watson kernel regression with user bandwidth</li>
+<li><strong>Method-Selection</strong>: Nadaraya-Watson kernel regression with supporting bandwidth selection method</li>
+<li><strong>Kernel-Smoothing</strong>: Kernel regression with different types of kernel and regression methods</li>
+<li><strong>Kernel-Ridge</strong>: Nadaraya-Watson kernel regression with automatic bandwidth selection</li>
+</ul>
+</div></blockquote>
+<p>For more details about this approach of non-parametric analysis refer to <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression"><span class="std std-ref">Kernel Regression Methods</span></a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby kernel-regression <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-of">
+<code class="descname">-of</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--of-key</code><code class="descclassname"> &lt;of_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets key for which we are finding the model (y-coordinates).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-per">
+<code class="descname">-per</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--per-key</code><code class="descclassname"> &lt;per_key&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-per" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the key that will be used as a source variable (x-coordinates).</p>
+</dd></dl>
+
+<p class="rubric">Commands</p>
+<dl class="object">
+<dt>
+<code class="descname">estimator-settings</code></dt>
+<dd></dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">kernel-ridge</code></dt>
+<dd></dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">kernel-smoothing</code></dt>
+<dd></dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">method-selection</code></dt>
+<dd></dd></dl>
+
+<dl class="object">
+<dt>
+<code class="descname">user-selection</code></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-kernel-regression-estimator-settings">
+<h4>perun postprocessby kernel-regression estimator-settings<a class="headerlink" href="#perun-postprocessby-kernel-regression-estimator-settings" title="Permalink to this headline">¶</a></h4>
+<p>Nadaraya-Watson kernel regression with specific settings for estimate.</p>
+<p>As has been mentioned above, the kernel regression aims to estimate the functional relation
+between explanatory variable <strong>y</strong> and the response variable <strong>X</strong>. This mode of kernel regression
+postprocessor calculates the conditional mean <strong>E[y|X] = m(X)</strong>, where <strong>y = m(X) +</strong> <span class="math">\(\epsilon\)</span>.
+Variable <strong>X</strong> is represented in the postprocessor by &lt;per-key&gt; option and the variable <strong>y</strong> is
+represented by &lt;of-key&gt; option.</p>
+<p><strong>Regression Estimator &lt;reg-type&gt;</strong>:</p>
+<blockquote>
+<div><blockquote>
+<div><p>This mode offer two types of <em>regression estimator</em> &lt;<cite>reg-type</cite>&gt;. <em>Local Constant (`ll`)</em> type of
+regression provided by this mode is also known as <em>Nadaraya-Watson</em> kernel regression:</p>
+<blockquote>
+<div><p><strong>Nadaraya-Watson</strong>: expects the following conditional expectation: <strong>E[y|X] = m(X)</strong>, where
+function <strong>m(*)</strong> represents the regression function to estimate. Then we can alternatively write
+the following formula: <strong>y = m(X) +</strong> <span class="math">\(\epsilon\)</span>, <strong>E</strong> (<span class="math">\(\epsilon\)</span>) <strong>= 0</strong>. Then we can
+suppose, that we have the set of independent observations {(<span class="math">\({x_1}\)</span>, <span class="math">\({y_1}\)</span>), …,
+(<span class="math">\({x_n}\)</span>, <span class="math">\({y_n}\)</span>)} and the <strong>Nadaraya-Watson</strong> estimator is defined as:</p>
+<blockquote>
+<div><div class="math">
+\[m_{h}(x) = \sum_{i=1}^{n}K_h(x - x_i)y_i / \sum_{j=1}^{n}K_h(x - x_j)\]</div>
+</div></blockquote>
+<p>where <span class="math">\({K_h}\)</span> is a kernel with bandwidth <em>h</em>. The denominator is a weighting term with sum 1.
+It easy to see that this kernel regression estimator is just a weighted sum of the observed responses
+<span class="math">\({y_i}\)</span>. There are many other kernel estimators that are various in compare to this presented
+estimator. However, since all are asymptotic equivalently, we will not deal with them closer. <strong>Kernel
+Regression</strong> postprocessor works in all modes only with <strong>Nadaraya-Watson</strong> estimator.</p>
+</div></blockquote>
+</div></blockquote>
+<p>The second supported <em>regression estimator</em> in this mode of postprocessor is <em>Local Linear (`lc`)</em>. This
+type is an extension of that which suffers less from bias issues at the edge of the support.</p>
+<blockquote>
+<div><p><strong>Local Linear</strong>: estimator, that offers various advantages compared with other kernel-type estimators,
+such as the <em>Nadaraya-Watson</em> estimator. More precisely, it adapts to both random and fixed designs, and to
+various design densities such as highly clustered designs and nearly uniform designs. It turns out that
+the <em>local linear</em> smoother repairs the drawbacks of other kernel regression estimators. An regression
+estimator <em>m</em> of <em>m</em> is a linear smoother if, for each <em>x</em>, there is a vector <span class="math">\(l(x) = (l_1(x), ...,
+l_n(x))^T\)</span> such that:</p>
+<blockquote>
+<div><div class="math">
+\[m(x) = \sum_{i=1}^{n}l_i(x)Y_i = l(x)^TY\]</div>
+<p>where <span class="math">\(Y = (Y_1, ..., Y_n)^T\)</span>. For kernel estimators:</p>
+<div class="math">
+\[l_i(x) = K(||x - X_i|| / h) / \sum_{j=1}^{n}K(||x - X_j|| / h)\]</div>
+<p>where <em>K</em> represents kernel and <em>h</em> its bandwidth.</p>
+</div></blockquote>
+<p>For a better imagination, there is an interesting fact, that the following estimators are linear
+smoothers too: <em>Gaussian process regression</em>, <em>splines</em>.</p>
+</div></blockquote>
+</div></blockquote>
+<p><strong>Bandwidth Method &lt;bandwidth-method&gt;</strong>:</p>
+<blockquote>
+<div><p>As has been said in the general description of the <em>kernel regression</em>, once of the most important
+factors of the resulting estimate is the kernel <strong>bandwidth</strong>. When the inappropriate value is selected
+may occur to <em>under-laying</em> or <em>over-laying</em> fo the resulting kernel estimate. Since the bandwidth of
+the kernel is a free parameter which exhibits a strong influence on the resulting estimate postprocessor
+offers the method for its selection. Two most popular data-driven methods of bandwidth selection that
+have desirable properties are <em>least-squares cross-validation</em> (<cite>cv_ls</cite>) and the <em>AIC-based</em> method of
+<em>Hurvich et al. (1998)</em>, which is based on minimizing a modified <em>Akaike Information Criterion</em> (<cite>aic</cite>):</p>
+<blockquote>
+<div><p><strong>Cross-Validation Least-Squares</strong>: determination of the optimal kernel bandwidth for kernel
+regression is based on minimizing</p>
+<div class="math">
+\[CV(h) = n^{-1} \sum_{i=1}^{n}(Y_i - g_{-i}(X_i))^2,\]</div>
+<p>where <span class="math">\(g_{-i}(X_i)\)</span> is the estimator of <span class="math">\(g(X_i)\)</span> formed by leaving out the <em>i-th</em>
+observation when generating the prediction for observation <em>i</em>.</p>
+<p><strong>Hurvich et al.’s</strong> (1998) approach is based on the minimization of</p>
+<div class="math">
+\[AIC_c = ln(\sigma^2) + ((1 + tr(H) / n) / (1 - (tr(H) + 2) / n),\]</div>
+<p>where</p>
+<div class="math">
+\[\sigma^2  = 1 / n \sum_{i=1}^{n}(Y_i - g(X_i))^2 = Y'(I - H)'(I - H)Y / n\]</div>
+<p>with <span class="math">\(g(X_i)\)</span> being a non-parametric regression estimator and <em>H</em> being an <em>n x n</em> matrix of
+kernel weights with its <em>(i, j)-th</em> element given by <span class="math">\(H_{ij} = K_h(X_i, X_j) / \sum_{l=1}^{n}
+K_h(X_i, X_l)\)</span>, where <span class="math">\(K_h(*)\)</span> is a generalized product kernel.</p>
+</div></blockquote>
+<p>Both methods for kernel bandwidth selection the <em>least-squared cross-validation</em> and the <em>AIC</em> have been
+shown to be asymptotically equivalent.</p>
+</div></blockquote>
+<p>The remaining options at this mode of kernel regression postprocessor are described within usage to it and you
+can see this in the list below. All these options are parameters to <em>EstimatorSettings</em> (see <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_density.EstimatorSettings.html">EstimatorSettings</a>),
+that optimizing the kernel bandwidth based on the these specified settings.</p>
+<p>In the case of confusion about this approach of kernel regression, you can visit <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.kernel_regression.KernelReg.html#statsmodels.nonparametric.kernel_regression.KernelReg">StatsModels</a>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby kernel-regression estimator-settings <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-estimator-settings-rt">
+<code class="descname">-rt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--reg-type</code><code class="descclassname"> &lt;reg_type&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-rt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the type for regression estimator. Supported types are: “lc”: local-constant (Nadaraya-Watson) and “ll”: local-linear estimator. Default is “ll”. For more information about these types you can visit Perun Documentation.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-estimator-settings-bw">
+<code class="descname">-bw</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bandwidth-method</code><code class="descclassname"> &lt;bandwidth_method&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-bw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the method for bandwidth selection. Supported values are: “cv-ls”: least-squarescross validation and “aic”: AIC Hurvich bandwidth estimation. Default is “cv-ls”. For more information about these methods you can visit Perun Documentation.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-estimator-settings-efficient">
+<code class="descname">--efficient</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--uniformly</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-efficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, is executing the efficient bandwidth estimation - by taking smaller sub-samples and estimating the scaling factor of each sub-sample. It is useful for large samples and/or multiple variables. If False (default), all data is used at the same time.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-estimator-settings-randomize">
+<code class="descname">--randomize</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--no-randomize</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-randomize" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the bandwidth estimation is performed by taking &lt;n_res&gt; random re-samples of size &lt;n-sub-samples&gt; from the full sample. If set to False (default), is performed by slicing the full sample in sub-samples of &lt;n-sub-samples&gt; size, so that all samples are used once.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nsub">
+<code class="descname">-nsub</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--n-sub-samples</code><code class="descclassname"> &lt;n_sub_samples&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nsub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Size of the sub-samples (default is 50).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nres">
+<code class="descname">-nres</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--n-re-samples</code><code class="descclassname"> &lt;n_re_samples&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nres" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of random re-samples used to bandwidth estimation. It has effect only if &lt;randomize&gt; is set to True. Default values is 25.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-estimator-settings-return-median">
+<code class="descname">--return-median</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--return-mean</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-return-median" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the estimator uses the median of all scaling factors for each sub-sample to estimate bandwidth of the full sample. If False (default), the estimator used the mean.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-kernel-regression-user-selection">
+<h4>perun postprocessby kernel-regression user-selection<a class="headerlink" href="#perun-postprocessby-kernel-regression-user-selection" title="Permalink to this headline">¶</a></h4>
+<p>Nadaraya-Watson kernel regression with user bandwidth.</p>
+<p>This mode of kernel regression postprocessor is very similar to <em>estimator-settings</em> mode. Also offers two
+types of <em>regression estimator</em> &lt;reg-type&gt; and that the <em>Nadaraya-Watson</em> estimator, so known as <em>local-
+constant</em> (<cite>lc</cite>) and the <em>local-linear</em> estimator (<cite>ll</cite>). Details about these estimators are available in
+<a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>. In contrary to this mode, which selected a kernel
+bandwidth using the <em>EstimatorSettings</em> and chosen parameters, in this mode the user itself selects a kernel
+bandwidth &lt;bandwidth-value&gt;. This value will be used to execute the kernel regression. The value of kernel
+bandwidth in the resulting estimate may change occasionally, specifically in the case, when the bandwidth
+value is too low to execute the kernel regression. Then will be a bandwidth value approximated to the
+closest appropriate value, so that is not decreased the accuracy of the resulting estimate.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby kernel-regression user-selection <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-user-selection-rt">
+<code class="descname">-rt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--reg-type</code><code class="descclassname"> &lt;reg_type&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-user-selection-rt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the type for regression estimator. Supported types are: “lc”: local-constant (Nadaraya-Watson) and “ll”: local-linear estimator. Default is “ll”. For more information about these types you can visit Perun Documentation.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-user-selection-bv">
+<code class="descname">-bv</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bandwidth-value</code><code class="descclassname"> &lt;bandwidth_value&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-user-selection-bv" title="Permalink to this definition">¶</a></dt>
+<dd><p>The float value of &lt;bandwidth&gt; defined by user, which will be used at kernel regression.  [required]</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-kernel-regression-method-selection">
+<h4>perun postprocessby kernel-regression method-selection<a class="headerlink" href="#perun-postprocessby-kernel-regression-method-selection" title="Permalink to this headline">¶</a></h4>
+<p>Nadaraya-Watson kernel regression with supporting bandwidth selection method.</p>
+<p>The last method from a group of three methods based on a similar principle. <em>Method-selection</em> mode
+offers the same type of <em>regression estimators</em> &lt;reg-type&gt; as the first two described methods. The first
+supported option is <cite>ll</cite>, which represents the <em>local-linear</em> estimator. <em>Nadaraya-Watson</em> or <em>local constant</em>
+estimator represents the second option for &lt;reg-type&gt; parameter. The more detailed description of these
+estimators is located in <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>. The difference between
+this mode and the two first modes is in the way of determination of a kernel bandwidth. In this mode are offered
+two methods to determine bandwidth. These methods try calculated an optimal bandwidth from predefined formulas:</p>
+<blockquote>
+<div><p><strong>Scotts’s Rule</strong> of thumb to determine the smoothing bandwidth for a kernel estimation. It
+is very fast compute. This rule was designed for density estimation but is usable for kernel
+regression too. Typically produces a larger bandwidth and therefore it is useful for estimating
+a gradual trend:</p>
+<blockquote>
+<div><div class="math">
+\[bw = 1.059 * A * n^{-1/5},\]</div>
+<p>where <em>n</em> marks the length of X variable &lt;per-key&gt; and</p>
+<div class="math">
+\[A = min(\sigma(x), IQR(x) / 1.349),\]</div>
+<p>where <span class="math">\(\sigma\)</span> marks the <a class="reference external" href="https://en.wikipedia.org/wiki/Standard_deviation">StandardDeviation</a> and IQR marks the <a class="reference external" href="https://en.wikipedia.org/wiki/Interquartile_range">InterquartileRange</a>.</p>
+</div></blockquote>
+<p><strong>Silverman’s Rule</strong> of thumb to determine the smoothing bandwidth for a kernel estimation. Belongs to
+most popular method which uses the <em>rule-of-thumb</em>. Rule is originally designs for <em>density estimation</em>
+and therefore uses the normal density as a prior for approximating. For the necessary estimation of
+the <span class="math">\(\sigma\)</span> of X &lt;per-key&gt; he proposes a robust version making use of the <a class="reference external" href="https://en.wikipedia.org/wiki/Interquartile_range">InterquartileRange</a>.
+If the true density is uni-modal, fairly symmetric and does not have fat tails, it works fine:</p>
+<blockquote>
+<div><div class="math">
+\[bw = 0.9 * A * n^{-1/5},\]</div>
+<p>where <em>n</em> marks the length of X variable &lt;per-key&gt; and</p>
+<div class="math">
+\[A = min(\sigma(x), IQR(x) / 1.349),\]</div>
+<p>where <span class="math">\(\sigma\)</span> marks the <a class="reference external" href="https://en.wikipedia.org/wiki/Standard_deviation">StandardDeviation</a> and IQR marks the <a class="reference external" href="https://en.wikipedia.org/wiki/Interquartile_range">InterquartileRange</a>.</p>
+</div></blockquote>
+</div></blockquote>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby kernel-regression method-selection <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-method-selection-rt">
+<code class="descname">-rt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--reg-type</code><code class="descclassname"> &lt;reg_type&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-method-selection-rt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the type for regression estimator. Supported types are: “lc”: local-constant (Nadaraya-Watson) and “ll”: local-linear estimator. Default is “ll”. For more information about these types you can visit Perun Documentation.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-method-selection-bm">
+<code class="descname">-bm</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bandwidth-method</code><code class="descclassname"> &lt;bandwidth_method&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-method-selection-bm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the helper method to determine the kernel bandwidth. The &lt;method_name&gt; will be used to compute the bandwidth, which will be used at kernel regression.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-kernel-regression-kernel-smoothing">
+<h4>perun postprocessby kernel-regression kernel-smoothing<a class="headerlink" href="#perun-postprocessby-kernel-regression-kernel-smoothing" title="Permalink to this headline">¶</a></h4>
+<p>Kernel regression with different types of kernel and regression methods.</p>
+<p>This mode of kernel regression postprocessor implements non-parametric regression using different kernel
+methods and different kernel types. The calculation in this mode can be split into three parts. The first
+part is represented by the <em>kernel type</em>, the second part by <em>bandwidth computation</em> and the last part is
+represented by <em>regression method</em>, which will be used to interleave the given resources. We will look
+gradually at individual supported options in the each part of computation.</p>
+<blockquote>
+<div><p><strong>Kernel Type &lt;kernel-type&gt;</strong>:</p>
+<p>In non-parametric statistics a <em>kernel</em> is a weighting function used in estimation techniques. In <em>kernel
+regression</em> is used to estimate the conditional expectation of a random variable. As has been said, <em>kernel
+width</em> must be specified when running a non-parametric estimation. The <em>kernel</em> in view of mathematical
+definition is a non-negative real-valued integrable function <em>K</em>. For most applications, it is desirable
+to define the function to satisfy two additional requirements:</p>
+<blockquote>
+<div><p><strong>Normalization</strong>:</p>
+<blockquote>
+<div><div class="math">
+\[\int_{-\infty}^{+\infty}K(u)du = 1,\]</div>
+</div></blockquote>
+<p><strong>Symmetry</strong></p>
+<blockquote>
+<div><div class="math">
+\[K(-u) = K(u),\]</div>
+</div></blockquote>
+<p>for all values of u. The second requirement ensures that the average of the corresponding distribution
+is equal to that of the sample used. If <em>K</em> is a kernel, then so is the function <span class="math">\(K^*\)</span> defined
+by <span class="math">\(K^*(u) = \lambda K (\lambda u)\)</span>, where <span class="math">\(\lambda &gt; 0\)</span>. This can be used to select a scale
+that is appropriate for the data. This mode offers several types of kernel functions:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="52%" />
+<col width="19%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>Kernel Name</strong></td>
+<td><strong>Kernel Function, K(u)</strong></td>
+<td><strong>Efficiency</strong></td>
+</tr>
+<tr class="row-even"><td><strong>Gaussian (normal)</strong></td>
+<td><span class="math">\(K(u)=(1/\sqrt{2\pi})e^{-(1/2)u^2}\)</span></td>
+<td>95.1%</td>
+</tr>
+<tr class="row-odd"><td><strong>Epanechnikov</strong></td>
+<td><span class="math">\(K(u)=3/4(1-u^2)\)</span></td>
+<td>100%</td>
+</tr>
+<tr class="row-even"><td><strong>Tricube</strong></td>
+<td><span class="math">\(K(u)=70/81(1-|u^3|)^3\)</span></td>
+<td>99.8%</td>
+</tr>
+<tr class="row-odd"><td><strong>Gaussian order4</strong></td>
+<td><span class="math">\(\phi_4(u)=1/2(3-u^2)\phi(u)\)</span>,
+where <span class="math">\(\phi\)</span> is the normal kernel</td>
+<td>not applicable</td>
+</tr>
+<tr class="row-even"><td><strong>Epanechnikov order4</strong></td>
+<td><span class="math">\(K_4(u)=-(15/8)u^2+(9/8)\)</span>, where <em>K</em>
+is the non-normalized Epanechnikov kernel</td>
+<td>not applicable</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Efficiency is defined as <span class="math">\(\sqrt{\int{}{}u^2K(u)du}\int{}{}K(u)^2du\)</span>, and its measured to the
+<em>Epanechnikov</em> kernel.</p>
+</div></blockquote>
+<p><strong>Smoothing Method &lt;smoothing-method&gt;</strong>:</p>
+<p><em>Kernel-Smoothing</em> mode of this postprocessor offers three different non-parametric regression methods to
+execute <em>kernel regression</em>. The first of them is called <em>spatial-average</em> and perform a <em>Nadaraya-Watson</em>
+regression (i.e. also called local-constant regression) on the data using a given kernel:</p>
+<blockquote>
+<div><div class="math">
+\[m_{h}(x) = \sum_{i=1}^{n}K_h((x - x_i) / h)y_i / \sum_{j=1}^{n}K_h((x - x_j) / h),\]</div>
+</div></blockquote>
+<p>where <em>K(x)</em> is the kernel and must be such that <em>E(K(x)) = 0</em> and <em>h</em> is the bandwidth of the method.
+<em>Local-Constant</em> regression was also described in <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>.
+The second supported regression method by this mode is called <em>local-linear</em>. Compared with previous method,
+which offers computational with different types of kernel, this method has restrictions and perform <em>local-
+linear</em> regression using only <em>Gaussian (Normal)</em> kernel. The <em>local-constant</em> regression was described in
+<a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a> and therefore will not be given no further
+attention to it. <em>Local Polynomial</em> regression is the last method in this mode and perform regression in <em>N-D</em>
+using a user-provided  kernel. The <em>local-polynomial</em> regression is the function that minimizes, for each
+position:</p>
+<blockquote>
+<div><div class="math">
+\[m_{h}(x) = \sum_{i=0}^{n}K((x - x_i) / h)(y_i - a_0 - P_q(x_i -x))^2,\]</div>
+</div></blockquote>
+<p>where <em>K(x)</em> is the kernel such that <em>E(K(x)) = 0</em>, <em>q</em> is the order of the fitted polynomial
+&lt;polynomial-order&gt;, <span class="math">\(P_q(x)\)</span> is a polynomial or order <em>q</em> in <em>x</em>, and <em>h</em> is the bandwidth
+of the method. The polynomial <span class="math">\(P_q(x)\)</span> is of the form:</p>
+<blockquote>
+<div><div class="math">
+\[F_d(k) = { n \in N^d | \sum_{i=1}^{d}n_i = k }\]</div>
+<div class="math">
+\[P_q(x_1, ..., x_d) = \sum_{k=1}^{q}{}\sum_{n \in F_d(k)}^{}{} a_{k,n}\prod_{i=1}^{d}x_{i}^{n_i}\]</div>
+</div></blockquote>
+<p>For example we can have:</p>
+<blockquote>
+<div><div class="math">
+\[P_2(x, y) = a_{110}x + a_{101}y + a_{220}x^2 + a_{221}xy + a_{202}y^2\]</div>
+</div></blockquote>
+</div></blockquote>
+<p>The last part of the calculation is the <em>bandwidth</em> computation. This mode offers to user enter the value
+directly with use of parameter &lt;bandwidth-value&gt;. The parameter &lt;bandwidth-method&gt; offers to user the selection
+from the two methods to determine the optimal bandwidth value. The supported methods are <em>Scotts’s Rule</em> and
+<em>Silverman’s Rule</em>, which are described in <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-method-selection"><span class="std std-ref">perun postprocessby kernel-regression method-selection</span></a>. This
+parameter cannot be entered in combination with &lt;bandwidth-value&gt;, then will be ignored and will be accepted value
+from &lt;bandwidth-value&gt;.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby kernel-regression kernel-smoothing <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-kt">
+<code class="descname">-kt</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--kernel-type</code><code class="descclassname"> &lt;kernel_type&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-kt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the set of kernels to execute the <cite>kernel-smoothing</cite> with kernel selected by the user. For exact definitions of these kernels and more information about it, you can visit the Perun Documentation.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-sm">
+<code class="descname">-sm</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--smoothing-method</code><code class="descclassname"> &lt;smoothing_method&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-sm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides kernel smoothing methods to executing non-parametric regressions: <cite>local-polynomial</cite> perform a local-polynomial regression in N-D using a user-provided kernel; <cite>local-linear</cite> perform a local-linear regression using a gaussian (normal) kernel; and <cite>spatial-average</cite> performa Nadaraya-Watson regression on the data (so called local-constant regression) using a user-provided kernel.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bm">
+<code class="descname">-bm</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bandwidth-method</code><code class="descclassname"> &lt;bandwidth_method&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the helper method to determine the kernel bandwidth. The &lt;bandwidth_method&gt; will be used to compute the bandwidth, which will be used at kernel-smoothing regression. Cannot be entered in combination with &lt;bandwidth-value&gt;, then will be ignored and will be accepted value from &lt;bandwidth-value&gt;.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bv">
+<code class="descname">-bv</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--bandwidth-value</code><code class="descclassname"> &lt;bandwidth_value&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bv" title="Permalink to this definition">¶</a></dt>
+<dd><p>The float value of &lt;bandwidth&gt; defined by user, which will be used at kernel regression. If is entered in the combination with &lt;bandwidth-method&gt;, then method will be ignored.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-q">
+<code class="descname">-q</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--polynomial-order</code><code class="descclassname"> &lt;polynomial_order&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-q" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides order of the polynomial to fit. Default value of the order is equal to 3. Is accepted only by <cite>local-polynomial</cite> &lt;smoothing-method&gt;, another methods ignoring it.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="perun-postprocessby-kernel-regression-kernel-ridge">
+<h4>perun postprocessby kernel-regression kernel-ridge<a class="headerlink" href="#perun-postprocessby-kernel-regression-kernel-ridge" title="Permalink to this headline">¶</a></h4>
+<p>Nadaraya-Watson kernel regression with automatic bandwidth selection.</p>
+<p>This mode implements <em>Nadaraya-Watson</em> kernel regression, which was described above in
+<a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>. While the previous modes provided the methods to
+determine the optimal bandwidth with different ways, this method provides a little bit different way. From a given
+range of potential bandwidths &lt;gamma-range&gt; try to select the optimal kernel bandwidth with use of <em>leave-one-out
+cross-validation</em>. This approach was described in <a class="reference internal" href="postprocessors.html#postprocessors-kernel-regression-estimator-settings"><span class="std std-ref">perun postprocessby kernel-regression estimator-settings</span></a>, where
+was introduced the <em>least-squares cross- validation</em> and it is a modification of this approach. <em>Leave-one-out
+cross validation</em> is <a class="reference external" href="https://medium.com/datadriveninvestor/k-fold-cross-validation-6b8518070833">K-fold</a> cross validation taken to its logical extreme, with <em>K</em> equal to <em>N</em>, the number of
+data points in the set. The original <em>gamma-range</em> will be divided on the base of size the given step &lt;gamma-step&gt;.
+The selection of specific value from this range will be executing by minimizing <a class="reference external" href="https://en.wikipedia.org/wiki/Mean_squared_error">mean-squared-error</a> in
+<em>leave-one-out cross-validation</em>. The selected <em>bandwidth-value</em> will serves for <em>gaussian</em> kernel in resulting
+estimate: <span class="math">\(K(x, y) = exp(-gamma * ||x-y||^2)\)</span>.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>perun postprocessby kernel-regression kernel-ridge <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gr">
+<code class="descname">-gr</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--gamma-range</code><code class="descclassname"> &lt;gamma_range&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the range for automatic bandwidth selection of the kernel via leave-one-outcross-validation. One value from these range will be selected with minimizing the mean-squared error of leave-one-out cross-validation. The first value will be taken as the lower bound of the range and cannot be greater than the second value.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gs">
+<code class="descname">-gs</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--gamma-step</code><code class="descclassname"> &lt;gamma_step&gt;</code><a class="headerlink" href="#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the size of the step, with which will be executed the iteration over the given &lt;gamma-range&gt;. Cannot be greater than length of &lt;gamma-range&gt;, else will be setto value of the lower bound of the &lt;gamma_range&gt;.</p>
 </dd></dl>
 
 </div>
@@ -2487,6 +2978,12 @@ which is specified by <a class="reference internal" href="config.html#confkey-ge
 <li><a class="reference internal" href="#perun-postprocessby-moving-average-sma">perun postprocessby moving_average sma</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-moving-average-smm">perun postprocessby moving_average smm</a></li>
 <li><a class="reference internal" href="#perun-postprocessby-moving-average-ema">perun postprocessby moving_average ema</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-kernel-regression">perun postprocessby kernel-regression</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-kernel-regression-estimator-settings">perun postprocessby kernel-regression estimator-settings</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-kernel-regression-user-selection">perun postprocessby kernel-regression user-selection</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-kernel-regression-method-selection">perun postprocessby kernel-regression method-selection</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-kernel-regression-kernel-smoothing">perun postprocessby kernel-regression kernel-smoothing</a></li>
+<li><a class="reference internal" href="#perun-postprocessby-kernel-regression-kernel-ridge">perun postprocessby kernel-regression kernel-ridge</a></li>
 </ul>
 </li>
 </ul>

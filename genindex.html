@@ -6,13 +6,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Index &#8212; Perun 0.16.4 documentation</title>
+    <title>Index &#8212; Perun 0.16.7 documentation</title>
     <link rel="stylesheet" href="_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.16.4',
+        VERSION:     '0.16.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -100,6 +100,13 @@
 </li>
       </ul></li>
       <li>
+    --efficient, --uniformly
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-efficient">perun-postprocessby-kernel-regression-estimator-settings command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-efficient">[1]</a>
+</li>
+      </ul></li>
+      <li>
     --keep-profile
 
       <ul>
@@ -125,6 +132,20 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-memory-no-source">perun-collect-memory command line option</a>, <a href="collectors.html#cmdoption-perun-collect-memory-no-source">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    --randomize, --no-randomize
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-randomize">perun-postprocessby-kernel-regression-estimator-settings command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-randomize">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    --return-median, --return-mean
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-return-median">perun-postprocessby-kernel-regression-estimator-settings command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-return-median">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -216,6 +237,15 @@
 </li>
       </ul></li>
       <li>
+    -bm, --bandwidth-method &lt;bandwidth_method&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bm">perun-postprocessby-kernel-regression-kernel-smoothing command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bm">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-bm">perun-postprocessby-kernel-regression-method-selection command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-bm">[1]</a>
+</li>
+      </ul></li>
+      <li>
     -bm, --bucket_method &lt;bucket_method&gt;
 
       <ul>
@@ -227,6 +257,22 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-bn">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-bn">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -bv, --bandwidth-value &lt;bandwidth_value&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bv">perun-postprocessby-kernel-regression-kernel-smoothing command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bv">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-bv">perun-postprocessby-kernel-regression-user-selection command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-bv">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -bw, --bandwidth-method &lt;bandwidth_method&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-bw">perun-postprocessby-kernel-regression-estimator-settings command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-bw">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -376,6 +422,20 @@
 </li>
       </ul></li>
       <li>
+    -gr, --gamma-range &lt;gamma_range&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gr">perun-postprocessby-kernel-regression-kernel-ridge command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gr">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -gs, --gamma-step &lt;gamma_step&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gs">perun-postprocessby-kernel-regression-kernel-ridge command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gs">[1]</a>
+</li>
+      </ul></li>
+      <li>
     -gt, --graph-title &lt;graph_title&gt;
 
       <ul>
@@ -398,6 +458,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-config-h">perun-config command line option</a>, <a href="config.html#cmdoption-perun-config-h">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -kt, --kernel-type &lt;kernel_type&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-kt">perun-postprocessby-kernel-regression-kernel-smoothing command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-kt">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -468,6 +535,8 @@
         <li><a href="cli.html#cmdoption-perun-utils-create-nb">perun-utils-create command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     -ne, --no-edit
 
@@ -475,8 +544,20 @@
         <li><a href="cli.html#cmdoption-perun-utils-create-ne">perun-utils-create command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    -nres, --n-re-samples &lt;n_re_samples&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nres">perun-postprocessby-kernel-regression-estimator-settings command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nres">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -nsub, --n-sub-samples &lt;n_sub_samples&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nsub">perun-postprocessby-kernel-regression-estimator-settings command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nsub">[1]</a>
+</li>
+      </ul></li>
       <li>
     -o, --of &lt;of_key&gt;
 
@@ -494,6 +575,8 @@
     -of, --of-key &lt;of_key&gt;
 
       <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-of">perun-postprocessby-kernel-regression command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-of">[1]</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-of">perun-postprocessby-moving_average command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-of">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-of">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-of">[1]</a>
@@ -537,6 +620,8 @@
     -per, --per-key &lt;per_key&gt;
 
       <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-per">perun-postprocessby-kernel-regression command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-per">[1]</a>
+</li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-per">perun-postprocessby-moving_average command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-per">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-per">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-per">[1]</a>
@@ -547,6 +632,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-run-job-pp">perun-run-job command line option</a>, <a href="jobs.html#cmdoption-perun-run-job-pp">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -q, --polynomial-order &lt;polynomial_order&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-q">perun-postprocessby-kernel-regression-kernel-smoothing command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-q">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -568,6 +660,17 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-collect-time-r">perun-collect-time command line option</a>, <a href="collectors.html#cmdoption-perun-collect-time-r">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -rt, --reg-type &lt;reg_type&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-rt">perun-postprocessby-kernel-regression-estimator-settings command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-rt">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-rt">perun-postprocessby-kernel-regression-method-selection command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-rt">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-rt">perun-postprocessby-kernel-regression-user-selection command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-rt">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -642,6 +745,13 @@
 
       <ul>
         <li><a href="cli.html#cmdoption-perun-postprocessby-regressogram-sf">perun-postprocessby-regressogram command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regressogram-sf">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    -sm, --smoothing-method &lt;smoothing_method&gt;
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-sm">perun-postprocessby-kernel-regression-kernel-smoothing command line option</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-sm">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -884,10 +994,10 @@
 </li>
       <li><a href="profile.html#perun.profile.query.all_numerical_resource_fields_of">all_numerical_resource_fields_of() (in module perun.profile.query)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="profile.html#perun.profile.query.all_resource_fields_of">all_resource_fields_of() (in module perun.profile.query)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="profile.html#perun.profile.query.all_resources_of">all_resources_of() (in module perun.profile.query)</a>
 </li>
       <li>
@@ -897,6 +1007,8 @@
         <li><a href="config.html#confunit-args">configuration unit</a>
 </li>
         <li><a href="jobs.html#matrixunit-args">matrix format unit</a>
+</li>
+        <li><a href="profile.html#perfkey-args">perf format key</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1255,16 +1367,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    params
-
-      <ul>
-        <li><a href="profile.html#perfkey-params">perf format key</a>
-</li>
-      </ul></li>
-      <li>
     perf format key
 
       <ul>
+        <li><a href="profile.html#perfkey-args">args</a>
+</li>
         <li><a href="profile.html#perfkey-cmd">cmd</a>
 </li>
         <li><a href="profile.html#perfkey-collector_info.name">collector_info.name</a>
@@ -1272,8 +1379,6 @@
         <li><a href="profile.html#perfkey-collector_info.params">collector_info.params</a>
 </li>
         <li><a href="profile.html#perfkey-models">models</a>
-</li>
-        <li><a href="profile.html#perfkey-params">params</a>
 </li>
         <li><a href="profile.html#perfkey-resources">resources</a>
 </li>
@@ -1519,6 +1624,76 @@
 </li>
       </ul></li>
       <li>
+    perun-postprocessby-kernel-regression command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-of">-of, --of-key &lt;of_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-of">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-per">-per, --per-key &lt;per_key&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-per">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    perun-postprocessby-kernel-regression-estimator-settings command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-efficient">--efficient, --uniformly</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-efficient">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-randomize">--randomize, --no-randomize</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-randomize">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-return-median">--return-median, --return-mean</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-return-median">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-bw">-bw, --bandwidth-method &lt;bandwidth_method&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-bw">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nres">-nres, --n-re-samples &lt;n_re_samples&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nres">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nsub">-nsub, --n-sub-samples &lt;n_sub_samples&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-nsub">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-rt">-rt, --reg-type &lt;reg_type&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-estimator-settings-rt">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    perun-postprocessby-kernel-regression-kernel-ridge command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gr">-gr, --gamma-range &lt;gamma_range&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gr">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gs">-gs, --gamma-step &lt;gamma_step&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-ridge-gs">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    perun-postprocessby-kernel-regression-kernel-smoothing command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bm">-bm, --bandwidth-method &lt;bandwidth_method&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bm">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bv">-bv, --bandwidth-value &lt;bandwidth_value&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-bv">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-kt">-kt, --kernel-type &lt;kernel_type&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-kt">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-q">-q, --polynomial-order &lt;polynomial_order&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-q">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-sm">-sm, --smoothing-method &lt;smoothing_method&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-kernel-smoothing-sm">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    perun-postprocessby-kernel-regression-method-selection command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-bm">-bm, --bandwidth-method &lt;bandwidth_method&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-bm">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-rt">-rt, --reg-type &lt;reg_type&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-method-selection-rt">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    perun-postprocessby-kernel-regression-user-selection command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-bv">-bv, --bandwidth-value &lt;bandwidth_value&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-bv">[1]</a>
+</li>
+        <li><a href="cli.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-rt">-rt, --reg-type &lt;reg_type&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-kernel-regression-user-selection-rt">[1]</a>
+</li>
+      </ul></li>
+      <li>
     perun-postprocessby-moving_average command line option
 
       <ul>
@@ -1536,6 +1711,8 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-moving-average-ema-d">-d, --decay &lt;decay&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-moving-average-ema-d">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-postprocessby-moving_average-sma command line option
 
@@ -1571,8 +1748,6 @@
         <li><a href="cli.html#cmdoption-perun-postprocessby-regression-analysis-s">-s, --steps &lt;steps&gt;</a>, <a href="postprocessors.html#cmdoption-perun-postprocessby-regression-analysis-s">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     perun-postprocessby-regressogram command line option
 
