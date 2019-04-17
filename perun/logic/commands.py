@@ -162,6 +162,7 @@ def init_perun_at(perun_path, is_reinit, vcs_config, config_template='master'):
     store.touch_dir(os.path.join(perun_full_path, 'logs'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
     store.touch_dir(os.path.join(perun_full_path, 'stats'))
+    store.touch_dir(os.path.join(perun_full_path, 'tmp'))
     # If the config does not exist, we initialize the new version
     if not os.path.exists(os.path.join(perun_full_path, 'local.yml')):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)

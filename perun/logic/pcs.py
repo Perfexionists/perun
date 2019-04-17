@@ -121,6 +121,28 @@ def get_stats_directory():
     return stats_directory
 
 
+@singleton
+def get_tmp_directory():
+    """Returns the name of the directory, where various or temporary files are stored
+
+    :return str: path to the tmp directory
+    """
+    tmp_directory = os.path.join(get_path(), 'tmp')
+    store.touch_dir(tmp_directory)
+    return tmp_directory
+
+
+@singleton
+def get_tmp_index():
+    """Returns the path to the index file in tmp directory, where details about some tmp files
+    are stored
+
+    :return str: path to the tmp index file
+    """
+    tmp_directory = get_tmp_directory()
+    return os.path.join(tmp_directory, '.index')
+
+
 @singleton_with_args
 def get_config_file(config_type):
     """Returns the config file for the given config type

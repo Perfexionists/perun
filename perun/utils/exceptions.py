@@ -99,6 +99,27 @@ class StatsFileNotFoundException(Exception):
         return self.msg
 
 
+class InvalidTempPathException(Exception):
+    """Raised when the looked up temporary path (file or directory) does not exist or the given
+    path is of invalid type for the given operation (file path for directory operation etc.)"""
+    def __init__(self, msg):
+        super().__init__("")
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
+class ProtectedTempException(Exception):
+    """Raised when an attempt to delete protected temp file is made."""
+    def __init__(self, msg):
+        super().__init__("")
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
 class VersionControlSystemException(Exception):
     """Raised when there is an issue with wrapped version control system.
 
