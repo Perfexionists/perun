@@ -13,6 +13,7 @@ import re
 import click
 import colorama
 import termcolor
+from operator import itemgetter
 
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
@@ -23,9 +24,11 @@ import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
+import perun.logic.temp as temp
 
 from perun.utils.exceptions import NotPerunRepositoryException, \
-    ExternalEditorErrorException, MissingConfigSectionException
+    ExternalEditorErrorException, MissingConfigSectionException, InvalidTempPathException, \
+    ProtectedTempException
 from perun.utils.helpers import \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, SUPPORTED_PROFILE_TYPES, HEADER_ATTRS, HEADER_COMMIT_COLOUR, \
@@ -883,3 +886,108 @@ def load_profile_from_args(profile_name, minor_version):
     loaded_profile = store.load_profile_from_file(profile_name, False)
 
     return loaded_profile
+
+
+def print_temp_files(root, **kwargs):
+    """Print the temporary files in the root directory.
+
+    :param str root: the path to the directory that should be listed
+    :param kwargs: additional parameters such as sorting, output formatting etc.
+    """
+    # Try to load the files in the root directory
+    try:
+        tmp_files = temp.list_all_temps_with_details(root)
+    except InvalidTempPathException as exc:
+        print("Error: " + str(exc))
+        return
+
+    # Filter the files by protection level if it is set to show only certain group
+    if kwargs['filter_protection'] != 'all':
+        for idx, (name, level, size) in enumerate(list(tmp_files)):
+            if level != kwargs['filter_protection']:
+                tmp_files.remove((name, level, size))
+
+    # First sort by the name
+    tmp_files.sort(key=itemgetter(0))
+    # Now apply 'sort-by' if it differs from name:
+    if kwargs['sort_by'] != 'name':
+        sort_map = temp.SORT_ATTR_MAP[kwargs['sort_by']]
+        tmp_files.sort(key=itemgetter(sort_map['pos']), reverse=sort_map['reverse'])
+
+    # Print the total files size if needed
+    if not kwargs['no_total_size']:
+        total_size = utils.format_file_size(sum(size for _, _, size in tmp_files))
+        print('Total size of all temporary files: {}'.format(
+            termcolor.colored(total_size, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS))
+        )
+
+    # Print the file records
+    print_formatted_temp_files(tmp_files, not kwargs['no_file_size'],
+                               not kwargs['no_protection_level'])
+
+
+def print_formatted_temp_files(records, show_size, show_protection):
+    """Format and print temporary file records as:
+    size | protection level | path from tmp/ directory
+
+    :param list records: the list of temporary file records as tuple (size, protection, path)
+    :param bool show_size: flag indicating whether size for each file should be shown
+    :param bool show_protection: if set to True, show the protection level of each file
+    """
+    # Handle empty tmp/ dir
+    if not records:
+        cprintln('== No results in the .perun/tmp/ directory ==', 'white')
+        return
+
+    # Absolute path might be a bit too long, we remove the path component to the tmp/ directory
+    prefix = len(pcs.get_tmp_directory()) + 1
+    for file_name, protection, size in records:
+        # Print the size of each file
+        if show_size:
+            print('{}'.format(termcolor.colored(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
+                  end=termcolor.colored(' | ', TEXT_WARN_COLOUR))
+        # Print the protection level of each file
+        if show_protection:
+            if protection == temp.UNPROTECTED:
+                print('{}'.format(temp.UNPROTECTED),
+                      end=termcolor.colored(' | ', TEXT_WARN_COLOUR))
+            else:
+                print('{}  '.format(termcolor.colored(temp.PROTECTED, TEXT_WARN_COLOUR)),
+                      end=termcolor.colored(' | ', TEXT_WARN_COLOUR))
+
+        # Print the file path, emphasize the directory to make it a bit more readable
+        file_name = file_name[prefix:]
+        file_dir = os.path.dirname(file_name)
+        if file_dir:
+            file_dir += os.sep
+            print('{}'.format(termcolor.colored(file_dir, TEXT_EMPH_COLOUR)), end='')
+        print('{}'.format(os.path.basename(file_name)))
+
+
+def delete_temps(path, ignore_protected, force, **kwargs):
+    """Delete the temporary file(s) identified by the path. The path can be either file (= delete
+    only the file) or directory (= delete files in the directory or the whole directory).
+
+    :param str path: the path to the target file or directory
+    :param bool ignore_protected: if True, protected files are ignored and not deleted, otherwise
+                                  deletion process is aborted and exception is raised
+    :param bool force: if True, delete also protected files
+    :param kwargs: additional parameters
+    """
+    try:
+        # Determine if path is file or directory and call the correct functions for that
+        if temp.exists_temp_file(path):
+            temp.delete_temp_file(path, ignore_protected, force)
+        elif temp.exists_temp_dir(path):
+            # We might delete only files or files + empty directories
+            if kwargs['keep_directories']:
+                temp.delete_all_temps(path, ignore_protected, force)
+            else:
+                temp.delete_temp_dir(path, ignore_protected, force)
+        # The supplied path does not exist, inform the user so they can correct the path
+        else:
+            print("Note: The supplied path '{}' does not exist, no files deleted"
+                  .format(temp.temp_path(path)))
+    except (InvalidTempPathException, ProtectedTempException) as exc:
+        # Invalid path or protected files encountered
+        print("Error: " + str(exc))

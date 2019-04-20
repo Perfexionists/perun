@@ -54,6 +54,7 @@ import perun.logic.commands as commands
 import perun.logic.runner as runner
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
+import perun.logic.temp as temp
 import perun.postprocess
 import perun.profile.factory as profiles
 import perun.utils as utils
@@ -1116,6 +1117,62 @@ def create(template_type, **kwargs):
         scripts.create_unit_from_template(template_type, **kwargs)
     except ExternalEditorErrorException as editor_exception:
         perun_log.error("while invoking external editor: {}".format(str(editor_exception)))
+
+
+@utils_group.group('temp')
+def temp_group():
+    """Provides set of operations for maintaining the temporary directory (.perun/tmp/) of perun.
+    """
+    pass
+
+
+@temp_group.command('list')
+@click.argument('root', type=click.Path(), required=False, default=pcs.get_tmp_directory())
+@click.option('--no-total-size', flag_value=True, default=False,
+              help='Do not show the total size of all the temporary files combined.')
+@click.option('--no-file-size', flag_value=True, default=False,
+              help='Do not show the size of each temporary file.')
+@click.option('--no-protection-level', flag_value=True, default=False,
+              help='Do not show the protection level of the temporary files.')
+@click.option('--sort-by', '-sb', type=click.Choice(temp.SORT_ATTR), default=temp.SORT_ATTR[0],
+              help='Sorts the temporary files on the output.')
+@click.option('--filter-protection', '-fp', type=click.Choice(temp.PROTECTION_LEVEL),
+              default=temp.PROTECTION_LEVEL[0],
+              help='List only temporary files with the given protection level.')
+def temp_list(root, **kwargs):
+    """Lists the temporary files of the '.perun/tmp/' directory. It is possible to list only
+    files in specific subdirectory by supplying the ROOT path.
+
+    The path can be either absolute or relative - the base of the relative path is the tmp/
+    directory.
+    """
+    commands.print_temp_files(root, **kwargs)
+
+
+@temp_group.command('delete')
+@click.argument('path', type=click.Path(), required=True)
+@click.option('--warn', '-w', flag_value=False, default=True,
+              help='Warn the user (and abort the deletion with no files deleted) if protected files'
+                   ' are present.')
+@click.option('--force', '-f', flag_value=True, default=False,
+              help='If set, protected files are deleted regardless of --warn value.')
+@click.option('--keep-directories', '-kd', flag_value=True, default=False,
+              help='If path refers to directory, empty tmp/ directories and subdirectories '
+                   'will be kept.')
+def delete_temp(path, warn, force, **kwargs):
+    """Deletes the temporary file or directory.
+
+    Use the command 'perun utils temp delete .' to safely delete all unprotected files in the
+    '.perun/tmp/' directory.
+
+    The command 'perun utils temp delete -f .' can be used to clear the whole '.perun/tmp/'
+    directory including protected files. Protected files are usually more important and should not
+    be deleted without a good reason (such as tmp/ corruption, too many uncleared files etc.)
+
+    However, deleting temp files (protected or not) should not be done when other perun processes
+    are running as it may cause them to crash due to a missing file.
+    """
+    commands.delete_temps(path, warn, force, **kwargs)
 
 
 def init_unit_commands(lazy_init=True):

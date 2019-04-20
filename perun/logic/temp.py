@@ -46,6 +46,10 @@ is not used, the file will not be deleted and exception will be raised. This all
 that some important files are not easily and accidentally removed, while also providing a
 mechanism to delete them if the need for complete cleanup arises.
 
+Deletion:
+---------------------------------------------------
+When using this interface, the files are not automatically cleaned up when they are no longer used.
+Thus the user should take care to delete them appropriately to save some memory.
 """
 
 
@@ -56,6 +60,31 @@ import zlib
 import perun.logic.pcs as pcs
 import perun.logic.store as store
 import perun.utils.exceptions as exceptions
+
+
+UNPROTECTED, PROTECTED = 'unprotected', 'protected'
+
+SORT_ATTR = [
+    'name', 'protection', 'size'
+]
+PROTECTION_LEVEL = [
+    'all', UNPROTECTED, PROTECTED
+]
+
+SORT_ATTR_MAP = {
+    'name': {
+        'pos': 0,
+        'reverse': False
+    },
+    'protection': {
+        'pos': 1,
+        'reverse': False
+    },
+    'size': {
+        'pos': 2,
+        'reverse': True
+    }
+}
 
 
 def temp_path(path):
@@ -227,7 +256,31 @@ def list_all_temps(root=None):
     else:
         root = _join_to_tmp_path(root)
     _is_tmp_dir(root)
-    return [os.path.join(dirpath, file) for dirpath, _, files in os.walk(root) for file in files]
+    return [os.path.join(dirpath, file) for dirpath, _, files in os.walk(root) for file in files
+            if file != '.index']
+
+
+def list_all_temps_with_details(root=None):
+    """Provides a list of all the temporary files in the 'root' folder and all its subfolders
+    with additional data such as protection level and file size.
+
+    For details regarding the path format, see the module docstring.
+
+    If the 'root' is not provided or None, the whole tmp/ folder is considered as the root.
+
+    :param str root: the path to the root folder
+
+    :return list: tuples (name, protection level, size)
+    """
+    tmp_files = list_all_temps(root)
+    unprotected, protected = _filter_protected_files(tmp_files)
+    u_sizes, p_sizes = _get_temps_size(unprotected), _get_temps_size(protected)
+    result = []
+    for idx, p_file in enumerate(protected):
+        result.append((p_file, PROTECTED, p_sizes[idx]))
+    for idx, u_file in enumerate(unprotected):
+        result.append((u_file, UNPROTECTED, u_sizes[idx]))
+    return result
 
 
 def get_temp_properties(file_path):
@@ -287,22 +340,30 @@ def delete_temp_dir(root, ignore_protected=False, force=False):
     _delete_empty_directories(root)
 
 
-def delete_temp_file(file_path, force=False):
+def delete_temp_file(file_path, ignore_protected=False, force=False):
     """Delete the temporary file identified by the 'file_path'.
 
     For details regarding the path format, see the module docstring.
 
+    If 'ignore_protected' is False and the temporary file is protected, the whole deletion process
+    is aborted, the file is not deleted and an exception is raised.
+    If set to True, the protected file will be kept.
+
+    If 'force' is True, the protected file is deleted regardless of the 'ignore_protected' value.
+
     :param str file_path: path to the temporary file to delete
+    :param bool ignore_protected: protected file will either abort the deletion process or
+                                  the file will be ignored and not deleted
     :param bool force: if True and the 'filepath' is protected, the file will be deleted anyway
     """
     file_path = _join_to_tmp_path(file_path.rstrip(os.sep))
     # Check if tmp file exists
     _is_tmp_file(file_path)
     # Don't delete protected temp files unless forced
-    _delete_files([file_path], False, force)
+    _delete_files([file_path], ignore_protected, force)
 
 
-def delete_all_temps(root=None, ignore_protected=None, force=None):
+def delete_all_temps(root=None, ignore_protected=False, force=False):
     """Deletes all the temporary files in the 'root' folder and its subfolders.
 
     For details regarding the path format, see the module docstring.
@@ -358,7 +419,7 @@ def _join_to_tmp_path(path):
     # The resulting path might end up out of tmp/ for both absolute or relative paths
     if not path.startswith(tmp_location):
         raise exceptions.InvalidTempPathException("The resulting path '{}' is not located in "
-                                                  "the tmp/ perun directory.".format(path))
+                                                  "the perun tmp/ directory.".format(path))
     return path
 
 
@@ -456,7 +517,7 @@ def _delete_empty_directories(root):
     # Check if the given directory is empty and delete it
     for directory in all_dirs:
         if not os.listdir(directory):
-            os.remove(directory)
+            os.rmdir(directory)
 
 
 def _write_to_temp(file_path, content, json_format, protect, compress):
@@ -481,6 +542,18 @@ def _write_to_temp(file_path, content, json_format, protect, compress):
         tmp_handle.write(content)
     # Save the properties to the index file if needed
     _add_to_index(file_path, json_format, protect, compress)
+
+
+def _get_temps_size(tmp_files):
+    """Obtains the sizes (in bytes) of the temporary files.
+
+    :param list tmp_files: a list of temporary files
+    :return list: list with corresponding sizes (the pairs are defined by the same list index)
+    """
+    sizes = []
+    for tmp_file in tmp_files:
+        sizes.append(os.stat(tmp_file).st_size)
+    return sizes
 
 
 def _add_to_index(tmp_file, json_format=False, protected=False, compressed=False):
@@ -542,10 +615,11 @@ def _load_index():
 
     :return dict: the decompressed and json-decoded index content.
     """
-    # Create the tmp index file if it does not exist yet
+    # Create and init the tmp index file if it does not exist yet
     tmp_index = pcs.get_tmp_index()
     if not os.path.exists(tmp_index):
         store.touch_file(tmp_index)
+        _save_index({})
     # Open and load the file
     try:
         with open(tmp_index, 'rb') as tmp_handle:
