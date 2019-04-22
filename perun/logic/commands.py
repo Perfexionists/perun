@@ -896,6 +896,7 @@ def print_temp_files(root, **kwargs):
     """
     # Try to load the files in the root directory
     try:
+        temp.synchronize_index()
         tmp_files = temp.list_all_temps_with_details(root)
     except InvalidTempPathException as exc:
         print("Error: " + str(exc))
@@ -991,3 +992,10 @@ def delete_temps(path, ignore_protected, force, **kwargs):
     except (InvalidTempPathException, ProtectedTempException) as exc:
         # Invalid path or protected files encountered
         print("Error: " + str(exc))
+
+
+def sync_temps():
+    """Synchronizes the internal state of the index file so that it corresponds to some possible
+    manual changes in the directory by the user.
+    """
+    temp.synchronize_index()

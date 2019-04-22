@@ -305,6 +305,33 @@ def test_temp_file_deletion(pcs_with_empty_git):
     _check_index([])
 
 
+def test_temp_sync(pcs_with_empty_git):
+    """Test the index synchronization mechanism in the tmp/ directory.
+    """
+    # Create some dummy files
+    file_lock, file_results = 'trace/lock.txt', 'degradation/results.data'
+    temp.touch_temp_file(file_lock, protect=True)
+    temp.new_temp(file_results, 'Some degradations', True, True, True)
+    # Check the index contents
+    assert temp.get_temp_properties(file_lock) == (False, True, False)
+    assert temp.get_temp_properties(file_results) == (True, True, True)
+    _check_index([file_lock, file_results])
+
+    # Now delete the file ignoring the temp module interface
+    os.remove(temp.temp_path(file_results))
+    assert not os.path.exists(temp.temp_path(file_results))
+
+    # The index should now be in inconsistent state
+    assert temp.get_temp_properties(file_results) == (True, True, True)
+    _check_index([file_lock, file_results])
+
+    # Perform synchronization, now the file_results record should be deleted
+    temp.synchronize_index()
+    assert temp.get_temp_properties(file_lock) == (False, True, False)
+    assert temp.get_temp_properties(file_results) == (False, False, False)
+    _check_index([file_lock])
+
+
 def _check_index(expected_content):
     """Check if the index file contains exactly the entries in expected_content.
 

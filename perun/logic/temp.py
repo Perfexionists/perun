@@ -400,7 +400,7 @@ def synchronize_index():
     """
     index_entries = _load_index()
     tmp_files = list_all_temps()
-    for tmp_name, conf in index_entries.items():
+    for (tmp_name, conf) in list(index_entries.items()):
         # Remove records of files that are deleted or not necessary to track
         if tmp_name not in tmp_files or (not conf['json'] and not conf['protected']
                                          and not conf['compressed']):

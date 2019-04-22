@@ -1175,6 +1175,17 @@ def delete_temp(path, warn, force, **kwargs):
     commands.delete_temps(path, warn, force, **kwargs)
 
 
+@temp_group.command('sync')
+def temp_sync():
+    """Synchronizes the '.perun/tmp/' directory contents with the internal tracking file. This is
+    useful when some files or directories were deleted manually and the resulting inconsistency is
+    causing troubles - however, this should be a very rare condition.
+
+    Invoking the 'temp list' command should also synchronize the internal state automatically.
+    """
+    commands.sync_temps()
+
+
 def init_unit_commands(lazy_init=True):
     """Runs initializations for all of the subcommands (shows, collectors, postprocessors)
 
