@@ -177,6 +177,8 @@ def new_temp(file_path, content, json_format=False, protect=False, compress=Fals
     if os.path.exists(file_path):
         raise exceptions.InvalidTempPathException("The temporary file '{}' already exists."
                                                   .format(file_path))
+    # Make sure that the directory hierarchy for the file exists
+    touch_temp_dir(os.path.dirname(file_path))
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
@@ -193,6 +195,8 @@ def store_temp(file_path, content, json_format=False, protect=False, compress=Fa
     :param bool compress: if True, the content will be compressed
     """
     file_path = _join_to_tmp_path(file_path)
+    # Make sure that the directory hierarchy for the file exists
+    touch_temp_dir(os.path.dirname(file_path))
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
@@ -227,8 +231,8 @@ def get_temp(file_path):
         return None
 
 
-def clear_temp(file_path):
-    """Clears the content of the temporary file 'file_path'
+def reset_temp(file_path):
+    """Clears the content and resets properties of the temporary file 'file_path'
 
     For details regarding the path format, see the module docstring.
 
@@ -238,6 +242,7 @@ def clear_temp(file_path):
     _is_tmp_file(file_path)
     with open(file_path, 'w'):
         pass
+    _add_to_index(file_path, False, False, False)
 
 
 def list_all_temps(root=None):
@@ -251,11 +256,13 @@ def list_all_temps(root=None):
 
     :return list: paths to all the files in the 'root' folder hierarchy
     """
+    # Get the correct root
     if root is None:
         root = pcs.get_tmp_directory()
     else:
         root = _join_to_tmp_path(root)
     _is_tmp_dir(root)
+    # Omit the index file
     return [os.path.join(dirpath, file) for dirpath, _, files in os.walk(root) for file in files
             if file != '.index']
 
@@ -272,9 +279,11 @@ def list_all_temps_with_details(root=None):
 
     :return list: tuples (name, protection level, size)
     """
+    # Get the files, protection level and sizes
     tmp_files = list_all_temps(root)
     unprotected, protected = _filter_protected_files(tmp_files)
     u_sizes, p_sizes = _get_temps_size(unprotected), _get_temps_size(protected)
+    # Create tuples out of the parameters
     result = []
     for idx, p_file in enumerate(protected):
         result.append((p_file, PROTECTED, p_sizes[idx]))
@@ -622,8 +631,8 @@ def _load_index():
         _save_index({})
     # Open and load the file
     try:
-        with open(tmp_index, 'rb') as tmp_handle:
-            return json.loads(store.read_and_deflate_chunk(tmp_handle))
+        with open(tmp_index, 'rb') as index_handle:
+            return json.loads(store.read_and_deflate_chunk(index_handle))
     except (ValueError, zlib.error):
         # Contents either empty or corrupted, init the content to empty dict
         return {}
@@ -636,6 +645,6 @@ def _save_index(records):
     :param dict records: the index entries/records in the dictionary format
     """
     tmp_index = pcs.get_tmp_index()
-    with open(tmp_index, 'w+b') as tmp_handle:
+    with open(tmp_index, 'w+b') as index_handle:
         compressed = store.pack_content(json.dumps(records, indent=2).encode('utf-8'))
-        tmp_handle.write(compressed)
+        index_handle.write(compressed)
