@@ -1128,13 +1128,15 @@ def temp_group():
 
 @temp_group.command('list')
 @click.argument('root', type=click.Path(), required=False, default=pcs.get_tmp_directory())
-@click.option('--no-total-size', flag_value=True, default=False,
+@click.option('--no-color', '-c', flag_value=True, default=False,
+              help='Disable the output coloring, useful for storing the output to file etc.')
+@click.option('--no-total-size', '-t', flag_value=True, default=False,
               help='Do not show the total size of all the temporary files combined.')
-@click.option('--no-file-size', flag_value=True, default=False,
+@click.option('--no-file-size', '-f', flag_value=True, default=False,
               help='Do not show the size of each temporary file.')
-@click.option('--no-protection-level', flag_value=True, default=False,
+@click.option('--no-protection-level', '-p', flag_value=True, default=False,
               help='Do not show the protection level of the temporary files.')
-@click.option('--sort-by', '-sb', type=click.Choice(temp.SORT_ATTR), default=temp.SORT_ATTR[0],
+@click.option('--sort-by', '-s', type=click.Choice(temp.SORT_ATTR), default=temp.SORT_ATTR[0],
               help='Sorts the temporary files on the output.')
 @click.option('--filter-protection', '-fp', type=click.Choice(temp.PROTECTION_LEVEL),
               default=temp.PROTECTION_LEVEL[0],
@@ -1151,15 +1153,15 @@ def temp_list(root, **kwargs):
 
 @temp_group.command('delete')
 @click.argument('path', type=click.Path(), required=True)
-@click.option('--warn', '-w', flag_value=False, default=True,
+@click.option('--warn', '-w', flag_value=True, default=False,
               help='Warn the user (and abort the deletion with no files deleted) if protected files'
                    ' are present.')
 @click.option('--force', '-f', flag_value=True, default=False,
               help='If set, protected files are deleted regardless of --warn value.')
-@click.option('--keep-directories', '-kd', flag_value=True, default=False,
+@click.option('--keep-directories', '-k', flag_value=True, default=False,
               help='If path refers to directory, empty tmp/ directories and subdirectories '
                    'will be kept.')
-def delete_temp(path, warn, force, **kwargs):
+def temp_delete(path, warn, force, **kwargs):
     """Deletes the temporary file or directory.
 
     Use the command 'perun utils temp delete .' to safely delete all unprotected files in the
@@ -1172,7 +1174,7 @@ def delete_temp(path, warn, force, **kwargs):
     However, deleting temp files (protected or not) should not be done when other perun processes
     are running as it may cause them to crash due to a missing file.
     """
-    commands.delete_temps(path, warn, force, **kwargs)
+    commands.delete_temps(path, not warn, force, **kwargs)
 
 
 @temp_group.command('sync')

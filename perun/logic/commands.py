@@ -919,21 +919,22 @@ def print_temp_files(root, **kwargs):
     if not kwargs['no_total_size']:
         total_size = utils.format_file_size(sum(size for _, _, size in tmp_files))
         print('Total size of all temporary files: {}'.format(
-            termcolor.colored(total_size, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS))
+            _set_color(total_size, TEXT_EMPH_COLOUR, not kwargs['no_color']))
         )
 
     # Print the file records
     print_formatted_temp_files(tmp_files, not kwargs['no_file_size'],
-                               not kwargs['no_protection_level'])
+                               not kwargs['no_protection_level'], not kwargs['no_color'])
 
 
-def print_formatted_temp_files(records, show_size, show_protection):
+def print_formatted_temp_files(records, show_size, show_protection, use_color):
     """Format and print temporary file records as:
     size | protection level | path from tmp/ directory
 
     :param list records: the list of temporary file records as tuple (size, protection, path)
     :param bool show_size: flag indicating whether size for each file should be shown
     :param bool show_protection: if set to True, show the protection level of each file
+    :param bool use_color: if set to True, certain parts of the output will be colored
     """
     # Handle empty tmp/ dir
     if not records:
@@ -945,24 +946,39 @@ def print_formatted_temp_files(records, show_size, show_protection):
     for file_name, protection, size in records:
         # Print the size of each file
         if show_size:
-            print('{}'.format(termcolor.colored(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
-                  end=termcolor.colored(' | ', TEXT_WARN_COLOUR))
+            print('{}'.format(_set_color(utils.format_file_size(size),
+                                         TEXT_EMPH_COLOUR, use_color)),
+                  end=_set_color(' | ', TEXT_WARN_COLOUR, use_color))
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
                 print('{}'.format(temp.UNPROTECTED),
-                      end=termcolor.colored(' | ', TEXT_WARN_COLOUR))
+                      end=_set_color(' | ', TEXT_WARN_COLOUR, use_color))
             else:
-                print('{}  '.format(termcolor.colored(temp.PROTECTED, TEXT_WARN_COLOUR)),
-                      end=termcolor.colored(' | ', TEXT_WARN_COLOUR))
+                print('{}  '.format(_set_color(temp.PROTECTED, TEXT_WARN_COLOUR, use_color)),
+                      end=_set_color(' | ', TEXT_WARN_COLOUR, use_color))
 
         # Print the file path, emphasize the directory to make it a bit more readable
         file_name = file_name[prefix:]
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            print('{}'.format(termcolor.colored(file_dir, TEXT_EMPH_COLOUR)), end='')
+            print('{}'.format(_set_color(file_dir, TEXT_EMPH_COLOUR, use_color)), end='')
         print('{}'.format(os.path.basename(file_name)))
+
+
+def _set_color(output, color, enable_coloring=True):
+    """Transforms the output to colored version.
+
+    :param str output: the output text that should be colored
+    :param str color: the color
+    :param bool enable_coloring: switch that allows to disable the coloring - the function is no-op
+
+    :return str: the new colored output (if enabled)
+    """
+    if enable_coloring:
+        return termcolor.colored(output, color, attrs=TEXT_ATTRS)
+    return output
 
 
 def delete_temps(path, ignore_protected, force, **kwargs):

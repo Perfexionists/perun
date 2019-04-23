@@ -17,10 +17,12 @@ import perun.utils as utils
 import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.store as store
+import perun.logic.temp as temp
 import perun.logic.runner as perun_runner
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
+import perun.logic.pcs as pcs
 
 __author__ = 'Tomas Fiedor'
 
@@ -1698,3 +1700,120 @@ def test_error_runs(pcs_full, monkeypatch):
     ])
     assert result.exit_code == 1
 
+
+def test_temp(pcs_with_empty_git):
+    """Test the CLI operations on the temporary files"""
+    runner = CliRunner()
+    files_dir = os.path.join(os.path.split(__file__)[0], 'tmp_files')
+
+    # Try to list temporary files with empty tmp/ directory
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
+    assert result.exit_code == 0
+    assert 'Total size of all' in result.output and 'No results in' in result.output
+
+    # List temporary files with empty tmp/ directory and without the total size option
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '--no-total-size'])
+    assert result.exit_code == 0
+    assert 'Total size of all' not in result.output and 'No results in' in result.output
+
+    # Add some files to the tmp/
+    file_lock = 'trace/lock.txt'
+    file_records = 'trace/data/records.data'
+    file_deg = 'degradations/results/data.out'
+    file_deg2 = 'degradations/results/data2.out'
+    with open(os.path.join(files_dir, 'tst_stap_record.txt'), 'r') as records_handle:
+        file_records_content = records_handle.read()
+    with open(os.path.join(files_dir, 'lin1.perf'), 'r') as deg_handle:
+        file_deg_content = deg_handle.read()
+    with open(os.path.join(files_dir, 'const1.perf'), 'r') as deg_handle:
+        file_deg2_content = deg_handle.read()
+    temp.new_temp(file_lock, "Some important data", protect=True)
+    temp.new_temp(file_records, file_records_content)
+    temp.new_temp(file_deg, file_deg_content, protect=True)
+    temp.new_temp(file_deg2, file_deg2_content)
+
+    # List the now-nonempty tmp/ directory in colored mode
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
+    assert result.exit_code == 0
+    _compare_temp_outputs(result.output, os.path.join(files_dir, 'list1.ref'))
+
+    # From now on, the colored mode will be disabled
+    # Test the file size and protection-level switches
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '--no-file-size',
+                                           '--no-protection-level', '--no-color'])
+    assert result.exit_code == 0
+    _compare_temp_outputs(result.output, os.path.join(files_dir, 'list2.ref'))
+
+    # Test the sorting by size and protection level (name is default)
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-s', 'size', '--no-color'])
+    assert result.exit_code == 0
+    _compare_temp_outputs(result.output, os.path.join(files_dir, 'list3.ref'))
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-s', 'protection', '-c'])
+    assert result.exit_code == 0
+    _compare_temp_outputs(result.output, os.path.join(files_dir, 'list4.ref'))
+
+    # Test the protection filter
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'protected', '-c'])
+    assert result.exit_code == 0
+    _compare_temp_outputs(result.output, os.path.join(files_dir, 'list5.ref'))
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'unprotected', '-c'])
+    assert result.exit_code == 0
+    _compare_temp_outputs(result.output, os.path.join(files_dir, 'list6.ref'))
+
+    # Test the syncing
+    # Simulate manual deletion by the user
+    assert temp.exists_temp_file(file_lock)
+    assert temp.get_temp_properties(file_lock) == (False, True, False)
+    os.remove(os.path.join(pcs.get_tmp_directory(), file_lock))
+    assert not temp.exists_temp_file(file_lock)
+    # However index records are still there, sync
+    assert temp.get_temp_properties(file_lock) == (False, True, False)
+    result = runner.invoke(cli.temp_sync, [])
+    assert result.exit_code == 0
+    assert temp.get_temp_properties(file_lock) == (False, False, False)
+
+    # Test the deletion
+    # Test the warning
+    result = runner.invoke(cli.temp_delete, ['.', '-w'])
+    assert result.exit_code == 0
+    assert 'Aborted' in result.output
+    assert temp.exists_temp_file(file_deg)
+
+    # Test single file deletion
+    result = runner.invoke(cli.temp_delete, [file_deg2])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_deg2)
+
+    # Test the keep directories
+    result = runner.invoke(cli.temp_delete, ['trace/data', '-k'])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_records)
+    assert temp.exists_temp_dir('trace/data')
+
+    # Test the force deletion of the whole tmp/ directory with keeping the empty dirs
+    result = runner.invoke(cli.temp_delete, ['.', '-f', '-k'])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_lock) and not temp.exists_temp_file(file_deg)
+    assert temp.exists_temp_dir('degradations') and temp.exists_temp_dir('trace')
+
+    # Partially repopulate the directory
+    temp.new_temp(file_lock, "Some important data", protect=True)
+    temp.new_temp(file_deg2, file_deg2_content)
+
+    # Test the complete deletion of the tmp/ directory
+    result = runner.invoke(cli.temp_delete, ['.', '-f'])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_lock) and not temp.exists_temp_file(file_deg2)
+    tmp_content = os.listdir(pcs.get_tmp_directory())
+    assert len(tmp_content) == 1 and tmp_content[0] == '.index'
+
+
+def _compare_temp_outputs(runner_result, reference_file):
+    """Compares runner output with a file output
+
+    :param str runner_result: the output of the CLI runner
+    :param str reference_file: path to the reference file
+    """
+    with open(reference_file, 'r') as f_handle:
+        expected_output = f_handle.read()
+    assert runner_result == expected_output
