@@ -283,12 +283,15 @@ def list_all_temps_with_details(root=None):
     tmp_files = list_all_temps(root)
     unprotected, protected = _filter_protected_files(tmp_files)
     u_sizes, p_sizes = _get_temps_size(unprotected), _get_temps_size(protected)
+    # Create 3 lists representing the names, protection levels and sizes
+    tmp_files = unprotected + protected
+    sizes = u_sizes + p_sizes
+    protection_level = [UNPROTECTED] * len(unprotected) + [PROTECTED] * len(protected)
+
     # Create tuples out of the parameters
     result = []
-    for idx, p_file in enumerate(protected):
-        result.append((p_file, PROTECTED, p_sizes[idx]))
-    for idx, u_file in enumerate(unprotected):
-        result.append((u_file, UNPROTECTED, u_sizes[idx]))
+    for idx, file in enumerate(tmp_files):
+        result.append((file, protection_level[idx], sizes[idx]))
     return result
 
 

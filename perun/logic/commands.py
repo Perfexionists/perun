@@ -904,7 +904,7 @@ def print_temp_files(root, **kwargs):
 
     # Filter the files by protection level if it is set to show only certain group
     if kwargs['filter_protection'] != 'all':
-        for idx, (name, level, size) in enumerate(list(tmp_files)):
+        for name, level, size in list(tmp_files):
             if level != kwargs['filter_protection']:
                 tmp_files.remove((name, level, size))
 

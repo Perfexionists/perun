@@ -1127,7 +1127,7 @@ def temp_group():
 
 
 @temp_group.command('list')
-@click.argument('root', type=click.Path(), required=False, default=pcs.get_tmp_directory())
+@click.argument('root', type=click.Path(), required=False, default='.')
 @click.option('--no-color', '-c', flag_value=True, default=False,
               help='Disable the output coloring, useful for storing the output to file etc.')
 @click.option('--no-total-size', '-t', flag_value=True, default=False,
