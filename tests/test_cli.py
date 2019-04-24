@@ -1716,6 +1716,11 @@ def test_temp(pcs_with_empty_git):
     assert result.exit_code == 0
     assert 'Total size of all' not in result.output and 'No results in' in result.output
 
+    # Try to list files in invalid path
+    result = runner.invoke(cli.temp_list, ['../'])
+    assert result.exit_code == 0
+    assert 'not located in' in result.output
+
     # Add some files to the tmp/
     file_lock = 'trace/lock.txt'
     file_records = 'trace/data/records.data'
@@ -1773,6 +1778,11 @@ def test_temp(pcs_with_empty_git):
     assert temp.get_temp_properties(file_lock) == (False, False, False)
 
     # Test the deletion
+    # Try to delete non-existent directory
+    result = runner.invoke(cli.temp_delete, ['some/invalid/dir'])
+    assert result.exit_code == 0
+    assert 'does not exist, no files deleted' in result.output
+
     # Test the warning
     result = runner.invoke(cli.temp_delete, ['.', '-w'])
     assert result.exit_code == 0

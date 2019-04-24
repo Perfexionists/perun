@@ -421,10 +421,10 @@ def format_file_size(size):
 
     :return str: the formatted size for output
     """
-    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti']:
         if abs(size) < 1024.0:
             if unit == '':
                 return "{:6.0f} B  ".format(size)
             return "{:6.1f} {}B".format(size, unit)
         size /= 1024.0
-    return "{:.1f} YiB".format(size)
+    return "{:.1f} PiB".format(size)
