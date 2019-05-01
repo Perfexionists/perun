@@ -90,32 +90,32 @@ def test_temp_file_operations(pcs_with_empty_git):
     """
     # Create a new temporary file and check it
     lock_file = 'trace/lock.txt'
-    temp.new_temp(lock_file, 'Some test data in custom format')
+    temp.create_new_temp(lock_file, 'Some test data in custom format')
     assert temp.exists_temp_file(lock_file)
     assert temp.get_temp_properties(lock_file) == (False, False, False)
-    assert temp.get_temp(lock_file) == 'Some test data in custom format'
+    assert temp.read_temp(lock_file) == 'Some test data in custom format'
 
     # new_temp should not allow overwriting
     with pytest.raises(exceptions.InvalidTempPathException) as exc:
-        temp.new_temp(lock_file, 'Another test data')
+        temp.create_new_temp(lock_file, 'Another test data')
     assert 'already exists' in str(exc.value)
 
     # Create new temporary file using store_temp
     collect_file = 'trace/files/collect.log'
     temp.store_temp(collect_file, 'Some log data')
     assert temp.exists_temp_file(collect_file)
-    assert temp.get_temp(collect_file) == 'Some log data'
+    assert temp.read_temp(collect_file) == 'Some log data'
 
     # store_temp should allow overwriting
     temp.store_temp(collect_file, 'Some data for overwrite')
-    assert temp.get_temp(collect_file) == 'Some data for overwrite'
+    assert temp.read_temp(collect_file) == 'Some data for overwrite'
 
     # Test the file properties json and compressed
     temp_data = {'id': 0x11ef, 'data': {'important': ['values']}}
     temp.store_temp(collect_file, temp_data, True, False, True)
     # The index should take care of correct formatting and (de)compression
     assert temp.get_temp_properties(collect_file) == (True, False, True)
-    assert temp.get_temp(collect_file) == temp_data
+    assert temp.read_temp(collect_file) == temp_data
     # Test manually the content to ensure the formatting and compression happened
     expected_content = store.pack_content(json.dumps(temp_data, indent=2).encode('utf-8'))
     with open(temp.temp_path(collect_file), 'rb') as tmp_handle:
@@ -127,11 +127,11 @@ def test_temp_file_operations(pcs_with_empty_git):
     with open(temp.temp_path(collect_file), 'w') as tmp_handle:
         # The file is still considered json-formatted and compressed, thus error occurs when reading
         tmp_handle.write('Some uncompressed and not formatted data')
-    assert temp.get_temp(collect_file) is None
+    assert temp.read_temp(collect_file) is None
 
     # Reset the corrupted file
     temp.reset_temp(collect_file)
-    assert temp.get_temp(collect_file) == ''
+    assert temp.read_temp(collect_file) == ''
 
 
 def test_temp_file_deletion(pcs_with_empty_git):
@@ -149,7 +149,7 @@ def test_temp_file_deletion(pcs_with_empty_git):
     temp.touch_temp_file(file_collect)
     temp.touch_temp_file(file_records)
     temp.touch_temp_file(file_deg_info)
-    temp.new_temp(file_deg_records, temp_data, json_format=True, protect=True, compress=True)
+    temp.create_new_temp(file_deg_records, temp_data, json_format=True, protect=True, compress=True)
     temp.store_temp(file_deg_log, "Some log data", json_format=False, protect=False, compress=True)
     # Test correct properties
     assert temp.get_temp_properties(file_lock) == (False, True, False)
@@ -311,7 +311,7 @@ def test_temp_sync(pcs_with_empty_git):
     # Create some dummy files
     file_lock, file_results = 'trace/lock.txt', 'degradation/results.data'
     temp.touch_temp_file(file_lock, protect=True)
-    temp.new_temp(file_results, 'Some degradations', True, True, True)
+    temp.create_new_temp(file_results, 'Some degradations', True, True, True)
     # Check the index contents
     assert temp.get_temp_properties(file_lock) == (False, True, False)
     assert temp.get_temp_properties(file_results) == (True, True, True)

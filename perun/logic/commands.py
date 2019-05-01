@@ -899,8 +899,7 @@ def print_temp_files(root, **kwargs):
         temp.synchronize_index()
         tmp_files = temp.list_all_temps_with_details(root)
     except InvalidTempPathException as exc:
-        print("Error: " + str(exc))
-        return
+        perun_log.error(str(exc))
 
     # Filter the files by protection level if it is set to show only certain group
     if kwargs['filter_protection'] != 'all':
@@ -919,7 +918,7 @@ def print_temp_files(root, **kwargs):
     if not kwargs['no_total_size']:
         total_size = utils.format_file_size(sum(size for _, _, size in tmp_files))
         print('Total size of all temporary files: {}'.format(
-            _set_color(total_size, TEXT_EMPH_COLOUR, not kwargs['no_color']))
+            perun_log.set_color(total_size, TEXT_EMPH_COLOUR, not kwargs['no_color']))
         )
 
     # Print the file records
@@ -946,39 +945,26 @@ def print_formatted_temp_files(records, show_size, show_protection, use_color):
     for file_name, protection, size in records:
         # Print the size of each file
         if show_size:
-            print('{}'.format(_set_color(utils.format_file_size(size),
-                                         TEXT_EMPH_COLOUR, use_color)),
-                  end=_set_color(' | ', TEXT_WARN_COLOUR, use_color))
+            print('{}'.format(perun_log.set_color(utils.format_file_size(size),
+                                                  TEXT_EMPH_COLOUR, use_color)),
+                  end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
                 print('{}'.format(temp.UNPROTECTED),
-                      end=_set_color(' | ', TEXT_WARN_COLOUR, use_color))
+                      end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
             else:
-                print('{}  '.format(_set_color(temp.PROTECTED, TEXT_WARN_COLOUR, use_color)),
-                      end=_set_color(' | ', TEXT_WARN_COLOUR, use_color))
+                print('{}  '.format(perun_log.set_color(temp.PROTECTED, TEXT_WARN_COLOUR,
+                                                        use_color)),
+                      end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
 
         # Print the file path, emphasize the directory to make it a bit more readable
         file_name = file_name[prefix:]
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            print('{}'.format(_set_color(file_dir, TEXT_EMPH_COLOUR, use_color)), end='')
+            print('{}'.format(perun_log.set_color(file_dir, TEXT_EMPH_COLOUR, use_color)), end='')
         print('{}'.format(os.path.basename(file_name)))
-
-
-def _set_color(output, color, enable_coloring=True):
-    """Transforms the output to colored version.
-
-    :param str output: the output text that should be colored
-    :param str color: the color
-    :param bool enable_coloring: switch that allows to disable the coloring - the function is no-op
-
-    :return str: the new colored output (if enabled)
-    """
-    if enable_coloring:
-        return termcolor.colored(output, color, attrs=TEXT_ATTRS)
-    return output
 
 
 def delete_temps(path, ignore_protected, force, **kwargs):
@@ -1003,11 +989,11 @@ def delete_temps(path, ignore_protected, force, **kwargs):
                 temp.delete_temp_dir(path, ignore_protected, force)
         # The supplied path does not exist, inform the user so they can correct the path
         else:
-            print("Note: The supplied path '{}' does not exist, no files deleted"
-                  .format(temp.temp_path(path)))
+            perun_log.warn("The supplied path '{}' does not exist, no files deleted"
+                           .format(temp.temp_path(path)))
     except (InvalidTempPathException, ProtectedTempException) as exc:
         # Invalid path or protected files encountered
-        print("Error: " + str(exc))
+        perun_log.error(str(exc))
 
 
 def sync_temps():

@@ -60,17 +60,22 @@ import zlib
 import perun.logic.pcs as pcs
 import perun.logic.store as store
 import perun.utils.exceptions as exceptions
+import perun.utils.log as perun_log
 
-
+# Valid protection levels of temporary files
 UNPROTECTED, PROTECTED = 'unprotected', 'protected'
 
-SORT_ATTR = [
-    'name', 'protection', 'size'
-]
+# Options for temporary files filtering based on the protection level
 PROTECTION_LEVEL = [
     'all', UNPROTECTED, PROTECTED
 ]
 
+# Valid attributes that can be used for sorting
+SORT_ATTR = [
+    'name', 'protection', 'size'
+]
+
+# Additional sorting parameters
 SORT_ATTR_MAP = {
     'name': {
         'pos': 0,
@@ -92,13 +97,22 @@ def temp_path(path):
         - absolute path located in the .perun/tmp/ directory: no change
         - relative path: transformed to absolute path where .perun/tmp/ is considered as the
                          root/working directory for the relative path
-        - absolute or relative path out of the .perun/tmp/: an exception is thrown
+        - absolute or relative path out of the .perun/tmp/: an exception is raised
 
     :param str path: the path that should be transformed
 
     :return str: the transformed path
     """
-    return _join_to_tmp_path(path)
+    tmp_location = pcs.get_tmp_directory()
+
+    # The 'path' may be absolute with tmp/ location as prefix, which os.path.join handles well
+    # However it might also be a custom path '/ab/ef/' which causes join to create '/ab/ef/'
+    path = os.path.abspath(os.path.join(tmp_location, path))
+    # The resulting path might end up out of tmp/ for both absolute or relative paths
+    if not path.startswith(tmp_location):
+        raise exceptions.InvalidTempPathException("The resulting path '{}' is not located in "
+                                                  "the perun tmp/ directory.".format(path))
+    return path
 
 
 def touch_temp_dir(dir_path):
@@ -109,7 +123,7 @@ def touch_temp_dir(dir_path):
     :param str dir_path: the directory path
     """
     # Append the path to the tmp/ directory
-    dir_path = _join_to_tmp_path(dir_path)
+    dir_path = temp_path(dir_path)
     # Create the new directory(ies)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
@@ -124,7 +138,7 @@ def touch_temp_file(file_path, protect=False):
     :param bool protect: if True, the temporary file will be indexed as protected
     """
     # Append the file path to the tmp/ directory
-    file_path = _join_to_tmp_path(file_path.rstrip(os.sep))
+    file_path = temp_path(file_path.rstrip(os.sep))
     # Make sure that the directory hierarchy for the file exists
     touch_temp_dir(os.path.dirname(file_path))
 
@@ -143,7 +157,7 @@ def exists_temp_dir(dir_path):
 
     :return bool: True if the directory exists
     """
-    dir_path = _join_to_tmp_path(dir_path)
+    dir_path = temp_path(dir_path)
     return os.path.exists(dir_path) and os.path.isdir(dir_path)
 
 
@@ -156,11 +170,11 @@ def exists_temp_file(file_path):
 
     :return bool: True if the file exists
     """
-    file_path = _join_to_tmp_path(file_path)
+    file_path = temp_path(file_path)
     return os.path.exists(file_path) and os.path.isfile(file_path)
 
 
-def new_temp(file_path, content, json_format=False, protect=False, compress=False):
+def create_new_temp(file_path, content, json_format=False, protect=False, compress=False):
     """Creates new temporary file if it does not exist yet and writes the 'content' into the file.
     An exception is raised if the file already exists.
 
@@ -173,7 +187,7 @@ def new_temp(file_path, content, json_format=False, protect=False, compress=Fals
     :param bool compress: if True, the content will be compressed
     """
     # Do not allow file overwrite
-    file_path = _join_to_tmp_path(file_path)
+    file_path = temp_path(file_path)
     if os.path.exists(file_path):
         raise exceptions.InvalidTempPathException("The temporary file '{}' already exists."
                                                   .format(file_path))
@@ -194,14 +208,14 @@ def store_temp(file_path, content, json_format=False, protect=False, compress=Fa
     :param bool protect: if True, the file will have the protected status
     :param bool compress: if True, the content will be compressed
     """
-    file_path = _join_to_tmp_path(file_path)
+    file_path = temp_path(file_path)
     # Make sure that the directory hierarchy for the file exists
     touch_temp_dir(os.path.dirname(file_path))
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
-def get_temp(file_path):
-    """Gets the content of the temporary file 'file_path'. An exception is raised if the file does
+def read_temp(file_path):
+    """Reads the content of the temporary file 'file_path'. An exception is raised if the file does
     not exist. None is returned if the file could not have been read, is corrupted, has
     inconsistent or invalid index properties.
 
@@ -212,7 +226,7 @@ def get_temp(file_path):
     :return str or None: the file content or None if an error occurred
     """
     # Check the existence of the file and obtain its properties
-    file_path = _join_to_tmp_path(file_path)
+    file_path = temp_path(file_path)
     _is_tmp_file(file_path)
     json_format, _, compressed = _get_index_entry(file_path)
     try:
@@ -227,7 +241,8 @@ def get_temp(file_path):
                 content = json.loads(content)
         return content
     # Handle possible errors
-    except (OSError, ValueError, zlib.error):
+    except (OSError, ValueError, zlib.error) as exc:
+        perun_log.msg_to_file("Error reading temporary file: {}".format(str(exc)), 0)
         return None
 
 
@@ -238,7 +253,7 @@ def reset_temp(file_path):
 
     :param str file_path: the path to the temporary file
     """
-    file_path = _join_to_tmp_path(file_path)
+    file_path = temp_path(file_path)
     _is_tmp_file(file_path)
     with open(file_path, 'w'):
         pass
@@ -257,14 +272,13 @@ def list_all_temps(root=None):
     :return list: paths to all the files in the 'root' folder hierarchy
     """
     # Get the correct root
-    if root is None:
-        root = pcs.get_tmp_directory()
-    else:
-        root = _join_to_tmp_path(root)
+    root = pcs.get_tmp_directory() if root is None else temp_path(root)
     _is_tmp_dir(root)
     # Omit the index file
-    return [os.path.join(dirpath, file) for dirpath, _, files in os.walk(root) for file in files
-            if file != '.index']
+    return [
+        os.path.join(dirpath, file) for dirpath, _, files in os.walk(root) for file in files
+        if file != '.index'
+    ]
 
 
 def list_all_temps_with_details(root=None):
@@ -309,7 +323,7 @@ def get_temp_properties(file_path):
 
     :return tuple: (json_formatted, protected, compressed)
     """
-    return _get_index_entry(_join_to_tmp_path(file_path))
+    return _get_index_entry(temp_path(file_path))
 
 
 def set_protected_status(file_path, protected):
@@ -320,7 +334,7 @@ def set_protected_status(file_path, protected):
     :param str file_path: the path to the temporary file
     :param bool protected: True for protected file, False for unprotected file
     """
-    file_path = _join_to_tmp_path(file_path)
+    file_path = temp_path(file_path)
     _is_tmp_file(file_path)
     _add_to_index(file_path, protected=protected)
 
@@ -343,7 +357,7 @@ def delete_temp_dir(root, ignore_protected=False, force=False):
                                   process or they will be ignored and not deleted
     :param bool force: if True, the protected files will be also deleted
     """
-    root = _join_to_tmp_path(root)
+    root = temp_path(root)
     # Check if the directory path is valid
     _is_tmp_dir(root)
 
@@ -368,7 +382,7 @@ def delete_temp_file(file_path, ignore_protected=False, force=False):
                                   the file will be ignored and not deleted
     :param bool force: if True and the 'filepath' is protected, the file will be deleted anyway
     """
-    file_path = _join_to_tmp_path(file_path.rstrip(os.sep))
+    file_path = temp_path(file_path.rstrip(os.sep))
     # Check if tmp file exists
     _is_tmp_file(file_path)
     # Don't delete protected temp files unless forced
@@ -410,29 +424,6 @@ def synchronize_index():
             del index_entries[tmp_name]
     # Save the updated index
     _save_index(index_entries)
-
-
-def _join_to_tmp_path(path):
-    """Helper function that obtains absolute path based on the supplied path in the context of
-    the tmp/ directory. The path may already be absolute or relative - in this case, the
-    root (working) directory is assumed to be .perun/tmp/
-
-    In case the resulting path would not be located in the .perun/tmp/, an exception is raised.
-
-    :param str path: the path that should be transformed
-
-    :return str: the resulting transformed path
-    """
-    tmp_location = pcs.get_tmp_directory()
-
-    # The 'path' may be absolute with tmp/ location as prefix, which os.path.join handles well
-    # However it might also be a custom path '/ab/ef/' which causes join to create '/ab/ef/'
-    path = os.path.abspath(os.path.join(tmp_location, path))
-    # The resulting path might end up out of tmp/ for both absolute or relative paths
-    if not path.startswith(tmp_location):
-        raise exceptions.InvalidTempPathException("The resulting path '{}' is not located in "
-                                                  "the perun tmp/ directory.".format(path))
-    return path
 
 
 def _is_tmp_path(path):
@@ -524,7 +515,7 @@ def _delete_empty_directories(root):
     """
     # Obtain all the subdirectories in the root in the reverse order, however make sure tmp/ stays
     tmp_root = pcs.get_tmp_directory()
-    root = _join_to_tmp_path(root)
+    root = temp_path(root)
     all_dirs = [dirs for dirs, _, _ in os.walk(root, topdown=False) if dirs != tmp_root]
     # Check if the given directory is empty and delete it
     for directory in all_dirs:

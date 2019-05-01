@@ -1718,7 +1718,7 @@ def test_temp(pcs_with_empty_git):
 
     # Try to list files in invalid path
     result = runner.invoke(cli.temp_list, ['../'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert 'not located in' in result.output
 
     # Add some files to the tmp/
@@ -1732,10 +1732,10 @@ def test_temp(pcs_with_empty_git):
         file_deg_content = deg_handle.read()
     with open(os.path.join(files_dir, 'const1.perf'), 'r') as deg_handle:
         file_deg2_content = deg_handle.read()
-    temp.new_temp(file_lock, "Some important data", protect=True)
-    temp.new_temp(file_records, file_records_content)
-    temp.new_temp(file_deg, file_deg_content, protect=True)
-    temp.new_temp(file_deg2, file_deg2_content)
+    temp.create_new_temp(file_lock, "Some important data", protect=True)
+    temp.create_new_temp(file_records, file_records_content)
+    temp.create_new_temp(file_deg, file_deg_content, protect=True)
+    temp.create_new_temp(file_deg2, file_deg2_content)
 
     # List the now-nonempty tmp/ directory in colored mode
     result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
@@ -1785,7 +1785,7 @@ def test_temp(pcs_with_empty_git):
 
     # Test the warning
     result = runner.invoke(cli.temp_delete, ['.', '-w'])
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert 'Aborted' in result.output
     assert temp.exists_temp_file(file_deg)
 
@@ -1807,8 +1807,8 @@ def test_temp(pcs_with_empty_git):
     assert temp.exists_temp_dir('degradations') and temp.exists_temp_dir('trace')
 
     # Partially repopulate the directory
-    temp.new_temp(file_lock, "Some important data", protect=True)
-    temp.new_temp(file_deg2, file_deg2_content)
+    temp.create_new_temp(file_lock, "Some important data", protect=True)
+    temp.create_new_temp(file_deg2, file_deg2_content)
 
     # Test the complete deletion of the tmp/ directory
     result = runner.invoke(cli.temp_delete, ['.', '-f'])
