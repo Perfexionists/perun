@@ -269,6 +269,21 @@ def failed(ending='\n'):
     print(']', end=ending)
 
 
+def set_color(output, color, enable_coloring=True, attrs=None):
+    """Transforms the output to colored version.
+
+    :param str output: the output text that should be colored
+    :param str color: the color
+    :param bool enable_coloring: switch that allows to disable the coloring - the function is no-op
+    :param list attrs: list of additional attributes for the coloring
+
+    :return str: the new colored output (if enabled)
+    """
+    if enable_coloring:
+        return termcolor.colored(output, color, attrs=attrs)
+    return output
+
+
 def count_degradations_per_group(degradation_list):
     """Counts the number of optimizations and degradations
 

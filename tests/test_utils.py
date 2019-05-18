@@ -157,3 +157,18 @@ def test_binaries_lookup():
     assert len(binaries2) == 2
     assert binaries2[0].endswith('utils_tree/testdir/quicksort')
     assert binaries2[1].endswith('utils_tree/testdir/nobuild/quicksort')
+
+
+def test_size_formatting():
+    """Test the file size formatting
+    """
+    # Test small size values
+    assert utils.format_file_size(148) == '   148 B  '
+    assert utils.format_file_size(1012) == '  1012 B  '
+    # Test some larger values
+    assert utils.format_file_size(23456) == '  22.9 KiB'
+    assert utils.format_file_size(1054332440) == '1005.5 MiB'
+    # Test some ridiculously large values
+    assert utils.format_file_size(8273428342423) == '   7.5 TiB'
+    assert utils.format_file_size(81273198731928371) == '72.2 PiB'
+    assert utils.format_file_size(87329487294792342394293489232) == '77564166018710.8 PiB'

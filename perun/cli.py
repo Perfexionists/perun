@@ -54,6 +54,7 @@ import perun.logic.commands as commands
 import perun.logic.runner as runner
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
+import perun.logic.temp as temp
 import perun.postprocess
 import perun.profile.factory as profiles
 import perun.utils as utils
@@ -1116,6 +1117,75 @@ def create(template_type, **kwargs):
         scripts.create_unit_from_template(template_type, **kwargs)
     except ExternalEditorErrorException as editor_exception:
         perun_log.error("while invoking external editor: {}".format(str(editor_exception)))
+
+
+@utils_group.group('temp')
+def temp_group():
+    """Provides set of operations for maintaining the temporary directory (.perun/tmp/) of perun.
+    """
+    pass
+
+
+@temp_group.command('list')
+@click.argument('root', type=click.Path(), required=False, default='.')
+@click.option('--no-color', '-c', flag_value=True, default=False,
+              help='Disable the output coloring, useful for storing the output to file etc.')
+@click.option('--no-total-size', '-t', flag_value=True, default=False,
+              help='Do not show the total size of all the temporary files combined.')
+@click.option('--no-file-size', '-f', flag_value=True, default=False,
+              help='Do not show the size of each temporary file.')
+@click.option('--no-protection-level', '-p', flag_value=True, default=False,
+              help='Do not show the protection level of the temporary files.')
+@click.option('--sort-by', '-s', type=click.Choice(temp.SORT_ATTR), default=temp.SORT_ATTR[0],
+              help='Sorts the temporary files on the output.')
+@click.option('--filter-protection', '-fp', type=click.Choice(temp.PROTECTION_LEVEL),
+              default=temp.PROTECTION_LEVEL[0],
+              help='List only temporary files with the given protection level.')
+def temp_list(root, **kwargs):
+    """Lists the temporary files of the '.perun/tmp/' directory. It is possible to list only
+    files in specific subdirectory by supplying the ROOT path.
+
+    The path can be either absolute or relative - the base of the relative path is the tmp/
+    directory.
+    """
+    commands.print_temp_files(root, **kwargs)
+
+
+@temp_group.command('delete')
+@click.argument('path', type=click.Path(), required=True)
+@click.option('--warn', '-w', flag_value=True, default=False,
+              help='Warn the user (and abort the deletion with no files deleted) if protected files'
+                   ' are present.')
+@click.option('--force', '-f', flag_value=True, default=False,
+              help='If set, protected files are deleted regardless of --warn value.')
+@click.option('--keep-directories', '-k', flag_value=True, default=False,
+              help='If path refers to directory, empty tmp/ directories and subdirectories '
+                   'will be kept.')
+def temp_delete(path, warn, force, **kwargs):
+    """Deletes the temporary file or directory.
+
+    Use the command 'perun utils temp delete .' to safely delete all unprotected files in the
+    '.perun/tmp/' directory.
+
+    The command 'perun utils temp delete -f .' can be used to clear the whole '.perun/tmp/'
+    directory including protected files. Protected files are usually more important and should not
+    be deleted without a good reason (such as tmp/ corruption, too many uncleared files etc.)
+
+    However, deleting temp files (protected or not) should not be done when other perun processes
+    are running as it may cause them to crash due to a missing file.
+    """
+    commands.delete_temps(path, not warn, force, **kwargs)
+
+
+@temp_group.command('sync')
+def temp_sync():
+    """Synchronizes the '.perun/tmp/' directory contents with the internal tracking file. This is
+    useful when some files or directories were deleted manually and the resulting inconsistency is
+    causing troubles - however, this should be a very rare condition.
+
+    Invoking the 'temp list' command should also synchronize the internal state automatically.
+    """
+    commands.sync_temps()
 
 
 def init_unit_commands(lazy_init=True):

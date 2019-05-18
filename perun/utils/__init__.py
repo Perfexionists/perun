@@ -409,3 +409,22 @@ def build_command_str(cmd, args, workload):
     if workload:
         cmd += ' ' + workload
     return cmd
+
+
+def format_file_size(size):
+    """Format file size in Bytes into a fixed-length output so that it can be easily printed.
+
+    Courtesy of 'https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-
+    readable-version-of-file-size'
+
+    :param int size: the size in Bytes
+
+    :return str: the formatted size for output
+    """
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti']:
+        if abs(size) < 1024.0:
+            if unit == '':
+                return "{:6.0f} B  ".format(size)
+            return "{:6.1f} {}B".format(size, unit)
+        size /= 1024.0
+    return "{:.1f} PiB".format(size)
