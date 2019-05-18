@@ -321,7 +321,7 @@ def lookup_shared_config_dir():
                    "where the global config will be stored and rerun the command."
         perun_log.error(err_msg)
 
-    store.touch_dir_range(home_directory, perun_config_dir)
+    store.touch_dir(perun_config_dir)
     return perun_config_dir
 
 

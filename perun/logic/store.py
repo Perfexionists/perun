@@ -11,14 +11,13 @@ import string
 import struct
 import zlib
 
-import demandimport
-with demandimport.enabled():
-    import hashlib
-
 from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
 
+import demandimport
+with demandimport.enabled():
+    import hashlib
 
 __author__ = 'Tomas Fiedor'
 
@@ -26,6 +25,7 @@ INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
 INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")
 PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
 PENDING_TAG_RANGE_REGEX = re.compile(r"^(\d+)@p-(\d+)@p$")
+
 
 def touch_file(touched_filename, times=None):
     """
@@ -48,22 +48,7 @@ def touch_dir(touched_dir):
     :param str touched_dir: path that will be touched
     """
     if not os.path.exists(touched_dir):
-        os.mkdir(touched_dir)
-
-
-def touch_dir_range(touched_dir_start, touched_dir_end):
-    """Iterates through the range of the subdirs between start and end touching each one of the dir
-
-    E.g. for the following:
-    touched_dir_start = '/a/b', touched_dir_end = '/a/b/c/d/e'
-    following will be touched: /a/b, /a/b/c, ..., /a/b/c/d/e
-
-    :param str touched_dir_start: base case of the touched dirs
-    :param str touched_dir_end: end case of the touched dirs
-    """
-    for subdir in path_to_subpaths(touched_dir_end):
-        if subdir.startswith(touched_dir_start):
-            touch_dir(subdir)
+        os.makedirs(touched_dir)
 
 
 def path_to_subpaths(path):
@@ -158,7 +143,7 @@ def split_object_name(base_dir, object_name, object_ext=""):
 
 def add_loose_object_to_dir(base_dir, object_name, object_content):
     """
-    :param path base_dir: path to the base directory
+    :param str base_dir: path to the base directory
     :param str object_name: sha-1 string representing the object (possibly with extension)
     :param bytes object_content: contents of the packed object
     """
@@ -377,7 +362,7 @@ def load_profile_from_handle(file_name, file_handle, is_raw_profile):
 
         # Check the header, if the body is not malformed
         if prefix != 'profile' or profile_type not in SUPPORTED_PROFILE_TYPES or \
-                        len(body) != int(profile_size):
+                len(body) != int(profile_size):
             raise IncorrectProfileFormatException(file_name, "malformed profile '{}'")
 
     # Try to load the json, if there is issue with the profile

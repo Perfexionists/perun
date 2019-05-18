@@ -6,6 +6,15 @@ HEAD
 
 **To be included in next release**
 
+0.16.8 (2019-05-18)
+-------------------
+
+`commit: 05d7275cb5f00183a72f8428bc4aaba0420bb73b`
+
+**Extend perun instances with temporaries**
+
+  - add new logic module that allows to store temporary files in separate directory (.perun/tmp)
+
 0.16.7-hotfix (2019-04-15)
 --------------------------
 
