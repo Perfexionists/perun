@@ -66,6 +66,11 @@ from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModule
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException
 
+
+# Default number of displayed records for listing stats objects
+_DEFAULT_STATS_LIST_TOP = 20
+
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -1121,7 +1126,7 @@ def create(template_type, **kwargs):
 
 @utils_group.group('temp')
 def temp_group():
-    """Provides set of operations for maintaining the temporary directory (.perun/tmp/) of perun.
+    """Provides a set of operations for maintaining the temporary directory (.perun/tmp/) of perun.
     """
     pass
 
@@ -1186,6 +1191,131 @@ def temp_sync():
     Invoking the 'temp list' command should also synchronize the internal state automatically.
     """
     commands.sync_temps()
+
+
+@utils_group.group('stats')
+def stats_group():
+    """Provides a set of operations for manipulating the stats directory (.perun/stats/) of perun.
+    """
+    pass
+
+
+# TODO: default value as a constant, possibly merge the two list functions to one?
+@stats_group.command('list-files')
+@click.option('--top', '-N', type=int, default=_DEFAULT_STATS_LIST_TOP, show_default=True,
+              help='Show only stat files from top N minor versions. Show all results if set to 0. '
+                   'The minor version to start at can be changed using --from-minor.')
+@click.option('--from-minor', '-m', default=None, metavar='<hash>', is_eager=True,
+              callback=cli_helpers.lookup_minor_version_callback,
+              help='Show stat files starting from a certain minor version (default is HEAD).')
+@click.option('--no-minor', '-i', flag_value=True, default=False,
+              help='Do not show the minor version headers in the output.')
+@click.option('--no-file-size', '-f', flag_value=True, default=False,
+              help='Do not show the size of each stat file.')
+@click.option('--no-total-size', '-t', flag_value=True, default=False,
+              help='Do not show the total size of all the stat files combined.')
+@click.option('--sort-by-size', '-s', flag_value=True, default=False,
+              help='Sort the files by size instead of the minor versions order.')
+@click.option('--no-color', '-c', flag_value=True, default=False,
+              help='Disable the output coloring, useful for storing the output to file etc.')
+def stats_list_files(**kwargs):
+    """Show stat files stored in the stats directory (.perun/stats/). This command shows only a
+    limited number of the most recent files by default. This can be, however, changed by the
+    --top and --from-minor options.
+
+    The default output format is 'file size | minor version | file name'.
+    """
+    commands.list_stat_objects('files', **kwargs)
+
+
+@stats_group.command('list-versions')
+@click.option('--top', '-N', type=int, default=_DEFAULT_STATS_LIST_TOP, show_default=True,
+              help='Show only top N minor versions. Show all versions if set to 0. '
+                   'The minor version to start at can be changed using --from-minor.')
+@click.option('--from-minor', '-m', default=None, metavar='<hash>', is_eager=True,
+              callback=cli_helpers.lookup_minor_version_callback,
+              help='Show minor versions starting from a certain minor version (default is HEAD).')
+@click.option('--no-dir-size', '-d', flag_value=True, default=False,
+              help='Do not show the size of the version directory.')
+@click.option('--no-file-count', '-f', flag_value=True, default=False,
+              help='Do not show the number of files in each version directory.')
+@click.option('--no-total-size', '-t', flag_value=True, default=False,
+              help='Do not show the total size of all the versions combined.')
+@click.option('--sort-by-size', '-s', flag_value=True, default=False,
+              help='Sort the versions by size instead of their VCS order.')
+@click.option('--no-color', '-c', flag_value=True, default=False,
+              help='Disable the output coloring.')
+def stats_list_versions(**kwargs):
+    """Show minor versions stored as directories in the stats directory (.perun/stats/).
+    This command shows only a limited number of the most recent versions by default. This can be,
+    however, changed by the --top and --from-minor options.
+
+    The default output format is 'directory size | minor version | file count'.
+    """
+    commands.list_stat_objects('versions', **kwargs)
+
+
+@stats_group.group('delete')
+def stats_delete_group():
+    """Allows the deletion of stat files, minor versions or the whole stats directory.
+    """
+    pass
+
+
+@stats_delete_group.command('file')
+@click.argument('name', type=click.Path(), callback=cli_helpers.lookup_stats_file_callback)
+@click.option('--in-minor', '-m', default=None, metavar='<hash>', is_eager=True,
+              callback=cli_helpers.check_stats_minor_callback,
+              help='Delete the stats file in the specified minor version (HEAD if not specified) '
+                   'or across all the minor versions if set to ".".')
+@click.option('--keep-directory', '-k', flag_value=True, default=False,
+              help='Possibly empty directory of minor version will be kept in the file system.')
+def stats_delete_file(**kwargs):
+    """Deletes a stat file in either specific minor version or across all the minor versions in the
+    stats directory.
+    """
+    commands.delete_stats_file(**kwargs)
+
+
+@stats_delete_group.command('minor')
+@click.argument('version', callback=cli_helpers.check_stats_minor_callback)
+@click.option('--keep-directory', '-k', flag_value=True, default=False,
+              help='Resulting empty directory of minor version will be kept in the file system.')
+def stats_delete_minor(**kwargs):
+    """Deletes the specified minor version directory in stats with all its content.
+    """
+    commands.delete_stats_minor(**kwargs)
+
+
+@stats_delete_group.command('.')
+@click.option('--keep-directory', '-k', flag_value=True, default=False,
+              help='Resulting empty directories of minor versions will be kept in the file system.')
+def stats_delete_all(**kwargs):
+    """Deletes the whole content of the stats directory.
+    """
+    commands.delete_stats_all(**kwargs)
+
+
+@stats_group.command('clean')
+@click.option('--keep-custom', '-c', flag_value=True, default=False,
+              help='The custom stats directories will not be removed.')
+@click.option('--keep-empty', '-e', flag_value=True, default=False,
+              help='The empty version directories will not be removed.')
+def stats_clean(**kwargs):
+    """Cleans the stats directory by deleting distinguishable custom files and directories (i.e. not
+    all the custom made or manually created files / directories can be identified as custom, e.g.
+    when they comply the correct format etc.) and by removing the empty minor version directories.
+    """
+    commands.clean_stats(**kwargs)
+
+
+@stats_group.command('sync')
+def stats_sync():
+    """ Synchronizes the actual contents of the stats directory with the internal 'index' file.
+    The synchronization should be needed only rarely - mainly in cases when the stats directory
+    has been manually tampered with and some files or directories were created or deleted by a user.
+    """
+    commands.sync_stats()
 
 
 def init_unit_commands(lazy_init=True):

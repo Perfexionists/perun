@@ -135,6 +135,7 @@ def test_stats_in_minor_versions(pcs_full):
     stats.add_stats('root_stats_2', ['id_1'], [{'value': 10}], minor_root)
 
     root_files = stats.list_stats_for_minor(minor_root)
+    root_files = [file_name for file_name, _ in root_files]
     assert len(root_files) == 2 and 'root_stats' in root_files and 'root_stats_2' in root_files
     head_files = stats.list_stats_for_minor(minor_head)
     assert not head_files

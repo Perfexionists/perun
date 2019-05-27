@@ -101,6 +101,19 @@ def is_sha1(checksum):
     return len(checksum) == 40 and all(c in string.hexdigits for c in checksum)
 
 
+def sha_path_to_sha(sha_path):
+    """ Transforms the path of the minor version file / directory (represented by the SHA value) to
+    the actual SHA value as a string.
+
+    :param str sha_path: path to the minor version directory
+    :return str: the SHA value of the minor version or None if it's not a valid SHA value
+    """
+    rest, lower_level = os.path.split(sha_path.rstrip(os.sep))
+    _, upper_level = os.path.split(rest.rstrip(os.sep))
+    sha = upper_level + lower_level
+    return sha if is_sha1(sha) else None
+
+
 def pack_content(content):
     """Pack the given content with packing algorithm.
 

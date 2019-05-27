@@ -29,7 +29,8 @@ import perun.profile.query as query
 import perun.utils.log as perun_log
 
 from perun.utils import get_module
-from perun.utils.exceptions import InvalidParameterException, MissingConfigSectionException
+from perun.utils.exceptions import InvalidParameterException, MissingConfigSectionException, \
+                                   TagOutOfRangeException
 from perun.utils.helpers import Job
 from perun.utils.structs import Unit
 
@@ -190,6 +191,55 @@ def load_list_for_minor_version(minor_version):
         profile_info_list.append(profile_info)
 
     return profile_info_list
+
+
+@vcs.lookup_minor_version
+def get_nth_profile_of(position, minor_version):
+    """Returns the profile at nth position in the index
+
+    :param int position: position of the profile we are obtaining
+    :param str minor_version: looked up minor version for the wrapped vcs
+
+    :return str: path of the profile at nth position in the index
+    """
+    registered_profiles = load_list_for_minor_version(minor_version)
+    sort_profiles(registered_profiles)
+    if 0 <= position < len(registered_profiles):
+        return registered_profiles[position].realpath
+    else:
+        raise TagOutOfRangeException(position, len(registered_profiles) - 1)
+
+
+@vcs.lookup_minor_version
+def find_profile_entry(profile, minor_version):
+    """ Finds the profile entry within the index file of the minor version.
+
+    :param str profile: the profile identification, can be given as tag, sha value,
+                        sha-path (path to tracked profile in obj) or source-name
+    :param str minor_version: the minor version representation or None for HEAD
+
+    :return IndexEntry: the profile entry from the index file
+    """
+
+    minor_index = index.find_minor_index(minor_version)
+
+    # If profile is given as tag, obtain the sha-path of the file
+    tag_match = store.INDEX_TAG_REGEX.match(profile)
+    if tag_match:
+        profile = get_nth_profile_of(int(tag_match.group(1)), minor_version)
+    # Transform the sha-path (obtained or given) to the sha value
+    if not store.is_sha1(profile) and not profile.endswith('.perf'):
+        profile = store.sha_path_to_sha(profile)
+
+    # Search the minor index for the requested profile
+    with open(minor_index, 'rb') as index_handle:
+        # The profile can be only sha value or source path now
+        if store.is_sha1(profile):
+            return index.lookup_entry_within_index(index_handle, lambda x: x.checksum == profile,
+                                                   profile)
+        else:
+            return index.lookup_entry_within_index(index_handle, lambda x: x.path == profile,
+                                                   profile)
 
 
 def generate_units(collector):

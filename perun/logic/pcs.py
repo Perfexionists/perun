@@ -121,6 +121,15 @@ def get_stats_directory():
     return stats_directory
 
 
+def get_stats_index():
+    """Returns the path to the index file in stats directory where records about minor versions
+    with stats files are stored
+
+    :return str: path to the index file of the statistics directory
+    """
+    return os.path.join(get_stats_directory(), '.index')
+
+
 @singleton
 def get_tmp_directory():
     """Returns the name of the directory, where various or temporary files are stored
