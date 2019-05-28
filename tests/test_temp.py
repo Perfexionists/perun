@@ -4,6 +4,7 @@ import json
 
 import perun.logic.temp as temp
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.logic.pcs as pcs
 import perun.utils.exceptions as exceptions
 
@@ -337,7 +338,7 @@ def _check_index(expected_content):
 
     :param list expected_content: the list of expected entries in the index
     """
-    index_content = temp._load_index()
+    index_content = index.load_custom_index(pcs.get_tmp_index())
     index_keys = list(index_content.keys())
     assert len(index_keys) == len(expected_content)
     for record in expected_content:

@@ -854,12 +854,14 @@ def print_temp_files(root, **kwargs):
         tmp_files = temp.list_all_temps_with_details(root)
     except InvalidTempPathException as exc:
         perun_log.error(str(exc))
+        return
 
     # Filter the files by protection level if it is set to show only certain group
     if kwargs['filter_protection'] != 'all':
-        for name, level, size in list(tmp_files):
-            if level != kwargs['filter_protection']:
-                tmp_files.remove((name, level, size))
+        tmp_files = [(name, level, size) for name, level, size in tmp_files
+                     if level == kwargs['filter_protection']]
+    # If there are no files then abort the output
+    _handle_empty_results(not tmp_files, '.perun/tmp/')
 
     # First sort by the name
     tmp_files.sort(key=itemgetter(0))
@@ -869,12 +871,8 @@ def print_temp_files(root, **kwargs):
         tmp_files.sort(key=itemgetter(sort_map['pos']), reverse=sort_map['reverse'])
 
     # Print the total files size if needed
-    if not kwargs['no_total_size']:
-        total_size = utils.format_file_size(sum(size for _, _, size in tmp_files))
-        print('Total size of all temporary files: {}'.format(
-            perun_log.set_color(total_size, TEXT_EMPH_COLOUR, not kwargs['no_color']))
-        )
-
+    _print_total_size(sum(size for _, _, size in tmp_files), not kwargs['no_color'],
+                      not kwargs['no_total_size'])
     # Print the file records
     print_formatted_temp_files(tmp_files, not kwargs['no_file_size'],
                                not kwargs['no_protection_level'], not kwargs['no_color'])
@@ -889,11 +887,6 @@ def print_formatted_temp_files(records, show_size, show_protection, use_color):
     :param bool show_protection: if set to True, show the protection level of each file
     :param bool use_color: if set to True, certain parts of the output will be colored
     """
-    # Handle empty tmp/ dir
-    if not records:
-        cprintln('== No results in the .perun/tmp/ directory ==', 'white')
-        return
-
     # Absolute path might be a bit too long, we remove the path component to the tmp/ directory
     prefix = len(pcs.get_tmp_directory()) + 1
     for file_name, protection, size in records:
@@ -950,7 +943,6 @@ def delete_temps(path, ignore_protected, force, **kwargs):
         perun_log.error(str(exc))
 
 
-# TODO: replace the cprintln in printing temp files
 def list_stat_objects(mode, **kwargs):
     """ Prints the stat files or versions (based on the mode) in the '.perun/stats' directory.
 
@@ -965,10 +957,8 @@ def list_stat_objects(mode, **kwargs):
     versions = stats.list_stat_versions(kwargs['from_minor'], kwargs['top'])
     versions = [(version, stats.list_stats_for_minor(version)) for version, _ in versions]
 
-    # Abort the whole output since we have no versions
-    if not versions:
-        print('== No results for the given parameters in the .perun/stats/ directory ==')
-        return
+    # Abort the whole output if we have no versions
+    _handle_empty_results(not versions, '.perun/stats/')
 
     if mode == 'versions':
         # We need to print the versions, aggregate the files and their sizes
@@ -994,7 +984,6 @@ def list_stat_objects(mode, **kwargs):
     _print_stat_objects(results, properties, not kwargs['no_color'])
 
 
-# TODO: use it in the temp listing
 def _print_total_size(total_size, colored, enabled):
     """ Prints the formatted total size of all displayed results.
 
@@ -1005,8 +994,19 @@ def _print_total_size(total_size, colored, enabled):
     if enabled:
         total_size = utils.format_file_size(total_size)
         print('Total size of all the displayed files / directories: {}'.format(
-            _set_color(total_size, TEXT_EMPH_COLOUR, colored))
+            perun_log.set_color(total_size, TEXT_EMPH_COLOUR, colored))
         )
+
+
+def _handle_empty_results(is_empty, directory):
+    """ Prints a message if the obtained and filtered results are empty.
+
+    :param bool is_empty: flag that represents the state of the results
+    :param str directory: the directory where that was queried
+    """
+    if is_empty:
+        print('== No results for the given parameters in the {} directory =='.format(directory))
+        exit(0)
 
 
 def _print_stat_objects(stats_objects, properties, colored_delimiters):
@@ -1031,8 +1031,8 @@ def _print_stat_objects(stats_objects, properties, colored_delimiters):
             if show_property:
                 # Add the delimiter if the record already has some properties to print
                 if record:
-                    record += _set_color(' | ', TEXT_WARN_COLOUR, colored_delimiters)
-                record += _set_color(str(prop), TEXT_EMPH_COLOUR, property_colored)
+                    record += perun_log.set_color(' | ', TEXT_WARN_COLOUR, colored_delimiters)
+                record += perun_log.set_color(str(prop), TEXT_EMPH_COLOUR, property_colored)
         print(record)
 
 

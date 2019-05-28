@@ -1709,12 +1709,7 @@ def test_temp(pcs_with_empty_git):
     # Try to list temporary files with empty tmp/ directory
     result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
     assert result.exit_code == 0
-    assert 'Total size of all' in result.output and 'No results in' in result.output
-
-    # List temporary files with empty tmp/ directory and without the total size option
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '--no-total-size'])
-    assert result.exit_code == 0
-    assert 'Total size of all' not in result.output and 'No results in' in result.output
+    assert 'No results for the given parameters in' in result.output
 
     # Try to list files in invalid path
     result = runner.invoke(cli.temp_list, ['../'])

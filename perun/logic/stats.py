@@ -5,7 +5,9 @@ modules, collectors, post-processors etc. The 'stats' file can be indirectly lin
 profile by using the profile 'source' or 'checksum' as a template for the name of the stats file.
 Or the stats file might be completely unrelated to profiles by using some custom name.
 
-Stats files are located in the .perun/stats directory.
+Stats files are located in the .perun/stats directory under a specific minor version since the
+statistics are mostly related to some results or profiles acquired in a specific VCS version. For
+storing some temporary data that are unrelated to VCS version, use the 'temp' module.
 
 The format of the stats files is as follows:
 
@@ -36,15 +38,17 @@ The contents of the stats file are stored in a compressed form to reduce the mem
 import os
 import json
 import re
-import zlib
 import shutil
 
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.logic.pcs as pcs
 import perun.utils.exceptions as exceptions
 import perun.vcs as vcs
 import perun.profile.factory as profiles
 import perun.utils.log as perun_log
+
+from zlib import error
 
 
 # Match the timestamp format of the profile names
@@ -386,7 +390,6 @@ def _update_or_add_to_dict(dictionary, sid, extension):
         _add_to_dict(dictionary, sid, extension)
 
 
-# TODO: update the dir touching after temp-module is merged
 @vcs.lookup_minor_version
 def _touch_minor_stats_directory(minor_version):
     """ Touches the stats directories - upper (first byte of the minor version SHA) and lower (the
@@ -406,8 +409,7 @@ def _touch_minor_stats_directory(minor_version):
         except exceptions.VersionControlSystemException as exc:
             perun_log.msg_to_file("VCS error: {}".format(str(exc)), 0)
 
-    # Create both directories for storing statistics to the given minor version
-    store.touch_dir(upper_level_dir)
+    # Create the directory for storing statistics in the given minor version
     store.touch_dir(lower_level_dir)
     return lower_level_dir
 
@@ -423,7 +425,7 @@ def _load_stats_from(stats_handle):
         # Make sure we're at the beginning
         stats_handle.seek(0)
         return json.loads(store.read_and_deflate_chunk(stats_handle))
-    except (ValueError, zlib.error):
+    except (ValueError, error):
         # Contents either empty or corrupted, init the content to empty dict
         return {}
 
@@ -457,7 +459,6 @@ def _modify_stats_file(stats_filepath, stats_ids, stats_contents, modify_functio
         _save_stats_to(stats_handle, stats_records)
 
 
-# TODO: should the given version be also part of the candidates?
 def _get_version_candidates(minor_checksum, minor_date):
     """ Obtains successor minor versions that have the same date as the given minor version.
 
@@ -507,7 +508,7 @@ def _add_versions_to_index(minor_versions, index_stats=None):
         insert_pos = _find_nearest_version(index_stats, checksum, date)
         if insert_pos == len(index_stats) or index_stats[insert_pos] != [checksum, date]:
             index_stats.insert(insert_pos, [checksum, date])
-    _save_custom_index(pcs.get_stats_index(), index_stats)
+    index.save_custom_index(pcs.get_stats_index(), index_stats)
 
 
 def _remove_versions_from_index(minor_versions):
@@ -517,7 +518,7 @@ def _remove_versions_from_index(minor_versions):
     """
     index_stats = [[checksum, date] for checksum, date in _index_loader_wrapper()
                    if checksum not in minor_versions]
-    _save_custom_index(pcs.get_stats_index(), index_stats)
+    index.save_custom_index(pcs.get_stats_index(), index_stats)
 
 
 def _find_nearest_version(versions, minor_checksum, minor_date):
@@ -620,40 +621,5 @@ def _index_loader_wrapper():
 
     :return list: list of records in the index file or empty list for empty index file
     """
-    stats_index = _load_custom_index(pcs.get_stats_index())
+    stats_index = index.load_custom_index(pcs.get_stats_index())
     return stats_index if stats_index else []
-
-
-def _load_custom_index(index_path):
-    """Loads the content of the index file as dictionary.
-
-    The index is json-formatted and compressed, in case the index cannot be read for some reason,
-    an empty dictionary is returned.
-
-    :param str index_path: path to the index file
-
-    :return: the decompressed and json-decoded index content.
-    """
-    # Create and init the index file if it does not exist yet
-    if not os.path.exists(index_path):
-        store.touch_file(index_path)
-        _save_custom_index(index_path, {})
-    # Open and load the file
-    try:
-        with open(index_path, 'rb') as index_handle:
-            return json.loads(store.read_and_deflate_chunk(index_handle))
-    except (ValueError, zlib.error):
-        # Contents either empty or corrupted, init the content to empty dict
-        return {}
-
-
-def _save_custom_index(index_path, records):
-    """Saves the index records to the index file. The index file is created if it does not exist or
-    overwritten if it does.
-
-    :param str index_path: path to the index file
-    :param records: the index entries/records in a format that can be transformed to json
-    """
-    with open(index_path, 'w+b') as index_handle:
-        compressed = store.pack_content(json.dumps(records, indent=2).encode('utf-8'))
-        index_handle.write(compressed)
