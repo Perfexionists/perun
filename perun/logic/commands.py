@@ -1067,11 +1067,12 @@ def delete_stats_all(keep_directory):
     :param bool keep_directory: the empty version directories will be kept
                                 in the stats directory if True
     """
-    stats.delete_version_dirs(stats.list_stat_versions(), False, keep_directory)
+    stats.clear_stats(keep_directory)
 
 
 def clean_stats(keep_custom, keep_empty):
     """ Cleans the stats directory, that is:
+    - synchronizes the internal state of the stats directory, i.e. the index file
     - attempts to delete all distinguishable custom files and directories (some manually created or
       custom objects may not be identified if they have the correct format, e.g. version directory
       that was created manually but has a valid version counterpart in the VCS, manually created

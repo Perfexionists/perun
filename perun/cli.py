@@ -1200,7 +1200,6 @@ def stats_group():
     pass
 
 
-# TODO: default value as a constant, possibly merge the two list functions to one?
 @stats_group.command('list-files')
 @click.option('--top', '-N', type=int, default=_DEFAULT_STATS_LIST_TOP, show_default=True,
               help='Show only stat files from top N minor versions. Show all results if set to 0. '
@@ -1302,9 +1301,10 @@ def stats_delete_all(**kwargs):
 @click.option('--keep-empty', '-e', flag_value=True, default=False,
               help='The empty version directories will not be removed.')
 def stats_clean(**kwargs):
-    """Cleans the stats directory by deleting distinguishable custom files and directories (i.e. not
-    all the custom made or manually created files / directories can be identified as custom, e.g.
-    when they comply the correct format etc.) and by removing the empty minor version directories.
+    """Cleans the stats directory by synchronizing the internal state, deleting distinguishable
+    custom files and directories (i.e. not all the custom made or manually created files /
+    directories can be identified as custom, e.g. when they comply the correct format etc.)
+    and by removing the empty minor version directories.
     """
     commands.clean_stats(**kwargs)
 

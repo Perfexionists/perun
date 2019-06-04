@@ -39,6 +39,7 @@ import os
 import json
 import re
 import shutil
+from zlib import error
 
 import perun.logic.store as store
 import perun.logic.index as index
@@ -47,8 +48,6 @@ import perun.utils.exceptions as exceptions
 import perun.vcs as vcs
 import perun.profile.factory as profiles
 import perun.utils.log as perun_log
-
-from zlib import error
 
 
 # Match the timestamp format of the profile names
@@ -90,7 +89,6 @@ def build_stats_filename_as_profile_sha(profile, minor_version=None):
     return profiles.find_profile_entry(profile, minor_version).checksum
 
 
-# TODO: test the create_dir
 def get_stats_file_path(stats_filename, minor_version=None, check_existence=False,
                         create_dir=False):
     """Create full path for the given minor version and the stats file name.
@@ -99,6 +97,7 @@ def get_stats_file_path(stats_filename, minor_version=None, check_existence=Fals
     If set to True and the file does not exist, StatsFileNotFoundException is raised.
 
     Note: the corresponding minor version directory is created only if 'create_dir' is set to True.
+    However, if the minor version is not valid, an exception is thrown.
 
     :param str stats_filename: the name of the stats file to generate the path for
     :param str minor_version: the minor version representation or None for HEAD
@@ -159,9 +158,7 @@ def update_stats(stats_filename, stats_ids, extensions, minor_version=None):
     :param str minor_version: the minor version representation or None for HEAD
     """
     stats_file = get_stats_file_path(stats_filename, minor_version, create_dir=True)
-    _modify_stats_file(stats_file, stats_ids, extensions,
-                       lambda d, sid, ext: d[sid].update(ext) if sid in d
-                       else _add_to_dict(d, sid, ext))
+    _modify_stats_file(stats_file, stats_ids, extensions, _update_or_add_to_dict)
 
 
 def get_stats_of(stats_filename, stats_ids=None, minor_version=None):
@@ -223,7 +220,7 @@ def list_stat_versions(from_minor=None, top=0):
     :param str from_minor: starting minor version or None for HEAD
     :param int top: the number of versions to return, 0 for unlimited
 
-    :return list: the list of hashes (representing minor versions) sorted by date
+    :return list: the list of lists [version checksum, version date] sorted by date
     """
     indexed_versions = _index_loader_wrapper()
     # Get the actual length if everything is to be displayed
@@ -288,29 +285,48 @@ def delete_version_dirs(minor_versions, only_empty, keep_directories=False):
     for version in minor_versions:
         try:
             version_dir = store.split_object_name(pcs.get_stats_directory(), version)[1]
-            if only_empty:
-                # Attempt to remove the directory, this fails if the directory is not empty
-                os.rmdir(version_dir)
-                removed_versions.append(version)
-            elif keep_directories:
+            if keep_directories:
                 # Remove only the directories and files in the version directory
                 _, dirs, files = next(os.walk(version_dir))
                 _delete_stats_objects([os.path.join(version_dir, directory) for directory in dirs],
                                       [os.path.join(version_dir, file) for file in files])
             else:
-                # Remove the whole version directory
-                shutil.rmtree(version_dir)
+                # Attempt to remove the directory with different function based on 'only_empty'
+                os.rmdir(version_dir) if only_empty else shutil.rmtree(version_dir)
+                # Also delete the lower level version directory (the first SHA byte) if empty
+                lower_level_dir = os.path.split(version_dir)[0]
+                if not os.listdir(lower_level_dir):
+                    # We don't want to mess the log with failed attempts to delete the lower dir
+                    os.rmdir(lower_level_dir)
                 removed_versions.append(version)
         except OSError as exc:
             # Failed to delete some object, log and skip
-            perun_log.msg_to_file("Stats object deletion error: {}".format(str(exc)), 0)
+            perun_log.msg_to_file("Stats object deletion info: {}".format(str(exc)), 0)
 
     # Update the index to reflect the removed version directories
     _remove_versions_from_index(removed_versions)
 
 
+def clear_stats(keep_directories=False):
+    """ Clears the whole stats directory and attempts to reset it into the initial state.
+
+    :param bool keep_directories: the empty version directories are kept in the stats directory
+    """
+    if keep_directories:
+        # Synchronize the index to make sure that we delete every minor version
+        synchronize_index()
+        delete_version_dirs([version for version, _ in list_stat_versions()], False, True)
+        clean_stats(keep_empty=True)
+    else:
+        # No need to keep the version directories, simply recreate the stats directory
+        stats_dir = pcs.get_stats_directory()
+        shutil.rmtree(stats_dir)
+        store.touch_dir(stats_dir)
+
+
 def clean_stats(keep_custom=False, keep_empty=False):
     """ Cleans the stats directory, that is:
+    - synchronizes the internal state of the stats directory, i.e. the index file
     - attempts to delete all distinguishable custom files and directories (some manually created or
       custom objects may not be identified if they have the correct format, e.g. version directory
       that was created manually but has a valid version counterpart in the VCS, manually created
@@ -320,6 +336,8 @@ def clean_stats(keep_custom=False, keep_empty=False):
     :param bool keep_custom: the custom objects are kept in the stats directory if set to True
     :param bool keep_empty: the empty version directories are not deleted if set to True
     """
+    # First synchronize the index file
+    synchronize_index()
     if not keep_custom:
         # Get the custom files and directories in the stats directory
         _, custom = _get_versions_in_stats_directory()
@@ -329,20 +347,17 @@ def clean_stats(keep_custom=False, keep_empty=False):
         # Use the reversed order to minimize the number of exceptions due to already deleted files
         _delete_stats_objects(reversed(custom_dirs), reversed(custom_files))
     if not keep_empty:
-        delete_version_dirs(list_stat_versions(), True)
+        delete_version_dirs([version for version, _ in list_stat_versions()], True)
 
 
 def synchronize_index():
     """ Synchronizes the index file with the actual content of the stats directory. Should be
     needed only after some manual tampering with the directories and files in the stats directory.
-
     """
     indexed_versions = _index_loader_wrapper()
     stats_versions, _ = _get_versions_in_stats_directory()
     # Delete from index all minor version records that do not have a directory in stats anymore
-    for position, version in enumerate(indexed_versions):
-        if tuple(version) not in stats_versions:
-            del indexed_versions[position]
+    indexed_versions = [version for version in indexed_versions if tuple(version) in stats_versions]
     # Add record to index for all versions in stats that do not already have one
     # Make sure the values are sorted by date and are unique by inserting all the records
     _add_versions_to_index(stats_versions + indexed_versions, [])
@@ -400,14 +415,10 @@ def _touch_minor_stats_directory(minor_version):
     :return str: the full path of the minor version directory for stats
     """
     # Obtain path to the directory for the given minor version
-    upper_level_dir, lower_level_dir = store.split_object_name(pcs.get_stats_directory(),
-                                                               minor_version)
+    _, lower_level_dir = store.split_object_name(pcs.get_stats_directory(), minor_version)
     # Make an entry in the index if the minor version directory does not exist yet
     if not os.path.exists(lower_level_dir):
-        try:
-            _add_versions_to_index([_get_version_info(store.sha_path_to_sha(lower_level_dir))])
-        except exceptions.VersionControlSystemException as exc:
-            perun_log.msg_to_file("VCS error: {}".format(str(exc)), 0)
+        _add_versions_to_index([_get_version_info(store.sha_path_to_sha(lower_level_dir))])
 
     # Create the directory for storing statistics in the given minor version
     store.touch_dir(lower_level_dir)
@@ -475,7 +486,7 @@ def _get_version_candidates(minor_checksum, minor_date):
         next(from_iter)
         successor = vcs.get_minor_version_info(next(from_iter).checksum)
         while successor.date == minor_date:
-            candidates.append((successor.checksum, successor.date))
+            candidates.append(successor.checksum)
             successor = vcs.get_minor_version_info(next(from_iter).checksum)
     except (exceptions.VersionControlSystemException, StopIteration):
         # Some unexpected git corruption or we ran out of minor versions, end
@@ -586,25 +597,26 @@ def _get_versions_in_stats_directory():
 
         :return generator: generator object that provides the valid directories
         """
-        if not os.path.isdir(directory):
-            return
-        else:
-            for item in os.listdir(directory):
-                item = os.path.join(directory, item)
-                # Filter out objects that are not directories or do not pass the filtering function
-                if not os.path.isdir(item) or (filter_func is not None and not filter_func(item)):
-                    custom_list.append(item)
-                # The rest should be valid directories
-                else:
-                    yield item
+        for item in os.listdir(directory):
+            item = os.path.join(directory, item)
+            # Filter out objects that are not directories or do not pass the filtering function
+            if not os.path.isdir(item) or (filter_func is not None and not filter_func(item)):
+                custom_list.append(item)
+            # The rest should be valid directories
+            else:
+                yield item
 
     # List all the upper and lower directories
     versions, custom = [], []
-    stats_dir = pcs.get_stats_directory()
+    stats_dir, stats_idx = pcs.get_stats_directory(), pcs.get_stats_index()
     # The upper level of directories should represent the first SHA byte
-    for upper in list(dirs_generator(stats_dir, custom, lambda path: os.listdir(path))):
+    for upper in list(dirs_generator(stats_dir, custom, os.listdir)):
         # The lower level represents the rest of the SHA
-        for lower in list(dirs_generator(upper, custom)):
+        lower_list = list(dirs_generator(upper, custom))
+        # If there are no lower level directories, then the upper directory is custom
+        if not lower_list:
+            custom.append(upper)
+        for lower in lower_list:
             try:
                 # Construct the minor version from SHA and resolve it
                 versions.append(_get_version_info(store.sha_path_to_sha(lower)))
@@ -613,6 +625,10 @@ def _get_versions_in_stats_directory():
                 custom.extend(list(dirs_generator(lower, [])))
             except exceptions.VersionControlSystemException:
                 custom.append(lower)
+    # Remove the .index file from the custom list if it is present
+    if stats_idx in custom:
+        custom.remove(stats_idx)
+
     return versions, custom
 
 

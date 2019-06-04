@@ -121,6 +121,7 @@ def get_stats_directory():
     return stats_directory
 
 
+@singleton
 def get_stats_index():
     """Returns the path to the index file in stats directory where records about minor versions
     with stats files are stored
