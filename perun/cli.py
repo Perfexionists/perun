@@ -1280,10 +1280,10 @@ def stats_delete_file(**kwargs):
 @click.argument('version', callback=cli_helpers.check_stats_minor_callback)
 @click.option('--keep-directory', '-k', flag_value=True, default=False,
               help='Resulting empty directory of minor version will be kept in the file system.')
-def stats_delete_minor(**kwargs):
+def stats_delete_minor(version, **kwargs):
     """Deletes the specified minor version directory in stats with all its content.
     """
-    commands.delete_stats_minor(**kwargs)
+    commands.delete_stats_minor(version, **kwargs)
 
 
 @stats_delete_group.command('.')

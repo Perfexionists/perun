@@ -439,35 +439,43 @@ def test_stats_clean(pcs_with_more_commits):
     head_custom_file = os.path.join(minor_head[:2], minor_head[2:], 'custom_file')
     root_custom_file = os.path.join(minor_root[:2], minor_root[2:], 'custom_file_2')
     root_custom_dir = os.path.join(minor_root[:2], minor_root[2:], 'custom_dir')
+    root_tricky = os.path.join(minor_root[:2], 'tricky_custom')
     custom_stats_dir_file = os.path.join('custom_stats_dir', 'custom_file_3')
+    nested_custom_dir = os.path.join('lower', 'upper')
 
     # The stats directory structure is similar to the sync testing
     # HEAD: head_stats, custom_file
     # MIDDLE: 'empty'
     # ROOT: created manually, custom_file_2, custom_dir
+    # ROOT[:2]: tricky_custom
     # custom_stats_dir: custom_file_3
+    # lower/upper/: 'empty'
     stats.add_stats('head_stats', ['1'], [{'value': 1}])
     stats.add_stats('middle_stats', ['1'], [{'custom': 2}], minor_middle)
     stats.delete_stats_file('middle_stats', minor_middle, True)
     os.makedirs(os.path.join(stats_dir, minor_root[:2], minor_root[2:], 'custom_dir'))
+    os.makedirs(os.path.join(stats_dir, nested_custom_dir))
     os.mkdir(os.path.join(stats_dir, 'custom_stats_dir'))
     store.touch_file(os.path.join(stats_dir, root_custom_file))
     store.touch_file(os.path.join(stats_dir, head_custom_file))
     store.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
+    store.touch_file(os.path.join(stats_dir, root_tricky))
     # Add some custom versions that don't have a corresponding directory to the index file
     fake_minor1, fake_minor2 = _fake_checksums(minor_head, 2, [minor_head, minor_root])
     stats._add_versions_to_index([(fake_minor1, '1999-12-31 23:59:59'),
                                   (fake_minor2, '2009-01-01 00:00:00')])
     # Check that the directory structure is correct
     _check_objects([(minor_head, ['head_stats', 'custom_file']), (minor_middle, [])],
-                   [root_custom_dir], [root_custom_file, custom_stats_dir_file], check_index=False)
+                   [root_custom_dir, nested_custom_dir],
+                   [root_custom_file, custom_stats_dir_file, root_tricky], check_index=False)
     # Check the index content separately because of the fake minor versions
     assert set([v for v, _ in stats.list_stat_versions()]) == {minor_head, minor_middle,
                                                                fake_minor1, fake_minor2}
     # This combination of parameters should just synchronize the index file
     stats.clean_stats(True, True)
     _check_objects([(minor_head, ['head_stats', 'custom_file']), (minor_middle, []),
-                    (minor_root, ['custom_file_2'])], [root_custom_dir], [custom_stats_dir_file])
+                    (minor_root, ['custom_file_2'])], [root_custom_dir, nested_custom_dir],
+                   [custom_stats_dir_file, root_tricky])
     # Now try to clean the stats directory properly
     stats.clean_stats()
     _check_objects([(minor_head, ['head_stats', 'custom_file']), (minor_root, ['custom_file_2'])],

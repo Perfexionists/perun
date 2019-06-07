@@ -414,6 +414,9 @@ def build_command_str(cmd, args, workload):
 def format_file_size(size):
     """Format file size in Bytes into a fixed-length output so that it can be easily printed.
 
+    If size is set to 'None' then the function returns number of whitespace characters of the
+    same width as if an actual value was supplied.
+
     Courtesy of 'https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-
     readable-version-of-file-size'
 
@@ -421,6 +424,8 @@ def format_file_size(size):
 
     :return str: the formatted size for output
     """
+    if size is None:
+        return ' ' * 10
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti']:
         if abs(size) < 1024.0:
             if unit == '':

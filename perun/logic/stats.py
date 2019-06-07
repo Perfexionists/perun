@@ -291,13 +291,14 @@ def delete_version_dirs(minor_versions, only_empty, keep_directories=False):
                 _delete_stats_objects([os.path.join(version_dir, directory) for directory in dirs],
                                       [os.path.join(version_dir, file) for file in files])
             else:
-                # Attempt to remove the directory with different function based on 'only_empty'
-                os.rmdir(version_dir) if only_empty else shutil.rmtree(version_dir)
+                # Delete the whole directory
+                if not only_empty:
+                    shutil.rmtree(version_dir)
+                # Attempt to delete the possibly empty directory
+                elif only_empty and not _delete_empty_dir(version_dir):
+                    continue
                 # Also delete the lower level version directory (the first SHA byte) if empty
-                lower_level_dir = os.path.split(version_dir)[0]
-                if not os.listdir(lower_level_dir):
-                    # We don't want to mess the log with failed attempts to delete the lower dir
-                    os.rmdir(lower_level_dir)
+                _delete_empty_dir(os.path.split(version_dir)[0])
                 removed_versions.append(version)
         except OSError as exc:
             # Failed to delete some object, log and skip
@@ -379,6 +380,19 @@ def _delete_stats_objects(dirs, files):
             except OSError as exc:
                 # Possibly already deleted files or restricted permission etc., log and skip
                 perun_log.msg_to_file("Stats object deletion error: {}".format(str(exc)), 0)
+
+
+def _delete_empty_dir(directory_path):
+    """ Deletes the directory given by the path if it is empty. If not, then nothing is done.
+
+    :param str directory_path: path to the directory that should be deleted
+
+    :return bool: True if the directory was deleted, False otherwise
+    """
+    if not os.listdir(directory_path):
+        os.rmdir(directory_path)
+        return True
+    return False
 
 
 def _add_to_dict(dictionary, sid, content):
@@ -616,15 +630,25 @@ def _get_versions_in_stats_directory():
         # If there are no lower level directories, then the upper directory is custom
         if not lower_list:
             custom.append(upper)
+        # Check all the lower level objects
+        temp_versions, temp_custom = [], []
         for lower in lower_list:
             try:
                 # Construct the minor version from SHA and resolve it
-                versions.append(_get_version_info(store.sha_path_to_sha(lower)))
+                temp_versions.append(_get_version_info(store.sha_path_to_sha(lower)))
                 # Check the contents of the minor version stats, directories should not be allowed
                 # Do not check the files as we do not really have a way to distinguish custom ones
-                custom.extend(list(dirs_generator(lower, [])))
+                temp_custom.extend(list(dirs_generator(lower, [])))
             except exceptions.VersionControlSystemException:
-                custom.append(lower)
+                temp_custom.append(lower)
+        # If all the objects in the upper directory are custom, delete the upper
+        # Otherwise delete only the lower level objects
+        if not temp_versions:
+            custom.append(upper)
+        else:
+            versions.extend(temp_versions)
+            custom.extend(temp_custom)
+
     # Remove the .index file from the custom list if it is present
     if stats_idx in custom:
         custom.remove(stats_idx)

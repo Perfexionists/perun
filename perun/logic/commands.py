@@ -854,7 +854,6 @@ def print_temp_files(root, **kwargs):
         tmp_files = temp.list_all_temps_with_details(root)
     except InvalidTempPathException as exc:
         perun_log.error(str(exc))
-        return
 
     # Filter the files by protection level if it is set to show only certain group
     if kwargs['filter_protection'] != 'all':
@@ -968,18 +967,35 @@ def list_stat_objects(mode, **kwargs):
                       (not kwargs['no_file_count'], False)]
     else:
         # We need to print the files, create separate record for each file
-        results = [(size, version, file) for version, files in versions for file, size in files]
+        results = []
+        for version, files in versions:
+            # A bit more complicated since we also need records for empty version directories
+            if files:
+                results.extend([(size, version, file) for file, size in files])
+            else:
+                results.append((None, version, '-= No stats file =-'))
+        # results = [(size, version, file) for version, files in versions for file, size in files]
         properties = [(not kwargs['no_file_size'], not kwargs['no_color']),
                       (not kwargs['no_minor'], False), (True, False)]
 
     # Print the total size if needed
-    _print_total_size(sum(size for size, _, _ in results), not kwargs['no_color'],
-                      not kwargs['no_total_size'])
-    # Format the size so that is's suitable for output (can be done only after total size output)
-    results = [(utils.format_file_size(size), version, file) for size, version, file in results]
+    _print_total_size(sum(size for size, _, _ in results if size is not None),
+                      not kwargs['no_color'], not kwargs['no_total_size'])
     # Sort by size if needed
     if kwargs['sort_by_size']:
-        results.sort(key=itemgetter(0), reverse=True)
+        if mode == 'versions':
+            results.sort(key=itemgetter(0), reverse=True)
+        else:
+            # Separate the version directories with no file since they cannot be properly sorted
+            valid, empty = [], []
+            for file in results:
+                valid.append(file) if file[0] is not None else empty.append(file)
+            valid.sort(key=itemgetter(0), reverse=True)
+            results = valid + empty
+
+    # Format the size so that is's suitable for output
+    results = [(utils.format_file_size(size), version, file) for size, version, file in results
+               if file is not None]
     # Print all the results
     _print_stat_objects(results, properties, not kwargs['no_color'])
 
