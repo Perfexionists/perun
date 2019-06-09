@@ -59,7 +59,7 @@ RAW_ITEM_COLOUR = 'yellow'
 RAW_ATTRS = []
 
 # Job specific
-Job = namedlist.namedlist("Job", "collector postprocessors cmd workload args")
+Job = namedlist.namedlist("Job", "collector postprocessors executable")
 
 COLLECT_PHASE_CMD = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'

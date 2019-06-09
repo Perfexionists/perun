@@ -41,15 +41,14 @@ _TraceRecord = collections.namedtuple('record',
                                       ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence'])
 
 
-def systemtap_collect(script_path, log_path, output_path, cmd, args, **kwargs):
+def systemtap_collect(script_path, log_path, output_path, executable, **kwargs):
     """Collects performance data using the system tap wrapper, assembled script and
     external command. This function serves as a interface to the system tap collector.
 
     :param str script_path: path to the assembled system tap script file
     :param str log_path: path to the collection log file
     :param str output_path: path to the collection output file
-    :param str cmd: the external command that contains / invokes the profiled executable
-    :param list args: the arguments supplied to the external command
+    :param Executable executable: executable profiled program
     :param kwargs: additional collector configuration
     :return tuple: containing the collection status, path to the output file of the collector
     """
@@ -72,7 +71,7 @@ def systemtap_collect(script_path, log_path, output_path, cmd, args, **kwargs):
 
             # Run the command that is supposed to be profiled
             log.cprint(' SystemTap up and running, execute the profiling target... ', 'white')
-            run_profiled_command(cmd, args, **kwargs)
+            run_profiled_command(executable, **kwargs)
             log.done()
 
             # Terminate SystemTap process after the file was fully written
@@ -122,18 +121,15 @@ def start_systemtap_in_background(stap_script, output, logfile, **_):
     return process, _wait_for_systemtap_startup(logfile.name, process)
 
 
-def run_profiled_command(cmd, args, workload, timeout, **_):
+def run_profiled_command(executable, timeout, **_):
     """Runs the profiled external command with arguments.
 
-    :param str cmd: the external command
-    :param str args: the command arguments
-    :param str workload: the workload input
+    :param Executable executable: executable profiled command
     :param int timeout: if the process does not end before the specified timeout,
                         the process is terminated
     """
     # Run the profiled command and block it with wait if timeout is specified
-    full_command = utils.build_command_str(shlex.quote(cmd), args, workload)
-    process = utils.start_nonblocking_process(full_command)
+    process = utils.start_nonblocking_process(executable.to_escaped_string())
     try:
         process.wait(timeout=timeout)
     except TimeoutExpired:

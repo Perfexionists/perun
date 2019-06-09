@@ -3,6 +3,7 @@
 import os
 import glob
 import re
+import subprocess
 
 from click.testing import CliRunner
 
@@ -20,7 +21,7 @@ import perun.collect.complexity.run as complexity
 import perun.utils.log as log
 
 from perun.utils.helpers import Job
-from perun.utils.structs import Unit
+from perun.utils.structs import Unit, Executable
 from perun.workload.integer_generator import IntegerGenerator
 from perun.collect.trace.systemtap import _TraceRecord
 from perun.collect.trace.systemtap_script import RecordType
@@ -249,9 +250,15 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     assert result.exit_code == 0
     assert 'stored profile' in result.output
 
-    monkeypatch.setattr(
-        "perun.utils.build_command_str", lambda *_: "nonexistent"
-    )
+    original_run = utils.run_safely_external_command
+    def patched_run(cmd, *args, **kwargs):
+        if cmd.startswith('g++') or cmd.startswith('readelf') or cmd.startswith('echo'):
+            return original_run(cmd, *args, **kwargs)
+        else:
+            raise subprocess.CalledProcessError(1, 'error')
+
+    monkeypatch.setattr('perun.utils.run_safely_external_command', patched_run)
+
     runner = CliRunner()
     result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
                                          '-a test', '-w input', 'complexity',
@@ -598,7 +605,9 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
         'all': False,
         'no_func': 'main'
     })
-    job = Job('memory', [], str(target_bin), '', '')
+    executable = Executable(str(target_bin))
+    assert executable.to_escaped_string() != ""
+    job = Job('memory', [], executable)
     _, prof = run.run_collector(collector_unit, job)
 
     assert len(list(prof.all_resources())) == 2
@@ -607,7 +616,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
         'all': False,
         'no_source': 'memory_collect_test.c'
     })
-    job = Job('memory', [], str(target_bin), '', '')
+    job = Job('memory', [], executable)
     _, prof = run.run_collector(collector_unit, job)
 
     assert len(list(prof.all_resources())) == 0
@@ -615,9 +624,9 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
 
 def test_collect_memory_with_generator(pcs_full, memory_collect_job):
     """Tries to collect the memory with integer generators"""
-    cmd = memory_collect_job[0][0]
+    executable = Executable(memory_collect_job[0][0])
     collector = Unit('memory', {})
-    integer_job = Job(collector, [], cmd, '', '')
+    integer_job = Job(collector, [], executable)
     integer_generator = IntegerGenerator(integer_job, 1, 3, 1)
     memory_profiles = list(integer_generator.generate(run.run_collector))
     assert len(memory_profiles) == 1

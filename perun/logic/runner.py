@@ -18,7 +18,7 @@ import perun.utils.decorators as decorators
 import perun.workload as workloads
 
 from perun.utils import get_module
-from perun.utils.structs import GeneratorSpec, Unit
+from perun.utils.structs import GeneratorSpec, Unit, Executable
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
     COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, CollectStatus, PostprocessStatus, \
     Job
@@ -78,7 +78,7 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
     matrix = {
         str(b): {
             str(w): [
-                Job(c, posts, str(b), str(w), str(a)) for c in collector_pairs for a in args or ['']
+                Job(c, posts, Executable(b, w, a)) for c in collector_pairs for a in args or ['']
                 ] for w in workload
             } for b in cmd
         }
@@ -227,7 +227,7 @@ def run_collector(collector, job):
             collector.name, collection_msg
         ), recoverable=True)
     else:
-        print("Successfully collected data from {}".format(job.cmd))
+        print("Successfully collected data from {}".format(job.executable.cmd))
 
     return collection_status, prof
 

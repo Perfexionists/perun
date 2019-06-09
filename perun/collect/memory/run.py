@@ -18,10 +18,10 @@ _tmp_log_filename = "MemoryLog"
 DEFAULT_SAMPLING = 0.001
 
 
-def before(cmd, **_):
+def before(executable, **_):
     """ Phase for initialization the collect module
 
-    :param string cmd: binary file to profile
+    :param Executable executable: executable profiled command
     :returns tuple: (return code, status message, updated kwargs)
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +39,7 @@ def before(cmd, **_):
             log.done()
 
     print("Checking if binary contains debugging information: ", end='')
-    if not syscalls.check_debug_symbols(cmd):
+    if not syscalls.check_debug_symbols(executable.cmd):
         log.failed()
         error_msg = "Binary does not contain debug info section.\n"
         error_msg += "Please recompile your project with debug options (gcc -g | g++ -g)"
@@ -50,16 +50,14 @@ def before(cmd, **_):
     return CollectStatus.OK, '', {}
 
 
-def collect(cmd, args, workload, **_):
+def collect(executable, **_):
     """ Phase for collection of the profile data
 
-    :param string cmd: binary file to profile
-    :param string args: executing arguments
-    :param string workload: file that has to be provided to binary
+    :param Executable executable: executable profiled command
     :returns tuple: (return code, status message, updated kwargs)
     """
     print("Collecting data: ", end='')
-    result, collector_errors = syscalls.run(cmd, args, workload)
+    result, collector_errors = syscalls.run(executable)
     if result:
         log.failed()
         error_msg = 'Execution of binary failed with error code: '
@@ -71,13 +69,12 @@ def collect(cmd, args, workload, **_):
     return CollectStatus.OK, '', {}
 
 
-def after(cmd, workload, sampling=DEFAULT_SAMPLING, **kwargs):
+def after(executable, sampling=DEFAULT_SAMPLING, **kwargs):
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
 
-    :param string cmd: binary file to profile
+    :param Executable executable: executable profiled command
     :param int sampling: sampling of the collection of the data
-    :param str workload: workload for which we are collecting the data
     :param dict kwargs: profile's header
     :returns tuple: (return code, message, updated kwargs)
 
@@ -102,7 +99,7 @@ def after(cmd, workload, sampling=DEFAULT_SAMPLING, **kwargs):
     exclude_sources = kwargs.get('no_source', None)
 
     try:
-        profile = parser.parse_log(_tmp_log_filename, cmd, sampling, workload)
+        profile = parser.parse_log(_tmp_log_filename, executable, sampling)
     except IndexError as i_err:
         log.failed()
         traceback.print_exc()

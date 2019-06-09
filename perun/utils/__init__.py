@@ -413,24 +413,6 @@ def check_dependency(command):
     return True
 
 
-def build_command_str(cmd, args, workload):
-    """Creates the full command as concatenation of the cmd, args and workload values
-
-    :param str cmd: the command itself
-    :param str args: the arguments of the command
-    :param str workload: the workload parameter of the command, behaves the same as args
-
-    :return str: the full command with all the arguments appended
-    """
-    # Build the command, the args and workload should be only str as multiple options get
-    # get sliced and iterated by perun
-    if args:
-        cmd += ' ' + args
-    if workload:
-        cmd += ' ' + workload
-    return cmd
-
-
 def format_file_size(size):
     """Format file size in Bytes into a fixed-length output so that it can be easily printed.
 
