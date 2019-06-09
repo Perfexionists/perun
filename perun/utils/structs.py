@@ -1,6 +1,7 @@
 """List of helper and globally used structures and named tuples"""
 
 import collections
+import shlex
 
 from enum import Enum
 
@@ -12,6 +13,49 @@ PerformanceChange = Enum(
     'PerformanceChange',
     'Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization'
 )
+
+
+class Executable:
+    """Represents executable command with arguments and workload
+
+    :ivar str cmd: command to be executed (i.e. script, binary, etc.)
+    :ivar str args: optional arguments of the command (such as -q, --pretty=no, etc.)
+    :ivar str workload: optional workloads (or inputs) of the command (i.e. files, whatever)
+    :ivar str original_workload: workload that was used as an origin (stated from the configration,
+        note that this is to differentiate between actually generated workloads from generators and
+        names of the generators.
+    """
+    def __init__(self, cmd, args="", workload=""):
+        """Initializes the executable
+
+        :param str cmd: command to be executed
+        :param str args: optional arguments of the command
+        :param str workload: optional workloads of the command
+        """
+        self.cmd = str(cmd)
+        self.args = str(args)
+        self.workload = str(workload)
+        self.origin_workload = str(workload)
+
+    def __str__(self):
+        """Returns nonescaped, nonlexed string representation of the executable
+
+        :return: string representation of executable
+        """
+        executable = self.cmd
+        executable += " " + self.args if self.args else ""
+        executable += " " + self.workload if self.workload else ""
+        return executable
+
+    def to_escaped_string(self):
+        """Returns escaped string representation of executable
+
+        :return: escaped string representation of executable
+        """
+        executable = shlex.quote(self.cmd)
+        executable += " " + self.args if self.args else ""
+        executable += " " + self.workload if self.workload else ""
+        return executable
 
 
 class Unit:

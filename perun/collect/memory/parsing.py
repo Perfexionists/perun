@@ -117,13 +117,12 @@ def parse_resources(allocation, workload):
     return data
 
 
-def parse_log(filename, cmd, snapshots_interval, workload):
+def parse_log(filename, executable, snapshots_interval):
     """ Parse raw data in the log file
 
     :param string filename: name of the log file
-    :param string cmd: profiled binary
+    :param Executable executable: profiled binary
     :param Decimal snapshots_interval: interval of snapshots [s]
-    :param str workload: workload of the memory
     :returns structure: formatted structure representing section "snapshots" and "global"
         in memory profile
     """
@@ -152,7 +151,7 @@ def parse_log(filename, cmd, snapshots_interval, workload):
 
     # Build caches for demangle and addr2line for further calls
     syscalls.build_demangle_cache(names)
-    syscalls.build_address_to_line_cache(ips, cmd)
+    syscalls.build_address_to_line_cache(ips, executable.cmd)
 
     snapshots = []
     data = {}
@@ -181,7 +180,7 @@ def parse_log(filename, cmd, snapshots_interval, workload):
 
         # using parse_resources()
         # parsing resources,
-        data['resources'].append(parse_resources(allocation, workload))
+        data['resources'].append(parse_resources(allocation, executable.workload))
 
     if data:
         snapshots.append(data)

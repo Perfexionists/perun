@@ -88,7 +88,6 @@ class Profile(collections.MutableMapping):
 
     def _translate_resources(self, resource_list, additional_params):
         """Translate the list of resources to efficient format
-
         Given a list of resources, this is all flattened into a new format: a dictionary that
         maps unique resource identifiers (set of persistent properties) to list of collectable
         properties (such as ammounts, addresses, etc.)

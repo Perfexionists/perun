@@ -73,16 +73,13 @@ def address_to_line(ip):
     return address_to_line_cache[ip][:]
 
 
-def run(cmd, args, workload):
+def run(executable):
     """
-    :param string cmd: binary file to profile
-    :param string args: executing arguments
-    :param string workload: file that has to be provided to binary
+    :param Executable executable: executable command
     :returns int: return code of executed binary
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
-    sys_call = ('LD_PRELOAD="' + pwd + '/malloc.so" ' + cmd +
-                ' ' + args + ' ' + workload)
+    sys_call = ('LD_PRELOAD="' + pwd + '/malloc.so" ' + str(executable))
 
     with open('ErrorCollectLog', 'w') as error_log:
         ret = subprocess.call(sys_call, shell=True, stderr=error_log)
