@@ -6,6 +6,9 @@ HEAD
 
 **To be included in next release**
 
+  - extract cmd, args and workload to Executable class
+  - remove ``--remove-all`` argument in ``perun rm``
+
 0.17.1 (2019-07-24)
 -------------------
 

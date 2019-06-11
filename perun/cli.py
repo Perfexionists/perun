@@ -460,8 +460,6 @@ def add(profile, minor, **kwargs):
 @click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
               callback=cli_helpers.lookup_minor_version_callback,
               help='<profile> will be stored at this minor version (default is HEAD).')
-@click.option('--remove-all', '-A', is_flag=True, default=False,
-              help="Removes all occurrences of <profile> from the <hash> index.")
 def remove(profile, minor, **kwargs):
     """Unlinks the profile from the given minor version, keeping the contents
     stored in ``.perun`` directory.
