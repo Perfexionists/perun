@@ -22,7 +22,7 @@ import perun.utils.log as log
 import perun.vcs as vcs
 
 from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
-    StatsFileNotFoundException
+    StatsFileNotFoundException, NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
 
@@ -296,7 +296,7 @@ def lookup_removed_profile_callback(ctx, _, value):
     :param str value: value that is being read from the commandline
     :returns str: filename of the profile to be removed
     """
-    def add_to_removed(index):
+    def add_to_removed_from_index(index):
         """Helper function for adding stuff to massaged values
 
         :param int index: index we are looking up and registering to massaged values
@@ -307,26 +307,58 @@ def lookup_removed_profile_callback(ctx, _, value):
             )
             start = index_filename.rfind('objects') + len('objects')
             # Remove the .perun/objects/... prefix and merge the directory and file to sha
-            massaged_values.add("".join(index_filename[start:].split('/')))
+            ctx.params['from_index_generator'].add("".join(index_filename[start:].split('/')))
         except TagOutOfRangeException as exc:
             # Invalid tag value, rethrow as click error
             raise click.BadParameter(str(exc))
 
+    def add_to_removed_from_pending(pending):
+        """Helper function for adding pending to massaged values.
+
+        :param int pending: index of the pending profile
+        """
+        pending_profile = lookup_nth_pending_filename(pending)
+        ctx.params['from_jobs_generator'].add(pending_profile)
+
+    ctx.params.setdefault('from_index_generator', set())
+    ctx.params.setdefault('from_jobs_generator', set())
+
     massaged_values = set()
     for single_value in value:
-        index_match = store.INDEX_TAG_REGEX.match(single_value)
-        range_match = store.INDEX_TAG_RANGE_REGEX.match(single_value)
-        if index_match:
-            add_to_removed(int(index_match.group(1)))
-        elif range_match:
-            from_range, to_range = int(range_match.group(1)), int(range_match.group(2))
-            for i in range(from_range, to_range+1):
-                try:
-                    add_to_removed(i)
-                except click.BadParameter:
-                    log.warn("skipping nonexisting tag {}@i".format(i))
-        else:
-            massaged_values.add(single_value)
+        try:
+            index_match = store.INDEX_TAG_REGEX.match(single_value)
+            index_range_match = store.INDEX_TAG_RANGE_REGEX.match(single_value)
+            pending_match = store.PENDING_TAG_REGEX.match(single_value)
+            pending_range_match = store.PENDING_TAG_RANGE_REGEX.match(single_value)
+            if index_match:
+                add_to_removed_from_index(int(index_match.group(1)))
+            elif index_range_match:
+                from_range, to_range = int(index_range_match.group(1)), int(index_range_match.group(2))
+                for i in range(from_range, to_range+1):
+                    try:
+                        add_to_removed_from_index(i)
+                    except click.BadParameter:
+                        log.warn("skipping nonexisting tag {}@i".format(i))
+            elif pending_match:
+                add_to_removed_from_pending(int(pending_match.group(1)))
+            elif pending_range_match:
+                from_range, to_range = int(pending_range_match.group(1)), int(pending_range_match.group(2))
+                for i in range(from_range, to_range+1):
+                    try:
+                        add_to_removed_from_pending(i)
+                    except click.BadParameter:
+                        log.warn("skipping nonexisting tag {}@p".format(i))
+            # We check if this is actually something from pending, then we will remove it from pending
+            elif os.path.exists(single_value) and \
+                os.path.samefile(os.path.split(single_value)[0], pcs.get_job_directory()):
+                ctx.params['from_jobs_generator'].add(single_value)
+            # other profiles that are specified by the path are removed from index only
+            else:
+                ctx.params['from_index_generator'].add(single_value)
+        except NotPerunRepositoryException:
+            pass
+    massaged_values.update(ctx.params['from_index_generator'])
+    massaged_values.update(ctx.params['from_jobs_generator'])
     return massaged_values
 
 

@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import time
+import binascii
 
 import pytest
 from click.testing import CliRunner
@@ -1389,6 +1390,42 @@ def test_remove_tag_range(helpers, pcs_full):
     assert "no tracked" in result.output
     assert result.exit_code == 0
 
+
+def test_remove_pending(helpers, pcs_full, stored_profile_pool):
+    """Test running remove with pending tags and ranges"""
+    jobs_dir = pcs_full.get_job_directory()
+    runner = CliRunner()
+
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    result = runner.invoke(cli.status, [])
+    assert "no untracked" not in result.output
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 4 # 3 profiles and .index
+
+    result = runner.invoke(cli.remove, ['0@p'])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 3
+
+    result = runner.invoke(cli.remove, ['0@p'])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 2
+
+    removed_full_profile = [p for p in os.listdir(jobs_dir) if p != '.index'][0]
+    removed_full_profile = os.path.join(pcs_full.get_job_directory(), removed_full_profile)
+    result = runner.invoke(cli.remove, [removed_full_profile])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 1
+    assert os.listdir(jobs_dir) == ['.index']
+
+    result = runner.invoke(cli.status, [])
+    assert "no untracked" in result.output
+    assert result.exit_code == 0
+
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    assert len(os.listdir(jobs_dir)) == 4 # 3 profiles and .index
+    result = runner.invoke(cli.remove, ['0@p-10@p'])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 1
 
 def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     """Test running postprocessby with various valid and invalid tags
