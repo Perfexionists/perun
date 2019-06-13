@@ -266,19 +266,26 @@ def add(profile_names, minor_version, keep_profile=False, force=False):
 
 
 @vcs.lookup_minor_version
-def remove(profile_generator, minor_version, **kwargs):
+def remove_from_index(profile_generator, minor_version):
     """Removes @p profile from the @p minor_version inside the @p pcs
 
     :param generator profile_generator: profile that will be stored for the minor version
     :param str minor_version: SHA-1 representation of the minor version
-    :param dict kwargs: dictionary with additional options
     :raisesEntryNotFoundException: when the given profile_generator points to non-tracked profile
     """
-    perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
-
     object_directory = pcs.get_object_directory()
-    index.remove_from_index(object_directory, minor_version, profile_generator, **kwargs)
+    index.remove_from_index(object_directory, minor_version, profile_generator)
     perun_log.info("successfully removed {} from index".format(len(profile_generator)))
+
+
+def remove_from_pending(profile_generator):
+    """Removes profiles from the pending jobs directory (i.e, `.perun/jobs`
+
+    :param generator profile_generator: generator of profiles that will be removed from pending jobs
+    """
+    for pending_file in profile_generator:
+        os.remove(pending_file)
+    perun_log.info("successfully removed {} from pending jobs".format(len(profile_generator)))
 
 
 def calculate_profile_numbers_per_type(profile_list):

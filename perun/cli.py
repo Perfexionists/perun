@@ -458,7 +458,7 @@ def add(profile, minor, **kwargs):
 @click.option('--minor', '-m', required=False, default=None, metavar='<hash>', is_eager=True,
               callback=cli_helpers.lookup_minor_version_callback,
               help='<profile> will be stored at this minor version (default is HEAD).')
-def remove(profile, minor, **kwargs):
+def remove(from_index_generator, from_jobs_generator, minor, **_):
     """Unlinks the profile from the given minor version, keeping the contents
     stored in ``.perun`` directory.
 
@@ -475,16 +475,22 @@ def remove(profile, minor, **kwargs):
     control system is used instead. Massaging of <hash> is taken care of by
     underlying version control system (e.g. git uses ``git rev-parse``).
 
-    <profile> can either be a ``index tag`` or a path specifying the profile.
-    ``Index tags`` are in form of ``i@i``, where ``i`` stands for an index in
-    the minor version's index and ``@i`` is literal suffix. Run ``perun
-    status`` to see the `tags` of current ``HEAD``'s index. The
-    ``index tag range`` is in form of ``i@i-j@i``, where both ``i`` and ``j``
-    stands for indexes in the minor version's index. The ``index tag range``
-    then represents all of the profiles in the interval <i, j>. registered
-    in index. When ``i > j``, then no profiles will be removed; when ``j``;
-    when ``j`` is bigger than the number of pending profiles, then all of
-    the non-existing pending profiles will be obviously skipped.
+    <profile> can either be a ``index tag``, ``pending tag`` or a path specifying
+    the profile either in index or in the pending jobs. ``Index tags`` are in form
+    of ``i@i``, where ``i`` stands for an index in the minor version's index and
+    ``@i`` is literal suffix. Run ``perun status`` to see the `tags` of current
+    ``HEAD``'s index. The ``index tag range`` is in form of ``i@i-j@i``, where
+    both ``i`` and ``j`` stands for indexes in the minor version's index.
+    The ``index tag range`` then represents all of the profiles in the interval
+    <i, j>. registered in index. When ``i > j``, then no profiles will be removed;
+    when ``j``; when ``j`` is bigger than the number of pending profiles,
+    then all of the non-existing pending profiles will be obviously skipped.
+    The ``pending tags`` and ``pending tag range`` are defined analogously to
+    index tags, except they use the ``p`` character, i.e. ``0@p`` and ``0@p-2@p``
+    are valid pending tag and pending tag range. Otherwise one can use the path
+    to represent the removed profile. If the path points to existing profile in
+    pending jobs (i.e. ``.perun/jobs`` directory) the profile is removed from the
+    jobs, otherwise it is looked-up in the index.
     Tags consider the sorted order as specified by the following option
     :ckey:`format.sort_profiles_by`.
 
@@ -503,7 +509,8 @@ def remove(profile, minor, **kwargs):
     See :doc:`internals` for information how perun handles profiles internally.
     """
     try:
-        commands.remove(profile, minor, **kwargs)
+        commands.remove_from_index(from_index_generator, minor)
+        commands.remove_from_pending(from_jobs_generator)
     except (NotPerunRepositoryException, EntryNotFoundException) as exception:
         perun_log.error("could not remove profiles: {}".format(str(exception)))
 

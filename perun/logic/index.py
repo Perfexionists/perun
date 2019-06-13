@@ -555,7 +555,7 @@ def register_in_index(index_filename, registered_file, registered_file_checksum,
     perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
 
 
-def remove_from_index(base_dir, minor_version, removed_file_generator, remove_all=False):
+def remove_from_index(base_dir, minor_version, removed_file_generator):
     """Removes stream of removed files from the index.
 
     Iterates through all of the removed files, and removes their partial/full occurence from the
@@ -565,7 +565,6 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
     :param str minor_version: sha-1 representation of the minor version of vcs (like e..g commit)
     :param generator removed_file_generator: generator of filenames, that will be removed from the
         tracking
-    :param bool remove_all: true if all of the entries should be removed
     """
     # Get directory and index
     _, minor_version_index = store.split_object_name(base_dir, minor_version)
@@ -588,14 +587,9 @@ def remove_from_index(base_dir, minor_version, removed_file_generator, remove_al
                 else:
                     return entry.path == removed_file
 
-            if remove_all:
-                removed_entries.append(
-                    lookup_all_entries_within_index(index_handle, lookup_function)
-                )
-            else:
-                removed_entries.extend([
-                    lookup_entry_within_index(index_handle, lookup_function, removed_file)
-                ])
+            removed_entries.extend([
+                lookup_entry_within_index(index_handle, lookup_function, removed_file)
+            ])
             perun_log.info("deregistered: {}".format(removed_file))
 
         # Update number of entries

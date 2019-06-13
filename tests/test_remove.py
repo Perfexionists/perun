@@ -5,6 +5,7 @@ removing nonexistent profiles, etc.
 """
 
 import os
+import binascii
 
 import git
 import perun.logic.store as store
@@ -25,13 +26,13 @@ def test_rm_outside_pcs(stored_profile_pool):
     """
     with pytest.raises(NotPerunRepositoryException):
         # Remove first profile from the head
-        commands.remove([stored_profile_pool[0]], None)
+        commands.remove_from_index([stored_profile_pool[0]], None)
 
 
 def test_rm_on_empty_repo(pcs_with_empty_git, stored_profile_pool, capsys):
     """Test calling 'perun rm', when the wrapped VCS is empty"""
     with pytest.raises(SystemExit):
-        commands.remove([stored_profile_pool[0]], None)
+        commands.remove_from_index([stored_profile_pool[0]], None)
 
     # Test that nothing is printed on out and something is printed on err
     out, err = capsys.readouterr()
@@ -53,7 +54,7 @@ def test_rm_no_profiles(helpers, pcs_full, capsys):
     git_repo.index.commit("new commit")
 
     with pytest.raises(EntryNotFoundException) as exc:
-        commands.remove(['nonexistent.perf'], None)
+        commands.remove_from_index(['nonexistent.perf'], None)
     assert "none of the entries found in the index" in str(exc.value)
 
     out, _ = capsys.readouterr()
@@ -71,7 +72,7 @@ def test_rm_nonexistent(helpers, pcs_full, capsys):
     """
     before_count = helpers.count_contents_on_path(pcs_full.get_path())
     with pytest.raises(EntryNotFoundException) as exc:
-        commands.remove(['nonexistent.perf'], None)
+        commands.remove_from_index(['nonexistent.perf'], None)
     assert "'nonexistent.perf' not found in the index" in str(exc.value)
 
     out, _ = capsys.readouterr()
@@ -103,7 +104,7 @@ def test_rm(helpers, pcs_full, stored_profile_pool, capsys):
     with helpers.open_index(pcs_full.get_path(), head) as index_handle:
         assert helpers.exists_profile_in_index_such_that(index_handle, entry_contains_profile)
 
-    commands.remove([deleted_profile], None)
+    commands.remove_from_index([deleted_profile], None)
 
     with helpers.open_index(pcs_full.get_path(), head) as index_handle:
         assert not helpers.exists_profile_in_index_such_that(index_handle, entry_contains_profile)
@@ -114,3 +115,19 @@ def test_rm(helpers, pcs_full, stored_profile_pool, capsys):
     # Assert that nothing was removed
     after_count = helpers.count_contents_on_path(pcs_full.get_path())
     assert before_count == after_count
+
+
+def test_rm_pending(helpers, pcs_full, stored_profile_pool):
+    """Basic test of removing pending from the perun
+    """
+    jobs_dir = pcs_full.get_job_directory()
+
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    number_of_pending = len(os.listdir(jobs_dir))
+    assert number_of_pending == 3
+
+    removed_profiles = [os.path.join(jobs_dir, prof) for prof in os.listdir(jobs_dir)]
+    commands.remove_from_pending(removed_profiles)
+    number_of_pending = len(os.listdir(jobs_dir))
+    assert number_of_pending == 0
+
