@@ -1,6 +1,5 @@
 """Set of helper constants and helper named tuples for perun pcs"""
 
-import os
 import re
 import operator
 import collections
