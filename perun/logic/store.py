@@ -101,7 +101,7 @@ def is_sha1(checksum):
     return len(checksum) == 40 and all(c in string.hexdigits for c in checksum)
 
 
-def sha_path_to_sha(sha_path):
+def version_path_to_sha(sha_path):
     """ Transforms the path of the minor version file / directory (represented by the SHA value) to
     the actual SHA value as a string.
 

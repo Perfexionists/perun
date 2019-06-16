@@ -44,14 +44,20 @@ from zlib import error
 import perun.logic.store as store
 import perun.logic.index as index
 import perun.logic.pcs as pcs
+import perun.utils as utils
 import perun.utils.exceptions as exceptions
 import perun.vcs as vcs
 import perun.profile.factory as profiles
 import perun.utils.log as perun_log
 
+from perun.utils.helpers import SuppressExceptions
+
 
 # Match the timestamp format of the profile names
 PROFILE_TIMESTAMP_REGEX = re.compile(r"(-?\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})")
+
+# Default number of displayed records for listing stats objects
+DEFAULT_STATS_LIST_TOP = 20
 
 
 def build_stats_filename_as_profile_source(profile, ignore_timestamp, minor_version=None):
@@ -222,10 +228,10 @@ def list_stat_versions(from_minor=None, top=0):
 
     :return list: the list of lists [version checksum, version date] sorted by date
     """
-    indexed_versions = _index_loader_wrapper()
+    indexed_versions = _load_stats_index()
     # Get the actual length if everything is to be displayed
-    return _slice_versions(indexed_versions, from_minor,
-                           abs(len(indexed_versions) if top == 0 else top))
+    top = abs(len(indexed_versions) if top == 0 else top)
+    return _slice_versions(indexed_versions, from_minor, top)
 
 
 def delete_stats_file(stats_filename, minor_version=None, keep_directory=False):
@@ -241,7 +247,7 @@ def delete_stats_file(stats_filename, minor_version=None, keep_directory=False):
     os.remove(stats_file)
     if not keep_directory:
         # Delete the minor version directory if it is empty
-        minor_version = vcs.get_minor_head() if minor_version is None else minor_version
+        minor_version = minor_version or vcs.get_minor_head()
         delete_version_dirs([minor_version], True)
 
 
@@ -255,12 +261,10 @@ def delete_stats_file_across_versions(stats_filename, keep_directory=False):
     matches = []
     # Traverse all the version directories and attempt to delete the file
     for version, _ in list_stat_versions():
-        try:
+        # If the file was not found in this version, simply continue
+        with SuppressExceptions(exceptions.StatsFileNotFoundException):
             delete_stats_file(stats_filename, version, True)
             matches.append(version)
-        except exceptions.StatsFileNotFoundException:
-            # The file was not found in this version, simply continue
-            pass
 
     # Make sure we delete only empty version directories where we actually deleted the file
     if not keep_directory:
@@ -308,7 +312,7 @@ def delete_version_dirs(minor_versions, only_empty, keep_directories=False):
     _remove_versions_from_index(removed_versions)
 
 
-def clear_stats(keep_directories=False):
+def reset_stats(keep_directories=False):
     """ Clears the whole stats directory and attempts to reset it into the initial state.
 
     :param bool keep_directories: the empty version directories are kept in the stats directory
@@ -342,9 +346,7 @@ def clean_stats(keep_custom=False, keep_empty=False):
     if not keep_custom:
         # Get the custom files and directories in the stats directory
         _, custom = _get_versions_in_stats_directory()
-        custom_files, custom_dirs = [], []
-        for item in custom:
-            custom_files.append(item) if os.path.isfile(item) else custom_dirs.append(item)
+        custom_files, custom_dirs = utils.partition_list(custom, os.path.isfile)
         # Use the reversed order to minimize the number of exceptions due to already deleted files
         _delete_stats_objects(reversed(custom_dirs), reversed(custom_files))
     if not keep_empty:
@@ -355,7 +357,7 @@ def synchronize_index():
     """ Synchronizes the index file with the actual content of the stats directory. Should be
     needed only after some manual tampering with the directories and files in the stats directory.
     """
-    indexed_versions = _index_loader_wrapper()
+    indexed_versions = _load_stats_index()
     stats_versions, _ = _get_versions_in_stats_directory()
     # Delete from index all minor version records that do not have a directory in stats anymore
     indexed_versions = [version for version in indexed_versions if tuple(version) in stats_versions]
@@ -432,7 +434,7 @@ def _touch_minor_stats_directory(minor_version):
     _, lower_level_dir = store.split_object_name(pcs.get_stats_directory(), minor_version)
     # Make an entry in the index if the minor version directory does not exist yet
     if not os.path.exists(lower_level_dir):
-        _add_versions_to_index([_get_version_info(store.sha_path_to_sha(lower_level_dir))])
+        _add_versions_to_index([_get_version_info(store.version_path_to_sha(lower_level_dir))])
 
     # Create the directory for storing statistics in the given minor version
     store.touch_dir(lower_level_dir)
@@ -493,7 +495,8 @@ def _get_version_candidates(minor_checksum, minor_date):
     :return list: list of successor versions as tuples: (checksum, date)
     """
     candidates = []
-    try:
+    # Ignore some unexpected git corruption or the end of minor version history
+    with SuppressExceptions(exceptions.VersionControlSystemException, StopIteration):
         # Start iterating the minor versions at the supplied version
         from_iter = vcs.walk_minor_versions(minor_checksum)
         # However, the first generator result is the version itself, skip it
@@ -502,9 +505,6 @@ def _get_version_candidates(minor_checksum, minor_date):
         while successor.date == minor_date:
             candidates.append(successor.checksum)
             successor = vcs.get_minor_version_info(next(from_iter).checksum)
-    except (exceptions.VersionControlSystemException, StopIteration):
-        # Some unexpected git corruption or we ran out of minor versions, end
-        pass
     return candidates
 
 
@@ -527,7 +527,7 @@ def _add_versions_to_index(minor_versions, index_stats=None):
     :param list minor_versions: list of minor versions (checksum, date) to add
     :param list index_stats: the content of the index file - is loaded from the file if not provided
     """
-    index_stats = _index_loader_wrapper() if index_stats is None else index_stats
+    index_stats = _load_stats_index() if index_stats is None else index_stats
     for checksum, date in minor_versions:
         # Find the correct location for inserting the new minor record, avoid duplicates
         insert_pos = _find_nearest_version(index_stats, checksum, date)
@@ -541,7 +541,7 @@ def _remove_versions_from_index(minor_versions):
 
     :param list minor_versions: list of minor versions (checksums) to delete
     """
-    index_stats = [[checksum, date] for checksum, date in _index_loader_wrapper()
+    index_stats = [[checksum, date] for checksum, date in _load_stats_index()
                    if checksum not in minor_versions]
     index.save_custom_index(pcs.get_stats_index(), index_stats)
 
@@ -635,7 +635,7 @@ def _get_versions_in_stats_directory():
         for lower in lower_list:
             try:
                 # Construct the minor version from SHA and resolve it
-                temp_versions.append(_get_version_info(store.sha_path_to_sha(lower)))
+                temp_versions.append(_get_version_info(store.version_path_to_sha(lower)))
                 # Check the contents of the minor version stats, directories should not be allowed
                 # Do not check the files as we do not really have a way to distinguish custom ones
                 temp_custom.extend(list(dirs_generator(lower, [])))
@@ -656,7 +656,7 @@ def _get_versions_in_stats_directory():
     return versions, custom
 
 
-def _index_loader_wrapper():
+def _load_stats_index():
     """ Wraps the loader of custom index files so that it would return the expected default value.
 
     :return list: list of records in the index file or empty list for empty index file

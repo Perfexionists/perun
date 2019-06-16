@@ -522,10 +522,10 @@ def test_stats_clear(pcs_with_more_commits):
                    [root_custom_dir], [root_custom_file, custom_stats_dir_file], check_index=False)
 
     # Now try to clear the stats directory, only the version directories should be there
-    stats.clear_stats(True)
+    stats.reset_stats(True)
     _check_objects([(minor_head, []), (minor_middle, []), (minor_root, [])], [], [])
     # Clear the stats completely
-    stats.clear_stats()
+    stats.reset_stats()
     _check_objects([], [], [])
 
 

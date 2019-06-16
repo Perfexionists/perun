@@ -229,7 +229,7 @@ def find_profile_entry(profile, minor_version):
         profile = get_nth_profile_of(int(tag_match.group(1)), minor_version)
     # Transform the sha-path (obtained or given) to the sha value
     if not store.is_sha1(profile) and not profile.endswith('.perf'):
-        profile = store.sha_path_to_sha(profile)
+        profile = store.version_path_to_sha(profile)
 
     # Search the minor index for the requested profile
     with open(minor_index, 'rb') as index_handle:

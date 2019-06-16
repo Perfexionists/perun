@@ -55,6 +55,7 @@ import perun.logic.runner as runner
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.logic.temp as temp
+import perun.logic.stats as stats
 import perun.postprocess
 import perun.profile.factory as profiles
 import perun.utils as utils
@@ -65,10 +66,6 @@ import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException
-
-
-# Default number of displayed records for listing stats objects
-_DEFAULT_STATS_LIST_TOP = 20
 
 
 __author__ = 'Tomas Fiedor'
@@ -1201,7 +1198,7 @@ def stats_group():
 
 
 @stats_group.command('list-files')
-@click.option('--top', '-N', type=int, default=_DEFAULT_STATS_LIST_TOP, show_default=True,
+@click.option('--top', '-N', type=int, default=stats.DEFAULT_STATS_LIST_TOP, show_default=True,
               help='Show only stat files from top N minor versions. Show all results if set to 0. '
                    'The minor version to start at can be changed using --from-minor.')
 @click.option('--from-minor', '-m', default=None, metavar='<hash>', is_eager=True,
@@ -1228,7 +1225,7 @@ def stats_list_files(**kwargs):
 
 
 @stats_group.command('list-versions')
-@click.option('--top', '-N', type=int, default=_DEFAULT_STATS_LIST_TOP, show_default=True,
+@click.option('--top', '-N', type=int, default=stats.DEFAULT_STATS_LIST_TOP, show_default=True,
               help='Show only top N minor versions. Show all versions if set to 0. '
                    'The minor version to start at can be changed using --from-minor.')
 @click.option('--from-minor', '-m', default=None, metavar='<hash>', is_eager=True,

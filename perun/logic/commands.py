@@ -860,7 +860,9 @@ def print_temp_files(root, **kwargs):
         tmp_files = [(name, level, size) for name, level, size in tmp_files
                      if level == kwargs['filter_protection']]
     # If there are no files then abort the output
-    _handle_empty_results(not tmp_files, '.perun/tmp/')
+    if not tmp_files:
+        print('== No results for the given parameters in the .perun/tmp/ directory ==')
+        return
 
     # First sort by the name
     tmp_files.sort(key=itemgetter(0))
@@ -957,7 +959,9 @@ def list_stat_objects(mode, **kwargs):
     versions = [(version, stats.list_stats_for_minor(version)) for version, _ in versions]
 
     # Abort the whole output if we have no versions
-    _handle_empty_results(not versions, '.perun/stats/')
+    if not versions:
+        print('== No results for the given parameters in the .perun/stats/ directory ==')
+        return
 
     if mode == 'versions':
         # We need to print the versions, aggregate the files and their sizes
@@ -978,24 +982,26 @@ def list_stat_objects(mode, **kwargs):
         properties = [(not kwargs['no_file_size'], not kwargs['no_color']),
                       (not kwargs['no_minor'], False), (True, False)]
 
+    # Separate the results with no files since they cannot be properly sorted but still need
+    # to be printed
+    record_size = itemgetter(0)
+    valid_results, empty_results = utils.partition_list(
+        results, lambda item: record_size(item) is not None
+    )
+
     # Print the total size if needed
-    _print_total_size(sum(size for size, _, _ in results if size is not None),
+    _print_total_size(sum(record_size(record) for record in valid_results),
                       not kwargs['no_color'], not kwargs['no_total_size'])
     # Sort by size if needed
     if kwargs['sort_by_size']:
         if mode == 'versions':
-            results.sort(key=itemgetter(0), reverse=True)
+            results.sort(key=record_size, reverse=True)
         else:
-            # Separate the version directories with no file since they cannot be properly sorted
-            valid, empty = [], []
-            for file in results:
-                valid.append(file) if file[0] is not None else empty.append(file)
-            valid.sort(key=itemgetter(0), reverse=True)
-            results = valid + empty
+            valid_results.sort(key=record_size, reverse=True)
+            results = valid_results + empty_results
 
     # Format the size so that is's suitable for output
-    results = [(utils.format_file_size(size), version, file) for size, version, file in results
-               if file is not None]
+    results = [(utils.format_file_size(size), version, file) for size, version, file in results]
     # Print all the results
     _print_stat_objects(results, properties, not kwargs['no_color'])
 
@@ -1012,17 +1018,6 @@ def _print_total_size(total_size, colored, enabled):
         print('Total size of all the displayed files / directories: {}'.format(
             perun_log.set_color(total_size, TEXT_EMPH_COLOUR, colored))
         )
-
-
-def _handle_empty_results(is_empty, directory):
-    """ Prints a message if the obtained and filtered results are empty.
-
-    :param bool is_empty: flag that represents the state of the results
-    :param str directory: the directory where that was queried
-    """
-    if is_empty:
-        print('== No results for the given parameters in the {} directory =='.format(directory))
-        exit(0)
 
 
 def _print_stat_objects(stats_objects, properties, colored_delimiters):
@@ -1083,7 +1078,7 @@ def delete_stats_all(keep_directory):
     :param bool keep_directory: the empty version directories will be kept
                                 in the stats directory if True
     """
-    stats.clear_stats(keep_directory)
+    stats.reset_stats(keep_directory)
 
 
 def clean_stats(keep_custom, keep_empty):
