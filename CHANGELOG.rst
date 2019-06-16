@@ -6,6 +6,10 @@ HEAD
 
 **To be included in next release**
 
+  - refactor the perun stats module
+  - extend the stats module with a CLI
+  - add new operations (list, delete, ...) to the stats module
+
 0.16.8 (2019-05-18)
 -------------------
 
