@@ -164,7 +164,7 @@ def uid_getter(uid):
     )
 
 
-class SuppressExceptions(object):
+class SuppressedExceptions(object):
     """Context manager class for code blocks that need to suppress / ignore some exceptions
     and simply continue in the execution if those exceptions are encountered.
 

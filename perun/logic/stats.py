@@ -50,7 +50,7 @@ import perun.vcs as vcs
 import perun.profile.factory as profiles
 import perun.utils.log as perun_log
 
-from perun.utils.helpers import SuppressExceptions
+from perun.utils.helpers import SuppressedExceptions
 
 
 # Match the timestamp format of the profile names
@@ -262,7 +262,7 @@ def delete_stats_file_across_versions(stats_filename, keep_directory=False):
     # Traverse all the version directories and attempt to delete the file
     for version, _ in list_stat_versions():
         # If the file was not found in this version, simply continue
-        with SuppressExceptions(exceptions.StatsFileNotFoundException):
+        with SuppressedExceptions(exceptions.StatsFileNotFoundException):
             delete_stats_file(stats_filename, version, True)
             matches.append(version)
 
@@ -496,7 +496,7 @@ def _get_version_candidates(minor_checksum, minor_date):
     """
     candidates = []
     # Ignore some unexpected git corruption or the end of minor version history
-    with SuppressExceptions(exceptions.VersionControlSystemException, StopIteration):
+    with SuppressedExceptions(exceptions.VersionControlSystemException, StopIteration):
         # Start iterating the minor versions at the supplied version
         from_iter = vcs.walk_minor_versions(minor_checksum)
         # However, the first generator result is the version itself, skip it
