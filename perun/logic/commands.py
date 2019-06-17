@@ -19,6 +19,7 @@ import perun.logic.store as store
 import perun.logic.index as index
 import perun.profile.helpers as profile
 import perun.utils as utils
+import perun.utils.helpers as helpers
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
@@ -257,9 +258,8 @@ def add(profile_names, minor_version, keep_profile=False, force=False):
 
     profile_names_len = len(profile_names)
     if added_profile_count != profile_names_len:
-        perun_log.error("could not register {}{} profile{} in index: {} failed".format(
-            "all " if added_profile_count > 1 else "",
-            added_profile_count, "s" if added_profile_count > 1 else "",
+        perun_log.error("could not register {} in index: {} failed".format(
+            helpers.str_to_plural(added_profile_count, "profile"),
             added_profile_count - profile_names_len
         ))
     perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
@@ -275,7 +275,6 @@ def remove_from_index(profile_generator, minor_version):
     """
     object_directory = pcs.get_object_directory()
     index.remove_from_index(object_directory, minor_version, profile_generator)
-    perun_log.info("successfully removed {} from index".format(len(profile_generator)))
 
 
 def remove_from_pending(profile_generator):
@@ -283,9 +282,23 @@ def remove_from_pending(profile_generator):
 
     :param generator profile_generator: generator of profiles that will be removed from pending jobs
     """
-    for pending_file in profile_generator:
+    removed_profile_number = len(profile_generator)
+    for i, pending_file in enumerate(profile_generator):
         os.remove(pending_file)
-    perun_log.info("successfully removed {} from pending jobs".format(len(profile_generator)))
+        perun_log.info("{}/{} deleted {} from pending jobs".format(
+            helpers.format_counter_number(i+1, removed_profile_number),
+            removed_profile_number,
+            termcolor.colored(os.path.split(pending_file)[1], 'grey'),
+        ))
+
+    if removed_profile_number:
+        result_string = termcolor.colored("{}".format(
+            helpers.str_to_plural(removed_profile_number, "profile")
+        ), 'white', attrs=['bold'])
+        removed_src = termcolor.colored(os.path.join('.perun', 'jobs'), 'grey')
+        perun_log.info("successfully removed {} from pending jobs".format(
+            result_string, removed_src
+        ))
 
 
 def calculate_profile_numbers_per_type(profile_list):

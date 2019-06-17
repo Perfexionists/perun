@@ -9,6 +9,7 @@ HEAD
   - extract cmd, args and workload to Executable class
   - remove ``--remove-all`` argument in ``perun rm``
   - add support for removing profiles from pending jobs through perun
+  - improve the output of `perun rm` command
 
 0.17.1 (2019-07-24)
 -------------------

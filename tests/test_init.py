@@ -145,7 +145,7 @@ def test_no_params_exists_pcs_in_parent(capsys):
 
     # Assert that user was warned, there is a super perun directory
     out, _ = capsys.readouterr()
-    assert out.split("\n")[0].strip() == "warn: There exists super perun directory at {}".format(pcs_path)
+    assert out.split("\n")[0].strip() == "warning: There exists super perun directory at {}".format(pcs_path)
 
 
 @pytest.mark.usefixtures('cleandir')
