@@ -7,6 +7,7 @@ of various version of index entries.
 import os
 import binascii
 import struct
+import termcolor
 import json
 from zlib import error
 
@@ -568,6 +569,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
     """
     # Get directory and index
     _, minor_version_index = store.split_object_name(base_dir, minor_version)
+    removed_profile_number = len(removed_file_generator)
 
     if not os.path.exists(minor_version_index):
         raise EntryNotFoundException("", "empty index")
@@ -579,7 +581,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
         all_entries.sort(key=lambda unsorted_entry: unsorted_entry.offset)
         removed_entries = []
 
-        for removed_file in removed_file_generator:
+        for i, removed_file in enumerate(removed_file_generator):
             def lookup_function(entry):
                 """Helper lookup function according to the type of the removed file"""
                 if store.is_sha1(removed_file):
@@ -587,10 +589,14 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
                 else:
                     return entry.path == removed_file
 
-            removed_entries.extend([
-                lookup_entry_within_index(index_handle, lookup_function, removed_file)
-            ])
-            perun_log.info("deregistered: {}".format(removed_file))
+            found_entry = lookup_entry_within_index(index_handle, lookup_function, removed_file)
+            removed_entries.append(found_entry)
+
+            perun_log.info("{}/{} deregistered {} from index".format(
+                helpers.format_counter_number(i+1, removed_profile_number),
+                removed_profile_number,
+                termcolor.colored(found_entry.path, 'grey')
+            ))
 
         # Update number of entries
         index_handle.seek(INDEX_NUMBER_OF_ENTRIES_OFFSET)
@@ -603,6 +609,14 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
             entry.write_to(index_handle)
 
         index_handle.truncate()
+    if removed_profile_number:
+        result_string = termcolor.colored("{}".format(
+            helpers.str_to_plural(removed_profile_number, "profile")
+        ), 'white', attrs=['bold'])
+        index_sha = termcolor.colored(minor_version, 'green')
+        perun_log.info("successfully deregistered {} from {} index".format(
+            result_string, index_sha
+        ))
 
 
 def get_profile_list_for_minor(base_dir, minor_version):

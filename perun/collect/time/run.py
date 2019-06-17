@@ -10,6 +10,7 @@ import time as systime
 
 import perun.logic.runner as runner
 import perun.utils as utils
+import perun.utils.helpers as helpers
 from perun.utils.helpers import CollectStatus
 
 __author__ = 'Tomas Fiedor'
@@ -35,8 +36,8 @@ def collect(executable, repeat=10, warmup=3, **kwargs):
         sys.stdout.flush()
     print("")
 
-    print('Begin timing of {} {} time{} '.format(
-        executable.cmd, repeat, "s" if repeat != 1 else ""
+    print('Begin timing of {} {}'.format(
+        executable.cmd, helpers.str_to_plural(repeat, "time")
     ), end='')
     times = []
 

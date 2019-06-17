@@ -1368,7 +1368,7 @@ def test_remove_tag(pcs_full):
     runner = CliRunner()
     result = runner.invoke(cli.remove, ['0@i'])
     assert result.exit_code == 0
-    assert "removed" in result.output
+    assert "1/1 deregistered" in result.output
 
 
 def test_remove_tag_range(helpers, pcs_full):
@@ -1379,11 +1379,10 @@ def test_remove_tag_range(helpers, pcs_full):
     runner = CliRunner()
     result = runner.invoke(cli.remove, ['10@i-0@i'])
     assert result.exit_code == 0
-    assert "removed 0 from index" in result.output
 
     result = runner.invoke(cli.remove, ['0@i-10@i'])
     assert result.exit_code == 0
-    assert "removed 2 from index" in result.output
+    assert "2 profiles" in result.output
 
     # Nothing should remain!
     result = runner.invoke(cli.status, [])

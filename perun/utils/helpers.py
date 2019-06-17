@@ -190,3 +190,24 @@ class SuppressedExceptions(object):
                       no exception was raised
         """
         return isinstance(exc_val, tuple(self.exc))
+
+def str_to_plural(count, verb):
+    """Helper function that returns the plural of the string if count is more than 1
+
+    :param int count: number of the verbs
+    :param str verb: name of the verb we are creating a plural for
+    """
+    return str(count) + " " + verb + "s" if count != 1 else verb
+
+
+def format_counter_number(count, max_number):
+    """Helper function that returns string formatted to number of places given by the lenght of max
+    counter number.
+
+    :param int count: the current number of the counter
+    :param int max_number: the maximal number of counter
+    :return:
+    """
+    return "{:{decimal_width}d}".format(
+        count, decimal_width=len(str(max_number))
+    )

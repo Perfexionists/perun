@@ -14,7 +14,7 @@ import numpy as np
 
 import termcolor
 
-from perun.utils.helpers import first_index_of_attr
+from perun.utils.helpers import first_index_of_attr, str_to_plural
 from perun.utils.decorators import static_variables
 from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, CHANGE_COLOURS, \
     CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
@@ -130,7 +130,7 @@ def info(msg):
     """
     :param str msg: info message that will be printed only when there is at least lvl1 verbosity
     """
-    print("info: {}".format(msg))
+    print("{}".format(msg))
 
 
 def quiet_info(msg):
@@ -198,7 +198,7 @@ def warn(msg, end="\n"):
     :param str end:
     """
     if not SUPPRESS_WARNINGS:
-        print("warn: {}".format(msg), end=end)
+        print("warning: {}".format(msg), end=end)
 
 
 def print_current_phase(phase_msg, phase_unit, phase_colour):
@@ -337,9 +337,9 @@ def print_short_summary_of_degradations(degradation_list):
     print_short_change_string(counts)
     optimization_count = counts.get('Optimization', 0)
     degradation_count = counts.get('Degradation', 0)
-    print("{} optimization{}({}), {} degradation{}({})".format(
-        optimization_count, "s" if optimization_count != 1 else "", OPTIMIZATION_ICON,
-        degradation_count, "s" if degradation_count != 1 else "", DEGRADATION_ICON
+    print("{}({}), {}({})".format(
+        str_to_plural(optimization_count, "optimization"), OPTIMIZATION_ICON,
+        str_to_plural(degradation_count, "degradation"), DEGRADATION_ICON
     ))
 
 
@@ -376,9 +376,7 @@ def print_short_change_string(counts):
     :param dict counts: dictionary mapping found string changes into their counts
     """
     overall_changes = sum(counts.values())
-    print("{} change{}".format(
-        overall_changes, "s" if overall_changes != 1 else ""
-    ), end='')
+    print(str_to_plural(overall_changes, "change"), end='')
     if overall_changes > 0:
         change_string = change_counts_to_string(counts)
         print(" | {}".format(change_string), end='')
