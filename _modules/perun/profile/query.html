@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>perun.profile.query &#8212; Perun 0.14 documentation</title>
+    <title>perun.profile.query &#8212; Perun 0.16.9-hotfix documentation</title>
     <link rel="stylesheet" href="../../../_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '0.14',
+        VERSION:     '0.16.9-hotfix',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,6 +37,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <h1>Source code for perun.profile.query</h1><div class="highlight"><pre>
@@ -56,11 +58,11 @@
 
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="c1"># TODO: Consider adding caching to ease some of the computations (in case it is</span>
-<span class="c1"># time consuming)</span>
 
+<span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">numbers</span>
 <span class="kn">import</span> <span class="nn">perun.utils.exceptions</span> <span class="k">as</span> <span class="nn">exceptions</span>
+<span class="kn">import</span> <span class="nn">perun.utils.helpers</span> <span class="k">as</span> <span class="nn">helpers</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tomas Fiedor&#39;</span>
 <span class="n">__coauthored__</span> <span class="o">=</span> <span class="s2">&quot;Jiri Pavela&quot;</span>
@@ -96,14 +98,15 @@
         <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
             <span class="k">yield</span> <span class="nb">len</span><span class="p">(</span><span class="n">snapshots</span><span class="p">),</span> <span class="n">resource</span>
 
-    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">attr_error</span><span class="p">:</span>
         <span class="c1"># Element is not dict-like type with get method</span>
         <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">IncorrectProfileFormatException</span><span class="p">(</span>
-            <span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s2">&quot;Expected dictionary, got different type.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">None</span>
-    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s2">&quot;Expected dictionary, got different type:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">attr_error</span><span class="p">))</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">None</span>
+    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">key_error</span><span class="p">:</span>
         <span class="c1"># Dictionary does not contain specified key</span>
         <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">IncorrectProfileFormatException</span><span class="p">(</span>
-            <span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s2">&quot;Missing key in dictionary.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">None</span></div>
+            <span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s2">&quot;Missing key in dictionary: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">key_error</span><span class="p">)))</span> <span class="kn">from</span> <span class="nn">None</span></div>
 
 
 <span class="k">def</span> <span class="nf">flattened_values</span><span class="p">(</span><span class="n">root_key</span><span class="p">,</span> <span class="n">root_value</span><span class="p">):</span>
@@ -112,24 +115,22 @@
 <span class="sd">    Flattens all of the dictionaries to single level and &lt;key&gt;(:&lt;key&gt;)? values, lists are processed</span>
 <span class="sd">    to comma separated representation and rest is left as it is.</span>
 
-<span class="sd">    Arguments:</span>
-<span class="sd">        root_key(str or int): name (or index) of the processed key, that is going to be flattened</span>
-<span class="sd">        root_value(object): value that is flattened</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        (key, object): either decimal, string, or something else</span>
+<span class="sd">    :param str or int root_key: name (or index) of the processed key, that is going to be flattened</span>
+<span class="sd">    :param object root_value: value that is flattened</span>
+<span class="sd">    :returns (key, object): either decimal, string, or something else</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Dictionary is processed recursively according to the all items that are nested</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">nested_values</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">all_items_of</span><span class="p">(</span><span class="n">root_value</span><span class="p">):</span>
             <span class="c1"># Add one level of hierarchy with &#39;:&#39;</span>
-            <span class="n">nested_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">nested_values</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
             <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">root_key</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span>
         <span class="c1"># Additionally return the overall key as joined values of its nested stuff,</span>
         <span class="c1"># only if root is not a list (i.e. root key is not int = index)!</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root_key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">root_key</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">nested_values</span><span class="p">))</span>
+            <span class="n">nested_values</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">helpers</span><span class="o">.</span><span class="n">uid_getter</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">root_key</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">nested_values</span><span class="p">)))</span>
     <span class="c1"># Lists are merged as comma separated keys</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">root_key</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -191,7 +192,7 @@
 <span class="sd">    keys. In case some of the keys were not yet processed, they are yielded.</span>
 
 <span class="sd">    E.g. considering the example profiles from :pkey:`resources`, the function</span>
-<span class="sd">    yields the following for `memory`, `time` and `complexity` profiles</span>
+<span class="sd">    yields the following for `memory`, `time` and `trace` profiles</span>
 <span class="sd">    respectively (considering we convert the stream to list)::</span>
 
 <span class="sd">        memory_resource_fields = [</span>
@@ -226,7 +227,7 @@
 <span class="sd">    of the key does not contain integer values, it is skipped.</span>
 
 <span class="sd">    E.g. considering the example profiles from :pkey:`resources`, the function</span>
-<span class="sd">    yields the following for `memory`, `time` and `complexity` profiles</span>
+<span class="sd">    yields the following for `memory`, `time` and `trace` profiles</span>
 <span class="sd">    respectively (considering we convert the stream to list)::</span>
 
 <span class="sd">        memory_num_resource_fields = [&#39;address&#39;, &#39;amount&#39;, &#39;uid:line&#39;]</span>
@@ -266,7 +267,7 @@
 <span class="sd">    or set level, e.g. in case of `traces` one uses ``trace::function``.</span>
 
 <span class="sd">    E.g. considering the example profiles from :pkey:`resources`, the function</span>
-<span class="sd">    yields the following for `memory`, `time` and `complexity` profiles stored</span>
+<span class="sd">    yields the following for `memory`, `time` and `trace` profiles stored</span>
 <span class="sd">    in variables ``mprof``, ``tprof`` and ``cprof`` respectively::</span>
 
 <span class="sd">        &gt;&gt;&gt; list(query.unique_resource_values_of(mprof, &#39;subtype&#39;)</span>
@@ -339,7 +340,7 @@
 <span class="sd">    and iterates through all of its models (for more details about models refer</span>
 <span class="sd">    to :pkey:`models` or :ref:`postprocessors-regression-analysis`).</span>
 
-<span class="sd">    E.g. given some complexity profile ``complexity_prof``, we can iterate its</span>
+<span class="sd">    E.g. given some trace profile ``complexity_prof``, we can iterate its</span>
 <span class="sd">    models as follows:</span>
 
 <span class="sd">        &gt;&gt;&gt; gen = query.all_models_of(complexity_prof)</span>
@@ -384,7 +385,7 @@
 <span class="sd">    more details about the specification of models refer to :pkey:`models` or</span>
 <span class="sd">    :ref:`postprocessors-regression-analysis`).</span>
 
-<span class="sd">    E.g. given some complexity profile ``complexity_prof``, we can obtain</span>
+<span class="sd">    E.g. given some trace profile ``complexity_prof``, we can obtain</span>
 <span class="sd">    unique values of keys from `models` as follows:</span>
 
 <span class="sd">        &gt;&gt;&gt; list(query.unique_model_values_of(complexity_prof, &#39;model&#39;)</span>
@@ -408,13 +409,10 @@
     <span class="sd">&quot;&quot;&quot;Generator of all unique values of &#39;key&#39; occurring in the profile blocks generated by</span>
 <span class="sd">    &#39;blocks_gen&#39;.</span>
 
-<span class="sd">    Arguments:</span>
-<span class="sd">        profile(dict): valid profile with models</span>
-<span class="sd">        key(str): the key identifier whose unique values are returned</span>
-<span class="sd">        blocks_gen(iterable): the data blocks generator (e.g. all_resources_of)</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        iterable: stream of unique key values</span>
+<span class="sd">    :param dict profile: valid profile with models</span>
+<span class="sd">    :param str key: the key identifier whose unique values are returned</span>
+<span class="sd">    :param iterable blocks_gen: the data blocks generator (e.g. all_resources_of)</span>
+<span class="sd">    :returns iterable: stream of unique key values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># value can be dict, list, set etc and not only simple type, thus the list</span>
     <span class="n">unique_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -425,11 +423,10 @@
             <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_values</span><span class="p">:</span>
                 <span class="n">unique_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                 <span class="k">yield</span> <span class="n">value</span>
-
-<span class="c1"># Todo: add optimized version for multiple key search in one go? Need to discuss interface etc.</span>
 </pre></div>
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -461,11 +458,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

@@ -1,0 +1,211 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>perun.utils.structs &#8212; Perun 0.16.9-hotfix documentation</title>
+    <link rel="stylesheet" href="../../../_static/perun.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.16.9-hotfix',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for perun.utils.structs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;List of helper and globally used structures and named tuples&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tomas Fiedor&#39;</span>
+
+<span class="n">GeneratorSpec</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;GeneratorSpec&#39;</span><span class="p">,</span> <span class="s1">&#39;constructor params&#39;</span><span class="p">)</span>
+
+<span class="n">PerformanceChange</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span>
+    <span class="s1">&#39;PerformanceChange&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization&#39;</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Unit</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Specification of the unit that is part of run process</span>
+
+<span class="sd">    :ivar str name: name of the unit</span>
+<span class="sd">    :ivar dict params: parameters for the unit</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs the unit, with name being sanitized</span>
+
+<span class="sd">        :param str name: name of the unit</span>
+<span class="sd">        :param dict params: parameters for the unit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">Unit</span><span class="o">.</span><span class="n">sanitize_unit_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">desanitize_unit_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Replace the underscors in the unit name so it is CLI compatible.</span>
+
+<span class="sd">        In Click 7.0 all subcommands have automatically replaced underscores (_) with dashes (-).</span>
+<span class="sd">        We have to sanitize/desanitize the unit name through the Perun.</span>
+
+<span class="sd">        :param str unit_name: name of the unit that is desanitized</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">unit_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">sanitize_unit_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sanitizes module name so it is usable and uniform in the perun.</span>
+
+<span class="sd">        As of Click 7.0 in all subcommands underscores (_) are automatically replaced by dashes (-).</span>
+<span class="sd">        While this is surely nice feature, Perun works with the Python function names that actually</span>
+<span class="sd">        DO have underscores. So we basically support both formats, and in CLI we use only -, but use</span>
+<span class="sd">        this fecking function to make sure the CLI names are replaced back to underscores. Rant</span>
+<span class="sd">        over.</span>
+
+<span class="sd">        :param str unit_name: module name that we are sanitizing</span>
+<span class="sd">        :return: sanitized module name usable inside the Perun (with underscores instead of dashes)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">unit_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DegradationInfo"><a class="viewcode-back" href="../../../degradation.html#perun.utils.structs.DegradationInfo">[docs]</a><span class="k">class</span> <span class="nc">DegradationInfo</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;The returned results for performance check methods</span>
+
+<span class="sd">    :ivar PerformanceChange result: result of the performance change, either can be optimization,</span>
+<span class="sd">        degradation, no change, or certain type of unknown</span>
+<span class="sd">    :ivar str type: string representing the type of the degradation, e.g. &quot;order&quot; degradation</span>
+<span class="sd">    :ivar str location: location, where the degradation has happened</span>
+<span class="sd">    :ivar str from_baseline: value or model representing the baseline, i.e. from which the new</span>
+<span class="sd">        version was optimized or degraded</span>
+<span class="sd">    :ivar str to_target: value or model representing the target, i.e. to which the new version was</span>
+<span class="sd">        optimized or degraded</span>
+<span class="sd">    :ivar str confidence_type: type of the confidence we have in the detected degradation, e.g. r^2</span>
+<span class="sd">    :ivar float confidence_rate: value of the confidence we have in the detected degradation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">fb</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">rd</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ct</span><span class="o">=</span><span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Each degradation consists of its results, the location, where the change has happened</span>
+<span class="sd">        (this is e.g. the unique id of the resource, like function or concrete line), then the pair</span>
+<span class="sd">        of best models for baseline and target, and the information about confidence.</span>
+
+<span class="sd">        E.g. for models we can use coefficient of determination as some kind of confidence, e.g. the</span>
+<span class="sd">        higher the confidence the more likely we predicted successfully the degradation or</span>
+<span class="sd">        optimization.</span>
+
+<span class="sd">        :param PerformanceChange res: result of the performance change, either can be optimization,</span>
+<span class="sd">            degradation, no change, or certain type of unknown</span>
+<span class="sd">        :param str t: string representing the type of the degradation, e.g. &quot;order&quot; degradation</span>
+<span class="sd">        :param str loc: location, where the degradation has happened</span>
+<span class="sd">        :param str fb: value or model representing the baseline, i.e. from which the new version was</span>
+<span class="sd">            optimized or degraded</span>
+<span class="sd">        :param str tt: value or model representing the target, i.e. to which the new version was</span>
+<span class="sd">            optimized or degraded</span>
+<span class="sd">        :param int rd: quantified rate of the degradation, i.e. how much exactly it degrades</span>
+<span class="sd">        :param str ct: type of the confidence we have in the detected degradation, e.g. r^2</span>
+<span class="sd">        :param float cr: value of the confidence we have in the detected degradation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">res</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">loc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_baseline</span> <span class="o">=</span> <span class="n">fb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_target</span> <span class="o">=</span> <span class="n">tt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_degradation</span> <span class="o">=</span> <span class="n">rd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confidence_type</span> <span class="o">=</span> <span class="n">ct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confidence_rate</span> <span class="o">=</span> <span class="n">cr</span>
+
+<div class="viewcode-block" id="DegradationInfo.to_storage_record"><a class="viewcode-back" href="../../../degradation.html#perun.utils.structs.DegradationInfo.to_storage_record">[docs]</a>    <span class="k">def</span> <span class="nf">to_storage_record</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transforms the degradation info to a storage_record</span>
+
+<span class="sd">        :return: string representation of the degradation as a stored record in the file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_baseline</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to_target</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate_degradation</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">confidence_type</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">confidence_rate</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="../../../index.html">
+    <h3>Perun</h3>
+  </a>
+</p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

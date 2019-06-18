@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>perun.vcs &#8212; Perun 0.14 documentation</title>
+    <title>perun.vcs &#8212; Perun 0.16.9-hotfix documentation</title>
     <link rel="stylesheet" href="../../_static/perun.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.14',
+        VERSION:     '0.16.9-hotfix',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,6 +37,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <h1>Source code for perun.vcs</h1><div class="highlight"><pre>
@@ -49,14 +51,44 @@
 <span class="sd">Inside the wrapper are defined function that are used for lookup of the concrete implementations</span>
 <span class="sd">depending of the chosen type/module, like e.g. git, svn, etc.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
 
 <span class="kn">import</span> <span class="nn">perun.utils.log</span> <span class="k">as</span> <span class="nn">perun_log</span>
+<span class="kn">import</span> <span class="nn">perun.logic.pcs</span> <span class="k">as</span> <span class="nn">pcs</span>
 <span class="kn">from</span> <span class="nn">perun.utils</span> <span class="k">import</span> <span class="n">dynamic_module_function_call</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Tomas Fiedor&#39;</span>
 
 
-<div class="viewcode-block" id="get_minor_head"><a class="viewcode-back" href="../../internals.html#perun.vcs.get_minor_head">[docs]</a><span class="k">def</span> <span class="nf">get_minor_head</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">lookup_minor_version</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;If the minor_version is not given by the caller, it looks up the HEAD in the repo.</span>
+
+<span class="sd">    If the @p func is called with minor_version parameter set to None,</span>
+<span class="sd">    then this decorator performs a lookup of the minor_version corresponding</span>
+<span class="sd">    to the head of the repository.</span>
+
+<span class="sd">    :param function func: decorated function for which we will lookup the minor_version</span>
+<span class="sd">    :returns function: decorated function, with minor_version translated or obtained</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f_args</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="n">minor_version_position</span> <span class="o">=</span> <span class="n">f_args</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;minor_version&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Inner wrapper of the function&quot;&quot;&quot;</span>
+        <span class="c1"># if the minor_version is None, then we obtain the minor head for the wrapped type</span>
+        <span class="k">if</span> <span class="n">minor_version_position</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="n">minor_version_position</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># note: since tuples are immutable we have to do this workaround</span>
+            <span class="n">arg_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="n">arg_list</span><span class="p">[</span><span class="n">minor_version_position</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_minor_head</span><span class="p">()</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">check_minor_version_validity</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="n">minor_version_position</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+
+<div class="viewcode-block" id="get_minor_head"><a class="viewcode-back" href="../../internals.html#perun.vcs.get_minor_head">[docs]</a><span class="k">def</span> <span class="nf">get_minor_head</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Returns the string representation of head of current major version, i.e.</span>
 <span class="sd">    for git this returns the massaged HEAD reference.</span>
 
@@ -65,23 +97,21 @@
 <span class="sd">    (either by ``perun run`` or ``perun collect``), where the retrieved</span>
 <span class="sd">    identification is used as :preg:`origin`.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: source path of the wrapped vcs</span>
 <span class="sd">    :returns: unique string representation of current head (usually in SHA)</span>
 <span class="sd">    :raises ValueError: if the head cannot be retrieved from the current</span>
 <span class="sd">        context</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">dynamic_module_function_call</span><span class="p">(</span>
-            <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">vcs_type</span><span class="p">,</span> <span class="s1">&#39;_get_minor_head&#39;</span><span class="p">,</span> <span class="n">vcs_path</span>
+            <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="s1">&#39;_get_minor_head&#39;</span><span class="p">,</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">value_error</span><span class="p">:</span>
         <span class="n">perun_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-            <span class="s2">&quot;could not obtain head minor version: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value_error</span><span class="p">)</span>
+            <span class="s2">&quot;while fetching head minor version: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value_error</span><span class="p">)</span>
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="init"><a class="viewcode-back" href="../../internals.html#perun.vcs.init">[docs]</a><span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">vcs_init_params</span><span class="p">):</span>
+<div class="viewcode-block" id="init"><a class="viewcode-back" href="../../internals.html#perun.vcs.init">[docs]</a><span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">vcs_init_params</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Calls the implementation of initialization of wrapped underlying version</span>
 <span class="sd">    control system.</span>
 
@@ -89,12 +119,11 @@
 <span class="sd">    version control system instances and newly created instances. Init is</span>
 <span class="sd">    called during the ``perun init`` command from command line interface.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: destination path of the initialized wrapped vcs</span>
 <span class="sd">    :param dict vcs_init_params: dictionary of keyword arguments passed to</span>
 <span class="sd">        initialization method of the underlying vcs module</span>
 <span class="sd">    :return: true if the underlying vcs was successfully initialized</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
     <span class="n">perun_log</span><span class="o">.</span><span class="n">msg_to_stdout</span><span class="p">(</span><span class="s2">&quot;Initializing </span><span class="si">{}</span><span class="s2"> version control params </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">vcs_init_params</span>
     <span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
@@ -103,7 +132,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="walk_minor_versions"><a class="viewcode-back" href="../../internals.html#perun.vcs.walk_minor_versions">[docs]</a><span class="k">def</span> <span class="nf">walk_minor_versions</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">head_minor_version</span><span class="p">):</span>
+<div class="viewcode-block" id="walk_minor_versions"><a class="viewcode-back" href="../../internals.html#perun.vcs.walk_minor_versions">[docs]</a><span class="k">def</span> <span class="nf">walk_minor_versions</span><span class="p">(</span><span class="n">head_minor_version</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Generator of minor versions for the given major version, which yields</span>
 <span class="sd">    the ``MinorVersion`` named tuples containing the following information:</span>
 <span class="sd">    ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation</span>
@@ -113,12 +142,11 @@
 <span class="sd">    Minor versions are walked through this function during the ``perun log``</span>
 <span class="sd">    command.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: source path of the wrapped vcs</span>
 <span class="sd">    :param str head_minor_version: the root minor versions which is the root</span>
 <span class="sd">        of the walk.</span>
 <span class="sd">    :returns: iterable stream of minor version representation</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
     <span class="n">perun_log</span><span class="o">.</span><span class="n">msg_to_stdout</span><span class="p">(</span><span class="s2">&quot;Walking minor versions of type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">vcs_type</span>
     <span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
@@ -127,15 +155,14 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="walk_major_versions"><a class="viewcode-back" href="../../internals.html#perun.vcs.walk_major_versions">[docs]</a><span class="k">def</span> <span class="nf">walk_major_versions</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">):</span>
+<div class="viewcode-block" id="walk_major_versions"><a class="viewcode-back" href="../../internals.html#perun.vcs.walk_major_versions">[docs]</a><span class="k">def</span> <span class="nf">walk_major_versions</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Generator of major versions for the current wrapped repository.</span>
 
 <span class="sd">    This function is currently unused, but will be needed in the future.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: source path of the wrapped vcs</span>
-<span class="sd">    :returns: interable stream of major version representation</span>
+<span class="sd">    :returns: iterable stream of major version representation</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
     <span class="n">perun_log</span><span class="o">.</span><span class="n">msg_to_stdout</span><span class="p">(</span><span class="s2">&quot;Walking major versions of type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">vcs_type</span>
     <span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
@@ -144,7 +171,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_minor_version_info"><a class="viewcode-back" href="../../internals.html#perun.vcs.get_minor_version_info">[docs]</a><span class="k">def</span> <span class="nf">get_minor_version_info</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">minor_version</span><span class="p">):</span>
+<div class="viewcode-block" id="get_minor_version_info"><a class="viewcode-back" href="../../internals.html#perun.vcs.get_minor_version_info">[docs]</a><span class="k">def</span> <span class="nf">get_minor_version_info</span><span class="p">(</span><span class="n">minor_version</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Yields the specification of concrete minor version in form of</span>
 <span class="sd">    the ``MinorVersion`` named tuples containing the following information:</span>
 <span class="sd">    ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation</span>
@@ -155,12 +182,11 @@
 <span class="sd">    :func:`perun.vcs.walk_minor_versions` and is used during the ``perun</span>
 <span class="sd">    status`` output to display the specifics of minor version.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: source path of the wrapped vcs</span>
 <span class="sd">    :param str minor_version: the specification of minor version (in form of</span>
 <span class="sd">        sha e.g.) for which we are retrieving the details</span>
 <span class="sd">    :returns: minor version named tuple</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
     <span class="n">perun_log</span><span class="o">.</span><span class="n">msg_to_stdout</span><span class="p">(</span><span class="s2">&quot;Getting minor version info of type </span><span class="si">{}</span><span class="s2"> and args </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">minor_version</span>
     <span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
@@ -169,17 +195,16 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_head_major_version"><a class="viewcode-back" href="../../internals.html#perun.vcs.get_head_major_version">[docs]</a><span class="k">def</span> <span class="nf">get_head_major_version</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">):</span>
+<div class="viewcode-block" id="get_head_major_version"><a class="viewcode-back" href="../../internals.html#perun.vcs.get_head_major_version">[docs]</a><span class="k">def</span> <span class="nf">get_head_major_version</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Returns the string representation of current major version of the</span>
 <span class="sd">    wrapped repository.</span>
 
 <span class="sd">    Major version is displayed during the ``perun status`` output, which shows</span>
 <span class="sd">    the current working major version of the project.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: source path of the wrapped vcs</span>
 <span class="sd">    :returns: string representation of the major version</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
     <span class="n">perun_log</span><span class="o">.</span><span class="n">msg_to_stdout</span><span class="p">(</span><span class="s2">&quot;Getting head major version of type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">vcs_type</span>
     <span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
@@ -188,26 +213,25 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="check_minor_version_validity"><a class="viewcode-back" href="../../internals.html#perun.vcs.check_minor_version_validity">[docs]</a><span class="k">def</span> <span class="nf">check_minor_version_validity</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">minor_version</span><span class="p">):</span>
+<div class="viewcode-block" id="check_minor_version_validity"><a class="viewcode-back" href="../../internals.html#perun.vcs.check_minor_version_validity">[docs]</a><span class="k">def</span> <span class="nf">check_minor_version_validity</span><span class="p">(</span><span class="n">minor_version</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Checks whether the given minor version specification corresponds to the</span>
 <span class="sd">    wrapped version control system, and is not in wrong format.</span>
 
 <span class="sd">    Minor version validity is mostly checked during the lookup of the minor</span>
 <span class="sd">    versions from the command line interface.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: source path of the wrapped vcs</span>
 <span class="sd">    :param str minor_version: the specification of minor version (in form of</span>
 <span class="sd">        sha e.g.) for which we are checking the validity</span>
 <span class="sd">    :raises VersionControlSystemException: when the given minor version is</span>
 <span class="sd">        invalid in the context of the wrapped version control system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
     <span class="n">dynamic_module_function_call</span><span class="p">(</span>
         <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">vcs_type</span><span class="p">,</span> <span class="s1">&#39;_check_minor_version_validity&#39;</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">minor_version</span>
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="massage_parameter"><a class="viewcode-back" href="../../internals.html#perun.vcs.massage_parameter">[docs]</a><span class="k">def</span> <span class="nf">massage_parameter</span><span class="p">(</span><span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">parameter_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="massage_parameter"><a class="viewcode-back" href="../../internals.html#perun.vcs.massage_parameter">[docs]</a><span class="k">def</span> <span class="nf">massage_parameter</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">parameter_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Conversion function for massaging (or unifying different representations</span>
 <span class="sd">    of objects) the parameters for version control systems.</span>
 
@@ -216,19 +240,115 @@
 <span class="sd">    versions. Massing then unifies e.g. the references or proper hash</span>
 <span class="sd">    representations, to just one representation for internal processing.</span>
 
-<span class="sd">    :param str vcs_type: type of the underlying wrapped version control system</span>
-<span class="sd">    :param str vcs_path: source path of the wrapped vcs</span>
 <span class="sd">    :param str parameter: vcs parameter (e.g. revision, minor or major version)</span>
 <span class="sd">        which will be massaged, i.e. transformed to unified representation</span>
 <span class="sd">    :param str parameter_type: more detailed type of the parameter</span>
 <span class="sd">    :returns: string representation of parameter</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">dynamic_module_function_call</span><span class="p">(</span>
         <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">vcs_type</span><span class="p">,</span> <span class="s1">&#39;_massage_parameter&#39;</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">parameter_type</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="is_dirty"><a class="viewcode-back" href="../../internals.html#perun.vcs.is_dirty">[docs]</a><span class="k">def</span> <span class="nf">is_dirty</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Tests whether the wrapped repository is dirty.</span>
+
+<span class="sd">    By dirty repository we mean a repository that has either a submitted changes to its index (i.e.</span>
+<span class="sd">    we are in the middle of commit) or any unsubmitted changes to tracked files in the current</span>
+<span class="sd">    working directory.</span>
+
+<span class="sd">    Note that this is crucial for performance testing, as any uncommited changes may skew</span>
+<span class="sd">    the profiled data and hence the resulting profiles would not correctly represent the performance</span>
+<span class="sd">    of minor versions.</span>
+
+<span class="sd">    :return: whether the given repository is dirty or not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">dynamic_module_function_call</span><span class="p">(</span>
+        <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">vcs_type</span><span class="p">,</span> <span class="s1">&#39;_is_dirty&#39;</span><span class="p">,</span> <span class="n">vcs_path</span>
+    <span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">CleanState</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper with wrapper, which is used to execute instances of commands with clean state of VCS.</span>
+
+<span class="sd">    This is needed e.g. when we are collecting new data, and the repository is dirty with changes,</span>
+<span class="sd">    then we use this CleanState to keep those changes, have a clean state (or maybe even checkout</span>
+<span class="sd">    different version) and then collect correctly the data. The previous state is then restored</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a with wrapper for a corresponding VCS&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_state</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_head</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;When entering saves the state of the repository</span>
+
+<span class="sd">        We save the uncommited/unsaved changes (e.g. to stash) and also we remeber the previous</span>
+<span class="sd">        head, which will be restored at the end.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_head</span> <span class="o">=</span> <span class="n">save_state</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;When exiting, restores the state of the repository</span>
+
+<span class="sd">        Restores the previous commit and unstashes the changes made to working directory and index.</span>
+
+<span class="sd">        :param _: not used params of exit handler</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">restore_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_head</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="save_state"><a class="viewcode-back" href="../../internals.html#perun.vcs.save_state">[docs]</a><span class="k">def</span> <span class="nf">save_state</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Saves the state of the repository in case it is dirty.</span>
+
+<span class="sd">    When saving the state of the repository one should store all of the uncommited changes to</span>
+<span class="sd">    the working directory and index. Any issues while this process happens should be handled by</span>
+<span class="sd">    user itself, hence no workarounds and mending should take place in this function.</span>
+
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Todo: Check the vcs.fail_when_dirty and log error in the case</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">dynamic_module_function_call</span><span class="p">(</span>
+        <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">vcs_type</span><span class="p">,</span> <span class="s1">&#39;_save_state&#39;</span><span class="p">,</span> <span class="n">vcs_path</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="restore_state"><a class="viewcode-back" href="../../internals.html#perun.vcs.restore_state">[docs]</a><span class="k">def</span> <span class="nf">restore_state</span><span class="p">(</span><span class="n">saved</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Restores the previous state of the the repository</span>
+
+<span class="sd">    When restoring the state of the repository one should pop the stored changes from the stash</span>
+<span class="sd">    and reapply them on the current directory. This make sure, that after the performance testing,</span>
+<span class="sd">    the project is in the previous state and developer can continue with his work.</span>
+
+<span class="sd">    :param bool saved: whether the stashed was something</span>
+<span class="sd">    :param str state: the previous state of the repository</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
+    <span class="n">dynamic_module_function_call</span><span class="p">(</span>
+        <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">vcs_type</span><span class="p">,</span> <span class="s1">&#39;_restore_state&#39;</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">saved</span><span class="p">,</span> <span class="n">state</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="checkout"><a class="viewcode-back" href="../../internals.html#perun.vcs.checkout">[docs]</a><span class="k">def</span> <span class="nf">checkout</span><span class="p">(</span><span class="n">minor_version</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks out the new working directory corresponding to the given minor version.</span>
+
+<span class="sd">    According to the supplied minor version, this command should remake the working directory</span>
+<span class="sd">    so it corresponds to the state defined by the minor version.</span>
+
+<span class="sd">    :param str minor_version: minor version that will be checked out</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vcs_type</span><span class="p">,</span> <span class="n">vcs_path</span> <span class="o">=</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_type</span><span class="p">(),</span> <span class="n">pcs</span><span class="o">.</span><span class="n">get_vcs_path</span><span class="p">()</span>
+    <span class="n">massaged_minor_version</span> <span class="o">=</span> <span class="n">massage_parameter</span><span class="p">(</span><span class="n">minor_version</span><span class="p">)</span>
+    <span class="n">dynamic_module_function_call</span><span class="p">(</span>
+        <span class="s1">&#39;perun.vcs&#39;</span><span class="p">,</span> <span class="n">vcs_type</span><span class="p">,</span> <span class="s1">&#39;_checkout&#39;</span><span class="p">,</span> <span class="n">vcs_path</span><span class="p">,</span> <span class="n">massaged_minor_version</span>
     <span class="p">)</span></div>
 </pre></div>
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -260,11 +380,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Tomas Fiedor, Jiri Pavela, et al..
+      &copy;2017, Tomas Fiedor, Jiri Pavela, Simon Stupinsky, et al..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 
