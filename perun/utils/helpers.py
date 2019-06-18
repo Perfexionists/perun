@@ -162,3 +162,35 @@ def uid_getter(uid):
         uid[0],
         int("".join(map(str, map(lambda x: x+max_value, map(ord, uid[0])))))
     )
+
+
+class SuppressedExceptions(object):
+    """Context manager class for code blocks that need to suppress / ignore some exceptions
+    and simply continue in the execution if those exceptions are encountered.
+
+    :ivar list exc: the list of exception classes that should be ignored
+    """
+    def __init__(self, *exception_list):
+        """
+        :param exception_list: the exception classes to ignore
+        """
+        self.exc = exception_list
+
+    def __enter__(self):
+        """Context manager entry sentinel, no set up needed
+
+        :return object: the context manager class instance, shouldn't be needed
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit sentinel, check if the code raised an exception and if the
+        exception belongs to the list of suppressed exceptions.
+
+        :param type exc_type: the type of the exception
+        :param exception exc_val: the value of the exception
+        :param traceback exc_tb: the exception traceback
+        :return bool: True if the encountered exception should be ignored, False otherwise or if
+                      no exception was raised
+        """
+        return isinstance(exc_val, tuple(self.exc))
