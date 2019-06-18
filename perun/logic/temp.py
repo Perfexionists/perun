@@ -59,6 +59,7 @@ import zlib
 
 import perun.logic.pcs as pcs
 import perun.logic.store as store
+import perun.logic.index as index
 import perun.utils.exceptions as exceptions
 import perun.utils.log as perun_log
 
@@ -415,7 +416,7 @@ def synchronize_index():
 
     Namely removes index entries that are not needed or refer to no longer existing files
     """
-    index_entries = _load_index()
+    index_entries = index.load_custom_index(pcs.get_tmp_index())
     tmp_files = list_all_temps()
     for (tmp_name, conf) in list(index_entries.items()):
         # Remove records of files that are deleted or not necessary to track
@@ -423,7 +424,7 @@ def synchronize_index():
                                          and not conf['compressed']):
             del index_entries[tmp_name]
     # Save the updated index
-    _save_index(index_entries)
+    index.save_custom_index(pcs.get_tmp_index(), index_entries)
 
 
 def _is_tmp_path(path):
@@ -495,7 +496,7 @@ def _filter_protected_files(tmp_files):
 
     :return tuple: (list of unprotected files, list of protected files)
     """
-    index_entries = _load_index()
+    index_entries = index.load_custom_index(pcs.get_tmp_index())
     unprotected, protected = [], []
     for file in tmp_files:
         # Check if file is indexed and protected
@@ -574,12 +575,12 @@ def _add_to_index(tmp_file, json_format=False, protected=False, compressed=False
         _delete_index_entries([tmp_file])
         return
     # Otherwise save the parameters
-    index_records = _load_index()
+    index_records = index.load_custom_index(pcs.get_tmp_index())
     file_config = index_records.setdefault(tmp_file, {})
     file_config['json'] = json_format
     file_config['protected'] = protected
     file_config['compressed'] = compressed
-    _save_index(index_records)
+    index.save_custom_index(pcs.get_tmp_index(), index_records)
 
 
 def _get_index_entry(tmp_file):
@@ -591,7 +592,7 @@ def _get_index_entry(tmp_file):
     :param str tmp_file: the path of the temporary file
     :return tuple: (json_format, protected, compressed)
     """
-    file_record = _load_index().get(tmp_file)
+    file_record = index.load_custom_index(pcs.get_tmp_index()).get(tmp_file)
     if file_record is None:
         # Non-existent entries are assumed to be all False
         return False, False, False
@@ -603,42 +604,8 @@ def _delete_index_entries(tmp_files):
 
     :param list tmp_files: the list of the temporary files for which to delete the entries
     """
-    index_records = _load_index()
+    index_records = index.load_custom_index(pcs.get_tmp_index())
     for tmp_file in tmp_files:
         if tmp_file in index_records:
             del index_records[tmp_file]
-    _save_index(index_records)
-
-
-def _load_index():
-    """Loads the content of the index file as dictionary.
-
-    The index is json-formatted and compressed, in case the index cannot be read for some reason,
-    an empty dictionary is returned.
-
-    :return dict: the decompressed and json-decoded index content.
-    """
-    # Create and init the tmp index file if it does not exist yet
-    tmp_index = pcs.get_tmp_index()
-    if not os.path.exists(tmp_index):
-        store.touch_file(tmp_index)
-        _save_index({})
-    # Open and load the file
-    try:
-        with open(tmp_index, 'rb') as index_handle:
-            return json.loads(store.read_and_deflate_chunk(index_handle))
-    except (ValueError, zlib.error):
-        # Contents either empty or corrupted, init the content to empty dict
-        return {}
-
-
-def _save_index(records):
-    """Saves the index records to the index file. The index file is created if it does not exist or
-    overwritten if it does.
-
-    :param dict records: the index entries/records in the dictionary format
-    """
-    tmp_index = pcs.get_tmp_index()
-    with open(tmp_index, 'w+b') as index_handle:
-        compressed = store.pack_content(json.dumps(records, indent=2).encode('utf-8'))
-        index_handle.write(compressed)
+    index.save_custom_index(pcs.get_tmp_index(), index_records)

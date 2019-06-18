@@ -6,6 +6,17 @@ HEAD
 
 **To be included in next release**
 
+0.16.9 (2019-06-18)
+-------------------
+
+`commit: 8e7228deb81cdfacfea7e7273fd25e70503cbe2b`
+
+**Add CLI for stats manipulation**
+
+  - refactor the perun stats module
+  - extend the stats module with a CLI
+  - add new operations (list, delete, ...) to the stats module
+
 0.16.8 (2019-05-18)
 -------------------
 

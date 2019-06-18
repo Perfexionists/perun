@@ -30,6 +30,19 @@ class MissingConfigSectionException(Exception):
     def __str__(self):
         return "key '{}' is not specified in configuration.\nSee docs/config.rst for more details."
 
+
+class TagOutOfRangeException(Exception):
+    """Raised when the requested profile tag is out of range."""
+    def __init__(self, position, total):
+        super().__init__("")
+        self.position = position
+        self.total = total
+
+    def __str__(self):
+        return "invalid tag '{}' (choose from interval <{}, {}>)".format(
+            "{}@i".format(self.position), "0@i", "{}@i".format(self.total))
+
+
 class ExternalEditorErrorException(Exception):
     """Raised when there is an error while invoking the external editor"""
     def __init__(self, editor, reason):

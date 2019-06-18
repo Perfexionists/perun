@@ -7,12 +7,41 @@ the wrapper.
 Inside the wrapper are defined function that are used for lookup of the concrete implementations
 depending of the chosen type/module, like e.g. git, svn, etc.
 """
+import inspect
 
 import perun.utils.log as perun_log
 import perun.logic.pcs as pcs
 from perun.utils import dynamic_module_function_call
 
 __author__ = 'Tomas Fiedor'
+
+
+def lookup_minor_version(func):
+    """If the minor_version is not given by the caller, it looks up the HEAD in the repo.
+
+    If the @p func is called with minor_version parameter set to None,
+    then this decorator performs a lookup of the minor_version corresponding
+    to the head of the repository.
+
+    :param function func: decorated function for which we will lookup the minor_version
+    :returns function: decorated function, with minor_version translated or obtained
+    """
+    f_args, _, _, _, *_ = inspect.getfullargspec(func)
+    minor_version_position = f_args.index('minor_version')
+
+    def wrapper(*args, **kwargs):
+        """Inner wrapper of the function"""
+        # if the minor_version is None, then we obtain the minor head for the wrapped type
+        if minor_version_position < len(args) and args[minor_version_position] is None:
+            # note: since tuples are immutable we have to do this workaround
+            arg_list = list(args)
+            arg_list[minor_version_position] = get_minor_head()
+            args = tuple(arg_list)
+        else:
+            check_minor_version_validity(args[minor_version_position])
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def get_minor_head():
