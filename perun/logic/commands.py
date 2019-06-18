@@ -9,9 +9,10 @@ import collections
 import os
 import re
 
+from operator import itemgetter
+
 import colorama
 import termcolor
-from operator import itemgetter
 
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config

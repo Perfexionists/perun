@@ -5,8 +5,8 @@ several warm-up executions, followed by the actual timing.
 """
 
 import sys
-import click
 import time as systime
+import click
 
 import perun.logic.runner as runner
 import perun.utils as utils

@@ -211,11 +211,11 @@ def _validate_input(**kwargs):
         raise click.exceptions.BadParameter("At least one --files parameter must be supplied.")
 
 
-def _sampling_to_dictionary(ctx, param, value):
+def _sampling_to_dictionary(_, __, value):
     """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
 
-    :param dict ctx: click context
-    :param object param: the parameter object
+    :param dict _: click context
+    :param object __: the parameter object
     :param list value: the list of sampling values
 
     :return list of dict: list of sampling dictionaries

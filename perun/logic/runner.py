@@ -246,11 +246,13 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
         cmd, args, workload = ctx.obj['cmd'], ctx.obj['args'], ctx.obj['workload']
         minor_versions = ctx.obj['minor_version_list']
         collector_params.update(ctx.obj['params'])
-        if run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **{
+        run_params = {
             'collector_params': {
                 collector_name: collector_params
             }
-        }) != CollectStatus.OK:
+        }
+        if run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **run_params) \
+                != CollectStatus.OK:
             log.error("collection of profiles was unsuccessful")
     except KeyError as collector_exception:
         log.error("missing parameter: {}".format(str(collector_exception)))

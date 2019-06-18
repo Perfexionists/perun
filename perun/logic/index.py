@@ -7,11 +7,12 @@ of various version of index entries.
 import os
 import binascii
 import struct
-import termcolor
 import json
 from zlib import error
 
 from enum import Enum
+
+import termcolor
 
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
