@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+ - hotfix issue in Makefile
+
 0.16.9 (2019-06-18)
 -------------------
 
