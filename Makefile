@@ -33,11 +33,11 @@ gh-pages:
 	rm -rf build _sources _static
 	git checkout master docs figs examples Makefile CHANGELOG.rst
 	git reset HEAD
-	cp·CHANGELOG.rst·docs/changelog.rst
+	cp CHANGELOG.rst docs/changelog.rst
 	make docs
-	mv·-fv·docs/_build/html/*·./
-	rm·-rf·docs·examples·figs·CHANGELOG.rst
+	mv -fv docs/_build/html/* ./
+	rm -rf docs examples figs CHANGELOG.rst
 	git add -A
-	git·commit·-m·"Generated·gh-pages·for·version·`git·describe·--tags·`git·rev-list·--tags·--max-count=1``"
+	git commit -m "Generated gh-pages for version `git describe --tags `git rev-list --tags --max-count=1``"
 
 .PHONY: init test docs install dev run-gui gh-pages docs-latex docs-release docs-all

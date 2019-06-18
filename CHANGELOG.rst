@@ -6,6 +6,15 @@ HEAD
 
 **To be included in next release**
 
+0.16.9-hotfix (2019-06-18)
+--------------------------
+
+`commit: 126473caba3685878bf79f687115023918d5048a`
+
+**Hotfix issue in Makefile**
+
+ - hotfix issue in Makefile
+
 0.16.9 (2019-06-18)
 -------------------
 
