@@ -196,8 +196,8 @@ def config_get(ctx, key):
         commands.config_get(ctx.obj['store_type'], key)
     except MissingConfigSectionException as mcs_err:
         perun_log.error("error while getting key '{}': {}".format(
-            key, str(mcs_err))
-        )
+            key, str(mcs_err)
+        ))
 
 
 @config.command('set')
