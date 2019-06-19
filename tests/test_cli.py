@@ -2324,28 +2324,39 @@ def test_temp(pcs_with_empty_git):
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list1.ref'))
 
+    log.COLOR_OUTPUT = False
     # From now on, the colored mode will be disabled
     # Test the file size and protection-level switches
-    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), '--no-file-size',
-                                           '--no-protection-level', '--no-color'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '--no-file-size', '--no-protection-level'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list2.ref'))
 
     # Test the sorting by size and protection level (name is default)
-    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), '-s', 'size', '--no-color'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-s', 'size'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list3.ref'))
-    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), '-s', 'protection', '-c'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-s', 'protection'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list4.ref'))
 
     # Test the protection filter
-    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'protected', '-c'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-fp', 'protected'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list5.ref'))
-    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'unprotected', '-c'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-fp', 'unprotected'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list6.ref'))
+    log.COLOR_OUTPUT = True
 
     # Test the syncing
     # Simulate manual deletion by the user
@@ -2477,60 +2488,77 @@ def test_stats(pcs_with_more_commits):
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list3.ref'))
-    result = runner.invoke(utils_cli.stats_list_files, ['-N', 2, '-m', minor_middle, '-c'])
+
+    log.COLOR_OUTPUT = False
+    result = runner.invoke(utils_cli.stats_list_files, [
+        '-N', 2, '-m', minor_middle
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list4.ref'))
     # Test the list of versions
-    result = runner.invoke(utils_cli.stats_list_versions, ['-N', 2, '-m', minor_middle, '-c'])
+    result = runner.invoke(utils_cli.stats_list_versions, [
+        '-N', 2, '-m', minor_middle
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list5.ref'))
 
     # Test the sorting by size and omitting some properties
-    result = runner.invoke(utils_cli.stats_list_files, ['-c', '-s', '-t'])
+    result = runner.invoke(utils_cli.stats_list_files, [
+        '-s', '-t'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list6.ref'))
-    result = runner.invoke(utils_cli.stats_list_versions, ['-c', '-s', '-t'])
+    result = runner.invoke(utils_cli.stats_list_versions, [
+        '-s', '-t'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list7.ref'))
 
     # Test the output by omitting more properties
-    result = runner.invoke(utils_cli.stats_list_files, ['-c', '-i', '-f'])
+    result = runner.invoke(utils_cli.stats_list_files, [
+        '-i', '-f'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list8.ref'))
-    result = runner.invoke(utils_cli.stats_list_versions, ['-c', '-f', '-d'])
+    result = runner.invoke(utils_cli.stats_list_versions, [
+        '-f', '-d'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list9.ref'))
+    log.COLOR_OUTPUT = True
 
     # Delete the minor_middle directory
     result = runner.invoke(utils_cli.stats_delete_minor, [minor_middle])
     assert result.exit_code == 0
     assert not os.path.exists(os.path.join(stats_dir, minor_middle[:2], minor_middle[2:]))
 
+    log.COLOR_OUTPUT = False
     # Now try lists with invalid minor values
     # Attempting to list version that doesn't have directory in stats, should display the successor
-    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', minor_middle, '-c'])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', minor_middle])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list10.ref'))
     # Attempt to list non-existent minor version
-    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234', '-c'])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234'])
     assert result.exit_code == 2
     assert 'did not resolve to an object' in result.output
     # Try the same with version list
-    result = runner.invoke(utils_cli.stats_list_versions, ['-N', 1, '-m', minor_middle, '-c'])
+    result = runner.invoke(utils_cli.stats_list_versions, ['-N', 1, '-m', minor_middle])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list11.ref'))
     # Attempt to list non-existent minor version
-    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234', '-c'])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234'])
     assert result.exit_code == 2
     assert 'did not resolve to an object' in result.output
+    log.COLOR_OUTPUT = True
 
     # Recreate the middle version directory, keep it empty however
     stats.add_stats('tmp_stats', ['id_1'], [{'value': 10}], minor_middle)
