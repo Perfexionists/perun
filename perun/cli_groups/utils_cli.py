@@ -68,8 +68,6 @@ def temp_group():
 
 @temp_group.command('list')
 @click.argument('root', type=click.Path(), required=False, default='.')
-@click.option('--no-color', '-c', flag_value=True, default=False,
-              help='Disable the output coloring, useful for storing the output to file etc.')
 @click.option('--no-total-size', '-t', flag_value=True, default=False,
               help='Do not show the total size of all the temporary files combined.')
 @click.option('--no-file-size', '-f', flag_value=True, default=False,
@@ -150,8 +148,6 @@ def stats_group():
               help='Do not show the total size of all the stat files combined.')
 @click.option('--sort-by-size', '-s', flag_value=True, default=False,
               help='Sort the files by size instead of the minor versions order.')
-@click.option('--no-color', '-c', flag_value=True, default=False,
-              help='Disable the output coloring, useful for storing the output to file etc.')
 def stats_list_files(**kwargs):
     """Show stat files stored in the stats directory (.perun/stats/). This command shows only a
     limited number of the most recent files by default. This can be, however, changed by the
@@ -177,8 +173,6 @@ def stats_list_files(**kwargs):
               help='Do not show the total size of all the versions combined.')
 @click.option('--sort-by-size', '-s', flag_value=True, default=False,
               help='Sort the versions by size instead of their VCS order.')
-@click.option('--no-color', '-c', flag_value=True, default=False,
-              help='Disable the output coloring.')
 def stats_list_versions(**kwargs):
     """Show minor versions stored as directories in the stats directory (.perun/stats/).
     This command shows only a limited number of the most recent versions by default. This can be,

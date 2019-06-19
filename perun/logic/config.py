@@ -7,6 +7,7 @@ There are three types of config: local, corresponding to concrete pcs, global, w
 global information and configurations, like e.g. list of registered repositories, and temporary,
 containing formats and options for one execution of perun command.
 """
+
 import os
 import re
 import sys

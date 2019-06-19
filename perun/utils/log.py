@@ -22,6 +22,7 @@ from perun.utils.structs import PerformanceChange
 
 __author__ = 'Tomas Fiedor'
 VERBOSITY = 0
+COLOR_OUTPUT = True
 
 # Enum of verbosity levels
 VERBOSE_DEBUG = 2
@@ -271,19 +272,23 @@ def failed(ending='\n'):
     print(']', end=ending)
 
 
-def set_color(output, color, enable_coloring=True, attrs=None):
+def in_color(output, color, attribute_style="none"):
     """Transforms the output to colored version.
 
     :param str output: the output text that should be colored
     :param str color: the color
-    :param bool enable_coloring: switch that allows to disable the coloring - the function is no-op
-    :param list attrs: list of additional attributes for the coloring
+    :param str attribute_style: name of the additional style, i.e. bold, italic, etc.
 
     :return str: the new colored output (if enabled)
     """
-    if enable_coloring:
+    attrs = {
+        "none": []
+    }.get(attribute_style, [])
+
+    if COLOR_OUTPUT:
         return termcolor.colored(output, color, attrs=attrs)
-    return output
+    else:
+        return output
 
 
 def count_degradations_per_group(degradation_list):

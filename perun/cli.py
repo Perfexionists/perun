@@ -73,13 +73,15 @@ __author__ = 'Tomas Fiedor'
               help='Disables the paging of the long standard output (currently'
               ' affects only ``status`` and ``log`` outputs). See '
               ':ckey:`paging` to change the default paging strategy.')
+@click.option('--no-color', '-nc', default=False, is_flag=True,
+              help='Disables the colored output.')
 @click.option('--verbose', '-v', count=True, default=0,
               help='Increases the verbosity of the standard output. Verbosity '
               'is incremental, and each level increases the extent of output.')
 @click.option('--version', help='Prints the current version of Perun.',
               is_eager=True, is_flag=True, default=False,
               callback=cli_helpers.print_version)
-def cli(verbose=0, no_pager=False, **_):
+def cli(no_color, verbose=0, no_pager=False, **_):
     """Perun is an open source light-weight Performance Versioning System.
 
     In order to initialize Perun in current directory run the following::
@@ -105,6 +107,7 @@ def cli(verbose=0, no_pager=False, **_):
     # by default the pager is suppressed, and only calling it from the CLI enables it,
     # through --no-pager set by default to False you enable the paging
     perun_log.SUPPRESS_PAGING = no_pager
+    perun_log.COLOR_OUTPUT = not no_color
 
     # set the verbosity level of the log
     if perun_log.VERBOSITY < verbose:
