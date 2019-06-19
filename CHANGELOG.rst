@@ -10,6 +10,7 @@ HEAD
   - remove ``--remove-all`` argument in ``perun rm``
   - add support for removing profiles from pending jobs through perun
   - improve the output of `perun rm` command
+  - extract CLI groups to isolate modules
 
 0.17.1 (2019-07-24)
 -------------------
