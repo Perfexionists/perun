@@ -10,7 +10,11 @@ import io
 import pydoc
 import functools
 import traceback
+<<<<<<< 2bfa4abeb4393cc90fb5b3e9829e52c0145d963f
 import numpy as np
+=======
+import time
+>>>>>>> Extract colouring to single function
 
 import termcolor
 
@@ -174,7 +178,7 @@ def print_current_stack(colour='red'):
         ]
         if not any(filtering_conditions):
             reduced_trace.append(frame)
-    print(termcolor.colored(
+    print(in_color(
         ''.join(traceback.format_list(reduced_trace)), colour
     ), file=sys.stderr)
 
@@ -184,7 +188,7 @@ def error(msg, recoverable=False):
     :param str msg: error message printed to standard output
     :param bool recoverable: whether we can recover from the error
     """
-    print(termcolor.colored("fatal: {}".format(msg), 'red'), file=sys.stderr)
+    print(in_color("fatal: {}".format(msg), 'red'), file=sys.stderr)
     if is_verbose_enough(VERBOSE_DEBUG):
         print_current_stack()
 
@@ -209,10 +213,8 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
     :param str phase_unit: additional parameter that is passed to the phase_msg
     :param str phase_colour: phase colour defined in helpers.py
     """
-    print(termcolor.colored(
-        phase_msg.format(
-            termcolor.colored(phase_unit, attrs=COLLECT_PHASE_ATTRS_HIGH)
-        ), phase_colour, attrs=COLLECT_PHASE_ATTRS
+    print(in_color(
+        phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS
     ))
 
 
@@ -229,28 +231,26 @@ def print_job_progress(overall_jobs):
     print_job_progress.current_job += 1
 
 
-def cprint(string, colour, attrs=None, flush=True):
+def cprint(string, colour, attrs='none', flush=True):
     """Wrapper over coloured print without adding new line
 
     :param str string: string that is printed with colours
     :param str colour: colour that will be used to colour the string
-    :param list attrs: list of additional attributes for the colouring
+    :param str attrs: name of additional attributes for the colouring
     :param bool flush: set True to immediately perform print operation
     """
-    attrs = attrs or []
-    print(termcolor.colored(string, colour, attrs=attrs), end='', flush=flush)
+    print(in_color(string, colour, attrs), end='', flush=flush)
 
 
-def cprintln(string, colour, attrs=None, ending='\n'):
+def cprintln(string, colour, attrs='none'):
     """Wrapper over coloured print with added new line or other ending
 
     :param str string: string that is printed with colours and newline
     :param str colour: colour that will be used to colour the stirng
-    :param list attrs: list of additional attributes for the colouring
+    :param str attrs: name of additional attributes for the colouring
     :param str ending: ending of the string, be default new line
     """
-    attrs = attrs or []
-    print(termcolor.colored(string, colour, attrs=attrs), end=ending)
+    print(in_color(string, colour, attrs))
 
 
 def done(ending='\n'):
@@ -259,7 +259,7 @@ def done(ending='\n'):
     :param str ending: end of the string, by default new line
     """
     print('[', end='')
-    cprint("DONE", 'green', attrs=['bold'])
+    cprint("DONE", 'green', attrs='bold')
     print(']', end=ending)
 
 
@@ -268,11 +268,11 @@ def failed(ending='\n'):
     :param str ending: end of the string, by default new line
     """
     print('[', end='')
-    cprint("FAILED", 'red', attrs=['bold'])
+    cprint("FAILED", 'red', attrs='bold')
     print(']', end=ending)
 
 
-def in_color(output, color, attribute_style="none"):
+def in_color(output, color='white', attribute_style="none"):
     """Transforms the output to colored version.
 
     :param str output: the output text that should be colored
@@ -282,7 +282,9 @@ def in_color(output, color, attribute_style="none"):
     :return str: the new colored output (if enabled)
     """
     attrs = {
-        "none": []
+        "none": [],
+        "bold": ["bold"],
+        "underline": ["underline"]
     }.get(attribute_style, [])
 
     if COLOR_OUTPUT:
@@ -356,15 +358,15 @@ def change_counts_to_string(counts, width=0):
     :return: string representing the counts of found changes
     """
     width = max(width - counts.get('Optimization', 0) - counts.get('Degradation', 0), 0)
-    change_str = termcolor.colored(
+    change_str = in_color(
         str(OPTIMIZATION_ICON*counts.get('Optimization', 0)),
         CHANGE_COLOURS[PerformanceChange.Optimization],
-        attrs=['bold']
+        'bold'
     )
-    change_str += termcolor.colored(
+    change_str += in_color(
         str(DEGRADATION_ICON*counts.get('Degradation', 0)),
         CHANGE_COLOURS[PerformanceChange.Degradation],
-        attrs=['bold']
+        'bold'
     )
     return change_str + width*' '
 
@@ -414,7 +416,7 @@ def _print_models_info(deg_info, model_strategy):
         :param str baseline_colour: baseline colour to print baseline string
         :param str target_str: target kind of model (e.g. moving_average, linear, etc.)
         :param str target_colour: target colour to print target string
-        :param list attrs: list of additional attributes for the colouring
+        :param str attrs: name of type attributes for the colouring
         :return None: function has nor return value
         """
         print(baseline_str, end='')
@@ -425,19 +427,19 @@ def _print_models_info(deg_info, model_strategy):
     from_colour, to_colour = get_degradation_change_colours(deg_info.result)
 
     if model_strategy == 'best-param':
-        print_models_kinds(' from: ', from_colour, ' -> to: ', to_colour, ['bold'])
+        print_models_kinds(' from: ', from_colour, ' -> to: ', to_colour, 'bold')
     elif model_strategy in ('best-nonparam', 'best-model', 'best-both'):
-        print_models_kinds(' base: ', 'blue', ' targ: ', 'blue', ['bold'])
+        print_models_kinds(' base: ', 'blue', ' targ: ', 'blue', 'bold')
     elif model_strategy in ('all-nonparam', 'all-param', 'all-models'):
         print(' model: ', end='')
-        cprint('{}'.format(deg_info.from_baseline), colour='blue', attrs=['bold'])
+        cprint('{}'.format(deg_info.from_baseline), colour='blue', attrs='bold')
 
     if deg_info.confidence_type != 'no':
         print(' (with confidence ', end='')
         cprint(
             '{} = {}'.format(
                 deg_info.confidence_type, deg_info.confidence_rate),
-            'white', attrs=['bold']
+            'white', 'bold'
         )
         print(')', end='')
 
@@ -459,7 +461,7 @@ def _print_partial_intervals(partial_intervals):
         if change_info != PerformanceChange.NoChange:
             cprint(
                 "<{}, {}> {}x; ".format(x_start, x_end, rel_error),
-                CHANGE_COLOURS.get(change_info, 'white'), attrs=[]
+                CHANGE_COLOURS.get(change_info, 'white')
             )
     print("")
 
@@ -488,25 +490,25 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
     for location, changes in itertools.groupby(degradation_list, keygetter):
         # Print the location
         print("at", end='')
-        cprint(' {}'.format(location), 'white', attrs=['bold'])
+        cprint(' {}'.format(location), 'white', attrs='bold')
         print(":")
         # Iterate and print all of the infos
         for deg_info, cmd, __ in changes:
             print('\u2514 ', end='')
-            cprint('{}x'.format(round(deg_info.rate_degradation, 2)), 'white', attrs=['bold'])
+            cprint('{}x'.format(round(deg_info.rate_degradation, 2)), 'white', 'bold')
             print(': ', end='')
-            cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, 'white'), attrs=[])
+            cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, 'white'))
             print(' ', end='')
             cprint(
                 '{}'.format(CHANGE_STRINGS[deg_info.result]),
-                CHANGE_COLOURS[deg_info.result], attrs=['bold']
+                CHANGE_COLOURS[deg_info.result], 'bold'
             )
             if deg_info.result != PerformanceChange.NoChange:
                 _print_models_info(deg_info, model_strategy)
 
             # Print information about command that was executed
             print(" (", end='')
-            cprint("$ {}".format(cmd), CHANGE_CMD_COLOUR, attrs=['bold'])
+            cprint("$ {}".format(cmd), CHANGE_CMD_COLOUR, 'bold')
             print(')')
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
@@ -569,6 +571,33 @@ def aggregate_intervals(intervals):
 
     return agg_intervals
 
+def print_elapsed_time(func):
+    """Prints elapsed time after the execution of the wrapped function
+
+    Takes the timestamp before the execution of the function and after the execution and prints
+    the elapsed time to the standard output.
+
+    :param function func: wrapped function
+    :return: function for which we will print the elapsed time
+    """
+    def inner_wrapper(*args, **kwargs):
+        """Inner wrapper of the decorated function
+
+        :param list args: original arguments of the function
+        :param dict kwargs: original keyword arguments of the function
+        :return: results of the decorated function
+        """
+        before = time.time()
+        results = func(*args, **kwargs)
+        elapsed = time.time() - before
+        print("[!] {} [{}] in {} [!]".format(
+            (func.phase_name if hasattr(func, 'phase_name') else func.__name__).title(),
+            in_color("DONE", 'green', 'bold'),
+            in_color("{:0.2f}s".format(elapsed), 'white', 'bold')
+        ))
+        return results
+    return inner_wrapper
+
 
 class History:
     """Helper with wrapper, which is used when one wants to visualize the version control history
@@ -607,7 +636,7 @@ class History:
             :return: string representing the edge in ascii
             """
             return char if self.colour == 'white' \
-                else termcolor.colored(char, self.colour, attrs=['bold'])
+                else in_color(char, self.colour, 'bold')
 
     def __init__(self, head):
         """Creates a with wrapper, which keeps and prints the context of the current vcs
@@ -720,7 +749,7 @@ class History:
         print(minor_str, end='')
         cprint(" {}".format(
             minor_version_info.checksum[:6]
-        ), 'yellow', attrs=[])
+        ), 'yellow')
         print(": {} | ".format(
             minor_version_info.desc.split("\n")[0].strip()
         ), end='')

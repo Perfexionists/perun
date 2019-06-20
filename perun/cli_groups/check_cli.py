@@ -1,7 +1,6 @@
 """Group of CLI commands used for detecting degradations in VCS history"""
 
 import distutils.util as dutils
-import termcolor
 
 import click
 
@@ -9,6 +8,7 @@ import perun.check.factory as check
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.utils.cli_helpers as cli_helpers
+import perun.utils.log as log
 
 
 __author__ = 'Tomas Fiedor'
@@ -68,18 +68,18 @@ def check_group(**_):
     ))
     if should_precollect:
         print("{} is set to {}. ".format(
-            termcolor.colored('degradation.collect_before_check', 'white', attrs=['bold']),
-            termcolor.colored('true', 'green', attrs=['bold'])
+            log.in_color('degradation.collect_before_check', 'white', 'bold'),
+            log.in_color('true', 'green', 'bold')
         ), end='')
         print("Missing profiles will be freshly collected with respect to the ", end='')
         print("nearest job matrix (run `perun config edit` to modify the underlying job matrix).")
         if precollect_to_log:
             print("The progress of the pre-collect phase will be stored in logs at {}.".format(
-                termcolor.colored(pcs.get_log_directory(), 'white', attrs=['bold'])
+                log.in_color(pcs.get_log_directory(), 'white', 'bold')
             ))
         else:
             print("The progress of the pre-collect phase will be redirected to {}.".format(
-                termcolor.colored('black hole', 'white', attrs=['bold'])
+                log.in_color('black hole', 'white', 'bold')
             ))
 
 

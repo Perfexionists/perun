@@ -12,7 +12,6 @@ import re
 from operator import itemgetter
 
 import colorama
-import termcolor
 
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
@@ -289,14 +288,14 @@ def remove_from_pending(profile_generator):
         perun_log.info("{}/{} deleted {} from pending jobs".format(
             helpers.format_counter_number(i+1, removed_profile_number),
             removed_profile_number,
-            termcolor.colored(os.path.split(pending_file)[1], 'grey'),
+            perun_log.in_color(os.path.split(pending_file)[1], 'grey'),
         ))
 
     if removed_profile_number:
-        result_string = termcolor.colored("{}".format(
+        result_string = perun_log.in_color("{}".format(
             helpers.str_to_plural(removed_profile_number, "profile")
-        ), 'white', attrs=['bold'])
-        removed_src = termcolor.colored(os.path.join('.perun', 'jobs'), 'grey')
+        ), 'white', 'bold')
+        removed_src = perun_log.in_color(os.path.join('.perun', 'jobs'), 'grey')
         perun_log.info("successfully removed {} from pending jobs".format(
             result_string, removed_src
         ))
@@ -466,38 +465,38 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
     minor_version_output_colour = 'white'
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
     fmt_tokens, _ = FMT_SCANNER.scan(minor_version_info_fmt)
-    slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+    slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
 
     # Print header (2 is padding for id)
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             if attr_type == 'stats':
-                end_msg = termcolor.colored(' profiles', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
-                print(termcolor.colored("{0}{4}{1}{4}{2}{4}{3}{5}".format(
-                    termcolor.colored(
-                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS
+                end_msg = perun_log.in_color(' profiles', HEADER_SLASH_COLOUR, HEADER_ATTRS)
+                print(perun_log.in_color("{0}{4}{1}{4}{2}{4}{3}{5}".format(
+                    perun_log.in_color(
+                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, HEADER_ATTRS
                     ),
-                    termcolor.colored(
+                    perun_log.in_color(
                         'm'.rjust(max_lengths['memory']),
-                        PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS
+                        PROFILE_TYPE_COLOURS['memory'], HEADER_ATTRS
                     ),
-                    termcolor.colored(
+                    perun_log.in_color(
                         'x'.rjust(max_lengths['mixed']),
-                        PROFILE_TYPE_COLOURS['mixed'], attrs=HEADER_ATTRS),
-                    termcolor.colored(
+                        PROFILE_TYPE_COLOURS['mixed'], HEADER_ATTRS),
+                    perun_log.in_color(
                         't'.rjust(max_lengths['time']),
-                        PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
+                        PROFILE_TYPE_COLOURS['time'], HEADER_ATTRS),
                     slash,
                     end_msg
-                ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS), end='')
+                ), HEADER_SLASH_COLOUR, HEADER_ATTRS), end='')
             else:
                 limit = adjust_limit(limit, attr_type, max_lengths)
                 token_string = attr_type.center(limit, ' ')
-                cprint(token_string, minor_version_output_colour, attrs=HEADER_ATTRS)
+                cprint(token_string, minor_version_output_colour, HEADER_ATTRS)
         else:
             # Print the rest (non token stuff)
-            cprint(token, minor_version_output_colour, attrs=HEADER_ATTRS)
+            cprint(token, minor_version_output_colour, HEADER_ATTRS)
     print("")
     # Print profiles
     for minor_version in minor_version_list:
@@ -510,29 +509,28 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
                         pcs.get_object_directory(), minor_version.checksum
                     )
                     if tracked_profiles['all']:
-                        print(termcolor.colored("{:{}}".format(
+                        print(perun_log.in_color("{:{}}".format(
                             tracked_profiles['all'], max_lengths['all']
-                        ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
+                        ), TEXT_EMPH_COLOUR, TEXT_ATTRS), end='')
 
                         # Print the coloured numbers
                         for profile_type in SUPPORTED_PROFILE_TYPES:
                             print("{}{}".format(
-                                termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
-                                termcolor.colored("{:{}}".format(
+                                perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
+                                perun_log.in_color("{:{}}".format(
                                     tracked_profiles[profile_type], max_lengths[profile_type]
                                 ), PROFILE_TYPE_COLOURS[profile_type])
                             ), end='')
 
                         print(
-                            termcolor.colored(
-                                " profiles", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS
+                            perun_log.in_color(
+                                " profiles", HEADER_INFO_COLOUR, TEXT_ATTRS
                             ), end=''
                         )
                     else:
                         print(
-                            termcolor.colored(
-                                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR,
-                                attrs=TEXT_ATTRS
+                            perun_log.in_color(
+                                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, TEXT_ATTRS
                             ), end=''
                         )
                 elif attr_type == 'changes':
@@ -687,7 +685,7 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
             token_string = attr_type.center(limit, ' ')
-            cprint(token_string, profile_output_colour, [])
+            cprint(token_string, profile_output_colour)
         else:
             # Print the rest (non token stuff)
             cprint(token, profile_output_colour)
@@ -794,12 +792,12 @@ def status(short=False, **_):
 
     # Print the status of major head.
     print("On major version {} ".format(
-        termcolor.colored(major_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+        perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
     ), end='')
 
     # Print the index of the current head
     print("(minor version: {})".format(
-        termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+        perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
     ))
 
     # Print in long format, the additional information about head commit, by default print

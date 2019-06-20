@@ -15,17 +15,9 @@ __author__ = 'Tomas Fiedor'
 # File system specific
 READ_CHUNK_SIZE = 1024
 
-# Config specific constants and helpers
-CONFIG_UNIT_ATTRIBUTES = {
-    'collectors': ['name', 'pargs', 'kwargs'],
-    'postprocessors': ['name', 'pargs', 'kwargs'],
-    'bins': None,
-    'workloads': None
-}
-
 # Other constants
 MAXIMAL_LINE_WIDTH = 60
-TEXT_ATTRS = []
+TEXT_ATTRS = 'none'
 TEXT_EMPH_COLOUR = 'green'
 TEXT_WARN_COLOUR = 'red'
 
@@ -45,18 +37,18 @@ PROFILE_TYPE_COLOURS = {
 }
 PROFILE_DELIMITER = '|'
 
-HEADER_ATTRS = ['underline']
+HEADER_ATTRS = 'underline'
 HEADER_COMMIT_COLOUR = 'green'
 HEADER_INFO_COLOUR = 'white'
 HEADER_SLASH_COLOUR = 'white'
 
 DESC_COMMIT_COLOUR = 'white'
-DESC_COMMIT_ATTRS = ['bold', 'dark']
+DESC_COMMIT_ATTRS = 'darkbold'
 
 # Raw output specific thing
 RAW_KEY_COLOUR = 'magenta'
 RAW_ITEM_COLOUR = 'yellow'
-RAW_ATTRS = []
+RAW_ATTRS = 'none'
 
 # Job specific
 Job = namedlist.namedlist("Job", "collector postprocessors executable")
@@ -66,8 +58,8 @@ COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'
 COLLECT_PHASE_POSTPROCESS = 'yellow'
 COLLECT_PHASE_ERROR = 'red'
-COLLECT_PHASE_ATTRS = []
-COLLECT_PHASE_ATTRS_HIGH = []
+COLLECT_PHASE_ATTRS = 'none'
+COLLECT_PHASE_ATTRS_HIGH = 'none'
 
 # Degradation specific
 CHANGE_CMD_COLOUR = 'magenta'

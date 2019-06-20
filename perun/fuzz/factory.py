@@ -16,6 +16,7 @@ import threading
 from subprocess import CalledProcessError, TimeoutExpired
 from uuid import uuid4
 
+import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.fuzz.interpret as interpret
 import perun.fuzz.filesystem as filesystem
@@ -384,7 +385,7 @@ def save_fuzz_state(xdata, ydata, state):
         ydata.append(state)
 
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('fuzz performance')
 def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocessor,
                             minor_version_list, **kwargs):

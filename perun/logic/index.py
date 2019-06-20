@@ -12,8 +12,6 @@ from zlib import error
 
 from enum import Enum
 
-import termcolor
-
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
@@ -596,7 +594,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
             perun_log.info("{}/{} deregistered {} from index".format(
                 helpers.format_counter_number(i+1, removed_profile_number),
                 removed_profile_number,
-                termcolor.colored(found_entry.path, 'grey')
+                perun_log.in_color(found_entry.path, 'grey')
             ))
 
         # Update number of entries
@@ -611,10 +609,10 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
 
         index_handle.truncate()
     if removed_profile_number:
-        result_string = termcolor.colored("{}".format(
+        result_string = perun_log.in_color("{}".format(
             helpers.str_to_plural(removed_profile_number, "profile")
-        ), 'white', attrs=['bold'])
-        index_sha = termcolor.colored(minor_version, 'green')
+        ), 'white', 'bold')
+        index_sha = perun_log.in_color(minor_version, 'green')
         perun_log.info("successfully deregistered {} from {} index".format(
             result_string, index_sha
         ))

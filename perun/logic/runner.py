@@ -195,7 +195,7 @@ def run_all_phases_for(runner, runner_type, runner_params):
     return ok_status, "", runner_params['profile']
 
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('collect')
 def run_collector(collector, job):
     """Run the job of collector of the given name.
@@ -258,7 +258,7 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
         log.error("missing parameter: {}".format(str(collector_exception)))
 
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('postprocess')
 def run_postprocessor(postprocessor, job, prof):
     """Run the job of postprocess of the given name.
@@ -342,7 +342,7 @@ def run_postprocessor_on_profile(prof, postprocessor_name, postprocessor_params,
     return p_status, processed_profile
 
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('prerun')
 def run_prephase_commands(phase, phase_colour='white'):
     """Runs the phase before the actual collection of the methods
@@ -372,7 +372,7 @@ def run_prephase_commands(phase, phase_colour='white'):
             ))
 
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('batch job run')
 def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
     """Runs the batch of jobs on current state of the VCS.
@@ -421,7 +421,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                         yield collective_status, prof, job
 
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('overall profiling')
 def generate_jobs(minor_version_list, job_matrix, number_of_jobs):
     """
@@ -436,7 +436,7 @@ def generate_jobs(minor_version_list, job_matrix, number_of_jobs):
             yield from generate_jobs_on_current_working_dir(job_matrix, number_of_jobs)
 
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('overall profiling')
 def generate_jobs_with_history(minor_version_list, job_matrix, number_of_jobs):
     """
