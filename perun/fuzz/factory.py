@@ -1,10 +1,11 @@
 """Collection of global methods for fuzz testing"""
 __author__ = 'Tomas Fiedor'
 
+import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.logic.runner as run
 
-@decorators.print_elapsed_time
+@log.print_elapsed_time
 @decorators.phase_function('fuzz performance')
 def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocessor,
                             minor_version_list, **kwargs):
