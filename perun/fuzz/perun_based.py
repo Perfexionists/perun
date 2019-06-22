@@ -12,7 +12,7 @@ from perun.utils.structs import PerformanceChange
 
 __author__ = 'Matus Liscinsky'
 
-DEGRADATION_RATIO_TRESHOLD = 0.1
+DEGRADATION_RATIO_TRESHOLD = 0
 
 def init(cmd, args, seeds, collector, postprocessor,
          minor_version_list, **kwargs):
@@ -83,6 +83,8 @@ def test(cmd, args, workload, collector, postprocessor,
         for perf_change in check.degradation_between_profiles(base_prof[1], target_prof[1]):
             checks += 1
             print(perf_change.result)
+            # print(perf_change.rate_degradation)
+
             if(perf_change.result == PerformanceChange.Degradation):
                 degs += 1
 

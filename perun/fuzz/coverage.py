@@ -14,7 +14,7 @@ import perun.utils as utils
 
 __author__ = 'Matus Liscinsky'
 
-GCOV_VERSION_W_INTERMEDIATE_FORMAT = 5
+GCOV_VERSION_W_INTERMEDIATE_FORMAT = 4.9
 
 ProgramErrorSignals = {"8": "SIGFPE",
                        "4": "SIGILL",
@@ -53,13 +53,19 @@ def execute_bin(command, timeout=15, stdin=None):
     :param int timeout: if the process does not end before the specified timeout,
                         the process is terminated
     :param handle stdin: the command input as a file handle
+    :return dict: exit code and output string
     """
     command = list(filter(None, command))
-    process = subprocess.Popen(
-        command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        process = subprocess.Popen(
+            command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    output, _ = process.communicate(timeout=timeout)
-    exit_code = process.wait()
+        output, _ = process.communicate(timeout=timeout)
+        exit_code = process.wait()
+
+    except subprocess.TimeoutExpired:
+        process.terminate()
+        raise
 
     if exit_code != 0 and str(-exit_code) in ProgramErrorSignals:
         return {"exit_code": (-exit_code), "output": ProgramErrorSignals[str(-exit_code)]}
@@ -103,6 +109,7 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
 
     :param str gcno_path: path to .gcno files, created within building the project (--coverage flag)
     :param str source_path: path to project source files
+    :param int timeout: specified timeout for run of target application
     :param str cmd: string with command that will be executed
     :param str args: additional parameters to command
     :param list seeds: initial sample files
@@ -113,7 +120,7 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
 
     gcov_output = execute_bin(["gcov", "--version"])
     gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
-    
+
     coverages = []
 
     # run program with each seed
@@ -154,12 +161,12 @@ def test(*args, **kwargs):
 
     exit_report = execute_bin(command, kwargs["hang_timeout"])
     if exit_report["exit_code"] != 0:
-        print("Initial testing with file " +
+        print("Testing with file " +
               workload["path"] + " causes " + exit_report["output"])
         raise subprocess.CalledProcessError(exit_report, command)
 
-    workload["cov"], _ = get_coverage_info(kwargs["gcov_version"],
-                                           kwargs["source_files"], gcno_path, os.getcwd(), kwargs["gcov_files"])
+    workload["cov"], _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],
+                                           gcno_path, os.getcwd(), kwargs["gcov_files"])
     return set_cond(kwargs["base_cov"], workload["cov"], kwargs["parent"]["cov"],  kwargs["icovr"])
 
 
@@ -172,9 +179,11 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     Otherwise, standard gcov output file format  will be parsed.
     Current working directory is now changed back.
 
+    :param int gcov_version: version of gcov
     :param str gcno_path: path to the directory with files containing coverage information
     :param str source_files: source files of the target project
     :param str cwd: current working directory for changing back
+    :param list gcov_files: paths to gcov files
     :return list: absolute paths of generated .gcov files
     """
     os.chdir(gcno_path)
@@ -186,6 +195,7 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     command.extend(source_files)
     execute_bin(command)
 
+    # searching for gcov files, if they are not already known
     if gcov_files == None:
         gcov_files = []
         for f in os.listdir("."):
@@ -218,7 +228,8 @@ def set_cond(base_cov, cov, parent_cov,  increase_ratio=1.5):
 
     :param int base_cov: base coverage
     :param int cov: measured coverage
-    :param int cov: desired coverage increase ration between `base_cov` and `cov`
+    :param int parent_cov: coverage of mutation parent
+    :param int increase_ratio: desired coverage increase ration between `base_cov` and `cov`
     :return bool: True if `cov` is greater than `base_cov` * `deg_ratio`, False otherwise
     """
     tresh_cov = int(base_cov * increase_ratio)

@@ -1682,6 +1682,7 @@ def test_fuzzing_correct(pcs_full):
         '--max-size-adjunct', '35000',
         '--icovr', '1.05',
         '--interesting-files-limit', '2',
+        '--workloads-filter', '(?notvalidregex?)',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
@@ -1698,6 +1699,19 @@ def test_fuzzing_correct(pcs_full):
         '--interesting-files-limit', '1',
         '--mut-count-strategy', 'probabilistic',
         '--regex-rules', regex_file,
+    ])
+    assert result.exit_code == 0
+    assert 'Fuzzing successfully finished' in result.output
+
+    # Testing tail with empty xml file and regex_rules
+    xml_workload = os.path.dirname(examples) + '/samples/xml/empty.xml'
+    regex_file = os.path.dirname(examples) + '/rules.yaml'
+    result = runner.invoke(cli.fuzz_cmd, [
+        '--cmd', tail,
+        '--output-dir', '.',
+        '--initial-workload', xml_workload,
+        '--timeout', '1',
+        '--max-size-percentual', '3.5',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
@@ -1788,7 +1802,7 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 0
     assert 'Timeout' in result.output
 
-    # Testing UBT 
+    # Testing UBT for degs
     process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/UBT"])
     process.communicate()
     process.wait()
@@ -1797,7 +1811,7 @@ def test_fuzzing_correct(pcs_full):
         '--cmd', ubt_test,
         '--output-dir', '.',
         '--initial-workload', os.path.dirname(examples) + '/UBT/input.txt',
-        '--timeout', '5',
+        '--timeout', '10',
         '--hang-timeout', '2',
         '--source-path', os.path.dirname(examples) + '/UBT/src',
         '--gcno-path', os.path.dirname(examples) + '/UBT/build',
@@ -1808,6 +1822,29 @@ def test_fuzzing_correct(pcs_full):
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
+
+    # Testing UBT for deg in initial test
+    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/UBT"])
+    process.communicate()
+    process.wait()
+    ubt_test = os.path.dirname(examples) + "/UBT/build/ubt"
+    result = runner.invoke(cli.fuzz_cmd, [
+        '--cmd', ubt_test,
+        '--output-dir', '.',
+        '--initial-workload', os.path.dirname(examples) + '/UBT/a_small_input.txt',
+        '--initial-workload', os.path.dirname(examples) + '/UBT/sorted_input.txt',
+        '--timeout', '4',
+        '--hang-timeout', '2',
+        '--source-path', os.path.dirname(examples) + '/UBT/src',
+        '--gcno-path', os.path.dirname(examples) + '/UBT/build',
+        '--max-size-percentual', '1',
+        '--mut-count-strategy', 'unitary', 
+    ])
+    assert result.exit_code == 0
+    assert 'Fuzzing successfully finished' in result.output
+
+    '--initial-workload', os.path.dirname(examples) + '/UBT/a_small_input.txt',
+
 
 def test_fuzzing_incorrect(pcs_full):
     """Runs basic tests for fuzzing CLI """

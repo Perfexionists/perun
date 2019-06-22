@@ -1,7 +1,7 @@
 src=src
 build=build
 CC=gcc
-CFLAGS= --coverage 
+CFLAGS= -std=c11 --coverage 
 
 .PHONY : all
 all: ubt

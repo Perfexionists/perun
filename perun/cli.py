@@ -935,6 +935,9 @@ def job(ctx, **kwargs):
               callback=cli_helpers.minor_version_list_callback, default=[
                   'HEAD'],
               help='Specifies the head minor version, for which the fuzzing will be performed.')
+@click.option('--workloads-filter', '-wf', nargs=1, required=False,
+              type=str, metavar='<regexp>', default="",
+              help='Regular expression for filtering the workloads.')
 @click.option('--source-path', '-s', nargs=1, required=False,
               type=click.Path(exists=True, readable=True), metavar='<path>',
               help='The path to the directory of the project source files.')
@@ -962,7 +965,7 @@ def job(ctx, **kwargs):
               ' file will be set to (size of the largest workload + value).' 
               'Default value is 1 000 000 B = 1MB.')
 @click.option('--max-size-percentual', '-mp', nargs=1, required=False,
-              type=click.FloatRange(1, None, False), metavar='<float>',
+              type=click.FloatRange(0.1, None, False), metavar='<float>',
               help='Max size expressed by percentage. Using this option, max size of generated' 
               ' input file will be set to (size of the largest workload * value).'
               ' E.g. 1.5, max_size=largest_workload_size * 1.5')
