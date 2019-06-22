@@ -5,8 +5,6 @@
 
 #include "ubt.h"
 
-
-
 int main(int argc, char **argv)
 {
     assert(argc > 1);
@@ -14,14 +12,14 @@ int main(int argc, char **argv)
     int num;
     int c;
     BST tree = bst_create();
-    
+
     while( (c = fscanf(fp, "%d ", &num)) != EOF && c == 1){
         bst_insert(tree, num);
     }
 
     bst_print(tree);
     fprintf(stdout, "BST Depth: %lu\n", bst_depth(tree));
-    
+
     bst_destroy(&tree);
     exit(EXIT_SUCCESS);
 }
