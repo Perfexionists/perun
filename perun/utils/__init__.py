@@ -435,3 +435,21 @@ def format_file_size(size):
             return "{:6.1f} {}B".format(size, unit)
         size /= 1024.0
     return "{:.1f} PiB".format(size)
+
+
+def create_empty_pass(return_code):
+    """Returns a function which will do nothing
+
+    This is used to handle collectors and postprocessors that do not have before or after phases.
+
+    :param object return_code: either CollectStatus.OK or PostprocessorStatus.OK
+    :return: function that does nothing
+    """
+    def empty_pass(**kwargs):
+        """Empty collection or postprocessing phase, doing nothing
+
+        :param dict kwargs: arguments of the phase
+        :return: return code, empty return message, non-modified arguments
+        """
+        return return_code, "", kwargs
+    return empty_pass
