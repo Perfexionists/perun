@@ -160,39 +160,29 @@ def run_all_phases_for(runner, runner_type, runner_params):
     :param str runner_type: string type of the runner (either collector or postprocessor)
     :param dict runner_params: dictionary of arguments for runner
     """
+    # TODO: Add integrity check for (1) 'profile' in kwargs, (2) collect/postprocess functions
     ok_status = CollectStatus.OK if runner_type == 'collector' else PostprocessStatus.OK
     error_status = CollectStatus.ERROR if runner_type == 'collector' else PostprocessStatus.ERROR
     runner_verb = runner_type[:-2]
 
-    for phase in ['before', runner_verb, 'after']:
-        phase_function = getattr(runner, phase, None)
-        if phase_function:
-            try:
-                ret_val, ret_msg, updated_params = phase_function(**runner_params)
-            # We safely catch all of the exceptions
-            except Exception as exc:
-                ret_val, ret_msg, updated_params = error_status, str(exc), {}
-            runner_params.update(updated_params or {})
-            if not is_status_ok(ret_val, ok_status):
-                return error_status, "error while {}{} phase: {}".format(
-                    phase, ("_" + runner_verb)*(phase != runner_verb), ret_msg
-                ), None
-        elif phase == runner_verb:
-            return error_status, "missing {}() function for {}".format(
-                runner_verb, runner.__name__
-            ), None
+    ret_val, ret_msg = ok_status, ""
 
-    # Return the processed profile
-    if 'profile' not in runner_params.keys():
-        return error_status, "missing generated profile for {} {}".format(
-            runner_type, runner.__name__
-        ), None
-    if not isinstance(runner_params['profile'], profile_factory.Profile):
-        log.warn("{} {} does not return Profile object".format(
-            runner_type, runner.__name__
-        ))
-        return ok_status, "", profile_factory.Profile(runner_params['profile'])
-    return ok_status, "", runner_params['profile']
+    for phase in ['before', runner_verb, 'after']:
+        phase_function = getattr(runner, phase, utils.create_empty_pass(ok_status))
+        try:
+            ret_val, ret_msg, updated_params = phase_function(**runner_params)
+        # We safely catch all of the exceptions
+        except Exception as exc:
+            ret_val, updated_params = error_status, {}
+            ret_msg = "error while {}{} phase: {}".format(
+                phase, ("_" + runner_verb)*(phase != runner_verb), str(exc)
+            ), {}
+
+        runner_params.update(updated_params or {})
+        if not is_status_ok(ret_val, ok_status):
+            break
+
+    return ret_val, ret_msg, runner_params.get('profile', {})
 
 
 @log.print_elapsed_time
@@ -222,7 +212,7 @@ def run_collector(collector, job):
     collection_status, collection_msg, prof \
         = run_all_phases_for(collector_module, 'collector', job_params)
 
-    if collection_status != CollectStatus.OK:
+    if not is_status_ok(collection_status, CollectStatus.OK):
         log.error("while collecting by {}: {}".format(
             collector.name, collection_msg
         ), recoverable=True)
@@ -251,8 +241,10 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
                 collector_name: collector_params
             }
         }
-        if run_single_job(cmd, args, workload, [collector_name], [], minor_versions, **run_params) \
-                != CollectStatus.OK:
+        collect_status = run_single_job(
+            cmd, args, workload, [collector_name], [], minor_versions, **run_params
+        )
+        if not is_status_ok(collect_status, CollectStatus.OK):
             log.error("collection of profiles was unsuccessful")
     except KeyError as collector_exception:
         log.error("missing parameter: {}".format(str(collector_exception)))
@@ -402,7 +394,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                 for c_status, prof in generator(job, **params).generate(run_collector):
                     # Run the collector and check if the profile was successfully collected
                     # In case, the status was not OK, then we skip the postprocessing
-                    if c_status != CollectStatus.OK:
+                    if not is_status_ok(c_status, CollectStatus.OK) or not prof:
                         collective_status = CollectStatus.ERROR
                         continue
 
