@@ -19,7 +19,7 @@ import perun.utils.exceptions as exceptions
 import perun.utils as utils
 import perun.utils.log as log
 
-from perun.utils.helpers import CollectStatus
+from perun.utils.structs import CollectStatus
 
 
 # The collector subtypes

@@ -21,7 +21,7 @@ import perun.collect.complexity.run as complexity
 import perun.utils.log as log
 
 from perun.utils.helpers import Job
-from perun.utils.structs import Unit, Executable
+from perun.utils.structs import Unit, Executable, CollectStatus
 from perun.workload.integer_generator import IntegerGenerator
 from perun.collect.trace.systemtap import _TraceRecord
 from perun.collect.trace.systemtap_script import RecordType
@@ -197,7 +197,7 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     cmd, args, work, collectors, posts, config = complexity_collect_job
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     result = run.run_single_job(cmd, args, work, collectors, posts, [head], **config)
-    assert result == run.CollectStatus.OK
+    assert result == CollectStatus.OK
 
     # Assert that nothing was removed
     after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]

@@ -8,6 +8,8 @@ import perun.utils as utils
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
 
+from perun.utils.structs import CollectStatus
+
 
 __author__ = 'Tomas Fiedor'
 
@@ -64,7 +66,7 @@ def matrix(ctx, quiet, **kwargs):
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
     kwargs.update({'with_history': not quiet})
-    if runner.run_matrix_job(**kwargs) != runner.CollectStatus.OK:
+    if runner.run_matrix_job(**kwargs) != CollectStatus.OK:
         perun_log.error("job specification failed in one of the phases")
 
 
@@ -150,5 +152,5 @@ def job(ctx, **kwargs):
     """
     kwargs.update({'minor_version_list': ctx.obj['minor_version_list']})
     kwargs.update({'with_history': True})
-    if runner.run_single_job(**kwargs) != runner.CollectStatus.OK:
+    if runner.run_single_job(**kwargs) != CollectStatus.OK:
         perun_log.error("job specification failed in one of the phases")

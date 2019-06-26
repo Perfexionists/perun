@@ -24,11 +24,12 @@ import perun.logic.config as config
 import perun.logic.store as store
 import perun.logic.temp as temp
 import perun.logic.stats as stats
-import perun.logic.runner as perun_runner
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
 import perun.logic.pcs as pcs
+
+from perun.utils.structs import CollectStatus, RunnerReport
 
 __author__ = 'Tomas Fiedor'
 
@@ -1810,7 +1811,25 @@ def test_error_runs(pcs_full, monkeypatch):
     assert result.exit_code == 1
     assert "fokume postprocessor does not exist" in result.output
 
-    monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: perun_runner.CollectStatus.ERROR)
+    # Test that inner run_postprocessor raises some error
+    matrix.data['postprocessors'] = [
+        {'name': 'regression_analysis', 'params': {}}
+    ]
+    result = runner.invoke(run_cli.run, ['matrix', '-q'])
+    assert result.exit_code == 1
+    assert "while postprocessing by regression_analysis" in result.output
+    assert "is missing required keys" in result.output
+
+    # Test matrix with collect() that fails
+    run_report = RunnerReport(None, "collector", {})
+    run_report.status = CollectStatus.ERROR
+    monkeypatch.setattr('perun.logic.runner.run_all_phases_for', lambda *_, **__: (run_report, {}))
+    result = runner.invoke(run_cli.run, ['matrix', '-q'])
+    print(result.output)
+    assert result.exit_code == 1
+    assert "while collecting by time" in result.output
+
+    monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: CollectStatus.ERROR)
     result = runner.invoke(run_cli.run, ['job', '--cmd', 'ls',
         '--args', '-al', '--workload', '.',
         '--collector', 'time'

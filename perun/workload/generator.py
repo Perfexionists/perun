@@ -12,7 +12,7 @@ import perun.utils.log as log
 import perun.profile.helpers as profile
 import perun.profile.factory as factory
 
-from perun.utils.helpers import CollectStatus
+from perun.utils.structs import CollectStatus
 
 __author__ = 'Tomas Fiedor'
 

@@ -9,7 +9,7 @@ import perun.postprocess.kernel_regression.methods as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
-from perun.utils.helpers import PostprocessStatus
+from perun.utils.structs import PostprocessStatus
 
 __author__ = 'Simon Stupinsky'
 

@@ -11,7 +11,7 @@ import click
 import perun.logic.runner as runner
 import perun.utils as utils
 import perun.utils.helpers as helpers
-from perun.utils.helpers import CollectStatus
+from perun.utils.structs import CollectStatus
 
 __author__ = 'Tomas Fiedor'
 
