@@ -35,19 +35,6 @@ class Helpers(object):
     Helper class with various static functions for helping with profiles
     """
     @staticmethod
-    def list_contents_on_path(path):
-        """Helper function for listing the contents of the path
-
-        Arguments:
-            path(str): path to the director which we will list
-        """
-        for root, dirs, files in os.walk(path):
-            for file_on_path in files:
-                print("file: ", os.path.join(root, file_on_path))
-            for dir_on_path in dirs:
-                print("dirs: ", os.path.join(root, dir_on_path))
-
-    @staticmethod
     def count_contents_on_path(path):
         """Helper function for counting the contents of the path
 

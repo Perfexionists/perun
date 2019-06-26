@@ -67,8 +67,6 @@ def profile_filter(generator, rule):
     for profile in generator:
         if rule in profile[0]:
             return profile[1]
-    # No match found
-    return None
 
 
 def sort_flattened_structure(structure):

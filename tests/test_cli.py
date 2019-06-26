@@ -57,8 +57,6 @@ def test_cli(pcs_full):
 
 def run_non_param_test(runner, test_params, expected_exit_code, expected_output):
     result = runner.invoke(cli.postprocessby, test_params)
-    if result.exit_code != expected_exit_code:
-        print(result.output)
     assert result.exit_code == expected_exit_code
     assert expected_output in result.output
 
