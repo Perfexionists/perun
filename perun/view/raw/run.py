@@ -33,9 +33,9 @@ def show(profile, **_):
     print('')
 
     # Construct the collector info
-    if 'collector' in profile.keys():
+    if 'collector_info' in profile.keys():
         print(log.in_color('collector:', RAW_KEY_COLOUR))
-        collector_info = profile['collector']
+        collector_info = profile['collector_info']
         for collector_item in ['name', 'params']:
             if collector_item in collector_info.keys():
                 print(RAW_INDENT*1*' ' + "- {}: {}".format(

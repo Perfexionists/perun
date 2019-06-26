@@ -27,8 +27,6 @@ def profile_filter(generator, rule):
     for profile in generator:
         if rule in profile[0]:
             return profile[1]
-    # No match found
-    return None
 
 
 def test_flame_graph(memory_profiles):

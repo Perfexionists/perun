@@ -98,8 +98,6 @@ def successfully_added_profile_in(index_handle, valid_profile):
     # This sounds weird, but I want to use this function in asserts
     except EntryNotFoundException:
         return False
-    except AssertionError:
-        return False
 
 
 def test_add_on_empty_repo(helpers, pcs_with_empty_git, valid_profile_pool, capsys):
