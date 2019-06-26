@@ -4,8 +4,9 @@ import operator
 import click
 
 import perun.logic.runner as runner
-from perun.utils.helpers import PostprocessStatus
+
 from perun.profile.factory import pass_profile
+from perun.utils.structs import PostprocessStatus
 
 __author__ = 'Tomas Fiedor'
 

@@ -10,7 +10,7 @@ import perun.collect.memory.parsing as parser
 import perun.collect.memory.syscalls as syscalls
 import perun.logic.runner as runner
 import perun.utils.log as log
-from perun.utils.helpers import CollectStatus
+from perun.utils.structs import CollectStatus
 
 __author__ = 'Radim Podola'
 _lib_name = "malloc.so"

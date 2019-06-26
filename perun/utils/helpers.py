@@ -5,8 +5,6 @@ import operator
 import collections
 import namedlist
 
-from enum import Enum
-
 from perun.utils.structs import PerformanceChange
 
 
@@ -98,18 +96,6 @@ LINE_PARSING_REGEX = re.compile(
     r"(?P<minor>\S+)\s"
     r"(?P<cmdstr>.+)"
 )
-
-
-class CollectStatus(Enum):
-    """Simple enumeration for statuses of the collectors"""
-    OK = 0
-    ERROR = 1
-
-
-class PostprocessStatus(Enum):
-    """Simple enumeration for statuses of the postprocessors"""
-    OK = 0
-    ERROR = 1
 
 
 def first_index_of_attr(tuple_list, attr, value):
