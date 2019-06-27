@@ -132,6 +132,31 @@ def load_job_info_from_config():
     return info
 
 
+def run_phase_function(report, phase):
+    """Runs the concrete phase function of the runner (collector or postprocessor)
+
+    If the runner does not provide the function for phase then empty pass is created and
+    nothing is returned. If any exception occurs, or if the phase return non-zero status,
+    then the overall report ends with Error.
+
+    :param RunnerReport report: collective report about the run of the phase
+    :param str phase: name of the phase/function that is run
+    """
+    phase_function = getattr(report.runner, phase, utils.create_empty_pass(report.ok_status))
+    runner_verb = report.runner_type[:-2]
+    report.phase = phase
+    try:
+        phase_result = phase_function(**report.kwargs)
+        report.update_from(*phase_result)
+    # We safely catch all of the exceptions
+    except Exception as exc:
+        report.status = report.error_status
+        report.exception = exc
+        report.message = "error while {}{} phase: {}".format(
+            phase, ("_" + runner_verb)*(phase != runner_verb), str(exc)
+        )
+
+
 def run_all_phases_for(runner, runner_type, runner_params):
     """Run all of the phases (before, runner_type, after) for given params.
 
@@ -153,18 +178,7 @@ def run_all_phases_for(runner, runner_type, runner_params):
     report = RunnerReport(runner, runner_type, runner_params)
 
     for phase in ['before', runner_verb, 'after']:
-        phase_function = getattr(runner, phase, utils.create_empty_pass(report.ok_status))
-        report.phase = phase
-        try:
-            phase_result = phase_function(**report.kwargs)
-            report.update_from(*phase_result)
-        # We safely catch all of the exceptions
-        except Exception as exc:
-            report.status = report.error_status
-            report.exception = exc
-            report.message = "error while {}{} phase: {}".format(
-                phase, ("_" + runner_verb)*(phase != runner_verb), str(exc)
-            )
+        run_phase_function(report, phase)
 
         if not report.is_ok():
             break
