@@ -75,7 +75,7 @@ class RunnerReport:
         :return:
         """
         self.stat_code = stat_code
-        self.message = message
+        self.message += message
         self.kwargs.update(params or {})
 
         is_enum = hasattr(self.stat_code, 'value')

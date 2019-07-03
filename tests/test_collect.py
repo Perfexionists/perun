@@ -665,3 +665,41 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
     _, err = capsys.readouterr()
     assert 'Something happened lol!' in err
+
+
+def test_teardown(pcs_full, monkeypatch, capsys):
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    original_phase_f = run.run_phase_function
+
+    # Assert that collection went OK and teardown returns error
+    status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    assert status == CollectStatus.OK
+
+    def teardown_returning_error(report, phase):
+        if phase == 'teardown':
+            result = (CollectStatus.ERROR, "error in teardown", {})
+            report.update_from(*result)
+        else:
+            original_phase_f(report, phase)
+    monkeypatch.setattr("perun.logic.runner.run_phase_function", teardown_returning_error)
+    status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    assert status == CollectStatus.ERROR
+    _, err = capsys.readouterr()
+    assert "error in teardown" in err
+
+    # Assert that collection went Wrong, teardown went OK, and still returns the error
+    def teardown_not_screwing_things(report, phase):
+        if phase == 'teardown':
+            print("Teardown was executed")
+            assert report.status == CollectStatus.ERROR
+            result = (CollectStatus.OK, "", {})
+            report.update_from(*result)
+        elif phase == 'before':
+            result = (CollectStatus.ERROR, "error while before", {})
+            report.update_from(*result)
+    monkeypatch.setattr("perun.logic.runner.run_phase_function", teardown_not_screwing_things)
+    status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    assert status == CollectStatus.ERROR
+    out, err = capsys.readouterr()
+    assert "Teardown was executed" in out
+    assert "error while before" in err
