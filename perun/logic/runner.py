@@ -183,6 +183,8 @@ def run_all_phases_for(runner, runner_type, runner_params):
         if not report.is_ok():
             break
 
+    run_phase_function(report, 'teardown')
+
     return report, report.kwargs.get('profile', {})
 
 
