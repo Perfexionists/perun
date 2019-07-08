@@ -421,11 +421,9 @@ def pcs_with_degradations():
 
 
 @pytest.fixture(scope="function")
-def pcs_full():
-    """
-    """
+def pcs_full(stored_profile_pool):
     # Change working dir into the temporary directory
-    profiles = stored_profile_pool()
+    profiles = stored_profile_pool
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
