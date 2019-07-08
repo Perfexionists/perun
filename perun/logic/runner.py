@@ -157,6 +157,31 @@ def run_phase_function(report, phase):
         )
 
 
+def check_integrity_of_runner(runner, runner_type, report):
+    """Checks that the runner has basic requirements of collectors and postprocessor.
+
+    This function warns user that some expected conventions were not fulfilled. In particular,
+    this checks that the runners return the dictionary with 'profile' keyword, i.e. it does
+    something with profile. Second it checks that the runner has corresponding collect or
+    postprocess functions (though theoretically one can have only before and after phases)
+
+    :param module runner: module of the runner (postprocessor or collector)
+    :param str runner_type: string name of the runner (the run function is derived from this)
+    :param RunnerReport report: report of the collection phase
+    """
+    runner_name = runner.__name__.split('.')[-2]
+    if 'profile' not in report.kwargs.keys() and report.is_ok():
+        log.warn("{} {} does not return any profile".format(
+            runner_name, runner_type
+        ))
+
+    runner_verb = runner_type[:-2]
+    if not getattr(runner, runner_verb, None):
+        log.warn("{} is missing {}() function".format(
+            runner_name, runner_verb
+        ))
+
+
 def run_all_phases_for(runner, runner_type, runner_params):
     """Run all of the phases (before, runner_type, after) for given params.
 
@@ -172,7 +197,6 @@ def run_all_phases_for(runner, runner_type, runner_params):
     :param dict runner_params: dictionary of arguments for runner
     :return RunnerReport: report about the run phase
     """
-    # TODO: Add integrity check for (1) 'profile' in kwargs, (2) collect/postprocess functions
     runner_verb = runner_type[:-2]
 
     report = RunnerReport(runner, runner_type, runner_params)
@@ -184,6 +208,7 @@ def run_all_phases_for(runner, runner_type, runner_params):
             break
 
     run_phase_function(report, 'teardown')
+    check_integrity_of_runner(runner, runner_type, report)
 
     return report, report.kwargs.get('profile', {})
 

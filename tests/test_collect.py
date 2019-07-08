@@ -21,7 +21,7 @@ import perun.collect.complexity.run as complexity
 import perun.utils.log as log
 
 from perun.utils.helpers import Job
-from perun.utils.structs import Unit, Executable, CollectStatus
+from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
 from perun.workload.integer_generator import IntegerGenerator
 from perun.collect.trace.systemtap import _TraceRecord
 from perun.collect.trace.systemtap_script import RecordType
@@ -667,7 +667,23 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
     assert 'Something happened lol!' in err
 
 
+def test_integrity_tests(capsys):
+    """Basic tests for checking integrity of runners"""
+    mock_report = RunnerReport(complexity, 'postprocessor', {'profile': {}})
+    run.check_integrity_of_runner(complexity, 'postprocessor', mock_report)
+    out, err = capsys.readouterr()
+    assert "warning: complexity is missing postprocess() function" in out
+    assert "" == err
+
+    mock_report = RunnerReport(complexity, 'collector', {})
+    run.check_integrity_of_runner(complexity, 'collector', mock_report)
+    out, err = capsys.readouterr()
+    assert "warning: collector complexity does not return any profile"
+    assert "" == err
+
+
 def test_teardown(pcs_full, monkeypatch, capsys):
+    """Basic tests for integrity of the teardown phase"""
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     original_phase_f = run.run_phase_function
 
