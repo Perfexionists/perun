@@ -2049,5 +2049,6 @@ def _compare_file_outputs(runner_result, reference_file):
     :param str reference_file: path to the reference file
     """
     with open(reference_file, 'r') as f_handle:
-        expected_output = f_handle.read()
-    assert runner_result == expected_output
+        expected_output = f_handle.readlines()
+    runner_result = runner_result.splitlines(keepends=True)
+    assert sorted(runner_result) == sorted(expected_output)

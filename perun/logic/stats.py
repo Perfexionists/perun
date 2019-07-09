@@ -47,7 +47,7 @@ import perun.logic.pcs as pcs
 import perun.utils as utils
 import perun.utils.exceptions as exceptions
 import perun.vcs as vcs
-import perun.profile.factory as profiles
+import perun.profile.helpers as helpers
 import perun.utils.log as perun_log
 
 from perun.utils.helpers import SuppressedExceptions
@@ -71,7 +71,7 @@ def build_stats_filename_as_profile_source(profile, ignore_timestamp, minor_vers
 
     :return str: the generated stats filename (not path!)
     """
-    profile_index_entry = profiles.find_profile_entry(profile, minor_version)
+    profile_index_entry = helpers.find_profile_entry(profile, minor_version)
     stats_name = profile_index_entry.path
     if ignore_timestamp:
         # Remove the timestamp entry in the profile name
@@ -92,7 +92,7 @@ def build_stats_filename_as_profile_sha(profile, minor_version=None):
 
     :return str: the generated stats filename (not path!)
     """
-    return profiles.find_profile_entry(profile, minor_version).checksum
+    return helpers.find_profile_entry(profile, minor_version).checksum
 
 
 def get_stats_file_path(stats_filename, minor_version=None, check_existence=False,
