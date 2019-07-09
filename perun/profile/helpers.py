@@ -29,10 +29,11 @@ import perun.profile.query as query
 import perun.utils.log as perun_log
 
 from perun.utils import get_module
+from perun.profile.factory import Profile
 from perun.utils.exceptions import InvalidParameterException, MissingConfigSectionException, \
                                    TagOutOfRangeException
 from perun.utils.helpers import Job
-from perun.utils.structs import Unit
+from perun.utils.structs import Unit, Executable
 
 __author__ = 'Tomas Fiedor'
 
@@ -265,9 +266,9 @@ def generate_header_for_profile(job):
 
     return {
         'type': collector.COLLECTOR_TYPE,
-        'cmd': job.cmd,
-        'args': job.args,
-        'workload': job.workload,
+        'cmd': job.executable.cmd,
+        'args': job.executable.args,
+        'workload': job.executable.workload,
         'units': generate_units(collector)
     }
 
@@ -362,8 +363,9 @@ def extract_job_from_profile(profile):
     cmd = profile['header']['cmd']
     args = profile['header']['args']
     workload = profile['header']['workload']
+    executable = Executable(cmd, args, workload)
 
-    return Job(collector, posts, cmd, workload, args)
+    return Job(collector, posts, executable)
 
 
 def is_key_aggregatable_by(profile, func, key, keyname):
@@ -432,6 +434,9 @@ def merge_resources_of(lhs, rhs):
     :param Profile rhs: right operator of the profile merge
     :return: profile with merged resources
     """
+    # Not Good: Temporary solution:
+    if not isinstance(rhs, Profile):
+        rhs = Profile(rhs)
     # Return lhs/rhs if rhs/lhs is empty
     lhs_res = [res[1] for res in lhs.all_resources()] if lhs else []
     rhs_res = [res[1] for res in rhs.all_resources()] if rhs else []
