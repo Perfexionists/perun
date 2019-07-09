@@ -57,7 +57,7 @@ import perun.logic.config as perun_config
 import perun.logic.temp as temp
 import perun.logic.stats as stats
 import perun.postprocess
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 import perun.utils as utils
 import perun.utils.script_helpers as scripts
 import perun.utils.cli_helpers as cli_helpers

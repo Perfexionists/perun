@@ -21,7 +21,7 @@ def profile_filter(generator, rule):
         rule(str): string to search in the name
 
     Returns:
-        dict: first profile with name containing the rule
+        Profile: first profile with name containing the rule
     """
     # Loop the generator and test the rule
     for profile in generator:
@@ -40,8 +40,8 @@ def test_flame_graph(memory_profiles):
         flame_graph = convert.to_flame_graph_format(memory_profile)
 
         line_no = 0
-        for snap in memory_profile['snapshots']:
-            line_no += len(list(filter(lambda item: item['subtype'] != 'free', snap['resources'])))
+        for _, snap in memory_profile.all_snapshots():
+            line_no += len(list(filter(lambda item: item['subtype'] != 'free', snap)))
 
         for line in flame_graph:
             print(line)
@@ -56,7 +56,7 @@ def test_heap_map(memory_profiles):
     """
     for memory_profile in memory_profiles:
         heap_map = convert.to_heap_map_format(memory_profile)
-        assert len(heap_map['snapshots']) == len(memory_profile['snapshots'])
+        assert len(heap_map['snapshots']) == len(list(memory_profile.all_snapshots()))
 
 
 def test_heat_map(memory_profiles):
@@ -81,7 +81,7 @@ def test_coefficients_to_points_correct(postprocess_profiles):
 
     # Get all models and perform the conversion on all of them
     # TODO: add more advanced checks
-    models = list(query.all_models_of(models_profile))
+    models = list(models_profile.all_models())
     for model in models:
         data = convert.plot_data_from_coefficients_of(model[1])
         assert 'plot_x' in data
@@ -98,7 +98,7 @@ def test_coefficients_to_points_corrupted_model(postprocess_profiles):
     assert models_profile is not None
 
     # Get all models and perform the conversion on all of them
-    models = list(query.all_models_of(models_profile))
+    models = list(models_profile.all_models())
     with pytest.raises(exceptions.InvalidModelException) as exc:
         for model in models:
             convert.plot_data_from_coefficients_of(model[1])

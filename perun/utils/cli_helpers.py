@@ -10,7 +10,7 @@ import re
 import click
 
 import perun
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 import perun.logic.commands as commands
 import perun.logic.store as store
 import perun.logic.stats as stats

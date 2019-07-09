@@ -4,7 +4,6 @@ import re
 import operator
 import collections
 import namedlist
-import click
 
 from enum import Enum
 
@@ -69,9 +68,6 @@ COLLECT_PHASE_POSTPROCESS = 'yellow'
 COLLECT_PHASE_ERROR = 'red'
 COLLECT_PHASE_ATTRS = []
 COLLECT_PHASE_ATTRS_HIGH = []
-
-# Show specific
-pass_profile = click.make_pass_decorator(dict)
 
 # Degradation specific
 CHANGE_CMD_COLOUR = 'magenta'

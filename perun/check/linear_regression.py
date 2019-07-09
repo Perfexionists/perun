@@ -68,7 +68,7 @@ def exec_linear_regression(uid, baseline_x_pts, lin_abs_error, threshold, linear
             change_type = 'linear'
 
     std_err_profile = fast_check.exec_fast_check(
-        baseline_profile, baseline_x_pts, lin_abs_error
+        uid, baseline_profile, baseline_x_pts, lin_abs_error
     )
     # obtaining the models (linear and quadratic) from the new regressed profile
     quad_err_model = detect.get_filtered_best_models_of(

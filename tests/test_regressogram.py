@@ -47,7 +47,7 @@ def test_regressogram_method(postprocess_profiles):
                 else:
                     compare_results(model[0][key], exp_result[key], eps=0.00001)
         # Remove generated models for next run of iteration
-        del profile['profile']['global']['models']
+        profile['profile']['models'].clear()
 
 
 # Common expected interval edges

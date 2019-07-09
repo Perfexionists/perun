@@ -176,13 +176,13 @@ def add_models_to_profile(profile, models):
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
-    :param profile: profile to add the analysis
-    :param models: analysis executed by the individual postprocessor
+    :param Profil profile: profile to add the analysis
+    :param list models: analysis executed by the individual postprocessor
     :return: method has no return value
     """
     # Store the results into the original profile
-    if 'models' not in profile['global']:
-        profile['global']['models'] = models
+    if 'models' not in profile.keys():
+        profile['models'] = models
     else:
-        profile['global']['models'].extend(models)
+        profile['models'].extend(models)
     return profile

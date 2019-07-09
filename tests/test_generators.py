@@ -27,7 +27,7 @@ def test_integer_generator():
     for c_status, profile in integer_generator.generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile
-        assert len(profile['global']['resources']) > 0
+        assert len(profile['resources']) > 0
 
     # Try that the pure generator raises error
     pure_generator = Generator(integer_job)
@@ -109,7 +109,7 @@ def test_loading_generators_from_config(monkeypatch, pcs_full):
     for c_status, profile in constructor(integer_job, **params).generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile
-        assert len(profile['global']['resources'])
+        assert len(profile['resources'])
 
 
 def test_singleton():
@@ -122,7 +122,7 @@ def test_singleton():
     for c_status, profile in singleton_generator.generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile
-        assert len(profile['global']['resources']) > 0
+        assert len(profile['resources']) > 0
         job_count += 1
     assert job_count == 1
 
@@ -136,7 +136,7 @@ def test_string_generator():
     for c_status, profile in string_generator.generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile
-        assert len(profile['global']['resources']) > 0
+        assert len(profile['resources']) > 0
 
 
 def test_file_generator():
@@ -148,4 +148,4 @@ def test_file_generator():
     for c_status, profile in file_generator.generate(runner.run_collector):
         assert c_status == CollectStatus.OK
         assert profile
-        assert len(profile['global']['resources']) > 0
+        assert len(profile['resources']) > 0

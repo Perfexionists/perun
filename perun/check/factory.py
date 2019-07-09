@@ -9,7 +9,8 @@ from perun.utils.structs import PerformanceChange
 
 import perun.utils.exceptions as exceptions
 import perun.utils.log as log
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
+import perun.profile.factory as profile_factory
 import perun.logic.runner as runner
 import perun.logic.config as config
 import perun.logic.pcs as pcs
@@ -154,9 +155,9 @@ def degradation_between_profiles(baseline_profile, target_profile):
     :param ProfileInfo target_profile: profile corresponding to the checked minor version
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    if not isinstance(baseline_profile, dict):
+    if not isinstance(baseline_profile, profile_factory.Profile):
         baseline_profile = store.load_profile_from_file(baseline_profile.realpath, False)
-    if not isinstance(target_profile, dict):
+    if not isinstance(target_profile, profile_factory.Profile):
         target_profile = store.load_profile_from_file(target_profile.realpath, False)
 
     # We run all of the degradation methods suitable for the given configuration of profile

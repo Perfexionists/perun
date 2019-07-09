@@ -1,0 +1,95 @@
+{
+  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae",
+  "collector_info": {
+    "params": {
+      "rules": [
+        "skiplistSearch"
+      ],
+      "internal_data_filename": "trace.log",
+      "internal_storage_size": 20000,
+      "internal_direct_output": false,
+      "sampling": [],
+      "files": [
+        "../example_sources/skiplist_parameters_cpp/skiplist_height_low.cpp",
+        "../example_sources/structures/skiplist.cpp",
+        "../example_sources/structures/skiplist.h"
+      ],
+      "target_dir": "./target"
+    },
+    "name": "complexity"
+  },
+  "global": {
+    "models": [
+      {
+        "x_interval_end": 1000000,
+        "r_square": 0.0,
+        "uid": "skiplistSearch(skiplist*, int)",
+        "model": "constant",
+        "method": "full",
+        "x_interval_start": 1,
+        "coeffs": [
+          {
+            "value": 25703.159215696418,
+            "name": "b0"
+          },
+          {
+            "value": 0.0,
+            "name": "b1"
+          }
+        ]
+      },
+      {
+        "x_interval_end": 1000000,
+        "r_square": 0.6844937271954514,
+        "uid": "skiplistSearch(skiplist*, int)",
+        "model": "power",
+        "method": "full",
+        "x_interval_start": 1,
+        "coeffs": [
+          {
+            "value": 4.59074017916881,
+            "name": "b0"
+          },
+          {
+            "value": 0.6483671438009997,
+            "name": "b1"
+          }
+        ]
+      }
+    ],
+    "time": "18.484409s",
+    "resources": [
+      {
+        "amount": 4310.180936395099,
+        "type": "mixed",
+        "subtype": "time delta",
+        "uid": "skiplistSearch(skiplist*, int)",
+        "structure-unit-size": 1
+      },
+      {
+        "amount": 4384.978480029307,
+        "type": "mixed",
+        "subtype": "time delta",
+        "uid": "skiplistSearch(skiplist*, int)",
+        "structure-unit-size": 1001
+      },
+      {
+        "amount": 4503.062376017413,
+        "type": "mixed",
+        "subtype": "time delta",
+        "uid": "skiplistSearch(skiplist*, int)",
+        "structure-unit-size": 2001
+      }
+    ]
+  },
+  "header": {
+    "type": "mixed",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "args": "",
+    "workload": "wl",
+    "cmd": "cmd"
+  },
+  "postprocessors": []
+}

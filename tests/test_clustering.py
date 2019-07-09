@@ -9,7 +9,6 @@ import perun.cli as cli
 import perun.utils.log as log
 import perun.postprocess.clusterizer.run as clusterizer
 import perun.logic.store as store
-import perun.profile.query as query
 
 __author__ = 'Tomas Fiedor'
 
@@ -41,10 +40,10 @@ def test_sort_order(full_profiles):
 def get_malloced_resources(profile):
     """Helper function for getting resources that were allocated by malloc
 
-    :param dict profile: dictionary with resources
+    :param Profile profile: dictionary with resources
     :return: list of resources allocated by malloc
     """
-    resources = list(map(operator.itemgetter(1), query.all_resources_of(profile)))
+    resources = list(map(operator.itemgetter(1), profile.all_resources()))
     resources.sort(key=clusterizer.resource_sort_key)
     malloced = []
     for group, members in itertools.groupby(resources, clusterizer.resource_group_key):
