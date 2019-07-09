@@ -69,7 +69,7 @@ def get_filtered_best_models_of(profile, model_filter=filter_by_r_square):
     obtains model of that type. Method maps the individually metrics from obtained profile
     to map, which is returns to calling function. Models are chosen unique according to its UID.
 
-    :param dict profile: dictionary of profile resources and stuff
+    :param Profile profile: dictionary of profile resources and stuff
     :param function model_filter: filter function for models
     :returns: map of unique identifier of computed models to their best models
     """
@@ -77,7 +77,7 @@ def get_filtered_best_models_of(profile, model_filter=filter_by_r_square):
         uid: BestModelRecord("", 0.0, 0.0, 0.0, 0, 0, 0.0)
         for uid in query.unique_model_values_of(profile, 'uid')
     }
-    for _, model in query.all_models_of(profile):
+    for _, model in profile.all_models():
         model_uid = model['uid']
         if model_filter(best_model_map, model):
             if model['model'] == 'quadratic':
@@ -202,7 +202,7 @@ def general_detection(baseline_profile, target_profile,
                 )
             elif classification_method == ClassificationMethod.FastCheck:
                 err_profile = check.fast_check.exec_fast_check(
-                    baseline_profile, baseline_x_pts, abs_error
+                    uid, baseline_profile, baseline_x_pts, abs_error
                 )
                 std_err_model = get_filtered_best_models_of(err_profile)
                 change_type = std_err_model[uid][0].upper()

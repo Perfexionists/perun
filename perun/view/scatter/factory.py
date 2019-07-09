@@ -65,7 +65,7 @@ def generate_plot_data_slices(profile):
     """
     # Get resources for scatter plot points and models for curves
     resource_table = convert.resources_to_pandas_dataframe(profile)
-    models = list(map(itemgetter(1), query.all_models_of(profile)))
+    models = list(map(itemgetter(1), profile.all_models()))
     # Get unique uids from profile, each uid (and optionally interval) will have separate graph
     uids = map(convert.flatten, query.unique_resource_values_of(profile, 'uid'))
 

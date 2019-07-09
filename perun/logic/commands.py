@@ -17,7 +17,7 @@ import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.logic.store as store
 import perun.logic.index as index
-import perun.profile.factory as profile
+import perun.profile.helpers as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp

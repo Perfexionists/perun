@@ -2,7 +2,7 @@
 
 import click
 import perun.view.flamegraph.flamegraph as flame
-from perun.utils.helpers import pass_profile
+from perun.profile.factory import pass_profile
 
 __author__ = 'Radim Podola'
 

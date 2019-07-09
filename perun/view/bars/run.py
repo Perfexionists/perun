@@ -11,7 +11,7 @@ import perun.utils.log as log
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.bokeh_helpers as bokeh_helpers
 
-from perun.utils.helpers import pass_profile
+from perun.profile.factory import pass_profile
 from perun.utils.exceptions import InvalidParameterException
 
 __author__ = 'Radim Podola'

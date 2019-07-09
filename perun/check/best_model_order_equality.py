@@ -61,13 +61,13 @@ MODEL_ORDERING = [
 def get_best_models_of(profile):
     """Retrieves the best models for unique identifiers and their models
 
-    :param dict profile: dictionary of profile resources and stuff
+    :param Profile profile: dictionary of profile resources and stuff
     :returns: map of unique identifier of computed models to their best models
     """
     best_model_map = {
         uid: ("", 0.0) for uid in query.unique_model_values_of(profile, 'uid')
     }
-    for _, model in query.all_models_of(profile):
+    for _, model in profile.all_models():
         model_uid = model['uid']
         if best_model_map[model_uid][1] < model['r_square']:
             best_model_map[model_uid] = (model['model'], model['r_square'])
