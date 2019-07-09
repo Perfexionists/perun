@@ -20,6 +20,7 @@ import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
 import perun.utils.log as log
 
+from perun.profile.factory import Profile
 from perun.utils.helpers import Job
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
 from perun.workload.integer_generator import IntegerGenerator
@@ -609,6 +610,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     assert executable.to_escaped_string() != ""
     job = Job('memory', [], executable)
     _, prof = run.run_collector(collector_unit, job)
+    prof = Profile(prof)
 
     assert len(list(prof.all_resources())) == 2
 
@@ -618,6 +620,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     })
     job = Job('memory', [], executable)
     _, prof = run.run_collector(collector_unit, job)
+    prof = Profile(prof)
 
     assert len(list(prof.all_resources())) == 0
 
