@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.17 (2019-07-09)
+-----------------
+
+`commit: e6b1e88d766d93cdab4f114464df51114d6415a8`
+
+**Optimize profile format**
+
   - make profile format more compact
   - fix minor issue in fast check
   - extract selected functions from query to profile object
