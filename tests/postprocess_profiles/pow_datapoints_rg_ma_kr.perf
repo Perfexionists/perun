@@ -1,23 +1,161 @@
 {
+  "resources": {
+    "pow::test2#0": {
+      "amount": [
+        159.9, 206.9, 236.8, 269.9, 300.6, 323.6, 351.7, 377.6, 384.1, 437.2, 444.7
+      ],
+      "structure-unit-size": [
+        17.6, 26.0, 31.9, 38.9, 45.8, 51.2, 58.1, 64.7, 66.7, 80.8, 82.9
+      ]
+    },
+    "pow::test3#0": {
+      "amount": [
+        0, 3, 24, 81, 192, 375
+      ],
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5
+      ]
+    },
+    "pow::test1#0": {
+      "amount": [
+        33, 49, 19, 27, 23, 51, 34, 32, 28, 36, 43
+      ],
+      "structure-unit-size": [
+        8.1, 69.9, 4.2, 14.1, 5.6, 52.1, 44.6, 19.6, 33, 6.7, 30.1
+      ]
+    }
+  },
+  "header": {
+    "units": {
+      "mixed(time delta)": "us"
+    },
+    "args": "",
+    "type": "mixed",
+    "workload": "",
+    "cmd": "complexity"
+  },
+  "models": [
+    {
+      "x_start": 4.2,
+      "buckets_method": "doane",
+      "y_start": 19,
+      "r_square": 0.7031140196767394,
+      "statistic_function": "mean",
+      "x_end": 69.9,
+      "method": "regressogram",
+      "bucket_stats": [
+        27.75, 27.0, 32.0, 0.0, 35.5, 0.0, 34.0, 0.0, 51.0, 0.0, 49.0
+      ],
+      "uid": "pow::test1"
+    },
+    {
+      "x_start": 17.6,
+      "buckets_method": "doane",
+      "y_start": 159.9,
+      "r_square": 0.9994266342574701,
+      "statistic_function": "mean",
+      "x_end": 82.9,
+      "method": "regressogram",
+      "bucket_stats": [
+        159.9, 206.9, 0.0, 236.8, 269.9, 0.0, 300.6, 323.6, 351.7, 0.0, 380.85, 0.0, 0.0, 440.95
+      ],
+      "uid": "pow::test2"
+    },
+    {
+      "x_start": 0.0,
+      "buckets_method": "doane",
+      "y_start": 0,
+      "r_square": 0.0,
+      "statistic_function": "mean",
+      "x_end": 5.0,
+      "method": "regressogram",
+      "bucket_stats": [
+        112.5
+      ],
+      "uid": "pow::test3"
+    },
+    {
+      "x_start": 4.2,
+      "r_square": 1.0,
+      "window_width": 1,
+      "x_end": 69.9,
+      "method": "moving_average",
+      "bucket_stats": [
+        19.0, 23.0, 36.0, 33.0, 27.0, 32.0, 43.0, 28.0, 34.0, 51.0, 49.0
+      ],
+      "uid": "pow::test1",
+      "per_key": "structure-unit-size",
+      "moving_method": "sma"
+    },
+    {
+      "x_start": 17.6,
+      "r_square": 1.0,
+      "window_width": 1,
+      "x_end": 82.9,
+      "method": "moving_average",
+      "bucket_stats": [
+        159.9, 206.9, 236.80000000000004, 269.90000000000003, 300.6, 323.6, 351.69999999999993, 377.59999999999997, 384.1, 437.19999999999993, 444.6999999999999
+      ],
+      "uid": "pow::test2",
+      "per_key": "structure-unit-size",
+      "moving_method": "sma"
+    },
+    {
+      "x_start": 0,
+      "r_square": 1.0,
+      "window_width": 1,
+      "x_end": 5,
+      "method": "moving_average",
+      "bucket_stats": [
+        0.0, 3.0, 24.0, 81.0, 192.0, 375.0
+      ],
+      "uid": "pow::test3",
+      "per_key": "structure-unit-size",
+      "moving_method": "sma"
+    },
+    {
+      "kernel_stats": [
+        26.175124008473617, 26.67927243804135, 27.07538906127298, 27.579537490841147, 29.740173617560647, 31.72075673371988, 35.50186995547885, 36.546177416726486, 40.72340726171728, 43.42420242011612, 49.8340895960489
+      ],
+      "r_square": 0.5997834026574319,
+      "x_start": 4.2,
+      "kernel_mode": "estimator",
+      "method": "kernel_regression",
+      "uid": "pow::test1",
+      "per_key": "structure-unit-size",
+      "bandwidth": 38036001.984519236,
+      "x_end": 69.9
+    },
+    {
+      "kernel_stats": [
+        159.90000000022295, 206.89631055086934, 236.7839412561459, 269.89162093926495, 300.58853882925257, 323.5887330812313, 351.69391559809105, 377.48741438240006, 384.1035395592318, 437.1999999959081, 444.7000000000029
+      ],
+      "r_square": 0.999999847606045,
+      "x_start": 17.6,
+      "kernel_mode": "estimator",
+      "method": "kernel_regression",
+      "uid": "pow::test2",
+      "per_key": "structure-unit-size",
+      "bandwidth": 2.1081316666506185,
+      "x_end": 82.9
+    },
+    {
+      "kernel_stats": [
+        -7.367966913668367e-16, 3.001439511250745, 24.002879022501492, 81.00431853375223, 192.00575804500298, 375.00000000000006
+      ],
+      "r_square": 0.9999999994287802,
+      "x_start": 0,
+      "kernel_mode": "estimator",
+      "method": "kernel_regression",
+      "uid": "pow::test3",
+      "per_key": "structure-unit-size",
+      "bandwidth": 0.2302209349610233,
+      "x_end": 5
+    }
+  ],
   "collector_info": {
-    "name": "trace",
     "params": {
-      "sampling": [
-        {
-          "func": "SLList_insert",
-          "sample": 1
-        },
-        {
-          "func": "func1",
-          "sample": 1
-        }
-      ],
-      "internal_data_filename": "trace.log",
-      "files": [
-        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
-        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
-        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
-      ],
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
       "rules": [
         "SLList_init",
         "func1",
@@ -30,450 +168,84 @@
         "Remove",
         "Search"
       ],
-      "internal_storage_size": 20000,
-      "target_dir": "/home/jirka/Git/complexity-repo/target",
-      "internal_direct_output": false
-    }
-  },
-  "global": {
-    "time": "0.00023s",
-    "resources": [
-      {
-        "structure-unit-size": 8.1,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 33,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 69.9,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 49,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 4.2,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 19,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 14.1,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 27,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 5.6,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 23,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 52.1,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 51,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 44.6,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 34,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 19.6,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 32,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 33,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 28,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 6.7,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 36,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 30.1,
-        "uid": "pow::test1",
-        "type": "mixed",
-        "amount": 43,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 17.6,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 159.9,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 26.0,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 206.9,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 31.9,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 236.8,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 38.9,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 269.9,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 45.8,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 300.6,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 51.2,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 323.6,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 58.1,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 351.7,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 64.7,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 377.6,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 66.7,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 384.1,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 80.8,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 437.2,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 82.9,
-        "uid": "pow::test2",
-        "type": "mixed",
-        "amount": 444.7,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 0,
-        "uid": "pow::test3",
-        "type": "mixed",
-        "amount": 0,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 1,
-        "uid": "pow::test3",
-        "type": "mixed",
-        "amount": 3,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 2,
-        "uid": "pow::test3",
-        "type": "mixed",
-        "amount": 24,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 3,
-        "uid": "pow::test3",
-        "type": "mixed",
-        "amount": 81,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 4,
-        "uid": "pow::test3",
-        "type": "mixed",
-        "amount": 192,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 5,
-        "uid": "pow::test3",
-        "type": "mixed",
-        "amount": 375,
-        "subtype": "time delta"
-      }
-    ],
-    "models": [
-      {
-        "statistic_function": "mean",
-        "uid": "pow::test1",
-        "buckets_method": "doane",
-        "method": "regressogram",
-        "x_interval_end": 69.9,
-        "bucket_stats": [
-          27.75,
-          27.0,
-          32.0,
-          0.0,
-          35.5,
-          0.0,
-          34.0,
-          0.0,
-          51.0,
-          0.0,
-          49.0
-        ],
-        "r_square": 0.7031140196767394,
-        "x_interval_start": 4.2,
-        "y_interval_start": 19
-      },
-      {
-        "statistic_function": "mean",
-        "uid": "pow::test2",
-        "buckets_method": "doane",
-        "method": "regressogram",
-        "x_interval_end": 82.9,
-        "bucket_stats": [
-          159.9,
-          206.9,
-          0.0,
-          236.8,
-          269.9,
-          0.0,
-          300.6,
-          323.6,
-          351.7,
-          0.0,
-          380.85,
-          0.0,
-          0.0,
-          440.95
-        ],
-        "r_square": 0.9994266342574701,
-        "x_interval_start": 17.6,
-        "y_interval_start": 159.9
-      },
-      {
-        "statistic_function": "mean",
-        "uid": "pow::test3",
-        "buckets_method": "doane",
-        "method": "regressogram",
-        "x_interval_end": 5.0,
-        "bucket_stats": [
-          112.5
-        ],
-        "r_square": 0.0,
-        "x_interval_start": 0.0,
-        "y_interval_start": 0
-      },
-      {
-        "per_key": "structure-unit-size",
-        "uid": "pow::test1",
-        "method": "moving_average",
-        "moving_method": "sma",
-        "window_width": 1,
-        "x_interval_end": 69.9,
-        "bucket_stats": [
-          19.0,
-          23.0,
-          36.0,
-          33.0,
-          27.0,
-          32.0,
-          43.0,
-          28.0,
-          34.0,
-          51.0,
-          49.0
-        ],
-        "r_square": 1.0,
-        "x_interval_start": 4.2
-      },
-      {
-        "per_key": "structure-unit-size",
-        "uid": "pow::test2",
-        "method": "moving_average",
-        "moving_method": "sma",
-        "window_width": 1,
-        "x_interval_end": 82.9,
-        "bucket_stats": [
-          159.9,
-          206.9,
-          236.80000000000004,
-          269.90000000000003,
-          300.6,
-          323.6,
-          351.69999999999993,
-          377.59999999999997,
-          384.1,
-          437.19999999999993,
-          444.6999999999999
-        ],
-        "r_square": 1.0,
-        "x_interval_start": 17.6
-      },
-      {
-        "per_key": "structure-unit-size",
-        "uid": "pow::test3",
-        "method": "moving_average",
-        "moving_method": "sma",
-        "window_width": 1,
-        "x_interval_end": 5,
-        "bucket_stats": [
-          0.0,
-          3.0,
-          24.0,
-          81.0,
-          192.0,
-          375.0
-        ],
-        "r_square": 1.0,
-        "x_interval_start": 0
-      },
-      {
-        "kernel_mode": "estimator",
-        "per_key": "structure-unit-size",
-        "uid": "pow::test1",
-        "method": "kernel_regression",
-        "x_interval_end": 69.9,
-        "r_square": 0.5997834026574319,
-        "kernel_stats": [
-          26.175124008473617,
-          26.67927243804135,
-          27.07538906127298,
-          27.579537490841147,
-          29.740173617560647,
-          31.72075673371988,
-          35.50186995547885,
-          36.546177416726486,
-          40.72340726171728,
-          43.42420242011612,
-          49.8340895960489
-        ],
-        "x_interval_start": 4.2,
-        "bandwidth": 38036001.984519236
-      },
-      {
-        "kernel_mode": "estimator",
-        "per_key": "structure-unit-size",
-        "uid": "pow::test2",
-        "method": "kernel_regression",
-        "x_interval_end": 82.9,
-        "r_square": 0.999999847606045,
-        "kernel_stats": [
-          159.90000000022295,
-          206.89631055086934,
-          236.7839412561459,
-          269.89162093926495,
-          300.58853882925257,
-          323.5887330812313,
-          351.69391559809105,
-          377.48741438240006,
-          384.1035395592318,
-          437.1999999959081,
-          444.7000000000029
-        ],
-        "x_interval_start": 17.6,
-        "bandwidth": 2.1081316666506185
-      },
-      {
-        "kernel_mode": "estimator",
-        "per_key": "structure-unit-size",
-        "uid": "pow::test3",
-        "method": "kernel_regression",
-        "x_interval_end": 5,
-        "r_square": 0.9999999994287802,
-        "kernel_stats": [
-          -7.367966913668367e-16,
-          3.001439511250745,
-          24.002879022501492,
-          81.00431853375223,
-          192.00575804500298,
-          375.00000000000006
-        ],
-        "x_interval_start": 0,
-        "bandwidth": 0.2302209349610233
-      }
-    ]
-  },
-  "header": {
-    "workload": "",
-    "cmd": "complexity",
-    "type": "mixed",
-    "units": {
-      "mixed(time delta)": "us"
+      "internal_direct_output": false,
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
+      "internal_data_filename": "trace.log",
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "internal_storage_size": 20000
     },
-    "args": ""
+    "name": "trace"
+  },
+  "resource_type_map": {
+    "pow::test2#0": {
+      "subtype": "time delta",
+      "uid": "pow::test2",
+      "time": "0.00023s",
+      "type": "mixed"
+    },
+    "pow::test3#0": {
+      "subtype": "time delta",
+      "uid": "pow::test3",
+      "time": "0.00023s",
+      "type": "mixed"
+    },
+    "pow::test1#0": {
+      "subtype": "time delta",
+      "uid": "pow::test1",
+      "time": "0.00023s",
+      "type": "mixed"
+    }
   },
   "postprocessors": [
     {
-      "name": "regressogram",
       "params": {
-        "statistic_function": "mean",
         "bucket_method": "doane",
         "per_key": "structure-unit-size",
+        "statistic_function": "mean",
         "bucket_number": null,
         "of_key": "amount"
-      }
+      },
+      "name": "regressogram"
     },
     {
-      "name": "moving_average",
       "params": {
-        "per_key": "structure-unit-size",
-        "moving_method": "sma",
+        "center": true,
+        "min_periods": null,
         "window_width": null,
         "of_key": "amount",
-        "min_periods": null,
-        "center": true,
-        "window_type": null
-      }
+        "per_key": "structure-unit-size",
+        "window_type": null,
+        "moving_method": "sma"
+      },
+      "name": "moving_average"
     },
     {
-      "name": "kernel_regression",
       "params": {
         "n_sub_samples": 50,
-        "per_key": "structure-unit-size",
-        "return_median": false,
-        "randomize": false,
-        "n_re_samples": 25,
-        "reg_type": "ll",
-        "efficient": false,
-        "of_key": "amount",
         "bandwidth_method": "cv_ls",
-        "kernel_mode": "estimator-settings"
-      }
+        "return_median": false,
+        "kernel_mode": "estimator-settings",
+        "of_key": "amount",
+        "reg_type": "ll",
+        "per_key": "structure-unit-size",
+        "randomize": false,
+        "efficient": false,
+        "n_re_samples": 25
+      },
+      "name": "kernel_regression"
     }
   ],
   "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a"

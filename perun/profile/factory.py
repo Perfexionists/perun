@@ -15,6 +15,7 @@ import perun.profile.convert as convert
 
 __author__ = 'Tomas Fiedor'
 
+
 class Profile(collections.MutableMapping):
     """
     :ivar dict _storage: internal storage of the profile
@@ -216,15 +217,15 @@ class Profile(collections.MutableMapping):
 
             >>> gen = complexity_prof.all_models()
             >>> gen.__next__()
-            (0, {'x_interval_start': 0, 'model': 'constant', 'method': 'full',
+            (0, {'x_start': 0, 'model': 'constant', 'method': 'full',
             'coeffs': [{'name': 'b0', 'value': 0.5644496762801648}, {'name': 'b1',
             'value': 0.0}], 'uid': 'SLList_insert(SLList*, int)', 'r_square': 0.0,
-            'x_interval_end': 11892})
+            'x_end': 11892})
             >>> gen.__next__()
-            (1, {'x_interval_start': 0, 'model': 'exponential', 'method': 'full',
+            (1, {'x_start': 0, 'model': 'exponential', 'method': 'full',
             'coeffs': [{'name': 'b0', 'value': 0.9909792049684152}, {'name': 'b1',
             'value': 1.000004056250301}], 'uid': 'SLList_insert(SLList*, int)',
-            'r_square': 0.007076437903106431, 'x_interval_end': 11892})
+            'r_square': 0.007076437903106431, 'x_end': 11892})
 
 
         :param dict profile: performance profile w.r.t :ref:`profile-spec`

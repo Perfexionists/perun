@@ -18,7 +18,7 @@ def specific_quad_data(x_pts, y_pts, steps, **_):
     where each part continues the computation (the part contains results from the previous).
 
     Yielded data dictionary contains 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'y_sq_sum',
-    x_cube_sum, x4_sum, x_sq_y_sum, 'pts_num', 'x_interval_start' and 'x_interval_end' keys.
+    x_cube_sum, x4_sum, x_sq_y_sum, 'pts_num', 'x_start' and 'x_end' keys.
 
     :param list x_pts: the list of x data points
     :param list y_pts: the list of y data points
@@ -58,7 +58,7 @@ def specific_quad_data(x_pts, y_pts, steps, **_):
         data = dict(
             x_sum=x_sum, y_sum=y_sum, xy_sum=xy_sum, x_sq_sum=x_square_sum, y_sq_sum=y_square_sum,
             x_cube_sum=x_cube_sum, x4_sum=x4_sum, x_sq_y_sum=x_square_y_sum,
-            pts_num=pts_num, x_interval_start=x_min, x_interval_end=x_max
+            pts_num=pts_num, x_start=x_min, x_end=x_max
         )
         yield data
 

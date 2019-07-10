@@ -114,8 +114,8 @@ def regression_analysis(profile, **kwargs):
                     "name": "b1"
                 }
             ],
-            "x_interval_start": 0,
-            "x_interval_end": 11892,
+            "x_start": 0,
+            "x_end": 11892,
             "model": "linear",
             "method": "full",
         }

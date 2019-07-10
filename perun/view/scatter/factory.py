@@ -45,11 +45,11 @@ def slice_models_by_interval(models):
     :returns generator: stream of models slices (list)
     """
     # Sort the models by intervals first, to yield them in order
-    models = sorted(models, key=itemgetter('x_interval_start', 'x_interval_end'))
+    models = sorted(models, key=itemgetter('x_start', 'x_end'))
     # Separate the models into groups according to intervals
     intervals = defaultdict(list)
     for model in models:
-        intervals[(model['x_interval_start'], model['x_interval_end'])].append(model)
+        intervals[(model['x_start'], model['x_end'])].append(model)
     # Yield the list of models with the same interval
     for interval_models in intervals.items():
         yield interval_models[1]
@@ -143,10 +143,10 @@ def create_regressogram_model(graph, model, colour):
     bucket_no = len(model['bucket_stats'])
     # Evenly division of the interval by number of buckets
     x_pts = np.linspace(
-        model['x_interval_start'], model['x_interval_end'], num=bucket_no+ 1
+        model['x_start'], model['x_end'], num=bucket_no+ 1
     )
     # Add the beginning of the first edge
-    y_pts = np.append(model['y_interval_start'], model['bucket_stats'])
+    y_pts = np.append(model['y_start'], model['bucket_stats'])
     # Create legend for the plotted model
     legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(
         model['method'][:3], bucket_no, model['statistic_function'], model['r_square']
@@ -228,8 +228,8 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
         if models_slice:
             this_graph_title += ('; method: {0}; interval <{1}, {2}>'
                                  .format(models_slice[0]['method'],
-                                         models_slice[0]['x_interval_start'],
-                                         models_slice[0]['x_interval_end']))
+                                         models_slice[0]['x_start'],
+                                         models_slice[0]['x_end']))
         bokeh_helpers.configure_graph(
             scatter, profile, 'count', this_graph_title, x_axis_label, y_axis_label, graph_width)
 

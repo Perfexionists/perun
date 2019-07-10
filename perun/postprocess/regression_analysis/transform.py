@@ -7,14 +7,14 @@ from perun.postprocess.regression_analysis.regression_models import get_transfor
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def coefficients_to_points(model, coeffs, x_interval_start, x_interval_end, **_):
+def coefficients_to_points(model, coeffs, x_start, x_end, **_):
     """ Transform computed coefficients from regression analysis into points, which can be
         plotted as a function / curve.
 
     :param str model: the model name
     :param list coeffs: the model coefficients
-    :param int or float x_interval_start: the left bound of the x interval
-    :param int or float x_interval_end: the right bound of the x interval
+    :param int or float x_start: the left bound of the x interval
+    :param int or float x_end: the right bound of the x interval
     :raises DictionaryKeysValidationFailed: if some dictionary checking fails
     :raises TypeError: if the required function arguments are not in the unpacked dictionary input
     :returns dict: dictionary with 'plot_x' and 'plot_y' arrays
@@ -31,8 +31,8 @@ def coefficients_to_points(model, coeffs, x_interval_start, x_interval_end, **_)
             coefficient.get('name', 'invalid_coeff'): coefficient.get('value', 0)
         })
     data.update({
-        'x_interval_start': x_interval_start,
-        'x_interval_end': x_interval_end
+        'x_start': x_start,
+        'x_end': x_end
     })
 
     # Call the transformation function and check results

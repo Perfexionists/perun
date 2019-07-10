@@ -191,7 +191,7 @@ def kernel_regression(x_pts, y_pts, config):
         "bandwidth": bw_value[0][0] if config['kernel_mode'] != 'estimator-settings'
                      else kernel_estimate.bw[0],
         'r_square': kernel_estimate.r_squared(),
-        'kernel_stats': list(kernel_stats),
+        'bucket_stats': list(kernel_stats),
         'kernel_mode': 'estimator',
     }
 
@@ -283,7 +283,7 @@ def kernel_smoothing(x_pts, y_pts, config):
     return {
         'bandwidth': kernel_estimate.bandwidth[0][0],
         'r_square': metrics.r2_score(y_pts, kernel_estimate(x_pts)),
-        'kernel_stats': list(kernel_estimate(x_pts)),
+        'bucket_stats': list(kernel_estimate(x_pts)),
         'kernel_mode': 'smoothing',
     }
 
@@ -324,7 +324,7 @@ def kernel_ridge(x_pts, y_pts, config):
     return {
         "bandwidth": kernel_estimate.gamma,
         'r_square': kernel_estimate.score(x_pts, y_pts),
-        'kernel_stats': list(kernel_values),
+        'bucket_stats': list(kernel_values),
         'kernel_mode': 'ridge',
     }
 
@@ -350,8 +350,8 @@ def execute_kernel_regression(x_pts, y_pts, config):
 
     # Create the initial dictionary, that contains the common items for all modes
     kernel_model = {
-        'x_interval_start': min(x_pts),
-        'x_interval_end': max(x_pts),
+        'x_start': min(x_pts),
+        'x_end': max(x_pts),
         'per_key': config['per_key']
     }
 

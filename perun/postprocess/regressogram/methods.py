@@ -82,9 +82,9 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
         'buckets_method': 'user' if isinstance(buckets, int) else buckets,
         'statistic_function': statistic_function,
         'bucket_stats': bucket_stats.tolist(),
-        'x_interval_start': np.min(bucket_edges),
-        'x_interval_end': np.max(bucket_edges),
-        'y_interval_start': min(y_pts),
+        'x_start': np.min(bucket_edges),
+        'x_end': np.max(bucket_edges),
+        'y_start': min(y_pts),
         'r_square': sklearn.metrics.r2_score(
             y_pts, [bucket_stats[bucket_number - 1] for bucket_number in bucket_numbers]
         )

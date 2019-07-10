@@ -137,15 +137,16 @@ def moving_average(x_pts, y_pts, configuration):
         bucket_stats, r_square = execute_computation(y_pts, configuration)
     # If has not been specified the window width, then will be followed the iterative computation
     else:
-        bucket_stats, r_square, configuration['window_width'] = iterative_analysis(x_pts, y_pts,
-                                                                                   configuration)
+        bucket_stats, r_square, configuration['window_width'] = iterative_analysis(
+            x_pts, y_pts, configuration
+        )
 
     # Create output dictionaries
     return {
         'moving_method': configuration['moving_method'],
         'window_width': configuration['window_width'],
-        'x_interval_start': min(x_pts),
-        'x_interval_end': max(x_pts),
+        'x_start': min(x_pts),
+        'x_end': max(x_pts),
         'r_square': r_square,
         'bucket_stats': [float(value) for value in bucket_stats.values],
         'per_key': configuration['per_key']

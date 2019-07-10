@@ -1,18 +1,35 @@
 {
-  "collector_info": {
-    "name": "trace",
-    "params": {
-      "sampling": [
-        {
-          "sample": 1,
-          "func": "SLList_insert"
-        },
-        {
-          "sample": 1,
-          "func": "func1"
-        }
+  "resources": {
+    "log::test1#0": {
+      "amount": [
+        6, 9.5, 13, 15, 16.5, 17.5, 18.5, 19, 19.5, 19.7, 19.8
       ],
-      "internal_storage_size": 20000,
+      "structure-unit-size": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+      ]
+    },
+    "log::test2#0": {
+      "amount": [
+        0, 1, 2, 3
+      ],
+      "structure-unit-size": [
+        1, 10, 100, 1000
+      ]
+    }
+  },
+  "header": {
+    "workload": "",
+    "args": "",
+    "cmd": "complexity",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "type": "mixed"
+  },
+  "models": [],
+  "collector_info": {
+    "params": {
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
       "rules": [
         "SLList_init",
         "func1",
@@ -25,135 +42,41 @@
         "Remove",
         "Search"
       ],
+      "internal_direct_output": false,
       "files": [
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
       ],
-      "target_dir": "/home/jirka/Git/complexity-repo/target",
       "internal_data_filename": "trace.log",
-      "internal_direct_output": false
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "internal_storage_size": 20000
+    },
+    "name": "trace"
+  },
+  "resource_type_map": {
+    "log::test1#0": {
+      "subtype": "time delta",
+      "uid": "log::test1",
+      "time": "0.00023s",
+      "type": "mixed"
+    },
+    "log::test2#0": {
+      "subtype": "time delta",
+      "uid": "log::test2",
+      "time": "0.00023s",
+      "type": "mixed"
     }
   },
-  "global": {
-    "time": "0.00023s",
-    "resources": [
-      {
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 1,
-        "amount": 6
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 2,
-        "amount": 9.5
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 3,
-        "amount": 13
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 4,
-        "amount": 15
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 5,
-        "amount": 16.5
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 6,
-        "amount": 17.5
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 7,
-        "amount": 18.5
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 8,
-        "amount": 19
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 9,
-        "amount": 19.5
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 10,
-        "amount": 19.7
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test1",
-        "structure-unit-size": 11,
-        "amount": 19.8
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test2",
-        "structure-unit-size": 1,
-        "amount": 0
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test2",
-        "structure-unit-size": 10,
-        "amount": 1
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test2",
-        "structure-unit-size": 100,
-        "amount": 2
-      },
-			{
-        "subtype": "time delta",
-        "type": "mixed",
-        "uid": "log::test2",
-        "structure-unit-size": 1000,
-        "amount": 3
-      }
-    ]
-  },
-  "header": {
-    "type": "mixed",
-    "args": "",
-    "units": {
-      "mixed(time delta)": "ms"
-    },
-    "cmd": "complexity",
-    "workload": ""
-  },
-  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
-  "postprocessors": []
+  "postprocessors": [],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a"
 }

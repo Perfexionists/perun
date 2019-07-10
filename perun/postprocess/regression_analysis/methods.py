@@ -369,8 +369,8 @@ def _transform_to_output_data(data, extra_keys=None):
     """Transforms the data dictionary into their output format - omitting computational details
     and keys that are not important for the result and it's further manipulation.
 
-    The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_interval_start' and
-    'x_interval_end' keys taken from the data dictionary. The function also allows to specify
+    The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_start' and
+    'x_end' keys taken from the data dictionary. The function also allows to specify
     extra keys to be included in the output dictionary. If certain key is missing in the data
     dictionary, then it's not included in the output dictionary. Coefficients are saved with
     default names 'b0', 'b1'...
@@ -381,10 +381,10 @@ def _transform_to_output_data(data, extra_keys=None):
     :returns dict: the output dictionary
     """
     tools.validate_dictionary_keys(
-        data, ['model', 'coeffs', 'r_square', 'x_interval_start', 'x_interval_end'], [])
+        data, ['model', 'coeffs', 'r_square', 'x_start', 'x_end'], [])
 
     # Specify the keys which should be directly mapped
-    transform_keys = ['model', 'r_square', 'x_interval_start', 'x_interval_end', 'method', 'uid']
+    transform_keys = ['model', 'r_square', 'x_start', 'x_end', 'method', 'uid']
     if extra_keys is not None:
         transform_keys += extra_keys
     transformed = {key: data[key] for key in transform_keys if key in data}

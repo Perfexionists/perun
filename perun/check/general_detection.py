@@ -85,13 +85,13 @@ def get_filtered_best_models_of(profile, model_filter=filter_by_r_square):
                     model['model'], model['r_square'],
                     model['coeffs'][0]['value'], model['coeffs'][1]['value'],
                     model['coeffs'][2]['value'],
-                    model['x_interval_start'], model['x_interval_end'],
+                    model['x_start'], model['x_end'],
                 )
             else:
                 best_model_map[model_uid] = BestModelRecord(
                     model['model'], model['r_square'],
                     model['coeffs'][0]['value'], model['coeffs'][1]['value'], 0,
-                    model['x_interval_start'], model['x_interval_end']
+                    model['x_start'], model['x_end']
                 )
 
     return best_model_map

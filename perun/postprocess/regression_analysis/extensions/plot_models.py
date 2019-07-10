@@ -39,21 +39,21 @@ def model_plot_computation(model_x, model_y, **data):
     return plot_data
 
 
-def generic_plot_x_pts(x_interval_start, x_interval_end,
+def generic_plot_x_pts(x_start, x_end,
                        smoothness=DEFAULT_SMOOTHNESS, transform_by=tools.as_plot_x_dict, **_):
     """Generic version of model x points computation.
 
     Splits the x interval of model into number of points.
 
-    :param int or float x_interval_start: the left bound of the x interval
-    :param int or float x_interval_end: the right bound of the x interval
+    :param int or float x_start: the left bound of the x interval
+    :param int or float x_end: the right bound of the x interval
     :param int smoothness: number of points to produce from the interval
     :param function transform_by: function for additional transformation of the resulting data
     :raises TypeError: if the required function arguments are not in the unpacked dictionary input
     :returns dict: data dictionary with 'plot_x' array
     """
     # Produce number of points from the interval
-    return transform_by(tools.split_model_interval(x_interval_start, x_interval_end, smoothness))
+    return transform_by(tools.split_model_interval(x_start, x_end, smoothness))
 
 
 def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, transform_by=tools.as_plot_y_dict, **_):
