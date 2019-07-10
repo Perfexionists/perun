@@ -1,4 +1,128 @@
 {
+  "header": {
+    "args": "",
+    "workload": "wl",
+    "cmd": "cmd",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "type": "mixed"
+  },
+  "models": [
+    {
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 10.990460641562796
+        },
+        {
+          "name": "b1",
+          "value": 7.633198579672345e-05
+        }
+      ],
+      "r_square": 0.0008439851773378397,
+      "uid": "skiplistSearch(skiplist*, int)",
+      "model": "power",
+      "x_interval_end": 1000000,
+      "x_interval_start": 1,
+      "method": "full"
+    },
+    {
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 10.998250394901188
+        },
+        {
+          "name": "b1",
+          "value": 6.0035275989974285e-09
+        }
+      ],
+      "r_square": 0.0029273206521644064,
+      "uid": "skiplistSearch(skiplist*, int)",
+      "model": "linear",
+      "x_interval_end": 1000000,
+      "x_interval_start": 1,
+      "method": "full"
+    },
+    {
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 10.99833396952263
+        },
+        {
+          "name": "b1",
+          "value": 1.0000000005225675
+        }
+      ],
+      "r_square": 0.0029208025644877947,
+      "uid": "skiplistSearch(skiplist*, int)",
+      "model": "exponential",
+      "x_interval_end": 1000000,
+      "x_interval_start": 1,
+      "method": "full"
+    },
+    {
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 10.990013912718162
+        },
+        {
+          "name": "b1",
+          "value": 0.0008776677481465272
+        }
+      ],
+      "r_square": 0.0008472704550332666,
+      "uid": "skiplistSearch(skiplist*, int)",
+      "model": "logarithmic",
+      "x_interval_end": 1000000,
+      "x_interval_start": 1,
+      "method": "full"
+    },
+    {
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 11.00334656621284
+        },
+        {
+          "name": "b1",
+          "value": -2.4573681911049408e-08
+        },
+        {
+          "name": "b2",
+          "value": 3.054684485242171e-14
+        }
+      ],
+      "r_square": 0.007999701302131013,
+      "uid": "skiplistSearch(skiplist*, int)",
+      "model": "quadratic",
+      "x_interval_end": 1000000,
+      "x_interval_start": 1,
+      "method": "full"
+    },
+    {
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 11.001255160464487
+        },
+        {
+          "name": "b1",
+          "value": 0
+        }
+      ],
+      "r_square": 1,
+      "uid": "skiplistSearch(skiplist*, int)",
+      "model": "constant",
+      "x_interval_end": 1000000,
+      "x_interval_start": 1,
+      "method": "full"
+    }
+  ],
+  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae",
   "resources": {
     "skiplistSearch(skiplist*, int)#0": {
       "amount": [
@@ -9,164 +133,40 @@
       ]
     }
   },
-  "header": {
-    "workload": "wl",
-    "args": "",
-    "type": "mixed",
-    "units": {
-      "mixed(time delta)": "ms"
-    },
-    "cmd": "cmd"
+  "resource_type_map": {
+    "skiplistSearch(skiplist*, int)#0": {
+      "time": "18.484409s",
+      "type": "mixed",
+      "subtype": "time delta",
+      "uid": "skiplistSearch(skiplist*, int)"
+    }
   },
-  "models": [
+  "postprocessors": [
     {
-      "coeffs": [
-        {
-          "value": 10.990460641562796,
-          "name": "b0"
-        },
-        {
-          "value": 7.633198579672345e-05,
-          "name": "b1"
-        }
-      ],
-      "x_start": 1,
-      "x_end": 1000000,
-      "method": "full",
-      "model": "power",
-      "uid": "skiplistSearch(skiplist*, int)",
-      "r_square": 0.0008439851773378397
-    },
-    {
-      "coeffs": [
-        {
-          "value": 10.998250394901188,
-          "name": "b0"
-        },
-        {
-          "value": 6.0035275989974285e-09,
-          "name": "b1"
-        }
-      ],
-      "x_start": 1,
-      "x_end": 1000000,
-      "method": "full",
-      "model": "linear",
-      "uid": "skiplistSearch(skiplist*, int)",
-      "r_square": 0.0029273206521644064
-    },
-    {
-      "coeffs": [
-        {
-          "value": 10.99833396952263,
-          "name": "b0"
-        },
-        {
-          "value": 1.0000000005225675,
-          "name": "b1"
-        }
-      ],
-      "x_start": 1,
-      "x_end": 1000000,
-      "method": "full",
-      "model": "exponential",
-      "uid": "skiplistSearch(skiplist*, int)",
-      "r_square": 0.0029208025644877947
-    },
-    {
-      "coeffs": [
-        {
-          "value": 10.990013912718162,
-          "name": "b0"
-        },
-        {
-          "value": 0.0008776677481465272,
-          "name": "b1"
-        }
-      ],
-      "x_start": 1,
-      "x_end": 1000000,
-      "method": "full",
-      "model": "logarithmic",
-      "uid": "skiplistSearch(skiplist*, int)",
-      "r_square": 0.0008472704550332666
-    },
-    {
-      "coeffs": [
-        {
-          "value": 11.00334656621284,
-          "name": "b0"
-        },
-        {
-          "value": -2.4573681911049408e-08,
-          "name": "b1"
-        },
-        {
-          "value": 3.054684485242171e-14,
-          "name": "b2"
-        }
-      ],
-      "x_start": 1,
-      "x_end": 1000000,
-      "method": "full",
-      "model": "quadratic",
-      "uid": "skiplistSearch(skiplist*, int)",
-      "r_square": 0.007999701302131013
-    },
-    {
-      "coeffs": [
-        {
-          "value": 11.001255160464487,
-          "name": "b0"
-        },
-        {
-          "value": 0,
-          "name": "b1"
-        }
-      ],
-      "x_start": 1,
-      "x_end": 1000000,
-      "method": "full",
-      "model": "constant",
-      "uid": "skiplistSearch(skiplist*, int)",
-      "r_square": 1
+      "name": "regression_analysis",
+      "params": {
+        "regression_models": [],
+        "method": "full",
+        "steps": 3
+      }
     }
   ],
   "collector_info": {
+    "name": "complexity",
     "params": {
-      "internal_direct_output": false,
-      "rules": [
-        "skiplistSearch"
-      ],
+      "internal_data_filename": "trace.log",
+      "sampling": [],
+      "internal_storage_size": 20000,
       "files": [
         "../example_sources/skiplist_parameters_cpp/skiplist_height_low.cpp",
         "../example_sources/structures/skiplist.cpp",
         "../example_sources/structures/skiplist.h"
       ],
-      "internal_data_filename": "trace.log",
-      "sampling": [],
-      "internal_storage_size": 20000,
-      "target_dir": "./target"
-    },
-    "name": "complexity"
-  },
-  "resource_type_map": {
-    "skiplistSearch(skiplist*, int)#0": {
-      "subtype": "time delta",
-      "uid": "skiplistSearch(skiplist*, int)",
-      "time": "18.484409s",
-      "type": "mixed"
+      "target_dir": "./target",
+      "internal_direct_output": false,
+      "rules": [
+        "skiplistSearch"
+      ]
     }
-  },
-  "postprocessors": [
-    {
-      "params": {
-        "method": "full",
-        "regression_models": [],
-        "steps": 3
-      },
-      "name": "regression_analysis"
-    }
-  ],
-  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae"
+  }
 }

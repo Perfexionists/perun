@@ -1,114 +1,21 @@
 {
-  "resources": {
-    "linear::test1#0": {
-      "amount": [
-        46, 48, 51, 52.1, 54, 52, 59, 58.7, 61.6, 64, 61.4, 54.6, 58.8, 58
-      ],
-      "structure-unit-size": [
-        132, 129, 120, 113.2, 105, 92, 84, 83.2, 88.4, 59, 80, 81.5, 71, 69.2
-      ]
-    },
+  "resource_type_map": {
     "linear::test2#0": {
-      "amount": [
-        8, 10.5, 13, 15.5, 18, 20.5, 23, 25.5, 28, 30.5
-      ],
-      "structure-unit-size": [
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
-      ]
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "linear::test2",
+      "subtype": "time delta"
+    },
+    "linear::test1#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "linear::test1",
+      "subtype": "time delta"
     }
   },
-  "header": {
-    "workload": "",
-    "args": "",
-    "cmd": "complexity",
-    "units": {
-      "mixed(time delta)": "us"
-    },
-    "type": "mixed"
-  },
-  "models": [
-    {
-      "y_start": 46,
-      "r_square": 0.840480465011754,
-      "x_start": 59.0,
-      "x_end": 132.0,
-      "model": "regressogram",
-      "buckets_method": "doane",
-      "uid": "linear::test1",
-      "bucket_stats": [
-        64.0, 58.0, 58.8, 61.4, 57.43333333333334, 56.8, 0.0, 0.0, 54.0, 52.1, 51.0, 0.0, 47.0
-      ],
-      "statistic_function": "mean"
-    },
-    {
-      "y_start": 8,
-      "r_square": 0.7575757575757576,
-      "x_start": 0.0,
-      "x_end": 9.0,
-      "model": "regressogram",
-      "buckets_method": "doane",
-      "uid": "linear::test2",
-      "bucket_stats": [
-        13.0, 25.5
-      ],
-      "statistic_function": "mean"
-    },
-    {
-      "bucket_stats": [
-        64.0, 58.0, 58.8, 61.39999999999999, 54.6, 58.70000000000001, 59.000000000000014, 61.60000000000002, 52.00000000000002, 54.00000000000003, 52.10000000000002, 51.00000000000002, 48.00000000000003, 46.00000000000003
-      ],
-      "r_square": 1.0,
-      "x_start": 59,
-      "x_end": 132,
-      "model": "moving_average",
-      "uid": "linear::test1",
-      "window_width": 1,
-      "moving_method": "sma",
-      "per_key": "structure-unit-size"
-    },
-    {
-      "bucket_stats": [
-        8.0, 10.5, 13.0, 15.5, 18.0, 20.5, 23.0, 25.5, 28.0, 30.5
-      ],
-      "r_square": 1.0,
-      "x_start": 0,
-      "x_end": 9,
-      "model": "moving_average",
-      "uid": "linear::test2",
-      "window_width": 1,
-      "moving_method": "sma",
-      "per_key": "structure-unit-size"
-    },
-    {
-      "kernel_stats": [
-        62.858574360003615, 60.722822711799736, 60.34592536211872, 58.46143861370751, 58.14735748897219, 57.79139888093874, 57.62388894774664, 56.702584315190066, 55.948789615825675, 53.226753201453974, 51.50977638623432, 50.085941954100036, 48.20145520569275, 47.57329295622017
-      ],
-      "x_end": 132,
-      "r_square": 0.7907602362991459,
-      "x_start": 59,
-      "kernel_mode": "estimator",
-      "model": "kernel_regression",
-      "uid": "linear::test1",
-      "per_key": "structure-unit-size",
-      "bandwidth": 30351362.464754254
-    },
-    {
-      "kernel_stats": [
-        7.999999999999998, 10.5, 13.0, 15.500000000000004, 17.999999999999993, 20.500000000000004, 22.99999999999999, 25.499999999999993, 28.0, 30.499999999999996
-      ],
-      "x_end": 9,
-      "r_square": 1.0,
-      "x_start": 0,
-      "kernel_mode": "estimator",
-      "model": "kernel_regression",
-      "uid": "linear::test2",
-      "per_key": "structure-unit-size",
-      "bandwidth": 1.8970114134082943
-    }
-  ],
   "collector_info": {
+    "name": "trace",
     "params": {
-      "internal_direct_output": false,
       "rules": [
         "SLList_init",
         "func1",
@@ -126,7 +33,7 @@
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
       ],
-      "internal_data_filename": "trace.log",
+      "internal_storage_size": 20000,
       "sampling": [
         {
           "func": "SLList_insert",
@@ -137,63 +44,156 @@
           "sample": 1
         }
       ],
-      "internal_storage_size": 20000,
-      "target_dir": "/home/jirka/Git/complexity-repo/target"
-    },
-    "name": "trace"
-  },
-  "resource_type_map": {
-    "linear::test1#0": {
-      "subtype": "time delta",
-      "uid": "linear::test1",
-      "time": "0.00023s",
-      "type": "mixed"
-    },
-    "linear::test2#0": {
-      "subtype": "time delta",
-      "uid": "linear::test2",
-      "time": "0.00023s",
-      "type": "mixed"
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
+      "internal_direct_output": false,
+      "internal_data_filename": "trace.log"
     }
   },
   "postprocessors": [
     {
+      "name": "regressogram",
       "params": {
-        "bucket_method": "doane",
-        "per_key": "structure-unit-size",
-        "statistic_function": "mean",
         "bucket_number": null,
-        "of_key": "amount"
-      },
-      "name": "regressogram"
+        "bucket_method": "doane",
+        "of_key": "amount",
+        "per_key": "structure-unit-size",
+        "statistic_function": "mean"
+      }
     },
     {
+      "name": "moving_average",
       "params": {
         "center": true,
-        "min_periods": null,
-        "window_width": null,
         "of_key": "amount",
-        "moving_method": "sma",
         "window_type": null,
-        "per_key": "structure-unit-size"
-      },
-      "name": "moving_average"
+        "min_periods": null,
+        "moving_method": "sma",
+        "per_key": "structure-unit-size",
+        "window_width": null
+      }
     },
     {
+      "name": "kernel_regression",
       "params": {
-        "n_sub_samples": 50,
-        "bandwidth_method": "cv_ls",
-        "return_median": false,
-        "kernel_mode": "estimator-settings",
+        "n_re_samples": 25,
         "reg_type": "ll",
-        "efficient": false,
-        "per_key": "structure-unit-size",
+        "bandwidth_method": "cv_ls",
         "randomize": false,
+        "efficient": false,
         "of_key": "amount",
-        "n_re_samples": 25
-      },
-      "name": "kernel_regression"
+        "per_key": "structure-unit-size",
+        "kernel_mode": "estimator-settings",
+        "return_median": false,
+        "n_sub_samples": 50
+      }
     }
   ],
-  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a"
+  "resources": {
+    "linear::test2#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ],
+      "amount": [
+        8, 10.5, 13, 15.5, 18, 20.5, 23, 25.5, 28, 30.5
+      ]
+    },
+    "linear::test1#0": {
+      "structure-unit-size": [
+        132, 129, 120, 113.2, 105, 92, 84, 83.2, 88.4, 59, 80, 81.5, 71, 69.2
+      ],
+      "amount": [
+        46, 48, 51, 52.1, 54, 52, 59, 58.7, 61.6, 64, 61.4, 54.6, 58.8, 58
+      ]
+    }
+  },
+  "models": [
+    {
+      "method": "regressogram",
+      "x_interval_start": 59.0,
+      "r_square": 0.840480465011754,
+      "uid": "linear::test1",
+      "y_interval_start": 46,
+      "buckets_method": "doane",
+      "statistic_function": "mean",
+      "x_interval_end": 132.0,
+      "bucket_stats": [
+        64.0, 58.0, 58.8, 61.4, 57.43333333333334, 56.8, 0.0, 0.0, 54.0, 52.1, 51.0, 0.0, 47.0
+      ]
+    },
+    {
+      "method": "regressogram",
+      "x_interval_start": 0.0,
+      "r_square": 0.7575757575757576,
+      "uid": "linear::test2",
+      "y_interval_start": 8,
+      "buckets_method": "doane",
+      "statistic_function": "mean",
+      "x_interval_end": 9.0,
+      "bucket_stats": [
+        13.0, 25.5
+      ]
+    },
+    {
+      "method": "moving_average",
+      "x_interval_end": 132,
+      "r_square": 1.0,
+      "uid": "linear::test1",
+      "x_interval_start": 59,
+      "moving_method": "sma",
+      "per_key": "structure-unit-size",
+      "bucket_stats": [
+        64.0, 58.0, 58.8, 61.39999999999999, 54.6, 58.70000000000001, 59.000000000000014, 61.60000000000002, 52.00000000000002, 54.00000000000003, 52.10000000000002, 51.00000000000002, 48.00000000000003, 46.00000000000003
+      ],
+      "window_width": 1
+    },
+    {
+      "method": "moving_average",
+      "x_interval_end": 9,
+      "r_square": 1.0,
+      "uid": "linear::test2",
+      "x_interval_start": 0,
+      "moving_method": "sma",
+      "per_key": "structure-unit-size",
+      "bucket_stats": [
+        8.0, 10.5, 13.0, 15.5, 18.0, 20.5, 23.0, 25.5, 28.0, 30.5
+      ],
+      "window_width": 1
+    },
+    {
+      "r_square": 0.7907602362991459,
+      "method": "kernel_regression",
+      "uid": "linear::test1",
+      "x_interval_start": 59,
+      "per_key": "structure-unit-size",
+      "x_interval_end": 132,
+      "kernel_mode": "estimator",
+      "bandwidth": 30351362.464754254,
+      "kernel_stats": [
+        62.858574360003615, 60.722822711799736, 60.34592536211872, 58.46143861370751, 58.14735748897219, 57.79139888093874, 57.62388894774664, 56.702584315190066, 55.948789615825675, 53.226753201453974, 51.50977638623432, 50.085941954100036, 48.20145520569275, 47.57329295622017
+      ]
+    },
+    {
+      "r_square": 1.0,
+      "method": "kernel_regression",
+      "uid": "linear::test2",
+      "x_interval_start": 0,
+      "per_key": "structure-unit-size",
+      "x_interval_end": 9,
+      "kernel_mode": "estimator",
+      "bandwidth": 1.8970114134082943,
+      "kernel_stats": [
+        7.999999999999998, 10.5, 13.0, 15.500000000000004, 17.999999999999993, 20.500000000000004, 22.99999999999999, 25.499999999999993, 28.0, 30.499999999999996
+      ]
+    }
+  ],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
+  "header": {
+    "type": "mixed",
+    "workload": "",
+    "units": {
+      "mixed(time delta)": "us"
+    },
+    "args": "",
+    "cmd": "complexity"
+  }
 }
