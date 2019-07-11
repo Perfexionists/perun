@@ -59,7 +59,7 @@ def generate_plot_data_slices(profile):
     """ Generates data slices for plotting resources and models. The resources are split by unique
         uids, models are sliced into parts by uid and interval.
 
-    :param dict profile: loaded perun profile
+    :param Profile profile: loaded perun profile
     :returns generator: generator: resources and models slices of unique uid as pair
         (data_slice(pandas.DataFrame), uid_models(list))
     """

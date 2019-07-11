@@ -46,9 +46,9 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
         'amount': []
     }
     # executing the regression analysis
-    for i, (x, y) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
-        updated_data['structure-unit-size'].append(x)
-        updated_data['amount'].append(y)
+    for _, (x_pts, y_pts) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
+        updated_data['structure-unit-size'].append(x_pts)
+        updated_data['amount'].append(y_pts)
     # Nasty hack, though it should work
     std_err_profile._storage['resources'] = {
         uid: updated_data

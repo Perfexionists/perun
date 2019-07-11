@@ -1,9 +1,9 @@
 """ Extension for regression model coefficients transformation into array of points. The points
     array can be then used for model plotting as a series of lines forming a (curved) line.
 """
+import numpy as np
 
 import perun.postprocess.regression_analysis.tools as tools
-import numpy as np
 
 # Default model curve smoothness specified as number of points generated from x interval
 # The higher the value, the smoother the curves, the longer the computation tho.
@@ -80,7 +80,7 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, transform_by=tools.as
         f_x = np.vectorize(m_fx)
         plot_x = f_x(plot_x)
     # Apply the computation formula
-    return transform_by(np.array(formula(b0, b1, plot_x)))
+    return transform_by(np.array(formula(plot_x, b0, b1)))
 
 
 def quad_plot_y_pts(plot_x, b0, b1, b2, formula, transform_by=tools.as_plot_y_dict, **_):
@@ -103,4 +103,4 @@ def quad_plot_y_pts(plot_x, b0, b1, b2, formula, transform_by=tools.as_plot_y_di
     :returns dict: data dictionary with 'plot_y' array
     """
     # Apply the computation formula
-    return transform_by(np.array(formula(b0, b1, b2, plot_x)))
+    return transform_by(np.array(formula(plot_x, b0, b1, b2)))

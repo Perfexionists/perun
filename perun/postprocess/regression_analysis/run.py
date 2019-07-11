@@ -37,7 +37,7 @@ def postprocess(profile, **configuration):
 
 
 @click.command()
-@click.option('--method', '-m', type=click.Choice(methods.get_supported_methods()),
+@click.option('--method', '-m', type=click.Choice(methods.get_param_methods()),
               required=True, multiple=False,
               help='Will use the <method> to find the best fitting models for'
                    ' the given profile.')

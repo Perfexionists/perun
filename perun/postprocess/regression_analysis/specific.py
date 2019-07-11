@@ -107,12 +107,12 @@ def specific_quad_coefficients(
     det_m = s_xx * s_x2x2 - s_xx2 ** 2
 
     # Compute the coefficients
-    b2 = (s_x2y * s_xx - s_xy * s_xx2) / det_m
-    b1 = (s_xy * s_x2x2 - s_x2y * s_xx2) / det_m
-    b0 = (y_sum - b1 * x_sum - b2 * x_sq_sum) / pts_num
+    b_2 = (s_x2y * s_xx - s_xy * s_xx2) / det_m
+    b_1 = (s_xy * s_x2x2 - s_x2y * s_xx2) / det_m
+    b_0 = (y_sum - b_1 * x_sum - b_2 * x_sq_sum) / pts_num
 
     # Apply the modification functions on the coefficients and save them
-    data = dict(coeffs=[b0, b1, b2])
+    data = dict(coeffs=[b_0, b_1, b_2])
     return data
 
 

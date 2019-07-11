@@ -10,6 +10,7 @@ import io
 import pydoc
 import functools
 import traceback
+import numpy as np
 
 import termcolor
 
@@ -419,10 +420,11 @@ def print_list_of_degradations(degradation_list):
             )
             if deg_info.result != PerformanceChange.NoChange:
                 from_colour, to_colour = get_degradation_change_colours(deg_info.result)
-                print(' from: ', end='')
-                cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
-                print(' -> to: ', end='')
-                cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
+                if deg_info.from_baseline != '-' and deg_info.to_target != '-':
+                    print(' from: ', end='')
+                    cprint('{}'.format(deg_info.from_baseline), from_colour, attrs=[])
+                    print(' -> to: ', end='')
+                    cprint('{}'.format(deg_info.to_target), to_colour, attrs=[])
                 if deg_info.confidence_type != 'no':
                     print(' (with confidence ', end='')
                     cprint(
@@ -435,7 +437,45 @@ def print_list_of_degradations(degradation_list):
             print(" (", end='')
             cprint("$ {}".format(cmd), CHANGE_CMD_COLOUR, attrs=['bold'])
             print(')')
+            if deg_info.partial_intervals is not None:
+                deg_info.partial_intervals = aggregate_intervals(deg_info.partial_intervals)
+                print('  \u2514 ', end='')
+                for change_info, rel_error, x_start, x_end in deg_info.partial_intervals:
+                    if change_info != PerformanceChange.NoChange:
+                        cprint(
+                            "<{}, {}> {}x; ".format(
+                                round(x_start, 2), round(x_end, 2), np.round(rel_error, 2)
+                            ),
+                            CHANGE_COLOURS.get(change_info, 'white'), attrs=[]
+                        )
+                print("\n")
     print("")
+
+
+def aggregate_intervals(intervals):
+    def get_indices_of_intervals():
+        if intervals.any():
+            start_idx, end_idx = 0, 0
+            change, _, _, _ = intervals[start_idx]
+            for end_idx, (new_change, _, _, _) in enumerate(intervals[1:], 1):
+                if change != new_change:
+                    yield (start_idx, end_idx - 1)
+                    if end_idx == len(intervals) - 1:
+                        yield (end_idx, end_idx)
+                    change = new_change
+                    start_idx = end_idx
+            if start_idx != end_idx or len(intervals) == 1:
+                yield (start_idx, end_idx)
+
+    intervals = intervals[intervals[:, 0] != PerformanceChange.NoChange]
+    agg_intervals = []
+    for start_index, end_index in get_indices_of_intervals():
+        rel_error = np.sum(intervals[start_index:end_index+1, 1]) / (end_index - start_index + 1)
+        agg_intervals.append((
+            intervals[start_index][0], rel_error, intervals[start_index][2], intervals[end_index][3]
+        ))
+
+    return agg_intervals
 
 
 class History:

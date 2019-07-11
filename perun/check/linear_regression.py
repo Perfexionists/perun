@@ -71,10 +71,10 @@ def exec_linear_regression(uid, baseline_x_pts, lin_abs_error, threshold, linear
         uid, baseline_profile, baseline_x_pts, lin_abs_error
     )
     # obtaining the models (linear and quadratic) from the new regressed profile
-    quad_err_model = detect.get_filtered_best_models_of(
+    quad_err_model = detect.get_filtered_best_param_models_of(
         std_err_profile, model_filter=detect.create_filter_by_model('quadratic')
     )
-    linear_err_model = detect.get_filtered_best_models_of(
+    linear_err_model = detect.get_filtered_best_param_models_of(
         std_err_profile, model_filter=detect.create_filter_by_model('linear')
     )
 
@@ -85,7 +85,7 @@ def exec_linear_regression(uid, baseline_x_pts, lin_abs_error, threshold, linear
 
     # We did not classify the change
     if not change_type:
-        std_err_model = detect.get_filtered_best_models_of(std_err_profile)
+        std_err_model = detect.get_filtered_best_param_models_of(std_err_profile)
         change_type = std_err_model[uid].type
 
     return change_type

@@ -12,6 +12,15 @@ import perun.postprocess.regression_analysis.tools as tools
 _REQUIRED_KEYS = ['bucket_method', 'statistic_function']
 
 
+def get_nparam_methods():
+    """Provides all currently supported computational methods, to
+    estimate the optimal number of buckets, as a list of their names.
+
+    :returns list of str: the names of all supported methods
+    """
+    return _METHODS
+
+
 def get_supported_selectors():
     """Provides all currently supported computational methods, to
     estimate the optimal number of buckets, as a list of their names.
@@ -130,3 +139,6 @@ _BUCKET_SELECTORS = {
     'sqrt': numpy_bucket_selectors._hist_bin_sqrt,
     'sturges': numpy_bucket_selectors._hist_bin_sturges,
 }
+
+# supported non-parametric methods
+_METHODS = ['regressogram', 'moving_average', 'kernel_regression']

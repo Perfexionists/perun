@@ -11,7 +11,7 @@ import perun.utils.exceptions as exceptions
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def get_supported_methods():
+def get_param_methods():
     """Provides all currently supported computational methods as a list of their names.
 
     :returns list of str: the names of all supported methods
@@ -42,9 +42,9 @@ def compute(data_gen, method, models, **kwargs):
                 result['uid'] = chunk[2]
                 result['method'] = method
                 analysis.append(result)
-        except exceptions.GenericRegressionExceptionBase as e:
+        except exceptions.GenericRegressionExceptionBase as exc:
             print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
-            print("  - " + str(e))
+            print("  - " + str(exc))
     # Compute the derived models
     for der in compute_derived(derived, analysis, **kwargs):
         analysis.append(der)
@@ -423,6 +423,7 @@ def _build_uniform_regression_data_format(x_pts, y_pts, model):
     # Initialize the data generator
     model['data_gen'] = model['data_gen'](**model)
     return model
+
 
 # supported methods mapping
 # - every method must be called with proper argument signature in 'compute' function

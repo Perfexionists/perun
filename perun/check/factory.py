@@ -5,8 +5,9 @@ import os
 
 import distutils.util as dutils
 
-from perun.utils.structs import PerformanceChange
+from perun.utils.structs import DegradationInfo, PerformanceChange
 
+import perun.check.general_detection as detection
 import perun.utils.exceptions as exceptions
 import perun.utils.log as log
 import perun.profile.helpers as profiles
@@ -246,7 +247,9 @@ def parse_strategy(strategy):
         'bmoe': 'best_model_order_equality',
         'preg': 'polynomial_regression',
         'lreg': 'linear_regression',
-        'fast': 'fast_check'
+        'fast': 'fast_check',
+        'int': 'integral_comparison',
+        'loc': 'local_statistics',
     }
     return short_strings.get(strategy, strategy)
 
@@ -279,3 +282,87 @@ def get_strategies_for(profile):
             method = parse_strategy(strategy['method'])
             already_applied_strategies.append(method)
             yield method
+
+
+def run_detection_for_all_models(detection_method, base_profile, targ_profile):
+    """
+    The wrapper for running detection methods for both parametric and non-parametric models.
+
+    A method can be divided into two primary runs. In the first run, the method
+    obtains the non-parametric models and performs the comparison between them.
+    In the second run, the analysis performs the comparison of best parametric models, that
+    are obtained from both given profiles. A method gradually returns the `DegradationInfo`
+    between compared models.
+
+    :param callable detection_method: method to execute the detection logic with the call template
+    :param Profile base_profile: baseline profile against which we are checking the degradation
+    :param Profile targ_profile: target profile corresponding to the checked minor version
+    :returns: tuple - degradation result (structure DegradationInfo)
+    """
+    def call_detection_runner(base_models, targ_models, param):
+        """
+        Method call the detection runner for given set of models.
+
+        :param base_models: baseline models for performing the detection
+        :param targ_models: target models for performing the detection
+        :param param: flag for differentiation of parametric and nonparametric models
+        :return: tuple - degradation result (structure DegradationInfo)
+        """
+        for degradation_info in run_detection(
+                detection_method, base_profile, base_models, targ_profile, targ_models, param=param
+        ):
+            yield degradation_info
+
+    # run for non-parametric models
+    base_nparam_models = base_profile.all_models(group='non-parametric')
+    targ_nparam_models = targ_profile.all_models(group='non-parametric')
+    base_nparam_models = {model['uid'] + model['method']: model for _, model in base_nparam_models}
+    for deg_info in call_detection_runner(base_nparam_models, targ_nparam_models, param=False):
+        yield deg_info
+
+    # run for best parametric models
+    base_param_models = detection.get_filtered_best_param_models_of(base_profile)
+    targ_param_models = detection.get_filtered_best_param_models_of(targ_profile)
+    for deg_info in call_detection_runner(base_param_models, targ_param_models, param=True):
+        yield deg_info
+
+
+def run_detection(detection_method, base_profile, base_models, targ_profile, targ_models, **kwargs):
+    """
+    The runner of detection methods for a set of models pairs (baseline and target).
+
+    The method performs the degradation check between two relevant models, obtained from
+    the given set of models. According to the match of the UIDs of the models is called
+    the detection method, that returns a dictionary with information about the changes
+    from the comparison of these models. This method subsequently return the structure
+    DegradationInfo with relevant items about detected changes between compared models.
+
+    :param callable detection_method: method to execute the detection logic with the call template
+    :param Profile base_profile: baseline profile against which we are checking the degradation
+    :param BestModelRecord/dict base_models: set of models to comparison from baseline profile
+    :param Profile targ_profile: target profile corresponding to the checked minor version
+    :param BestModelRecord/dict targ_models: set of models to comparison from target profile
+    :param bool kwargs: param flag for differentiation of parametric and nonparametric models
+    :return: tuple - degradation result (structure DegradationInfo)
+    """
+    param = kwargs.get('param', True)
+    for param_uid, targ_model in targ_models.items() if param else targ_models:
+        uid = param_uid if param else targ_model['uid']
+        base_model = base_models.get(uid if param else uid + targ_model['method'])
+        if base_model:
+            change_result = detection_method(
+                base_model, targ_model, param, base_profile=base_profile, targ_profile=targ_profile
+            )
+
+            base_r_square = base_model.r_square if param else base_model['r_square']
+            targ_r_square = targ_model.r_square if param else targ_model['r_square']
+            yield DegradationInfo(
+                res=change_result.get('change_info'),
+                t=str(change_result.get('rel_error')),
+                loc=uid,
+                fb=base_model.type if param else "-",
+                tt=base_model.type if param else "-",
+                ct='r_square',
+                cr=round(min(base_r_square, targ_r_square), 2),
+                pi=change_result.get('partial_intervals'),
+            )

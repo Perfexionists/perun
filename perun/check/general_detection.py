@@ -62,7 +62,7 @@ def filter_by_r_square(model_map, model):
     return model_map[model['uid']][1] < model['r_square']
 
 
-def get_filtered_best_models_of(profile, model_filter=filter_by_r_square):
+def get_filtered_best_param_models_of(profile, model_filter=filter_by_r_square):
     """Obtains the models from the given profile. In the first case the method obtains the
     best fitting models, it means, that it obtains the models which have the higher values
     of coefficient determination. In the case, that arguments model_type was given, method
@@ -77,7 +77,7 @@ def get_filtered_best_models_of(profile, model_filter=filter_by_r_square):
         uid: BestModelRecord("", 0.0, 0.0, 0.0, 0, 0, 0.0)
         for uid in query.unique_model_values_of(profile, 'uid')
     }
-    for _, model in profile.all_models():
+    for _, model in profile.all_models(group='parametric'):
         model_uid = model['uid']
         if model_filter(best_model_map, model):
             if model['model'] == 'quadratic':
@@ -94,7 +94,7 @@ def get_filtered_best_models_of(profile, model_filter=filter_by_r_square):
                     model['x_start'], model['x_end']
                 )
 
-    return best_model_map
+    return {k: v for k, v in best_model_map.items() if getattr(v, 'type') != ""}
 
 
 def get_function_values(model):
@@ -144,12 +144,12 @@ def general_detection(baseline_profile, target_profile,
     """
 
     # obtaining the needed models from both profiles
-    best_baseline_models = get_filtered_best_models_of(baseline_profile)
-    best_target_models = get_filtered_best_models_of(target_profile)
-    linear_baseline_model = get_filtered_best_models_of(
+    best_baseline_models = get_filtered_best_param_models_of(baseline_profile)
+    best_target_models = get_filtered_best_param_models_of(target_profile)
+    linear_baseline_model = get_filtered_best_param_models_of(
         baseline_profile, model_filter=create_filter_by_model('linear')
     )
-    linear_target_model = get_filtered_best_models_of(
+    linear_target_model = get_filtered_best_param_models_of(
         target_profile, model_filter=create_filter_by_model('linear')
     )
 
@@ -204,7 +204,7 @@ def general_detection(baseline_profile, target_profile,
                 err_profile = check.fast_check.exec_fast_check(
                     uid, baseline_profile, baseline_x_pts, abs_error
                 )
-                std_err_model = get_filtered_best_models_of(err_profile)
+                std_err_model = get_filtered_best_param_models_of(err_profile)
                 change_type = std_err_model[uid][0].upper()
 
         # check the relevant degree of changes and its type (negative or positive)

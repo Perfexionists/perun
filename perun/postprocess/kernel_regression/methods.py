@@ -194,7 +194,7 @@ def kernel_regression(x_pts, y_pts, config):
     # Set parameter for resulting kernel model
     return {
         "bandwidth": bw_value[0][0] if config['kernel_mode'] != 'estimator-settings'
-        else kernel_estimate.bw[0],
+                     else kernel_estimate.bw[0],
         'r_square': kernel_estimate.r_squared(),
         'bucket_stats': list(kernel_stats),
         'kernel_mode': 'estimator',

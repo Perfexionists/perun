@@ -163,11 +163,11 @@ def generic_regression_coefficients(
     s_xy = xy_sum - tools.safe_division(x_sum, num_sqrt) * tools.safe_division(y_sum, num_sqrt)
     s_xx = x_sq_sum - (tools.safe_division(x_sum, num_sqrt) ** 2)
 
-    b1 = tools.safe_division(s_xy, s_xx)
-    b0 = tools.safe_division(y_sum - b1 * x_sum, pts_num)
+    b_1 = tools.safe_division(s_xy, s_xx)
+    b_0 = tools.safe_division(y_sum - b_1 * x_sum, pts_num)
 
     # Apply the modification functions on the coefficients and save them
-    data = dict(coeffs=[f_a(b0), f_b(b1)], s_xy=s_xy, s_xx=s_xx)
+    data = dict(coeffs=[f_a(b_0), f_b(b_1)], s_xy=s_xy, s_xx=s_xx)
     return data
 
 

@@ -7,11 +7,14 @@ regions and flatten the format.
 """
 
 import collections
-import click
 import operator
 import itertools
+import click
 
 import perun.profile.convert as convert
+
+from perun.postprocess.regression_analysis.methods import get_param_methods
+from perun.postprocess.regressogram.methods import get_nparam_methods
 
 __author__ = 'Tomas Fiedor'
 
@@ -59,7 +62,7 @@ class Profile(collections.MutableMapping):
         :param str resource_type: type of the resources in the resources list,
             can either be snapshots (then it is list of different snapshots), global
             then it is old type of profile) or it can be resource l
-        :param bool clear_existing_resources: if set to true, then the actual storage will be cleared
+        :param bool clear_existing_resources: if set to true then the actual storage will be cleared
             before updating the resources
         :return:
         """
@@ -73,10 +76,11 @@ class Profile(collections.MutableMapping):
         elif resource_type == 'snapshots':
             # Resources are in type of [{'time': _, 'resources': []}
             for i, snapshot in enumerate(resource_list):
-                self._translate_resources(snapshot['resources'], {
-                    'snapshot': i,
-                    'time': snapshot.get('time', '0.0')}
-                )
+                self._translate_resources(snapshot['resources'],
+                                          {
+                                              'snapshot': i,
+                                              'time': snapshot.get('time', '0.0')
+                                          })
         elif isinstance(resource_list, (dict, Profile)):
             self._storage['resources'].update(resource_list)
         else:
@@ -103,7 +107,9 @@ class Profile(collections.MutableMapping):
             collectable_properties = [
                 (key, value) for (key, value) in resource.items() if key in Profile.collectable
             ]
-            resource_type = self.register_resource_type(resource['uid'], tuple(persistent_properties))
+            resource_type = self.register_resource_type(
+                resource['uid'], tuple(persistent_properties)
+            )
             if resource_type not in self._storage['resources'].keys():
                 self._storage['resources'][resource_type] = {
                     key: [] for (key, _) in collectable_properties
@@ -204,7 +210,7 @@ class Profile(collections.MutableMapping):
                 snapshot_number = collectable_properties.get('snapshot', 0)
                 yield snapshot_number, collectable_properties
 
-    def all_models(self):
+    def all_models(self, group="all"):
         """Generator of all 'models' records from the performance profile w.r.t.
         :ref:`profile-spec`.
 
@@ -228,14 +234,17 @@ class Profile(collections.MutableMapping):
             'r_square': 0.007076437903106431, 'x_end': 11892})
 
 
-        :param dict profile: performance profile w.r.t :ref:`profile-spec`
+        :param str group: the kind of requested models to return
         :returns: iterable stream of ``(int, dict)`` pairs, where first yields the
             positional number of model and latter correponds to one 'models'
             record (for more details about models refer to :pkey:`models` or
             :ref:`postprocessors-regression-analysis`)
         """
         for model_idx, model in enumerate(self._storage['models']):
-            yield model_idx, model
+            if group == 'all' or\
+               (group == 'parametric' and model.get('method') in get_param_methods()) or\
+               (group == 'non-parametric' and model.get('method') in get_nparam_methods()):
+                yield model_idx, model
 
     def all_snapshots(self):
         """Iterates through all the snapshots in resources
@@ -248,12 +257,11 @@ class Profile(collections.MutableMapping):
         all_resources = list(self.all_resources())
         all_resources.sort(key=operator.itemgetter(0))
         snapshot_map = collections.defaultdict(list)
-        for no, res in itertools.groupby(all_resources, operator.itemgetter(0)):
-            snapshot_map[no] = list(map(operator.itemgetter(1), res))
+        for number_of, res in itertools.groupby(all_resources, operator.itemgetter(0)):
+            snapshot_map[number_of] = list(map(operator.itemgetter(1), res))
         maximal_snapshot = max(snapshot_map.keys())
         for i in range(0, maximal_snapshot+1):
             yield i, snapshot_map[i]
 
 # Click helper
 pass_profile = click.make_pass_decorator(Profile)
-

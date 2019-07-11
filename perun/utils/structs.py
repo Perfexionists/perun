@@ -13,6 +13,7 @@ PerformanceChange = Enum(
     'Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization'
 )
 
+
 class Unit:
     """Specification of the unit that is part of run process
 
@@ -72,7 +73,7 @@ class DegradationInfo:
     :ivar float confidence_rate: value of the confidence we have in the detected degradation
     """
 
-    def __init__(self, res, t, loc, fb, tt, rd=0, ct="no", cr=0):
+    def __init__(self, res, t, loc, fb, tt, rd=0, ct="no", cr=0, pi=None):
         """Each degradation consists of its results, the location, where the change has happened
         (this is e.g. the unique id of the resource, like function or concrete line), then the pair
         of best models for baseline and target, and the information about confidence.
@@ -101,6 +102,7 @@ class DegradationInfo:
         self.rate_degradation = rd
         self.confidence_type = ct
         self.confidence_rate = cr
+        self.partial_intervals = pi
 
     def to_storage_record(self):
         """Transforms the degradation info to a storage_record

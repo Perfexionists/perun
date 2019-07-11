@@ -36,6 +36,7 @@ def exec_polynomial_regression(baseline_x_pts, lin_abs_error):
     :param integer lin_abs_error: values of the independent variables from both profiles
     :returns: string (classification of the change)
     """
+    degree = 0
     # executing the polynomial regression
     polynom = np.polyfit(baseline_x_pts, lin_abs_error, 0, None, True)
     for degree in range(0, 4):
