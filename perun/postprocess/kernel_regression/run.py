@@ -33,11 +33,11 @@ _DEFAULT_N_RES = 25
 # - Default is computed the mean of all scaling factors
 _DEFAULT_RETURN_MEDIAN = False
 # Set of kernels for use with `kernel-smoothing` mode of kernel-regression
-# - Gaussian (normal) kernel by default at computation
-_KERNEL_TYPES = ['normal', 'tricube', 'epanechnikov', 'epanechnikov4', 'normal4']
+# - Epanechnikov kernel by default at computation
+_KERNEL_TYPES = ['epanechnikov', 'tricube', 'normal', 'epanechnikov4', 'normal4']
 # Supported method for non-parametric regression using kernel methods
-# - Default non-parametric regression method: local-polynomial(q=1)
-_SMOOTHING_METHODS = ['local-polynomial', 'spatial-average', 'local-linear']
+# - Default non-parametric regression method: spatial-average
+_SMOOTHING_METHODS = ['spatial-average', 'local-linear', 'local-polynomial']
 # Default value for order of the polynomial to fit with `local-polynomial` kernel smoothing method
 _DEFAULT_POLYNOMIAL_ORDER = 3
 # Default range (minimal and maximal values) for automatic bandwidth selection at `kernel-ridge`
@@ -587,7 +587,7 @@ def kernel_regression(ctx, **_):
     """
     # running default mode with use EstimatorSettings and its default parameters
     if ctx.invoked_subcommand is None:
-        ctx.invoke(estimator_settings)
+        ctx.invoke(kernel_smoothing)
 
 
 # Supported modes at executing kernel regression:

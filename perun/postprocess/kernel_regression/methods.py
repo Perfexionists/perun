@@ -15,6 +15,8 @@ import statsmodels.nonparametric.api as nparam
 
 import perun.postprocess.regression_analysis.tools as tools
 
+__author__ = 'Simon Stupinsky'
+
 # set numpy variables to ignore warning messages at computation
 # - it is only temporary solution for clearly listings
 np.seterr(divide='ignore', invalid='ignore')
@@ -23,6 +25,9 @@ np.seterr(divide='ignore', invalid='ignore')
 # - scott: Scott's Rule of Thumb (default method)
 # - silverman: Silverman's Rule of Thumb
 BW_SELECTION_METHODS = ['scott', 'silverman']
+
+# Minimum points count to perform the regression
+_MIN_POINTS_COUNT = 3
 
 
 class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
@@ -102,7 +107,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
             err = (kernel * self.y_pts[:, np.newaxis]).sum(axis=0) / kernel.sum(axis=0) - self.y_pts
             mse[i] = (err ** 2).mean()
 
-        self.gamma = gamma_values[np.nanargmin(mse)]
+        self.gamma = gamma_values[np.nanargmin(mse) if not np.isnan(mse).all() else 0]
 
 
 def compute_kernel_regression(data_gen, config):
@@ -189,7 +194,7 @@ def kernel_regression(x_pts, y_pts, config):
     # Set parameter for resulting kernel model
     return {
         "bandwidth": bw_value[0][0] if config['kernel_mode'] != 'estimator-settings'
-                     else kernel_estimate.bw[0],
+        else kernel_estimate.bw[0],
         'r_square': kernel_estimate.r_squared(),
         'bucket_stats': list(kernel_stats),
         'kernel_mode': 'estimator',
@@ -358,8 +363,13 @@ def execute_kernel_regression(x_pts, y_pts, config):
     # If the coordinates lists contain only one resource, then the computation will be not executing
     # - It is protection before the failure of the method to determine tha optimal kernel bandwidth
     # -- It is useless executing the kernel regression over the one pair of points
-    if len(x_pts) == 1 and len(y_pts) == 1:
-        kernel_model.update({"bandwidth": 1, 'r_square': 1, 'kernel_stats': y_pts})
+    if len(x_pts) < _MIN_POINTS_COUNT and len(y_pts) < _MIN_POINTS_COUNT:
+        kernel_model.update({
+            "bandwidth": 1,
+            'r_square': 1,
+            'bucket_stats': y_pts,
+            'kernel_mode': 'manually'
+        })
     elif config['kernel_mode'] in ('estimator-settings', 'method-selection', 'user-selection'):
         kernel_model.update(kernel_regression(x_pts, y_pts, config))
     elif config['kernel_mode'] == 'kernel-smoothing':
