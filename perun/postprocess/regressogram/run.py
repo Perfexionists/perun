@@ -41,7 +41,7 @@ def postprocess(profile, **configuration):
               help=('Restricts the number of buckets to which will be '
                     'placed the values of the selected statistics.'))
 @click.option('--bucket_method', '-bm', required=False,
-              type=click.Choice(methods.get_supported_methods()),
+              type=click.Choice(methods.get_supported_selectors()),
               default=_DEFAULT_BUCKETS_METHOD, multiple=False,
               help='Specifies the method to estimate the optimal number of buckets.')
 @click.option('--statistic_function', '-sf', type=click.Choice(['mean', 'median']),
