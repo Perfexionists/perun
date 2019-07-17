@@ -13,6 +13,7 @@ import click
 
 import perun.profile.convert as convert
 
+from perun.check.general_detection import get_filtered_best_models_of
 from perun.postprocess.regression_analysis.methods import get_param_methods
 from perun.postprocess.regressogram.methods import get_nparam_methods
 
@@ -210,7 +211,28 @@ class Profile(collections.MutableMapping):
                 snapshot_number = collectable_properties.get('snapshot', 0)
                 yield snapshot_number, collectable_properties
 
-    def all_models(self, group="all"):
+    def get_models(self, models_strategy):
+        """
+        The function obtains models according to the given strategy.
+
+        This function according to the given strategy and group derived from it
+        obtains the models from the current profile. The function creates the
+        relevant dictionary with required models or calls the responded functions,
+        that returns the models according to the specifications.
+
+        :param str models_strategy: name of detection models strategy to obtains relevant models
+        :return dict: dictionary with required models
+        """
+        group = models_strategy.rsplit('-')[1]
+        if models_strategy in ('all-param', 'all-nonparam'):
+            models = [model for idx, model in self.all_models(group=group)]
+            return {model['uid'] + model.get('model', model['method']): model for model in models}
+        elif models_strategy in ('best-nonparam', 'best-model'):
+            return get_filtered_best_models_of(self, group=group)
+        elif models_strategy == 'best-param':
+            return get_filtered_best_models_of(self, group=group)
+
+    def all_models(self, group='both'):
         """Generator of all 'models' records from the performance profile w.r.t.
         :ref:`profile-spec`.
 
@@ -241,9 +263,9 @@ class Profile(collections.MutableMapping):
             :ref:`postprocessors-regression-analysis`)
         """
         for model_idx, model in enumerate(self._storage['models']):
-            if group == 'all' or\
-               (group == 'parametric' and model.get('method') in get_param_methods()) or\
-               (group == 'non-parametric' and model.get('method') in get_nparam_methods()):
+            if group == 'both' or\
+               (group == 'param' and model.get('method') in get_param_methods()) or\
+               (group == 'nonparam' and model.get('method') in get_nparam_methods()):
                 yield model_idx, model
 
     def all_snapshots(self):
@@ -262,6 +284,7 @@ class Profile(collections.MutableMapping):
         maximal_snapshot = max(snapshot_map.keys())
         for i in range(0, maximal_snapshot+1):
             yield i, snapshot_map[i]
+
 
 # Click helper
 pass_profile = click.make_pass_decorator(Profile)

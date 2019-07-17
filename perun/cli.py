@@ -943,6 +943,13 @@ def fuzz_cmd(**kwargs):
               is_flag=True, default=False,
               help='whenever there are missing profiles in the given point of history'
               ' the matrix will be rerun and new generated profiles assigned.')
+@click.option('--models-type', '-m', nargs=1, required=False, multiple=False,
+              type=click.Choice(check.get_supported_detection_models_strategies()),
+              default=check.get_supported_detection_models_strategies()[0],
+              help="The detection models strategies predict the way of executing "
+                   "the detection between two profiles, respectively between relevant "
+                   "kinds of its models. Available only in the following detection "
+                   "methods: Integral Comparison (IC) and Local Statistics (LS).")
 def check_group(**_):
     """Applies for the points of version history checks for possible performance changes.
 
@@ -1049,7 +1056,8 @@ def check_all(minor_head='HEAD'):
               callback=cli_helpers.lookup_minor_version_callback, metavar='<hash>',
               help='Will check the index of different minor version <hash>'
                    ' during the profile lookup.')
-def check_profiles(baseline_profile, target_profile, minor, **_):
+@click.pass_context
+def check_profiles(ctx, baseline_profile, target_profile, minor, **_):
     """Checks for changes in performance between two profiles.
 
     The commands checks for the changes between two isolate profiles, that can be stored in pending
@@ -1076,7 +1084,9 @@ def check_profiles(baseline_profile, target_profile, minor, **_):
 
     """
     print("")
-    check.degradation_between_files(baseline_profile, target_profile, minor)
+    check.degradation_between_files(
+        baseline_profile, target_profile, minor, ctx.parent.params['models_type']
+    )
 
 
 @cli.group('utils')

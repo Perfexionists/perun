@@ -197,11 +197,17 @@ def unify_regressogram(base_model, targ_model, targ_profile):
     :param Profile targ_profile: target profile corresponding to the checked minor version
     :return dict: new regressogram model with the required 'uid'
     """
+    log.warn(
+        '{0}: {1} models with different length ({2} != {3}) are slicing'.format(
+            base_model['uid'], base_model['method'],
+            len(base_model['bucket_stats']), len(targ_model['bucket_stats'])
+        ), end=": "
+    )
     log.cprint('Target regressogram model will be post-processed again.\n', 'yellow')
     # set needed parameters for regressogram post-processors
     mapper_keys = {
-        'per_key': targ_model['resource_keys'][0],
-        'of_key': targ_model['resource_keys'][1]
+        'per_key': targ_model['per_key'],
+        'of_key': targ_model['of_key']
     }
     config = {
         'statistic_function': targ_model['statistic_function'],
@@ -218,7 +224,7 @@ def unify_regressogram(base_model, targ_model, targ_profile):
     return [model for model in new_regressogram_models if model['uid'] == targ_model['uid']][0]
 
 
-def execute_analysis(base_model, targ_model, param=False, **kwargs):
+def execute_analysis(base_model, targ_model, **kwargs):
     """
     A method performs the primary analysis for pair of models.
 
@@ -231,12 +237,11 @@ def execute_analysis(base_model, targ_model, param=False, **kwargs):
 
     :param dict base_model: baseline model with all its parameters for comparison
     :param dict targ_model: target model with all its parameters for comparison
-    :param bool param: flag to resolution parametric and non-parametric models
-    :param dict kwargs: baseline and target profiles
+    :param dict kwargs: dictionary with baseline and target profiles
     :return:
     """
-    x_pts, base_y_pts, targ_y_pts = process_models(
-        base_model, kwargs.get('targ_profile'), targ_model, param
+    x_pts, base_y_pts, targ_y_pts = preprocess_models(
+        base_model, kwargs.get('targ_profile'), targ_model
     )
 
     base_stats, _ = compute_window_stats(x_pts, base_y_pts)
@@ -263,66 +268,78 @@ def execute_analysis(base_model, targ_model, param=False, **kwargs):
     }
 
 
-def process_models(base_model, targ_profile, targ_model, param):
+def preprocess_models(base_model, targ_profile, targ_model):
     """
-    Method prepare models to execute the computation of statistics between them.
+    Function prepare models to execute the computation of statistics between them.
 
-    This method in the case of parametric model obtains their functional values directly
-    from coefficients these models. In the case of non-parametric models method checks it
-    interval length and potentially edit the interval to the same length. In the case of
-    regressogram model method unifies two regressogram models according to the length of
-    the shorter interval. The method returns the values of both model (baseline and target)
-    and the common interval on which are defined these models.
+    This function in the case of parametric models obtains their functional values directly
+    from coefficients these models. The function checks lengths of both models interval and
+    potentially sliced the intervals to the same length. In the case of the regressogram model,
+    function unifies two regressogram models according to the length of the shorter interval.
+    The function returns the values of both model (baseline and target) and the common interval
+    on which are defined these models.
 
-    :param dict/BestModelRecord base_model:  baseline model with all its parameters for processing
+    :param dict base_model: baseline model with its parameters for processing
     :param Profile targ_profile: target profile against which contains the given target model
-    :param dict/BestModelRecord targ_model: target model with all its parameters for processing
-    :param bool param: the flag for resolution the parametric and non-parametric models
+    :param dict targ_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """
-    if param:
-        x_pts, base_y_pts = methods.get_function_values(base_model)
-        _, targ_y_pts = methods.get_function_values(targ_model)
-    else:
-        base_model, targ_model = check_nparam_models(base_model, targ_model)
-        y_pts_len = len(base_model['bucket_stats'])
-        x_pts = np.linspace(base_model['x_start'], base_model['x_end'], num=y_pts_len)
-        if base_model['method'] == 'regressogram' and\
-                len(base_model['bucket_stats']) != len(targ_model['bucket_stats']):
-            targ_model = unify_regressogram(base_model, targ_model, targ_profile)
-        base_y_pts = base_model['bucket_stats']
-        targ_y_pts = targ_model['bucket_stats']
+    def get_model_coordinates(model):
+        """
+        Function obtains the coordinates of given model.
 
-    return x_pts, base_y_pts, targ_y_pts
+        The function according to the kind of model obtains its coordinates.
+        When the model is parametric, then are coordinates obtained from its
+        formula. When the model is non-parametric then the function divides
+        the stored x-interval according to the length of its stored values.
+
+        :param dict model: dictionary with model and its required properties
+        :return: obtained x and y coordinates - x-points, y-points
+        """
+        if model.get('coeffs'):
+            x_pts, y_pts = methods.get_function_values(model)
+        else:
+            x_pts = np.linspace(model['x_start'], model['x_end'], num=len(model['bucket_stats']))
+            y_pts = model['bucket_stats']
+        return x_pts, y_pts
+
+    def check_model_coordinates():
+        """
+        Function check the lengths of the coordinates from both models.
+
+        When the length of coordinates from both models are not equal, then
+        the function applies the slicing of all intervals to the length of the
+        shorter model. The function returns the all potentially reduced intervals
+        of coordinates. When the lengths are valid, then the function returns
+        original coordinates without change.
+
+        :return foursome: x-points and y-points from both profiles (baseline and target)
+        """
+        if len(base_y_pts) != len(targ_y_pts):
+            log.warn(
+                '{0}: {1} models with different length ({2} != {3}) are slicing'
+                .format(base_model['uid'], base_model['method'], len(base_y_pts), len(targ_y_pts))
+            )
+            return base_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
+                targ_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
+                base_y_pts[:min(len(base_y_pts), len(targ_y_pts))], \
+                targ_y_pts[:min(len(base_y_pts), len(targ_y_pts))]
+        return base_x_pts, base_y_pts, targ_x_pts, targ_y_pts
+
+    # check whether both models are regressogram and whether there are not about the same length
+    if base_model['method'] == 'regressogram' and targ_model['method'] == 'regressogram' and \
+            len(base_model['bucket_stats']) != len(targ_model['bucket_stats']):
+        targ_model = unify_regressogram(base_model, targ_model, targ_profile)
+
+    # obtains coordinates from both models and perform the check their lengths
+    base_x_pts, base_y_pts = get_model_coordinates(base_model)
+    targ_x_pts, targ_y_pts = get_model_coordinates(targ_model)
+    base_x_pts, base_y_pts, targ_x_pts, targ_y_pts = check_model_coordinates()
+
+    return base_x_pts, base_y_pts, targ_y_pts
 
 
-def check_nparam_models(base_model, targ_model):
-    """
-    The method check the length of the model values.
-
-    A method compares the length of the model values. If the lengths are not
-    equal, then the analysis will not execute and the warning will print for
-    the user. When the lengths are not equal at regressogram model, then a
-    warning is printed and the target model will unify with the baseline model
-    in the next steps.
-
-    :param dict base_model: baseline model with all its parameters
-    :param dict targ_model: target model with all its parameters
-    :return bool: True if the length are equal, else False (exception at regressogram models)
-    """
-    base_len = len(base_model['bucket_stats'])
-    targ_len = len(targ_model['bucket_stats'])
-    if base_len != targ_len:
-        log.warn(
-            '{0}: {1} models with different length ({2} != {3}) are slicing'
-            .format(base_model['uid'], base_model['method'], base_len, targ_len)
-        )
-        base_model['bucket_stats'] = base_model['bucket_stats'][:min(base_len, targ_len)]
-        targ_model['bucket_stats'] = targ_model['bucket_stats'][:min(base_len, targ_len)]
-    return base_model, targ_model
-
-
-def local_statistics(base_profile, targ_profile):
+def local_statistics(base_profile, targ_profile, models_strategy='best-model'):
     """
     The wrapper of `local_statistics` detection method. Method calls the general method
     for running the detection between pairs of profile (baseline and target) and subsequently
@@ -330,9 +347,10 @@ def local_statistics(base_profile, targ_profile):
 
     :param Profile base_profile: base against which we are checking the degradation
     :param Profile targ_profile: profile corresponding to the checked minor version
+    :param str models_strategy: detection model strategy for obtains the relevant kind of models
     :returns: tuple - degradation result
     """
-    for degradation_info in factory.run_detection_for_all_models(
-            execute_analysis, base_profile, targ_profile
+    for degradation_info in factory.run_detection_for_profiles(
+            execute_analysis, base_profile, targ_profile, models_strategy
     ):
         yield degradation_info

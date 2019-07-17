@@ -2,12 +2,12 @@
 
 import contextlib
 import os
+import re
 
 import distutils.util as dutils
 
 from perun.utils.structs import DegradationInfo, PerformanceChange
 
-import perun.check.general_detection as detection
 import perun.utils.exceptions as exceptions
 import perun.utils.log as log
 import perun.profile.helpers as profiles
@@ -22,6 +22,34 @@ import perun.vcs as vcs
 
 
 __author__ = 'Tomas Fiedor'
+
+# Minimal confidence rate from both models to perform the detection
+_MIN_CONFIDANCE_RATE = 0.15
+# Supported detection strategies that work with different kinds of models
+_SUPPORTED_DETECTION_MODELS_STRATEGIES = [
+    'best-model', 'best-param', 'best-nonparam',
+    'all-param', 'all-nonparam', 'all-models', 'best-both'
+]
+
+
+def get_supported_detection_models_strategies():
+    """
+    Provides supported detection models strategies to execute
+    the degradation check between two profiles with different kinds
+    of models. The individual strategies represent the way of
+    executing the detection between profiles and their models:
+
+        - best-param: best parametric models from both profiles
+        - best-non-param: best non-parametric models from both profiles
+        - best-model: best models from both profiles
+        - all-param: all parametric models pair from both profiles
+        - all-non-param: all non-parametric models pair from both profiles
+        - all-models: all models pair from both profiles
+        - best-both: best parametric and non-parametric models from both profiles
+
+    :returns list of str: the names of all supported degradation models strategies
+    """
+    return _SUPPORTED_DETECTION_MODELS_STRATEGIES
 
 
 def profiles_to_queue(minor_version):
@@ -83,38 +111,38 @@ def degradation_in_minor(minor_version, quiet=False):
     :returns: list of found changes
     """
     minor_version_info = vcs.get_minor_version_info(minor_version)
-    baseline_version_queue = minor_version_info.parents
+    base_version_queue = minor_version_info.parents
     pre_collect_profiles(minor_version_info)
-    target_profile_queue = profiles_to_queue(minor_version)
+    targ_profile_queue = profiles_to_queue(minor_version)
     detected_changes = []
-    while target_profile_queue and baseline_version_queue:
-        # Pop the nearest baseline
-        baseline = baseline_version_queue.pop(0)
+    while targ_profile_queue and base_version_queue:
+        # Pop the nearest base
+        base = base_version_queue.pop(0)
 
         # Enqueue the parents in BFS manner
-        baseline_info = vcs.get_minor_version_info(baseline)
-        baseline_version_queue.extend(baseline_info.parents)
+        base_info = vcs.get_minor_version_info(base)
+        base_version_queue.extend(base_info.parents)
 
         # Precollect profiles if this is set
-        pre_collect_profiles(baseline_info)
+        pre_collect_profiles(base_info)
 
         # Print header if there is at least some profile to check against
-        baseline_profiles = profiles_to_queue(baseline)
+        base_profiles = profiles_to_queue(base)
 
         # Iterate through the profiles and check degradation between those of same configuration
-        for baseline_config, baseline_profile in baseline_profiles.items():
-            target_profile = target_profile_queue.get(baseline_config)
-            cmdstr = profiles.config_tuple_to_cmdstr(baseline_config)
-            if target_profile:
+        for base_config, base_profile in base_profiles.items():
+            targ_profile = targ_profile_queue.get(base_config)
+            cmdstr = profiles.config_tuple_to_cmdstr(base_config)
+            if targ_profile:
                 # Print information about configuration
                 # and extend the list of the detected changes including the configuration
                 # and source minor version.
                 detected_changes.extend([
-                    (deg, cmdstr, baseline_info.checksum) for deg in
-                    degradation_between_profiles(baseline_profile, target_profile)
+                    (deg, cmdstr, base_info.checksum) for deg in
+                    degradation_between_profiles(base_profile, targ_profile, 'best-model')
                     if deg.result != PerformanceChange.NoChange
                 ])
-                del target_profile_queue[target_profile.config_tuple]
+                del targ_profile_queue[targ_profile.config_tuple]
 
         # Store the detected degradation
         store.save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
@@ -146,58 +174,62 @@ def degradation_in_history(head):
     return detected_changes
 
 
-def degradation_between_profiles(baseline_profile, target_profile):
+def degradation_between_profiles(base_profile, targ_profile, models_strategy):
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     We first find the suitable strategy for the profile configuration and then call the appropriate
     wrapper function.
 
-    :param ProfileInfo baseline_profile: baseline against which we are checking the degradation
-    :param ProfileInfo target_profile: profile corresponding to the checked minor version
+    :param ProfileInfo base_profile: baseline against which we are checking the degradation
+    :param ProfileInfo targ_profile: profile corresponding to the checked minor version
+    :param str models_strategy: name of detection models strategy to obtains relevant model kinds
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    if not isinstance(baseline_profile, profile_factory.Profile):
-        baseline_profile = store.load_profile_from_file(baseline_profile.realpath, False)
-    if not isinstance(target_profile, profile_factory.Profile):
-        target_profile = store.load_profile_from_file(target_profile.realpath, False)
+    if not isinstance(base_profile, profile_factory.Profile):
+        base_profile = store.load_profile_from_file(base_profile.realpath, False)
+    if not isinstance(targ_profile, profile_factory.Profile):
+        targ_profile = store.load_profile_from_file(targ_profile.realpath, False)
 
     # We run all of the degradation methods suitable for the given configuration of profile
-    for degradation_method in get_strategies_for(baseline_profile):
+    for degradation_method in get_strategies_for(base_profile):
         yield from utils.dynamic_module_function_call(
-            'perun.check', degradation_method, degradation_method, baseline_profile, target_profile
+            'perun.check', degradation_method, degradation_method,
+            base_profile, targ_profile, models_strategy=models_strategy
         )
 
 
 @decorators.print_elapsed_time
 @decorators.phase_function('check two profiles')
-def degradation_between_files(baseline_file, target_file, minor_version):
+def degradation_between_files(base_file, targ_file, minor_version, models_strategy):
     """Checks between pair of files (baseline, target) whether there are any changes in performance.
 
-    :param dict baseline_file: baseline profile we are checking against
-    :param dict target_file: target profile we are testing
-    :param str minor_version: target minor_version
+    :param dict base_file: baseline profile we are checking against
+    :param dict targ_file: target profile we are testing
+    :param str minor_version: targ minor_version
+    :param str models_strategy: name of detection models strategy to obtains relevant model kinds
+    :returns None: no return value
     """
     # First check if the configurations are compatible
-    baseline_config = profiles.to_config_tuple(baseline_file)
-    target_config = profiles.to_config_tuple(target_file)
-    target_minor_version = target_file.get('origin', minor_version)
-    if baseline_config != target_config:
+    base_config = profiles.to_config_tuple(base_file)
+    targ_config = profiles.to_config_tuple(targ_file)
+    targ_minor_version = targ_file.get('origin', minor_version)
+    if base_config != targ_config:
         log.error("incompatible configurations '{}' and '{}'".format(
-            baseline_config, target_config
+            base_config, targ_config
         ) + "\n\nPerformance check does not make sense for profiles collected in different ways!")
 
     detected_changes = [
-        (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version) for deg in
-        degradation_between_profiles(baseline_file, target_file)
+        (deg, profiles.config_tuple_to_cmdstr(base_config), targ_minor_version) for deg in
+        degradation_between_profiles(base_file, targ_file, models_strategy)
         if deg.result != PerformanceChange.NoChange
     ]
 
     # Store the detected changes for given minor version
     store.save_degradation_list_for(
-        pcs.get_object_directory(), target_minor_version, detected_changes
+        pcs.get_object_directory(), targ_minor_version, detected_changes
     )
     print("")
-    log.print_list_of_degradations(detected_changes)
+    log.print_list_of_degradations(detected_changes, models_strategy)
     log.print_short_summary_of_degradations(detected_changes)
 
 
@@ -284,52 +316,42 @@ def get_strategies_for(profile):
             yield method
 
 
-def run_detection_for_all_models(detection_method, base_profile, targ_profile):
+def run_detection_for_profiles(detection_method, base_profile, targ_profile, models_strategy):
     """
-    The wrapper for running detection methods for both parametric and non-parametric models.
+    The wrapper for running detection methods for all kinds of models.
 
-    A method can be divided into two primary runs. In the first run, the method
-    obtains the non-parametric models and performs the comparison between them.
-    In the second run, the analysis performs the comparison of best parametric models, that
-    are obtained from both given profiles. A method gradually returns the `DegradationInfo`
-    between compared models.
+    According to the given `models_strategy` this function obtains the relevant
+    models from both given profiles and subsequently calls the function, that
+    ensure the executing of detection between them. In the end, this function
+    returns the structure `DegradationInfo` with the detected information.
 
     :param callable detection_method: method to execute the detection logic with the call template
     :param Profile base_profile: baseline profile against which we are checking the degradation
     :param Profile targ_profile: target profile corresponding to the checked minor version
+    :param str models_strategy: name of detection models strategy to obtains relevant model kinds
     :returns: tuple - degradation result (structure DegradationInfo)
     """
-    def call_detection_runner(base_models, targ_models, param):
-        """
-        Method call the detection runner for given set of models.
-
-        :param base_models: baseline models for performing the detection
-        :param targ_models: target models for performing the detection
-        :param param: flag for differentiation of parametric and nonparametric models
-        :return: tuple - degradation result (structure DegradationInfo)
-        """
+    if models_strategy in ('all-models', 'best-both'):
+        partial_strategies = ['all-param', 'all-nonparam'] if models_strategy == 'all-models' else \
+            ['best-param', 'best-nonparam']
+        for partial_strategy in partial_strategies:
+            for degradation_info in run_detection_for_profiles(
+                    detection_method, base_profile, targ_profile, partial_strategy
+            ):
+                yield degradation_info
+    else:
+        base_models = base_profile.get_models(models_strategy)
+        targ_models = targ_profile.get_models(models_strategy)
         for degradation_info in run_detection(
-                detection_method, base_profile, base_models, targ_profile, targ_models, param=param
+                detection_method, base_profile, base_models,
+                targ_profile, targ_models, models_strategy=models_strategy
         ):
             yield degradation_info
-
-    # run for non-parametric models
-    base_nparam_models = base_profile.all_models(group='non-parametric')
-    targ_nparam_models = targ_profile.all_models(group='non-parametric')
-    base_nparam_models = {model['uid'] + model['method']: model for _, model in base_nparam_models}
-    for deg_info in call_detection_runner(base_nparam_models, targ_nparam_models, param=False):
-        yield deg_info
-
-    # run for best parametric models
-    base_param_models = detection.get_filtered_best_param_models_of(base_profile)
-    targ_param_models = detection.get_filtered_best_param_models_of(targ_profile)
-    for deg_info in call_detection_runner(base_param_models, targ_param_models, param=True):
-        yield deg_info
 
 
 def run_detection(detection_method, base_profile, base_models, targ_profile, targ_models, **kwargs):
     """
-    The runner of detection methods for a set of models pairs (baseline and target).
+    The runner of detection methods for a set of models pairs (base and targ).
 
     The method performs the degradation check between two relevant models, obtained from
     the given set of models. According to the match of the UIDs of the models is called
@@ -338,31 +360,32 @@ def run_detection(detection_method, base_profile, base_models, targ_profile, tar
     DegradationInfo with relevant items about detected changes between compared models.
 
     :param callable detection_method: method to execute the detection logic with the call template
-    :param Profile base_profile: baseline profile against which we are checking the degradation
-    :param BestModelRecord/dict base_models: set of models to comparison from baseline profile
-    :param Profile targ_profile: target profile corresponding to the checked minor version
-    :param BestModelRecord/dict targ_models: set of models to comparison from target profile
-    :param bool kwargs: param flag for differentiation of parametric and nonparametric models
+    :param Profile base_profile: base profile against which we are checking the degradation
+    :param dict base_models: set of models to comparison from base profile
+    :param Profile targ_profile: targ profile corresponding to the checked minor version
+    :param dict targ_models: set of models to comparison from targ profile
+    :param kwargs: contains name of detection models strategy to obtains relevant model kinds
     :return: tuple - degradation result (structure DegradationInfo)
     """
-    param = kwargs.get('param', True)
-    for param_uid, targ_model in targ_models.items() if param else targ_models:
-        uid = param_uid if param else targ_model['uid']
-        base_model = base_models.get(uid if param else uid + targ_model['method'])
-        if base_model:
+    uid_flag = kwargs['models_strategy'] in ('all-param', 'all-nonparam')
+    for param_uid, targ_model in targ_models.items():
+        uid = targ_model['uid'] if uid_flag else param_uid
+        base_model = base_models.get(uid, base_models.get(param_uid))
+
+        if base_model and round(min(base_model['r_square'], targ_model['r_square']), 2) \
+                >= _MIN_CONFIDANCE_RATE:
             change_result = detection_method(
-                base_model, targ_model, param, base_profile=base_profile, targ_profile=targ_profile
+                base_model, targ_model, base_profile=base_profile, targ_profile=targ_profile
             )
 
-            base_r_square = base_model.r_square if param else base_model['r_square']
-            targ_r_square = targ_model.r_square if param else targ_model['r_square']
             yield DegradationInfo(
                 res=change_result.get('change_info'),
                 t=str(change_result.get('rel_error')),
-                loc=uid,
-                fb=base_model.type if param else "-",
-                tt=base_model.type if param else "-",
+                loc=re.sub(base_model.get('model', base_model.get('method')) + '$', '', uid)
+                if uid_flag else uid,
+                fb=base_model.get('model', base_model.get('method')),
+                tt=targ_model.get('model', targ_model.get('method')),
                 ct='r_square',
-                cr=round(min(base_r_square, targ_r_square), 2),
+                cr=round(min(base_model['r_square'], targ_model['r_square']), 2),
                 pi=change_result.get('partial_intervals'),
             )

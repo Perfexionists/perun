@@ -11,34 +11,35 @@ import perun.logic.runner as runner
 import perun.check.general_detection as detect
 
 
-def fast_check(baseline_profile, target_profile):
+def fast_check(base_profile, targ_profile, **_):
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
-    :param dict baseline_profile: baseline against which we are checking the degradation
-    :param dict target_profile: profile corresponding to the checked minor version
+    :param dict base_profile: base against which we are checking the degradation
+    :param dict targ_profile: profile corresponding to the checked minor version
+    :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
     return detect.general_detection(
-        baseline_profile, target_profile, detect.ClassificationMethod.FastCheck
+        base_profile, targ_profile, detect.ClassificationMethod.FastCheck
     )
 
 
-def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
+def exec_fast_check(uid, base_profile, base_x_pts, abs_error):
     """The function executes the classification of performance change between two profiles with
     using regression analysis. The type of the best model from the regressed profile, which
     contains the value absolute error, computed from the best models of both profile, is returned
     such as the degree of the changes.
 
     :param string uid: unique identifier of function for which we are creating the model
-    :param Profile baseline_profile: baseline against which we are checking the degradation
-    :param np_array baseline_x_pts: the value absolute error computed from the linear models
+    :param Profile base_profile: base against which we are checking the degradation
+    :param np_array base_x_pts: the value absolute error computed from the linear models
         obtained from both profiles
     :param integer abs_error: values of the independent variables from both profiles
     :returns: string (classification of the change)
     """
     # creating the new profile
-    std_err_profile = copy.deepcopy(baseline_profile)
+    std_err_profile = copy.deepcopy(base_profile)
     std_err_profile['models'].clear()
 
     updated_data = {
@@ -46,7 +47,7 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
         'amount': []
     }
     # executing the regression analysis
-    for _, (x_pts, y_pts) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
+    for _, (x_pts, y_pts) in enumerate(zip(np.nditer(base_x_pts), np.nditer(abs_error))):
         updated_data['structure-unit-size'].append(x_pts)
         updated_data['amount'].append(y_pts)
     # Nasty hack, though it should work

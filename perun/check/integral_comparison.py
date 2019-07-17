@@ -30,12 +30,13 @@ def compute_param_integral(model):
     According to the value of coefficients from these formulae is computed the
     integral using the general integration method from `scipy` package.
 
-    :param BestModelRecord model: model with its required metrics (coefficients, type, ...)
+    :param dict model: model with its required metrics (coefficients,type,etc)
     :return float: the value of integral of `formula` from `x_start` to `x_end`
     """
-    formula = regression_models.get_formula_of(model.type)
-    coeffs = (model.b0, model.b1, model.b2) if model.type == 'quadratic' else (model.b0, model.b1)
-    return integrate.quad(formula, model.x_start, model.x_end, args=coeffs)[0]
+    formula = regression_models.get_formula_of(model['model'])
+    coeffs = (model['coeffs'][0]['value'], model['coeffs'][1]['value'],)
+    coeffs = coeffs + (model['coeffs'][2]['value'],) if model['model'] == 'quadratic' else coeffs
+    return integrate.quad(formula, model['x_start'], model['x_end'], args=coeffs)[0]
 
 
 def compute_nparam_integral(model):
@@ -89,7 +90,7 @@ def classify_change(diff_value, no_change, change, base_per=1):
     return change
 
 
-def execute_analysis(base_model, targ_model, param, **_):
+def execute_analysis(base_model, targ_model, **_):
     """
     A method performs the primary analysis for pair of models.
 
@@ -99,16 +100,29 @@ def execute_analysis(base_model, targ_model, param, **_):
     models with using of the threshold value. At the end is returned the dictionary
     with relevant information about the detected change.
 
-    :param BestModelRecord/dict base_model: baseline model
-    :param BestModelRecord/dict targ_model: target_model
-    :param bool param: flag for resolution parametric and non-parametric models
-    :param dict _: unification with remaining detection methods
+    :param dict base_model: dictionary of baseline model with its required properties
+    :param dict targ_model: dictionary of target_model with its required properties
+    :param dict _: unification with remaining detection methods (i.e. Integral Comparison)
     :return DegradationInfo: tuple with degradation info between pair of models:
         (deg. result, deg. location, deg. rate, confidence type and rate, etc.)
     """
-    integral_method = compute_param_integral if param else compute_nparam_integral
-    base_integral = integral_method(base_model)
-    targ_integral = integral_method(targ_model)
+    def compute_integral(model):
+        """
+        This function computes the integral under the curve of the given model.
+
+        According to the kind of the given model, the function determines the
+        calculating function, that subsequently calculates the value of integral
+        from the given model.
+
+        :param dict model: dictionary of model with its required properties
+        :return float: the result of the integral
+        """
+        integral_method = compute_param_integral if model.get('coeffs') else compute_nparam_integral
+        return integral_method(model)
+
+    base_integral = compute_integral(base_model)
+    targ_integral = compute_integral(targ_model)
+
     rel_error = tools.safe_division(targ_integral - base_integral, base_integral)
 
     change_info = classify_change(
@@ -122,7 +136,7 @@ def execute_analysis(base_model, targ_model, param, **_):
     }
 
 
-def integral_comparison(base_profile, targ_profile):
+def integral_comparison(base_profile, targ_profile, models_strategy='best-model'):
     """
     The wrapper of `integral comparison` detection method. Method calls the general method
     for running the detection between pairs of profile (baseline and target) and subsequently
@@ -130,9 +144,10 @@ def integral_comparison(base_profile, targ_profile):
 
     :param Profile base_profile: baseline profile against which we are checking the degradation
     :param Profile targ_profile: target profile corresponding to the checked minor version
+    :param str models_strategy: detection model strategy for obtains the relevant kind of models
     :returns: tuple - degradation result (structure DegradationInfo)
     """
-    for degradation_info in factory.run_detection_for_all_models(
-            execute_analysis, base_profile, targ_profile
+    for degradation_info in factory.run_detection_for_profiles(
+            execute_analysis, base_profile, targ_profile, models_strategy
     ):
         yield degradation_info
