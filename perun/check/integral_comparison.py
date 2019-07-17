@@ -132,7 +132,7 @@ def execute_analysis(base_model, targ_model, **_):
 
     return {
         "change_info": change_info,
-        "rel_error": str('{0:.2f}'.format(rel_error if np.isfinite(rel_error) else 0)) + 'x',
+        "rel_error": round(rel_error if np.isfinite(rel_error) else 0, 2),
     }
 
 

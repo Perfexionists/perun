@@ -90,9 +90,11 @@ def best_model_order_equality(baseline_profile, target_profile, **_):
                 degradation_rate = 0
 
             yield DegradationInfo(
-                change, "model", uid,
-                best_baseline_model['model'],
-                best_model['model'],
-                degradation_rate,
-                "r_square", confidence
+                res=change,
+                t="model",
+                loc=uid,
+                fb=best_baseline_model['model'],
+                tt=best_model['model'],
+                rd=degradation_rate,
+                ct="r_square", cr=confidence
             )

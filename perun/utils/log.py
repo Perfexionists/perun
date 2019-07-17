@@ -486,6 +486,8 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
         # Iterate and print all of the infos
         for deg_info, cmd, __ in changes:
             print('\u2514 ', end='')
+            cprint('{}x'.format(deg_info.rate_degradation), 'white', attrs=['bold'])
+            print(': ', end='')
             cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, 'white'), attrs=[])
             print(' ', end='')
             cprint(

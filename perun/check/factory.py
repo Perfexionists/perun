@@ -380,11 +380,11 @@ def run_detection(detection_method, base_profile, base_models, targ_profile, tar
 
             yield DegradationInfo(
                 res=change_result.get('change_info'),
-                t=str(change_result.get('rel_error')),
                 loc=re.sub(base_model.get('model', base_model.get('method')) + '$', '', uid)
                 if uid_flag else uid,
                 fb=base_model.get('model', base_model.get('method')),
                 tt=targ_model.get('model', targ_model.get('method')),
+                rd=change_result.get('rel_error'),
                 ct='r_square',
                 cr=round(min(base_model['r_square'], targ_model['r_square']), 2),
                 pi=change_result.get('partial_intervals'),

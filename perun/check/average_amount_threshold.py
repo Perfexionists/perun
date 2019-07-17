@@ -86,8 +86,10 @@ def average_amount_threshold(baseline_profile, target_profile, **_):
                 change = check.PerformanceChange.NoChange
 
             yield DegradationInfo(
-                change, resource_type, target_uid,
-                "{}{}".format(baseline_average.round(2), unit),
-                "{}{}".format(target_average.round(2), unit),
-                difference_ratio,
+                res=change,
+                t=resource_type,
+                loc=target_uid,
+                fb="{}{}".format(baseline_average.round(2), unit),
+                tt="{}{}".format(target_average.round(2), unit),
+                rd=difference_ratio,
             )

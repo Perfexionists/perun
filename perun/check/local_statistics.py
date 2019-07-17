@@ -260,9 +260,8 @@ def execute_analysis(base_model, targ_model, **kwargs):
 
     return {
         'change_info': change_info,
-        'rel_error': str(
-            '{0:.2f}'.format(
-                tools.safe_division(np.sum(partial_rel_error), partial_rel_error.size)) + 'x'
+        'rel_error': round(
+            tools.safe_division(np.sum(partial_rel_error), partial_rel_error.size), 2
         ),
         'partial_intervals': partial_intervals
     }

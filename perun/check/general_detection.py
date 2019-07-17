@@ -230,9 +230,12 @@ def general_detection(
             confidence = 0.0
 
         yield DegradationInfo(
-            change, change_type, uid,
-            best_corresponding_base_model['model'],
-            targ_model['model'],
-            rel_error,
-            'r_square', confidence
+            res=change,
+            loc=uid,
+            fb=best_corresponding_base_model['model'],
+            tt=targ_model['model'],
+            t=change_type,
+            rd=rel_error,
+            ct='r_square',
+            cr=confidence
         )
