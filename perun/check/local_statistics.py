@@ -5,6 +5,8 @@ The module contains the methods, that executes the computational logic of
 
 __author__ = 'Simon Stupinsky'
 
+import re
+
 import numpy as np
 import scipy.integrate as integrate
 
@@ -182,7 +184,7 @@ def compare_diff_values(change_score, rel_error):
     return change_score
 
 
-def unify_regressogram(base_model, targ_model, targ_profile):
+def unify_regressogram(uid, base_model, targ_model, targ_profile):
     """
     The method unifies the regressograms into the same count of buckets.
 
@@ -192,18 +194,21 @@ def unify_regressogram(base_model, targ_model, targ_profile):
     method to compute the new regressogram models. This method returns the new
     regressogram model, which has the same 'uid' as the given models.
 
-    :param dict base_model: baseline regressogram model with all its parameters
-    :param dict targ_model: target regressogram model with all its parameters
+    :param str uid: unique identification of both analysed models
+    :param ModelRecord base_model: baseline regressogram model with all its parameters
+    :param ModelRecord targ_model: target regressogram model with all its parameters
     :param Profile targ_profile: target profile corresponding to the checked minor version
     :return dict: new regressogram model with the required 'uid'
     """
+    uid = re.sub(base_model.type + '$', '', uid)
     log.warn(
         '{0}: {1} models with different length ({2} != {3}) are slicing'.format(
-            base_model['uid'], base_model['model'],
-            len(base_model['bucket_stats']), len(targ_model['bucket_stats'])
+            uid, base_model.type, len(base_model.b0), len(targ_model.b0)
         ), end=": "
     )
     log.cprint('Target regressogram model will be post-processed again.\n', 'yellow')
+    # find target model with all needed items from target profile
+    targ_model = targ_profile.get_model_of(targ_model.type, uid)
     # set needed parameters for regressogram post-processors
     mapper_keys = {
         'per_key': targ_model['per_key'],
@@ -211,7 +216,7 @@ def unify_regressogram(base_model, targ_model, targ_profile):
     }
     config = {
         'statistic_function': targ_model['statistic_function'],
-        'bucket_number': len(base_model['bucket_stats']),
+        'bucket_number': len(base_model.b0),
         'bucket_method': None,
     }
     config.update(mapper_keys)
@@ -221,10 +226,11 @@ def unify_regressogram(base_model, targ_model, targ_profile):
     )
 
     # match the regressogram model with the right 'uid'
-    return [model for model in new_regressogram_models if model['uid'] == targ_model['uid']][0]
+    model = [model for model in new_regressogram_models if model['uid'] == uid][0]
+    return methods.create_model_record(model)
 
 
-def execute_analysis(base_model, targ_model, **kwargs):
+def execute_analysis(uid, base_model, targ_model, **kwargs):
     """
     A method performs the primary analysis for pair of models.
 
@@ -235,13 +241,14 @@ def execute_analysis(base_model, targ_model, **kwargs):
     detected changes on all analysed sub-intervals commonly with the overall change between
     compared models.
 
+    :param str uid: unique identification of both analysed models
     :param dict base_model: baseline model with all its parameters for comparison
     :param dict targ_model: target model with all its parameters for comparison
     :param dict kwargs: dictionary with baseline and target profiles
     :return:
     """
     x_pts, base_y_pts, targ_y_pts = preprocess_models(
-        base_model, kwargs.get('targ_profile'), targ_model
+        uid, base_model, kwargs.get('targ_profile'), targ_model
     )
 
     base_stats, _ = compute_window_stats(x_pts, base_y_pts)
@@ -267,7 +274,7 @@ def execute_analysis(base_model, targ_model, **kwargs):
     }
 
 
-def preprocess_models(base_model, targ_profile, targ_model):
+def preprocess_models(uid, base_model, targ_profile, targ_model):
     """
     Function prepare models to execute the computation of statistics between them.
 
@@ -278,9 +285,10 @@ def preprocess_models(base_model, targ_profile, targ_model):
     The function returns the values of both model (baseline and target) and the common interval
     on which are defined these models.
 
-    :param dict base_model: baseline model with its parameters for processing
+    :param str uid: unique identification of both analysed models
+    :param ModelRecord base_model: baseline model with its parameters for processing
     :param Profile targ_profile: target profile against which contains the given target model
-    :param dict targ_model: target model with all its parameters for processing
+    :param ModelRecord targ_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """
     def get_model_coordinates(model):
@@ -292,14 +300,14 @@ def preprocess_models(base_model, targ_profile, targ_model):
         formula. When the model is non-parametric then the function divides
         the stored x-interval according to the length of its stored values.
 
-        :param dict model: dictionary with model and its required properties
+        :param ModelRecord model: dictionary with model and its required properties
         :return: obtained x and y coordinates - x-points, y-points
         """
-        if model.get('coeffs'):
+        if model.b1 is not None:
             x_pts, y_pts = methods.get_function_values(model)
         else:
-            x_pts = np.linspace(model['x_start'], model['x_end'], num=len(model['bucket_stats']))
-            y_pts = model['bucket_stats']
+            x_pts = np.linspace(model.x_start, model.x_end, num=len(model.b0))
+            y_pts = model.b0
         return x_pts, y_pts
 
     def check_model_coordinates():
@@ -317,7 +325,7 @@ def preprocess_models(base_model, targ_profile, targ_model):
         if len(base_y_pts) != len(targ_y_pts):
             log.warn(
                 '{0}: {1} models with different length ({2} != {3}) are slicing'
-                .format(base_model['uid'], base_model['model'], len(base_y_pts), len(targ_y_pts))
+                .format(uid, base_model.type, len(base_y_pts), len(targ_y_pts))
             )
             return base_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
                 base_y_pts[:min(len(base_y_pts), len(targ_y_pts))], \
@@ -326,9 +334,9 @@ def preprocess_models(base_model, targ_profile, targ_model):
         return base_x_pts, base_y_pts, targ_x_pts, targ_y_pts
 
     # check whether both models are regressogram and whether there are not about the same length
-    if base_model['model'] == 'regressogram' and targ_model['model'] == 'regressogram' and \
-            len(base_model['bucket_stats']) != len(targ_model['bucket_stats']):
-        targ_model = unify_regressogram(base_model, targ_model, targ_profile)
+    if base_model.type == 'regressogram' and targ_model.type == 'regressogram' and \
+            len(base_model.b0) != len(targ_model.b0):
+        targ_model = unify_regressogram(uid, base_model, targ_model, targ_profile)
 
     # obtains coordinates from both models and perform the check their lengths
     base_x_pts, base_y_pts = get_model_coordinates(base_model)

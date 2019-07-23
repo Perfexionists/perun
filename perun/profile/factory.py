@@ -221,12 +221,11 @@ class Profile(collections.MutableMapping):
         that returns the models according to the specifications.
 
         :param str models_strategy: name of detection models strategy to obtains relevant models
-        :return dict: dictionary with required models
+        :return ModelRecord: required models
         """
         group = models_strategy.rsplit('-')[1]
         if models_strategy in ('all-param', 'all-nonparam'):
-            models = [model for idx, model in self.all_models(group=group)]
-            return {model['uid'] + model.get('model'): model for model in models}
+            return get_filtered_best_models_of(self, group=group, model_filter=None)
         elif models_strategy in ('best-nonparam', 'best-model', 'best-param'):
             return get_filtered_best_models_of(self, group=group)
 
@@ -265,6 +264,19 @@ class Profile(collections.MutableMapping):
                (group == 'param' and model.get('model') in get_supported_models()) or\
                (group == 'nonparam' and model.get('model') in get_nparam_methods()):
                 yield model_idx, model
+
+    def get_model_of(self, model_type, uid):
+        """
+        Finds specific model from profile according to the
+        given kind of model and specific unique identification.
+
+        :param str model_type: specific kind of required model (e.g. regressogram, constant, etc.)
+        :param str uid: specific unique identification of required model
+        :return dict: model with all its relevant items
+        """
+        for _, model in enumerate(self._storage['models']):
+            if model_type == model['model'] and model['uid'] == uid:
+                return model
 
     def all_snapshots(self):
         """Iterates through all the snapshots in resources

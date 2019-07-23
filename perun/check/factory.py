@@ -368,24 +368,22 @@ def run_detection(detection_method, base_profile, base_models, targ_profile, tar
     :return: tuple - degradation result (structure DegradationInfo)
     """
     uid_flag = kwargs['models_strategy'] in ('all-param', 'all-nonparam')
-    for param_uid, targ_model in targ_models.items():
-        uid = targ_model['uid'] if uid_flag else param_uid
-        base_model = base_models.get(uid, base_models.get(param_uid))
+    for uid, targ_model in targ_models.items():
+        base_model = base_models.get(uid)
 
-        if base_model and round(min(base_model['r_square'], targ_model['r_square']), 2) \
+        if base_model and round(min(base_model.r_square, targ_model.r_square), 2) \
                 >= _MIN_CONFIDANCE_RATE:
             change_result = detection_method(
-                base_model, targ_model, base_profile=base_profile, targ_profile=targ_profile
+                uid, base_model, targ_model, base_profile=base_profile, targ_profile=targ_profile
             )
 
             yield DegradationInfo(
                 res=change_result.get('change_info'),
-                loc=re.sub(base_model.get('model', base_model.get('model')) + '$', '', uid)
-                if uid_flag else uid,
-                fb=base_model.get('model'),
-                tt=targ_model.get('model'),
+                loc=re.sub(base_model.type + '$', '', uid) if uid_flag else uid,
+                fb=base_model.type,
+                tt=targ_model.type,
                 rd=change_result.get('rel_error'),
                 ct='r_square',
-                cr=round(min(base_model['r_square'], targ_model['r_square']), 2),
+                cr=round(min(base_model.r_square, targ_model.r_square), 2),
                 pi=change_result.get('partial_intervals'),
             )

@@ -8,6 +8,7 @@ these profiles. Module contains two other temporary methods, which are using by 
 general methods.
 """
 
+from collections import namedtuple
 from enum import Enum
 
 import numpy as np
@@ -22,6 +23,9 @@ from perun.utils.structs import PerformanceChange, DegradationInfo
 __author__ = 'Simon Stupinsky'
 
 SAMPLES = 1000
+ModelRecord = namedtuple(
+    'ModelRecord', 'type r_square b0 b1 b2 x_start x_end'
+)
 ClassificationMethod = Enum(
     'ClassificationMethod', 'FastCheck LinearRegression PolynomialRegression'
 )
@@ -53,9 +57,25 @@ def filter_by_r_square(model_map, model):
 
     :param dict model_map: dictionary with already found models
     :param dict model: model of given uid
-    :return:  filter function that retrieves only the best model w.r.t r_square
+    :return: filter function that retrieves only the best model w.r.t r_square
     """
-    return model_map[model['uid']]['r_square'] < model['r_square']
+    return model_map[model['uid']][1] < model['r_square']
+
+
+def create_model_record(model):
+    """
+    Function transform model to ModelRecord.
+
+    :param dict model: model for transformation
+    :return ModelRecord: filled ModelRecord with model items
+    """
+    return ModelRecord(
+        model['model'], model['r_square'],
+        model['coeffs'][0]['value'] if model.get('coeffs') else model['bucket_stats'],
+        model['coeffs'][1]['value'] if model.get('coeffs') else None,
+        model['coeffs'][2]['value'] if len(model.get('coeffs', [])) == 3 else 0,
+        model['x_start'], model['x_end'],
+    )
 
 
 def get_filtered_best_models_of(profile, group, model_filter=filter_by_r_square):
@@ -73,17 +93,23 @@ def get_filtered_best_models_of(profile, group, model_filter=filter_by_r_square)
 
     :param Profile profile: dictionary of profile resources and stuff
     :param str group: name of the group of models kind (e.g. param, nonparam, both) to obtains
-    :param function model_filter: filter function for models
+    :param function/None model_filter: filter function for models
     :returns: map of unique identifier of computed models to their best models
     """
-    best_model_map = {
-        uid: {'r_square': 0.0} for uid in query.unique_model_values_of(profile, 'uid')
-    }
-    for _, model in profile.all_models(group=group):
-        if model_filter(best_model_map, model):
-            best_model_map[model['uid']] = model
-
-    return {k: v for k, v in best_model_map.items() if v['r_square'] != 0.0}
+    if model_filter:
+        best_model_map = {
+            uid: ModelRecord("", 0.0, 0.0, 0.0, 0, 0, 0.0)
+            for uid in query.unique_model_values_of(profile, 'uid')
+        }
+        for _, model in profile.all_models(group=group):
+            if model_filter(best_model_map, model):
+                best_model_map[model['uid']] = create_model_record(model)
+        return {k: v for k, v in best_model_map.items() if v.r_square != 0.0}
+    else:
+        best_model_map = {}
+        for idx, model in profile.all_models(group=group):
+            best_model_map[model['uid'] + model.get('model')] = create_model_record(model)
+        return best_model_map
 
 
 def get_function_values(model):
@@ -92,32 +118,24 @@ def get_function_values(model):
     is interval divide into several parts and to them is computed relevant values of
     dependent variables.
 
-    :param dict model: model with its required metrics (value of coefficient, type, ...)
+    :param ModelRecord model: model with its required metrics (value of coefficient, type, ...)
     :returns: np_array (x-coordinates, y-coordinates)
     """
-    model_handler = regression_models._MODELS[model['model']]
+    model_handler = regression_models._MODELS[model.type]
     plotter = model_handler['transformations']['plot_model']
 
     array_x_pts = plotter['model_x'](
-        model['x_start'], model['x_end'], SAMPLES, transform_by=utils.identity
+        model.x_start, model.x_end, SAMPLES, transform_by=utils.identity
     )
 
-    if model['model'] == 'quadratic':
+    if model.type == 'quadratic':
         array_y_pts = plotter['model_y'](
-            array_x_pts,
-            model['coeffs'][0]['value'],
-            model['coeffs'][1]['value'],
-            model['coeffs'][2]['value'],
-            plotter['formula'],
+            array_x_pts, model.b0, model.b1, model.b2, plotter['formula'],
             transform_by=utils.identity
         )
     else:
         array_y_pts = plotter['model_y'](
-            array_x_pts,
-            model['coeffs'][0]['value'],
-            model['coeffs'][1]['value'],
-            plotter['formula'],
-            model_handler['f_x'],
+            array_x_pts, model.b0, model.b1, plotter['formula'], model_handler['f_x'],
             transform_by=utils.identity
         )
 
@@ -182,10 +200,10 @@ def general_detection(
         # check state, when no change has occurred
         change = PerformanceChange.Unknown
         change_type = ''
-        threshold_b0 = abs(0.05 * base_model['coeffs'][0]['value'])
-        threshold_b1 = abs(0.05 * base_model['coeffs'][1]['value'])
-        diff_b0 = targ_model['coeffs'][0]['value'] - base_model['coeffs'][0]['value']
-        diff_b1 = targ_model['coeffs'][1]['value'] - base_model['coeffs'][1]['value']
+        threshold_b0 = abs(0.05 * base_model.b0)
+        threshold_b1 = abs(0.05 * base_model.b1)
+        diff_b0 = targ_model.b0 - base_model.b0
+        diff_b1 = targ_model.b1 - base_model.b1
         if abs(diff_b0) <= threshold_b0 and abs(diff_b1) <= threshold_b1:
             change = PerformanceChange.NoChange
         else:  # some change between profile was occurred
@@ -196,8 +214,7 @@ def general_detection(
             elif classification_method == ClassificationMethod.LinearRegression:
                 change_type = check.linear_regression.exec_linear_regression(
                     uid, baseline_x_pts, lin_abs_error, 0.05 * np.amax(abs_error),
-                    target_linear_model['coeffs'][1]['value'] -
-                    baseline_linear_model['coeffs'][1]['value'],
+                    target_linear_model.b1 - baseline_linear_model.b1,
                     base_model, targ_model, base_profile
                 )
             elif classification_method == ClassificationMethod.FastCheck:
@@ -224,7 +241,7 @@ def general_detection(
         best_corresponding_base_model = best_base_models[uid]
         if best_corresponding_linear_model:
             confidence = min(
-                best_corresponding_linear_model['r_square'], target_linear_model['r_square']
+                best_corresponding_linear_model.r_square, target_linear_model.r_square
             )
         else:
             confidence = 0.0
@@ -232,8 +249,8 @@ def general_detection(
         yield DegradationInfo(
             res=change,
             loc=uid,
-            fb=best_corresponding_base_model['model'],
-            tt=targ_model['model'],
+            fb=best_corresponding_base_model.type,
+            tt=targ_model.type,
             t=change_type,
             rd=rel_error,
             ct='r_square',

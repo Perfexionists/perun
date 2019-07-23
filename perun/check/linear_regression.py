@@ -42,19 +42,19 @@ def exec_linear_regression(
         from both profiles
     :param integer threshold: the appropriate value for distinction individual state of detection
     :param integer linear_diff_b1: difference coefficients b1 from both linear models
-    :param dict base_model: the best model from the baseline profile
-    :param dict targ_model: the best model from the target profile
+    :param ModelRecord base_model: the best model from the baseline profile
+    :param ModelRecord targ_model: the best model from the target profile
     :param dict base_profile: baseline against which we are checking the degradation
     :returns: string (classification of the change)
     """
 
     # executing the linear regression
-    diff_b0 = targ_model['coeffs'][0]['value'] - base_model['coeffs'][0]['value']
+    diff_b0 = targ_model.b0 - base_model.b0
     gradient, intercept, r_value, _, _ = stats.linregress(base_x_pts, lin_abs_error)
 
     # check the first two types of change
     change_type = ''
-    if base_model['model'] == 'linear' or base_model['model'] == 'constant':
+    if base_model.type == 'linear' or base_model.type == 'constant':
         if utils.abs_in_absolute_range(gradient, threshold) \
                 and utils.abs_in_relative_range(diff_b0, intercept, 0.05) \
                 and abs(diff_b0 - intercept) < 0.000000000001:
@@ -82,13 +82,13 @@ def exec_linear_regression(
     )
 
     # check the last quadratic type of change
-    if quad_err_model[uid]['r_square'] > 0.90 \
-            and abs(quad_err_model[uid]['r_square'] - linear_err_model[uid]['r_square']) > 0.01:
+    if quad_err_model[uid].r_square > 0.90 \
+            and abs(quad_err_model[uid].r_square - linear_err_model[uid].r_square) > 0.01:
         change_type = 'quadratic'
 
     # We did not classify the change
     if not change_type:
         std_err_model = detect.get_filtered_best_models_of(std_err_profile, group='param')
-        change_type = std_err_model[uid]['model']
+        change_type = std_err_model[uid].type
 
     return change_type

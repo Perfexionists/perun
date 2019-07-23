@@ -75,11 +75,11 @@ def best_model_order_equality(baseline_profile, target_profile, **_):
     for uid, best_model in best_target_models.items():
         best_baseline_model = best_baseline_models.get(uid)
         if best_baseline_model:
-            confidence = min(best_baseline_model['r_square'], best_model['r_square'])
+            confidence = min(best_baseline_model.r_square, best_model.r_square)
             if confidence >= CONFIDENCE_THRESHOLD \
-               and best_baseline_model['model'] != best_model['model']:
-                baseline_ordering = MODEL_ORDERING.index(best_baseline_model['model'])
-                target_ordering = MODEL_ORDERING.index(best_model['model'])
+               and best_baseline_model.type != best_model.type:
+                baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
+                target_ordering = MODEL_ORDERING.index(best_model.type)
                 if baseline_ordering > target_ordering:
                     change = check.PerformanceChange.Optimization
                 else:
@@ -93,8 +93,8 @@ def best_model_order_equality(baseline_profile, target_profile, **_):
                 res=change,
                 t="model",
                 loc=uid,
-                fb=best_baseline_model['model'],
-                tt=best_model['model'],
+                fb=best_baseline_model.type,
+                tt=best_model.type,
                 rd=degradation_rate,
                 ct="r_square", cr=confidence
             )

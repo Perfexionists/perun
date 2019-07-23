@@ -30,13 +30,13 @@ def compute_param_integral(model):
     According to the value of coefficients from these formulae is computed the
     integral using the general integration method from `scipy` package.
 
-    :param dict model: model with its required metrics (coefficients,type,etc)
+    :param ModelRecord model: model with its required metrics (coefficients,type,etc)
     :return float: the value of integral of `formula` from `x_start` to `x_end`
     """
-    formula = regression_models.get_formula_of(model['model'])
-    coeffs = (model['coeffs'][0]['value'], model['coeffs'][1]['value'],)
-    coeffs = coeffs + (model['coeffs'][2]['value'],) if model['model'] == 'quadratic' else coeffs
-    return integrate.quad(formula, model['x_start'], model['x_end'], args=coeffs)[0]
+    formula = regression_models.get_formula_of(model.type)
+    coeffs = (model.b0, model.b1,)
+    coeffs = coeffs + (model.b2,) if model.type == 'quadratic' else coeffs
+    return integrate.quad(formula, model.x_start, model.x_end, args=coeffs)[0]
 
 
 def compute_nparam_integral(model):
@@ -48,12 +48,12 @@ def compute_nparam_integral(model):
     length of `y`-interval and then execute the computation with using `scipy`
     package.
 
-    :param dict model: regressogram model with its required metrics
+    :param ModelRecord model: regressogram model with its required metrics
         (bucket_stats, x_start, x_end, ...)
     :return float: the value of integral computed using samples
     """
-    x_pts = np.linspace(model['x_start'], model['x_end'], num=len(model['bucket_stats']))
-    return integrate.simps(model['bucket_stats'], x_pts)
+    x_pts = np.linspace(model.x_start, model.x_end, num=len(model.b0))
+    return integrate.simps(model.b0, x_pts)
 
 
 def classify_change(diff_value, no_change, change, base_per=1):
@@ -90,7 +90,7 @@ def classify_change(diff_value, no_change, change, base_per=1):
     return change
 
 
-def execute_analysis(base_model, targ_model, **_):
+def execute_analysis(_, base_model, targ_model, **__):
     """
     A method performs the primary analysis for pair of models.
 
@@ -100,9 +100,10 @@ def execute_analysis(base_model, targ_model, **_):
     models with using of the threshold value. At the end is returned the dictionary
     with relevant information about the detected change.
 
-    :param dict base_model: dictionary of baseline model with its required properties
-    :param dict targ_model: dictionary of target_model with its required properties
-    :param dict _: unification with remaining detection methods (i.e. Integral Comparison)
+    :param str _: unique identification of given models (not used in this detection method)
+    :param ModelRecord base_model: dictionary of baseline model with its required properties
+    :param ModelRecord targ_model: dictionary of target_model with its required properties
+    :param dict __: unification with remaining detection methods (i.e. Integral Comparison)
     :return DegradationInfo: tuple with degradation info between pair of models:
         (deg. result, deg. location, deg. rate, confidence type and rate, etc.)
     """
@@ -114,10 +115,11 @@ def execute_analysis(base_model, targ_model, **_):
         calculating function, that subsequently calculates the value of integral
         from the given model.
 
-        :param dict model: dictionary of model with its required properties
+        :param ModelRecord model: dictionary of model with its required properties
         :return float: the result of the integral
         """
-        integral_method = compute_param_integral if model.get('coeffs') else compute_nparam_integral
+        integral_method = compute_param_integral if model.b1 is not None \
+            else compute_nparam_integral
         return integral_method(model)
 
     base_integral = compute_integral(base_model)
