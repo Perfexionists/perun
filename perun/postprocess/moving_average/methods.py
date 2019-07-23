@@ -67,7 +67,7 @@ def compute_moving_average(data_gen, configuration):
     for x_pts, y_pts, uid in data_gen:
         moving_average_model = moving_average(x_pts, y_pts, configuration)
         moving_average_model['uid'] = uid
-        moving_average_model['method'] = 'moving_average'
+        moving_average_model['model'] = 'moving_average'
         # add partial result to the model result list - create output dictionaries
         moving_average_models.append(moving_average_model)
     return moving_average_models

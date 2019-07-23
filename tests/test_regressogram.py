@@ -34,7 +34,7 @@ def test_regressogram_method(postprocess_profiles):
         assert code.value == 0
         # Obtaining generator of models from profile in the UID order
         models = generate_models_by_uid(
-            profile, 'regressogram', ['exp::test1', 'exp::test2', 'exp::test3'], key='method'
+            profile, 'regressogram', ['exp::test1', 'exp::test2', 'exp::test3'], key='model'
         )
 
         # Test the expected result with each obtained model

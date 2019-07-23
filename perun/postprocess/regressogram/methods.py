@@ -50,7 +50,7 @@ def compute_regressogram(data_gen, config):
         result = regressogram(x_pts, y_pts, config['statistic_function'], buckets)
         result.update({
             'uid': uid,
-            'method': 'regressogram',
+            'model': 'regressogram',
             'per_key': config['per_key'],
             'of_key': config['of_key']
         })

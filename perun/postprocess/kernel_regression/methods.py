@@ -136,7 +136,7 @@ def compute_kernel_regression(data_gen, config):
         # calling the method, that ensures the calling the relevant mode of kernel regression
         kernel_model = execute_kernel_regression(x_pts, y_pts, config)
         kernel_model['uid'] = uid
-        kernel_model['method'] = 'kernel_regression'
+        kernel_model['model'] = 'kernel_regression'
         # add partial result to the model result list - create output dictionary with kernel models
         kernel_models.append(kernel_model)
     return kernel_models

@@ -14,7 +14,7 @@ import click
 import perun.profile.convert as convert
 
 from perun.check.general_detection import get_filtered_best_models_of
-from perun.postprocess.regression_analysis.methods import get_param_methods
+from perun.postprocess.regression_analysis.regression_models import get_supported_models
 from perun.postprocess.regressogram.methods import get_nparam_methods
 
 __author__ = 'Tomas Fiedor'
@@ -226,7 +226,7 @@ class Profile(collections.MutableMapping):
         group = models_strategy.rsplit('-')[1]
         if models_strategy in ('all-param', 'all-nonparam'):
             models = [model for idx, model in self.all_models(group=group)]
-            return {model['uid'] + model.get('model', model['method']): model for model in models}
+            return {model['uid'] + model.get('model'): model for model in models}
         elif models_strategy in ('best-nonparam', 'best-model', 'best-param'):
             return get_filtered_best_models_of(self, group=group)
 
@@ -262,8 +262,8 @@ class Profile(collections.MutableMapping):
         """
         for model_idx, model in enumerate(self._storage['models']):
             if group == 'both' or\
-               (group == 'param' and model.get('method') in get_param_methods()) or\
-               (group == 'nonparam' and model.get('method') in get_nparam_methods()):
+               (group == 'param' and model.get('model') in get_supported_models()) or\
+               (group == 'nonparam' and model.get('model') in get_nparam_methods()):
                 yield model_idx, model
 
     def all_snapshots(self):

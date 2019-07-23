@@ -199,7 +199,7 @@ def unify_regressogram(base_model, targ_model, targ_profile):
     """
     log.warn(
         '{0}: {1} models with different length ({2} != {3}) are slicing'.format(
-            base_model['uid'], base_model['method'],
+            base_model['uid'], base_model['model'],
             len(base_model['bucket_stats']), len(targ_model['bucket_stats'])
         ), end=": "
     )
@@ -317,7 +317,7 @@ def preprocess_models(base_model, targ_profile, targ_model):
         if len(base_y_pts) != len(targ_y_pts):
             log.warn(
                 '{0}: {1} models with different length ({2} != {3}) are slicing'
-                .format(base_model['uid'], base_model['method'], len(base_y_pts), len(targ_y_pts))
+                .format(base_model['uid'], base_model['model'], len(base_y_pts), len(targ_y_pts))
             )
             return base_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
                 base_y_pts[:min(len(base_y_pts), len(targ_y_pts))], \
@@ -326,7 +326,7 @@ def preprocess_models(base_model, targ_profile, targ_model):
         return base_x_pts, base_y_pts, targ_x_pts, targ_y_pts
 
     # check whether both models are regressogram and whether there are not about the same length
-    if base_model['method'] == 'regressogram' and targ_model['method'] == 'regressogram' and \
+    if base_model['model'] == 'regressogram' and targ_model['model'] == 'regressogram' and \
             len(base_model['bucket_stats']) != len(targ_model['bucket_stats']):
         targ_model = unify_regressogram(base_model, targ_model, targ_profile)
 

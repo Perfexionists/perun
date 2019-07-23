@@ -207,7 +207,7 @@
         18.0, 5.0, 5.0, 0.0, 5.0, 5.0, 0.0, 5.0, 5.0, 5.0, 0.0, 5.0
       ],
       "per_key": "structure-unit-size",
-      "method": "regressogram"
+      "model": "regressogram"
     },
     {
       "uid": "alloc",
@@ -220,7 +220,7 @@
       "per_key": "structure-unit-size",
       "r_square": 1.0,
       "x_end": 275,
-      "method": "moving_average"
+      "model": "moving_average"
     }
   ],
   "resource_type_map": {

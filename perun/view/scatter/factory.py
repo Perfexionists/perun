@@ -96,9 +96,9 @@ def draw_models(graph, models, profile):
         if 'coeffs' in model:
             graph = create_parametric_model(graph, model, colour_palette[idx])
         # The non-parametric models do not contain the coefficients
-        elif model['method'] == 'regressogram':
+        elif model['model'] == 'regressogram':
             graph = create_regressogram_model(graph, model, colour_palette[idx])
-        elif model['method'] in ('moving_average', 'kernel_regression'):
+        elif model['model'] in ('moving_average', 'kernel_regression'):
             graph = create_non_param_model(graph, model, profile, colour_palette[idx])
     return graph
 
@@ -149,7 +149,7 @@ def create_regressogram_model(graph, model, colour):
     y_pts = np.append(model['y_start'], model['bucket_stats'])
     # Create legend for the plotted model
     legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(
-        model['method'][:3], bucket_no, model['statistic_function'], model['r_square']
+        model['model'][:3], bucket_no, model['statistic_function'], model['r_square']
     )
     # Plot the render_step_function function for regressogram model
     graph_params = {'color': colour, 'line_width': 3.5, 'legend': legend}
@@ -182,12 +182,12 @@ def create_non_param_model(graph, model, profile, colour):
         return graph
 
     legend = ""
-    if model['method'] == 'moving_average':
+    if model['model'] == 'moving_average':
         # Create legend for the plotted moving_average model
         legend = '{0}: window={1}, R^2={2:f}'.format(
             model['moving_method'], model['window_width'], model['r_square']
         )
-    elif model['method'] == 'kernel_regression':
+    elif model['model'] == 'kernel_regression':
         # Create legend for the plotted kernel models
         legend = '{0}: bw={1}, R^2={2:f}'.format(
             model['kernel_mode'], model['bandwidth'], model['r_square']
@@ -227,7 +227,7 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
         this_graph_title = graph_title + '; uid: {0}'.format(data_slice.uid.values[0])
         if models_slice:
             this_graph_title += ('; method: {0}; interval <{1}, {2}>'
-                                 .format(models_slice[0]['method'],
+                                 .format(models_slice[0]['model'],
                                          models_slice[0]['x_start'],
                                          models_slice[0]['x_end']))
         bokeh_helpers.configure_graph(

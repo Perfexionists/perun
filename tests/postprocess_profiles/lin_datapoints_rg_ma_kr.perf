@@ -32,7 +32,7 @@
       "r_square": 0.840480465011754,
       "x_start": 59.0,
       "x_end": 132.0,
-      "method": "regressogram",
+      "model": "regressogram",
       "buckets_method": "doane",
       "uid": "linear::test1",
       "bucket_stats": [
@@ -45,7 +45,7 @@
       "r_square": 0.7575757575757576,
       "x_start": 0.0,
       "x_end": 9.0,
-      "method": "regressogram",
+      "model": "regressogram",
       "buckets_method": "doane",
       "uid": "linear::test2",
       "bucket_stats": [
@@ -60,7 +60,7 @@
       "r_square": 1.0,
       "x_start": 59,
       "x_end": 132,
-      "method": "moving_average",
+      "model": "moving_average",
       "uid": "linear::test1",
       "window_width": 1,
       "moving_method": "sma",
@@ -73,7 +73,7 @@
       "r_square": 1.0,
       "x_start": 0,
       "x_end": 9,
-      "method": "moving_average",
+      "model": "moving_average",
       "uid": "linear::test2",
       "window_width": 1,
       "moving_method": "sma",
@@ -87,7 +87,7 @@
       "r_square": 0.7907602362991459,
       "x_start": 59,
       "kernel_mode": "estimator",
-      "method": "kernel_regression",
+      "model": "kernel_regression",
       "uid": "linear::test1",
       "per_key": "structure-unit-size",
       "bandwidth": 30351362.464754254
@@ -100,7 +100,7 @@
       "r_square": 1.0,
       "x_start": 0,
       "kernel_mode": "estimator",
-      "method": "kernel_regression",
+      "model": "kernel_regression",
       "uid": "linear::test2",
       "per_key": "structure-unit-size",
       "bandwidth": 1.8970114134082943

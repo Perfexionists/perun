@@ -41,7 +41,7 @@
       "r_square": 0.9960136674259681,
       "x_start": 0.0,
       "x_end": 110.0,
-      "method": "regressogram",
+      "model": "regressogram",
       "bucket_stats": [
         0.2, 0.2, 0.0, 0.2, 0.0, 0.2, 0.0, 0.3, 0.0, 0.4, 0.5, 0.0, 0.7, 0.0, 1.0, 0.0, 1.2, 1.4, 1.5, 1.7999999999999998
       ],
@@ -54,7 +54,7 @@
       "r_square": 0.9942763368555876,
       "x_start": 17.0,
       "x_end": 103.0,
-      "method": "regressogram",
+      "model": "regressogram",
       "bucket_stats": [
         21.0, 0.0, 19.0, 23.0, 36.0, 33.0, 0.0, 27.0, 32.0, 0.0, 0.0, 0.0, 62.0, 0.0, 0.0, 74.0
       ],
@@ -67,7 +67,7 @@
       "r_square": 0.0,
       "x_start": 0.0,
       "x_end": 8.0,
-      "method": "regressogram",
+      "model": "regressogram",
       "bucket_stats": [
         56.77777777777778
       ],
@@ -78,7 +78,7 @@
       "r_square": 0.9755837129840547,
       "x_start": 0,
       "x_end": 110,
-      "method": "moving_average",
+      "model": "moving_average",
       "bucket_stats": [
         NaN, 0.2, 0.20000000000000004, 0.20000000000000004, 0.25, 0.35, 0.44999999999999996, 0.5999999999999999, 0.8499999999999999, 1.0999999999999996, 1.2999999999999996, 1.4499999999999997, 1.5999999999999999, 1.7999999999999998
       ],
@@ -91,7 +91,7 @@
       "r_square": 1.0,
       "x_start": 17,
       "x_end": 103,
-      "method": "moving_average",
+      "model": "moving_average",
       "bucket_stats": [
         18.0, 24.0, 19.0, 23.0, 36.0, 33.0, 27.0, 32.0, 62.0, 72.0, 76.0
       ],
@@ -104,7 +104,7 @@
       "r_square": 1.0,
       "x_start": 0,
       "x_end": 8,
-      "method": "moving_average",
+      "model": "moving_average",
       "bucket_stats": [
         1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0
       ],
@@ -120,7 +120,7 @@
       "bandwidth": 5.565770874398895,
       "x_start": 0,
       "kernel_mode": "estimator",
-      "method": "kernel_regression",
+      "model": "kernel_regression",
       "uid": "exp::test1",
       "per_key": "structure-unit-size",
       "r_square": 0.9993274556690619,
@@ -133,7 +133,7 @@
       "bandwidth": 5.079589007438139,
       "x_start": 17,
       "kernel_mode": "estimator",
-      "method": "kernel_regression",
+      "model": "kernel_regression",
       "uid": "exp::test2",
       "per_key": "structure-unit-size",
       "r_square": 0.9898398317185579,
@@ -146,7 +146,7 @@
       "bandwidth": 0.21770025364325246,
       "x_start": 0,
       "kernel_mode": "estimator",
-      "method": "kernel_regression",
+      "model": "kernel_regression",
       "uid": "exp::test3",
       "per_key": "structure-unit-size",
       "r_square": 0.9999999999385866,
