@@ -5,6 +5,7 @@ this is done in appropriate test files, only the API is tested."""
 
 import os
 import git
+import numpy as np
 import re
 import shutil
 import time
@@ -589,6 +590,8 @@ def test_kernel_regression_correct(pcs_full):
 
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
+    np.warnings.filterwarnings('ignore')
+
     correct_tests = [
         # TEST KERNEL-REGRESSION COMMON OPTIONS
         # 1. Test the help printout first
@@ -743,11 +746,11 @@ def test_kernel_regression_correct(pcs_full):
 
     # Instantiate the runner first
     runner = CliRunner()
-
-    cprof_idx = "/home/simon/perun/tests/postprocess_profiles/kernel_datapoints.perf"
+    pool_path = os.path.join(os.path.split(__file__)[0], 'postprocess_profiles')
+    profile = os.path.join(pool_path, 'kernel_datapoints.perf')
 
     # Perform the testing
-    kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, cprof_idx)
+    kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, profile)
 
 
 def test_reg_analysis_incorrect(pcs_full):
@@ -1475,6 +1478,37 @@ def test_check_profiles(helpers, pcs_with_degradations):
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):
         result = runner.invoke(cli.check_group, ['profiles', "0@i", tag])
+        assert result.exit_code == 0
+
+
+def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
+    """Test checking detection model strategies
+
+    Expecting correct behaviors
+    """
+    runner = CliRunner()
+    # Initialize the matrix
+    matrix = config.Config('local', '', {
+        'degradation': {
+            'strategies': [
+                {'method': 'local_statistics'}
+            ]
+        },
+    })
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+
+    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    profiles = [
+        os.path.join(pool_path, 'baseline_strategies.perf'),
+        os.path.join(pool_path, 'target_strategies.perf')
+    ]
+    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
+
+    for model_strategy in ['best-param', 'all-nonparam', 'best-both']:
+        result = runner.invoke(
+            cli.check_group,
+            ['--models-type', model_strategy, 'profiles', "0@p", "1@p"]
+        )
         assert result.exit_code == 0
 
 

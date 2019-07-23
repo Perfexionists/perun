@@ -469,9 +469,7 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
         for change_info, rel_error, x_start, x_end in deg_info.partial_intervals:
             if change_info != PerformanceChange.NoChange:
                 cprint(
-                    "<{}, {}> {}x; ".format(
-                        round(x_start, 2), round(x_end, 2), np.round(rel_error, 2)
-                    ),
+                    "<{}, {}> {}x; ".format(x_start, x_end, rel_error),
                     CHANGE_COLOURS.get(change_info, 'white'), attrs=[]
                 )
         print("")
@@ -486,7 +484,7 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
         # Iterate and print all of the infos
         for deg_info, cmd, __ in changes:
             print('\u2514 ', end='')
-            cprint('{}x'.format(deg_info.rate_degradation), 'white', attrs=['bold'])
+            cprint('{}x'.format(round(deg_info.rate_degradation, 2)), 'white', attrs=['bold'])
             print(': ', end='')
             cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, 'white'), attrs=[])
             print(' ', end='')
@@ -528,7 +526,8 @@ def aggregate_intervals(intervals):
     for start_index, end_index in get_indices_of_intervals():
         rel_error = np.sum(intervals[start_index:end_index+1, 1]) / (end_index - start_index + 1)
         agg_intervals.append((
-            intervals[start_index][0], rel_error, intervals[start_index][2], intervals[end_index][3]
+            intervals[start_index][0], np.round(rel_error, 2),
+            intervals[start_index][2], intervals[end_index][3]
         ))
 
     return agg_intervals

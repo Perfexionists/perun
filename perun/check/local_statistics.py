@@ -138,9 +138,9 @@ def classify_stats_diff(base_stats, targ_stats):
         # compute difference between the metrics from both models
         diff_values = np.subtract(targ_stats[base_stat[0]], base_stat[1])
         # compute the relative error of current processed metric
-        new_rel_error = np.nan_to_num(
-            np.true_divide(diff_values, base_stat[1], where=base_stat[1] != 0)
-        )
+        new_rel_error = np.nan_to_num(np.true_divide(
+            diff_values, base_stat[1], out=np.zeros_like(diff_values), where=base_stat[1] != 0
+        ))
         # compute the sum of the partial relative errors computed from the individual metrics
         rel_error = np.add(rel_error, new_rel_error)
         # update the change_score according to the value of current computed relative error
@@ -249,8 +249,8 @@ def execute_analysis(base_model, targ_model, **kwargs):
     change_info, partial_rel_error = classify_stats_diff(base_stats, targ_stats)
 
     x_pts = np.append(x_pts, [x_pts[0]], axis=1) if x_pts.size == 1 else x_pts
-    x_pts_even = x_pts[:, 0::2].reshape(-1, x_pts.size // 2)[0]
-    x_pts_odd = x_pts[:, 1::2].reshape(-1, x_pts.size // 2)[0]
+    x_pts_even = x_pts[:, 0::2].reshape(-1, x_pts.size // 2)[0].round(2)
+    x_pts_odd = x_pts[:, 1::2].reshape(-1, x_pts.size // 2)[0].round(2)
     partial_intervals = np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T
 
     change_info = check_helpers.classify_change(
@@ -320,8 +320,8 @@ def preprocess_models(base_model, targ_profile, targ_model):
                 .format(base_model['uid'], base_model['method'], len(base_y_pts), len(targ_y_pts))
             )
             return base_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
-                targ_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
                 base_y_pts[:min(len(base_y_pts), len(targ_y_pts))], \
+                targ_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
                 targ_y_pts[:min(len(base_y_pts), len(targ_y_pts))]
         return base_x_pts, base_y_pts, targ_x_pts, targ_y_pts
 

@@ -227,9 +227,7 @@ class Profile(collections.MutableMapping):
         if models_strategy in ('all-param', 'all-nonparam'):
             models = [model for idx, model in self.all_models(group=group)]
             return {model['uid'] + model.get('model', model['method']): model for model in models}
-        elif models_strategy in ('best-nonparam', 'best-model'):
-            return get_filtered_best_models_of(self, group=group)
-        elif models_strategy == 'best-param':
+        elif models_strategy in ('best-nonparam', 'best-model', 'best-param'):
             return get_filtered_best_models_of(self, group=group)
 
     def all_models(self, group='both'):

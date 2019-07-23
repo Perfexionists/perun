@@ -7,6 +7,14 @@
       "structure-unit-size": [
         132, 129, 120, 113.2
       ]
+    },
+    "linear::test2#0": {
+      "amount": [
+        46, 48
+      ],
+      "structure-unit-size": [
+        132, 129
+      ]
     }
   },
   "header": {
@@ -59,6 +67,12 @@
     "linear::test1#0": {
       "subtype": "time delta",
       "uid": "linear::test1",
+      "time": "0.00023s",
+      "type": "mixed"
+    },
+    "linear::test2#0": {
+      "subtype": "time delta",
+      "uid": "linear::test2",
       "time": "0.00023s",
       "type": "mixed"
     }

@@ -73,7 +73,7 @@ class DegradationInfo:
     :ivar float confidence_rate: value of the confidence we have in the detected degradation
     """
 
-    def __init__(self, res, loc, fb, tt, t="-", rd=0, ct="no", cr=0, pi=None):
+    def __init__(self, res, loc, fb, tt, t="-", rd=0, ct=0, cr=0, pi=None):
         """Each degradation consists of its results, the location, where the change has happened
         (this is e.g. the unique id of the resource, like function or concrete line), then the pair
         of best models for baseline and target, and the information about confidence.
