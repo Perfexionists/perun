@@ -12,7 +12,7 @@ import perun.postprocess.regression_analysis.tools as tools
 _REQUIRED_KEYS = ['bucket_method', 'statistic_function']
 
 
-def get_nparam_methods():
+def get_supported_nparam_methods():
     """Provides all currently supported computational methods, to
     estimate the optimal number of buckets, as a list of their names.
 

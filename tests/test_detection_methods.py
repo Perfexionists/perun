@@ -65,8 +65,8 @@ def load_profiles(param):
     return profiles
 
 
-def check_degradation_result(base_profile, targ_profile, expected_result, function):
-    result = list(function(base_profile, targ_profile))
+def check_degradation_result(baseline_profile, target_profile, expected_result, function):
+    result = list(function(baseline_profile, target_profile))
     assert expected_result['result'] in [r.result for r in result]
     assert expected_result['type'] in [r.type for r in result]
     assert expected_result['rate'] in [round(r.rate_degradation) for r in result]
@@ -84,10 +84,10 @@ def test_regression_detections_methods():
         function = expected_results['function']
         expected_results = expected_results['results']
         for profiles_kind, results_kind in zip(profiles, expected_results):
-            base_profile = profiles_kind[0]
-            for targ_profile, error_kind in zip(profiles_kind[1:], results_kind):
-                check_degradation_result(base_profile, targ_profile, error_kind[0], function)
-                check_degradation_result(targ_profile, base_profile, error_kind[1], function)
+            baseline_profile = profiles_kind[0]
+            for target_profile, error_kind in zip(profiles_kind[1:], results_kind):
+                check_degradation_result(baseline_profile, target_profile, error_kind[0], function)
+                check_degradation_result(target_profile, baseline_profile, error_kind[1], function)
 
 
 def test_complex_detection_methods():

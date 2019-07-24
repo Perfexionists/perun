@@ -15,7 +15,7 @@ import perun.profile.convert as convert
 
 from perun.check.general_detection import get_filtered_best_models_of
 from perun.postprocess.regression_analysis.regression_models import get_supported_models
-from perun.postprocess.regressogram.methods import get_nparam_methods
+from perun.postprocess.regressogram.methods import get_supported_nparam_methods
 
 __author__ = 'Tomas Fiedor'
 
@@ -77,11 +77,10 @@ class Profile(collections.MutableMapping):
         elif resource_type == 'snapshots':
             # Resources are in type of [{'time': _, 'resources': []}
             for i, snapshot in enumerate(resource_list):
-                self._translate_resources(snapshot['resources'],
-                                          {
+                self._translate_resources(snapshot['resources'], {
                                               'snapshot': i,
-                                              'time': snapshot.get('time', '0.0')
-                                          })
+                                              'time': snapshot.get('time', '0.0')}
+                                          )
         elif isinstance(resource_list, (dict, Profile)):
             self._storage['resources'].update(resource_list)
         else:
@@ -211,7 +210,7 @@ class Profile(collections.MutableMapping):
                 snapshot_number = collectable_properties.get('snapshot', 0)
                 yield snapshot_number, collectable_properties
 
-    def get_models(self, models_strategy):
+    def all_filtered_models(self, models_strategy):
         """
         The function obtains models according to the given strategy.
 
@@ -262,7 +261,7 @@ class Profile(collections.MutableMapping):
         for model_idx, model in enumerate(self._storage['models']):
             if group == 'both' or\
                (group == 'param' and model.get('model') in get_supported_models()) or\
-               (group == 'nonparam' and model.get('model') in get_nparam_methods()):
+               (group == 'nonparam' and model.get('model') in get_supported_nparam_methods()):
                 yield model_idx, model
 
     def get_model_of(self, model_type, uid):

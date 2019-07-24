@@ -385,6 +385,82 @@ def print_short_change_string(counts):
     print("")
 
 
+def _print_models_info(deg_info, model_strategy):
+    """
+    The function prints information about both models from detection.
+
+    This function prints available information about models at which
+    was detected change, according to the applied models strategy.
+    Depends on the applied strategy it can logging the type of
+    parametric model (e.g. constant, linear, etc.) or kind of
+    models (e.g. regressogram, constant, etc.). The function also
+    prints information about confidence at detection, i.e. confidence
+    rate and confidence type.
+
+    :param DegradationInfo deg_info: structures of found degradations with required information
+    :param str model_strategy: detection model strategy for obtains the relevant kind of models
+    :return None: function has no return value
+    """
+    def print_models_kinds(
+            baseline_str, baseline_colour, target_str, target_colour, attrs
+    ):
+        """
+        The function format the given parameters to required format at output.
+
+        :param str baseline_str: baseline kind of model (e.g. regressogram, constant, etc.)
+        :param str baseline_colour: baseline colour to print baseline string
+        :param str target_str: target kind of model (e.g. moving_average, linear, etc.)
+        :param str target_colour: target colour to print target string
+        :param list attrs: list of additional attributes for the colouring
+        :return None: function has nor return value
+        """
+        print(baseline_str, end='')
+        cprint('{}'.format(deg_info.from_baseline), colour=baseline_colour, attrs=attrs)
+        print(target_str, end='')
+        cprint('{}'.format(deg_info.to_target), colour=target_colour, attrs=attrs)
+
+    from_colour, to_colour = get_degradation_change_colours(deg_info.result)
+
+    if model_strategy == 'best-param':
+        print_models_kinds(' from: ', from_colour, ' -> to: ', to_colour, ['bold'])
+    elif model_strategy in ('best-nonparam', 'best-model', 'best-both'):
+        print_models_kinds(' base: ', 'blue', ' targ: ', 'blue', ['bold'])
+    elif model_strategy in ('all-nonparam', 'all-param', 'all-models'):
+        print(' model: ', end='')
+        cprint('{}'.format(deg_info.from_baseline), colour='blue', attrs=['bold'])
+
+    if deg_info.confidence_type != 'no':
+        print(' (with confidence ', end='')
+        cprint(
+            '{} = {}'.format(
+                deg_info.confidence_type, deg_info.confidence_rate),
+            'white', attrs=['bold']
+        )
+        print(')', end='')
+
+
+def _print_partial_intervals(partial_intervals):
+    """
+    The function prints information about detected changes on the partial intervals.
+
+    This function is using only when was used the `local-statistics` detection
+    method, that determines the changes on the individual sub-intervals. The
+    function prints the range of the sub-interval and the error rate on this
+    sub-interval.
+
+    :param np.ndarray partial_intervals: array with partial intervals and all required items
+    :return None: function has no return value
+    """
+    print('  \u2514 ', end='')
+    for change_info, rel_error, x_start, x_end in aggregate_intervals(partial_intervals):
+        if change_info != PerformanceChange.NoChange:
+            cprint(
+                "<{}, {}> {}x; ".format(x_start, x_end, rel_error),
+                CHANGE_COLOURS.get(change_info, 'white'), attrs=[]
+            )
+    print("")
+
+
 def print_list_of_degradations(degradation_list, model_strategy="best-model"):
     """Prints list of found degradations grouped by location
 
@@ -403,76 +479,6 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
         :return: location of the degradation used for grouping
         """
         return item[0].location
-
-    def print_models_info():
-        """
-        The function prints information about both models from detection.
-
-        This function prints available information about models at which
-        was detected change, according to the applied models strategy.
-        Depends on the applied strategy it can logging the type of
-        parametric model (e.g. constant, linear, etc.) or kind of
-        models (e.g. regressogram, constant, etc.). The function also
-        prints information about confidence at detection, i.e. confidence
-        rate and confidence type.
-
-        :return None: function has no return value
-        """
-        def print_models_kinds(base_str, base_colour, targ_str, targ_colour, attrs):
-            """
-            The function format the given parameters to required format at output.
-
-            :param str base_str: baseline kind of model (e.g. regressogram, constant, etc.)
-            :param str base_colour: baseline colour to print baseline string
-            :param str targ_str: target kind of model (e.g. moving_average, linear, etc.)
-            :param str targ_colour: target colour to print target string
-            :param list attrs: list of additional attributes for the colouring
-            :return None: function has nor return value
-            """
-            print(base_str, end='')
-            cprint('{}'.format(deg_info.from_baseline), colour=base_colour, attrs=attrs)
-            print(targ_str, end='')
-            cprint('{}'.format(deg_info.to_target), colour=targ_colour, attrs=attrs)
-
-        from_colour, to_colour = get_degradation_change_colours(deg_info.result)
-
-        if model_strategy == 'best-param':
-            print_models_kinds(' from: ', from_colour, ' -> to: ', to_colour, ['bold'])
-        elif model_strategy in ('best-nonparam', 'best-model', 'best-both'):
-            print_models_kinds(' base: ', 'blue', ' targ: ', 'blue', ['bold'])
-        elif model_strategy in ('all-nonparam', 'all-param', 'all-models'):
-            print(' model: ', end='')
-            cprint('{}'.format(deg_info.from_baseline), colour='blue', attrs=['bold'])
-
-        if deg_info.confidence_type != 'no':
-            print(' (with confidence ', end='')
-            cprint(
-                '{} = {}'.format(
-                    deg_info.confidence_type, deg_info.confidence_rate),
-                'white', attrs=['bold']
-            )
-            print(')', end='')
-
-    def print_partial_intervals():
-        """
-        The function prints information about detected changes on the partial intervals.
-
-        This function is using only when was used the `local-statistics` detection
-        method, that determines the changes on the individual sub-intervals. The
-        function prints the range of the sub-interval and the error rate on this
-        sub-interval.
-
-        :return None: function has no return value
-        """
-        deg_info.partial_intervals = aggregate_intervals(deg_info.partial_intervals)
-        print('  \u2514 ', end='')
-        for change_info, rel_error, x_start, x_end in deg_info.partial_intervals:
-            if change_info != PerformanceChange.NoChange:
-                cprint(
-                    "<{}, {}> {}x; ".format(x_start, x_end, rel_error),
-                    CHANGE_COLOURS.get(change_info, 'white'), attrs=[]
-                )
-        print("")
 
     # Group by location
     degradation_list.sort(key=keygetter)
@@ -493,7 +499,7 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
                 CHANGE_COLOURS[deg_info.result], attrs=['bold']
             )
             if deg_info.result != PerformanceChange.NoChange:
-                print_models_info()
+                _print_models_info(deg_info, model_strategy)
 
             # Print information about command that was executed
             print(" (", end='')
@@ -502,12 +508,40 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
             if deg_info.partial_intervals is not None:
-                print_partial_intervals()
+                _print_partial_intervals(deg_info.partial_intervals)
     print("")
 
 
 def aggregate_intervals(intervals):
+    """
+    Function aggregates the partial intervals according to the types of change.
+
+    The function aggregates the neighbourly partial intervals when they have the
+    same detected type of change. Then the individual intervals are joined since
+    in the whole interval are the same kind of the changes. For example, we can
+    suppose the following intervals:
+
+        - <0, 1>: Degradation; <1, 2> Degradation; <2, 3>: Optimization;
+          <3, 4>: MaybeOptimization; <4, 5>: MaybeOptimization
+
+    Then the resulting aggregated intervals will be the following:
+
+        - <0, 2>: Degradation; <2, 3>: Optimization; <3, 5>: MaybeOptimization
+
+    :param np.ndarray intervals: the array of partial intervals with tuples of required information
+    :return list: list of the aggregated partial intervals to print
+    """
     def get_indices_of_intervals():
+        """
+        Function computes the indices of the aggregated intervals.
+
+        The function iterates over the individual partial intervals and aggregates the
+        neighbourly intervals when they have the same type of change. When the next
+        interval has the different type of change, then the relevant indices of
+        aggregated intervals are returned and proceeds to the next iteration.
+
+        :return tuple: function returns the indices of aggregate intervals.
+        """
         if intervals.any():
             start_idx, end_idx = 0, 0
             change, _, _, _ = intervals[start_idx]

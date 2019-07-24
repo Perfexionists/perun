@@ -105,11 +105,11 @@ def get_filtered_best_models_of(profile, group, model_filter=filter_by_r_square)
             if model_filter(best_model_map, model):
                 best_model_map[model['uid']] = create_model_record(model)
         return {k: v for k, v in best_model_map.items() if v.r_square != 0.0}
-    else:
-        best_model_map = {}
-        for idx, model in profile.all_models(group=group):
-            best_model_map[model['uid'] + model.get('model')] = create_model_record(model)
-        return best_model_map
+
+    best_model_map = {}
+    for _, model in profile.all_models(group=group):
+        best_model_map[model['uid'] + model.get('model')] = create_model_record(model)
+    return best_model_map
 
 
 def get_function_values(model):
@@ -143,7 +143,8 @@ def get_function_values(model):
 
 
 def general_detection(
-        base_profile, targ_profile, classification_method=ClassificationMethod.PolynomialRegression
+        baseline_profile, target_profile,
+        classification_method=ClassificationMethod.PolynomialRegression
 ):
     """The general method, which covers all detection logic. At the begin obtains the pairs
     of the best models from the given profiles and the pairs of the linears models. Subsequently
@@ -152,41 +153,41 @@ def general_detection(
     classification is know the type of occurred changes. In the last steps is determined
     information, which will be returned to users (i.e. confidence, change between models).
 
-    :param Profile base_profile: baseline against which we are checking the degradation
-    :param Profile targ_profile: profile corresponding to the checked minor version
+    :param Profile baseline_profile: baseline against which we are checking the degradation
+    :param Profile target_profile: profile corresponding to the checked minor version
     :param ClassificationMethod classification_method: method used for actual classification of
         performance changes
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
 
     # obtaining the needed models from both profiles
-    best_base_models = get_filtered_best_models_of(base_profile, group='param')
-    best_targ_models = get_filtered_best_models_of(targ_profile, group='param')
-    linear_base_model = get_filtered_best_models_of(
-        base_profile, group='param', model_filter=create_filter_by_model('linear')
+    best_baseline_models = get_filtered_best_models_of(baseline_profile, group='param')
+    best_target_models = get_filtered_best_models_of(target_profile, group='param')
+    linear_baseline_model = get_filtered_best_models_of(
+        baseline_profile, group='param', model_filter=create_filter_by_model('linear')
     )
-    linear_targ_model = get_filtered_best_models_of(
-        targ_profile, group='param', model_filter=create_filter_by_model('linear')
+    linear_target_model = get_filtered_best_models_of(
+        target_profile, group='param', model_filter=create_filter_by_model('linear')
     )
 
     covered_uids = set.intersection(
-        set(best_base_models.keys()), set(best_targ_models.keys()),
-        set(linear_base_model.keys()), set(linear_targ_model.keys())
+        set(best_baseline_models.keys()), set(best_target_models.keys()),
+        set(linear_baseline_model.keys()), set(linear_target_model.keys())
     )
     models = {
         uid: (
-            best_base_models[uid], best_targ_models[uid],
-            linear_base_model[uid], linear_targ_model[uid]
+            best_baseline_models[uid], best_target_models[uid],
+            linear_baseline_model[uid], linear_target_model[uid]
         ) for uid in covered_uids
     }
 
     # iterate through all uids and corresponding models
     for uid, model_quadruple in models.items():
-        base_model, targ_model, baseline_linear_model, target_linear_model = model_quadruple
+        baseline_model, target_model, baseline_linear_model, target_linear_model = model_quadruple
 
         # obtaining the dependent and independent variables of all models
-        baseline_y_pts, baseline_x_pts = get_function_values(base_model)
-        target_y_pts, _ = get_function_values(targ_model)
+        baseline_y_pts, baseline_x_pts = get_function_values(baseline_model)
+        target_y_pts, _ = get_function_values(target_model)
         linear_baseline_y_pts, _ = get_function_values(baseline_linear_model)
         linear_target_y_pts, _ = get_function_values(target_linear_model)
 
@@ -200,10 +201,10 @@ def general_detection(
         # check state, when no change has occurred
         change = PerformanceChange.Unknown
         change_type = ''
-        threshold_b0 = abs(0.05 * base_model.b0)
-        threshold_b1 = abs(0.05 * base_model.b1)
-        diff_b0 = targ_model.b0 - base_model.b0
-        diff_b1 = targ_model.b1 - base_model.b1
+        threshold_b0 = abs(0.05 * baseline_model.b0)
+        threshold_b1 = abs(0.05 * baseline_model.b1)
+        diff_b0 = target_model.b0 - baseline_model.b0
+        diff_b1 = target_model.b1 - baseline_model.b1
         if abs(diff_b0) <= threshold_b0 and abs(diff_b1) <= threshold_b1:
             change = PerformanceChange.NoChange
         else:  # some change between profile was occurred
@@ -215,11 +216,11 @@ def general_detection(
                 change_type = check.linear_regression.exec_linear_regression(
                     uid, baseline_x_pts, lin_abs_error, 0.05 * np.amax(abs_error),
                     target_linear_model.b1 - baseline_linear_model.b1,
-                    base_model, targ_model, base_profile
+                    baseline_model, target_model, baseline_profile
                 )
             elif classification_method == ClassificationMethod.FastCheck:
                 err_profile = check.fast_check.exec_fast_check(
-                    uid, base_profile, baseline_x_pts, abs_error
+                    uid, baseline_profile, baseline_x_pts, abs_error
                 )
                 std_err_model = get_filtered_best_models_of(err_profile, group='param')
                 change_type = std_err_model[uid][0].upper()
@@ -237,8 +238,8 @@ def general_detection(
                 else:
                     change = PerformanceChange.MaybeOptimization
 
-        best_corresponding_linear_model = best_base_models[uid]
-        best_corresponding_base_model = best_base_models[uid]
+        best_corresponding_linear_model = best_baseline_models[uid]
+        best_corresponding_baseline_model = best_baseline_models[uid]
         if best_corresponding_linear_model:
             confidence = min(
                 best_corresponding_linear_model.r_square, target_linear_model.r_square
@@ -249,8 +250,8 @@ def general_detection(
         yield DegradationInfo(
             res=change,
             loc=uid,
-            fb=best_corresponding_base_model.type,
-            tt=targ_model.type,
+            fb=best_corresponding_baseline_model.type,
+            tt=target_model.type,
             t=change_type,
             rd=rel_error,
             ct='r_square',

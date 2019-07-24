@@ -114,7 +114,7 @@ def compute_window_stats(x_pts, y_pts):
     }, x_edges
 
 
-def classify_stats_diff(base_stats, targ_stats):
+def classify_stats_diff(baseline_stats, target_stats):
     """
     The method performs the classification of computed statistical metrics.
 
@@ -125,23 +125,24 @@ def classify_stats_diff(base_stats, targ_stats):
     the iteration over all metrics. Finally, a method determines the change states
     and computes the average relative error.
 
-    :param dict base_stats: contains the metrics on relevant sub-intervals from baseline model
-    :param dict targ_stats: contains the metrics on relevant sub-intervals from target model
+    :param dict baseline_stats: contains the metrics on relevant sub-intervals from baseline model
+    :param dict target_stats: contains the metrics on relevant sub-intervals from target model
     :return tuple: (change states on individual sub-intervals, average relative error)
     """
     # create vectorized functions which take a np.arrays as inputs and perform actions over it
     compare_diffs = np.vectorize(compare_diff_values)
     classify_change = np.vectorize(check_helpers.classify_change)
     # initialize np.arrays about the size of sub-intervals from given stats
-    change_score = np.full_like(base_stats.get(list(base_stats.keys())[0]), 0)
-    rel_error = np.full_like(base_stats.get(list(targ_stats.keys())[0]), 0)
+    change_score = np.full_like(baseline_stats.get(list(baseline_stats.keys())[0]), 0)
+    rel_error = np.full_like(baseline_stats.get(list(target_stats.keys())[0]), 0)
     # iteration over each metric in the given stats
-    for base_stat in base_stats.items():
+    for baseline_stat_key, baseline_stat_value in baseline_stats.items():
         # compute difference between the metrics from both models
-        diff_values = np.subtract(targ_stats[base_stat[0]], base_stat[1])
+        diff_values = np.subtract(target_stats[baseline_stat_key], baseline_stat_value)
         # compute the relative error of current processed metric
         new_rel_error = np.nan_to_num(np.true_divide(
-            diff_values, base_stat[1], out=np.zeros_like(diff_values), where=base_stat[1] != 0
+            diff_values, baseline_stat_value, out=np.zeros_like(diff_values),
+            where=baseline_stat_value != 0
         ))
         # compute the sum of the partial relative errors computed from the individual metrics
         rel_error = np.add(rel_error, new_rel_error)
@@ -149,10 +150,10 @@ def classify_stats_diff(base_stats, targ_stats):
         change_score = compare_diffs(change_score, new_rel_error)
 
     change_states = classify_change(
-        change_score, _STATS_FOR_NO_CHANGE, _STATS_FOR_CHANGE, len(base_stats.keys())
+        change_score, _STATS_FOR_NO_CHANGE, _STATS_FOR_CHANGE, len(baseline_stats.keys())
     )
     return np.atleast_1d(change_states), \
-        np.atleast_1d(np.divide(rel_error, len(base_stats.keys())))
+        np.atleast_1d(np.divide(rel_error, len(baseline_stats.keys())))
 
 
 def compare_diff_values(change_score, rel_error):
@@ -184,7 +185,7 @@ def compare_diff_values(change_score, rel_error):
     return change_score
 
 
-def unify_regressogram(uid, base_model, targ_model, targ_profile):
+def unify_buckets_in_regressogram(uid, baseline_model, target_model, target_profile):
     """
     The method unifies the regressograms into the same count of buckets.
 
@@ -195,34 +196,34 @@ def unify_regressogram(uid, base_model, targ_model, targ_profile):
     regressogram model, which has the same 'uid' as the given models.
 
     :param str uid: unique identification of both analysed models
-    :param ModelRecord base_model: baseline regressogram model with all its parameters
-    :param ModelRecord targ_model: target regressogram model with all its parameters
-    :param Profile targ_profile: target profile corresponding to the checked minor version
+    :param ModelRecord baseline_model: baseline regressogram model with all its parameters
+    :param ModelRecord target_model: target regressogram model with all its parameters
+    :param Profile target_profile: target profile corresponding to the checked minor version
     :return dict: new regressogram model with the required 'uid'
     """
-    uid = re.sub(base_model.type + '$', '', uid)
+    uid = re.sub(baseline_model.type + '$', '', uid)
     log.warn(
         '{0}: {1} models with different length ({2} != {3}) are slicing'.format(
-            uid, base_model.type, len(base_model.b0), len(targ_model.b0)
+            uid, baseline_model.type, len(baseline_model.b0), len(target_model.b0)
         ), end=": "
     )
     log.cprint('Target regressogram model will be post-processed again.\n', 'yellow')
     # find target model with all needed items from target profile
-    targ_model = targ_profile.get_model_of(targ_model.type, uid)
+    target_model = target_profile.get_model_of(target_model.type, uid)
     # set needed parameters for regressogram post-processors
     mapper_keys = {
-        'per_key': targ_model['per_key'],
-        'of_key': targ_model['of_key']
+        'per_key': target_model['per_key'],
+        'of_key': target_model['of_key']
     }
     config = {
-        'statistic_function': targ_model['statistic_function'],
-        'bucket_number': len(base_model.b0),
+        'statistic_function': target_model['statistic_function'],
+        'bucket_number': len(baseline_model.b0),
         'bucket_method': None,
     }
     config.update(mapper_keys)
     # compute new regressogram models with the new parameters needed to unification
     new_regressogram_models = rg_methods.compute_regressogram(
-        data_provider.data_provider_mapper(targ_profile, **mapper_keys), config
+        data_provider.data_provider_mapper(target_profile, **mapper_keys), config
     )
 
     # match the regressogram model with the right 'uid'
@@ -230,7 +231,7 @@ def unify_regressogram(uid, base_model, targ_model, targ_profile):
     return methods.create_model_record(model)
 
 
-def execute_analysis(uid, base_model, targ_model, **kwargs):
+def execute_analysis(uid, baseline_model, target_model, **kwargs):
     """
     A method performs the primary analysis for pair of models.
 
@@ -242,18 +243,18 @@ def execute_analysis(uid, base_model, targ_model, **kwargs):
     compared models.
 
     :param str uid: unique identification of both analysed models
-    :param dict base_model: baseline model with all its parameters for comparison
-    :param dict targ_model: target model with all its parameters for comparison
+    :param dict baseline_model: baseline model with all its parameters for comparison
+    :param dict target_model: target model with all its parameters for comparison
     :param dict kwargs: dictionary with baseline and target profiles
     :return:
     """
-    x_pts, base_y_pts, targ_y_pts = preprocess_models(
-        uid, base_model, kwargs.get('targ_profile'), targ_model
+    x_pts, baseline_y_pts, target_y_pts = preprocess_models(
+        uid, baseline_model, kwargs.get('target_profile'), target_model
     )
 
-    base_stats, _ = compute_window_stats(x_pts, base_y_pts)
-    targ_stats, x_pts = compute_window_stats(x_pts, targ_y_pts)
-    change_info, partial_rel_error = classify_stats_diff(base_stats, targ_stats)
+    baseline_stats, _ = compute_window_stats(x_pts, baseline_y_pts)
+    target_stats, x_pts = compute_window_stats(x_pts, target_y_pts)
+    change_info, partial_rel_error = classify_stats_diff(baseline_stats, target_stats)
 
     x_pts = np.append(x_pts, [x_pts[0]], axis=1) if x_pts.size == 1 else x_pts
     x_pts_even = x_pts[:, 0::2].reshape(-1, x_pts.size // 2)[0].round(2)
@@ -274,7 +275,7 @@ def execute_analysis(uid, base_model, targ_model, **kwargs):
     }
 
 
-def preprocess_models(uid, base_model, targ_profile, targ_model):
+def preprocess_models(uid, baseline_model, target_profile, target_model):
     """
     Function prepare models to execute the computation of statistics between them.
 
@@ -286,9 +287,9 @@ def preprocess_models(uid, base_model, targ_profile, targ_model):
     on which are defined these models.
 
     :param str uid: unique identification of both analysed models
-    :param ModelRecord base_model: baseline model with its parameters for processing
-    :param Profile targ_profile: target profile against which contains the given target model
-    :param ModelRecord targ_model: target model with all its parameters for processing
+    :param ModelRecord baseline_model: baseline model with its parameters for processing
+    :param Profile target_profile: target profile against which contains the given target model
+    :param ModelRecord target_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """
     def get_model_coordinates(model):
@@ -322,42 +323,48 @@ def preprocess_models(uid, base_model, targ_profile, targ_model):
 
         :return foursome: x-points and y-points from both profiles (baseline and target)
         """
-        if len(base_y_pts) != len(targ_y_pts):
+        baseline_x_pts_len = len(baseline_x_pts)
+        baseline_y_pts_len = len(baseline_y_pts)
+        target_x_pts_len = len(target_x_pts)
+        target_y_pts_len = len(target_y_pts)
+        if baseline_y_pts_len != target_y_pts_len:
             log.warn(
                 '{0}: {1} models with different length ({2} != {3}) are slicing'
-                .format(uid, base_model.type, len(base_y_pts), len(targ_y_pts))
+                .format(uid, baseline_model.type, baseline_y_pts_len, target_y_pts_len)
             )
-            return base_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
-                base_y_pts[:min(len(base_y_pts), len(targ_y_pts))], \
-                targ_x_pts[:min(len(base_x_pts), len(targ_x_pts))], \
-                targ_y_pts[:min(len(base_y_pts), len(targ_y_pts))]
-        return base_x_pts, base_y_pts, targ_x_pts, targ_y_pts
+            return baseline_x_pts[:min(baseline_x_pts_len, target_x_pts_len)], \
+                baseline_y_pts[:min(baseline_y_pts_len, target_y_pts_len)], \
+                target_x_pts[:min(baseline_x_pts_len, target_x_pts_len)], \
+                target_y_pts[:min(baseline_y_pts_len, target_y_pts_len)]
+        return baseline_x_pts, baseline_y_pts, target_x_pts, target_y_pts
 
     # check whether both models are regressogram and whether there are not about the same length
-    if base_model.type == 'regressogram' and targ_model.type == 'regressogram' and \
-            len(base_model.b0) != len(targ_model.b0):
-        targ_model = unify_regressogram(uid, base_model, targ_model, targ_profile)
+    if baseline_model.type == 'regressogram' and target_model.type == 'regressogram' and \
+            len(baseline_model.b0) != len(target_model.b0):
+        target_model = unify_buckets_in_regressogram(
+            uid, baseline_model, target_model, target_profile
+        )
 
     # obtains coordinates from both models and perform the check their lengths
-    base_x_pts, base_y_pts = get_model_coordinates(base_model)
-    targ_x_pts, targ_y_pts = get_model_coordinates(targ_model)
-    base_x_pts, base_y_pts, targ_x_pts, targ_y_pts = check_model_coordinates()
+    baseline_x_pts, baseline_y_pts = get_model_coordinates(baseline_model)
+    target_x_pts, target_y_pts = get_model_coordinates(target_model)
+    baseline_x_pts, baseline_y_pts, target_x_pts, target_y_pts = check_model_coordinates()
 
-    return base_x_pts, base_y_pts, targ_y_pts
+    return baseline_x_pts, baseline_y_pts, target_y_pts
 
 
-def local_statistics(base_profile, targ_profile, models_strategy='best-model'):
+def local_statistics(baseline_profile, target_profile, models_strategy='best-model'):
     """
     The wrapper of `local_statistics` detection method. Method calls the general method
     for running the detection between pairs of profile (baseline and target) and subsequently
     returns the information about detected changes.
 
-    :param Profile base_profile: base against which we are checking the degradation
-    :param Profile targ_profile: profile corresponding to the checked minor version
+    :param Profile baseline_profile: base against which we are checking the degradation
+    :param Profile target_profile: profile corresponding to the checked minor version
     :param str models_strategy: detection model strategy for obtains the relevant kind of models
     :returns: tuple - degradation result
     """
-    for degradation_info in factory.run_detection_for_profiles(
-            execute_analysis, base_profile, targ_profile, models_strategy
+    for degradation_info in factory.run_detection_with_strategy(
+            execute_analysis, baseline_profile, target_profile, models_strategy
     ):
         yield degradation_info

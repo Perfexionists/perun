@@ -11,7 +11,7 @@ import perun.utils.exceptions as exceptions
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def get_param_methods():
+def get_supported_param_methods():
     """Provides all currently supported computational methods as a list of their names.
 
     :returns list of str: the names of all supported methods

@@ -56,7 +56,7 @@ def compute_nparam_integral(model):
     return integrate.simps(model.b0, x_pts)
 
 
-def classify_change(diff_value, no_change, change, base_per=1):
+def classify_change(diff_value, no_change, change, baseline_per=1):
     """
     Classification of changes according to the value of relative error.
 
@@ -75,12 +75,12 @@ def classify_change(diff_value, no_change, change, base_per=1):
     :param float diff_value: value of diff value computed between compared profiles
     :param float no_change: threshold to determine `no_change` state
     :param float change: threshold to determine remaining two states (`maybe_change` and `change`)
-    :param float base_per: percentage rate from the threshold according to the baseline value
+    :param float baseline_per: percentage rate from the threshold according to the baseline value
     :return PerformanceChange: determined changes in the basis of given arguments
     """
-    if abs(diff_value) <= no_change * base_per:
+    if abs(diff_value) <= no_change * baseline_per:
         change = PerformanceChange.NoChange
-    elif abs(diff_value) <= change * base_per:
+    elif abs(diff_value) <= change * baseline_per:
         change = PerformanceChange.MaybeOptimization if diff_value < 0 else \
             PerformanceChange.MaybeDegradation
     else:
@@ -90,7 +90,7 @@ def classify_change(diff_value, no_change, change, base_per=1):
     return change
 
 
-def execute_analysis(_, base_model, targ_model, **__):
+def execute_analysis(_, baseline_model, target_model, **__):
     """
     A method performs the primary analysis for pair of models.
 
@@ -101,8 +101,8 @@ def execute_analysis(_, base_model, targ_model, **__):
     with relevant information about the detected change.
 
     :param str _: unique identification of given models (not used in this detection method)
-    :param ModelRecord base_model: dictionary of baseline model with its required properties
-    :param ModelRecord targ_model: dictionary of target_model with its required properties
+    :param ModelRecord baseline_model: dictionary of baseline model with its required properties
+    :param ModelRecord target_model: dictionary of target_model with its required properties
     :param dict __: unification with remaining detection methods (i.e. Integral Comparison)
     :return DegradationInfo: tuple with degradation info between pair of models:
         (deg. result, deg. location, deg. rate, confidence type and rate, etc.)
@@ -122,10 +122,10 @@ def execute_analysis(_, base_model, targ_model, **__):
             else compute_nparam_integral
         return integral_method(model)
 
-    base_integral = compute_integral(base_model)
-    targ_integral = compute_integral(targ_model)
+    baseline_integral = compute_integral(baseline_model)
+    target_integral = compute_integral(target_model)
 
-    rel_error = tools.safe_division(targ_integral - base_integral, base_integral)
+    rel_error = tools.safe_division(target_integral - baseline_integral, baseline_integral)
 
     change_info = classify_change(
         rel_error if np.isfinite(rel_error) else 0,
@@ -138,18 +138,18 @@ def execute_analysis(_, base_model, targ_model, **__):
     }
 
 
-def integral_comparison(base_profile, targ_profile, models_strategy='best-model'):
+def integral_comparison(baseline_profile, target_profile, models_strategy='best-model'):
     """
     The wrapper of `integral comparison` detection method. Method calls the general method
     for running the detection between pairs of profile (baseline and target) and subsequently
     returns the information about detected changes.
 
-    :param Profile base_profile: baseline profile against which we are checking the degradation
-    :param Profile targ_profile: target profile corresponding to the checked minor version
+    :param Profile baseline_profile: baseline profile against which we are checking the degradation
+    :param Profile target_profile: target profile corresponding to the checked minor version
     :param str models_strategy: detection model strategy for obtains the relevant kind of models
     :returns: tuple - degradation result (structure DegradationInfo)
     """
-    for degradation_info in factory.run_detection_for_profiles(
-            execute_analysis, base_profile, targ_profile, models_strategy
+    for degradation_info in factory.run_detection_with_strategy(
+            execute_analysis, baseline_profile, target_profile, models_strategy
     ):
         yield degradation_info

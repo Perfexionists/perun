@@ -162,18 +162,20 @@ def kernel_regression(x_pts, y_pts, config):
     :param dict config: the perun and option context contains the entered options and commands
     :return dict: the output dictionary with result of kernel regression
     """
-    if config['kernel_mode'] == 'estimator-settings':
+    estimator_settings_flag = config['kernel_mode'] == 'estimator-settings'
+    if estimator_settings_flag:
         # Set the method to determine kernel bandwidth with EstimatorSettings
         # - Possible values `bw` in this branch are: `cv_ls`, `aic`
         bw_value = config.get('bandwidth_method')
     else:
-        # If was entered the bandwidth value by user, then will be set as `bw` in the required shape
+        # If was entered the bandwidth value by user, then will be set as `bw` value
         # - If was entered the bandwidth method to determination, then will be computing
         # -- Possible values of bandwidth method in this branch are: `scott`, `silverman`
-        bw_value = np.array(
-            config.get('bandwidth_value', nparam.bandwidths.select_bandwidth(
-                x_pts, config.get('method_name', BW_SELECTION_METHODS[0]), kernel=None))
-        ).reshape((1, -1))
+        bw_value = config.get(
+            'bandwidth_value', nparam.bandwidths.select_bandwidth(
+                x_pts, config.get('method_name', BW_SELECTION_METHODS[0]), kernel=None
+            )
+        )
 
     # Set specify settings for estimator object, if was selected the mode: `estimator-settings`
     # - When was not selected `estimator-settings` mode, then this object is not used at analysis
@@ -185,16 +187,16 @@ def kernel_regression(x_pts, y_pts, config):
 
     # Set parameters for non-parametric kernel regression class
     kernel_estimate = nparam.KernelReg(
-        endog=[y_pts], exog=[x_pts], reg_type=config['reg_type'],
-        var_type='c', bw=bw_value, defaults=estimator_settings
+        endog=[y_pts], exog=[x_pts], reg_type=config['reg_type'], var_type='c',
+        bw=bw_value if estimator_settings_flag else np.array(bw_value).reshape((1, -1)),
+        defaults=estimator_settings
     )
     # Returns the mean and marginal effects at the data_predict points
     kernel_stats, _ = kernel_estimate.fit()
 
     # Set parameter for resulting kernel model
     return {
-        "bandwidth": bw_value[0][0] if config['kernel_mode'] != 'estimator-settings'
-                     else kernel_estimate.bw[0],
+        "bandwidth": bw_value if not estimator_settings_flag else kernel_estimate.bw[0],
         'r_square': kernel_estimate.r_squared(),
         'bucket_stats': list(kernel_stats),
         'kernel_mode': 'estimator',
