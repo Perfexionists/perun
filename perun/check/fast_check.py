@@ -11,12 +11,13 @@ import perun.logic.runner as runner
 import perun.check.general_detection as detect
 
 
-def fast_check(baseline_profile, target_profile):
+def fast_check(baseline_profile, target_profile, **_):
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
-    :param dict baseline_profile: baseline against which we are checking the degradation
+    :param dict baseline_profile: base against which we are checking the degradation
     :param dict target_profile: profile corresponding to the checked minor version
+    :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
     return detect.general_detection(
@@ -46,9 +47,9 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
         'amount': []
     }
     # executing the regression analysis
-    for i, (x, y) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
-        updated_data['structure-unit-size'].append(x)
-        updated_data['amount'].append(y)
+    for _, (x_pts, y_pts) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
+        updated_data['structure-unit-size'].append(x_pts)
+        updated_data['amount'].append(y_pts)
     # Nasty hack, though it should work
     std_err_profile._storage['resources'] = {
         uid: updated_data

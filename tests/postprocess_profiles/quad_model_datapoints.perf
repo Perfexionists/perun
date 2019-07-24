@@ -1,18 +1,27 @@
 {
-  "collector_info": {
-    "name": "trace",
-    "params": {
-      "sampling": [
-        {
-          "sample": 1,
-          "func": "SLList_insert"
-        },
-        {
-          "sample": 1,
-          "func": "func1"
-        }
+  "resources": {
+    "quad::test1#0": {
+      "amount": [
+        115.6, 157.2, 189.2, 220.8, 253.8, 269.2, 284.8, 285.0, 277.4, 269.2, 244.2, 231.4, 180.4
       ],
-      "internal_storage_size": 20000,
+      "structure-unit-size": [
+        10, 15, 20, 24, 30, 34, 40, 45, 48, 50, 58, 60, 64
+      ]
+    }
+  },
+  "header": {
+    "workload": "",
+    "args": "",
+    "cmd": "complexity",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "type": "mixed"
+  },
+  "models": [],
+  "collector_info": {
+    "params": {
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
       "rules": [
         "SLList_init",
         "func1",
@@ -25,121 +34,35 @@
         "Remove",
         "Search"
       ],
+      "internal_direct_output": false,
       "files": [
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
         "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
       ],
-      "target_dir": "/home/jirka/Git/complexity-repo/target",
       "internal_data_filename": "trace.log",
-      "internal_direct_output": false
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "internal_storage_size": 20000
+    },
+    "name": "trace"
+  },
+  "resource_type_map": {
+    "quad::test1#0": {
+      "subtype": "time delta",
+      "uid": "quad::test1",
+      "time": "0.00023s",
+      "type": "mixed"
     }
   },
-  "global": {
-    "time": "0.00023s",
-    "resources": [
-      {
-        "structure-unit-size": 10,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 115.6,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 15,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 157.2,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 20,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 189.2,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 24,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 220.8,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 30,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 253.8,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 34,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 269.2,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 40,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 284.8,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 45,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 285.0,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 48,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 277.4,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 50,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 269.2,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 58,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 244.2,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 60,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 231.4,
-        "subtype": "time delta"
-      },
-      {
-        "structure-unit-size": 64,
-        "uid": "quad::test1",
-        "type": "mixed",
-        "amount": 180.4,
-        "subtype": "time delta"
-      }
-    ]
-  },
-  "header": {
-    "type": "mixed",
-    "args": "",
-    "units": {
-      "mixed(time delta)": "ms"
-    },
-    "cmd": "complexity",
-    "workload": ""
-  },
-  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
-  "postprocessors": []
+  "postprocessors": [],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a"
 }

@@ -11,7 +11,7 @@ import perun.utils.exceptions as exceptions
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def get_supported_methods():
+def get_supported_param_methods():
     """Provides all currently supported computational methods as a list of their names.
 
     :returns list of str: the names of all supported methods
@@ -42,9 +42,9 @@ def compute(data_gen, method, models, **kwargs):
                 result['uid'] = chunk[2]
                 result['method'] = method
                 analysis.append(result)
-        except exceptions.GenericRegressionExceptionBase as e:
+        except exceptions.GenericRegressionExceptionBase as exc:
             print("info: unable to perform regression analysis on function '{0}'.".format(chunk[2]))
-            print("  - " + str(e))
+            print("  - " + str(exc))
     # Compute the derived models
     for der in compute_derived(derived, analysis, **kwargs):
         analysis.append(der)
@@ -369,8 +369,8 @@ def _transform_to_output_data(data, extra_keys=None):
     """Transforms the data dictionary into their output format - omitting computational details
     and keys that are not important for the result and it's further manipulation.
 
-    The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_interval_start' and
-    'x_interval_end' keys taken from the data dictionary. The function also allows to specify
+    The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_start' and
+    'x_end' keys taken from the data dictionary. The function also allows to specify
     extra keys to be included in the output dictionary. If certain key is missing in the data
     dictionary, then it's not included in the output dictionary. Coefficients are saved with
     default names 'b0', 'b1'...
@@ -381,10 +381,10 @@ def _transform_to_output_data(data, extra_keys=None):
     :returns dict: the output dictionary
     """
     tools.validate_dictionary_keys(
-        data, ['model', 'coeffs', 'r_square', 'x_interval_start', 'x_interval_end'], [])
+        data, ['model', 'coeffs', 'r_square', 'x_start', 'x_end'], [])
 
     # Specify the keys which should be directly mapped
-    transform_keys = ['model', 'r_square', 'x_interval_start', 'x_interval_end', 'method', 'uid']
+    transform_keys = ['model', 'r_square', 'x_start', 'x_end', 'method', 'uid']
     if extra_keys is not None:
         transform_keys += extra_keys
     transformed = {key: data[key] for key in transform_keys if key in data}
@@ -423,6 +423,7 @@ def _build_uniform_regression_data_format(x_pts, y_pts, model):
     # Initialize the data generator
     model['data_gen'] = model['data_gen'](**model)
     return model
+
 
 # supported methods mapping
 # - every method must be called with proper argument signature in 'compute' function

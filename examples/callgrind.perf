@@ -1,27 +1,60 @@
 {
-  "type": "memory",
-  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
-  "cmd": "./gaston",
-  "param": "--serialize",
-  "workload": "ex4.mona",
-
-  "collector": {
-     "name": "massif",
-     "params": ""
-  },
-
-  "snapshots": [
-    { "timestamp": 123393017,
-      "resources": [
-        {"amount": 4134891, "uid": "mem_heap_B", "type": "memory"},
-        {"amount": 564725, "uid": "mem_heap_extra_B", "type": "memory"}
+  "resources": {
+    "mem_heap_B#0": {
+      "amount": [
+        4134891
       ]
     },
-    { "timestamp": 16162105,
-      "resources": [
-        {"amount": 4134891, "uid": "mem_heap_B", "type": "memory"},
-        {"amount": 564725, "uid": "mem_heap_extra_B", "type": "memory"}
+    "mem_heap_extra_B#0": {
+      "amount": [
+        564725
+      ]
+    },
+    "mem_heap_extra_B#1": {
+      "amount": [
+        564725
+      ]
+    },
+    "mem_heap_B#1": {
+      "amount": [
+        4134891
       ]
     }
-  ]
+  },
+  "param": "--serialize",
+  "collector": {
+    "params": "",
+    "name": "massif"
+  },
+  "models": [],
+  "type": "memory",
+  "resource_type_map": {
+    "mem_heap_B#0": {
+      "snapshot": 0,
+      "uid": "mem_heap_B",
+      "time": "0.0",
+      "type": "memory"
+    },
+    "mem_heap_extra_B#0": {
+      "snapshot": 0,
+      "uid": "mem_heap_extra_B",
+      "time": "0.0",
+      "type": "memory"
+    },
+    "mem_heap_extra_B#1": {
+      "snapshot": 1,
+      "uid": "mem_heap_extra_B",
+      "time": "0.0",
+      "type": "memory"
+    },
+    "mem_heap_B#1": {
+      "snapshot": 1,
+      "uid": "mem_heap_B",
+      "time": "0.0",
+      "type": "memory"
+    }
+  },
+  "workload": "ex4.mona",
+  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
+  "cmd": "./gaston"
 }

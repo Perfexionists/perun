@@ -7,13 +7,18 @@ regions and flatten the format.
 """
 
 import collections
-import click
 import operator
 import itertools
+import click
 
 import perun.profile.convert as convert
 
+from perun.check.general_detection import get_filtered_best_models_of
+from perun.postprocess.regression_analysis.regression_models import get_supported_models
+from perun.postprocess.regressogram.methods import get_supported_nparam_methods
+
 __author__ = 'Tomas Fiedor'
+
 
 class Profile(collections.MutableMapping):
     """
@@ -58,7 +63,7 @@ class Profile(collections.MutableMapping):
         :param str resource_type: type of the resources in the resources list,
             can either be snapshots (then it is list of different snapshots), global
             then it is old type of profile) or it can be resource l
-        :param bool clear_existing_resources: if set to true, then the actual storage will be cleared
+        :param bool clear_existing_resources: if set to true then the actual storage will be cleared
             before updating the resources
         :return:
         """
@@ -73,9 +78,9 @@ class Profile(collections.MutableMapping):
             # Resources are in type of [{'time': _, 'resources': []}
             for i, snapshot in enumerate(resource_list):
                 self._translate_resources(snapshot['resources'], {
-                    'snapshot': i,
-                    'time': snapshot.get('time', '0.0')}
-                )
+                                              'snapshot': i,
+                                              'time': snapshot.get('time', '0.0')}
+                                          )
         elif isinstance(resource_list, (dict, Profile)):
             self._storage['resources'].update(resource_list)
         else:
@@ -102,7 +107,9 @@ class Profile(collections.MutableMapping):
             collectable_properties = [
                 (key, value) for (key, value) in resource.items() if key in Profile.collectable
             ]
-            resource_type = self.register_resource_type(resource['uid'], tuple(persistent_properties))
+            resource_type = self.register_resource_type(
+                resource['uid'], tuple(persistent_properties)
+            )
             if resource_type not in self._storage['resources'].keys():
                 self._storage['resources'][resource_type] = {
                     key: [] for (key, _) in collectable_properties
@@ -203,7 +210,25 @@ class Profile(collections.MutableMapping):
                 snapshot_number = collectable_properties.get('snapshot', 0)
                 yield snapshot_number, collectable_properties
 
-    def all_models(self):
+    def all_filtered_models(self, models_strategy):
+        """
+        The function obtains models according to the given strategy.
+
+        This function according to the given strategy and group derived from it
+        obtains the models from the current profile. The function creates the
+        relevant dictionary with required models or calls the responded functions,
+        that returns the models according to the specifications.
+
+        :param str models_strategy: name of detection models strategy to obtains relevant models
+        :return ModelRecord: required models
+        """
+        group = models_strategy.rsplit('-')[1]
+        if models_strategy in ('all-param', 'all-nonparam'):
+            return get_filtered_best_models_of(self, group=group, model_filter=None)
+        elif models_strategy in ('best-nonparam', 'best-model', 'best-param'):
+            return get_filtered_best_models_of(self, group=group)
+
+    def all_models(self, group='both'):
         """Generator of all 'models' records from the performance profile w.r.t.
         :ref:`profile-spec`.
 
@@ -216,25 +241,41 @@ class Profile(collections.MutableMapping):
 
             >>> gen = complexity_prof.all_models()
             >>> gen.__next__()
-            (0, {'x_interval_start': 0, 'model': 'constant', 'method': 'full',
+            (0, {'x_start': 0, 'model': 'constant', 'method': 'full',
             'coeffs': [{'name': 'b0', 'value': 0.5644496762801648}, {'name': 'b1',
             'value': 0.0}], 'uid': 'SLList_insert(SLList*, int)', 'r_square': 0.0,
-            'x_interval_end': 11892})
+            'x_end': 11892})
             >>> gen.__next__()
-            (1, {'x_interval_start': 0, 'model': 'exponential', 'method': 'full',
+            (1, {'x_start': 0, 'model': 'exponential', 'method': 'full',
             'coeffs': [{'name': 'b0', 'value': 0.9909792049684152}, {'name': 'b1',
             'value': 1.000004056250301}], 'uid': 'SLList_insert(SLList*, int)',
-            'r_square': 0.007076437903106431, 'x_interval_end': 11892})
+            'r_square': 0.007076437903106431, 'x_end': 11892})
 
 
-        :param dict profile: performance profile w.r.t :ref:`profile-spec`
+        :param str group: the kind of requested models to return
         :returns: iterable stream of ``(int, dict)`` pairs, where first yields the
             positional number of model and latter correponds to one 'models'
             record (for more details about models refer to :pkey:`models` or
             :ref:`postprocessors-regression-analysis`)
         """
         for model_idx, model in enumerate(self._storage['models']):
-            yield model_idx, model
+            if group == 'both' or\
+               (group == 'param' and model.get('model') in get_supported_models()) or\
+               (group == 'nonparam' and model.get('model') in get_supported_nparam_methods()):
+                yield model_idx, model
+
+    def get_model_of(self, model_type, uid):
+        """
+        Finds specific model from profile according to the
+        given kind of model and specific unique identification.
+
+        :param str model_type: specific kind of required model (e.g. regressogram, constant, etc.)
+        :param str uid: specific unique identification of required model
+        :return dict: model with all its relevant items
+        """
+        for _, model in enumerate(self._storage['models']):
+            if model_type == model['model'] and model['uid'] == uid:
+                return model
 
     def all_snapshots(self):
         """Iterates through all the snapshots in resources
@@ -247,12 +288,12 @@ class Profile(collections.MutableMapping):
         all_resources = list(self.all_resources())
         all_resources.sort(key=operator.itemgetter(0))
         snapshot_map = collections.defaultdict(list)
-        for no, res in itertools.groupby(all_resources, operator.itemgetter(0)):
-            snapshot_map[no] = list(map(operator.itemgetter(1), res))
+        for number_of, res in itertools.groupby(all_resources, operator.itemgetter(0)):
+            snapshot_map[number_of] = list(map(operator.itemgetter(1), res))
         maximal_snapshot = max(snapshot_map.keys())
         for i in range(0, maximal_snapshot+1):
             yield i, snapshot_map[i]
 
+
 # Click helper
 pass_profile = click.make_pass_decorator(Profile)
-

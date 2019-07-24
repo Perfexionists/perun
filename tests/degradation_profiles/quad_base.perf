@@ -1,246 +1,226 @@
 {
-  "origin": "7f2273d512570b5a536ba3397c893f3c51874ba7",
-  "global": {
-    "resources": [
-      {
-        "structure-unit-size": 6619,
-        "subtype": "time delta",
-        "uid": "SLList_search(SLList*, int)",
-        "amount": 191797,
-        "type": "mixed"
-      },
-      {
-        "structure-unit-size": 6619,
-        "subtype": "time delta",
-        "uid": "SLList_insert(SLList*, int)",
-        "amount": 2,
-        "type": "mixed"
-      },
-      {
-        "structure-unit-size": 6622,
-        "subtype": "time delta",
-        "uid": "SLList_destroy(SLList*)",
-        "amount": 93,
-        "type": "mixed"
-      }
-    ],
-    "time": "205.142613s",
-    "models": [
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6621,
-        "uid": "SLList_insert(SLList*, int)",
-        "r_square": 0.01188420794338732,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 0.832061221173862
-          },
-          {
-            "name": "b1",
-            "value": 5.638551258482514e-05
-          }
-        ],
-        "model": "linear"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6621,
-        "uid": "SLList_insert(SLList*, int)",
-        "r_square": 0.021603543754938077,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 0.7934993585644216
-          },
-          {
-            "name": "b1",
-            "value": 0.04710307491446819
-          }
-        ],
-        "model": "power"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6621,
-        "uid": "SLList_insert(SLList*, int)",
-        "r_square": 0.007572276445938159,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 0.34522115224014344
-          },
-          {
-            "name": "b1",
-            "value": 0.08634093447429544
-          }
-        ],
-        "model": "logarithmic"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6621,
-        "uid": "SLList_insert(SLList*, int)",
-        "r_square": 0.0,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 1.0187254605859257
-          },
-          {
-            "name": "b1",
-            "value": 0.0
-          }
-        ],
-        "model": "constant"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6621,
-        "uid": "SLList_insert(SLList*, int)",
-        "r_square": 0.033548110512791475,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 1.0358563075000513
-          },
-          {
-            "name": "b1",
-            "value": 1.000030425119592
-          }
-        ],
-        "model": "exponential"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6619,
-        "uid": "SLList_search(SLList*, int)",
-        "r_square": 0.9336907884555826,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": -29777.598496701834
-          },
-          {
-            "name": "b1",
-            "value": 27.325376078181357
-          }
-        ],
-        "model": "linear"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6619,
-        "uid": "SLList_search(SLList*, int)",
-        "r_square": 0.9971418036312071,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 0.005643277303158322
-          },
-          {
-            "name": "b1",
-            "value": 1.961638794137905
-          }
-        ],
-        "model": "power"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6619,
-        "uid": "SLList_search(SLList*, int)",
-        "r_square": 0.5511692535229428,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": -247046.8713205001
-          },
-          {
-            "name": "b1",
-            "value": 39514.26069406892
-          }
-        ],
-        "model": "logarithmic"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6619,
-        "uid": "SLList_search(SLList*, int)",
-        "r_square": 0.0,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 60677.978981645945
-          },
-          {
-            "name": "b1",
-            "value": 0.0
-          }
-        ],
-        "model": "constant"
-      },
-      {
-        "x_interval_start": 0,
-        "x_interval_end": 6619,
-        "uid": "SLList_search(SLList*, int)",
-        "r_square": 0.7665809071363696,
-        "method": "full",
-        "coeffs": [
-          {
-            "name": "b0",
-            "value": 1184.6236710720143
-          },
-          {
-            "name": "b1",
-            "value": 1.000913492737908
-          }
-        ],
-        "model": "exponential"
-      }
-    ]
-  },
-  "postprocessors": [
-    {
-      "params": {
-        "method": "full",
-        "regression_models": [
-          "linear",
-          "power",
-          "log",
-          "const",
-          "exp"
-        ],
-        "steps": 1
-      },
-      "name": "regression_analysis"
+  "resources": {
+    "SLList_insert(SLList*, int)#0": {
+      "amount": [
+        2
+      ],
+      "structure-unit-size": [
+        6619
+      ]
+    },
+    "SLList_destroy(SLList*)#0": {
+      "amount": [
+        93
+      ],
+      "structure-unit-size": [
+        6622
+      ]
+    },
+    "SLList_search(SLList*, int)#0": {
+      "amount": [
+        191797
+      ],
+      "structure-unit-size": [
+        6619
+      ]
     }
-  ],
+  },
   "header": {
-    "cmd": "target",
-    "workload": "workload.in",
-    "args": "",
     "units": {
       "mixed(time delta)": "ms"
     },
-    "type": "mixed"
+    "args": "",
+    "type": "mixed",
+    "workload": "workload.in",
+    "cmd": "target"
   },
+  "models": [
+    {
+      "coeffs": [
+        {
+          "value": 0.832061221173862,
+          "name": "b0"
+        },
+        {
+          "value": 5.638551258482514e-05,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.01188420794338732,
+      "x_start": 0,
+      "x_end": 6621,
+      "method": "full",
+      "model": "linear",
+      "uid": "SLList_insert(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": 0.7934993585644216,
+          "name": "b0"
+        },
+        {
+          "value": 0.04710307491446819,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.021603543754938077,
+      "x_start": 0,
+      "x_end": 6621,
+      "method": "full",
+      "model": "power",
+      "uid": "SLList_insert(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": 0.34522115224014344,
+          "name": "b0"
+        },
+        {
+          "value": 0.08634093447429544,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.007572276445938159,
+      "x_start": 0,
+      "x_end": 6621,
+      "method": "full",
+      "model": "logarithmic",
+      "uid": "SLList_insert(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": 1.0187254605859257,
+          "name": "b0"
+        },
+        {
+          "value": 0.0,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.0,
+      "x_start": 0,
+      "x_end": 6621,
+      "method": "full",
+      "model": "constant",
+      "uid": "SLList_insert(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": 1.0358563075000513,
+          "name": "b0"
+        },
+        {
+          "value": 1.000030425119592,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.033548110512791475,
+      "x_start": 0,
+      "x_end": 6621,
+      "method": "full",
+      "model": "exponential",
+      "uid": "SLList_insert(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": -29777.598496701834,
+          "name": "b0"
+        },
+        {
+          "value": 27.325376078181357,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.9336907884555826,
+      "x_start": 0,
+      "x_end": 6619,
+      "method": "full",
+      "model": "linear",
+      "uid": "SLList_search(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": 0.005643277303158322,
+          "name": "b0"
+        },
+        {
+          "value": 1.961638794137905,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.9971418036312071,
+      "x_start": 0,
+      "x_end": 6619,
+      "method": "full",
+      "model": "power",
+      "uid": "SLList_search(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": -247046.8713205001,
+          "name": "b0"
+        },
+        {
+          "value": 39514.26069406892,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.5511692535229428,
+      "x_start": 0,
+      "x_end": 6619,
+      "method": "full",
+      "model": "logarithmic",
+      "uid": "SLList_search(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": 60677.978981645945,
+          "name": "b0"
+        },
+        {
+          "value": 0.0,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.0,
+      "x_start": 0,
+      "x_end": 6619,
+      "method": "full",
+      "model": "constant",
+      "uid": "SLList_search(SLList*, int)"
+    },
+    {
+      "coeffs": [
+        {
+          "value": 1184.6236710720143,
+          "name": "b0"
+        },
+        {
+          "value": 1.000913492737908,
+          "name": "b1"
+        }
+      ],
+      "r_square": 0.7665809071363696,
+      "x_start": 0,
+      "x_end": 6619,
+      "method": "full",
+      "model": "exponential",
+      "uid": "SLList_search(SLList*, int)"
+    }
+  ],
   "collector_info": {
     "params": {
+      "init-storage-size": 20000,
+      "internal_data_filename": "trace.log",
       "target_dir": "./target",
-      "files": [
-        "../example_sources/simple_sll_cpp/main.cpp",
-        "../example_sources/simple_sll_cpp/SLList.h",
-        "../example_sources/simple_sll_cpp/SLListcls.h"
-      ],
       "rules": [
         "func1",
         "SLList_init",
@@ -253,9 +233,49 @@
         "Remove",
         "Search"
       ],
-      "internal_data_filename": "trace.log",
-      "init-storage-size": 20000
+      "files": [
+        "../example_sources/simple_sll_cpp/main.cpp",
+        "../example_sources/simple_sll_cpp/SLList.h",
+        "../example_sources/simple_sll_cpp/SLListcls.h"
+      ]
     },
     "name": "complexity"
-  }
+  },
+  "resource_type_map": {
+    "SLList_insert(SLList*, int)#0": {
+      "subtype": "time delta",
+      "uid": "SLList_insert(SLList*, int)",
+      "time": "205.142613s",
+      "type": "mixed"
+    },
+    "SLList_destroy(SLList*)#0": {
+      "subtype": "time delta",
+      "uid": "SLList_destroy(SLList*)",
+      "time": "205.142613s",
+      "type": "mixed"
+    },
+    "SLList_search(SLList*, int)#0": {
+      "subtype": "time delta",
+      "uid": "SLList_search(SLList*, int)",
+      "time": "205.142613s",
+      "type": "mixed"
+    }
+  },
+  "postprocessors": [
+    {
+      "params": {
+        "regression_models": [
+          "linear",
+          "power",
+          "log",
+          "const",
+          "exp"
+        ],
+        "method": "full",
+        "steps": 1
+      },
+      "name": "regression_analysis"
+    }
+  ],
+  "origin": "7f2273d512570b5a536ba3397c893f3c51874ba7"
 }

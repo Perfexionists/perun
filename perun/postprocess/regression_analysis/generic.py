@@ -57,7 +57,7 @@ def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
     where each part continues the computation (the part contains results from the previous).
 
     Yielded data dictionary contains 'x_sum', 'y_sum', 'xy_sum', 'x_sq_sum', 'y_sq_sum', 'pts_num',
-    'num_sqrt', 'x_interval_start' and 'x_interval_end' keys.
+    'num_sqrt', 'x_start' and 'x_end' keys.
 
     :param list x_pts: the list of x data points
     :param list y_pts: the list of y data points
@@ -105,7 +105,7 @@ def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
         data = dict(
             x_sum=x_sum, y_sum=y_sum, xy_sum=xy_sum, x_sq_sum=x_square_sum,
             y_sq_sum=y_square_sum, pts_num=pts_num, num_sqrt=sqrt(pts_num),
-            x_interval_start=x_min, x_interval_end=x_max
+            x_start=x_min, x_end=x_max
         )
         yield data
 
@@ -163,11 +163,11 @@ def generic_regression_coefficients(
     s_xy = xy_sum - tools.safe_division(x_sum, num_sqrt) * tools.safe_division(y_sum, num_sqrt)
     s_xx = x_sq_sum - (tools.safe_division(x_sum, num_sqrt) ** 2)
 
-    b1 = tools.safe_division(s_xy, s_xx)
-    b0 = tools.safe_division(y_sum - b1 * x_sum, pts_num)
+    b_1 = tools.safe_division(s_xy, s_xx)
+    b_0 = tools.safe_division(y_sum - b_1 * x_sum, pts_num)
 
     # Apply the modification functions on the coefficients and save them
-    data = dict(coeffs=[f_a(b0), f_b(b1)], s_xy=s_xy, s_xx=s_xx)
+    data = dict(coeffs=[f_a(b_0), f_b(b_1)], s_xy=s_xy, s_xx=s_xx)
     return data
 
 

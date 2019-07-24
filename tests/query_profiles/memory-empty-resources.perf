@@ -1,50 +1,20 @@
 {
+  "resources": {},
   "header": {
-    "cmd": "./test",
-    "workload": "test",
     "units": {
       "memory": "B"
     },
     "args": "",
-    "type": "memory"
+    "type": "memory",
+    "workload": "test",
+    "cmd": "./test"
   },
+  "models": [],
   "collector_info": {
-    "name": "memory",
-    "params": {}
+    "params": {},
+    "name": "memory"
   },
-  "global": {
-    "resources": []
-  },
+  "resource_type_map": {},
   "postprocessors": [],
-  "snapshots": [
-    {
-      "time": "0.001000",
-      "resources": []
-    },
-    {
-      "time": "0.002000",
-      "resources": []
-    },
-    {
-      "time": "0.003000",
-      "resources": []
-    },
-    {
-      "time": "0.004000",
-      "resources": []
-    },
-    {
-      "time": "0.005000",
-      "resources": []
-    },
-    {
-      "time": "0.006000",
-      "resources": []
-    },
-    {
-      "time": "0.007000",
-      "resources": []
-    }
-  ],
   "origin": "1ba8c02d211d40692768b5d61c200c15d91fb2b2"
 }

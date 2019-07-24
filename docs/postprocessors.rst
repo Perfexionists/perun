@@ -201,7 +201,7 @@ is *statistic_function*, which represented the statistic to compute the value in
 contains the name of the method (*bucket_method*) by which was calculated the optimal number of
 buckets, in this case specifically computed with Doanes_ formula, and *coefficient of determination*
 (:math:`R^2`) for measuring the fitting of the model. Each such model can be used in the further
-interpretation of the models (either by :ref:`views-scatter` or:ref:`degradation-method-aat`).
+interpretation of the models (either by :ref:`views-scatter` or :ref:`degradation-method-aat`).
 
 .. image:: /../examples/exp_data_regressogram.*
 

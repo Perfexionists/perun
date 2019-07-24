@@ -1,24 +1,76 @@
 {
-  "type": "mixed",
-  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
-  "cmd": "./gaston",
-  "param": "--serialize",
-  "workload": "ex4.mona",
-
-  "collector": {
-     "name": "gaston-collect",
-     "params": ""
+  "resources": {
+    "dec-proc#0": {
+      "amount": [
+        "0.45"
+      ]
+    },
+    "mona-space#0": {
+      "amount": [
+        "4817"
+      ]
+    },
+    "cleaning#0": {
+      "amount": [
+        "0.01"
+      ]
+    },
+    "fixpoint-space#0": {
+      "amount": [
+        "977296"
+      ]
+    },
+    "overall-space#0": {
+      "amount": [
+        "31712"
+      ]
+    },
+    "sa-creation#0": {
+      "amount": [
+        "0.10"
+      ]
+    }
   },
-
-  "global": {
-     "timestamp": "0.59s",
-     "resources":[
-        {"amount": "0.10", "uid": "sa-creation", "type": "time"},
-        {"amount": "0.45", "uid": "dec-proc", "type": "time"},
-        {"amount": "0.01", "uid": "cleaning", "type": "time"},
-        {"amount": "4817", "uid": "mona-space", "type": "term"},
-        {"amount": "31712", "uid": "overall-space", "type": "term"},
-        {"amount": "977296", "uid": "fixpoint-space", "type": "term"}
-     ]
-  }
+  "param": "--serialize",
+  "collector": {
+    "params": "",
+    "name": "gaston-collect"
+  },
+  "models": [],
+  "type": "mixed",
+  "resource_type_map": {
+    "dec-proc#0": {
+      "uid": "dec-proc",
+      "time": "0.0",
+      "type": "time"
+    },
+    "mona-space#0": {
+      "uid": "mona-space",
+      "time": "0.0",
+      "type": "term"
+    },
+    "cleaning#0": {
+      "uid": "cleaning",
+      "time": "0.0",
+      "type": "time"
+    },
+    "fixpoint-space#0": {
+      "uid": "fixpoint-space",
+      "time": "0.0",
+      "type": "term"
+    },
+    "overall-space#0": {
+      "uid": "overall-space",
+      "time": "0.0",
+      "type": "term"
+    },
+    "sa-creation#0": {
+      "uid": "sa-creation",
+      "time": "0.0",
+      "type": "time"
+    }
+  },
+  "workload": "ex4.mona",
+  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
+  "cmd": "./gaston"
 }
