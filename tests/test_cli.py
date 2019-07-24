@@ -5,6 +5,7 @@ this is done in appropriate test files, only the API is tested."""
 
 import os
 import git
+import numpy as np
 import re
 import shutil
 import time
@@ -81,10 +82,13 @@ def test_regressogram_incorrect(pcs_full):
         {'params': ['-bm', 'user'], 'output': 'Invalid value for "--bucket_method"'},
         # Test malformed statistic_function argument
         {'params': ['--statistic_functions'], 'output': 'no such option: --statistic_functions'},
-        # Test missing statistic_function value
-        {'params': ['--statistic_function'], 'output': '--statistic_function option requires an argument'},
         # Test invalid model name
-        {'params': ['-sf', 'max'], 'output': 'Invalid value for "--statistic_function"'}
+        {'params': ['-sf', 'max'], 'output': 'Invalid value for "--statistic_function"'},
+        # Test missing statistic_function value
+        {
+            'params': ['--statistic_function'],
+            'output': '--statistic_function option requires an argument'
+        },
     ]
     # TODO: multiple values check
 
@@ -95,7 +99,9 @@ def test_regressogram_incorrect(pcs_full):
     regressogram_params = ['1@i', 'regressogram']
     # Executing the testing
     for incorrect_test in incorrect_tests:
-        run_non_param_test(runner, regressogram_params + incorrect_test['params'], 2, incorrect_test['output'])
+        run_non_param_test(
+            runner, regressogram_params + incorrect_test['params'], 2, incorrect_test['output']
+        )
 
 
 def test_regressogram_correct(pcs_full):
@@ -161,11 +167,15 @@ def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_i
     for idx, test in enumerate(tests_set):
         if method_idx == 1:
             for n in range(method_idx, 3):
-                run_non_param_test(runner, moving_average_params + moving_average_methods[n] + test['params'],
-                                   exit_code, test.get('output', 'Successfully postprocessed'))
+                run_non_param_test(
+                    runner, moving_average_params + moving_average_methods[n] + test['params'],
+                    exit_code, test.get('output', 'Successfully postprocessed')
+                )
         else:
-            run_non_param_test(runner, moving_average_params + moving_average_methods[method_idx] + test['params'],
-                               exit_code, test.get('output', 'Successfully postprocessed'))
+            run_non_param_test(
+                runner, moving_average_params + moving_average_methods[method_idx] + test['params'],
+                exit_code, test.get('output', 'Successfully postprocessed')
+            )
         method_idx += 1 if idx + 1 == tests_edge[method_idx] else 0
 
 
@@ -366,13 +376,21 @@ def kernel_regression_runner_test(runner, tests_set, tests_edge, exit_code, cpro
     # Set stable parameters at all tests
     kernel_regression_params = [cprof_idx, 'kernel-regression']
     # Set the supported methods at moving average postprocessor
-    kernel_regression_modes = {0: [], 1: ['estimator-settings'], 2: ['method-selection'], 3: ['user-selection'],
-                               4: ['kernel-ridge'], 5: ['kernel-smoothing']}
+    kernel_regression_modes = {
+        0: [],
+        1: ['estimator-settings'],
+        2: ['method-selection'],
+        3: ['user-selection'],
+        4: ['kernel-ridge'],
+        5: ['kernel-smoothing']
+    }
     # Executing the testing
     mode_idx = 0
     for idx, test in enumerate(tests_set):
-        run_non_param_test(runner, kernel_regression_params + kernel_regression_modes[mode_idx] + test['params'],
-                           exit_code, test.get('output', 'Successfully postprocessed'))
+        run_non_param_test(
+            runner, kernel_regression_params + kernel_regression_modes[mode_idx] + test['params'],
+            exit_code, test.get('output', 'Successfully postprocessed')
+        )
         mode_idx += 1 if idx + 1 == tests_edge[mode_idx] else 0
 
 
@@ -509,7 +527,10 @@ def test_kernel_regression_incorrect(pcs_full):
         # 58. Test invalid value gamma-step argument no.1
         {'params': ['--gamma-step', 0], 'output': 'Invalid value for "--gamma-step"'},
         # 59. Test invalid value gamma-step argument no.2
-        {'params': ['--gamma-step', 10], 'output': 'Invalid values: step must be < then the length of the range'},
+        {
+            'params': ['--gamma-step', 10],
+            'output': 'Invalid values: step must be < then the length of the range'
+        },
 
         # TEST OPTIONS OF KERNEL-SMOOTHING MODES IN KERNEL-REGRESSION CLI
         # 60. Test malformed kernel-type argument
@@ -517,7 +538,10 @@ def test_kernel_regression_incorrect(pcs_full):
         # 61. Test missing kernel-type value
         {'params': ['-kt'], 'output': '-kt option requires an argument'},
         # 62. Test invalid value of kernel-type argument
-        {'params': ['--kernel-type', 'epanechnikov5'], 'output': 'Invalid value for "--kernel-type"'},
+        {
+            'params': ['--kernel-type', 'epanechnikov5'],
+            'output': 'Invalid value for "--kernel-type"'
+        },
         # 63. Test malformed smoothing-method argument
         {'params': ['--smothing-method'], 'output': 'no such option: --smothing-method'},
         # 64. Test missing smoothing-method value
@@ -535,7 +559,10 @@ def test_kernel_regression_incorrect(pcs_full):
         # 70. Test missing bandwidth-method value
         {'params': ['-bm'], 'output': '-bm option requires an argument'},
         # 71. Test invalid value for bandwidth-method argument
-        {'params': ['--bandwidth-method', 'sccot'], 'output': 'Invalid value for "--bandwidth-method"'},
+        {
+            'params': ['--bandwidth-method', 'sccot'],
+            'output': 'Invalid value for "--bandwidth-method"'
+        },
         # 72. Test malformed polynomial-order argument
         {'params': ['--polynomila-order'], 'output': 'no such option: --polynomila-order'},
         # 73. Test missing value for polynomial-order argument
@@ -563,6 +590,8 @@ def test_kernel_regression_correct(pcs_full):
 
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
+    np.warnings.filterwarnings('ignore')
+
     correct_tests = [
         # TEST KERNEL-REGRESSION COMMON OPTIONS
         # 1. Test the help printout first
@@ -610,9 +639,12 @@ def test_kernel_regression_correct(pcs_full):
         # 21. Test the complex combinations of options - no.2
         {'params': ['-bw', 'aic', '-nres', 10, '-nsub', 50, '--randomize', '--efficient']},
         # 22. Test the complex combinations of options - no.3
-        {'params': [
-            '--reg-type', 'll', '--bandwidth-method', 'cv_ls', '--efficient', '--randomize', '--n-sub-samples', 20
-        ]},
+        {
+            'params': [
+                '--reg-type', 'll', '--bandwidth-method', 'cv_ls',
+                '--efficient', '--randomize', '--n-sub-samples', 20
+            ]
+        },
 
         # TEST METHOD-SELECTION OPTIONS
         # 23. Test the help printout first
@@ -686,28 +718,39 @@ def test_kernel_regression_correct(pcs_full):
         # 54. Test valid value for polynomial-order argument
         {'params': ['--smoothing-method', 'local-polynomial', '--polynomial-order', 5]},
         # 55. Test complex combination of options - no.1
-        {'params': ['--kernel-type', 'epanechnikov', '--smoothing-method', 'local-linear', '-bm', 'silverman']},
+        {
+            'params': [
+                '--kernel-type', 'epanechnikov', '--smoothing-method',
+                'local-linear', '-bm', 'silverman'
+            ]
+        },
         # 56. Test complex combination of options - no.2
         {'params': ['-kt', 'normal', '-sm', 'local-polynomial', '--polynomial-order', 8, '-bv', 1]},
         # 57. Test complex combination of options - no.3
         {'params': ['--kernel-type', 'normal', '-sm', 'local-linear', '--bandwidth-value', .5]},
         # 58. Test complex combination of options - no.5
-        {'params': ['--kernel-type', 'normal', '-sm', 'local-polynomial', '--bandwidth-value', 1e-10]},
+        {
+            'params': [
+                '--kernel-type', 'normal', '-sm', 'local-polynomial', '--bandwidth-value', 1e-10
+            ]
+        },
         # 59. Test complex combination of options - no.4
-        {'params': ['--smoothing-method', 'spatial-average', '--bandwidth-method', 'scott', '--kernel-type', 'tricube']}
+        {
+            'params': [
+                '--smoothing-method', 'spatial-average', '--bandwidth-method',
+                'scott', '--kernel-type', 'tricube'
+            ]
+        }
     ]
     tests_edge = [5, 22, 30, 34, 40, 59]
 
     # Instantiate the runner first
     runner = CliRunner()
-
-    result = runner.invoke(cli.status, [])
-    match = re.search(r'([0-9]+@i).*mixed', result.output)
-    assert match
-    cprof_idx = match.groups(1)[0]
+    pool_path = os.path.join(os.path.split(__file__)[0], 'postprocess_profiles')
+    profile = os.path.join(pool_path, 'kernel_datapoints.perf')
 
     # Perform the testing
-    kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, cprof_idx)
+    kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, profile)
 
 
 def test_reg_analysis_incorrect(pcs_full):
@@ -1434,7 +1477,38 @@ def test_check_profiles(helpers, pcs_with_degradations):
 
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):
-        result = runner.invoke(cli.check_profiles, ["0@i", tag])
+        result = runner.invoke(cli.check_group, ['profiles', "0@i", tag])
+        assert result.exit_code == 0
+
+
+def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
+    """Test checking detection model strategies
+
+    Expecting correct behaviors
+    """
+    runner = CliRunner()
+    # Initialize the matrix
+    matrix = config.Config('local', '', {
+        'degradation': {
+            'strategies': [
+                {'method': 'local_statistics'}
+            ]
+        },
+    })
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+
+    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    profiles = [
+        os.path.join(pool_path, 'baseline_strategies.perf'),
+        os.path.join(pool_path, 'target_strategies.perf')
+    ]
+    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
+
+    for model_strategy in ['best-param', 'all-nonparam', 'best-both']:
+        result = runner.invoke(
+            cli.check_group,
+            ['--models-type', model_strategy, 'profiles', "0@p", "1@p"]
+        )
         assert result.exit_code == 0
 
 

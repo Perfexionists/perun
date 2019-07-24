@@ -357,8 +357,6 @@ Profile API
 
 .. automodule:: perun.profile.factory
 
-.. autofunction:: load_profile_from_file
-
 .. autofunction:: store_profile_at
 
 .. _profile-conversion-api:

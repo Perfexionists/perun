@@ -1,23 +1,51 @@
 {
-  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae",
+  "resources": {
+    "SLList_insert(SLList*, int)#0": {
+      "amount": [
+        1, 0, 1, 1
+      ],
+      "structure-unit-size": [
+        0, 1, 2, 3
+      ]
+    },
+    "SLList_destroy(SLList*)#0": {
+      "amount": [
+        1
+      ],
+      "structure-unit-size": [
+        4
+      ]
+    },
+    "SLList_init(SLList*)#0": {
+      "amount": [
+        6
+      ],
+      "structure-unit-size": [
+        0
+      ]
+    },
+    "SLList_search(SLList*, int)#0": {
+      "amount": [
+        0
+      ],
+      "structure-unit-size": [
+        0
+      ]
+    }
+  },
   "header": {
-    "cmd": "../stap-collector/tst",
+    "workload": "",
     "type": "mixed",
     "units": {
       "mixed(time delta)": "us"
     },
-    "workload": "",
-    "params": ""
+    "params": "",
+    "cmd": "../stap-collector/tst"
   },
+  "models": [],
   "collector_info": {
-    "name": "complexity",
     "params": {
-      "rules": [
-        "SLList_init",
-        "SLList_insert",
-        "SLList_search",
-        "SLList_destroy"
-      ],
+      "global_sampling": null,
       "sampling": [
         {
           "func": "SLList_insert",
@@ -28,63 +56,42 @@
           "sample": 1
         }
       ],
-      "method": "custom",
-      "global_sampling": null
+      "rules": [
+        "SLList_init",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy"
+      ],
+      "method": "custom"
+    },
+    "name": "complexity"
+  },
+  "resource_type_map": {
+    "SLList_insert(SLList*, int)#0": {
+      "subtype": "time delta",
+      "uid": "SLList_insert(SLList*, int)",
+      "time": "6.8e-05s",
+      "type": "mixed"
+    },
+    "SLList_destroy(SLList*)#0": {
+      "subtype": "time delta",
+      "uid": "SLList_destroy(SLList*)",
+      "time": "6.8e-05s",
+      "type": "mixed"
+    },
+    "SLList_init(SLList*)#0": {
+      "subtype": "time delta",
+      "uid": "SLList_init(SLList*)",
+      "time": "6.8e-05s",
+      "type": "mixed"
+    },
+    "SLList_search(SLList*, int)#0": {
+      "subtype": "time delta",
+      "uid": "SLList_search(SLList*, int)",
+      "time": "6.8e-05s",
+      "type": "mixed"
     }
   },
   "postprocessors": [],
-  "global": {
-    "time": "6.8e-05s",
-    "resources": [
-      {
-        "type": "mixed",
-        "amount": 6,
-        "subtype": "time delta",
-        "uid": "SLList_init(SLList*)",
-        "structure-unit-size": 0
-      },
-      {
-        "type": "mixed",
-        "amount": 0,
-        "subtype": "time delta",
-        "uid": "SLList_search(SLList*, int)",
-        "structure-unit-size": 0
-      },
-      {
-        "type": "mixed",
-        "amount": 1,
-        "subtype": "time delta",
-        "uid": "SLList_insert(SLList*, int)",
-        "structure-unit-size": 0
-      },
-      {
-        "type": "mixed",
-        "amount": 0,
-        "subtype": "time delta",
-        "uid": "SLList_insert(SLList*, int)",
-        "structure-unit-size": 1
-      },
-      {
-        "type": "mixed",
-        "amount": 1,
-        "subtype": "time delta",
-        "uid": "SLList_insert(SLList*, int)",
-        "structure-unit-size": 2
-      },
-      {
-        "type": "mixed",
-        "amount": 1,
-        "subtype": "time delta",
-        "uid": "SLList_insert(SLList*, int)",
-        "structure-unit-size": 3
-      },
-      {
-        "type": "mixed",
-        "amount": 1,
-        "subtype": "time delta",
-        "uid": "SLList_destroy(SLList*)",
-        "structure-unit-size": 4
-      }
-    ]
-  }
+  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae"
 }

@@ -57,7 +57,7 @@ def get_averages(profile):
     return data_frame.groupby('uid').mean().to_dict()['amount']
 
 
-def average_amount_threshold(baseline_profile, target_profile):
+def average_amount_threshold(baseline_profile, target_profile, **_):
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     This is based on simple heuristic, where for the same function models, we only check the order
@@ -65,6 +65,7 @@ def average_amount_threshold(baseline_profile, target_profile):
 
     :param dict baseline_profile: baseline against which we are checking the degradation
     :param dict target_profile: profile corresponding to the checked minor version
+    :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
     baseline_averages = get_averages(baseline_profile)
@@ -85,8 +86,10 @@ def average_amount_threshold(baseline_profile, target_profile):
                 change = check.PerformanceChange.NoChange
 
             yield DegradationInfo(
-                change, resource_type, target_uid,
-                "{}{}".format(baseline_average.round(2), unit),
-                "{}{}".format(target_average.round(2), unit),
-                difference_ratio,
+                res=change,
+                t=resource_type,
+                loc=target_uid,
+                fb="{}{}".format(baseline_average.round(2), unit),
+                tt="{}{}".format(target_average.round(2), unit),
+                rd=difference_ratio,
             )

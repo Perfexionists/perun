@@ -2,8 +2,8 @@
 Postprocessor module with non-parametric analysis using the moving average methods.
 """
 
-import click
 import functools
+import click
 
 import perun.logic.runner as runner
 import perun.postprocess.moving_average.methods as methods
@@ -23,11 +23,11 @@ _DEFAULT_DECAY = ('com', 0)
 # default statistic function to compute - mean/average
 _DEFAULT_STATISTIC = 'mean'
 # recognized window types for Simple Moving Average/Median
-_WINDOW_TYPES = ['boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen', 'bohman', 'blackmanharris', 'nuttall',
-                 'barthann']
+_WINDOW_TYPES = [
+    'boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen',
+    'bohman', 'blackmanharris', 'nuttall', 'barthann'
+]
 
-
-# TODO: The possibility of before postprocessing phase
 
 def postprocess(profile, **configuration):
     """
@@ -37,21 +37,22 @@ def postprocess(profile, **configuration):
     :param configuration: the perun and options context
     """
     # Perform the non-parametric analysis using the moving average methods
-    moving_average_models = methods.compute_moving_average(data_provider.data_provider_mapper(profile, **configuration),
-                                                           configuration)
+    moving_average_models = methods.compute_moving_average(
+        data_provider.data_provider_mapper(profile, **configuration), configuration
+    )
 
     # Return the profile after the execution of moving average method
-    return PostprocessStatus.OK, '', {'profile': tools.add_models_to_profile(profile, moving_average_models)}
+    return PostprocessStatus.OK, '', {
+        'profile': tools.add_models_to_profile(profile, moving_average_models)
+    }
 
 
-# TODO: The possibility of after postprocessing phase
-
-def common_sma_options(f):
+def common_sma_options(func_obj):
     """
     The wrapper of common options for both supported commands represents simple
     moving average methods: Simple Moving Average and Simple Moving Average Median.
 
-    :param function f: the function in which the decorator of common options is currently applied
+    :param function func_obj: the function in which the decorator of common options is applied
     :return: returns sequence of the single options for the current function (f) as decorators
     """
     options = [
@@ -62,44 +63,55 @@ def common_sma_options(f):
                      help='If set to False, the result is set to the right edge of the '
                           'window, else is result set to the center of the window')
     ]
-    return functools.reduce(lambda x, option: option(x), options, f)
+    return functools.reduce(lambda x, option: option(x), options, func_obj)
 
 
 @click.command(name='sma')
 @click.option('--window_type', '-wt', type=click.Choice(_WINDOW_TYPES),
-              help='Provides the window type, if not set then all points are evenly weighted.'
+              help='Provides the window type, if not set then all points are evenly weighted. '
                    'For further information about window types see the notes in the documentation.')
 @common_sma_options
 @click.pass_context
 def simple_moving_average(ctx, **kwargs):
     """ **Simple Moving Average**
 
-        In the most of cases, it is an unweighted Moving Average, this means that the each x-coordinate
-        in the data set (profiled resources) has equal importance and is weighted equally. Then the `mean`
-        is computed from the previous `n data` (`<no-center>`), where the `n` marks `<window-width>`.
-        However, in science and engineering the mean is normally taken from an equal number of data on
-        either side of a central value (`<center>`). This ensures that variations in the mean are aligned
-        with the variations in the mean are aligned with variations in the data rather than being shifted
-        in the x-axis direction. Since the window at the boundaries of the interval does not contain enough
-        count of points usually, it is necessary to specify the value of `<min-periods>` to avoid the NaN
-        result. The role of the weighted function in this approach belongs to `<window-type>`, which represents
-        the suite of the following window functions for filtering:
+        In the most of cases, it is an unweighted Moving Average, this means that the each
+        x-coordinate in the data set (profiled resources) has equal importance and is weighted
+        equally. Then the `mean` is computed from the previous `n data` (`<no-center>`), where the
+        `n` marks `<window-width>`. However, in science and engineering the mean is normally taken
+        from an equal number of data on either side of a central value (`<center>`). This ensures
+        that variations in the mean are aligned with the variations in the mean are aligned with
+        variations in the data rather than being shifted in the x-axis direction. Since the window
+        at the boundaries of the interval does not contain enough count of points usually, it is
+        necessary to specify the value of `<min-periods>` to avoid the NaN result. The role of the
+        weighted function in this approach belongs to `<window-type>`, which represents the suite
+        of the following window functions for filtering:
 
-            - **boxcar**: known as rectangular or Dirichlet window, is equivalent to no window at all: --
-            - **triang**: standard triangular window: /\
-            - **blackman**: formed by using three terms of a summation of cosines, minimal leakage, close to optimal
-            - **hamming**: formed by using a raised cosine with non-zero endpoints, minimize the nearest side lobe
-            - **bartlett**: similar to triangular, endpoints are at zero, processing of tapering data sets
-            - **parzen**: can be regarded as a generalization of k-nearest neighbor techniques
-            - **bohman**: convolution of two half-duration cosine lobes
-            - **blackmanharris**: minimum in the sense that its maximum side lobes are minimized (symmetric 4-term)
-            - **nuttall**: minimum 4-term Blackman-Harris window according to Nuttall (so called 'Nuttall4c')
-            - **barthann**: has a main lobe at the origin and asymptotically decaying side lobes on both sides
-            - **kaiser**: formed by using a Bessel function, needs beta value (set to 14 - good starting point)
+            | - **boxcar**: known as rectangular or Dirichlet window, is equivalent to no window
+                    at all: --
+            | - **triang**: standard triangular window
+            | - **blackman**: formed by using three terms of a summation of cosines, minimal
+                    leakage, close to optimal
+            | - **hamming**: formed by using a raised cosine with non-zero endpoints, minimize the
+                    nearest side lobe
+            | - **bartlett**: similar to triangular, endpoints are at zero, processing of tapering
+                    data sets
+            | - **parzen**: can be regarded as a generalization of k-nearest neighbor techniques
+            | - **bohman**: convolution of two half-duration cosine lobes
+            | - **blackmanharris**: minimum in the sense that its maximum side lobes are minimized
+                    (symmetric 4-term)
+            | - **nuttall**: minimum 4-term Blackman-Harris window according to Nuttall
+                    (so called 'Nuttall4c')
+            | - **barthann**: has a main lobe at the origin and asymptotically decaying side lobes
+                    on both sides
+            | - **kaiser**: formed by using a Bessel function, needs beta value
+                    (set to 14 - good starting point)
 
-            .. _SciPyWindow: https://docs.scipy.org/doc/scipy/reference/signal.windows.html#module-scipy.signal.windows
+            .. _SciPyWindow: https://docs.scipy.org/doc/scipy/reference/signal.windows.
+                    html#module-scipy.signal.windows
 
-            For more details about this window functions or for their visual view you can see SciPyWindow_.
+            For more details about this window functions or for their visual view you can
+            see SciPyWindow_.
     """
     kwargs.update({'moving_method': 'sma'})
     kwargs.update(ctx.parent.params)
@@ -112,12 +124,12 @@ def simple_moving_average(ctx, **kwargs):
 def simple_moving_median(ctx, **kwargs):
     """ **Simple Moving Median**
 
-        The second representative of Simple Moving Average methods is the Simple Moving **Median**. For
-        this method are applicable to the same rules like in the first described method, except for the
-        option for choosing the window type, which do not make sense in this approach. The only difference
-        between these two methods are the way of computation the values in the individual sub-intervals.
-        Simple Moving **Median** is not based on the computation of average, but as the name suggests, it
-        based on the **median**.
+        The second representative of Simple Moving Average methods is the Simple Moving **Median**.
+        For this method are applicable to the same rules like in the first described method, except
+        for the option for choosing the window type, which do not make sense in this approach. The
+        only difference between these two methods are the way of computation the values in the
+        individual sub-intervals. Simple Moving **Median** is not based on the computation of
+        average, but as the name suggests, it based on the **median**.
     """
     kwargs.update({'moving_method': 'smm'})
     kwargs.update(ctx.parent.params)
@@ -127,41 +139,53 @@ def simple_moving_median(ctx, **kwargs):
 @click.command(name='ema')
 @click.option('--decay', '-d', callback=methods.validate_decay_param, default=_DEFAULT_DECAY,
               type=click.Tuple([click.Choice(methods.get_supported_decay_params()), float]),
-              help='Exactly one of "com", "span", "halflife", "alpha" can be provided. Allowed values and '
-                   'relationship between the parameters are specified in the documentation (e.g. --decay=com 3).')
+              help='Exactly one of "com", "span", "halflife", "alpha" can be provided. Allowed '
+                   'values and relationship between the parameters are specified in the '
+                   'documentation (e.g. --decay=com 3).')
 @click.pass_context
 def exponential_moving_average(ctx, **kwargs):
     """ **Exponential Moving Average**
 
-        This method is a type of moving average methods, also know as **Exponential** Weighted Moving Average,
-        that places a greater weight and significance on the most recent data points. The weighting for each
-        far x-coordinate decreases exponentially and never reaching zero. This approach of moving average reacts
-        more significantly to recent changes than a *Simple* Moving Average, which applies an equal weight to
-        all observations in the period. To calculate an EMA must be first computing the **Simple** Moving Average
-        (SMA) over a particular sub-interval. In the next step must be calculated the multiplier for smoothing
-        (weighting) the EMA, which depends on the selected formula, the following options are supported (`<decay>`):
+        This method is a type of moving average methods, also know as **Exponential** Weighted
+        Moving Average, that places a greater weight and significance on the most recent data
+        points. The weighting for each far x-coordinate decreases exponentially and never reaching
+        zero. This approach of moving average reacts more significantly to recent changes than a
+        *Simple* Moving Average, which applies an equal weight to all observations in the period.
+        To calculate an EMA must be first computing the **Simple** Moving Average (SMA) over a
+        particular sub-interval. In the next step must be calculated the multiplier for smoothing
+        (weighting) the EMA, which depends on the selected formula, the following options are
+        supported (`<decay>`):
 
-            - **com**: specify decay in terms of center of mass: :math:`{\\alpha}` = 1 / (1 + com), for com >= 0
-            - **span**: specify decay in terms of span: :math:`{\\alpha}` = 2 / (span + 1), for span >= 1
-            - **halflife**: specify decay in terms of half-life, :math:`{\\alpha}` = 1 - exp(log(0.5) / halflife), for halflife > 0
-            - **alpha**: specify smoothing factor :math:`{\\alpha}` directly: 0 < :math:`{\\alpha}` <= 1
+            | - **com**: specify decay in terms of center of mass:
+                    :math:`{\\alpha}` = 1 / (1 + com), for com >= 0
+            | - **span**: specify decay in terms of span:
+                    :math:`{\\alpha}` = 2 / (span + 1), for span >= 1
+            | - **halflife**: specify decay in terms of half-life,
+                    :math:`{\\alpha}` = 1 - exp(log(0.5) / halflife), for halflife > 0
+            | - **alpha**: specify smoothing factor
+                    :math:`{\\alpha}` directly: 0 < :math:`{\\alpha}` <= 1
 
-        The computed coefficient :math:`{\\alpha}` represents the degree of weighting decrease, a constant smoothing
-        factor, The higher value of :math:`{\\alpha}` discounts older observations faster, the small value to the
-        contrary. Finally, to calculate the current value of EMA is used the relevant formula. It is important
-        do not confuse **Exponential** Moving Average with **Simple** Moving Average. An **Exponential** Moving
-        Average behaves quite differently from the second mentioned method, because it is the function of
-        weighting factor or length of the average.
+        The computed coefficient :math:`{\\alpha}` represents the degree of weighting decrease, a
+        constant smoothing factor, The higher value of :math:`{\\alpha}` discounts older
+        observations faster, the small value to the contrary. Finally, to calculate the current
+        value of EMA is used the relevant formula. It is important do not confuse **Exponential**
+        Moving Average with **Simple** Moving Average. An **Exponential** Moving Average behaves
+        quite differently from the second mentioned method, because it is the function of weighting
+        factor or length of the average.
     """
-    kwargs.update({'moving_method': 'ema', 'window_width': kwargs['decay'][1], 'decay': kwargs['decay'][0]})
+    kwargs.update({
+        'moving_method': 'ema',
+        'window_width': kwargs['decay'][1],
+        'decay': kwargs['decay'][0]
+    })
     kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
 
 
 @click.group(invoke_without_command=True)
 @click.option('--min_periods', '-mp', type=click.IntRange(min=1, max=None),
-              help='Provides the minimum number of observations in window required to have a value. '
-                   'If the number of possible observations smaller then result is NaN.')
+              help='Provides the minimum number of observations in window required to have a value.'
+                   ' If the number of possible observations smaller then result is NaN.')
 @cli_helpers.resources_key_options
 @click.pass_context
 def moving_average(ctx, **_):
@@ -191,7 +215,8 @@ def moving_average(ctx, **_):
         basic and commonly used `<moving-methods>` are the **simple** moving average (**sma**) and
         the *exponential* moving average (**ema**).
 
-    For more details about this approach of non-parametric analysis refer to :ref:`postprocessors-moving-average`.
+    For more details about this approach of non-parametric analysis refer
+    to :ref:`postprocessors-moving-average`.
     """
     # run default simple moving average command
     if ctx.invoked_subcommand is None:

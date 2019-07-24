@@ -37,7 +37,7 @@ def postprocess(profile, **configuration):
 
 
 @click.command()
-@click.option('--method', '-m', type=click.Choice(methods.get_supported_methods()),
+@click.option('--method', '-m', type=click.Choice(methods.get_supported_param_methods()),
               required=True, multiple=False,
               help='Will use the <method> to find the best fitting models for'
                    ' the given profile.')
@@ -114,8 +114,8 @@ def regression_analysis(profile, **kwargs):
                     "name": "b1"
                 }
             ],
-            "x_interval_start": 0,
-            "x_interval_end": 11892,
+            "x_start": 0,
+            "x_end": 11892,
             "model": "linear",
             "method": "full",
         }

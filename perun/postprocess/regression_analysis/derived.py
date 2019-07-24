@@ -43,8 +43,8 @@ def derived_const(analysis, const_ref, **_):
     for result in analysis:
         # Check the keys in the result dictionary
         tools.validate_dictionary_keys(
-            result, ['r_square', 'coeffs', 'y_sum', 'pts_num', 'x_interval_start',
-                     'x_interval_end', 'uid', 'method'], [])
+            result, ['r_square', 'coeffs', 'y_sum', 'pts_num', 'x_start',
+                     'x_end', 'uid', 'method'], [])
 
         # Duplicate the constant model template
         const = const_ref.copy()
@@ -71,8 +71,8 @@ def derived_const(analysis, const_ref, **_):
 
         # Build the const model record
         const['r_square'] = r
-        const['x_interval_start'] = result['x_interval_start']
-        const['x_interval_end'] = result['x_interval_end']
+        const['x_start'] = result['x_start']
+        const['x_end'] = result['x_end']
         const['coeffs'] = [result['y_sum'] / result['pts_num'], 0]
         const['uid'] = result['uid']
         const['method'] = result['method']

@@ -17,8 +17,6 @@ _DEFAULT_BUCKETS_METHOD = 'doane'
 _DEFAULT_STATISTIC = 'mean'
 
 
-# TODO: The possibility of before postprocessing phase
-
 def postprocess(profile, **configuration):
     """
     Invoked from perun core, handles the postprocess actions
@@ -27,21 +25,23 @@ def postprocess(profile, **configuration):
     :param configuration: the perun and options context
     """
     # Perform the non-parametric analysis using the regressogram method
-    regressogram_models = methods.compute_regressogram(data_provider.data_provider_mapper(profile, **configuration),
-                                                      configuration)
+    regressogram_models = methods.compute_regressogram(
+        data_provider.data_provider_mapper(profile, **configuration), configuration
+    )
 
     # Return the profile after the execution of regressogram method
-    return PostprocessStatus.OK, '', {'profile': tools.add_models_to_profile(profile, regressogram_models)}
+    return PostprocessStatus.OK, '', {
+        'profile': tools.add_models_to_profile(profile, regressogram_models)
+    }
 
-
-# TODO: The possibility of after postprocessing phase
 
 @click.command()
-@click.option('--bucket_number', '-bn', required=False, multiple=False, type=click.IntRange(min=1, max=None),
+@click.option('--bucket_number', '-bn', required=False, multiple=False,
+              type=click.IntRange(min=1, max=None),
               help=('Restricts the number of buckets to which will be '
                     'placed the values of the selected statistics.'))
 @click.option('--bucket_method', '-bm', required=False,
-              type=click.Choice(methods.get_supported_methods()),
+              type=click.Choice(methods.get_supported_selectors()),
               default=_DEFAULT_BUCKETS_METHOD, multiple=False,
               help='Specifies the method to estimate the optimal number of buckets.')
 @click.option('--statistic_function', '-sf', type=click.Choice(['mean', 'median']),
@@ -67,25 +67,31 @@ def regressogram(profile, **kwargs):
         intervals and the estimate of the point in concrete interval takes the mean/median of the
         y-coordinates (`<of_resource_key>`), respectively of its value on this sub-interval.
         We currently use the `coefficient of determination` (:math:`R^2`) to measure the fitness of
-        regressogram. The fitness of estimation of regressogram model depends primarily on the number
-        of buckets into which the interval will be divided. The user can choose number of buckets
-        manually (`<bucket_window>`) or use one of the following methods to estimate the optimal
-        number of buckets (`<bucket_method>`):
+        regressogram. The fitness of estimation of regressogram model depends primarily on the
+        number of buckets into which the interval will be divided. The user can choose number of
+        buckets manually (`<bucket_window>`) or use one of the following methods to estimate the
+        optimal number of buckets (`<bucket_method>`):
 
-            - **sqrt**: square root (of data size) estimator, used for its speed and simplicity
-            - **rice**: does not take variability into account, only data size and commonly overestimates
-            - **scott**: takes into account data variability and data size, less robust estimator
-            - **stone**: based on leave-one-out cross validation estimate of the integrated squared error
-            - **fd**: robust, takes into account data variability and data size, resilient to outliers
-            - **sturges**: only accounts for data size, underestimates for large non-gaussian data
-            - **doane**: generalization of Sturges' formula, works better with non-gaussian data
-            - **auto**: max of the Sturges' and 'fd' estimators, provides good all around performance
+            | - **sqrt**: square root (of data size) estimator, used for its speed and simplicity
+            | - **rice**: does not take variability into account, only data size and commonly
+                    overestimates
+            | - **scott**: takes into account data variability and data size, less robust estimator
+            | - **stone**: based on leave-one-out cross validation estimate of the integrated
+                    squared error
+            | - **fd**: robust, takes into account data variability and data size, resilient to
+                    outliers
+            | - **sturges**: only accounts for data size, underestimates for large non-gaussian data
+            | - **doane**: generalization of Sturges' formula, works better with non-gaussian data
+            | - **auto**: max of the Sturges' and 'fd' estimators, provides good all around
+                    performance
 
-        .. _SciPy: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
+        .. _SciPy: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.
+                html#numpy.histogram_bucket_edges
 
-        For more details about these methods to estimate the optimal number of buckets or to view the
-        code of these methods, you can visit SciPy_.
+        For more details about these methods to estimate the optimal number of buckets or to view
+        the code of these methods, you can visit SciPy_.
 
-    For more details about this approach of non-parametric analysis refer to :ref:`postprocessors-regressogram`.
+    For more details about this approach of non-parametric analysis refer to
+    :ref:`postprocessors-regressogram`.
     """
     runner.run_postprocessor_on_profile(profile, 'regressogram', kwargs)

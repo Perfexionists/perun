@@ -1,5 +1,6 @@
 """
-Module with computational method of moving average and auxiliary methods at executing of this method.
+Module with computational method of moving average and
+auxiliary methods at executing of this method.
 """
 import click
 import numpy as np
@@ -44,8 +45,8 @@ def compute_window_width_change(window_width, r_square):
     :param float r_square: coefficient of determination from the current moving average model
     :return int: new value of window width for next run of iterative computation
     """
-    return max(1, window_width - max(1, int(
-        min(.9 * window_width - 1, _WINDOW_WIDTH_INCREASE * (window_width - 1) * (_MIN_R_SQUARE - r_square)))))
+    window_change = _WINDOW_WIDTH_INCREASE * (window_width - 1) * (_MIN_R_SQUARE - r_square)
+    return max(1, window_width - max(1, int(min(.9 * window_width - 1, window_change))))
 
 
 def compute_moving_average(data_gen, configuration):
@@ -57,14 +58,16 @@ def compute_moving_average(data_gen, configuration):
     :return: list of dict: the computation results
     """
     # checking the presence of specific keys in individual methods
-    tools.validate_dictionary_keys(configuration, _METHOD_REQUIRED_KEYS[configuration['moving_method']], [])
+    tools.validate_dictionary_keys(
+        configuration, _METHOD_REQUIRED_KEYS[configuration['moving_method']], []
+    )
 
     # list of resulting models of the analysis
     moving_average_models = []
     for x_pts, y_pts, uid in data_gen:
         moving_average_model = moving_average(x_pts, y_pts, configuration)
         moving_average_model['uid'] = uid
-        moving_average_model['method'] = 'moving_average'
+        moving_average_model['model'] = 'moving_average'
         # add partial result to the model result list - create output dictionaries
         moving_average_models.append(moving_average_model)
     return moving_average_models
@@ -86,21 +89,26 @@ def execute_computation(y_pts, config):
     For more details about these methods, you can see the Perun or Pandas documentation.
 
     :param list y_pts: the tuple of y-coordinates for computation
-    :param dict config: the dictionary contains the needed parameters to compute the individual methods
+    :param dict config: the dict contains the needed parameters to compute the individual methods
     :return tuple: pandas.Series with the computed result, coefficient of determination float value
     """
     # computation of Simple Moving Average and Simple Moving Median
     if config['moving_method'] in ('sma', 'smm'):
-        bucket_stats = pd.Series(data=y_pts).rolling(window=config['window_width'], min_periods=config['min_periods'],
-                                                     center=config['center'], win_type=config.get('window_type'))
+        bucket_stats = pd.Series(data=y_pts).rolling(
+            window=config['window_width'], min_periods=config['min_periods'],
+            center=config['center'], win_type=config.get('window_type')
+        )
         # computation of the individual values based on the selected methods
-        bucket_stats = bucket_stats.median() if config['moving_method'] == 'smm' else bucket_stats.mean()
+        bucket_stats = bucket_stats.median() if config['moving_method'] == 'smm' \
+            else bucket_stats.mean()
     # computation of Exponential Moving Average
     elif config['moving_method'] == 'ema':
         decay_dict = {config['decay']: config['window_width']}
-        bucket_stats = pd.Series(data=y_pts).ewm(com=decay_dict.get('com'), span=decay_dict.get('span'),
-                                                 halflife=decay_dict.get('halflife'), alpha=decay_dict.get('alpha'),
-                                                 min_periods=config['min_periods'] or config['window_width']).mean()
+        bucket_stats = pd.Series(data=y_pts).ewm(
+            com=decay_dict.get('com'), span=decay_dict.get('span'), alpha=decay_dict.get('alpha'),
+            halflife=decay_dict.get('halflife'),
+            min_periods=config['min_periods'] or config['window_width']
+        ).mean()
     # computation of the coefficient of determination (R^2)
     r_square = sklearn.metrics.r2_score(y_pts, np.nan_to_num(bucket_stats))
     return bucket_stats, r_square
@@ -127,16 +135,18 @@ def moving_average(x_pts, y_pts, configuration):
     # If has been specified the window width by user, then will be followed the direct computation
     if configuration.get('window_width'):
         bucket_stats, r_square = execute_computation(y_pts, configuration)
-    # If has not been specified the window width by user, then will be followed the iterative computation
+    # If has not been specified the window width, then will be followed the iterative computation
     else:
-        bucket_stats, r_square, configuration['window_width'] = iterative_analysis(x_pts, y_pts, configuration)
+        bucket_stats, r_square, configuration['window_width'] = iterative_analysis(
+            x_pts, y_pts, configuration
+        )
 
     # Create output dictionaries
     return {
         'moving_method': configuration['moving_method'],
         'window_width': configuration['window_width'],
-        'x_interval_start': min(x_pts),
-        'x_interval_end': max(x_pts),
+        'x_start': min(x_pts),
+        'x_end': max(x_pts),
         'r_square': r_square,
         'bucket_stats': [float(value) for value in bucket_stats.values],
         'per_key': configuration['per_key']
@@ -158,7 +168,8 @@ def iterative_analysis(x_pts, y_pts, config):
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
     :param dict config: the perun and option context with needed parameters
-    :return tuple: pandas.Series with the computed result, coefficient of determination float value, window width (int)
+    :return tuple: pandas.Series with the computed result -
+        coefficient of determination float value - window width (int)
     """
     # set the initial value of window width by a few percents of the length of the interval
     # - minimal window width is equal to 1
@@ -169,9 +180,10 @@ def iterative_analysis(x_pts, y_pts, config):
         # obtaining new results from moving average analysis
         bucket_stats, r_square = execute_computation(y_pts, config)
         # check whether the window width is still changing
-        window_new_change = config['window_width'] - compute_window_width_change(config['window_width'], r_square)
-        # computation of the new window width, if yet have not been achieved the desired smoothness, for next run
-        config['window_width'] = compute_window_width_change(config['window_width'], r_square)
+        new_window_width = compute_window_width_change(config['window_width'], r_square)
+        window_new_change = config['window_width'] - new_window_width
+        # computation of the new window width, if yet have not been achieved the desired smoothness
+        config['window_width'] = new_window_width
     return bucket_stats, r_square, config['window_width']
 
 
@@ -199,7 +211,9 @@ def validate_decay_param(_, param, value):
     else:  # value out of acceptable range
         # obtaining the error message according to name of `decay` method
         err_msg = _DECAY_PARAMS_INFO[value[0]]['err_msg']
-        raise click.BadOptionUsage(param.name, 'Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg))
+        raise click.BadOptionUsage(
+            param.name, 'Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg)
+        )
 
 
 # dictionary contains the required keys to check before the access to this keys

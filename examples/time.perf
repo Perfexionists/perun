@@ -1,23 +1,43 @@
 {
-  "type": "time",
-  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
-  "cmd": "/dir/subdir/cmd",
+  "resources": {
+    "real#0": {
+      "amount": [
+        "0.616s"
+      ]
+    },
+    "user#0": {
+      "amount": [
+        "0.500s"
+      ]
+    },
+    "sys#0": {
+      "amount": [
+        "0.125s"
+      ]
+    }
+  },
   "param": "-g -w -v",
+  "minor_version": "a5cf40ebf33610c97083b209fc12a36adc3a99ff",
+  "models": [],
+  "type": "time",
+  "resource_type_map": {
+    "real#0": {
+      "uid": "real",
+      "time": "0.0"
+    },
+    "user#0": {
+      "uid": "user",
+      "time": "0.0"
+    },
+    "sys#0": {
+      "uid": "sys",
+      "time": "0.0"
+    }
+  },
   "workload": "load.in",
-
   "collector": {
-    "name": "time",
-    "params": ""
+    "params": "",
+    "name": "time"
   },
-
-  "global": {
-    "timestamp": "12.32s",
-    "resources": [
-       {"amount": "0.616s", "uid": "real"},
-       {"amount": "0.500s", "uid": "user"},
-       {"amount": "0.125s", "uid": "sys"}
-    ]
-  },
-
-  "snapshots": []
+  "cmd": "/dir/subdir/cmd"
 }
