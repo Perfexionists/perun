@@ -295,9 +295,8 @@ def remove_from_pending(profile_generator):
         result_string = perun_log.in_color("{}".format(
             helpers.str_to_plural(removed_profile_number, "profile")
         ), 'white', 'bold')
-        removed_src = perun_log.in_color(os.path.join('.perun', 'jobs'), 'grey')
         perun_log.info("successfully removed {} from pending jobs".format(
-            result_string, removed_src
+            result_string
         ))
 
 
