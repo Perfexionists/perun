@@ -168,9 +168,10 @@ def test_add(helpers, pcs_full, valid_profile_pool):
         assert before_entries_count == (after_entries_count - 1)
 
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
-    #   one of the profiles already in the tracking
+    #   one of the profiles already in the tracking. With new profile format the number may wary
     after_count = helpers.count_contents_on_path(pcs_full.get_path())
-    assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
+    after_expected = (after_count[0] - (len(valid_profile_pool) - 1) - 2)
+    assert after_expected in (before_count[0], before_count[0]+1)
 
 
 def test_add_no_minor(helpers, pcs_full, valid_profile_pool):
@@ -199,9 +200,10 @@ def test_add_no_minor(helpers, pcs_full, valid_profile_pool):
         assert before_entries_count == (after_entries_count - 1)
 
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
-    #   one of the profiles already in the tracking
+    #   one of the profiles already in the tracking. With new profile format the number may wary
     after_count = helpers.count_contents_on_path(pcs_full.get_path())
-    assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
+    after_expected = (after_count[0] - (len(valid_profile_pool) - 1) - 2)
+    assert after_expected in (before_count[0], before_count[0]+1)
 
 
 def test_add_wrong_minor(helpers, pcs_full, valid_profile_pool):
@@ -294,9 +296,10 @@ def test_add_existing(helpers, pcs_full, valid_profile_pool, capsys):
         assert 'already registered in' in out
 
     # Assert that just len-1 blobs was added, as the second profile has the same structure as
-    #   one of the profiles already in the tracking
+    #   one of the profiles already in the tracking. With new profile format the number may wary
     after_count = helpers.count_contents_on_path(pcs_full.get_path())
-    assert before_count[0] == (after_count[0] - (len(valid_profile_pool) - 1) - 2)
+    after_expected = (after_count[0] - (len(valid_profile_pool) - 1) - 2)
+    assert after_expected in (before_count[0], before_count[0]+1)
 
 
 @pytest.mark.usefixtures('cleandir')

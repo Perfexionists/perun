@@ -73,7 +73,7 @@ def collect(executable, repeat=10, warmup=3, **kwargs):
 
 
 @click.command()
-@click.option('--warm-up-repetition', '-w', 'warmup',
+@click.option('--warmup', '-w', 'warmup',
               default=3, nargs=1, type=click.INT, metavar='<int>',
               help='Before the actual timing, the collector will execute <int> warm-up executions.')
 @click.option('--repeat', '-r',

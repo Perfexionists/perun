@@ -109,7 +109,7 @@ def degradation_in_minor(minor_version, quiet=False):
     :returns: list of found changes
     """
     minor_version_info = vcs.get_minor_version_info(minor_version)
-    baseline_version_queue = minor_version_info.parents
+    baseline_version_queue = [p for p in minor_version_info.parents]
     pre_collect_profiles(minor_version_info)
     target_profile_queue = profiles_to_queue(minor_version)
     detected_changes = []

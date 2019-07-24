@@ -11,6 +11,10 @@ HEAD
   - add support for removing profiles from pending jobs through perun
   - improve the output of `perun rm` command
   - extract CLI groups to isolate modules
+  - add caching to selected vcs commands
+  - fix untested bug in degradation check
+  - rename warmup parameter in `time` to ``--warmup``
+  - lower the number of warmup and repetitions for time collector during tests
 
 0.17.1 (2019-07-24)
 -------------------

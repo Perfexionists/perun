@@ -24,7 +24,10 @@ def test_degradation_precollect(monkeypatch, pcs_full, capsys):
         'args': ['-al'],
         'workloads': ['.', '..'],
         'collectors': [
-            {'name': 'time', 'params': {}}
+            {'name': 'time', 'params': {
+                'warmup': 1,
+                'repeat': 1
+            }}
         ],
         'postprocessors': [],
         'execute': {
