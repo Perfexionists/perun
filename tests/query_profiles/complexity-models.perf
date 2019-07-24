@@ -157,9 +157,9 @@
       "r_square": 0.17966835944667436,
       "method": "full",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "exponential",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -175,9 +175,9 @@
       "r_square": 0.19461279461279446,
       "method": "full",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "linear",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -193,9 +193,9 @@
       "r_square": 0.04041633173535342,
       "method": "full",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "logarithmic",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -211,9 +211,9 @@
       "r_square": 0.5436554435063784,
       "method": "full",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "power",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -229,9 +229,9 @@
       "r_square": 0.08494556549476462,
       "method": "full",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "quadratic",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -247,9 +247,9 @@
       "r_square": -0.009323268608534052,
       "method": "full",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "exponential",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -265,9 +265,9 @@
       "r_square": 0.003367003367000798,
       "method": "full",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "linear",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -283,9 +283,9 @@
       "r_square": 0.009506708948767373,
       "method": "full",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "logarithmic",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -301,9 +301,9 @@
       "r_square": 0.037428897586245014,
       "method": "full",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "power",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -319,9 +319,9 @@
       "r_square": 0.0018876792332157555,
       "method": "full",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "quadratic",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",

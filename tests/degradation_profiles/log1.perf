@@ -90,8 +90,8 @@
       "r_square": 0.6834282177324498,
       "uid": "skiplistSearch(skiplist*, int)",
       "model": "linear",
-      "x_interval_end": 1000000,
-      "x_interval_start": 1,
+      "x_end": 1000000,
+      "x_start": 1,
       "method": "full"
     },
     {
@@ -108,8 +108,8 @@
       "r_square": 0.8078212942753822,
       "uid": "skiplistSearch(skiplist*, int)",
       "model": "power",
-      "x_interval_end": 1000000,
-      "x_interval_start": 1,
+      "x_end": 1000000,
+      "x_start": 1,
       "method": "full"
     },
     {
@@ -126,8 +126,8 @@
       "r_square": 0.9997920331936034,
       "uid": "skiplistSearch(skiplist*, int)",
       "model": "logarithmic",
-      "x_interval_end": 1000000,
-      "x_interval_start": 1,
+      "x_end": 1000000,
+      "x_start": 1,
       "method": "full"
     },
     {
@@ -144,8 +144,8 @@
       "r_square": 0.5474156041948421,
       "uid": "skiplistSearch(skiplist*, int)",
       "model": "exponential",
-      "x_interval_end": 1000000,
-      "x_interval_start": 1,
+      "x_end": 1000000,
+      "x_start": 1,
       "method": "full"
     },
     {
@@ -166,8 +166,8 @@
       "r_square": 0.817765837402249,
       "uid": "skiplistSearch(skiplist*, int)",
       "model": "quadratic",
-      "x_interval_end": 1000000,
-      "x_interval_start": 1,
+      "x_end": 1000000,
+      "x_start": 1,
       "method": "full"
     },
     {
@@ -184,8 +184,8 @@
       "r_square": 0.0942067929907813,
       "uid": "skiplistSearch(skiplist*, int)",
       "model": "constant",
-      "x_interval_end": 1000000,
-      "x_interval_start": 1,
+      "x_end": 1000000,
+      "x_start": 1,
       "method": "full"
     }
   ],

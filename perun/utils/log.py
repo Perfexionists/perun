@@ -10,18 +10,15 @@ import io
 import pydoc
 import functools
 import traceback
-<<<<<<< 2bfa4abeb4393cc90fb5b3e9829e52c0145d963f
 import numpy as np
-=======
 import time
->>>>>>> Extract colouring to single function
 
 import termcolor
 
 from perun.utils.helpers import first_index_of_attr, str_to_plural
 from perun.utils.decorators import static_variables
-from perun.utils.helpers import COLLECT_PHASE_ATTRS, COLLECT_PHASE_ATTRS_HIGH, CHANGE_COLOURS, \
-    CHANGE_STRINGS, DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
+from perun.utils.helpers import COLLECT_PHASE_ATTRS, CHANGE_COLOURS, CHANGE_STRINGS, \
+    DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
 from perun.utils.structs import PerformanceChange
 
 __author__ = 'Tomas Fiedor'

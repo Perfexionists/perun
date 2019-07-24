@@ -127,12 +127,12 @@
         0.2, 0.2, 0.0, 0.2, 0.0, 0.2, 0.0, 0.3, 0.0, 0.4, 0.5, 0.0, 0.7, 0.0, 1.0, 0.0, 1.2, 1.4, 1.5, 1.7999999999999998
       ],
       "uid": "exp::test1",
-      "y_interval_start": 0.2,
+      "y_start": 0.2,
       "buckets_method": "doane",
       "statistic_function": "mean",
-      "x_interval_start": 0.0,
-      "x_interval_end": 110.0,
-      "method": "regressogram"
+      "x_start": 0.0,
+      "x_end": 110.0,
+      "model": "regressogram"
     },
     {
       "r_square": 0.9942763368555876,
@@ -140,12 +140,12 @@
         21.0, 0.0, 19.0, 23.0, 36.0, 33.0, 0.0, 27.0, 32.0, 0.0, 0.0, 0.0, 62.0, 0.0, 0.0, 74.0
       ],
       "uid": "exp::test2",
-      "y_interval_start": 18,
+      "y_start": 18,
       "buckets_method": "doane",
       "statistic_function": "mean",
-      "x_interval_start": 17.0,
-      "x_interval_end": 103.0,
-      "method": "regressogram"
+      "x_start": 17.0,
+      "x_end": 103.0,
+      "model": "regressogram"
     },
     {
       "r_square": 0.0,
@@ -153,19 +153,19 @@
         56.77777777777778
       ],
       "uid": "exp::test3",
-      "y_interval_start": 1,
+      "y_start": 1,
       "buckets_method": "doane",
       "statistic_function": "mean",
-      "x_interval_start": 0.0,
-      "x_interval_end": 8.0,
-      "method": "regressogram"
+      "x_start": 0.0,
+      "x_end": 8.0,
+      "model": "regressogram"
     },
     {
       "r_square": 0.9755837129840547,
-      "x_interval_end": 110,
+      "x_end": 110,
       "uid": "exp::test1",
-      "method": "moving_average",
-      "x_interval_start": 0,
+      "model": "moving_average",
+      "x_start": 0,
       "moving_method": "sma",
       "per_key": "structure-unit-size",
       "bucket_stats": [
@@ -175,10 +175,10 @@
     },
     {
       "r_square": 1.0,
-      "x_interval_end": 103,
+      "x_end": 103,
       "uid": "exp::test2",
-      "method": "moving_average",
-      "x_interval_start": 17,
+      "model": "moving_average",
+      "x_start": 17,
       "moving_method": "sma",
       "per_key": "structure-unit-size",
       "bucket_stats": [
@@ -188,10 +188,10 @@
     },
     {
       "r_square": 1.0,
-      "x_interval_end": 8,
+      "x_end": 8,
       "uid": "exp::test3",
-      "method": "moving_average",
-      "x_interval_start": 0,
+      "model": "moving_average",
+      "x_start": 0,
       "moving_method": "sma",
       "per_key": "structure-unit-size",
       "bucket_stats": [
@@ -200,11 +200,11 @@
       "window_width": 1
     },
     {
-      "method": "kernel_regression",
-      "x_interval_end": 110,
+      "model": "kernel_regression",
+      "x_end": 110,
       "r_square": 0.9993274556690619,
       "uid": "exp::test1",
-      "x_interval_start": 0,
+      "x_start": 0,
       "per_key": "structure-unit-size",
       "kernel_mode": "estimator",
       "bandwidth": 5.565770874398895,
@@ -213,11 +213,11 @@
       ]
     },
     {
-      "method": "kernel_regression",
-      "x_interval_end": 103,
+      "model": "kernel_regression",
+      "x_end": 103,
       "r_square": 0.9898398317185579,
       "uid": "exp::test2",
-      "x_interval_start": 17,
+      "x_start": 17,
       "per_key": "structure-unit-size",
       "kernel_mode": "estimator",
       "bandwidth": 5.079589007438139,
@@ -226,11 +226,11 @@
       ]
     },
     {
-      "method": "kernel_regression",
-      "x_interval_end": 8,
+      "model": "kernel_regression",
+      "x_end": 8,
       "r_square": 0.9999999999385866,
       "uid": "exp::test3",
-      "x_interval_start": 0,
+      "x_start": 0,
       "per_key": "structure-unit-size",
       "kernel_mode": "estimator",
       "bandwidth": 0.21770025364325246,
