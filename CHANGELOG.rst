@@ -6,6 +6,19 @@ HEAD
 
 **To be included in next release**
 
+0.17.1 (2019-07-24)
+-------------------
+
+`commit: e2fad3cd2ac22f17aa7abfe4375d9940eb9f2847`
+
+**Add new degradation detection methods**
+
+  - add new detection methods for parametric and non-parametric models
+  - add **Integral Comparison** detection method, which computes the integrals under models
+  - add **Local Statistics** detection method, which analyses the various statistics in intervals of models
+  - refactor various minor issues in postprocessing logic
+  - add new strategies for detecting performance changes
+
 0.17 (2019-07-09)
 -----------------
 
