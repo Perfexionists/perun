@@ -157,8 +157,8 @@
       "r_square": 0.9764155410929202,
       "method": "interval",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 0,
-      "x_interval_end": 3,
+      "x_start": 0,
+      "x_end": 3,
       "model": "power",
       "coeffs": [
         {
@@ -175,8 +175,8 @@
       "r_square": 0.0033674045748702808,
       "method": "interval",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 4,
-      "x_interval_end": 6,
+      "x_start": 4,
+      "x_end": 6,
       "model": "logarithmic",
       "coeffs": [
         {
@@ -193,8 +193,8 @@
       "r_square": 0.0013072128667427352,
       "method": "interval",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 7,
-      "x_interval_end": 9,
+      "x_start": 7,
+      "x_end": 9,
       "model": "logarithmic",
       "coeffs": [
         {
@@ -211,8 +211,8 @@
       "r_square": 0.0,
       "method": "interval",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 0,
-      "x_interval_end": 3,
+      "x_start": 0,
+      "x_end": 3,
       "model": "exponential",
       "coeffs": [
         {
@@ -229,8 +229,8 @@
       "r_square": 0.003367404574871613,
       "method": "interval",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 4,
-      "x_interval_end": 6,
+      "x_start": 4,
+      "x_end": 6,
       "model": "logarithmic",
       "coeffs": [
         {
@@ -247,8 +247,8 @@
       "r_square": 0.0,
       "method": "interval",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 7,
-      "x_interval_end": 9,
+      "x_start": 7,
+      "x_end": 9,
       "model": "exponential",
       "coeffs": [
         {

@@ -86,8 +86,8 @@
       "r_square": 0.01188420794338732,
       "uid": "SLList_insert(SLList*, int)",
       "model": "linear",
-      "x_interval_end": 6621,
-      "x_interval_start": 0,
+      "x_end": 6621,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -104,8 +104,8 @@
       "r_square": 0.021603543754938077,
       "uid": "SLList_insert(SLList*, int)",
       "model": "power",
-      "x_interval_end": 6621,
-      "x_interval_start": 0,
+      "x_end": 6621,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -122,8 +122,8 @@
       "r_square": 0.007572276445938159,
       "uid": "SLList_insert(SLList*, int)",
       "model": "logarithmic",
-      "x_interval_end": 6621,
-      "x_interval_start": 0,
+      "x_end": 6621,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -140,8 +140,8 @@
       "r_square": 0.0,
       "uid": "SLList_insert(SLList*, int)",
       "model": "constant",
-      "x_interval_end": 6621,
-      "x_interval_start": 0,
+      "x_end": 6621,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -158,8 +158,8 @@
       "r_square": 0.033548110512791475,
       "uid": "SLList_insert(SLList*, int)",
       "model": "exponential",
-      "x_interval_end": 6621,
-      "x_interval_start": 0,
+      "x_end": 6621,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -176,8 +176,8 @@
       "r_square": 0.9336907884555826,
       "uid": "SLList_search(SLList*, int)",
       "model": "linear",
-      "x_interval_end": 6619,
-      "x_interval_start": 0,
+      "x_end": 6619,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -194,8 +194,8 @@
       "r_square": 0.9971418036312071,
       "uid": "SLList_search(SLList*, int)",
       "model": "power",
-      "x_interval_end": 6619,
-      "x_interval_start": 0,
+      "x_end": 6619,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -212,8 +212,8 @@
       "r_square": 0.5511692535229428,
       "uid": "SLList_search(SLList*, int)",
       "model": "logarithmic",
-      "x_interval_end": 6619,
-      "x_interval_start": 0,
+      "x_end": 6619,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -230,8 +230,8 @@
       "r_square": 0.0,
       "uid": "SLList_search(SLList*, int)",
       "model": "constant",
-      "x_interval_end": 6619,
-      "x_interval_start": 0,
+      "x_end": 6619,
+      "x_start": 0,
       "method": "full"
     },
     {
@@ -248,8 +248,8 @@
       "r_square": 0.7665809071363696,
       "uid": "SLList_search(SLList*, int)",
       "model": "exponential",
-      "x_interval_end": 6619,
-      "x_interval_start": 0,
+      "x_end": 6619,
+      "x_start": 0,
       "method": "full"
     }
   ],

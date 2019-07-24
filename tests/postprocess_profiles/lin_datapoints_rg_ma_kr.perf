@@ -108,37 +108,37 @@
   },
   "models": [
     {
-      "method": "regressogram",
-      "x_interval_start": 59.0,
+      "model": "regressogram",
+      "x_start": 59.0,
       "r_square": 0.840480465011754,
       "uid": "linear::test1",
-      "y_interval_start": 46,
+      "y_start": 46,
       "buckets_method": "doane",
       "statistic_function": "mean",
-      "x_interval_end": 132.0,
+      "x_end": 132.0,
       "bucket_stats": [
         64.0, 58.0, 58.8, 61.4, 57.43333333333334, 56.8, 0.0, 0.0, 54.0, 52.1, 51.0, 0.0, 47.0
       ]
     },
     {
-      "method": "regressogram",
-      "x_interval_start": 0.0,
+      "model": "regressogram",
+      "x_start": 0.0,
       "r_square": 0.7575757575757576,
       "uid": "linear::test2",
-      "y_interval_start": 8,
+      "y_start": 8,
       "buckets_method": "doane",
       "statistic_function": "mean",
-      "x_interval_end": 9.0,
+      "x_end": 9.0,
       "bucket_stats": [
         13.0, 25.5
       ]
     },
     {
-      "method": "moving_average",
-      "x_interval_end": 132,
+      "model": "moving_average",
+      "x_end": 132,
       "r_square": 1.0,
       "uid": "linear::test1",
-      "x_interval_start": 59,
+      "x_start": 59,
       "moving_method": "sma",
       "per_key": "structure-unit-size",
       "bucket_stats": [
@@ -147,11 +147,11 @@
       "window_width": 1
     },
     {
-      "method": "moving_average",
-      "x_interval_end": 9,
+      "model": "moving_average",
+      "x_end": 9,
       "r_square": 1.0,
       "uid": "linear::test2",
-      "x_interval_start": 0,
+      "x_start": 0,
       "moving_method": "sma",
       "per_key": "structure-unit-size",
       "bucket_stats": [
@@ -161,11 +161,11 @@
     },
     {
       "r_square": 0.7907602362991459,
-      "method": "kernel_regression",
+      "model": "kernel_regression",
       "uid": "linear::test1",
-      "x_interval_start": 59,
+      "x_start": 59,
       "per_key": "structure-unit-size",
-      "x_interval_end": 132,
+      "x_end": 132,
       "kernel_mode": "estimator",
       "bandwidth": 30351362.464754254,
       "kernel_stats": [
@@ -174,11 +174,11 @@
     },
     {
       "r_square": 1.0,
-      "method": "kernel_regression",
+      "model": "kernel_regression",
       "uid": "linear::test2",
-      "x_interval_start": 0,
+      "x_start": 0,
       "per_key": "structure-unit-size",
-      "x_interval_end": 9,
+      "x_end": 9,
       "kernel_mode": "estimator",
       "bandwidth": 1.8970114134082943,
       "kernel_stats": [

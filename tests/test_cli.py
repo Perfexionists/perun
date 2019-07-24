@@ -1517,7 +1517,7 @@ def test_check_profiles(helpers, pcs_with_degradations):
 
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):
-        result = runner.invoke(check_cli.check_profiles, ["0@i", tag])
+        result = runner.invoke(check_cli.check_group, ["profiles", "0@i", tag])
         assert result.exit_code == 0
 
 
@@ -1546,7 +1546,7 @@ def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
 
     for model_strategy in ['best-param', 'all-nonparam', 'best-both']:
         result = runner.invoke(
-            cli.check_group,
+            check_cli.check_group,
             ['--models-type', model_strategy, 'profiles', "0@p", "1@p"]
         )
         assert result.exit_code == 0

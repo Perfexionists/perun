@@ -157,9 +157,9 @@
       "r_square": 0.17966835944667436,
       "method": "full",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 0,
+      "x_start": 0,
       "model": "invalid_model",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",

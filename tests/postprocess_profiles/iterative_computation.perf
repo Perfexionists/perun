@@ -157,9 +157,9 @@
       "r_square": 0.5436554435063783,
       "method": "iterative",
       "uid": "SLList_insert(SLList*, int)",
-      "x_interval_start": 1,
+      "x_start": 1,
       "model": "power",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
@@ -175,9 +175,9 @@
       "r_square": 0.009506708948767373,
       "method": "iterative",
       "uid": "SLListcls::Insert(int)",
-      "x_interval_start": 1,
+      "x_start": 1,
       "model": "logarithmic",
-      "x_interval_end": 9,
+      "x_end": 9,
       "coeffs": [
         {
           "name": "b0",
