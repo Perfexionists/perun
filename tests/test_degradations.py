@@ -165,7 +165,7 @@ def test_strategies():
     rule = {
         'method': 'average_amount_threshold',
         'collector': 'complexity',
-        'postprocessor': 'filter'
+        'postprocessor': 'normalizer'
     }
     assert not check.is_rule_applicable_for(rule, profile)
 
