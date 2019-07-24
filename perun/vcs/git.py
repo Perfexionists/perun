@@ -11,6 +11,7 @@ import git.exc
 
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps
+import perun.utils.decorators as decorators
 from perun.utils.exceptions import VersionControlSystemException
 from perun.utils.helpers import MinorVersion, MajorVersion
 
@@ -109,23 +110,27 @@ def _walk_major_versions(git_repo):
         yield MajorVersion(branch.name, _massage_parameter(git_repo, branch.name))
 
 
+@decorators.static_variables(commit_cache=dict())
 def _parse_commit(commit):
     """
     :param git.Commit commit: commit object
     :returns MinorVersion: namedtuple of minor version (date author email checksum desc parents)
     """
     checksum = str(commit)
-    commit_parents = [str(parent) for parent in commit.parents]
+    if checksum not in _parse_commit.commit_cache.keys():
+        commit_parents = [str(parent) for parent in commit.parents]
 
-    commit_author_info = commit.author
+        commit_author_info = commit.author
 
-    author, email = commit_author_info.name, commit_author_info.email
-    timestamp = commit.committed_date
-    date = timestamps.timestamp_to_str(int(timestamp))
+        author, email = commit_author_info.name, commit_author_info.email
+        timestamp = commit.committed_date
+        date = timestamps.timestamp_to_str(int(timestamp))
 
-    commit_description = str(commit.message)
+        commit_description = str(commit.message)
 
-    return MinorVersion(date, author, email, checksum, commit_description, commit_parents)
+        minor_version = MinorVersion(date, author, email, checksum, commit_description, commit_parents)
+        _parse_commit.commit_cache[checksum] = minor_version
+    return _parse_commit.commit_cache[checksum]
 
 
 @create_repo_from_path

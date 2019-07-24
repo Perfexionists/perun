@@ -1241,7 +1241,9 @@ def test_collect_correct(pcs_full):
     Expecting no exceptions, no errors, zero status
     """
     runner = CliRunner()
-    result = runner.invoke(cli.collect, ['-c echo', '-w hello', 'time'])
+    result = runner.invoke(cli.collect, [
+        '-c echo', '-w hello', 'time', '--repeat=1', '--warmup=1'
+    ])
     assert result.exit_code == 0
 
 
@@ -1663,11 +1665,15 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     # Initialize the matrix for the further collecting
     matrix = config.Config('local', '', {
         'vcs': {'type': 'git', 'url': '../'},
-        'cmds': ['ls'],
-        'args': ['-al'],
-        'workloads': ['.', '..'],
+        'cmds': ['echo'],
+        'args': [''],
+        'workloads': ['hello'],
         'collectors': [
-            {'name': 'time', 'params': {}}
+            {'name': 'time', 'params': {
+                'warmup': 1,
+                'repeat': 1
+
+            }}
         ],
         'postprocessors': [],
     })
@@ -1686,9 +1692,10 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     log_dir = pcs_with_degradations.get_log_directory()
     shutil.rmtree(log_dir)
     store.touch_dir(log_dir)
-    config.runtime().set('degradation', {})
-    config.runtime().set('degradation.collect_before_check', 'true')
-    config.runtime().set('degradation.log_collect', 'false')
+    config.runtime().data['degradation']  = {
+        'collect_before_check': 'true',
+        'log_collect': 'false'
+    }
     result = runner.invoke(cli.cli, ['--no-pager', 'check', 'head'])
     assert len(os.listdir(log_dir)) == 0
     assert result.exit_code == 0
@@ -1797,7 +1804,10 @@ def test_run(pcs_full, monkeypatch):
         'args': ['-al'],
         'workloads': ['.', '..'],
         'collectors': [
-            {'name': 'time', 'params': {}}
+            {'name': 'time', 'params': {
+                'warmup': 1,
+                'repeat': 1
+            }}
         ],
         'postprocessors': [],
         'execute': {
