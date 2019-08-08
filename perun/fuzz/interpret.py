@@ -9,10 +9,6 @@ import difflib
 import matplotlib.pyplot as plt
 # Force matplotlib to not use any Xwindows backend.
 plt.switch_backend('agg')
-import os.path as path
-import scipy.stats.mstats as stats
-
-import perun.fuzz.filesystem as filesystem
 
 
 def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, parents_fitness_values, base_cov, hangs, faults):

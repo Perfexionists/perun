@@ -3,6 +3,8 @@
 import re
 import random
 
+RULE_ITERATIONS = 10
+
 
 def remove_attribute_value(lines):
     """ Selects random line and removes random attribute value, 1-10 times.
@@ -12,7 +14,7 @@ def remove_attribute_value(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, 10)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         try:
             attr = random.choice(re.findall(r"\"\s*\S+\s*\"", lines[rand]))
@@ -29,7 +31,7 @@ def remove_attribute_name(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, 10)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         try:
             attr = random.choice(re.findall(r"\S*\s*=\s*[\"|\']", lines[rand]))
@@ -46,7 +48,7 @@ def remove_attribute(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, 10)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         try:
             attr = random.choice(re.findall(
@@ -64,7 +66,7 @@ def remove_tag(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, 10)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         try:
             tag = random.choice(re.findall(r"<[^>]*>", lines[rand]))

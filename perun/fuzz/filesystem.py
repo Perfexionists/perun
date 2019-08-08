@@ -7,6 +7,7 @@ import os
 import os.path as path
 import re
 
+
 def get_corpus(workloads, pattern):
     """ Iteratively search for files to fill input corpus.
 
@@ -19,7 +20,7 @@ def get_corpus(workloads, pattern):
     try:
         filter_regexp = re.compile(pattern)
     except re.error:
-        filter_regexp = re.compile("", flags=re.IGNORECASE)
+        filter_regexp = re.compile("")
 
     for w in workloads:
         if path.isdir(w) and os.access(w, os.R_OK):
@@ -38,12 +39,13 @@ def move_file_to(filename, directory):
     """Useful function for moving file to the special output directory.
 
     :param str filename: path to a file
-    :param str dir: path of destination directory, where file should be moved
+    :param str directory: path of destination directory, where file should be moved
     :return str: new path of the moved file
     """
     _, file = path.split(filename)
-    os.rename(filename, dir + "/" + file)
-    return dir + "/" + file
+    os.rename(filename, directory + "/" + file)
+    return directory + "/" + file
+
 
 def make_output_dirs(output_dir, new_dirs):
     """Creates special output directories for diffs and mutations causing fault or hang.
@@ -54,13 +56,10 @@ def make_output_dirs(output_dir, new_dirs):
     """
     dirs_dict = {}
     for dir_name in new_dirs:
-        os.makedirs(output_dir + "/"+ dir_name, exist_ok=True)
-        dirs_dict[dir_name] = output_dir + "/"+ dir_name
+        os.makedirs(output_dir + "/" + dir_name, exist_ok=True)
+        dirs_dict[dir_name] = output_dir + "/" + dir_name
     return dirs_dict
-    # os.makedirs(output_dir + "/hangs", exist_ok=True)
-    # os.makedirs(output_dir + "/faults", exist_ok=True)
-    # os.makedirs(output_dir + "/diffs", exist_ok=True)
-    # return output_dir + "/hangs", output_dir + "/faults", output_dir + "/diffs"
+
 
 def del_temp_files(parents, final_results, hangs, faults, output_dir):
     """ Deletes temporary files that are not positive results of fuzz testing
@@ -72,13 +71,10 @@ def del_temp_files(parents, final_results, hangs, faults, output_dir):
     """
 
     print("Removing remaining mutations ...")
-    waste = []
     for mut in parents:
-        if mut not in final_results and mut["path"].startswith(output_dir):
-            if mut not in hangs and mut not in faults:
-                waste.append(mut)
-
-    # waste = [mut for mut in final_results if mut not in hangs and mut not in faults]
-    for mut in waste:
-        if path.isfile(mut["path"]):
-            os.remove(mut["path"])
+        if mut not in final_results and mut not in hangs and mut not in faults and \
+                mut["path"].startswith(output_dir) and path.isfile(mut["path"]):
+            try:
+                os.remove(mut["path"])
+            except FileNotFoundError:
+                pass

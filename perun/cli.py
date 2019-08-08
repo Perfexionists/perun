@@ -644,7 +644,7 @@ def collect(ctx, **kwargs):
               type=click.IntRange(1, None, False), metavar='<int>',
               help='Time limit for fuzzing (in seconds).  Default value is 1800s.')
 @click.option('--hang-timeout', '-h', nargs=1, required=False, default=10,
-              type=click.IntRange(1, None, False), metavar='<int>',
+              type=click.FloatRange(0.001, None, False), metavar='<int>',
               help='The time limit before input is classified as a hang (in seconds).'
               ' Default value is 30s.')
 @click.option('--max', '-N', nargs=1, required=False,
@@ -680,6 +680,8 @@ def collect(ctx, **kwargs):
               callback=cli_helpers.single_yaml_param_callback, metavar='<file>',
               help='Option for adding custom rules specified by regular expressions,'
               ' written in YAML format file.')
+@click.option('--no-plotting', '-np', is_flag=True, required=False,
+              help='Avoiding sometimes lengthy plotting of graphs.')
 def fuzz_cmd(**kwargs):
     """Performs fuzzing for the specified command according to the initial sample of workload."""
     fuzz.run_fuzzing_for_command(**kwargs)
