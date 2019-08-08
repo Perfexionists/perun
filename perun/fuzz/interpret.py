@@ -1,16 +1,14 @@
+import perun.fuzz.filesystem as filesystem
+import scipy.stats.mstats as stats
+import os.path as path
 """ Module contains a set of functions for interpretation the results of fuzzing."""
 
 __author__ = 'Matus Liscinsky'
 
 import difflib
-import numpy as np
 import matplotlib.pyplot as plt
 # Force matplotlib to not use any Xwindows backend.
 plt.switch_backend('agg')
-import os.path as path
-import scipy.stats.mstats as stats
-
-import perun.fuzz.filesystem as filesystem
 
 
 def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, parents_fitness_values, base_cov, hangs, faults):
@@ -63,7 +61,7 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, par
 def get_time_value(value, time_data, data):
     """Function gets time value according to measured value.
 
-    :param value int|float: selected y-axis value  
+    :param value int|float: selected y-axis value
     :param time_data list: time values (x-axis)
     :param data list: measured values (y-axis)
     :return int: time value from `time_data` according to measured value from `data`
@@ -80,8 +78,8 @@ def plot_fuzz_time_series(time_data, data, filename, title, xlabel, ylabel):
     :param data list: measured values (y-axis)
     :param filename str: name of the output .pdf file
     :param str title: title of graph
-    :param str xlabel: name of x-axis 
-    :param str ylabel: name of y-axis 
+    :param str xlabel: name of x-axis
+    :param str ylabel: name of y-axis
     """
     _, ax = plt.subplots(figsize=(10, 5))
 

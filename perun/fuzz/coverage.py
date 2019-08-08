@@ -10,8 +10,6 @@ import os.path as path
 import subprocess
 import statistics
 
-import perun.utils as utils
-
 __author__ = 'Matus Liscinsky'
 
 GCOV_VERSION_W_INTERMEDIATE_FORMAT = 4.9
@@ -46,7 +44,7 @@ def prepare_workspace(source_path):
             os.remove(path.join(source_path, f))
 
 
-def execute_bin(command, timeout=15, stdin=None):
+def execute_bin(command, timeout=None, stdin=None):
     """Executes command with certain timeout.
 
     :param list command: command to be executed
@@ -118,6 +116,7 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
     # get source files (.c, .cc, .cpp, .h)
     source_files = get_src_files(source_path)
 
+    # get gcov version
     gcov_output = execute_bin(["gcov", "--version"])
     gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
 
@@ -145,8 +144,8 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
 
 def test(*args, **kwargs):
     """
-    Testing function for coverage based fuzzing. Before testing it prepares the workspace 
-    using `prepare_workspace` func, executes given command and `get_coverage_info` to 
+    Testing function for coverage based fuzzing. Before testing it prepares the workspace
+    using `prepare_workspace` func, executes given command and `get_coverage_info` to
     obtain coverage information.
 
     :param list args: list of arguments for testing
@@ -170,11 +169,24 @@ def test(*args, **kwargs):
     return set_cond(kwargs["base_cov"], workload["cov"], kwargs["parent"]["cov"],  kwargs["icovr"])
 
 
+def get_gcov_files(directory):
+    """ Searches for gcov files in `directory`.
+    :param str directory: path of a directory, where searching will be provided
+    :return list: absolute paths of found gcov files
+    """
+    gcov_files = []
+    for f in os.listdir("."):
+        if path.isfile(f) and f.endswith("gcov"):
+            gcov_file = path.abspath(path.join(".", f))
+            gcov_files.append(gcov_file)
+    return gcov_files
+
+
 def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     """ Executes gcov utility with source files, and gathers all output .gcov files.
 
-    First of all, it changes current working directory to directory specified by 
-    `source_path` and then executes utility gcov over all source files. 
+    First of all, it changes current working directory to directory specified by
+    `source_path` and then executes utility gcov over all source files.
     By execution, .gcov files was created as output in intermediate text format("-i") if possible.
     Otherwise, standard gcov output file format  will be parsed.
     Current working directory is now changed back.
@@ -197,11 +209,8 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
 
     # searching for gcov files, if they are not already known
     if gcov_files == None:
-        gcov_files = []
-        for f in os.listdir("."):
-            if path.isfile(f) and f.endswith("gcov"):
-                gcov_file = path.abspath(path.join(".", f))
-                gcov_files.append(gcov_file)
+        gcov_files = get_gcov_files(".")
+
     execs = 0
     for gcov_file in gcov_files:
         fp = open(gcov_file, "r")

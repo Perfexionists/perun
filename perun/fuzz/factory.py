@@ -2,31 +2,25 @@
 
 __author__ = 'Tomas Fiedor, Matus Liscinsky'
 
-import click
 import copy
 import difflib
 import itertools
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import os.path as path
 import random
 import signal
-import subprocess
 import sys
 import time
 import threading
+from subprocess import CalledProcessError, TimeoutExpired
 from uuid import uuid4
 
-import perun.check.factory as check
-import perun.fuzz.coverage as coverage
 import perun.utils.decorators as decorators
-import perun.fuzz.filesystem as filesystem
 import perun.fuzz.interpret as interpret
-import perun.logic.runner as run
+import perun.fuzz.filesystem as filesystem
+import perun.fuzz.filetype as filetype
 import perun.utils as utils
-from perun.fuzz.filetype import choose_methods, get_filetype
-from perun.utils.structs import PerformanceChange
 
 # to ignore numpy division warnings
 np.seterr(divide='ignore', invalid='ignore')
@@ -35,17 +29,18 @@ FP_ALLOWED_ERROR = 0.00001
 RATIO_INCR_CONST = 0.05
 RATIO_DECR_CONST = 0.01
 MAX_FILES_PER_RULE = 100
+SAMPLING = 1.0
 
 
 def get_max_size(seeds, max_size, max_percentual, max_adjunct):
-    """ Finds out max size among the sample files and compare it to specified 
+    """ Finds out max size among the sample files and compare it to specified
     max size of mutated file.
 
     :param list seeds: list of paths to sample files and their fuzz history
     :param int max_size: user defined max size of mutated file
     :param max_percentual: size specified by percentage
     :param max_adjunct: size to adjunct to max
-    :return int: `max_size` if defined, otherwise value depending on adjusting method 
+    :return int: `max_size` if defined, otherwise value depending on adjusting method
                  (percentage portion, adding constant size)
     """
     seed_max = 0
@@ -73,14 +68,14 @@ def fuzz_question(strategy, fuzz_stats, index):
     Strategies:
         - "unitary" - always 1
         - "proportional" - depends on how many degradations was caused by this method
-        - "probabilistic" - depends on ratio between: num of degradations caused by this method and 
+        - "probabilistic" - depends on ratio between: num of degradations caused by this method and
                             num of all degradations yet
-        - "mixed" - mixed "proportional" and "probabilistic" strategy 
+        - "mixed" - mixed "proportional" and "probabilistic" strategy
 
     :param str strategy: determines which strategy for deciding will be used
     :param list fuzz_stats: stats of fuzz methods
     :param int index: index in list `fuzz_stats` corresponding to stats of actual method
-    :return int: number of generated mutations for rule 
+    :return int: number of generated mutations for rule
     """
     if strategy == "unitary":
         return 1
@@ -121,17 +116,17 @@ def same_lines(lines, fuzzed_lines, is_binary):
 
 
 def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
-    """ Provides fuzzing on workload parent using all the implemented methods. 
+    """ Provides fuzzing on workload parent using all the implemented methods.
 
-    Reads the file and store the lines in list. Makes a copy of the list to send it to every 
-    single function providing one fuzzing method. With every fuzzing method: creates a new file 
-    with unique name, but with the same extension. It copies the fuzzing history given by 
+    Reads the file and store the lines in list. Makes a copy of the list to send it to every
+    single function providing one fuzzing method. With every fuzzing method: creates a new file
+    with unique name, but with the same extension. It copies the fuzzing history given by
     `fuzz_history`, append the id of used fuzz method and assign it to the new file. If the new file
     would be bigger than specified limit (`max_bytes`), the remainder is cut off.
 
     :param str parent: path of parent workload file, which will be fuzzed
     :param list fuzz_history: history of used fuzz methods on parent file
-    :param list fuzz_stats: stats of fuzzing (mutation) strategies 
+    :param list fuzz_stats: stats of fuzzing (mutation) strategies
     :param str output_dir: path to the output directory
     :param list fuzzing_methods: selected fuzzing (mutation) strategies
     :param int max_bytes: specify maximum size of created file in bytes
@@ -142,7 +137,7 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
     lines = []
     mutations = []
 
-    is_binary, _ = get_filetype(parent["path"])
+    is_binary, _ = filetype.get_filetype(parent["path"])
     if is_binary:
         fp_in = open(parent["path"], "rb")
     else:
@@ -198,7 +193,7 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
 def print_legend(fuzz_stats, fuzzing_methods):
     """ Prints stats of each fuzzing method.
 
-    :param list fuzz_stats: stats of fuzzing (mutation) strategies 
+    :param list fuzz_stats: stats of fuzzing (mutation) strategies
     :param list fuzzing_methods: selected fuzzing (mutation) strategies
     """
     print("="*32 + " MUTATION RULES " + "="*32)
@@ -211,8 +206,8 @@ def print_legend(fuzz_stats, fuzzing_methods):
 def print_results(general_fuzz_information, fuzz_stats, fuzzing_methods):
     """Prints results of fuzzing.
 
-    :param dict general_fuzz_information: general information about current fuzzing 
-    :param list fuzz_stats: stats of fuzzing (mutation) strategies 
+    :param dict general_fuzz_information: general information about current fuzzing
+    :param list fuzz_stats: stats of fuzzing (mutation) strategies
     :param list fuzzing_methods: selected fuzzing (mutation) strategies
     """
     print("="*35 + " RESULTS " + "="*35)
@@ -271,7 +266,7 @@ def rate_parent(parents_fitness_values, parent, base_cov=1):
     :param list parents_fitness_values: sorted list of fitness score of parents
     :param str parent: path to a file which is classified as parent
     :param int base_cov: baseline coverage
-    :return int: 1 if files is the same as some parent, otherwise 0 
+    :return int: 1 if files is the same as some parent, otherwise 0
     """
     increase_cov_rate = parent["cov"]/base_cov
 
@@ -291,8 +286,10 @@ def rate_parent(parents_fitness_values, parent, base_cov=1):
             # if the same file was generated before
             elif abs(fitness_value - parents_fitness_values[index]["value"]) <= FP_ALLOWED_ERROR:
                 # additional file comparing
-                if same_lines(open(parents_fitness_values[index]["mut"]["path"]).readlines(),
-                              open(parent["path"]).readlines(), get_filetype(parent["path"])[0]):
+                is_binary_file = filetype.get_filetype(parent["path"])[0]
+                mode = "rb" if is_binary_file else "r"
+                if same_lines(open(parents_fitness_values[index]["mut"]["path"], mode).readlines(),
+                              open(parent["path"], mode).readlines(), is_binary_file):
                     return 1
 
 
@@ -316,31 +313,31 @@ def update_rate(parents_fitness_values, parent):
         return
 
     for i in range(index, len(parents_fitness_values)):
-        if fitness_value <= parents_fitness_values[i]['value']:
+        if fitness_value <= parents_fitness_values[i]["value"]:
             parents_fitness_values.insert(
                 i, {"value": fitness_value, "mut": parent})
             break
 
 
 def choose_parent(parents_fitness_values, num_intervals=5):
-    """ Chooses one of the workload file, that will be fuzzed. 
+    """ Chooses one of the workload file, that will be fuzzed.
 
     If number of parents is smaller than intervals, function provides random choice.
     Otherwise, it splits parents to intervals, each interval assigns weight(probability)
     and does weighted interval selection. Then provides random choice of file from
-    selected interval. 
+    selected interval.
 
-    :param list parents_fitness_values: list of mutations sorted according to their fitness score 
-    :param num_intervals: number of intervals to which parents will be splitted
+    :param list parents_fitness_values: list of mutations sorted according to their fitness score
+    :param int num_intervals: number of intervals to which parents will be splitted
     :return list: absolute path to chosen file
     """
-    max = len(parents_fitness_values)
-    if max < num_intervals:
+    num_of_parents = len(parents_fitness_values)
+    if num_of_parents < num_intervals:
         return (random.choice(parents_fitness_values))["mut"]
 
     triangle_num = (num_intervals*num_intervals + num_intervals) / 2
     bottom = 0
-    tresh = int(max/num_intervals)
+    tresh = int(num_of_parents/num_intervals)
     top = tresh
     intervals = []
     weights = []
@@ -348,8 +345,8 @@ def choose_parent(parents_fitness_values, num_intervals=5):
     # creates borders of intervals
     for i in range(num_intervals):
         # remainder
-        if max - top < tresh:
-            top = max
+        if num_of_parents - top < tresh:
+            top = num_of_parents
         intervals.append((bottom, top))
         weights.append((i+1)/triangle_num)
         bottom = top
@@ -366,11 +363,25 @@ def choose_parent(parents_fitness_values, num_intervals=5):
 def print_msg(msg):
     """Temporary solution for printing fuzzing messages to the output.
 
-    :param msg: message to be printed
+    :param str msg: message to be printed
     """
     print("-"*70)
     print(msg)
     print("-"*70)
+
+
+def save_fuzz_state(xdata, ydata, state):
+    """Saves current state of fuzzing for plotting.
+
+    :param list xdata: list of data for x-axis (typically time values)
+    :param list ydata: list of data for y-axis
+    :param state: current value of measured variable
+    """
+    if len(ydata) > 1 and state == ydata[-2]:
+        xdata[-1] += SAMPLING
+    else:
+        xdata.append(xdata[-1] + SAMPLING)
+        ydata.append(state)
 
 
 @decorators.print_elapsed_time
@@ -411,7 +422,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     parents = filesystem.get_corpus(
         initial_workload, kwargs["workloads_filter"])
     # choosing appropriate fuzzing methods
-    fuzzing_methods = choose_methods(
+    fuzzing_methods = filetype.choose_methods(
         parents[0]["path"], kwargs["regex_rules"])
 
     # last element is for total num of cov increases or perf degradations
@@ -430,7 +441,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                                                                             postprocessor,
                                                                             minor_version_list,
                                                                             **kwargs)
-        except subprocess.TimeoutExpired:
+        except TimeoutExpired:
             print(
                 "Timeout ({}s) reached when testing with initial files. Adjust hang timeout using"
                 " option --hang-timeout, resp. -h.".format(kwargs["hang_timeout"]))
@@ -460,23 +471,12 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     time_for_cov = [0]
     max_covs = [1.0]
 
-    SAMPLING = 1.0
-
     # function for saving the state, stores information about run used for plotting graphs
     def save_state():
-        # if number of degradations has NOT changed
-        if len(degradations) > 1 and general_fuzz_information["degradations"] == degradations[-2]:
-            time_data[-1] += SAMPLING
-        else:
-            time_data.append(time_data[-1] + SAMPLING)
-            degradations.append(general_fuzz_information["degradations"])
-
-        # if max cov has NOT changed
-        if len(max_covs) > 1 and general_fuzz_information["max_cov"] == max_covs[-2]:
-            time_for_cov[-1] += SAMPLING
-        else:
-            time_for_cov.append(time_for_cov[-1] + SAMPLING)
-            max_covs.append(general_fuzz_information["max_cov"])
+        save_fuzz_state(time_data, degradations,
+                        general_fuzz_information["degradations"])
+        save_fuzz_state(time_for_cov, max_covs,
+                        general_fuzz_information["max_cov"])
 
         t = threading.Timer(SAMPLING, save_state,)
         t.daemon = True
@@ -488,16 +488,21 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     # SIGINT (CTRL-C) signal handler
     def signal_handler(sig, frame):
         print("Fuzzing process interrupted ...")
-        print("Plotting graphs ...")
-        interpret.plot_fuzz_time_series(
-            time_data, degradations, output_dirs["graphs"] +
-            "/degradations_ts.pdf", "Fuzzing in time",
-            "time (s)", "degradations")
-        if general_fuzz_information["coverage_testing"]:
+        finish_fuzzing()
+
+    def finish_fuzzing():
+        if not kwargs["no_plotting"]:
+            # plotting
+            print("Plotting graphs ...")
             interpret.plot_fuzz_time_series(
-                time_for_cov, max_covs, output_dirs["graphs"] +
-                "/coverage_ts.pdf",
-                "Max path during fuzing", "time (s)", "executed lines ratio")
+                time_data, degradations, output_dirs["graphs"] +
+                "/degradations_ts.pdf", "Fuzzing in time",
+                "time (s)", "degradations")
+            if general_fuzz_information["coverage_testing"]:
+                interpret.plot_fuzz_time_series(
+                    time_for_cov, max_covs, output_dirs["graphs"] +
+                    "/coverage_ts.pdf",
+                    "Max path during fuzing", "time (s)", "executed lines ratio")
         # diffs
         interpret.files_diff(final_results, faults,
                              hangs, output_dirs["diffs"])
@@ -505,7 +510,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
         interpret.save_log_files(output_dirs["logs"], time_data, degradations, time_for_cov,
                                  max_covs, parents_fitness_values, base_cov, hangs, faults)
         # remove remaining mutations
-        filesystem.del_temp_files(parents, final_results, hangs, faults, output_dir)
+        filesystem.del_temp_files(
+            parents, final_results, hangs, faults, output_dir)
 
         general_fuzz_information["end_time"] = time.time()
         general_fuzz_information["worst-case"] = parents_fitness_values[-1]["mut"]["path"]
@@ -539,14 +545,14 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                                          source_files=source_files, gcov_version=gcov_version,
                                          gcov_files=gcov_files, parent=current_workload, **kwargs)
                     # error occured
-                    except subprocess.CalledProcessError:
+                    except CalledProcessError:
                         general_fuzz_information["faults"] += 1
                         result = True
                         mutations[i]["path"] = filesystem.move_file_to(
                             mutations[i]["path"], output_dirs["faults"])
                         faults.append(mutations[i])
                     # timeout expired
-                    except subprocess.TimeoutExpired:
+                    except TimeoutExpired:
                         general_fuzz_information["hangs"] += 1
                         print("Timeout ({}s) reached when testing. See {}.".format(
                             kwargs["hang_timeout"], output_dirs["hangs"]))
@@ -559,11 +565,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                     if result:
                         if rate_parent(parents_fitness_values,
                                        mutations[i], base_cov):
-                            try:
-                                # the same file as previously generated
-                                os.remove(mutations[i]["path"])
-                            except FileNotFoundError:
-                                pass
+                            # the same file as previously generated
+                            os.remove(mutations[i]["path"])
                         else:
                             # print("Increase of coverage",
                                 #   result, mutations[i])
@@ -575,11 +578,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                             fuzz_stats[-1] += 1
                     # not successful mutation
                     else:
-                        try:
-                            pass
-                            os.remove(mutations[i]["path"])
-                        except FileNotFoundError:
-                            pass
+                        os.remove(mutations[i]["path"])
 
             # adapting increase coverage ratio
             if interesting_workloads:
@@ -629,11 +628,9 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                 final_results.append(interesting_workloads[i])
                 general_fuzz_information["degradations"] += 1
             else:
+                # in case of testing with coverage, parent wont be removed but used for mutation
                 if not general_fuzz_information["coverage_testing"]:
-                    try:
-                        os.remove(interesting_workloads[i]["path"])
-                    except FileNotFoundError:
-                        pass
+                    os.remove(interesting_workloads[i]["path"])
 
         # deletes interesting workloads for next run
         del interesting_workloads[:]
@@ -645,30 +642,4 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     print("="*79)  # temporary solution :) UI comming soon
     print("Fuzzing successfully finished.")
 
-    # plotting time_data, data, filename, title, xlabel, ylabel
-    print("Plotting graphs ...")
-    interpret.plot_fuzz_time_series(
-        time_data, degradations, output_dirs["graphs"] +
-        "/degradations_ts.pdf", "Fuzzing in time",
-        "time (s)", "degradations")
-
-    if general_fuzz_information["coverage_testing"]:
-        interpret.plot_fuzz_time_series(
-            time_for_cov, max_covs, output_dirs["graphs"] +
-            "/coverage_ts.pdf", "Max path during fuzing",
-            "time (s)", "executed lines ratio")
-
-    # diffs
-    interpret.files_diff(final_results, faults, hangs, output_dirs["diffs"])
-
-    # save log files
-    interpret.save_log_files(output_dirs["logs"], time_data, degradations, time_for_cov,
-                             max_covs, parents_fitness_values, base_cov, hangs, faults)
-
-    # deletes parents which are not final results, good parents but not causing deg
-    filesystem.del_temp_files(parents, final_results, hangs, faults, output_dir)
-    # for x in parents_fitness_values:
-    #     print(x["value"], "=", x["mut"]["cov"]/base_cov, "*( 1 +", x["mut"]["deg_ratio"], ")")
-
-    general_fuzz_information["worst-case"] = parents_fitness_values[-1]["mut"]["path"]
-    print_results(general_fuzz_information, fuzz_stats, fuzzing_methods)
+    finish_fuzzing()

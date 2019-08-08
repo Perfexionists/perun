@@ -4,19 +4,20 @@ import random
 
 __author__ = 'Matus Liscinsky'
 
-RULES_ITERATIONS = 10
-WS_MIN = 100 
+RULE_ITERATIONS = 10
+WS_MIN = 100
 WS_MAX = 1000
+
 
 def change_char(lines):
     """ Changes a random character of a line.
 
     Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</a!uthor>                    
+        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</a!uthor>                    "
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         index = random.randrange(len(lines[rand]))
         lines[rand] = lines[rand][:index] + \
@@ -28,11 +29,11 @@ def divide_line(lines):
 
     Example:
         "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</au"
-                                                   "thor>"                    
+                                                   "thor>                    "
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         index = random.randrange(len(lines[rand]))
         lines[rand] = lines[rand][:index] + "\n" + lines[rand][index:]
@@ -42,15 +43,16 @@ def fuzz_insert_ws(lines):
     """ Inserts 100-1000 spaces to random position in a line.
 
     Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>                    
+        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>
                                                                             "
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         index = random.randrange(len(lines[rand]))
-        lines[rand] = lines[rand][:index] + " "*random.randint(WS_MIN, WS_MAX) + lines[rand][index:]
+        lines[rand] = lines[rand][:index] + " " * \
+            random.randint(WS_MIN, WS_MAX) + lines[rand][index:]
 
 
 def fuzz_double_line(lines):
@@ -61,7 +63,7 @@ def fuzz_double_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         lines[rand] = lines[rand][:-1] * 2 + lines[rand][-1:]
 
@@ -70,14 +72,15 @@ def fuzz_append_ws(lines):
     """ Appends 100-1000 spaces to a line.
 
     Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>                    
+        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>
                                                                             "
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
-        lines[rand] = lines[rand][:-1] + " "*random.randint(WS_MIN, WS_MAX) + lines[rand][-1:]
+        lines[rand] = lines[rand][:-1] + " " * \
+            random.randint(WS_MIN, WS_MAX) + lines[rand][-1:]
 
 
 def fuzz_bloat_word(lines):
@@ -88,7 +91,7 @@ def fuzz_bloat_word(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         lines[rand] = "".join(lines[rand].split())+"\n"
 
@@ -97,13 +100,13 @@ def multiplicate_ws(lines):
     """ Replaces white spaces with more white spaces.
 
     Example:
-        "The quick brown fox." -> "The quick brown fox.,                                       
+        "The quick brown fox." -> "The quick brown fox.,
 
                     The quick brown fox."
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         lines[rand] = lines[rand].replace(" ", " "*10, 100)
 
@@ -112,12 +115,12 @@ def prepend_ws(lines):
     """ Prepends a line with 100-1000 white spaces.
 
     Example:
-        "The quick brown fox." -> "                      
+        "The quick brown fox." -> "
                                                            The quick brown fox."
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         lines[rand] = " "*random.randint(WS_MIN, WS_MAX) + lines[rand]
 
@@ -131,7 +134,7 @@ def fuzz_duplicate_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         lines.insert(rand, lines[random.randint(0, len(lines)-1)])
 
@@ -144,7 +147,7 @@ def fuzz_sort_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         words = lines[rand].split()
         try:
@@ -161,7 +164,7 @@ def fuzz_rsort_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         words = lines[rand].split()
         try:
@@ -179,7 +182,7 @@ def repeat_word(lines):
     :param list lines: lines of the workload, which has been choosen for mutating
     """
     REPETITIONS = 100
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         try:
             word = random.choice(lines[rand].split())
@@ -196,7 +199,7 @@ def del_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         if len(lines):
             del lines[random.randint(0, len(lines)-1)]
 
@@ -208,7 +211,7 @@ def del_word(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         try:
             word = random.choice(lines[rand].split())
@@ -224,11 +227,11 @@ def del_char(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         try:
-            char = lines[rand][random.randrange(len(lines[rand]))]
-            lines[rand] = lines[rand].replace(char, "")
+            index = random.randrange(len(lines[rand]))
+            lines[rand] = lines[rand][:index] + lines[rand][index + 1:]
         except ValueError:
             pass
 

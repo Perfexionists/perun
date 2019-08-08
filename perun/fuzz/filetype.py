@@ -10,7 +10,7 @@ __author__ = 'Matus Liscinsky'
 
 
 def custom_rules(regex_rules, fuzzing_methods):
-    """ Adds custom rules specified by regexps, and read from the file in YAML format. 
+    """ Adds custom rules specified by regexps, and read from the file in YAML format.
     Format:
         del: add
         ([0-9]{6}),([0-9]{2}): \\1.\\2
@@ -25,7 +25,8 @@ def custom_rules(regex_rules, fuzzing_methods):
             rand = random.randrange(len(lines))
             lines[rand] = comp_regexp.sub(value, lines[rand])
 
-        fuzzing_methods.append((custom_rule, "User rule: \"" + key + "\" -> \"" + value + "\""))
+        fuzzing_methods.append(
+            (custom_rule, "User rule: \"" + key + "\" -> \"" + value + "\""))
 
 
 def get_filetype(file):
@@ -35,17 +36,18 @@ def get_filetype(file):
     :return tuple: is_file_binary, file_type
     """
     try:
-        type = (mimetypes.guess_type(file))[0].split("/")[-1]
+        filetype = (mimetypes.guess_type(file))[0].split("/")[-1]
     except AttributeError:
-        type = None
-    return binaryornot.is_binary(file), type
+        filetype = None
+    return binaryornot.is_binary(file), filetype
+
 
 def choose_methods(file, regex_rules=None):
     """ Automatically collects appropriate fuzz methods according to file type.
 
     :param str file: path to file
     :param dict regex_rules: dict of custom regex rules
-    :return list: list of tuples fuzz_method_function, description 
+    :return list: list of tuples fuzz_method_function, description
     """
     fuzzing_methods = []
     if regex_rules:
@@ -62,4 +64,3 @@ def choose_methods(file, regex_rules=None):
         from perun.fuzz.methods.textfile import fuzzing_methods as text_fm
         fuzzing_methods.extend(text_fm)
     return fuzzing_methods
-    

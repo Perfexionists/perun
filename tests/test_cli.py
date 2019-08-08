@@ -63,23 +63,31 @@ def test_regressogram_incorrect(pcs_full):
         # Test non-existing argument
         {'params': ['-a'], 'output': 'no such option: -a'},
         # Test malformed bucket_number argument
-        {'params': ['--buckets_numbers'], 'output': 'no such option: --buckets_numbers'},
+        {'params': ['--buckets_numbers'],
+            'output': 'no such option: --buckets_numbers'},
         # Test missing bucket_number value
         {'params': ['-bn'], 'output': '-bn option requires an argument'},
         # Test invalid bucket_number value
-        {'params': ['-bn', 'user'], 'output': 'Invalid value for "--bucket_number"'},
+        {'params': ['-bn', 'user'],
+            'output': 'Invalid value for "--bucket_number"'},
         # Test malformed bucket_method argument
-        {'params': ['--buckets_methods'], 'output': 'no such option: --buckets_methods'},
+        {'params': ['--buckets_methods'],
+            'output': 'no such option: --buckets_methods'},
         # Test missing bucket_method value
-        {'params': ['--bucket_method'], 'output': '--bucket_method option requires an argument'},
+        {'params': ['--bucket_method'],
+            'output': '--bucket_method option requires an argument'},
         # Test invalid bucket_method value
-        {'params': ['-bm', 'user'], 'output': 'Invalid value for "--bucket_method"'},
+        {'params': ['-bm', 'user'],
+            'output': 'Invalid value for "--bucket_method"'},
         # Test malformed statistic_function argument
-        {'params': ['--statistic_functions'], 'output': 'no such option: --statistic_functions'},
+        {'params': ['--statistic_functions'],
+            'output': 'no such option: --statistic_functions'},
         # Test missing statistic_function value
-        {'params': ['--statistic_function'], 'output': '--statistic_function option requires an argument'},
+        {'params': ['--statistic_function'],
+            'output': '--statistic_function option requires an argument'},
         # Test invalid model name
-        {'params': ['-sf', 'max'], 'output': 'Invalid value for "--statistic_function"'}
+        {'params': ['-sf', 'max'],
+            'output': 'Invalid value for "--statistic_function"'}
     ]
     # TODO: multiple values check
 
@@ -90,7 +98,8 @@ def test_regressogram_incorrect(pcs_full):
     regressogram_params = ['1@i', 'regressogram']
     # Executing the testing
     for incorrect_test in incorrect_tests:
-        run_non_param_test(runner, regressogram_params + incorrect_test['params'], 2, incorrect_test['output'])
+        run_non_param_test(runner, regressogram_params +
+                           incorrect_test['params'], 2, incorrect_test['output'])
 
 
 def test_regressogram_correct(pcs_full):
@@ -133,7 +142,8 @@ def test_regressogram_correct(pcs_full):
         # Test 'sqrt' method as value for bucket_method parameter
         {'params': ['--bucket_method', 'sqrt']},
         # Test complex variant for regressogram method
-        {'params': ['--bucket_method', 'doane', '--statistic_function', 'mean']},
+        {'params': ['--bucket_method', 'doane',
+                    '--statistic_function', 'mean']},
         # Test bucket_method and bucket_number parameters common
         {'params': ['--bucket_method', 'sqrt', '--bucket_number', 10]},
     ]
@@ -183,47 +193,60 @@ def test_moving_average_incorrect(pcs_full):
         # 5. Test missing min_period value
         {'params': ['-mp'], 'output': '-mp option requires an argument'},
         # 6. Test invalid range min_periods value
-        {'params': ['--min_periods', 0], 'output': 'Invalid value for "--min_periods"'},
+        {'params': ['--min_periods', 0],
+            'output': 'Invalid value for "--min_periods"'},
         # 7. Test invalid value type min_periods value
-        {'params': ['-mp', 'A'], 'output': 'Invalid value for "--min_periods"'},
+        {'params': ['-mp', 'A'],
+            'output': 'Invalid value for "--min_periods"'},
         # 8. Test malformed per_key argument
         {'params': ['--per-keys'], 'output': 'no such option: --per-keys'},
         # 9. Test missing per_key value
         {'params': ['-per'], 'output': '-per option requires an argument'},
         # 10. Test invalid value per_key arguments
-        {'params': ['--per-key', 'unknown'], 'output': 'Invalid value for "--per-key"'},
+        {'params': ['--per-key', 'unknown'],
+            'output': 'Invalid value for "--per-key"'},
         # 11. Test malformed of_key argument
         {'params': ['--off'], 'output': 'no such option: --off'},
         # 12. Test missing of_key value
-        {'params': ['--of-key'], 'output': '--of-key option requires an argument'},
+        {'params': ['--of-key'],
+            'output': '--of-key option requires an argument'},
         # 13. Test invalid value of_key arguments
-        {'params': ['-of', 'unknown'], 'output': 'Invalid value for "--of-key"'},
+        {'params': ['-of', 'unknown'],
+            'output': 'Invalid value for "--of-key"'},
 
         # TESTS SIMPLE MOVING AVERAGE COMMAND AND SIMPLE MOVING MEDIAN COMMAND
         # 14. Test malformed window-width argument
-        {'params': ['--window_widh'], 'output': 'no such option: --window_widh'},
+        {'params': ['--window_widh'],
+            'output': 'no such option: --window_widh'},
         # 15. Test missing window-width value
         {'params': ['-ww'], 'output': '-ww option requires an argument'},
         # 16. Test invalid range window-width argument
-        {'params': ['-ww', -1], 'output': 'Invalid value for "--window_width"'},
+        {'params': ['-ww', -1],
+            'output': 'Invalid value for "--window_width"'},
         # 17. Test invalid value type window-width argument
-        {'params': ['--window_width', 0.5], 'output': 'Invalid value for "--window_width"'},
+        {'params': ['--window_width', 0.5],
+            'output': 'Invalid value for "--window_width"'},
         # 18. Test malformed center argument
         {'params': ['--centers'], 'output': 'no such option: --centers'},
         # 19. Test malformed no-center argument
         {'params': ['--mo-center'], 'output': 'no such option: --mo-center'},
         # 20. Test value for center argument
-        {'params': ['--center', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        {'params': ['--center', 'True'],
+            'output': 'Got unexpected extra argument (True)'},
         # 21. Test value for no-center argument
-        {'params': ['--no-center', 'False'], 'output': 'Got unexpected extra argument (False)'},
+        {'params': ['--no-center', 'False'],
+            'output': 'Got unexpected extra argument (False)'},
 
         # TESTS SIMPLE MOVING AVERAGE COMMAND
         # 22. Test malformed window-type argument
-        {'params': ['--windov_type'], 'output': 'no such option: --windov_type'},
+        {'params': ['--windov_type'],
+            'output': 'no such option: --windov_type'},
         # 23. Test missing window-type value
-        {'params': ['--window_type'], 'output': '--window_type option requires an argument'},
+        {'params': ['--window_type'],
+            'output': '--window_type option requires an argument'},
         # 24. Test invalid range window-type argument
-        {'params': ['-wt', "boxcars"], 'output': 'Invalid value for "--window_type"'},
+        {'params': ['-wt', "boxcars"],
+            'output': 'Invalid value for "--window_type"'},
 
         # TESTS EXPONENTIAL MOVING AVERAGE COMMAND
         # 25. Test malformed decay argument
@@ -231,17 +254,22 @@ def test_moving_average_incorrect(pcs_full):
         # 26. Test missing decay value
         {'params': ['-d'], 'output': '-d option requires 2 arguments'},
         # 27. Test invalid type of first value in decay argument
-        {'params': ['--decay', 'spam', 3], 'output': 'Invalid value for "--decay"'},
+        {'params': ['--decay', 'spam', 3],
+            'output': 'Invalid value for "--decay"'},
         # 28. Test invalid type of second value in decay argument
-        {'params': ['--decay', 'span', "A"], 'output': 'Invalid value for "--decay"'},
+        {'params': ['--decay', 'span', "A"],
+            'output': 'Invalid value for "--decay"'},
         # 29. Test invalid range for `com` value in decay argument
         {'params': ['--decay', 'com', -1], 'output': ' Invalid value for com'},
         # 30. Test invalid range for `span` value in decay argument
-        {'params': ['--decay', 'span', 0], 'output': ' Invalid value for span'},
+        {'params': ['--decay', 'span', 0],
+            'output': ' Invalid value for span'},
         # 31. Test invalid range for `halflife` value in decay argument
-        {'params': ['--decay', 'halflife', 0], 'output': 'Invalid value for halflife'},
+        {'params': ['--decay', 'halflife', 0],
+            'output': 'Invalid value for halflife'},
         # 32. Test invalid range for `com` value in decay argument
-        {'params': ['--decay', 'alpha', 0], 'output': ' Invalid value for alpha'},
+        {'params': ['--decay', 'alpha', 0],
+            'output': ' Invalid value for alpha'},
     ]
     # edge of test groups for different commands group or individual commands
     tests_edge = [13, 21, 24, 32]
@@ -255,7 +283,8 @@ def test_moving_average_incorrect(pcs_full):
     cprof_idx = match.groups(1)[0]
 
     # Perform the testing
-    moving_average_runner_test(runner, incorrect_tests, tests_edge, 2, cprof_idx)
+    moving_average_runner_test(
+        runner, incorrect_tests, tests_edge, 2, cprof_idx)
 
 
 def test_moving_average_correct(pcs_full):
@@ -335,13 +364,16 @@ def test_moving_average_correct(pcs_full):
         # 30. Test complex combination of parameters no.1 - SMA
         {'params': ['-mp', 1, 'sma', '--window_type', 'blackmanharris']},
         # 31. Test complex combination of parameters no.2 - SMA
-        {'params': ['--min_periods', 1, 'sma', '--no-center', '--window_type', 'triang']},
+        {'params': ['--min_periods', 1, 'sma',
+                    '--no-center', '--window_type', 'triang']},
         # 32. Test complex combination of parameters no.3 - SMA
-        {'params': ['--min_periods', 3, 'sma', '--window_width', 5, '--center', '-wt', 'parzen']},
+        {'params': ['--min_periods', 3, 'sma',
+                    '--window_width', 5, '--center', '-wt', 'parzen']},
         # 33. Test complex combination of parameters no.1 - SMM
         {'params': ['-mp', 2, 'smm', '--window_width', 5, '--center']},
         # 34. Test complex combination of parameters no.1 - SMM
-        {'params': ['--min_periods', 3, 'smm', '--no-center', '--window_width', 15]},
+        {'params': ['--min_periods', 3, 'smm',
+                    '--no-center', '--window_width', 15]},
     ]
     tests_edge = [7, 10, 23, 27, 34]
 
@@ -382,7 +414,8 @@ def test_kernel_regression_incorrect(pcs_full):
         # 1. Test non-existing argument
         {'params': ['--ajax'], 'output': 'no such option: --ajax'},
         # 2. Test non-existing command
-        {'params': ['my-selection'], 'output': 'No such command "my-selection"'},
+        {'params': ['my-selection'],
+            'output': 'No such command "my-selection"'},
         # 3. Test non-existing argument
         {'params': ['-c'], 'output': 'no such option: -c'},
         # 4. Test malformed per-key argument
@@ -390,23 +423,30 @@ def test_kernel_regression_incorrect(pcs_full):
         # 5. Test missing per-key value
         {'params': ['-per'], 'output': '-per option requires an argument'},
         # 6. Test invalid value for per-key argument
-        {'params': ['--per-key', 'randomize'], 'output': 'Invalid value for "--per-key"'},
+        {'params': ['--per-key', 'randomize'],
+            'output': 'Invalid value for "--per-key"'},
         # 7. Test malformed of-key argument
         {'params': ['--off-key'], 'output': 'no such option: --off-key'},
         # 8. Test missing of-key value
         {'params': ['-of'], 'output': '-of option requires an argument'},
         # 9. Test invalid value for per-key argument
-        {'params': ['-of', 'invalid'], 'output': 'Invalid value for "--of-key"'},
+        {'params': ['-of', 'invalid'],
+            'output': 'Invalid value for "--of-key"'},
         # 10. Test malformed estimator-settings command
-        {'params': ['estimator-setting'], 'output': 'No such command "estimator-setting"'},
+        {'params': ['estimator-setting'],
+            'output': 'No such command "estimator-setting"'},
         # 11. Test malformed user-selection command
-        {'params': ['user_selection'], 'output': 'No such command "user_selection"'},
+        {'params': ['user_selection'],
+            'output': 'No such command "user_selection"'},
         # 12. Test malformed method-selection command
-        {'params': ['method-selections'], 'output': 'No such command "method-selections"'},
+        {'params': ['method-selections'],
+            'output': 'No such command "method-selections"'},
         # 13. Test malformed kernel-smoothing command
-        {'params': ['krnel-smoothing'], 'output': 'No such command "krnel-smoothing"'},
+        {'params': ['krnel-smoothing'],
+            'output': 'No such command "krnel-smoothing"'},
         # 14. Test malformed kernel-ridge command
-        {'params': ['kernel-rigde'], 'output': 'No such command "kernel-rigde"'},
+        {'params': ['kernel-rigde'],
+            'output': 'No such command "kernel-rigde"'},
 
         # TEST OPTIONS OF ESTIMATOR-SETTINGS MODES IN KERNEL-REGRESSION CLI
         # 15. Test malformed reg-type argument
@@ -414,49 +454,65 @@ def test_kernel_regression_incorrect(pcs_full):
         # 16. Test missing reg-type value
         {'params': ['-rt'], 'output': '-rt option requires an argument'},
         # 17. Test invalid value for reg-type argument
-        {'params': ['--reg-type', 'lp'], 'output': 'Invalid value for "--reg-type"'},
+        {'params': ['--reg-type', 'lp'],
+            'output': 'Invalid value for "--reg-type"'},
         # 18. Test malformed bandwidth-method argument
-        {'params': ['--bandwidht-method'], 'output': 'no such option: --bandwidht-method'},
+        {'params': ['--bandwidht-method'],
+            'output': 'no such option: --bandwidht-method'},
         # 19. Test missing bandwidth-value value
         {'params': ['-bw'], 'output': '-bw option requires an argument'},
         # 20. Test invalid value for bandwidth-value argument
-        {'params': ['-bw', 'cv-ls'], 'output': 'Invalid value for "--bandwidth-method"'},
+        {'params': ['-bw', 'cv-ls'],
+            'output': 'Invalid value for "--bandwidth-method"'},
         # 21. Test malformed n-sub argument
-        {'params': ['--n-sub-sample'], 'output': 'no such option: --n-sub-sample'},
+        {'params': ['--n-sub-sample'],
+            'output': 'no such option: --n-sub-sample'},
         # 22. Test missing n-sub argument
         {'params': ['-nsub'], 'output': '-nsub option requires an argument'},
         # 23. Test invalid value for n-sub argument
-        {'params': ['-nsub', 0], 'output': 'Invalid value for "--n-sub-samples"'},
+        {'params': ['-nsub', 0],
+            'output': 'Invalid value for "--n-sub-samples"'},
         # 24. Test malformed n-res argument
-        {'params': ['--n-re-sample'], 'output': 'no such option: --n-re-sample'},
+        {'params': ['--n-re-sample'],
+            'output': 'no such option: --n-re-sample'},
         # 25. Test missing n-sub argument
         {'params': ['-nres'], 'output': '-nres option requires an argument'},
         # 26. Test invalid value for n-sub argument
-        {'params': ['--n-re-samples', 0], 'output': 'Invalid value for "--n-re-samples"'},
+        {'params': ['--n-re-samples', 0],
+            'output': 'Invalid value for "--n-re-samples"'},
         # 27. Test malformed efficient argument
         {'params': ['--eficient'], 'output': 'no such option: --eficient'},
         # 28. Test malformed no-uniformly argument
         {'params': ['--uniformlys'], 'output': 'no such option: --uniformlys'},
         # 29. Test value for efficient argument
-        {'params': ['--efficient', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        {'params': ['--efficient', 'True'],
+            'output': 'Got unexpected extra argument (True)'},
         # 30. Test value for uniformly argument
-        {'params': ['--uniformly', 'False'], 'output': 'Got unexpected extra argument (False)'},
+        {'params': ['--uniformly', 'False'],
+            'output': 'Got unexpected extra argument (False)'},
         # 31. Test malformed randomize argument
         {'params': ['--randomized'], 'output': 'no such option: --randomized'},
         # 32. Test malformed no-randomize argument
-        {'params': ['--no-randomized'], 'output': 'no such option: --no-randomized'},
+        {'params': ['--no-randomized'],
+            'output': 'no such option: --no-randomized'},
         # 33. Test value for randomize argument
-        {'params': ['--randomize', 'False'], 'output': 'Got unexpected extra argument (False)'},
+        {'params': ['--randomize', 'False'],
+            'output': 'Got unexpected extra argument (False)'},
         # 34. Test value for no-randomize argument
-        {'params': ['--no-randomize', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        {'params': ['--no-randomize', 'True'],
+            'output': 'Got unexpected extra argument (True)'},
         # 35. Test malformed return-median argument
-        {'params': ['--returns-median'], 'output': 'no such option: --returns-median'},
+        {'params': ['--returns-median'],
+            'output': 'no such option: --returns-median'},
         # 36. Test malformed return-mean argument
-        {'params': ['--returns-mean'], 'output': 'no such option: --returns-mean'},
+        {'params': ['--returns-mean'],
+            'output': 'no such option: --returns-mean'},
         # 37. Test value for return-median argument
-        {'params': ['--return-median', 'True'], 'output': 'Got unexpected extra argument (True)'},
+        {'params': ['--return-median', 'True'],
+            'output': 'Got unexpected extra argument (True)'},
         # 38. Test value for return-mean argument
-        {'params': ['--return-mean', 'False'], 'output': 'Got unexpected extra argument (False)'},
+        {'params': ['--return-mean', 'False'],
+            'output': 'Got unexpected extra argument (False)'},
 
         # TEST OPTIONS OF METHOD-SELECTION MODES IN KERNEL-REGRESSION CLI
         # 39. Test malformed reg-type argument
@@ -464,13 +520,16 @@ def test_kernel_regression_incorrect(pcs_full):
         # 40. Test missing reg-type value
         {'params': ['-rt'], 'output': '-rt option requires an argument'},
         # 41. Test invalid value for reg-type argument
-        {'params': ['--reg-type', 'lb'], 'output': 'Invalid value for "--reg-type"'},
+        {'params': ['--reg-type', 'lb'],
+            'output': 'Invalid value for "--reg-type"'},
         # 42. Test malformed bandwidth-method argument
-        {'params': ['--bandwidth-methods'], 'output': 'no such option: --bandwidth-methods'},
+        {'params': ['--bandwidth-methods'],
+            'output': 'no such option: --bandwidth-methods'},
         # 43. Test missing bandwidth-method value
         {'params': ['-bm'], 'output': '-bm option requires an argument'},
         # 44. Test invalid value for bandwidth-method argument
-        {'params': ['-bm', 'goldman'], 'output': 'Invalid value for "--bandwidth-method"'},
+        {'params': ['-bm', 'goldman'],
+            'output': 'Invalid value for "--bandwidth-method"'},
 
         # TEST OPTIONS OF USER-SELECTION MODES IN KERNEL-REGRESSION CLI
         # 45. Test malformed reg-type argument
@@ -478,13 +537,16 @@ def test_kernel_regression_incorrect(pcs_full):
         # 46. Test missing reg-type value
         {'params': ['-rt'], 'output': '-rt option requires an argument'},
         # 47. Test invalid value for reg-type argument
-        {'params': ['--reg-type', 'pp'], 'output': 'Invalid value for "--reg-type"'},
+        {'params': ['--reg-type', 'pp'],
+            'output': 'Invalid value for "--reg-type"'},
         # 48. Test malformed bandwidth-value argument
-        {'params': ['--bandwidth-values'], 'output': 'no such option: --bandwidth-values'},
+        {'params': ['--bandwidth-values'],
+            'output': 'no such option: --bandwidth-values'},
         # 49. Test missing bandwidth-value value
         {'params': ['-bv'], 'output': '-bv option requires an argument'},
         # 50. Test invalid value for bandwidth-value argument
-        {'params': ['--bandwidth-value', -2], 'output': 'Invalid value for "--bandwidth-value"'},
+        {'params': ['--bandwidth-value', -2],
+            'output': 'Invalid value for "--bandwidth-value"'},
 
         # TEST OPTIONS OF KERNEL-RIDGE MODES IN KERNEL-REGRESSION CLI
         # 51. Test malformed gamma-range argument
@@ -492,51 +554,67 @@ def test_kernel_regression_incorrect(pcs_full):
         # 52. Test missing gamma-range value
         {'params': ['-gr'], 'output': '-gr option requires 2 arguments'},
         # 53. Test wrong count of value gamma-range argument
-        {'params': ['--gamma-range', 2], 'output': '--gamma-range option requires 2 arguments'},
+        {'params': ['--gamma-range', 2],
+            'output': '--gamma-range option requires 2 arguments'},
         # 54. Test wrong type of values gamma-range argument
-        {'params': ['-gr', 'A', 'A'], 'output': 'Invalid value for "--gamma-range"'},
+        {'params': ['-gr', 'A', 'A'],
+            'output': 'Invalid value for "--gamma-range"'},
         # 55. Test invalid values gamma-range argument
-        {'params': ['-gr', 2, 2], 'output': 'Invalid values: 1.value must be < then the 2.value'},
+        {'params': ['-gr', 2, 2],
+            'output': 'Invalid values: 1.value must be < then the 2.value'},
         # 56. Test malformed gamma-step argument
-        {'params': ['--gamma-steps'], 'output': 'no such option: --gamma-steps'},
+        {'params': ['--gamma-steps'],
+            'output': 'no such option: --gamma-steps'},
         # 57. Test missing gamma-step value
         {'params': ['-gs'], 'output': '-gs option requires an argument'},
         # 58. Test invalid value gamma-step argument no.1
-        {'params': ['--gamma-step', 0], 'output': 'Invalid value for "--gamma-step"'},
+        {'params': ['--gamma-step', 0],
+            'output': 'Invalid value for "--gamma-step"'},
         # 59. Test invalid value gamma-step argument no.2
-        {'params': ['--gamma-step', 10], 'output': 'Invalid values: step must be < then the length of the range'},
+        {'params': ['--gamma-step', 10],
+            'output': 'Invalid values: step must be < then the length of the range'},
 
         # TEST OPTIONS OF KERNEL-SMOOTHING MODES IN KERNEL-REGRESSION CLI
         # 60. Test malformed kernel-type argument
-        {'params': ['--kernel-typse'], 'output': 'no such option: --kernel-typse'},
+        {'params': ['--kernel-typse'],
+            'output': 'no such option: --kernel-typse'},
         # 61. Test missing kernel-type value
         {'params': ['-kt'], 'output': '-kt option requires an argument'},
         # 62. Test invalid value of kernel-type argument
-        {'params': ['--kernel-type', 'epanechnikov5'], 'output': 'Invalid value for "--kernel-type"'},
+        {'params': ['--kernel-type', 'epanechnikov5'],
+            'output': 'Invalid value for "--kernel-type"'},
         # 63. Test malformed smoothing-method argument
-        {'params': ['--smothing-method'], 'output': 'no such option: --smothing-method'},
+        {'params': ['--smothing-method'],
+            'output': 'no such option: --smothing-method'},
         # 64. Test missing smoothing-method value
         {'params': ['-sm'], 'output': '-sm option requires an argument'},
         # 65. Test invalid value of smoothing method argument
-        {'params': ['-sm', 'local-constant'], 'output': 'Invalid value for "--smoothing-method"'},
+        {'params': ['-sm', 'local-constant'],
+            'output': 'Invalid value for "--smoothing-method"'},
         # 66. Test malformed bandwidth-value argument
-        {'params': ['--bandwith-value'], 'output': 'no such option: --bandwith-value'},
+        {'params': ['--bandwith-value'],
+            'output': 'no such option: --bandwith-value'},
         # 67. Test missing bandwidth-value value
         {'params': ['-bv'], 'output': '-bv option requires an argument'},
         # 68. Test invalid value for bandwidth-value argument
-        {'params': ['-bv', -100], 'output': 'Invalid value for "--bandwidth-value"'},
+        {'params': ['-bv', -100],
+            'output': 'Invalid value for "--bandwidth-value"'},
         # 69. Test malformed bandwidth-method argument
-        {'params': ['--bandwidht-method'], 'output': 'no such option: --bandwidht-method'},
+        {'params': ['--bandwidht-method'],
+            'output': 'no such option: --bandwidht-method'},
         # 70. Test missing bandwidth-method value
         {'params': ['-bm'], 'output': '-bm option requires an argument'},
         # 71. Test invalid value for bandwidth-method argument
-        {'params': ['--bandwidth-method', 'sccot'], 'output': 'Invalid value for "--bandwidth-method"'},
+        {'params': ['--bandwidth-method', 'sccot'],
+            'output': 'Invalid value for "--bandwidth-method"'},
         # 72. Test malformed polynomial-order argument
-        {'params': ['--polynomila-order'], 'output': 'no such option: --polynomila-order'},
+        {'params': ['--polynomila-order'],
+            'output': 'no such option: --polynomila-order'},
         # 73. Test missing value for polynomial-order argument
         {'params': ['-q'], 'output': '-q option requires an argument'},
         # 74. Test invalid value for polynomial-order argument
-        {'params': ['-q', 0], 'output': 'Invalid value for "--polynomial-order"'},
+        {'params': ['-q', 0],
+            'output': 'Invalid value for "--polynomial-order"'},
     ]
     tests_edge = [14, 38, 44, 50, 59, 74]
 
@@ -549,7 +627,8 @@ def test_kernel_regression_incorrect(pcs_full):
     cprof_idx = match.groups(1)[0]
 
     # Perform the testing
-    kernel_regression_runner_test(runner, incorrect_tests, tests_edge, 2, cprof_idx)
+    kernel_regression_runner_test(
+        runner, incorrect_tests, tests_edge, 2, cprof_idx)
 
 
 def test_kernel_regression_correct(pcs_full):
@@ -601,9 +680,11 @@ def test_kernel_regression_correct(pcs_full):
         # 19. Test the return-median argument
         {'params': ['--return-median']},
         # 20. Test the complex combinations of options - no.1
-        {'params': ['-rt', 'lc', '--return-median', '--randomize', '--n-re-samples', 5]},
+        {'params': ['-rt', 'lc', '--return-median',
+                    '--randomize', '--n-re-samples', 5]},
         # 21. Test the complex combinations of options - no.2
-        {'params': ['-bw', 'aic', '-nres', 10, '-nsub', 50, '--randomize', '--efficient']},
+        {'params': ['-bw', 'aic', '-nres', 10, '-nsub',
+                    50, '--randomize', '--efficient']},
         # 22. Test the complex combinations of options - no.3
         {'params': [
             '--reg-type', 'll', '--bandwidth-method', 'cv_ls', '--efficient', '--randomize', '--n-sub-samples', 20
@@ -679,17 +760,23 @@ def test_kernel_regression_correct(pcs_full):
         # 53. Test valid value for bandwidth-value argument
         {'params': ['-bv', .7582]},
         # 54. Test valid value for polynomial-order argument
-        {'params': ['--smoothing-method', 'local-polynomial', '--polynomial-order', 5]},
+        {'params': ['--smoothing-method',
+                    'local-polynomial', '--polynomial-order', 5]},
         # 55. Test complex combination of options - no.1
-        {'params': ['--kernel-type', 'epanechnikov', '--smoothing-method', 'local-linear', '-bm', 'silverman']},
+        {'params': ['--kernel-type', 'epanechnikov',
+                    '--smoothing-method', 'local-linear', '-bm', 'silverman']},
         # 56. Test complex combination of options - no.2
-        {'params': ['-kt', 'normal', '-sm', 'local-polynomial', '--polynomial-order', 8, '-bv', 1]},
+        {'params': ['-kt', 'normal', '-sm', 'local-polynomial',
+                    '--polynomial-order', 8, '-bv', 1]},
         # 57. Test complex combination of options - no.3
-        {'params': ['--kernel-type', 'normal', '-sm', 'local-linear', '--bandwidth-value', .5]},
+        {'params': ['--kernel-type', 'normal', '-sm',
+                    'local-linear', '--bandwidth-value', .5]},
         # 58. Test complex combination of options - no.5
-        {'params': ['--kernel-type', 'normal', '-sm', 'local-polynomial', '--bandwidth-value', 1e-10]},
+        {'params': ['--kernel-type', 'normal', '-sm',
+                    'local-polynomial', '--bandwidth-value', 1e-10]},
         # 59. Test complex combination of options - no.4
-        {'params': ['--smoothing-method', 'spatial-average', '--bandwidth-method', 'scott', '--kernel-type', 'tricube']}
+        {'params': ['--smoothing-method', 'spatial-average',
+                    '--bandwidth-method', 'scott', '--kernel-type', 'tricube']}
     ]
     tests_edge = [5, 22, 30, 34, 40, 59]
 
@@ -702,7 +789,8 @@ def test_kernel_regression_correct(pcs_full):
     cprof_idx = match.groups(1)[0]
 
     # Perform the testing
-    kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, cprof_idx)
+    kernel_regression_runner_test(
+        runner, correct_tests, tests_edge, 0, cprof_idx)
 
 
 def test_reg_analysis_incorrect(pcs_full):
@@ -721,22 +809,26 @@ def test_reg_analysis_incorrect(pcs_full):
     assert 'Usage' in result.output
 
     # Test non-existing argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-f'])
+    result = runner.invoke(cli.postprocessby, [
+                           '1@i', 'regression-analysis', '-f'])
     assert result.exit_code == 2
     assert 'no such option: -f' in result.output
 
     # Test malformed method argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--metod', 'full'])
+    result = runner.invoke(cli.postprocessby, [
+                           '1@i', 'regression-analysis', '--metod', 'full'])
     assert result.exit_code == 2
     assert 'no such option: --metod' in result.output
 
     # Test missing method value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m'])
+    result = runner.invoke(cli.postprocessby, [
+                           '1@i', 'regression-analysis', '-m'])
     assert result.exit_code == 2
     assert '-m option requires an argument' in result.output
 
     # Test invalid method name
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'extra'])
+    result = runner.invoke(cli.postprocessby, [
+                           '1@i', 'regression-analysis', '--method', 'extra'])
     assert result.exit_code == 2
     assert 'Invalid value for "--method"' in result.output
 
@@ -805,7 +897,8 @@ def test_reg_analysis_correct(pcs_full):
     cprof_idx = match.groups(1)[0]
 
     # Test the help printout first
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '--help'])
+    result = runner.invoke(cli.postprocessby, [
+                           cprof_idx, 'regression-analysis', '--help'])
     assert result.exit_code == 0
     assert 'Usage' in result.output
 
@@ -816,17 +909,20 @@ def test_reg_analysis_correct(pcs_full):
     assert 'Successfully postprocessed' in result.output
 
     # Test the full computation method with all models set as a default value
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full'])
+    result = runner.invoke(cli.postprocessby, [
+                           cprof_idx, 'regression-analysis', '-m', 'full'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test the iterative method with all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'iterative'])
+    result = runner.invoke(cli.postprocessby, [
+                           cprof_idx, 'regression-analysis', '-m', 'iterative'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
     # Test the interval method with all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'interval'])
+    result = runner.invoke(cli.postprocessby, [
+                           cprof_idx, 'regression-analysis', '-m', 'interval'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
@@ -837,7 +933,8 @@ def test_reg_analysis_correct(pcs_full):
     assert 'Successfully postprocessed' in result.output
 
     # Test the bisection method with all models
-    result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'bisection'])
+    result = runner.invoke(cli.postprocessby, [
+                           cprof_idx, 'regression-analysis', '-m', 'bisection'])
     assert result.exit_code == 0
     assert 'Successfully postprocessed' in result.output
 
@@ -918,7 +1015,8 @@ def test_status_correct(pcs_full):
     assert config.lookup_key_recursively('format.sort_profiles_by') == 'time'
 
     # Try that the sort order changed
-    short_result = runner.invoke(cli.status, ['--short', '--sort-by', 'source'])
+    short_result = runner.invoke(
+        cli.status, ['--short', '--sort-by', 'source'])
     assert short_result.exit_code == 0
     assert pcs_full.local_config().get('format.sort_profiles_by') == 'source'
 
@@ -1004,7 +1102,8 @@ def test_init_correct_with_params():
     """
     runner = CliRunner()
     dst = str(os.getcwd())
-    result = runner.invoke(cli.init, [dst, '--vcs-type=git', '--vcs-flag', 'bare'])
+    result = runner.invoke(
+        cli.init, [dst, '--vcs-type=git', '--vcs-flag', 'bare'])
     assert result.exit_code == 0
     assert 'config' in os.listdir(os.getcwd())
     with open(os.path.join(os.getcwd(), 'config'), 'r') as config_file:
@@ -1042,7 +1141,8 @@ def test_add_correct(helpers, pcs_full, valid_profile_pool):
         pcs_full.get_job_directory(), valid_profile_pool[0],
         vcs.get_minor_head()
     )
-    result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added_profile)])
+    result = runner.invoke(
+        cli.add, ['--keep-profile', '{}'.format(added_profile)])
     assert result.exit_code == 0
     assert os.path.exists(added_profile)
 
@@ -1054,7 +1154,8 @@ def test_cli_outside_pcs(helpers, valid_profile_pool):
     runner = CliRunner()
     dst_dir = os.getcwd()
     added_profile = helpers.prepare_profile(dst_dir, valid_profile_pool[0], "")
-    result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added_profile)])
+    result = runner.invoke(
+        cli.add, ['--keep-profile', '{}'.format(added_profile)])
     assert result.exit_code == 1
 
     result = runner.invoke(cli.remove, ['{}'.format(added_profile)])
@@ -1089,7 +1190,8 @@ def test_log_correct(pcs_full):
 
     short_result = runner.invoke(cli.log, ['--short'])
     assert short_result.exit_code == 0
-    assert len(result.output.split('\n')) > len(short_result.output.split('\n'))
+    assert len(result.output.split('\n')) > len(
+        short_result.output.split('\n'))
 
 
 def test_collect_correct(pcs_full):
@@ -1121,7 +1223,8 @@ def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
     """
     git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(
+        pcs_full.get_path(), valid_profile_pool)
     first_tagged = os.path.relpath(
         helpers.prepare_profile(
             pcs_full.get_job_directory(), valid_profile_pool[0], head
@@ -1156,7 +1259,8 @@ def test_add_tag(monkeypatch, helpers, pcs_full, valid_profile_pool):
     git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
     parent = str(git_repo.head.commit.parents[0])
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(
+        pcs_full.get_path(), valid_profile_pool)
     first_sha = os.path.relpath(helpers.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0], head)
     )
@@ -1193,7 +1297,8 @@ def test_add_tag_range(helpers, pcs_full, valid_profile_pool):
     """
     git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(
+        pcs_full.get_path(), valid_profile_pool)
     os.path.relpath(helpers.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0], head)
     )
@@ -1252,7 +1357,8 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
 
     Expecting no errors (or caught errors), everything postprocessed as it should be
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(
+        pcs_full.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
     assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 2
 
@@ -1277,9 +1383,11 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try absolute postprocessing
-    first_in_jobs = list(filter(helpers.index_filter, os.listdir(pending_dir)))[0]
+    first_in_jobs = list(
+        filter(helpers.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
-    result = runner.invoke(cli.postprocessby, [absolute_first_in_jobs, 'normalizer'])
+    result = runner.invoke(cli.postprocessby, [
+                           absolute_first_in_jobs, 'normalizer'])
     assert result.exit_code == 0
 
     # Try lookup postprocessing
@@ -1292,7 +1400,8 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
 
     Expecting no errors (or caught errors), everythig shown as it should be
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    helpers.populate_repo_with_untracked_profiles(
+        pcs_full.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
 
     runner = CliRunner()
@@ -1312,7 +1421,8 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
     assert result.exit_code == 2
 
     # Try absolute showing
-    first_in_jobs = list(filter(helpers.index_filter, os.listdir(pending_dir)))[0]
+    first_in_jobs = list(
+        filter(helpers.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.show, [absolute_first_in_jobs, 'raw'])
     assert result.exit_code == 0
@@ -1332,7 +1442,8 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
     assert result.exit_code == 1
 
     # Try getting something from index
-    result = runner.invoke(cli.show, ['prof-2-2017-03-20-21-40-42.perf', 'raw'])
+    result = runner.invoke(
+        cli.show, ['prof-2-2017-03-20-21-40-42.perf', 'raw'])
     assert result.exit_code == 0
 
 
@@ -1391,7 +1502,8 @@ def test_reset_outside_pcs(monkeypatch):
     assert result.exit_code == 1
     assert "could not reset" in result.output
 
-    monkeypatch.setattr('perun.logic.config.lookup_shared_config_dir', lambda: os.getcwd())
+    monkeypatch.setattr(
+        'perun.logic.config.lookup_shared_config_dir', lambda: os.getcwd())
     result = runner.invoke(cli.config, ['--shared', 'reset'])
     assert result.exit_code == 0
 
@@ -1419,13 +1531,15 @@ def test_reset(pcs_full):
 
 def test_check_profiles(helpers, pcs_with_degradations):
     """Tests checking degradation between two profiles"""
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(
+        __file__)[0], 'degradation_profiles')
     profiles = [
         os.path.join(pool_path, 'linear_base.perf'),
         os.path.join(pool_path, 'linear_base_degradated.perf'),
         os.path.join(pool_path, 'quad_base.perf')
     ]
-    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
+    helpers.populate_repo_with_untracked_profiles(
+        pcs_with_degradations.get_path(), profiles)
 
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):
@@ -1508,11 +1622,13 @@ def test_check_all(pcs_with_degradations):
 def test_utils_create(monkeypatch, tmpdir):
     """Tests creating stuff in the perun"""
     # Prepare different directory
-    monkeypatch.setattr('perun.utils.script_helpers.__file__', os.path.join(str(tmpdir), "utils", "script_helpers.py"))
+    monkeypatch.setattr('perun.utils.script_helpers.__file__', os.path.join(
+        str(tmpdir), "utils", "script_helpers.py"))
     monkeypatch.chdir(str(tmpdir))
 
     runner = CliRunner()
-    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    result = runner.invoke(
+        cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
     assert result.exit_code == 1
     assert "cannot use" in result.output and "as target developer directory" in result.output
 
@@ -1523,7 +1639,8 @@ def test_utils_create(monkeypatch, tmpdir):
     tmpdir.mkdir('check')
 
     # Try to successfully create the new postprocessor
-    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    result = runner.invoke(
+        cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
     assert result.exit_code == 0
     target_dir = os.path.join(str(tmpdir), 'postprocess', 'mypostprocessor')
     created_files = os.listdir(target_dir)
@@ -1646,32 +1763,37 @@ def test_fuzzing_correct(pcs_full):
     runner = CliRunner()
     examples = os.path.dirname(__file__) + '/fuzz_example/'
 
-    # Testing option --help       
+    # Testing option --help
     result = runner.invoke(cli.fuzz_cmd, ['--help'])
     assert result.exit_code == 0
     assert 'Usage' in result.output
 
-    # Testing tail with binary file
-    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/tail"])
+    # building custom tail program for testing
+    process = subprocess.Popen(
+        ["make", "-C", os.path.dirname(examples)+"/tail"])
     process.communicate()
     process.wait()
 
+    # path to the tail binary
     tail = os.path.dirname(examples) + "/tail/tail"
 
+    # 01. Testing tail with binary file
     bin_workload = os.path.dirname(examples) + '/samples/binary/libhtab.so'
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
         '--initial-workload', bin_workload,
         '--timeout', '1',
-        '--hang-timeout', '15',
         '--max', '10',
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
 
-    # Testing tail with txt files with coverage
+    # 02. Testing tail on a directory of txt files with coverage
     txt_workload = os.path.dirname(examples) + '/samples/txt'
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
@@ -1683,41 +1805,45 @@ def test_fuzzing_correct(pcs_full):
         '--icovr', '1.05',
         '--interesting-files-limit', '2',
         '--workloads-filter', '(?notvalidregex?)',
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
 
-    # Testing tail with xml files and regex_rules
+    # 03. Testing tail with xml files and regex_rules
     xml_workload = os.path.dirname(examples) + '/samples/xml/input.xml'
     regex_file = os.path.dirname(examples) + '/rules.yaml'
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
         '--initial-workload', xml_workload,
         '--timeout', '1',
         '--max-size-percentual', '3.5',
-        '--interesting-files-limit', '1',
         '--mut-count-strategy', 'probabilistic',
         '--regex-rules', regex_file,
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
 
-    # Testing tail with empty xml file and regex_rules
+    # 04. Testing tail with empty xml file
     xml_workload = os.path.dirname(examples) + '/samples/xml/empty.xml'
-    regex_file = os.path.dirname(examples) + '/rules.yaml'
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
         '--initial-workload', xml_workload,
         '--timeout', '1',
-        '--max-size-percentual', '3.5',
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
 
-    # Testing tail with wierd file type
-    wierd_workload = os.path.dirname(examples) + '/samples/undefined/wierd.california'
+    # 05. Testing tail with wierd file type and bad paths for coverage testing (-s, -g)
+    wierd_workload = os.path.dirname(
+        examples) + '/samples/undefined/wierd.california'
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
@@ -1725,19 +1851,22 @@ def test_fuzzing_correct(pcs_full):
         '--timeout', '1',
         '--max-size-percentual', '3.5',
         '--mut-count-strategy', 'proportional',
-        '--regex-rules', regex_file,
+        '--source-path', '.',
+        '--gcno-path', '.',
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
 
-    
-    # Testing for SIGABRT during init testing
+    # 06. Testing for SIGABRT during init testing
     num_workload = os.path.dirname(examples) + '/samples/txt/number.txt'
-    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/sigabrt-init"])
+    process = subprocess.Popen(
+        ["make", "-C", os.path.dirname(examples)+"/sigabrt-init"])
     process.communicate()
     process.wait()
 
     sigabrt_init = os.path.dirname(examples) + "/sigabrt-init/sigabrt"
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', sigabrt_init,
         '--output-dir', '.',
@@ -1748,102 +1877,110 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 1
     assert 'SIGABRT' in result.output
 
-    # Testing for SIGABRT during fuzz testing
-    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/sigabrt-test"])
+    # 07. Testing for SIGABRT during fuzz testing
+    process = subprocess.Popen(
+        ["make", "-C", os.path.dirname(examples)+"/sigabrt-test"])
     process.communicate()
     process.wait()
+
     sigabrt_test = os.path.dirname(examples) + "/sigabrt-test/sigabrt"
-    print(os.listdir(os.path.dirname(examples)+"/sigabrt-test"))
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', sigabrt_test,
         '--output-dir', '.',
         '--initial-workload', num_workload,
-        '--timeout', '2',
+        '--timeout', '1',
         '--source-path', os.path.dirname(sigabrt_test),
         '--gcno-path', os.path.dirname(sigabrt_test),
         '--mut-count-strategy', 'unitary',
-        '--execs', '1'
+        '--execs', '1',
     ])
     assert result.exit_code == 0
     assert 'SIGABRT' in result.output
 
-    # Testing for hang during init testing
-    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/hang-init"])
+    # 08. Testing for hang during init testing
+    process = subprocess.Popen(
+        ["make", "-C", os.path.dirname(examples)+"/hang-init"])
     process.communicate()
     process.wait()
+
     hang_init = os.path.dirname(examples) + "/hang-init/hang"
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_init,
         '--output-dir', '.',
         '--initial-workload', num_workload,
         '--source-path', os.path.dirname(hang_init),
         '--gcno-path', os.path.dirname(hang_init),
-        '--hang-timeout', '1',
+        '--hang-timeout', '0.001',
+        '--no-plotting',
     ])
     assert result.exit_code == 1
     assert 'Timeout' in result.output
 
-    # Testing for hang during fuzz testing
-    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/hang-test"])
+    # 09. Testing for hang during fuzz testing
+    process = subprocess.Popen(
+        ["make", "-C", os.path.dirname(examples)+"/hang-test"])
     process.communicate()
     process.wait()
+
     hang_test = os.path.dirname(examples) + "/hang-test/hang"
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,
         '--output-dir', '.',
         '--initial-workload', num_workload,
-        '--timeout', '2',
+        '--timeout', '1',
         '--source-path', os.path.dirname(hang_test),
         '--gcno-path', os.path.dirname(hang_test),
-        '--hang-timeout', '1',
-        '--execs', '1'
+        '--hang-timeout', '0.001',
+        '--execs', '1',
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Timeout' in result.output
 
-    # Testing UBT for degs
-    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/UBT"])
+    # 10. Testing UBT for degs
+    process = subprocess.Popen(
+        ["make", "-C", os.path.dirname(examples)+"/UBT"])
     process.communicate()
     process.wait()
+
     ubt_test = os.path.dirname(examples) + "/UBT/build/ubt"
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', ubt_test,
         '--output-dir', '.',
         '--initial-workload', os.path.dirname(examples) + '/UBT/input.txt',
-        '--timeout', '10',
-        '--hang-timeout', '2',
+        '--timeout', '1',
+        '--hang-timeout', '1',
         '--source-path', os.path.dirname(examples) + '/UBT/src',
         '--gcno-path', os.path.dirname(examples) + '/UBT/build',
         '--max-size-percentual', '1',
-        '--mut-count-strategy', 'unitary', 
-        '--execs', '12'
-
+        '--mut-count-strategy', 'unitary',
+        '--execs', '1',
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
 
-    # Testing UBT for deg in initial test
-    process = subprocess.Popen(["make", "-C", os.path.dirname(examples)+"/UBT"])
-    process.communicate()
-    process.wait()
-    ubt_test = os.path.dirname(examples) + "/UBT/build/ubt"
+    # 11. Testing UBT for deg in initial test
+
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', ubt_test,
         '--output-dir', '.',
-        '--initial-workload', os.path.dirname(examples) + '/UBT/a_small_input.txt',
-        '--initial-workload', os.path.dirname(examples) + '/UBT/sorted_input.txt',
-        '--timeout', '4',
-        '--hang-timeout', '2',
-        '--source-path', os.path.dirname(examples) + '/UBT/src',
-        '--gcno-path', os.path.dirname(examples) + '/UBT/build',
-        '--max-size-percentual', '1',
-        '--mut-count-strategy', 'unitary', 
+        '--initial-workload', os.path.dirname(examples) +
+        '/UBT/a_small_input.txt',
+        '--initial-workload', os.path.dirname(examples) +
+        '/UBT/sorted_input.txt',
+        '--timeout', '1',
+        '--hang-timeout', '0.01',
+        '--max-size-percentual', '2',
+        '--mut-count-strategy', 'unitary',
+        '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Fuzzing successfully finished' in result.output
-
-    '--initial-workload', os.path.dirname(examples) + '/UBT/a_small_input.txt',
 
 
 def test_fuzzing_incorrect(pcs_full):
@@ -1858,7 +1995,7 @@ def test_fuzzing_incorrect(pcs_full):
     ])
     assert result.exit_code == 2
     assert '--cmd' in result.output
-    
+
     # Missing option --initial-workload
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
@@ -1976,7 +2113,6 @@ def test_fuzzing_incorrect(pcs_full):
     assert result.exit_code == 2
     assert '--interesting-files-limit' in result.output
 
-
     # Wrong value for option --icovr
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
@@ -2038,10 +2174,10 @@ def test_error_runs(pcs_full, monkeypatch):
     assert result.exit_code == 1
     assert "fokume postprocessor does not exist" in result.output
 
-    monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: perun_runner.CollectStatus.ERROR)
+    monkeypatch.setattr('perun.logic.runner.run_single_job',
+                        lambda *_, **__: perun_runner.CollectStatus.ERROR)
     result = runner.invoke(cli.run, ['job', '--cmd', 'ls',
-        '--args', '-al', '--workload', '.',
-        '--collector', 'time'
-    ])
+                                     '--args', '-al', '--workload', '.',
+                                     '--collector', 'time'
+                                     ])
     assert result.exit_code == 1
-

@@ -1,10 +1,12 @@
 """Collects fuzzing rules specific for binary files."""
 
 import random
+import os
 
 __author__ = 'Matus Liscinsky'
 
-RULES_ITERATIONS = 10
+RULE_ITERATIONS = 10
+
 
 def insert_byte(lines):
     """ Selects random line and inserts a random byte to any position.
@@ -14,11 +16,10 @@ def insert_byte(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         index = random.randrange(len(lines[rand]))
-        num = random.randrange(255)
-        byte = chr(num).encode()
+        byte = os.urandom(1)
         lines[rand] = lines[rand][:index] + byte + lines[rand][index:]
 
 
@@ -26,11 +27,11 @@ def remove_byte(lines):
     """ Selects random line and removes random byte.
 
     Example:
-        #ef15ac -> ef15ac 
+        #ef15ac -> ef15ac
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         index = random.randrange(len(lines[rand]))
         lines[rand] = lines[rand][:index] + lines[rand][index+1:]
@@ -49,19 +50,28 @@ def byte_swap(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         line_num1 = random.randrange(len(lines))
         line_num2 = random.randrange(len(lines))
 
-        a = chr(lines[line_num1][random.randrange(len(lines[line_num1]))])
-        b = chr(lines[line_num2][random.randrange(len(lines[line_num2]))])
+        index1 = random.randrange(len(lines[line_num1]))
+        index2 = random.randrange(len(lines[line_num2]))
 
-        lines[line_num1] = lines[line_num1].replace(a.encode(), b.encode())
-        lines[line_num2] = lines[line_num2].replace(b.encode(), a.encode())
+        # converting to byte arrays to be able to modify
+        ba1 = bytearray(lines[line_num1])
+        ba2 = bytearray(lines[line_num2])
+
+        # swap
+        tmp = ba1[index1]
+        ba1[index1] = ba2[index2]
+        ba2[index2] = tmp
+
+        lines[line_num1] = ba1
+        lines[line_num2] = ba2
 
 
-def bite_flip(lines):
-    """ Selects random line and flips random bite.
+def bit_flip(lines):
+    """ Selects random line and flips random bit.
 
     Example:
     before:
@@ -71,7 +81,7 @@ def bite_flip(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         index = random.randrange(len(lines[rand]))
 
@@ -82,27 +92,30 @@ def bite_flip(lines):
 
 
 def remove_zero_byte(lines):
-    """ Selects random line and removes first occasion of zero byte.
+    """ Selects random line and removes random zero byte.
 
     Example:
         This is C string.\0 You are gonna love it.\0 -> This is string. You are gonna love it.\0
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
-        lines[rand] = lines[rand].replace(b"\0", b"", 1)
+        positions = [pos for pos, char in enumerate(lines[rand]) if char == 0]
+        if positions:
+            index = random.choice(positions)
+            lines[rand] = lines[rand][:index] + lines[rand][index+1:]
 
 
 def insert_zero_byte(lines):
     """ Selects random line and inserts zero byte to any position.
 
     Example:
-        This is C string.\0You are gonna love it.\0 -> This is C\0 string.\0You are gonna love it.\0 
+        This is C string.\0You are gonna love it.\0 -> This is C\0 string.\0You are gonna love it.\0
 
     :param list lines: lines of the file in list
     """
-    for _ in range(random.randint(1, RULES_ITERATIONS)):
+    for _ in range(random.randint(1, RULE_ITERATIONS)):
         rand = random.randrange(len(lines))
         index = random.randrange(len(lines[rand]))
         lines[rand] = lines[rand][:index] + b'\0' + lines[rand][index:]
@@ -113,4 +126,4 @@ fuzzing_methods = [(remove_zero_byte, "Remove zero byte"),
                    (insert_byte, "Insert a random byte to random position"),
                    (remove_byte, "Remove random byte"),
                    (byte_swap, "Switch two random bytes"),
-                   (bite_flip, "Flip random bite")]
+                   (bit_flip, "Flip random bit")]
