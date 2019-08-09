@@ -15,7 +15,6 @@ import perun.cli as cli
 import pytest
 
 import perun.logic.commands as commands
-import perun.profile.factory as perun_profile
 import perun.utils.decorators as decorators
 import perun.utils.streams as streams
 import perun.vcs as vcs
@@ -111,7 +110,7 @@ class Helpers(object):
         copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
         copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
         copied_profile['origin'] = origin
-        perun_profile.store_profile_at(copied_profile, copied_filename)
+        streams.store_json(copied_profile.serialize(), copied_filename)
         shutil.copystat(profile, copied_filename)
         return copied_filename
 
@@ -476,6 +475,45 @@ def pcs_full():
         len(os.listdir(os.path.join(pcs_object_dir, sub))) for sub in os.listdir(pcs_object_dir)
     )
     assert number_of_perun_objects == 5
+
+    yield pcs
+
+    # clean up the directory
+    shutil.rmtree(pcs_path)
+
+
+@pytest.fixture(scope="function")
+def pcs_with_more_commits():
+    """
+    """
+    # Change working dir into the temporary directory
+    pcs_path = tempfile.mkdtemp()
+    os.chdir(pcs_path)
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
+
+    # Initialize git
+    vcs.init({})
+
+    # Populate repo with commits
+    repo = git.Repo(pcs_path)
+
+    # Create first commit
+    file1 = os.path.join(pcs_path, "file1")
+    store.touch_file(file1)
+    repo.index.add([file1])
+    repo.index.commit("root")
+
+    # Create second commit
+    file2 = os.path.join(pcs_path, "file2")
+    store.touch_file(file2)
+    repo.index.add([file2])
+    repo.index.commit("second commit")
+
+    # Create third commit
+    file3 = os.path.join(pcs_path, "file3")
+    store.touch_file(file3)
+    repo.index.add([file3])
+    repo.index.commit("third commit")
 
     yield pcs
 

@@ -13,7 +13,7 @@ import perun.utils.log as log
 import perun.view.flow.bokeh_factory as flow_factory
 import perun.view.flow.ncurses_factory as curses_graphs
 from perun.utils.exceptions import InvalidParameterException
-from perun.utils.helpers import pass_profile
+from perun.profile.factory import pass_profile
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'

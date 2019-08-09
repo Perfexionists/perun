@@ -50,14 +50,14 @@ def generate_models_by_uid(profile, value, uid_sequence, key='model'):
     """Provides computed models results for each uid in the specified uid sequence.
 
     Arguments:
-        profile(dict): the whole profile with 'models' results
+        profile(Profile): the whole profile with 'models' results
         value(str): the specification of value of given key for matching models
         uid_sequence(list of str): list of uid values to search for
         key(str): the key for matching models
     Returns:
         generator: stream of lists with models dictionaries according to uid sequence
     """
-    models = profile['profile']['global']['models']
+    models = profile['profile']['models']
     for uid in uid_sequence:
         yield [m for m in models if m['uid'] == uid and m[key] == value]
 

@@ -6,7 +6,7 @@ import click
 
 import perun.profile.convert as heap_representation
 import perun.view.heapmap.heap_map as hm
-from perun.utils.helpers import pass_profile
+from perun.profile.factory import pass_profile
 
 __author__ = 'Radim Podola'
 

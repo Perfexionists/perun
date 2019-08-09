@@ -4,7 +4,7 @@ import demandimport
 with demandimport.enabled():
     import bkcharts as charts
 
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers

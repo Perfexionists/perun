@@ -45,11 +45,11 @@ def slice_models_by_interval(models):
     :returns generator: stream of models slices (list)
     """
     # Sort the models by intervals first, to yield them in order
-    models = sorted(models, key=itemgetter('x_interval_start', 'x_interval_end'))
+    models = sorted(models, key=itemgetter('x_start', 'x_end'))
     # Separate the models into groups according to intervals
     intervals = defaultdict(list)
     for model in models:
-        intervals[(model['x_interval_start'], model['x_interval_end'])].append(model)
+        intervals[(model['x_start'], model['x_end'])].append(model)
     # Yield the list of models with the same interval
     for interval_models in intervals.items():
         yield interval_models[1]
@@ -59,13 +59,13 @@ def generate_plot_data_slices(profile):
     """ Generates data slices for plotting resources and models. The resources are split by unique
         uids, models are sliced into parts by uid and interval.
 
-    :param dict profile: loaded perun profile
+    :param Profile profile: loaded perun profile
     :returns generator: generator: resources and models slices of unique uid as pair
         (data_slice(pandas.DataFrame), uid_models(list))
     """
     # Get resources for scatter plot points and models for curves
     resource_table = convert.resources_to_pandas_dataframe(profile)
-    models = list(map(itemgetter(1), query.all_models_of(profile)))
+    models = list(map(itemgetter(1), profile.all_models()))
     # Get unique uids from profile, each uid (and optionally interval) will have separate graph
     uids = map(convert.flatten, query.unique_resource_values_of(profile, 'uid'))
 
@@ -96,9 +96,9 @@ def draw_models(graph, models, profile):
         if 'coeffs' in model:
             graph = create_parametric_model(graph, model, colour_palette[idx])
         # The non-parametric models do not contain the coefficients
-        elif model['method'] == 'regressogram':
+        elif model['model'] == 'regressogram':
             graph = create_regressogram_model(graph, model, colour_palette[idx])
-        elif model['method'] in ('moving_average', 'kernel_regression'):
+        elif model['model'] in ('moving_average', 'kernel_regression'):
             graph = create_non_param_model(graph, model, profile, colour_palette[idx])
     return graph
 
@@ -143,13 +143,13 @@ def create_regressogram_model(graph, model, colour):
     bucket_no = len(model['bucket_stats'])
     # Evenly division of the interval by number of buckets
     x_pts = np.linspace(
-        model['x_interval_start'], model['x_interval_end'], num=bucket_no+ 1
+        model['x_start'], model['x_end'], num=bucket_no+ 1
     )
     # Add the beginning of the first edge
-    y_pts = np.append(model['y_interval_start'], model['bucket_stats'])
+    y_pts = np.append(model['y_start'], model['bucket_stats'])
     # Create legend for the plotted model
     legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(
-        model['method'][:3], bucket_no, model['statistic_function'], model['r_square']
+        model['model'][:3], bucket_no, model['statistic_function'], model['r_square']
     )
     # Plot the render_step_function function for regressogram model
     graph_params = {'color': colour, 'line_width': 3.5, 'legend': legend}
@@ -182,12 +182,12 @@ def create_non_param_model(graph, model, profile, colour):
         return graph
 
     legend = ""
-    if model['method'] == 'moving_average':
+    if model['model'] == 'moving_average':
         # Create legend for the plotted moving_average model
         legend = '{0}: window={1}, R^2={2:f}'.format(
             model['moving_method'], model['window_width'], model['r_square']
         )
-    elif model['method'] == 'kernel_regression':
+    elif model['model'] == 'kernel_regression':
         # Create legend for the plotted kernel models
         legend = '{0}: bw={1}, R^2={2:f}'.format(
             model['kernel_mode'], model['bandwidth'], model['r_square']
@@ -227,9 +227,9 @@ def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, gra
         this_graph_title = graph_title + '; uid: {0}'.format(data_slice.uid.values[0])
         if models_slice:
             this_graph_title += ('; method: {0}; interval <{1}, {2}>'
-                                 .format(models_slice[0]['method'],
-                                         models_slice[0]['x_interval_start'],
-                                         models_slice[0]['x_interval_end']))
+                                 .format(models_slice[0]['model'],
+                                         models_slice[0]['x_start'],
+                                         models_slice[0]['x_end']))
         bokeh_helpers.configure_graph(
             scatter, profile, 'count', this_graph_title, x_axis_label, y_axis_label, graph_width)
 

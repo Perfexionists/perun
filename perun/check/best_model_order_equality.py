@@ -40,8 +40,8 @@ value `1.0` (which would mean, that the model precisely fits the measured values
 that the best model fit the data tightly and hence the detected optimization is **not spurious**.
 """
 
-import perun.profile.query as query
 import perun.check.factory as check
+import perun.check.general_detection as detection
 
 from perun.utils.structs import DegradationInfo
 
@@ -58,24 +58,7 @@ MODEL_ORDERING = [
 ]
 
 
-def get_best_models_of(profile):
-    """Retrieves the best models for unique identifiers and their models
-
-    :param dict profile: dictionary of profile resources and stuff
-    :returns: map of unique identifier of computed models to their best models
-    """
-    best_model_map = {
-        uid: ("", 0.0) for uid in query.unique_model_values_of(profile, 'uid')
-    }
-    for _, model in query.all_models_of(profile):
-        model_uid = model['uid']
-        if best_model_map[model_uid][1] < model['r_square']:
-            best_model_map[model_uid] = (model['model'], model['r_square'])
-
-    return best_model_map
-
-
-def best_model_order_equality(baseline_profile, target_profile):
+def best_model_order_equality(baseline_profile, target_profile, **_):
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     This is based on simple heuristic, where for the same function models, we only check the order
@@ -83,19 +66,20 @@ def best_model_order_equality(baseline_profile, target_profile):
 
     :param dict baseline_profile: baseline against which we are checking the degradation
     :param dict target_profile: profile corresponding to the checked minor version
+    :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    best_baseline_models = get_best_models_of(baseline_profile)
-    best_target_profiles = get_best_models_of(target_profile)
+    best_baseline_models = detection.get_filtered_best_models_of(baseline_profile, group='param')
+    best_target_models = detection.get_filtered_best_models_of(target_profile, group='param')
 
-    for uid, best_model in best_target_profiles.items():
+    for uid, best_model in best_target_models.items():
         best_baseline_model = best_baseline_models.get(uid)
         if best_baseline_model:
-            confidence = min(best_baseline_model[1], best_model[1])
+            confidence = min(best_baseline_model.r_square, best_model.r_square)
             if confidence >= CONFIDENCE_THRESHOLD \
-               and best_baseline_model[0] != best_model[0]:
-                baseline_ordering = MODEL_ORDERING.index(best_baseline_model[0])
-                target_ordering = MODEL_ORDERING.index(best_model[0])
+               and best_baseline_model.type != best_model.type:
+                baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
+                target_ordering = MODEL_ORDERING.index(best_model.type)
                 if baseline_ordering > target_ordering:
                     change = check.PerformanceChange.Optimization
                 else:
@@ -106,9 +90,11 @@ def best_model_order_equality(baseline_profile, target_profile):
                 degradation_rate = 0
 
             yield DegradationInfo(
-                change, "model", uid,
-                best_baseline_model[0],
-                best_model[0],
-                degradation_rate,
-                "r_square", confidence
+                res=change,
+                t="model",
+                loc=uid,
+                fb=best_baseline_model.type,
+                tt=best_model.type,
+                rd=degradation_rate,
+                ct="r_square", cr=confidence
             )

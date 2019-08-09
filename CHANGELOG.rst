@@ -6,6 +6,59 @@ HEAD
 
 **To be included in next release**
 
+0.17.1 (2019-07-24)
+-------------------
+
+`commit: e2fad3cd2ac22f17aa7abfe4375d9940eb9f2847`
+
+**Add new degradation detection methods**
+
+  - add new detection methods for parametric and non-parametric models
+  - add **Integral Comparison** detection method, which computes the integrals under models
+  - add **Local Statistics** detection method, which analyses the various statistics in intervals of models
+  - refactor various minor issues in postprocessing logic
+  - add new strategies for detecting performance changes
+
+0.17 (2019-07-09)
+-----------------
+
+`commit: e6b1e88d766d93cdab4f114464df51114d6415a8`
+
+**Optimize profile format**
+
+  - make profile format more compact
+  - fix minor issue in fast check
+  - extract selected functions from query to profile object
+
+0.16.9-hotfix (2019-06-18)
+--------------------------
+
+`commit: 126473caba3685878bf79f687115023918d5048a`
+
+**Hotfix issue in Makefile**
+
+ - hotfix issue in Makefile
+
+0.16.9 (2019-06-18)
+-------------------
+
+`commit: 8e7228deb81cdfacfea7e7273fd25e70503cbe2b`
+
+**Add CLI for stats manipulation**
+
+  - refactor the perun stats module
+  - extend the stats module with a CLI
+  - add new operations (list, delete, ...) to the stats module
+
+0.16.8 (2019-05-18)
+-------------------
+
+`commit: 05d7275cb5f00183a72f8428bc4aaba0420bb73b`
+
+**Extend perun instances with temporaries**
+
+  - add new logic module that allows to store temporary files in separate directory (.perun/tmp)
+
 0.16.7-hotfix (2019-04-15)
 --------------------------
 
@@ -65,7 +118,7 @@ HEAD
 **Add kernel non-parametric regression**
 
   - fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+
-  - add three kernel non-parametrikjc regression models (see :ref:`_postprocessors-kernel-regression`)
+  - add three kernel non-parametrik regression models (see :ref:`_postprocessors-kernel-regression`)
   - fix minor issues in moving average and regressogram
 
 0.16.3 (2019-03-02)

@@ -56,7 +56,8 @@ def test_scatter_plot_non_param_methods(postprocess_profiles):
         results = list(map(operator.itemgetter(0), graphs))
 
         # Check if scatter plot generated expected amount of graphs for each profile
-        if 'exp_datapoints_rg_ma_kr.perf' in profile[0] or 'pow_datapoints_rg_ma_kr.perf' in profile[0]:
+        if 'exp_datapoints_rg_ma_kr.perf' in profile[0] or \
+                'pow_datapoints_rg_ma_kr.perf' in profile[0]:
             assert len(results) == 3
         elif 'lin_datapoints_rg_ma_kr.perf' in profile[0]:
             assert len(results) == 2

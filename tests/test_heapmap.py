@@ -66,7 +66,7 @@ def test_heap_map(mock_curses_window, monkeypatch, memory_profiles):
         # Correctly shows the ticks
         for tick in map(str, range(0, 110, 17)):
             assert tick in str_window
-        assert "1/{}".format(len(memory_profile['snapshots'])) in str_window
+        assert "1/{}".format(len(list(memory_profile.all_snapshots()))) in str_window
 
 
 def test_heap_and_heat_logic(mock_curses_window, monkeypatch, memory_profiles):

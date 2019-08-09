@@ -6,26 +6,28 @@ possible to be run in isolation.
 """
 
 import collections
-import inspect
 import os
 import re
 
-import click
 import colorama
 import termcolor
+from operator import itemgetter
 
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.logic.store as store
 import perun.logic.index as index
-import perun.profile.factory as profile
+import perun.profile.helpers as profile
 import perun.utils as utils
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
+import perun.logic.temp as temp
+import perun.logic.stats as stats
 
 from perun.utils.exceptions import NotPerunRepositoryException, \
-    ExternalEditorErrorException, MissingConfigSectionException
+    ExternalEditorErrorException, MissingConfigSectionException, InvalidTempPathException, \
+    ProtectedTempException
 from perun.utils.helpers import \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, SUPPORTED_PROFILE_TYPES, HEADER_ATTRS, HEADER_COMMIT_COLOUR, \
@@ -43,34 +45,6 @@ FMT_SCANNER = re.Scanner([
     (r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%", lambda scanner, token: ("fmt_string", token)),
     (r"[^%]+", lambda scanner, token: ("rest", token)),
 ])
-
-
-def lookup_minor_version(func):
-    """If the minor_version is not given by the caller, it looks up the HEAD in the repo.
-
-    If the @p func is called with minor_version parameter set to None,
-    then this decorator performs a lookup of the minor_version corresponding
-    to the head of the repository.
-
-    :param function func: decorated function for which we will lookup the minor_version
-    :returns function: decorated function, with minor_version translated or obtained
-    """
-    f_args, _, _, _, *_ = inspect.getfullargspec(func)
-    minor_version_position = f_args.index('minor_version')
-
-    def wrapper(*args, **kwargs):
-        """Inner wrapper of the function"""
-        # if the minor_version is None, then we obtain the minor head for the wrapped type
-        if minor_version_position < len(args) and args[minor_version_position] is None:
-            # note: since tuples are immutable we have to do this workaround
-            arg_list = list(args)
-            arg_list[minor_version_position] = vcs.get_minor_head()
-            args = tuple(arg_list)
-        else:
-            vcs.check_minor_version_validity(args[minor_version_position])
-        return func(*args, **kwargs)
-
-    return wrapper
 
 
 def config_get(store_type, key):
@@ -162,6 +136,7 @@ def init_perun_at(perun_path, is_reinit, vcs_config, config_template='master'):
     store.touch_dir(os.path.join(perun_full_path, 'logs'))
     store.touch_dir(os.path.join(perun_full_path, 'cache'))
     store.touch_dir(os.path.join(perun_full_path, 'stats'))
+    store.touch_dir(os.path.join(perun_full_path, 'tmp'))
     # If the config does not exist, we initialize the new version
     if not os.path.exists(os.path.join(perun_full_path, 'local.yml')):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
@@ -221,7 +196,7 @@ def init(dst, configuration_template='master', **kwargs):
         perun_log.error(err_msg)
 
 
-@lookup_minor_version
+@vcs.lookup_minor_version
 def add(profile_names, minor_version, keep_profile=False, force=False):
     """Appends @p profile to the @p minor_version inside the @p pcs
 
@@ -290,7 +265,7 @@ def add(profile_names, minor_version, keep_profile=False, force=False):
     perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
 
 
-@lookup_minor_version
+@vcs.lookup_minor_version
 def remove(profile_generator, minor_version, **kwargs):
     """Removes @p profile from the @p minor_version inside the @p pcs
 
@@ -373,7 +348,7 @@ output of status, log and others.
 
 
 @perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('log'))
-@lookup_minor_version
+@vcs.lookup_minor_version
 def log(minor_version, short=False, **_):
     """Prints the log of the performance control system
 
@@ -716,23 +691,6 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
             cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
 
 
-@lookup_minor_version
-def get_nth_profile_of(position, minor_version):
-    """Returns the profile at nth position in the index
-
-    :param int position: position of the profile we are obtaining
-    :param str minor_version: looked up minor version for the wrapped vcs
-    """
-    registered_profiles = profile.load_list_for_minor_version(minor_version)
-    profile.sort_profiles(registered_profiles)
-    if 0 <= position < len(registered_profiles):
-        return registered_profiles[position].realpath
-    else:
-        raise click.BadParameter("invalid tag '{}' (choose from interval <{}, {}>)".format(
-            "{}@i".format(position), "0@i", "{}@i".format(len(registered_profiles)-1)
-        ))
-
-
 def get_untracked_profiles():
     """Returns list untracked profiles, currently residing in the .perun/jobs directory.
 
@@ -852,7 +810,7 @@ def status(short=False, **_):
         perun_log.print_list_of_degradations(degradation_list)
 
 
-@lookup_minor_version
+@vcs.lookup_minor_version
 def load_profile_from_args(profile_name, minor_version):
     """
     :param Profile profile_name: profile that will be stored for the minor version
@@ -882,3 +840,271 @@ def load_profile_from_args(profile_name, minor_version):
     loaded_profile = store.load_profile_from_file(profile_name, False)
 
     return loaded_profile
+
+
+def print_temp_files(root, **kwargs):
+    """Print the temporary files in the root directory.
+
+    :param str root: the path to the directory that should be listed
+    :param kwargs: additional parameters such as sorting, output formatting etc.
+    """
+    # Try to load the files in the root directory
+    try:
+        temp.synchronize_index()
+        tmp_files = temp.list_all_temps_with_details(root)
+    except InvalidTempPathException as exc:
+        perun_log.error(str(exc))
+
+    # Filter the files by protection level if it is set to show only certain group
+    if kwargs['filter_protection'] != 'all':
+        tmp_files = [(name, level, size) for name, level, size in tmp_files
+                     if level == kwargs['filter_protection']]
+    # If there are no files then abort the output
+    if not tmp_files:
+        print('== No results for the given parameters in the .perun/tmp/ directory ==')
+        return
+
+    # First sort by the name
+    tmp_files.sort(key=itemgetter(0))
+    # Now apply 'sort-by' if it differs from name:
+    if kwargs['sort_by'] != 'name':
+        sort_map = temp.SORT_ATTR_MAP[kwargs['sort_by']]
+        tmp_files.sort(key=itemgetter(sort_map['pos']), reverse=sort_map['reverse'])
+
+    # Print the total files size if needed
+    _print_total_size(sum(size for _, _, size in tmp_files), not kwargs['no_color'],
+                      not kwargs['no_total_size'])
+    # Print the file records
+    print_formatted_temp_files(tmp_files, not kwargs['no_file_size'],
+                               not kwargs['no_protection_level'], not kwargs['no_color'])
+
+
+def print_formatted_temp_files(records, show_size, show_protection, use_color):
+    """Format and print temporary file records as:
+    size | protection level | path from tmp/ directory
+
+    :param list records: the list of temporary file records as tuple (size, protection, path)
+    :param bool show_size: flag indicating whether size for each file should be shown
+    :param bool show_protection: if set to True, show the protection level of each file
+    :param bool use_color: if set to True, certain parts of the output will be colored
+    """
+    # Absolute path might be a bit too long, we remove the path component to the tmp/ directory
+    prefix = len(pcs.get_tmp_directory()) + 1
+    for file_name, protection, size in records:
+        # Print the size of each file
+        if show_size:
+            print('{}'.format(perun_log.set_color(utils.format_file_size(size),
+                                                  TEXT_EMPH_COLOUR, use_color)),
+                  end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
+        # Print the protection level of each file
+        if show_protection:
+            if protection == temp.UNPROTECTED:
+                print('{}'.format(temp.UNPROTECTED),
+                      end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
+            else:
+                print('{}  '.format(perun_log.set_color(temp.PROTECTED, TEXT_WARN_COLOUR,
+                                                        use_color)),
+                      end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
+
+        # Print the file path, emphasize the directory to make it a bit more readable
+        file_name = file_name[prefix:]
+        file_dir = os.path.dirname(file_name)
+        if file_dir:
+            file_dir += os.sep
+            print('{}'.format(perun_log.set_color(file_dir, TEXT_EMPH_COLOUR, use_color)), end='')
+        print('{}'.format(os.path.basename(file_name)))
+
+
+def delete_temps(path, ignore_protected, force, **kwargs):
+    """Delete the temporary file(s) identified by the path. The path can be either file (= delete
+    only the file) or directory (= delete files in the directory or the whole directory).
+
+    :param str path: the path to the target file or directory
+    :param bool ignore_protected: if True, protected files are ignored and not deleted, otherwise
+                                  deletion process is aborted and exception is raised
+    :param bool force: if True, delete also protected files
+    :param kwargs: additional parameters
+    """
+    try:
+        # Determine if path is file or directory and call the correct functions for that
+        if temp.exists_temp_file(path):
+            temp.delete_temp_file(path, ignore_protected, force)
+        elif temp.exists_temp_dir(path):
+            # We might delete only files or files + empty directories
+            if kwargs['keep_directories']:
+                temp.delete_all_temps(path, ignore_protected, force)
+            else:
+                temp.delete_temp_dir(path, ignore_protected, force)
+        # The supplied path does not exist, inform the user so they can correct the path
+        else:
+            perun_log.warn("The supplied path '{}' does not exist, no files deleted"
+                           .format(temp.temp_path(path)))
+    except (InvalidTempPathException, ProtectedTempException) as exc:
+        # Invalid path or protected files encountered
+        perun_log.error(str(exc))
+
+
+def list_stat_objects(mode, **kwargs):
+    """ Prints the stat files or versions (based on the mode) in the '.perun/stats' directory.
+
+    The default output formats are:
+    'file size | minor version | file name' for files
+    'directory size | minor version | files count' for versions
+    However, the parameters in 'kwargs' can alter the format (hide certain properties etc.)
+
+    :param str mode: the requested list mode: 'versions' or 'files'
+    :param kwargs: additional parameters from the CLI such as coloring the output, sorting etc.
+    """
+    versions = stats.list_stat_versions(kwargs['from_minor'], kwargs['top'])
+    versions = [(version, stats.list_stats_for_minor(version)) for version, _ in versions]
+
+    # Abort the whole output if we have no versions
+    if not versions:
+        print('== No results for the given parameters in the .perun/stats/ directory ==')
+        return
+
+    if mode == 'versions':
+        # We need to print the versions, aggregate the files and their sizes
+        results = [(sum(size for _, size in files), version, len(files))
+                   for version, files in versions]
+        properties = [(not kwargs['no_dir_size'], not kwargs['no_color']), (True, False),
+                      (not kwargs['no_file_count'], False)]
+    else:
+        # We need to print the files, create separate record for each file
+        results = []
+        for version, files in versions:
+            # A bit more complicated since we also need records for empty version directories
+            if files:
+                results.extend([(size, version, file) for file, size in files])
+            else:
+                results.append((None, version, '-= No stats file =-'))
+        # results = [(size, version, file) for version, files in versions for file, size in files]
+        properties = [(not kwargs['no_file_size'], not kwargs['no_color']),
+                      (not kwargs['no_minor'], False), (True, False)]
+
+    # Separate the results with no files since they cannot be properly sorted but still need
+    # to be printed
+    record_size = itemgetter(0)
+    valid_results, empty_results = utils.partition_list(
+        results, lambda item: record_size(item) is not None
+    )
+
+    # Print the total size if needed
+    _print_total_size(sum(record_size(record) for record in valid_results),
+                      not kwargs['no_color'], not kwargs['no_total_size'])
+    # Sort by size if needed
+    if kwargs['sort_by_size']:
+        if mode == 'versions':
+            results.sort(key=record_size, reverse=True)
+        else:
+            valid_results.sort(key=record_size, reverse=True)
+            results = valid_results + empty_results
+
+    # Format the size so that is's suitable for output
+    results = [(utils.format_file_size(size), version, file) for size, version, file in results]
+    # Print all the results
+    _print_stat_objects(results, properties, not kwargs['no_color'])
+
+
+def _print_total_size(total_size, colored, enabled):
+    """ Prints the formatted total size of all displayed results.
+
+    :param int total_size: the total size in bytes
+    :param bool colored: a flag describing if the output should be colored
+    :param bool enabled: a flag describing if the total size should be displayed at all
+    """
+    if enabled:
+        total_size = utils.format_file_size(total_size)
+        print('Total size of all the displayed files / directories: {}'.format(
+            perun_log.set_color(total_size, TEXT_EMPH_COLOUR, colored))
+        )
+
+
+def _print_stat_objects(stats_objects, properties, colored_delimiters):
+    """ Prints stats objects (files, versions, other iterable etc.) in a general way.
+
+    The stats object should be a list of items to print, where each item consists of some
+    properties that may or may not be printed / colored, as set by the 'properties'.
+
+    The 'properties' should be a list of tuples (print, colored) that define if the corresponding
+    property (item property on a matching position) should be printed and colored.
+
+    :param list stats_objects: list of stat objects to print
+    :param list properties: list of settings for item properties / parts
+    :param bool colored_delimiters: enables/disables the coloring of delimiters for item properties
+    """
+    # Iterate all the stats objects and parts of each object
+    for item in stats_objects:
+        record = ''
+        for pos, prop in enumerate(item):
+            # Check if we should print the property and if it should be colored
+            show_property, property_colored = properties[pos]
+            if show_property:
+                # Add the delimiter if the record already has some properties to print
+                if record:
+                    record += perun_log.set_color(' | ', TEXT_WARN_COLOUR, colored_delimiters)
+                record += perun_log.set_color(str(prop), TEXT_EMPH_COLOUR, property_colored)
+        print(record)
+
+
+def delete_stats_file(name, in_minor, keep_directory):
+    """ Deletes stats file in either a specific minor version or across all the versions in the
+    stats directory.
+
+    :param str name: the file name
+    :param str in_minor: the minor version identification or '.' for global deletion
+    :param bool keep_directory: possibly empty version directory after the deletion will be kept
+                                in the stats directory if set to True.
+    """
+    if in_minor == '.':
+        stats.delete_stats_file_across_versions(name, keep_directory)
+    else:
+        stats.delete_stats_file(name, in_minor, keep_directory)
+
+
+def delete_stats_minor(minor, keep_directory):
+    """ Deletes the minor version directory in the stats directory.
+
+    :param str minor: the minor version identification
+    :param bool keep_directory: the empty version directory will be kept
+                                in the stats directory if True
+    """
+    stats.delete_version_dirs([minor], False, keep_directory)
+
+
+def delete_stats_all(keep_directory):
+    """ Deletes all items in the stats directory.
+
+    :param bool keep_directory: the empty version directories will be kept
+                                in the stats directory if True
+    """
+    stats.reset_stats(keep_directory)
+
+
+def clean_stats(keep_custom, keep_empty):
+    """ Cleans the stats directory, that is:
+    - synchronizes the internal state of the stats directory, i.e. the index file
+    - attempts to delete all distinguishable custom files and directories (some manually created or
+      custom objects may not be identified if they have the correct format, e.g. version directory
+      that was created manually but has a valid version counterpart in the VCS, manually created
+      files in the version directory etc.)
+    - deletes all empty version directories in the stats directory
+
+    :param bool keep_custom: the custom objects are kept in the stats directory if set to True
+    :param bool keep_empty: the empty version directories are not deleted if set to True
+    """
+    stats.clean_stats(keep_custom, keep_empty)
+
+
+def sync_stats():
+    """ Synchronize the stats directory contents with the index file - delete minor version records
+    for deleted versions and add missing records for existing versions.
+    """
+    stats.synchronize_index()
+
+
+def sync_temps():
+    """Synchronizes the internal state of the index file so that it corresponds to some possible
+    manual changes in the directory by the user.
+    """
+    temp.synchronize_index()

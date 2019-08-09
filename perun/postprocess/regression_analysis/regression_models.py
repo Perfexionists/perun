@@ -15,6 +15,17 @@ import perun.postprocess.regression_analysis.extensions.plot_models as plot
 import perun.utils.exceptions as exceptions
 
 
+def get_formula_of(model):
+    """
+    Method returns the formula for y coordinates computation according
+    to the given model type (e.g. linear, constant, etc.).
+
+    :param str model: the type of model which formula is required
+    :return lambda: formula for y coordinates computation
+    """
+    return _MODELS[model]['transformations']['plot_model']['formula']
+
+
 def get_supported_models():
     """Provides all currently supported models as a list of their names.
 
@@ -166,7 +177,7 @@ _MODELS = {
                 'computation': plot.model_plot_computation,
                 'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.generic_plot_y_pts,
-                'formula': lambda b0, b1, x: b0 + b1 * x
+                'formula': lambda x, b0, b1: b0 + b1 * x
             }
         }
     },
@@ -187,7 +198,7 @@ _MODELS = {
                 'computation': plot.model_plot_computation,
                 'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.generic_plot_y_pts,
-                'formula': lambda b0, b1, x: b0 + b1 * x
+                'formula': lambda x, b0, b1: b0 + b1 * x
             }
         }
     },
@@ -209,7 +220,7 @@ _MODELS = {
                 'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.generic_plot_y_pts,
                 'm_fx': math.log,
-                'formula': lambda b0, b1, x: b0 + b1 * x
+                'formula': lambda x, b0, b1: b0 + b1 * x
             }
         }
     },
@@ -227,7 +238,7 @@ _MODELS = {
                 'computation': plot.model_plot_computation,
                 'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.quad_plot_y_pts,
-                'formula': lambda b0, b1, b2, x: b0 + b1 * x + b2 * (x ** 2)
+                'formula': lambda x, b0, b1, b2: b0 + b1 * x + b2 * (x ** 2)
             }
         }
     },
@@ -248,7 +259,7 @@ _MODELS = {
                 'computation': plot.model_plot_computation,
                 'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.generic_plot_y_pts,
-                'formula': lambda b0, b1, x: b0 * x ** b1
+                'formula': lambda x, b0, b1: b0 * x ** b1
             }
         }
     },
@@ -269,7 +280,7 @@ _MODELS = {
                 'computation': plot.model_plot_computation,
                 'model_x': plot.generic_plot_x_pts,
                 'model_y': plot.generic_plot_y_pts,
-                'formula': lambda b0, b1, x: b0 * b1 ** x
+                'formula': lambda x, b0, b1: b0 * b1 ** x
             }
         }
     }

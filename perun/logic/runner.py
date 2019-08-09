@@ -9,8 +9,10 @@ import perun.logic.pcs as pcs
 import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.logic.index as index
-import perun.profile.factory as profile
+import perun.profile.helpers as profile
+import perun.profile.factory as profile_factory
 import perun.utils as utils
+import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.workload as workloads
@@ -174,17 +176,22 @@ def run_all_phases_for(runner, runner_type, runner_params):
             if not is_status_ok(ret_val, ok_status):
                 return error_status, "error while {}{} phase: {}".format(
                     phase, ("_" + runner_verb)*(phase != runner_verb), ret_msg
-                ), {}
+                ), None
         elif phase == runner_verb:
             return error_status, "missing {}() function for {}".format(
                 runner_verb, runner.__name__
-            ), {}
+            ), None
 
     # Return the processed profile
     if 'profile' not in runner_params.keys():
         return error_status, "missing generated profile for {} {}".format(
             runner_type, runner.__name__
-        ), {}
+        ), None
+    if not isinstance(runner_params['profile'], profile_factory.Profile):
+        log.warn("{} {} does not return Profile object".format(
+            runner_type, runner.__name__
+        ))
+        return ok_status, "", profile_factory.Profile(runner_params['profile'])
     return ok_status, "", runner_params['profile']
 
 
@@ -298,7 +305,7 @@ def store_generated_profile(prof, job):
     full_profile_name = profile.generate_profile_name(full_profile)
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
-    profile.store_profile_at(full_profile, full_profile_path)
+    streams.store_json(full_profile.serialize(), full_profile_path)
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
@@ -393,7 +400,7 @@ def generate_jobs_on_current_working_dir(job_matrix, number_of_jobs):
                 for c_status, prof in generator(job, **params).generate(run_collector):
                     # Run the collector and check if the profile was successfully collected
                     # In case, the status was not OK, then we skip the postprocessing
-                    if c_status != CollectStatus.OK or not prof:
+                    if c_status != CollectStatus.OK:
                         collective_status = CollectStatus.ERROR
                         continue
 

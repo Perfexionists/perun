@@ -15,12 +15,13 @@ import itertools
 import click
 
 import perun.postprocess.clusterizer as clustering
-import perun.profile.query as query
 import perun.profile.convert as convert
 import perun.utils as utils
 import perun.utils.log as log
 import perun.logic.runner as runner
-from perun.utils.helpers import PostprocessStatus, pass_profile
+
+from perun.utils.helpers import PostprocessStatus
+from perun.profile.factory import pass_profile
 
 
 def resource_sort_key(resource):
@@ -60,14 +61,14 @@ def postprocess(profile, strategy, **kwargs):
     All of the resources are first sorted according to their uid and amounts. Then they are group
     according to their uid and for each group we compute the clusters in isolation
 
-    :param dict profile: performance profile that will be clusterized
+    :param Profile profile: performance profile that will be clusterized
     :param str strategy: name of the used strategy
         (one of clustering.SUPPORTED_STRATEGIES
     :param kwargs:
     :return:
     """
     # Flatten the resources to sorted list of resources
-    resources = list(map(operator.itemgetter(1), query.all_resources_of(profile)))
+    resources = list(map(operator.itemgetter(1), profile.all_resources()))
     resources.sort(key=resource_sort_key)
 
     # For debug purposes, print the results
@@ -83,6 +84,7 @@ def postprocess(profile, strategy, **kwargs):
         utils.dynamic_module_function_call(
             'perun.postprocess.clusterizer', strategy, 'clusterize', list(members), **kwargs
         )
+    profile.update_resources(resources, clear_existing_resources=True)
 
     # For debug purposes, print the results
     if log.is_verbose_enough(log.VERBOSE_INFO):

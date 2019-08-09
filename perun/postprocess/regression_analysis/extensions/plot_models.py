@@ -1,9 +1,9 @@
 """ Extension for regression model coefficients transformation into array of points. The points
     array can be then used for model plotting as a series of lines forming a (curved) line.
 """
+import numpy as np
 
 import perun.postprocess.regression_analysis.tools as tools
-import numpy as np
 
 # Default model curve smoothness specified as number of points generated from x interval
 # The higher the value, the smoother the curves, the longer the computation tho.
@@ -39,21 +39,21 @@ def model_plot_computation(model_x, model_y, **data):
     return plot_data
 
 
-def generic_plot_x_pts(x_interval_start, x_interval_end,
+def generic_plot_x_pts(x_start, x_end,
                        smoothness=DEFAULT_SMOOTHNESS, transform_by=tools.as_plot_x_dict, **_):
     """Generic version of model x points computation.
 
     Splits the x interval of model into number of points.
 
-    :param int or float x_interval_start: the left bound of the x interval
-    :param int or float x_interval_end: the right bound of the x interval
+    :param int or float x_start: the left bound of the x interval
+    :param int or float x_end: the right bound of the x interval
     :param int smoothness: number of points to produce from the interval
     :param function transform_by: function for additional transformation of the resulting data
     :raises TypeError: if the required function arguments are not in the unpacked dictionary input
     :returns dict: data dictionary with 'plot_x' array
     """
     # Produce number of points from the interval
-    return transform_by(tools.split_model_interval(x_interval_start, x_interval_end, smoothness))
+    return transform_by(tools.split_model_interval(x_start, x_end, smoothness))
 
 
 def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, transform_by=tools.as_plot_y_dict, **_):
@@ -80,7 +80,7 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, transform_by=tools.as
         f_x = np.vectorize(m_fx)
         plot_x = f_x(plot_x)
     # Apply the computation formula
-    return transform_by(np.array(formula(b0, b1, plot_x)))
+    return transform_by(np.array(formula(plot_x, b0, b1)))
 
 
 def quad_plot_y_pts(plot_x, b0, b1, b2, formula, transform_by=tools.as_plot_y_dict, **_):
@@ -103,4 +103,4 @@ def quad_plot_y_pts(plot_x, b0, b1, b2, formula, transform_by=tools.as_plot_y_di
     :returns dict: data dictionary with 'plot_y' array
     """
     # Apply the computation formula
-    return transform_by(np.array(formula(b0, b1, b2, plot_x)))
+    return transform_by(np.array(formula(plot_x, b0, b1, b2)))

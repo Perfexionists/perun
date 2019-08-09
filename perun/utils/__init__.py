@@ -331,6 +331,26 @@ def merge_dict_range(*args):
     return res
 
 
+def partition_list(input_list, condition):
+    """Utility function for list partitioning on a condition so that the list is not iterated
+    twice and the condition is evaluated only once.
+
+    Based on a SO answer featuring multiple methods and their performance comparison:
+    'https://stackoverflow.com/a/31448772'
+
+    :param list input_list: the input list to be partitioned
+    :param function condition: the condition that should be evaluated on every list item
+    :return tuple: (list of items evaluated to True, list of items evaluated to False)
+    """
+    good, bad = [], []
+    for item in input_list:
+        if condition(item):
+            good.append(item)
+        else:
+            bad.append(item)
+    return good, bad
+
+
 def identity(*args):
     """Identity function, that takes the arguments and return them as they are
 
@@ -409,3 +429,27 @@ def build_command_str(cmd, args, workload):
     if workload:
         cmd += ' ' + workload
     return cmd
+
+
+def format_file_size(size):
+    """Format file size in Bytes into a fixed-length output so that it can be easily printed.
+
+    If size is set to 'None' then the function returns number of whitespace characters of the
+    same width as if an actual value was supplied.
+
+    Courtesy of 'https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-
+    readable-version-of-file-size'
+
+    :param int size: the size in Bytes
+
+    :return str: the formatted size for output
+    """
+    if size is None:
+        return ' ' * 10
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti']:
+        if abs(size) < 1024.0:
+            if unit == '':
+                return "{:6.0f} B  ".format(size)
+            return "{:6.1f} {}B".format(size, unit)
+        size /= 1024.0
+    return "{:.1f} PiB".format(size)

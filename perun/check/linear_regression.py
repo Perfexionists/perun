@@ -11,12 +11,13 @@ import perun.check.general_detection as detect
 import perun.check.fast_check as fast_check
 
 
-def linear_regression(baseline_profile, target_profile):
+def linear_regression(baseline_profile, target_profile, **_):
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
-    :param dict baseline_profile: baseline against which we are checking the degradation
+    :param dict baseline_profile: base against which we are checking the degradation
     :param dict target_profile: profile corresponding to the checked minor version
+    :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate, confidence)
     """
 
@@ -25,8 +26,10 @@ def linear_regression(baseline_profile, target_profile):
     )
 
 
-def exec_linear_regression(uid, baseline_x_pts, lin_abs_error, threshold, linear_diff_b1,
-                           baseline_model, target_model, baseline_profile):
+def exec_linear_regression(
+        uid, baseline_x_pts, lin_abs_error, threshold, linear_diff_b1,
+        baseline_model, target_model, baseline_profile
+):
     """Function executes the classification of performance change between two profiles with using
     function from scipy module, concretely linear regression and regression analysis. If that fails
     classification using linear regression, so it will be used regression analysis to the result of
@@ -39,8 +42,8 @@ def exec_linear_regression(uid, baseline_x_pts, lin_abs_error, threshold, linear
         from both profiles
     :param integer threshold: the appropriate value for distinction individual state of detection
     :param integer linear_diff_b1: difference coefficients b1 from both linear models
-    :param BestModelRecord baseline_model: the best model from the baseline profile
-    :param BestModelRecord target_model: the best model from the target profile
+    :param ModelRecord baseline_model: the best model from the baseline profile
+    :param ModelRecord target_model: the best model from the target profile
     :param dict baseline_profile: baseline against which we are checking the degradation
     :returns: string (classification of the change)
     """
@@ -68,14 +71,14 @@ def exec_linear_regression(uid, baseline_x_pts, lin_abs_error, threshold, linear
             change_type = 'linear'
 
     std_err_profile = fast_check.exec_fast_check(
-        baseline_profile, baseline_x_pts, lin_abs_error
+        uid, baseline_profile, baseline_x_pts, lin_abs_error
     )
     # obtaining the models (linear and quadratic) from the new regressed profile
     quad_err_model = detect.get_filtered_best_models_of(
-        std_err_profile, model_filter=detect.create_filter_by_model('quadratic')
+        std_err_profile, group='param', model_filter=detect.create_filter_by_model('quadratic')
     )
     linear_err_model = detect.get_filtered_best_models_of(
-        std_err_profile, model_filter=detect.create_filter_by_model('linear')
+        std_err_profile, group='param', model_filter=detect.create_filter_by_model('linear')
     )
 
     # check the last quadratic type of change
@@ -85,7 +88,7 @@ def exec_linear_regression(uid, baseline_x_pts, lin_abs_error, threshold, linear
 
     # We did not classify the change
     if not change_type:
-        std_err_model = detect.get_filtered_best_models_of(std_err_profile)
+        std_err_model = detect.get_filtered_best_models_of(std_err_profile, group='param')
         change_type = std_err_model[uid].type
 
     return change_type

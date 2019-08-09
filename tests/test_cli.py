@@ -5,6 +5,7 @@ this is done in appropriate test files, only the API is tested."""
 
 import os
 import git
+import numpy as np
 import re
 import shutil
 import subprocess
@@ -18,12 +19,18 @@ import perun.utils as utils
 import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.store as store
+import perun.logic.temp as temp
+import perun.logic.stats as stats
 import perun.logic.runner as perun_runner
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
+import perun.logic.pcs as pcs
 
 __author__ = 'Tomas Fiedor'
+
+
+SIZE_REGEX = re.compile(r"([0-9]+ (Ki|Mi){0,1}B)")
 
 
 def test_cli(pcs_full):
@@ -80,14 +87,14 @@ def test_regressogram_incorrect(pcs_full):
         {'params': ['-bm', 'user'],
             'output': 'Invalid value for "--bucket_method"'},
         # Test malformed statistic_function argument
-        {'params': ['--statistic_functions'],
-            'output': 'no such option: --statistic_functions'},
-        # Test missing statistic_function value
-        {'params': ['--statistic_function'],
-            'output': '--statistic_function option requires an argument'},
+        {'params': ['--statistic_functions'], 'output': 'no such option: --statistic_functions'},
         # Test invalid model name
-        {'params': ['-sf', 'max'],
-            'output': 'Invalid value for "--statistic_function"'}
+        {'params': ['-sf', 'max'], 'output': 'Invalid value for "--statistic_function"'},
+        # Test missing statistic_function value
+        {
+            'params': ['--statistic_function'],
+            'output': '--statistic_function option requires an argument'
+        },
     ]
     # TODO: multiple values check
 
@@ -98,8 +105,9 @@ def test_regressogram_incorrect(pcs_full):
     regressogram_params = ['1@i', 'regressogram']
     # Executing the testing
     for incorrect_test in incorrect_tests:
-        run_non_param_test(runner, regressogram_params +
-                           incorrect_test['params'], 2, incorrect_test['output'])
+        run_non_param_test(
+            runner, regressogram_params + incorrect_test['params'], 2, incorrect_test['output']
+        )
 
 
 def test_regressogram_correct(pcs_full):
@@ -166,11 +174,15 @@ def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_i
     for idx, test in enumerate(tests_set):
         if method_idx == 1:
             for n in range(method_idx, 3):
-                run_non_param_test(runner, moving_average_params + moving_average_methods[n] + test['params'],
-                                   exit_code, test.get('output', 'Successfully postprocessed'))
+                run_non_param_test(
+                    runner, moving_average_params + moving_average_methods[n] + test['params'],
+                    exit_code, test.get('output', 'Successfully postprocessed')
+                )
         else:
-            run_non_param_test(runner, moving_average_params + moving_average_methods[method_idx] + test['params'],
-                               exit_code, test.get('output', 'Successfully postprocessed'))
+            run_non_param_test(
+                runner, moving_average_params + moving_average_methods[method_idx] + test['params'],
+                exit_code, test.get('output', 'Successfully postprocessed')
+            )
         method_idx += 1 if idx + 1 == tests_edge[method_idx] else 0
 
 
@@ -393,13 +405,21 @@ def kernel_regression_runner_test(runner, tests_set, tests_edge, exit_code, cpro
     # Set stable parameters at all tests
     kernel_regression_params = [cprof_idx, 'kernel-regression']
     # Set the supported methods at moving average postprocessor
-    kernel_regression_modes = {0: [], 1: ['estimator-settings'], 2: ['method-selection'], 3: ['user-selection'],
-                               4: ['kernel-ridge'], 5: ['kernel-smoothing']}
+    kernel_regression_modes = {
+        0: [],
+        1: ['estimator-settings'],
+        2: ['method-selection'],
+        3: ['user-selection'],
+        4: ['kernel-ridge'],
+        5: ['kernel-smoothing']
+    }
     # Executing the testing
     mode_idx = 0
     for idx, test in enumerate(tests_set):
-        run_non_param_test(runner, kernel_regression_params + kernel_regression_modes[mode_idx] + test['params'],
-                           exit_code, test.get('output', 'Successfully postprocessed'))
+        run_non_param_test(
+            runner, kernel_regression_params + kernel_regression_modes[mode_idx] + test['params'],
+            exit_code, test.get('output', 'Successfully postprocessed')
+        )
         mode_idx += 1 if idx + 1 == tests_edge[mode_idx] else 0
 
 
@@ -571,8 +591,10 @@ def test_kernel_regression_incorrect(pcs_full):
         {'params': ['--gamma-step', 0],
             'output': 'Invalid value for "--gamma-step"'},
         # 59. Test invalid value gamma-step argument no.2
-        {'params': ['--gamma-step', 10],
-            'output': 'Invalid values: step must be < then the length of the range'},
+        {
+            'params': ['--gamma-step', 10],
+            'output': 'Invalid values: step must be < then the length of the range'
+        },
 
         # TEST OPTIONS OF KERNEL-SMOOTHING MODES IN KERNEL-REGRESSION CLI
         # 60. Test malformed kernel-type argument
@@ -581,8 +603,10 @@ def test_kernel_regression_incorrect(pcs_full):
         # 61. Test missing kernel-type value
         {'params': ['-kt'], 'output': '-kt option requires an argument'},
         # 62. Test invalid value of kernel-type argument
-        {'params': ['--kernel-type', 'epanechnikov5'],
-            'output': 'Invalid value for "--kernel-type"'},
+        {
+            'params': ['--kernel-type', 'epanechnikov5'],
+            'output': 'Invalid value for "--kernel-type"'
+        },
         # 63. Test malformed smoothing-method argument
         {'params': ['--smothing-method'],
             'output': 'no such option: --smothing-method'},
@@ -605,8 +629,10 @@ def test_kernel_regression_incorrect(pcs_full):
         # 70. Test missing bandwidth-method value
         {'params': ['-bm'], 'output': '-bm option requires an argument'},
         # 71. Test invalid value for bandwidth-method argument
-        {'params': ['--bandwidth-method', 'sccot'],
-            'output': 'Invalid value for "--bandwidth-method"'},
+        {
+            'params': ['--bandwidth-method', 'sccot'],
+            'output': 'Invalid value for "--bandwidth-method"'
+        },
         # 72. Test malformed polynomial-order argument
         {'params': ['--polynomila-order'],
             'output': 'no such option: --polynomila-order'},
@@ -637,6 +663,8 @@ def test_kernel_regression_correct(pcs_full):
 
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
+    np.warnings.filterwarnings('ignore')
+
     correct_tests = [
         # TEST KERNEL-REGRESSION COMMON OPTIONS
         # 1. Test the help printout first
@@ -686,9 +714,12 @@ def test_kernel_regression_correct(pcs_full):
         {'params': ['-bw', 'aic', '-nres', 10, '-nsub',
                     50, '--randomize', '--efficient']},
         # 22. Test the complex combinations of options - no.3
-        {'params': [
-            '--reg-type', 'll', '--bandwidth-method', 'cv_ls', '--efficient', '--randomize', '--n-sub-samples', 20
-        ]},
+        {
+            'params': [
+                '--reg-type', 'll', '--bandwidth-method', 'cv_ls',
+                '--efficient', '--randomize', '--n-sub-samples', 20
+            ]
+        },
 
         # TEST METHOD-SELECTION OPTIONS
         # 23. Test the help printout first
@@ -763,8 +794,12 @@ def test_kernel_regression_correct(pcs_full):
         {'params': ['--smoothing-method',
                     'local-polynomial', '--polynomial-order', 5]},
         # 55. Test complex combination of options - no.1
-        {'params': ['--kernel-type', 'epanechnikov',
-                    '--smoothing-method', 'local-linear', '-bm', 'silverman']},
+        {
+            'params': [
+                '--kernel-type', 'epanechnikov', '--smoothing-method',
+                'local-linear', '-bm', 'silverman'
+            ]
+        },
         # 56. Test complex combination of options - no.2
         {'params': ['-kt', 'normal', '-sm', 'local-polynomial',
                     '--polynomial-order', 8, '-bv', 1]},
@@ -772,25 +807,28 @@ def test_kernel_regression_correct(pcs_full):
         {'params': ['--kernel-type', 'normal', '-sm',
                     'local-linear', '--bandwidth-value', .5]},
         # 58. Test complex combination of options - no.5
-        {'params': ['--kernel-type', 'normal', '-sm',
-                    'local-polynomial', '--bandwidth-value', 1e-10]},
+        {
+            'params': [
+                '--kernel-type', 'normal', '-sm', 'local-polynomial', '--bandwidth-value', 1e-10
+            ]
+        },
         # 59. Test complex combination of options - no.4
-        {'params': ['--smoothing-method', 'spatial-average',
-                    '--bandwidth-method', 'scott', '--kernel-type', 'tricube']}
+        {
+            'params': [
+                '--smoothing-method', 'spatial-average', '--bandwidth-method',
+                'scott', '--kernel-type', 'tricube'
+            ]
+        }
     ]
     tests_edge = [5, 22, 30, 34, 40, 59]
 
     # Instantiate the runner first
     runner = CliRunner()
-
-    result = runner.invoke(cli.status, [])
-    match = re.search(r'([0-9]+@i).*mixed', result.output)
-    assert match
-    cprof_idx = match.groups(1)[0]
+    pool_path = os.path.join(os.path.split(__file__)[0], 'postprocess_profiles')
+    profile = os.path.join(pool_path, 'kernel_datapoints.perf')
 
     # Perform the testing
-    kernel_regression_runner_test(
-        runner, correct_tests, tests_edge, 0, cprof_idx)
+    kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, profile)
 
 
 def test_reg_analysis_incorrect(pcs_full):
@@ -1543,7 +1581,38 @@ def test_check_profiles(helpers, pcs_with_degradations):
 
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):
-        result = runner.invoke(cli.check_profiles, ["0@i", tag])
+        result = runner.invoke(cli.check_group, ['profiles', "0@i", tag])
+        assert result.exit_code == 0
+
+
+def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
+    """Test checking detection model strategies
+
+    Expecting correct behaviors
+    """
+    runner = CliRunner()
+    # Initialize the matrix
+    matrix = config.Config('local', '', {
+        'degradation': {
+            'strategies': [
+                {'method': 'local_statistics'}
+            ]
+        },
+    })
+    monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
+
+    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    profiles = [
+        os.path.join(pool_path, 'baseline_strategies.perf'),
+        os.path.join(pool_path, 'target_strategies.perf')
+    ]
+    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
+
+    for model_strategy in ['best-param', 'all-nonparam', 'best-both']:
+        result = runner.invoke(
+            cli.check_group,
+            ['--models-type', model_strategy, 'profiles', "0@p", "1@p"]
+        )
         assert result.exit_code == 0
 
 
@@ -2181,3 +2250,353 @@ def test_error_runs(pcs_full, monkeypatch):
                                      '--collector', 'time'
                                      ])
     assert result.exit_code == 1
+
+
+
+def test_temp(pcs_with_empty_git):
+    """Test the CLI operations on the temporary files"""
+    runner = CliRunner()
+    files_dir = os.path.join(os.path.split(__file__)[0], 'tmp_files')
+
+    # Try to list temporary files with empty tmp/ directory
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
+    assert result.exit_code == 0
+    assert 'No results for the given parameters in' in result.output
+
+    # Try to list files in invalid path
+    result = runner.invoke(cli.temp_list, ['../'])
+    assert result.exit_code == 1
+    assert 'not located in' in result.output
+
+    # Add some files to the tmp/
+    file_lock = 'trace/lock.txt'
+    file_records = 'trace/data/records.data'
+    file_deg = 'degradations/results/data.out'
+    file_deg2 = 'degradations/results/data2.out'
+    with open(os.path.join(files_dir, 'tst_stap_record.txt'), 'r') as records_handle:
+        file_records_content = records_handle.read()
+    with open(os.path.join(files_dir, 'lin1.perf'), 'r') as deg_handle:
+        file_deg_content = deg_handle.read()
+    with open(os.path.join(files_dir, 'const1.perf'), 'r') as deg_handle:
+        file_deg2_content = deg_handle.read()
+    temp.create_new_temp(file_lock, "Some important data", protect=True)
+    temp.create_new_temp(file_records, file_records_content)
+    temp.create_new_temp(file_deg, file_deg_content, protect=True)
+    temp.create_new_temp(file_deg2, file_deg2_content)
+
+    # List the now-nonempty tmp/ directory in colored mode
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
+    assert result.exit_code == 0
+    _compare_file_outputs(result.output, os.path.join(files_dir, 'list1.ref'))
+
+    # From now on, the colored mode will be disabled
+    # Test the file size and protection-level switches
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '--no-file-size',
+                                           '--no-protection-level', '--no-color'])
+    assert result.exit_code == 0
+    _compare_file_outputs(result.output, os.path.join(files_dir, 'list2.ref'))
+
+    # Test the sorting by size and protection level (name is default)
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-s', 'size', '--no-color'])
+    assert result.exit_code == 0
+    _compare_file_outputs(result.output, os.path.join(files_dir, 'list3.ref'))
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-s', 'protection', '-c'])
+    assert result.exit_code == 0
+    _compare_file_outputs(result.output, os.path.join(files_dir, 'list4.ref'))
+
+    # Test the protection filter
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'protected', '-c'])
+    assert result.exit_code == 0
+    _compare_file_outputs(result.output, os.path.join(files_dir, 'list5.ref'))
+    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'unprotected', '-c'])
+    assert result.exit_code == 0
+    _compare_file_outputs(result.output, os.path.join(files_dir, 'list6.ref'))
+
+    # Test the syncing
+    # Simulate manual deletion by the user
+    assert temp.exists_temp_file(file_lock)
+    assert temp.get_temp_properties(file_lock) == (False, True, False)
+    os.remove(os.path.join(pcs.get_tmp_directory(), file_lock))
+    assert not temp.exists_temp_file(file_lock)
+    # However index records are still there, sync
+    assert temp.get_temp_properties(file_lock) == (False, True, False)
+    result = runner.invoke(cli.temp_sync, [])
+    assert result.exit_code == 0
+    assert temp.get_temp_properties(file_lock) == (False, False, False)
+
+    # Test the deletion
+    # Try to delete non-existent directory
+    result = runner.invoke(cli.temp_delete, ['some/invalid/dir'])
+    assert result.exit_code == 0
+    assert 'does not exist, no files deleted' in result.output
+
+    # Test the warning
+    result = runner.invoke(cli.temp_delete, ['.', '-w'])
+    assert result.exit_code == 1
+    assert 'Aborted' in result.output
+    assert temp.exists_temp_file(file_deg)
+
+    # Test single file deletion
+    result = runner.invoke(cli.temp_delete, [file_deg2])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_deg2)
+
+    # Test the keep directories
+    result = runner.invoke(cli.temp_delete, ['trace/data', '-k'])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_records)
+    assert temp.exists_temp_dir('trace/data')
+
+    # Test the force deletion of the whole tmp/ directory with keeping the empty dirs
+    result = runner.invoke(cli.temp_delete, ['.', '-f', '-k'])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_lock) and not temp.exists_temp_file(file_deg)
+    assert temp.exists_temp_dir('degradations') and temp.exists_temp_dir('trace')
+
+    # Partially repopulate the directory
+    temp.create_new_temp(file_lock, "Some important data", protect=True)
+    temp.create_new_temp(file_deg2, file_deg2_content)
+
+    # Test the complete deletion of the tmp/ directory
+    result = runner.invoke(cli.temp_delete, ['.', '-f'])
+    assert result.exit_code == 0
+    assert not temp.exists_temp_file(file_lock) and not temp.exists_temp_file(file_deg2)
+    tmp_content = os.listdir(pcs.get_tmp_directory())
+    assert len(tmp_content) == 1 and tmp_content[0] == '.index'
+
+
+def test_stats(pcs_with_more_commits):
+    """ Test the CLI for stats module, mainly that all the options are working correctly.
+    """
+    runner = CliRunner()
+
+    # Prepare some variables for versions and paths
+    minor_head, minor_middle, minor_root = _get_vcs_versions()
+    head_dir = os.path.join(minor_head[:2], minor_head[2:])
+    middle_dir = os.path.join(minor_middle[:2], minor_middle[2:])
+    root_dir = os.path.join(minor_root[:2], minor_root[2:])
+    stats_dir = pcs.get_stats_directory()
+    files_dir = os.path.join(os.path.split(__file__)[0], 'stats_files')
+
+    # Prepare the reference values for minor versions and the valid mapping between them and the
+    # actual ones during the test run
+    reference_head = 'a00e5a82dd8284d6b73335015867e816a1c6cbd4'
+    reference_middle = '15de1b9a58807f17cf0a135146f4872752abc859'
+    reference_root = '246d9a25926195cfdfb10797436d022d6f6b0a1b'
+    version_mapping = [(minor_head, reference_head), (minor_middle, reference_middle),
+                       (minor_root, reference_root)]
+
+    # Try to list stats files with empty stats/ directory
+    result = runner.invoke(cli.stats_list_files, [])
+    assert result.exit_code == 0
+    assert 'No results for the given parameters in' in result.output
+    # Try it with some filtering parameters
+    result = runner.invoke(cli.stats_list_files, ['-N', 10, '-m', minor_middle])
+    assert result.exit_code == 0
+    assert 'No results for the given parameters in' in result.output
+
+    # Try to list stats minor versions with empty stats/ directory
+    result = runner.invoke(cli.stats_list_versions, [])
+    assert result.exit_code == 0
+    assert 'No results for the given parameters in' in result.output
+    # Try it with some filtering parameters
+    result = runner.invoke(cli.stats_list_versions, ['-N', 10, '-m', minor_root])
+    assert result.exit_code == 0
+    assert 'No results for the given parameters in' in result.output
+
+    head_custom = os.path.join(head_dir, 'custom_file')
+    root_custom = os.path.join(root_dir, 'custom_file_2')
+    head_custom_dir = os.path.join(root_dir, 'custom_dir')
+    stats_custom_dir = os.path.join('lower_custom', 'upper_custom')
+
+    # HEAD: head_stats, custom_file, custom_dir
+    # MIDDLE: 'empty'
+    # ROOT: created manually, custom_file_2
+    # lower_custom/upper_custom
+    stats.add_stats('head_stats', ['1'], [{'value': 1, 'location': 'minor_head'}])
+    stats.add_stats('middle_stats', ['1'], [{'custom': 2}], minor_middle)
+    stats.delete_stats_file('middle_stats', minor_middle, True)
+    os.makedirs(os.path.join(stats_dir, root_dir))
+    os.makedirs(os.path.join(stats_dir, stats_custom_dir))
+    os.mkdir(os.path.join(stats_dir, head_custom_dir))
+    store.touch_file(os.path.join(stats_dir, root_custom))
+    with open(os.path.join(stats_dir, root_custom), 'w+') as f_handle:
+        f_handle.write('Some custom data')
+    store.touch_file(os.path.join(stats_dir, head_custom))
+
+    # Test the list functions on populated stats directory and some custom objects
+    result = runner.invoke(cli.stats_list_files, [])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list1.ref'))
+    # Test the list of versions
+    result = runner.invoke(cli.stats_list_versions, [])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list2.ref'))
+
+    # Now synchronize the stats directory and test the filtering parameters in list functions
+    # Test the list of files
+    runner.invoke(cli.stats_sync, [])
+    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', minor_middle])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list3.ref'))
+    result = runner.invoke(cli.stats_list_files, ['-N', 2, '-m', minor_middle, '-c'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list4.ref'))
+    # Test the list of versions
+    result = runner.invoke(cli.stats_list_versions, ['-N', 2, '-m', minor_middle, '-c'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list5.ref'))
+
+    # Test the sorting by size and omitting some properties
+    result = runner.invoke(cli.stats_list_files, ['-c', '-s', '-t'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list6.ref'))
+    result = runner.invoke(cli.stats_list_versions, ['-c', '-s', '-t'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list7.ref'))
+
+    # Test the output by omitting more properties
+    result = runner.invoke(cli.stats_list_files, ['-c', '-i', '-f'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list8.ref'))
+    result = runner.invoke(cli.stats_list_versions, ['-c', '-f', '-d'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list9.ref'))
+
+    # Delete the minor_middle directory
+    result = runner.invoke(cli.stats_delete_minor, [minor_middle])
+    assert result.exit_code == 0
+    assert not os.path.exists(os.path.join(stats_dir, minor_middle[:2], minor_middle[2:]))
+
+    # Now try lists with invalid minor values
+    # Attempting to list version that doesn't have directory in stats, should display the successor
+    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', minor_middle, '-c'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list10.ref'))
+    # Attempt to list non-existent minor version
+    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234', '-c'])
+    assert result.exit_code == 2
+    assert 'did not resolve to an object' in result.output
+    # Try the same with version list
+    result = runner.invoke(cli.stats_list_versions, ['-N', 1, '-m', minor_middle, '-c'])
+    assert result.exit_code == 0
+    actual_output = _normalize_stats_output(result.output, version_mapping)
+    _compare_file_outputs(actual_output, os.path.join(files_dir, 'list11.ref'))
+    # Attempt to list non-existent minor version
+    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234', '-c'])
+    assert result.exit_code == 2
+    assert 'did not resolve to an object' in result.output
+
+    # Recreate the middle version directory, keep it empty however
+    stats.add_stats('tmp_stats', ['id_1'], [{'value': 10}], minor_middle)
+    result = runner.invoke(cli.stats_delete_file, ['-k', '-m', minor_middle, 'tmp_stats'])
+    assert result.exit_code == 0
+    assert os.path.exists(os.path.join(stats_dir, middle_dir))
+    assert not os.path.exists(os.path.join(stats_dir, middle_dir, 'tmp_stats'))
+
+    # Test the cleaning function that should be no-op
+    result = runner.invoke(cli.stats_clean, ['-c', '-e'])
+    assert result.exit_code == 0
+    assert os.path.exists(os.path.join(stats_dir, stats_custom_dir))
+
+    # Try to clean the directory properly
+    result = runner.invoke(cli.stats_clean, [])
+    assert result.exit_code == 0
+    assert not os.path.exists(os.path.join(stats_dir, 'lower_custom'))
+    assert not os.path.exists(os.path.join(stats_dir, middle_dir))
+
+    # Try to delete file in a version that doesn't have a directory in the stats
+    result = runner.invoke(cli.stats_delete_file, ['-m', minor_middle, 'some_file'])
+    assert result.exit_code == 2
+    assert 'does not exist in the stats directory' in result.output
+    # Try to delete some file in non-existing minor version
+    result = runner.invoke(cli.stats_delete_file, ['-m', 'abcdef12345', 'some_file'])
+    assert result.exit_code == 2
+    assert 'did not resolve to an object' in result.output
+    # Try deleting a file in a valid version that does not contain the file
+    result = runner.invoke(cli.stats_delete_file, ['-m', minor_head, 'file_not_present'])
+    assert result.exit_code == 2
+    assert 'does not exist in the stats directory for minor version' in result.output
+
+    # Add a file to both version directories and try to delete the file across all the versions
+    stats.add_stats('generic_stats', ['id_1'], [{'value': 1}])
+    stats.add_stats('generic_stats', ['id_1'], [{'value': 2}], minor_root)
+    assert os.path.exists(os.path.join(stats_dir, root_dir, 'generic_stats'))
+    result = runner.invoke(cli.stats_delete_file, ['-k', '-m', '.', 'generic_stats'])
+    assert result.exit_code == 0
+    assert not os.path.exists(os.path.join(stats_dir, root_dir,
+                                           'generic_stats'))
+
+    # Repopulate the middle minor version and try to delete the contents of the root version
+    stats.add_stats('middle_stats', ['id_1'], [{'value': 10}], minor_middle)
+    assert os.path.exists(os.path.join(stats_dir, root_dir, 'custom_file_2'))
+    result = runner.invoke(cli.stats_delete_minor, ['-k', minor_root])
+    assert result.exit_code == 0
+    assert not os.path.exists(os.path.join(stats_dir, root_dir, 'custom_file_2'))
+    assert os.path.exists(os.path.join(stats_dir, root_dir))
+
+    # Try to clear the contents of all the version directories
+    result = runner.invoke(cli.stats_delete_all, ['-k'])
+    assert result.exit_code == 0
+    assert len(stats.list_stat_versions()) == 3
+    assert len(stats.list_stats_for_minor(minor_head)) == 0
+    assert len(stats.list_stats_for_minor(minor_middle)) == 0
+    # Try to completely clear the contents of the stats directory
+    result = runner.invoke(cli.stats_delete_all, [])
+    assert result.exit_code == 0
+    assert not os.listdir(stats_dir)
+
+    # Try to add some stats file after the deletion to check that .index will be created correctly
+    stats.add_stats('middle_stats', ['id_1'], [{'value': 10}], minor_middle)
+    assert len(stats.list_stats_for_minor(minor_middle)) == 1
+
+
+def _get_vcs_versions():
+    """ Obtains the VCS minor versions.
+
+    :return list: list of minor version checksums sorted as in the VCS.
+    """
+    return [v.checksum for v in vcs.walk_minor_versions(vcs.get_minor_head())]
+
+
+def _normalize_stats_output(output, version_replacements):
+    """ Attempts to normalize the output of a cli command so that it can be compared.
+
+    That includes changing the minor version values to the reference ones and setting all the
+    size values to 0 since they can differ on different machines or lib versions etc.
+
+    :param str output: the command output
+    :param list version_replacements: list of mapping tuples (actual version, reference version)
+    :return str: the normalized output
+    """
+    # Normalize the minor versions to some comparable values
+    for minor_actual, minor_reference in version_replacements:
+        output = output.replace(minor_actual, minor_reference)
+    # Normalize the size values
+    size_matches = set(SIZE_REGEX.findall(output))
+    for match, _ in size_matches:
+        space_difference = len(match) - len('0 B')
+        output = output.replace(match, ' ' * space_difference + '0 B')
+    return output
+
+
+def _compare_file_outputs(runner_result, reference_file):
+    """Compares runner output with a file output
+
+    :param str runner_result: the output of the CLI runner
+    :param str reference_file: path to the reference file
+    """
+    with open(reference_file, 'r') as f_handle:
+        expected_output = f_handle.readlines()
+    runner_result = runner_result.splitlines(keepends=True)
+    assert sorted(runner_result) == sorted(expected_output)

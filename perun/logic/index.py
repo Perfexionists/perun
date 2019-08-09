@@ -7,6 +7,8 @@ of various version of index entries.
 import os
 import binascii
 import struct
+import json
+from zlib import error
 
 from enum import Enum
 
@@ -654,6 +656,42 @@ def get_profile_number_for_minor(base_dir, minor_version):
             return profile_numbers_per_type
     else:
         return {'all': 0}
+
+
+def load_custom_index(index_path):
+    """Loads the content of a custom index file (e.g. temp or stats) as a dictionary.
+
+    The index is json-formatted and compressed. In case the index cannot be read for some reason,
+    an empty dictionary is returned.
+
+    :param str index_path: path to the index file
+
+    :return: the decompressed and json-decoded index content.
+    """
+    # Create and init the index file if it does not exist yet
+    if not os.path.exists(index_path):
+        store.touch_file(index_path)
+        save_custom_index(index_path, {})
+    # Open and load the file
+    try:
+        with open(index_path, 'rb') as index_handle:
+            return json.loads(store.read_and_deflate_chunk(index_handle))
+    except (ValueError, error):
+        # Contents either empty or corrupted, init the content to empty dict
+        return {}
+
+
+def save_custom_index(index_path, records):
+    """Saves the index records to the custom index file.
+    The index file is created if it does not exist or overwritten if it does.
+
+    :param str index_path: path to the index file
+    :param records: the index entries/records in a format that can be transformed to json
+    """
+    with open(index_path, 'w+b') as index_handle:
+        compressed = store.pack_content(json.dumps(records, indent=2).encode('utf-8'))
+        index_handle.write(compressed)
+
 
 INDEX_ENTRY_CONSTRUCTORS = [
     BasicIndexEntry,

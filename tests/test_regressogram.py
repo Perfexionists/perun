@@ -24,18 +24,23 @@ def test_regressogram_method(postprocess_profiles):
 
     for current_method in _EXPECTED_RESULTS.keys():
         # Perform the non-parametric analysis using by regressogram
-        code, _, profile = postprocess(test_model, of_key='amount', statistic_function='mean',
-                                       bucket_number=10 if current_method == 'user' else None,
-                                       bucket_method=current_method if current_method != 'user' else None,
-                                       per_key='structure-unit-size')
+        code, _, profile = postprocess(
+            test_model, of_key='amount', statistic_function='mean',
+            bucket_number=10 if current_method == 'user' else None,
+            bucket_method=current_method if current_method != 'user' else None,
+            per_key='structure-unit-size'
+        )
         # Expected successful analysis by non-parametric postprocessor
         assert code.value == 0
         # Obtaining generator of models from profile in the UID order
-        models = generate_models_by_uid(profile, 'regressogram', ['exp::test1', 'exp::test2', 'exp::test3'],
-                                        key='method')
+        models = generate_models_by_uid(
+            profile, 'regressogram', ['exp::test1', 'exp::test2', 'exp::test3'], key='model'
+        )
 
         # Test the expected result with each obtained model
-        for model, exp_result, interval_result in zip(models, _EXPECTED_RESULTS[current_method], _COMMON_INTERVAL):
+        for model, exp_result, interval_result in zip(
+                models, _EXPECTED_RESULTS[current_method], _COMMON_INTERVAL
+        ):
             # Concatenate expected results with interval results to one dict
             exp_result.update(interval_result)
             # Comparison each significant value
@@ -43,21 +48,21 @@ def test_regressogram_method(postprocess_profiles):
                 # Comparison of bucket_stats array length
                 if key == 'bucket_stats':
                     assert len(model[0][key]) == exp_result[key]
-                # Double comparison of individual values (r_square, x_interval_start, x_interval_end)
+                # Double comparison of individual values (r_square, x_start, x_end)
                 else:
                     compare_results(model[0][key], exp_result[key], eps=0.00001)
         # Remove generated models for next run of iteration
-        del profile['profile']['global']['models']
+        profile['profile']['models'].clear()
 
 
 # Common expected interval edges
 _COMMON_INTERVAL = [
     # uid: exp::test1
-    {'x_interval_start': 0.0, 'x_interval_end': 110.0, 'y_interval_start': 0.2},
+    {'x_start': 0.0, 'x_end': 110.0, 'y_start': 0.2},
     # uid: exp::test2
-    {'x_interval_start': 17.0, 'x_interval_end': 103.0, 'y_interval_start': 18.0},
+    {'x_start': 17.0, 'x_end': 103.0, 'y_start': 18.0},
     # uid: exp::test3
-    {'x_interval_start': 0.0, 'x_interval_end': 8.0, 'y_interval_start': 1.0, }
+    {'x_start': 0.0, 'x_end': 8.0, 'y_start': 1.0}
 ]
 
 # Expected Results

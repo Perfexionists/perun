@@ -8,7 +8,8 @@ import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
 import perun.postprocess.regression_analysis.methods as methods
 import perun.postprocess.regression_analysis.regression_models as reg_models
-from perun.utils.helpers import PostprocessStatus, pass_profile
+from perun.utils.helpers import PostprocessStatus
+from perun.profile.factory import pass_profile
 
 __author__ = 'Jiri Pavela'
 
@@ -36,7 +37,7 @@ def postprocess(profile, **configuration):
 
 
 @click.command()
-@click.option('--method', '-m', type=click.Choice(methods.get_supported_methods()),
+@click.option('--method', '-m', type=click.Choice(methods.get_supported_param_methods()),
               required=True, multiple=False,
               help='Will use the <method> to find the best fitting models for'
                    ' the given profile.')
@@ -113,8 +114,8 @@ def regression_analysis(profile, **kwargs):
                     "name": "b1"
                 }
             ],
-            "x_interval_start": 0,
-            "x_interval_end": 11892,
+            "x_start": 0,
+            "x_end": 11892,
             "model": "linear",
             "method": "full",
         }

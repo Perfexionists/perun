@@ -30,6 +30,19 @@ class MissingConfigSectionException(Exception):
     def __str__(self):
         return "key '{}' is not specified in configuration.\nSee docs/config.rst for more details."
 
+
+class TagOutOfRangeException(Exception):
+    """Raised when the requested profile tag is out of range."""
+    def __init__(self, position, total):
+        super().__init__("")
+        self.position = position
+        self.total = total
+
+    def __str__(self):
+        return "invalid tag '{}' (choose from interval <{}, {}>)".format(
+            "{}@i".format(self.position), "0@i", "{}@i".format(self.total))
+
+
 class ExternalEditorErrorException(Exception):
     """Raised when there is an error while invoking the external editor"""
     def __init__(self, editor, reason):
@@ -94,6 +107,27 @@ class StatsFileNotFoundException(Exception):
         super().__init__("")
         self.path = filename
         self.msg = "The requested stats file '{}' does not exist".format(self.path)
+
+    def __str__(self):
+        return self.msg
+
+
+class InvalidTempPathException(Exception):
+    """Raised when the looked up temporary path (file or directory) does not exist or the given
+    path is of invalid type for the given operation (file path for directory operation etc.)"""
+    def __init__(self, msg):
+        super().__init__("")
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
+class ProtectedTempException(Exception):
+    """Raised when an attempt to delete protected temp file is made."""
+    def __init__(self, msg):
+        super().__init__("")
+        self.msg = msg
 
     def __str__(self):
         return self.msg

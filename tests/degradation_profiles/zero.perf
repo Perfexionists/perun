@@ -1,48 +1,63 @@
 {
-  "global": {
-    "resources": [
-      {
-        "workload": "10",
-        "subtype": "real",
-        "order": 1,
-        "uid": "factor",
-        "amount": 0.0,
-        "type": "time"
-      },
-      {
-        "workload": "10",
-        "subtype": "user",
-        "order": 1,
-        "uid": "factor",
-        "amount": 0.0,
-        "type": "time"
-      },
-      {
-        "workload": "10",
-        "subtype": "sys",
-        "order": 1,
-        "uid": "factor",
-        "amount": 0.0,
-        "type": "time"
-      }
-    ],
-    "timestamp": 0.18995141983032227
-  },
-  "header": {
-    "type": "time",
-    "workload": "10",
-    "cmd": "factor",
-    "args": "",
-    "units": {
-      "time": "s"
+  "resources": {
+    "factor#0": {
+      "amount": [
+        0.0
+      ]
+    },
+    "factor#1": {
+      "amount": [
+        0.0
+      ]
+    },
+    "factor#2": {
+      "amount": [
+        0.0
+      ]
     }
   },
-  "postprocessors": [],
-  "origin": "1eb3d631e73c5dad10c03b554629dff46c6abf20",
+  "header": {
+    "units": {
+      "time": "s"
+    },
+    "args": "",
+    "cmd": "factor",
+    "workload": "10",
+    "type": "time"
+  },
+  "models": [],
   "collector_info": {
     "params": {
       "workload": "10"
     },
     "name": "time"
-  }
+  },
+  "resource_type_map": {
+    "factor#0": {
+      "time": "0.0",
+      "uid": "factor",
+      "order": 1,
+      "subtype": "real",
+      "type": "time",
+      "workload": "10"
+    },
+    "factor#1": {
+      "time": "0.0",
+      "uid": "factor",
+      "order": 1,
+      "subtype": "user",
+      "type": "time",
+      "workload": "10"
+    },
+    "factor#2": {
+      "time": "0.0",
+      "uid": "factor",
+      "order": 1,
+      "subtype": "sys",
+      "type": "time",
+      "workload": "10"
+    }
+  },
+  "postprocessors": [],
+  "origin": "1eb3d631e73c5dad10c03b554629dff46c6abf20"
 }

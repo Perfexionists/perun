@@ -10,9 +10,10 @@ import re
 import click
 
 import perun
-import perun.profile.factory as profiles
+import perun.profile.helpers as profiles
 import perun.logic.commands as commands
 import perun.logic.store as store
+import perun.logic.stats as stats
 import perun.logic.config as config
 import perun.logic.pcs as pcs
 import perun.profile.query as query
@@ -20,7 +21,8 @@ import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.vcs as vcs
 
-from perun.utils.exceptions import VersionControlSystemException
+from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
+    StatsFileNotFoundException
 
 __author__ = 'Tomas Fiedor'
 
@@ -299,12 +301,16 @@ def lookup_removed_profile_callback(ctx, _, value):
 
         :param int index: index we are looking up and registering to massaged values
         """
-        index_filename = commands.get_nth_profile_of(
-            index, ctx.params['minor']
-        )
-        start = index_filename.rfind('objects') + len('objects')
-        # Remove the .perun/objects/... prefix and merge the directory and file to sha
-        massaged_values.add("".join(index_filename[start:].split('/')))
+        try:
+            index_filename = profiles.get_nth_profile_of(
+                index, ctx.params['minor']
+            )
+            start = index_filename.rfind('objects') + len('objects')
+            # Remove the .perun/objects/... prefix and merge the directory and file to sha
+            massaged_values.add("".join(index_filename[start:].split('/')))
+        except TagOutOfRangeException as exc:
+            # Invalid tag value, rethrow as click error
+            raise click.BadParameter(str(exc))
 
     massaged_values = set()
     for single_value in value:
@@ -384,10 +390,13 @@ def lookup_any_profile_callback(ctx, _, value):
     # 0) First check if the value is tag or not
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
     if index_tag_match:
-        index_profile = commands.get_nth_profile_of(
-            int(index_tag_match.group(1)), ctx.params['minor']
-        )
-        return store.load_profile_from_file(index_profile, is_raw_profile=False)
+        try:
+            index_profile = profiles.get_nth_profile_of(
+                int(index_tag_match.group(1)), ctx.params['minor']
+            )
+            return store.load_profile_from_file(index_profile, is_raw_profile=False)
+        except TagOutOfRangeException as exc:
+            raise click.BadParameter(str(exc))
 
     pending_tag_match = store.PENDING_TAG_REGEX.match(value)
     if pending_tag_match:
@@ -406,6 +415,59 @@ def lookup_any_profile_callback(ctx, _, value):
         log.error("could not lookup the profile '{}'".format(abs_path))
 
     return store.load_profile_from_file(abs_path, is_raw_profile=True)
+
+
+def check_stats_minor_callback(_, param, value):
+    """ Callback for checking existence of the minor version value in the VCS and also checking
+    that a corresponding version directory exists in the stats.
+
+    The only exception is a 'in_minor' parameter which can also refer to all the available
+    minor versions by having a value of '.'.
+
+    :param click.core.Context _: context
+    :param click.core.Argument param: the parameter name
+    :param str value: the supplied minor version value
+
+    :return str: the original value, which has been however checked
+    """
+    if param.name == 'in_minor' and value == '.':
+        return value
+    elif value:
+        # Check the minor version existence and that it has a directory in the 'stats'
+        # There are 2 possible failures - the minor version or the directory don't exist
+        try:
+            exists, _ = stats.find_minor_stats_directory(value)
+            if not exists:
+                raise click.BadParameter("The requested minor version '{}' does not exist in "
+                                         "the stats directory.".format(value))
+        except VersionControlSystemException as exc:
+            raise click.BadParameter(str(exc))
+        # The minor version value is valid
+        return value
+
+
+def lookup_stats_file_callback(ctx, _, value):
+    """ Callback for looking up the stats file in the stats directory. The stats file is searched
+    for in the specific minor version - if provided in 'in_minor' parameter - otherwise no lookup
+    is performed.
+
+    :param click.core.Context ctx: context
+    :param click.core.Argument _: param
+    :param str value: the file name
+
+    :return: either the looked up path of the file or the original value if no lookup was performed
+    """
+    # Resolve the 'in_minor' to HEAD if not specified
+    in_minor = vcs.get_minor_head() if not ctx.params['in_minor'] else ctx.params['in_minor']
+    # Check the existence only for files with specific 'in_minor'
+    if in_minor != '.':
+        try:
+            return stats.get_stats_file_path(value, in_minor, True)
+        except StatsFileNotFoundException:
+            raise click.BadParameter("The requested file '{}' does not exist in the "
+                                     "stats directory for minor version '{}'."
+                                     .format(value, in_minor))
+    return value
 
 
 def resources_key_options(func):
