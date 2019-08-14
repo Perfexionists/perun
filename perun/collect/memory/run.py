@@ -145,7 +145,7 @@ def after(executable, sampling=DEFAULT_SAMPLING, **kwargs):
               ' will include all allocators and even unreachable records.')
 @click.pass_context
 def memory(ctx, **kwargs):
-    """Generates `memory` performance profiel, capturing memory allocations of
+    """Generates `memory` performance profile, capturing memory allocations of
     different types along with target address and full call trace.
 
     \b
