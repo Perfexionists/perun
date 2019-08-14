@@ -3,6 +3,8 @@
 import pkgutil
 import os
 import subprocess
+import signal
+import pytest
 
 import perun.utils as utils
 import perun.vcs as vcs
@@ -13,6 +15,8 @@ import perun.logic.commands as commands
 import perun.view as view
 
 from perun.utils.structs import Unit
+from perun.utils.helpers import HandledSignals
+from perun.utils.exceptions import SignalReceivedException
 
 __author__ = 'Tomas Fiedor'
 
@@ -172,3 +176,9 @@ def test_size_formatting():
     assert utils.format_file_size(8273428342423) == '   7.5 TiB'
     assert utils.format_file_size(81273198731928371) == '72.2 PiB'
     assert utils.format_file_size(87329487294792342394293489232) == '77564166018710.8 PiB'
+
+
+def test_signal_handler():
+    """Tests default signal handler"""
+    with HandledSignals(signal.SIGINT):
+        os.kill(os.getpid(), signal.SIGINT)

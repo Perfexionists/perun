@@ -16,6 +16,7 @@ HEAD
   - rename warmup parameter in `time` to ``--warmup``
   - lower the number of warmup and repetitions for time collector during tests
   - remove filter postprocessor (did nothing)
+  - add signal handling to runner (authored by Jirka Pavela)
 
 0.17.1 (2019-07-24)
 -------------------
