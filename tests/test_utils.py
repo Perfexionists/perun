@@ -4,7 +4,6 @@ import pkgutil
 import os
 import subprocess
 import signal
-import pytest
 
 import perun.utils as utils
 import perun.vcs as vcs
@@ -16,7 +15,6 @@ import perun.view as view
 
 from perun.utils.structs import Unit
 from perun.utils.helpers import HandledSignals
-from perun.utils.exceptions import SignalReceivedException
 
 __author__ = 'Tomas Fiedor'
 
