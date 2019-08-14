@@ -6,22 +6,22 @@ TODO: Write long docstring of the new collector
 import click
 
 import perun.logic.runner as runner
-from perun.utils.helpers import CollectorStatus
+from perun.utils.helpers import CollectStatus
 
 {% if not no_before_phase %}
 def before(**kwargs):
     """TODO: Write docstring of the before collection phase"""
-    return CollectorStatus.OK, "status_message", dict(kwargs)
+    return CollectStatus.OK, "status_message", dict(kwargs)
 
 {% endif %}
 def collect(**kwargs):
     """TODO: Write docstring of the collection phase"""
-    return CollectorStatus.OK, "status message", dict(kwargs)
+    return CollectStatus.OK, "status message", dict(kwargs)
 
 {%  if not no_after_phase %}
 def after(**kwargs):
     """TODO: Write docstring of the after collection phase"""
-    return CollectorStatus.OK, "status message", dict(kwargs)
+    return CollectStatus.OK, "status message", dict(kwargs)
 
 {% endif %}
 @click.command()
