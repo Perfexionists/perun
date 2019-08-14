@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import signal
 
 import distutils.util as dutils
 import perun.vcs as vcs
@@ -10,7 +11,6 @@ import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.logic.index as index
 import perun.profile.helpers as profile
-import perun.profile.factory as profile_factory
 import perun.utils as utils
 import perun.utils.streams as streams
 import perun.utils.log as log
@@ -21,8 +21,9 @@ from perun.utils import get_module
 from perun.utils.structs import GeneratorSpec, Unit, Executable, RunnerReport, \
     CollectStatus, PostprocessStatus
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
-    COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, Job
+    COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, Job, HandledSignals
 from perun.workload.singleton_generator import SingletonGenerator
+from perun.utils.exceptions import SignalReceivedException
 
 __author__ = 'Tomas Fiedor'
 
@@ -182,6 +183,34 @@ def check_integrity_of_runner(runner, runner_type, report):
         ))
 
 
+def runner_teardown_handler(status_report, **kwargs):
+    """The teardown callback used in the signal handler.
+
+    :param RunnerReport status_report: the collection report object
+    :param kwargs: additional parameters as supplied by the HandledSignals CM
+    """
+    exc = kwargs['exc_val']
+    if isinstance(exc, SignalReceivedException):
+        log.warn('Received signal: {}, safe termination in process'.format(exc.signum))
+        status_report.status = status_report.error_status
+        status_report.exception = exc
+        status_report.message = str(exc)
+    run_phase_function(status_report, 'teardown')
+
+
+def runner_signal_handler(signum, frame):
+    """Custom signal handler that blocks all the handled signals until the __exit__ sentinel of
+    the CM is reached.
+
+    :param int signum: a representation of the encountered signal
+    :param object frame: a frame / stack trace object
+    """
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    signal.signal(signal.SIGQUIT, signal.SIG_IGN)
+    raise SignalReceivedException(signum, frame)
+
+
 def run_all_phases_for(runner, runner_type, runner_params):
     """Run all of the phases (before, runner_type, after) for given params.
 
@@ -197,17 +226,21 @@ def run_all_phases_for(runner, runner_type, runner_params):
     :param dict runner_params: dictionary of arguments for runner
     :return RunnerReport: report about the run phase
     """
+
     runner_verb = runner_type[:-2]
 
     report = RunnerReport(runner, runner_type, runner_params)
 
-    for phase in ['before', runner_verb, 'after']:
-        run_phase_function(report, phase)
+    with HandledSignals(
+            signal.SIGINT, signal.SIGTERM, signal.SIGQUIT, handler=runner_signal_handler,
+            callback=runner_teardown_handler, callback_args=[report]
+    ):
+        for phase in ['before', runner_verb, 'after']:
+            run_phase_function(report, phase)
 
-        if not report.is_ok():
-            break
+            if not report.is_ok():
+                break
 
-    run_phase_function(report, 'teardown')
     check_integrity_of_runner(runner, runner_type, report)
 
     return report, report.kwargs.get('profile', {})

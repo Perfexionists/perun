@@ -4,6 +4,7 @@ import os
 import glob
 import re
 import subprocess
+import signal
 
 from click.testing import CliRunner
 
@@ -722,3 +723,15 @@ def test_teardown(pcs_full, monkeypatch, capsys):
     out, err = capsys.readouterr()
     assert "Teardown was executed" in out
     assert "error while before" in err
+
+    # Test signals
+    def collect_firing_sigint(report, phase):
+        if phase == 'collect':
+            os.kill(os.getpid(), signal.SIGINT)
+        else:
+            original_phase_f(report, phase)
+    monkeypatch.setattr("perun.logic.runner.run_phase_function", collect_firing_sigint)
+    status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
+    assert status == CollectStatus.ERROR
+    out, err = capsys.readouterr()
+    assert "fatal: while collecting by time: Received signal: 2" in err

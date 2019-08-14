@@ -4,8 +4,10 @@ import re
 import operator
 import collections
 import namedlist
+import signal
 
 from perun.utils.structs import PerformanceChange
+from perun.utils.exceptions import SignalReceivedException
 
 
 __author__ = 'Tomas Fiedor'
@@ -169,6 +171,7 @@ class SuppressedExceptions(object):
         """
         return isinstance(exc_val, tuple(self.exc))
 
+
 def str_to_plural(count, verb):
     """Helper function that returns the plural of the string if count is more than 1
 
@@ -189,3 +192,99 @@ def format_counter_number(count, max_number):
     return "{:{decimal_width}d}".format(
         count, decimal_width=len(str(max_number))
     )
+
+
+class HandledSignals(object):
+    """Context manager for code blocks that need to handle one or more signals during their
+    execution.
+
+    The CM offers a default signal handler and a default handler exception. In this scenario, the
+    code execution is interrupted when the registered signals are encountered and - if provided -
+    a callback function is invoked.
+
+    After the callback, previous signal handlers are re-registered and the CM ends. If an exception
+    not related to the signal handling was encountered, it is re-raised after resetting the signal
+    handlers and (if set) invoking the callback function.
+
+    The callback function prototype is flexible, and the required arguments can be supplied by
+    the callback_args parameter. However, it should always accept the **kwargs arguments because
+    of the exc_type, exc_val and exc_tb arguments provided by the __exit__ function. This allows
+    the programmer to decide e.g. if certain parts of the callback code should be executed, based
+    on the raised exception - or the lack of an exception, that is.
+
+    A custom signal handler function can be supplied. In this case, the prototype should oblige
+    the rules of signal handling functions: func_name(signal_number, frame). If the custom signal
+    handling function uses a different exception then the default, it should be supplied to the CM
+    as well.
+
+    :ivar list signals: the list of signals that are being handled by the CM
+    :ivar function handler: the function used to handle the registered signals
+    :ivar exception handler_exc: the exception type related to the signal handler
+    :ivar function callback: the function that is always invoked during the CM exit
+    :ivar list callback_args: arguments for the callback function
+    :ivar list old_handlers: the list of previous signal handlers
+
+    """
+    def __init__(self, *signals, **kwargs):
+        """
+        :param signals: the identification of the handled signal, 'signal.SIG_' is recommended
+        :param kwargs: additional properties of the context manager
+        """
+        self.signals = signals
+        self.handler = kwargs.get('handler', default_signal_handler)
+        self.handler_exc = kwargs.get('handler_exception', SignalReceivedException)
+        self.callback = kwargs.get('callback')
+        self.callback_args = kwargs.get('callback_args', [])
+        self.old_handlers = []
+
+    def __enter__(self):
+        """ The CM entry sentinel, register the new signal handlers and store the previous ones.
+
+        :return object: the CM instance
+        """
+        for sig in self.signals:
+            self.old_handlers.append(signal.signal(sig, self.handler))
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """ The CM exit sentinel, perform the callback and reset the signal handlers.
+
+        :param type exc_type: the type of the exception
+        :param exception exc_val: the value of the exception
+        :param traceback exc_tb: the exception traceback
+        :return bool: True if the encountered exception should be ignored, False otherwise or if
+                      no exception was raised
+        """
+        # Ignore all the handled signals temporarily
+        for sig in self.signals:
+            signal.signal(sig, signal.SIG_IGN)
+        # Perform the callback
+        if self.callback:
+            self.callback(*self.callback_args, exc_type=exc_type, exc_val=exc_val, exc_tb=exc_tb)
+        # Reset the signal handlers
+        for sig, sig_handler in zip(self.signals, self.old_handlers):
+            signal.signal(sig, sig_handler)
+        # Re-raise the exceptions not related to signal handling
+        return isinstance(exc_val, self.handler_exc)
+
+
+def default_signal_handler(signum, frame):
+    """Default signal handler used by the HandledSignals CM.
+
+    The function attempts to block any subsequent handler invocation of the same signal by ignoring
+    the signal. Thus, there should be no further interrupts by the same signal until the __exit__
+    sentinel is reached (where all the handled signals are then temporarily ignored during
+    the callback).
+
+    However, this will still not block any other signals than the initially encountered one, since
+    the default handler doesn't have means to find out all the signals that are being handled by
+    a specific CM instance and should be thus ignored.
+
+    To block all the signals handled by a certain HandledSignals context manager, a custom handler
+    should be constructed in such a way that all the handled signals are set to signal.SIG_IGN.
+
+    :param int signum: representation of the signal that caused the handler to be invoked
+    :param object frame: the frame / stack trace object
+    """
+    signal.signal(signum, signal.SIG_IGN)
+    raise SignalReceivedException(signum, frame)
