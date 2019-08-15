@@ -226,8 +226,9 @@ def run_all_phases_for(runner, runner_type, runner_params):
     :param dict runner_params: dictionary of arguments for runner
     :return RunnerReport: report about the run phase
     """
-
     runner_verb = runner_type[:-2]
+    # Create immutable list of resource that should hold even in case of problems
+    runner_params['opened_resources'] = []
 
     report = RunnerReport(runner, runner_type, runner_params)
 
