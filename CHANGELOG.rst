@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+1.17.2 (2019-08-16)
+-------------------
+
+`commit: d82d15ec5635dacf8027311e44aa65b4776dc8fb`
+
+**Improve the runner logic**
+
   - extract cmd, args and workload to Executable class
   - remove ``--remove-all`` argument in ``perun rm``
   - add support for removing profiles from pending jobs through perun
