@@ -349,3 +349,19 @@ class UnexpectedPrototypeSyntaxError(Exception):
 
     def __str__(self):
         return "prototype of function '{}' is wrong: {}".format(self.prototype_name, self.cause)
+
+
+class SignalReceivedException(BaseException):
+    """Raised when a handled signal is encountered. BaseException used to avoid collision with
+    other exception handlers that catch 'Exception' classes."""
+    def __init__(self, signum, frame):
+        """
+        :param int signum: a representation of the encountered signal
+        :param object frame: a frame / stack trace object
+        """
+        super().__init__("")
+        self.signum = signum
+        self.frame = frame
+
+    def __str__(self):
+        return "Received signal: {}".format(self.signum)

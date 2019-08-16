@@ -14,17 +14,22 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.cli_groups.utils_cli as utils_cli
+import perun.cli_groups.config_cli as config_cli
+import perun.cli_groups.run_cli as run_cli
+import perun.cli_groups.check_cli as check_cli
 import perun.utils as utils
 import perun.utils.log as log
 import perun.logic.config as config
 import perun.logic.store as store
 import perun.logic.temp as temp
 import perun.logic.stats as stats
-import perun.logic.runner as perun_runner
 import perun.utils.exceptions as exceptions
 import perun.check.factory as check
 import perun.vcs as vcs
 import perun.logic.pcs as pcs
+
+from perun.utils.structs import CollectStatus, RunnerReport
 
 __author__ = 'Tomas Fiedor'
 
@@ -51,8 +56,6 @@ def test_cli(pcs_full):
 
 def run_non_param_test(runner, test_params, expected_exit_code, expected_output):
     result = runner.invoke(cli.postprocessby, test_params)
-    if result.exit_code != expected_exit_code:
-        print(result.output)
     assert result.exit_code == expected_exit_code
     assert expected_output in result.output
 
@@ -1146,7 +1149,9 @@ def test_collect_correct(pcs_full):
     Expecting no exceptions, no errors, zero status
     """
     runner = CliRunner()
-    result = runner.invoke(cli.collect, ['-c echo', '-w hello', 'time'])
+    result = runner.invoke(cli.collect, [
+        '-c echo', '-w hello', 'time', '--repeat=1', '--warmup=1'
+    ])
     assert result.exit_code == 0
 
 
@@ -1272,7 +1277,7 @@ def test_remove_tag(pcs_full):
     runner = CliRunner()
     result = runner.invoke(cli.remove, ['0@i'])
     assert result.exit_code == 0
-    assert "removed" in result.output
+    assert "1/1 deregistered" in result.output
 
 
 def test_remove_tag_range(helpers, pcs_full):
@@ -1283,17 +1288,52 @@ def test_remove_tag_range(helpers, pcs_full):
     runner = CliRunner()
     result = runner.invoke(cli.remove, ['10@i-0@i'])
     assert result.exit_code == 0
-    assert "removed 0 from index" in result.output
 
     result = runner.invoke(cli.remove, ['0@i-10@i'])
     assert result.exit_code == 0
-    assert "removed 2 from index" in result.output
+    assert "2 profiles" in result.output
 
     # Nothing should remain!
     result = runner.invoke(cli.status, [])
     assert "no tracked" in result.output
     assert result.exit_code == 0
 
+
+def test_remove_pending(helpers, pcs_full, stored_profile_pool):
+    """Test running remove with pending tags and ranges"""
+    jobs_dir = pcs_full.get_job_directory()
+    runner = CliRunner()
+
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    result = runner.invoke(cli.status, [])
+    assert "no untracked" not in result.output
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 4 # 3 profiles and .index
+
+    result = runner.invoke(cli.remove, ['0@p'])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 3
+
+    result = runner.invoke(cli.remove, ['0@p'])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 2
+
+    removed_full_profile = [p for p in os.listdir(jobs_dir) if p != '.index'][0]
+    removed_full_profile = os.path.join(pcs_full.get_job_directory(), removed_full_profile)
+    result = runner.invoke(cli.remove, [removed_full_profile])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 1
+    assert os.listdir(jobs_dir) == ['.index']
+
+    result = runner.invoke(cli.status, [])
+    assert "no untracked" in result.output
+    assert result.exit_code == 0
+
+    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    assert len(os.listdir(jobs_dir)) == 4 # 3 profiles and .index
+    result = runner.invoke(cli.remove, ['0@p-10@p'])
+    assert result.exit_code == 0
+    assert len(os.listdir(jobs_dir)) == 1
 
 def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     """Test running postprocessby with various valid and invalid tags
@@ -1392,23 +1432,23 @@ def test_config(pcs_full, monkeypatch):
     runner = CliRunner()
 
     # OK usage
-    result = runner.invoke(cli.config, ['--local', 'get', 'vcs.type'])
+    result = runner.invoke(config_cli.config, ['--local', 'get', 'vcs.type'])
     assert result.exit_code == 0
 
-    result = runner.invoke(cli.config, ['--local', 'set', 'vcs.remote', 'url'])
+    result = runner.invoke(config_cli.config, ['--local', 'set', 'vcs.remote', 'url'])
     assert result.exit_code == 0
 
     # Error cli usage
-    result = runner.invoke(cli.config, ['--local', 'get'])
+    result = runner.invoke(config_cli.config, ['--local', 'get'])
     assert result.exit_code == 2
 
-    result = runner.invoke(cli.config, ['--local', 'get', 'bogus.key'])
+    result = runner.invoke(config_cli.config, ['--local', 'get', 'bogus.key'])
     assert result.exit_code == 1
 
-    result = runner.invoke(cli.config, ['--local', 'set', 'key'])
+    result = runner.invoke(config_cli.config, ['--local', 'set', 'key'])
     assert result.exit_code == 2
 
-    result = runner.invoke(cli.config, ['--local', 'get', 'wrong,key'])
+    result = runner.invoke(config_cli.config, ['--local', 'get', 'wrong,key'])
     assert result.exit_code == 2
     assert "invalid format" in result.output
 
@@ -1417,14 +1457,14 @@ def test_config(pcs_full, monkeypatch):
         pass
 
     monkeypatch.setattr('perun.utils.run_external_command', donothing)
-    result = runner.invoke(cli.config, ['--local', 'edit'])
+    result = runner.invoke(config_cli.config, ['--local', 'edit'])
     assert result.exit_code == 0
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
 
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
-    result = runner.invoke(cli.config, ['--local', 'edit'])
+    result = runner.invoke(config_cli.config, ['--local', 'edit'])
     assert result.exit_code == 1
 
 
@@ -1435,12 +1475,12 @@ def test_reset_outside_pcs(monkeypatch):
     Excepts error when resetting local config, and no error when resetting global config
     """
     runner = CliRunner()
-    result = runner.invoke(cli.config, ['--local', 'reset'])
+    result = runner.invoke(config_cli.config, ['--local', 'reset'])
     assert result.exit_code == 1
     assert "could not reset" in result.output
 
     monkeypatch.setattr('perun.logic.config.lookup_shared_config_dir', lambda: os.getcwd())
-    result = runner.invoke(cli.config, ['--shared', 'reset'])
+    result = runner.invoke(config_cli.config, ['--shared', 'reset'])
     assert result.exit_code == 0
 
 
@@ -1456,7 +1496,7 @@ def test_reset(pcs_full):
         assert '#     - make' in contents
         assert '#   collect_before_check' in contents
 
-    result = runner.invoke(cli.config, ['--local', 'reset', 'developer'])
+    result = runner.invoke(config_cli.config, ['--local', 'reset', 'developer'])
     assert result.exit_code == 0
 
     with open(os.path.join(pcs_path, '.perun', 'local.yml'), 'r') as local_config:
@@ -1477,7 +1517,7 @@ def test_check_profiles(helpers, pcs_with_degradations):
 
     runner = CliRunner()
     for tag in ("0@p", "1@p", "2@p"):
-        result = runner.invoke(cli.check_group, ['profiles', "0@i", tag])
+        result = runner.invoke(check_cli.check_group, ["profiles", "0@i", tag])
         assert result.exit_code == 0
 
 
@@ -1506,7 +1546,7 @@ def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
 
     for model_strategy in ['best-param', 'all-nonparam', 'best-both']:
         result = runner.invoke(
-            cli.check_group,
+            check_cli.check_group,
             ['--models-type', model_strategy, 'profiles', "0@p", "1@p"]
         )
         assert result.exit_code == 0
@@ -1522,21 +1562,25 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     # Initialize the matrix for the further collecting
     matrix = config.Config('local', '', {
         'vcs': {'type': 'git', 'url': '../'},
-        'cmds': ['ls'],
-        'args': ['-al'],
-        'workloads': ['.', '..'],
+        'cmds': ['echo'],
+        'args': [''],
+        'workloads': ['hello'],
         'collectors': [
-            {'name': 'time', 'params': {}}
+            {'name': 'time', 'params': {
+                'warmup': 1,
+                'repeat': 1
+
+            }}
         ],
         'postprocessors': [],
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
 
-    result = runner.invoke(cli.check_head, [])
+    result = runner.invoke(check_cli.check_head, [])
     assert result.exit_code == 0
 
     # Try the precollect and various combinations of options
-    result = runner.invoke(cli.check_group, ['-c', 'head'])
+    result = runner.invoke(check_cli.check_group, ['-c', 'head'])
     assert result.exit_code == 0
     assert config.runtime().get('degradation.collect_before_check')
     config.runtime().data.clear()
@@ -1545,9 +1589,10 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     log_dir = pcs_with_degradations.get_log_directory()
     shutil.rmtree(log_dir)
     store.touch_dir(log_dir)
-    config.runtime().set('degradation', {})
-    config.runtime().set('degradation.collect_before_check', 'true')
-    config.runtime().set('degradation.log_collect', 'false')
+    config.runtime().data['degradation']  = {
+        'collect_before_check': 'true',
+        'log_collect': 'false'
+    }
     result = runner.invoke(cli.cli, ['--no-pager', 'check', 'head'])
     assert len(os.listdir(log_dir)) == 0
     assert result.exit_code == 0
@@ -1560,7 +1605,7 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     check.pre_collect_profiles.minor_version_cache.clear()
     assert len(os.listdir(object_dir)) == 0
     # Collect for the head commit
-    result = runner.invoke(cli.run, ['matrix'])
+    result = runner.invoke(run_cli.run, ['matrix'])
     assert result.exit_code == 0
 
     config.runtime().set('degradation.log_collect', 'true')
@@ -1576,10 +1621,10 @@ def test_check_all(pcs_with_degradations):
     Expecting correct behaviours
     """
     runner = CliRunner()
-    result = runner.invoke(cli.check_group, [])
+    result = runner.invoke(check_cli.check_group, [])
     assert result.exit_code == 0
 
-    result = runner.invoke(cli.check_all, [])
+    result = runner.invoke(check_cli.check_all, [])
     assert result.exit_code == 0
 
 
@@ -1591,7 +1636,7 @@ def test_utils_create(monkeypatch, tmpdir):
     monkeypatch.chdir(str(tmpdir))
 
     runner = CliRunner()
-    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    result = runner.invoke(utils_cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
     assert result.exit_code == 1
     assert "cannot use" in result.output and "as target developer directory" in result.output
 
@@ -1602,7 +1647,7 @@ def test_utils_create(monkeypatch, tmpdir):
     tmpdir.mkdir('check')
 
     # Try to successfully create the new postprocessor
-    result = runner.invoke(cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
+    result = runner.invoke(utils_cli.create, ['postprocess', 'mypostprocessor', '--no-edit'])
     assert result.exit_code == 0
     target_dir = os.path.join(str(tmpdir), 'postprocess', 'mypostprocessor')
     created_files = os.listdir(target_dir)
@@ -1610,7 +1655,7 @@ def test_utils_create(monkeypatch, tmpdir):
     assert 'run.py' in created_files
 
     # Try to successfully create the new collector
-    result = runner.invoke(cli.create, ['collect', 'mycollector', '--no-edit'])
+    result = runner.invoke(utils_cli.create, ['collect', 'mycollector', '--no-edit'])
     assert result.exit_code == 0
     target_dir = os.path.join(str(tmpdir), 'collect', 'mycollector')
     created_files = os.listdir(target_dir)
@@ -1618,7 +1663,7 @@ def test_utils_create(monkeypatch, tmpdir):
     assert 'run.py' in created_files
 
     # Try to successfully create the new collector
-    result = runner.invoke(cli.create, ['view', 'myview', '--no-edit'])
+    result = runner.invoke(utils_cli.create, ['view', 'myview', '--no-edit'])
     assert result.exit_code == 0
     target_dir = os.path.join(str(tmpdir), 'view', 'myview')
     created_files = os.listdir(target_dir)
@@ -1626,7 +1671,7 @@ def test_utils_create(monkeypatch, tmpdir):
     assert 'run.py' in created_files
 
     # Try to successfully create the new collector
-    result = runner.invoke(cli.create, ['check', 'mycheck', '--no-edit'])
+    result = runner.invoke(utils_cli.create, ['check', 'mycheck', '--no-edit'])
     assert result.exit_code == 0
     target_dir = os.path.join(str(tmpdir), 'check')
     created_files = os.listdir(target_dir)
@@ -1637,14 +1682,14 @@ def test_utils_create(monkeypatch, tmpdir):
         pass
 
     monkeypatch.setattr('perun.utils.run_external_command', donothing)
-    result = runner.invoke(cli.create, ['check', 'mydifferentcheck'])
+    result = runner.invoke(utils_cli.create, ['check', 'mydifferentcheck'])
     assert result.exit_code == 0
 
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
 
     monkeypatch.setattr('perun.utils.run_external_command', raiseexc)
-    result = runner.invoke(cli.create, ['check', 'mythirdcheck'])
+    result = runner.invoke(utils_cli.create, ['check', 'mythirdcheck'])
     assert result.exit_code == 1
 
 
@@ -1655,7 +1700,10 @@ def test_run(pcs_full, monkeypatch):
         'args': ['-al'],
         'workloads': ['.', '..'],
         'collectors': [
-            {'name': 'time', 'params': {}}
+            {'name': 'time', 'params': {
+                'warmup': 1,
+                'repeat': 1
+            }}
         ],
         'postprocessors': [],
         'execute': {
@@ -1666,11 +1714,11 @@ def test_run(pcs_full, monkeypatch):
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
     runner = CliRunner()
-    result = runner.invoke(cli.run, ['-c', 'matrix'])
+    result = runner.invoke(run_cli.run, ['-c', 'matrix'])
     assert result.exit_code == 0
 
     # Test unsupported option
-    result = runner.invoke(cli.run, ['-f', 'matrix'])
+    result = runner.invoke(run_cli.run, ['-f', 'matrix'])
     assert result.exit_code == 1
     assert "is unsupported" in result.output
 
@@ -1683,7 +1731,7 @@ def test_run(pcs_full, monkeypatch):
     jobs_before = len(os.listdir(job_dir))
     # Need to sleep, since in travis this could rewrite the stuff
     time.sleep(1)
-    result = runner.invoke(cli.run, ['matrix'])
+    result = runner.invoke(run_cli.run, ['matrix'])
     jobs_after = len(os.listdir(job_dir))
     assert result.exit_code == 0
     assert jobs_before == jobs_after
@@ -1692,7 +1740,7 @@ def test_run(pcs_full, monkeypatch):
     script_dir = os.path.split(__file__)[0]
     source_dir = os.path.join(script_dir, 'collect_trace')
     job_config_file = os.path.join(source_dir, 'job.yml')
-    result = runner.invoke(cli.run, [
+    result = runner.invoke(run_cli.run, [
         'job',
         '--cmd', 'ls',
         '--args', '-al',
@@ -1716,7 +1764,7 @@ def test_run(pcs_full, monkeypatch):
 
     monkeypatch.setattr('perun.utils.run_safely_external_command', run_wrapper)
     matrix.data['execute']['pre_run'].append('ls | grep dafad')
-    result = runner.invoke(cli.run, ['matrix'])
+    result = runner.invoke(run_cli.run, ['matrix'])
     assert result.exit_code == 1
 
 
@@ -1749,7 +1797,7 @@ def test_error_runs(pcs_full, monkeypatch):
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
     runner = CliRunner()
-    result = runner.invoke(cli.run, ['matrix'])
+    result = runner.invoke(run_cli.run, ['matrix'])
     assert result.exit_code == 1
     assert "missing 'collectors'" in result.output
 
@@ -1757,22 +1805,40 @@ def test_error_runs(pcs_full, monkeypatch):
         {'name': 'tome', 'params': {}}
     ]
 
-    result = runner.invoke(cli.run, ['matrix'])
+    result = runner.invoke(run_cli.run, ['matrix'])
     assert result.exit_code == 1
     assert "missing 'cmds'" in result.output
     matrix.data['cmds'] = ['ls']
 
-    result = runner.invoke(cli.run, ['matrix', '-q'])
+    result = runner.invoke(run_cli.run, ['matrix', '-q'])
     assert result.exit_code == 1
     assert "tome collector does not exist" in result.output
     matrix.data['collectors'][0]['name'] = 'time'
 
-    result = runner.invoke(cli.run, ['matrix', '-q'])
+    result = runner.invoke(run_cli.run, ['matrix', '-q'])
     assert result.exit_code == 1
     assert "fokume postprocessor does not exist" in result.output
 
-    monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: perun_runner.CollectStatus.ERROR)
-    result = runner.invoke(cli.run, ['job', '--cmd', 'ls',
+    # Test that inner run_postprocessor raises some error
+    matrix.data['postprocessors'] = [
+        {'name': 'regression_analysis', 'params': {}}
+    ]
+    result = runner.invoke(run_cli.run, ['matrix', '-q'])
+    assert result.exit_code == 1
+    assert "while postprocessing by regression_analysis" in result.output
+    assert "is missing required keys" in result.output
+
+    # Test matrix with collect() that fails
+    run_report = RunnerReport(None, "collector", {})
+    run_report.status = CollectStatus.ERROR
+    monkeypatch.setattr('perun.logic.runner.run_all_phases_for', lambda *_, **__: (run_report, {}))
+    result = runner.invoke(run_cli.run, ['matrix', '-q'])
+    print(result.output)
+    assert result.exit_code == 1
+    assert "while collecting by time" in result.output
+
+    monkeypatch.setattr('perun.logic.runner.run_single_job', lambda *_, **__: CollectStatus.ERROR)
+    result = runner.invoke(run_cli.run, ['job', '--cmd', 'ls',
         '--args', '-al', '--workload', '.',
         '--collector', 'time'
     ])
@@ -1785,12 +1851,12 @@ def test_temp(pcs_with_empty_git):
     files_dir = os.path.join(os.path.split(__file__)[0], 'tmp_files')
 
     # Try to list temporary files with empty tmp/ directory
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
+    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory()])
     assert result.exit_code == 0
     assert 'No results for the given parameters in' in result.output
 
     # Try to list files in invalid path
-    result = runner.invoke(cli.temp_list, ['../'])
+    result = runner.invoke(utils_cli.temp_list, ['../'])
     assert result.exit_code == 1
     assert 'not located in' in result.output
 
@@ -1811,32 +1877,43 @@ def test_temp(pcs_with_empty_git):
     temp.create_new_temp(file_deg2, file_deg2_content)
 
     # List the now-nonempty tmp/ directory in colored mode
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory()])
+    result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory()])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list1.ref'))
 
+    log.COLOR_OUTPUT = False
     # From now on, the colored mode will be disabled
     # Test the file size and protection-level switches
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '--no-file-size',
-                                           '--no-protection-level', '--no-color'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '--no-file-size', '--no-protection-level'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list2.ref'))
 
     # Test the sorting by size and protection level (name is default)
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-s', 'size', '--no-color'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-s', 'size'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list3.ref'))
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-s', 'protection', '-c'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-s', 'protection'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list4.ref'))
 
     # Test the protection filter
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'protected', '-c'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-fp', 'protected'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list5.ref'))
-    result = runner.invoke(cli.temp_list, [pcs.get_tmp_directory(), '-fp', 'unprotected', '-c'])
+    result = runner.invoke(utils_cli.temp_list, [
+        pcs.get_tmp_directory(), '-fp', 'unprotected'
+    ])
     assert result.exit_code == 0
     _compare_file_outputs(result.output, os.path.join(files_dir, 'list6.ref'))
+    log.COLOR_OUTPUT = True
 
     # Test the syncing
     # Simulate manual deletion by the user
@@ -1846,35 +1923,35 @@ def test_temp(pcs_with_empty_git):
     assert not temp.exists_temp_file(file_lock)
     # However index records are still there, sync
     assert temp.get_temp_properties(file_lock) == (False, True, False)
-    result = runner.invoke(cli.temp_sync, [])
+    result = runner.invoke(utils_cli.temp_sync, [])
     assert result.exit_code == 0
     assert temp.get_temp_properties(file_lock) == (False, False, False)
 
     # Test the deletion
     # Try to delete non-existent directory
-    result = runner.invoke(cli.temp_delete, ['some/invalid/dir'])
+    result = runner.invoke(utils_cli.temp_delete, ['some/invalid/dir'])
     assert result.exit_code == 0
     assert 'does not exist, no files deleted' in result.output
 
     # Test the warning
-    result = runner.invoke(cli.temp_delete, ['.', '-w'])
+    result = runner.invoke(utils_cli.temp_delete, ['.', '-w'])
     assert result.exit_code == 1
     assert 'Aborted' in result.output
     assert temp.exists_temp_file(file_deg)
 
     # Test single file deletion
-    result = runner.invoke(cli.temp_delete, [file_deg2])
+    result = runner.invoke(utils_cli.temp_delete, [file_deg2])
     assert result.exit_code == 0
     assert not temp.exists_temp_file(file_deg2)
 
     # Test the keep directories
-    result = runner.invoke(cli.temp_delete, ['trace/data', '-k'])
+    result = runner.invoke(utils_cli.temp_delete, ['trace/data', '-k'])
     assert result.exit_code == 0
     assert not temp.exists_temp_file(file_records)
     assert temp.exists_temp_dir('trace/data')
 
     # Test the force deletion of the whole tmp/ directory with keeping the empty dirs
-    result = runner.invoke(cli.temp_delete, ['.', '-f', '-k'])
+    result = runner.invoke(utils_cli.temp_delete, ['.', '-f', '-k'])
     assert result.exit_code == 0
     assert not temp.exists_temp_file(file_lock) and not temp.exists_temp_file(file_deg)
     assert temp.exists_temp_dir('degradations') and temp.exists_temp_dir('trace')
@@ -1884,7 +1961,7 @@ def test_temp(pcs_with_empty_git):
     temp.create_new_temp(file_deg2, file_deg2_content)
 
     # Test the complete deletion of the tmp/ directory
-    result = runner.invoke(cli.temp_delete, ['.', '-f'])
+    result = runner.invoke(utils_cli.temp_delete, ['.', '-f'])
     assert result.exit_code == 0
     assert not temp.exists_temp_file(file_lock) and not temp.exists_temp_file(file_deg2)
     tmp_content = os.listdir(pcs.get_tmp_directory())
@@ -1913,20 +1990,20 @@ def test_stats(pcs_with_more_commits):
                        (minor_root, reference_root)]
 
     # Try to list stats files with empty stats/ directory
-    result = runner.invoke(cli.stats_list_files, [])
+    result = runner.invoke(utils_cli.stats_list_files, [])
     assert result.exit_code == 0
     assert 'No results for the given parameters in' in result.output
     # Try it with some filtering parameters
-    result = runner.invoke(cli.stats_list_files, ['-N', 10, '-m', minor_middle])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 10, '-m', minor_middle])
     assert result.exit_code == 0
     assert 'No results for the given parameters in' in result.output
 
     # Try to list stats minor versions with empty stats/ directory
-    result = runner.invoke(cli.stats_list_versions, [])
+    result = runner.invoke(utils_cli.stats_list_versions, [])
     assert result.exit_code == 0
     assert 'No results for the given parameters in' in result.output
     # Try it with some filtering parameters
-    result = runner.invoke(cli.stats_list_versions, ['-N', 10, '-m', minor_root])
+    result = runner.invoke(utils_cli.stats_list_versions, ['-N', 10, '-m', minor_root])
     assert result.exit_code == 0
     assert 'No results for the given parameters in' in result.output
 
@@ -1951,106 +2028,123 @@ def test_stats(pcs_with_more_commits):
     store.touch_file(os.path.join(stats_dir, head_custom))
 
     # Test the list functions on populated stats directory and some custom objects
-    result = runner.invoke(cli.stats_list_files, [])
+    result = runner.invoke(utils_cli.stats_list_files, [])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list1.ref'))
     # Test the list of versions
-    result = runner.invoke(cli.stats_list_versions, [])
+    result = runner.invoke(utils_cli.stats_list_versions, [])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list2.ref'))
 
     # Now synchronize the stats directory and test the filtering parameters in list functions
     # Test the list of files
-    runner.invoke(cli.stats_sync, [])
-    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', minor_middle])
+    runner.invoke(utils_cli.stats_sync, [])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', minor_middle])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list3.ref'))
-    result = runner.invoke(cli.stats_list_files, ['-N', 2, '-m', minor_middle, '-c'])
+
+    log.COLOR_OUTPUT = False
+    result = runner.invoke(utils_cli.stats_list_files, [
+        '-N', 2, '-m', minor_middle
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list4.ref'))
     # Test the list of versions
-    result = runner.invoke(cli.stats_list_versions, ['-N', 2, '-m', minor_middle, '-c'])
+    result = runner.invoke(utils_cli.stats_list_versions, [
+        '-N', 2, '-m', minor_middle
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list5.ref'))
 
     # Test the sorting by size and omitting some properties
-    result = runner.invoke(cli.stats_list_files, ['-c', '-s', '-t'])
+    result = runner.invoke(utils_cli.stats_list_files, [
+        '-s', '-t'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list6.ref'))
-    result = runner.invoke(cli.stats_list_versions, ['-c', '-s', '-t'])
+    result = runner.invoke(utils_cli.stats_list_versions, [
+        '-s', '-t'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list7.ref'))
 
     # Test the output by omitting more properties
-    result = runner.invoke(cli.stats_list_files, ['-c', '-i', '-f'])
+    result = runner.invoke(utils_cli.stats_list_files, [
+        '-i', '-f'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list8.ref'))
-    result = runner.invoke(cli.stats_list_versions, ['-c', '-f', '-d'])
+    result = runner.invoke(utils_cli.stats_list_versions, [
+        '-f', '-d'
+    ])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list9.ref'))
+    log.COLOR_OUTPUT = True
 
     # Delete the minor_middle directory
-    result = runner.invoke(cli.stats_delete_minor, [minor_middle])
+    result = runner.invoke(utils_cli.stats_delete_minor, [minor_middle])
     assert result.exit_code == 0
     assert not os.path.exists(os.path.join(stats_dir, minor_middle[:2], minor_middle[2:]))
 
+    log.COLOR_OUTPUT = False
     # Now try lists with invalid minor values
     # Attempting to list version that doesn't have directory in stats, should display the successor
-    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', minor_middle, '-c'])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', minor_middle])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list10.ref'))
     # Attempt to list non-existent minor version
-    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234', '-c'])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234'])
     assert result.exit_code == 2
     assert 'did not resolve to an object' in result.output
     # Try the same with version list
-    result = runner.invoke(cli.stats_list_versions, ['-N', 1, '-m', minor_middle, '-c'])
+    result = runner.invoke(utils_cli.stats_list_versions, ['-N', 1, '-m', minor_middle])
     assert result.exit_code == 0
     actual_output = _normalize_stats_output(result.output, version_mapping)
     _compare_file_outputs(actual_output, os.path.join(files_dir, 'list11.ref'))
     # Attempt to list non-existent minor version
-    result = runner.invoke(cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234', '-c'])
+    result = runner.invoke(utils_cli.stats_list_files, ['-N', 1, '-m', 'abcdef1234'])
     assert result.exit_code == 2
     assert 'did not resolve to an object' in result.output
+    log.COLOR_OUTPUT = True
 
     # Recreate the middle version directory, keep it empty however
     stats.add_stats('tmp_stats', ['id_1'], [{'value': 10}], minor_middle)
-    result = runner.invoke(cli.stats_delete_file, ['-k', '-m', minor_middle, 'tmp_stats'])
+    result = runner.invoke(utils_cli.stats_delete_file, ['-k', '-m', minor_middle, 'tmp_stats'])
     assert result.exit_code == 0
     assert os.path.exists(os.path.join(stats_dir, middle_dir))
     assert not os.path.exists(os.path.join(stats_dir, middle_dir, 'tmp_stats'))
 
     # Test the cleaning function that should be no-op
-    result = runner.invoke(cli.stats_clean, ['-c', '-e'])
+    result = runner.invoke(utils_cli.stats_clean, ['-c', '-e'])
     assert result.exit_code == 0
     assert os.path.exists(os.path.join(stats_dir, stats_custom_dir))
 
     # Try to clean the directory properly
-    result = runner.invoke(cli.stats_clean, [])
+    result = runner.invoke(utils_cli.stats_clean, [])
     assert result.exit_code == 0
     assert not os.path.exists(os.path.join(stats_dir, 'lower_custom'))
     assert not os.path.exists(os.path.join(stats_dir, middle_dir))
 
     # Try to delete file in a version that doesn't have a directory in the stats
-    result = runner.invoke(cli.stats_delete_file, ['-m', minor_middle, 'some_file'])
+    result = runner.invoke(utils_cli.stats_delete_file, ['-m', minor_middle, 'some_file'])
     assert result.exit_code == 2
     assert 'does not exist in the stats directory' in result.output
     # Try to delete some file in non-existing minor version
-    result = runner.invoke(cli.stats_delete_file, ['-m', 'abcdef12345', 'some_file'])
+    result = runner.invoke(utils_cli.stats_delete_file, ['-m', 'abcdef12345', 'some_file'])
     assert result.exit_code == 2
     assert 'did not resolve to an object' in result.output
     # Try deleting a file in a valid version that does not contain the file
-    result = runner.invoke(cli.stats_delete_file, ['-m', minor_head, 'file_not_present'])
+    result = runner.invoke(utils_cli.stats_delete_file, ['-m', minor_head, 'file_not_present'])
     assert result.exit_code == 2
     assert 'does not exist in the stats directory for minor version' in result.output
 
@@ -2058,7 +2152,7 @@ def test_stats(pcs_with_more_commits):
     stats.add_stats('generic_stats', ['id_1'], [{'value': 1}])
     stats.add_stats('generic_stats', ['id_1'], [{'value': 2}], minor_root)
     assert os.path.exists(os.path.join(stats_dir, root_dir, 'generic_stats'))
-    result = runner.invoke(cli.stats_delete_file, ['-k', '-m', '.', 'generic_stats'])
+    result = runner.invoke(utils_cli.stats_delete_file, ['-k', '-m', '.', 'generic_stats'])
     assert result.exit_code == 0
     assert not os.path.exists(os.path.join(stats_dir, root_dir,
                                            'generic_stats'))
@@ -2066,19 +2160,19 @@ def test_stats(pcs_with_more_commits):
     # Repopulate the middle minor version and try to delete the contents of the root version
     stats.add_stats('middle_stats', ['id_1'], [{'value': 10}], minor_middle)
     assert os.path.exists(os.path.join(stats_dir, root_dir, 'custom_file_2'))
-    result = runner.invoke(cli.stats_delete_minor, ['-k', minor_root])
+    result = runner.invoke(utils_cli.stats_delete_minor, ['-k', minor_root])
     assert result.exit_code == 0
     assert not os.path.exists(os.path.join(stats_dir, root_dir, 'custom_file_2'))
     assert os.path.exists(os.path.join(stats_dir, root_dir))
 
     # Try to clear the contents of all the version directories
-    result = runner.invoke(cli.stats_delete_all, ['-k'])
+    result = runner.invoke(utils_cli.stats_delete_all, ['-k'])
     assert result.exit_code == 0
     assert len(stats.list_stat_versions()) == 3
     assert len(stats.list_stats_for_minor(minor_head)) == 0
     assert len(stats.list_stats_for_minor(minor_middle)) == 0
     # Try to completely clear the contents of the stats directory
-    result = runner.invoke(cli.stats_delete_all, [])
+    result = runner.invoke(utils_cli.stats_delete_all, [])
     assert result.exit_code == 0
     assert not os.listdir(stats_dir)
 

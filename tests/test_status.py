@@ -137,9 +137,6 @@ def assert_printed_profiles(profile_info, out):
             assert p_time in out
             profile_info.remove(profile_entry)
             break
-    else:
-        # Entry not found
-        assert False
 
 
 def assert_info(out, git_repo, stored_profiles, untracked_profiles):

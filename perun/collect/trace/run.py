@@ -19,7 +19,7 @@ import perun.utils.exceptions as exceptions
 import perun.utils as utils
 import perun.utils.log as log
 
-from perun.utils.helpers import CollectStatus
+from perun.utils.structs import CollectStatus
 
 
 # The collector subtypes
@@ -42,7 +42,7 @@ _COLLECTOR_STATUS = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(**kwargs):
+def before(executable, **kwargs):
     """ Assembles the SystemTap script according to input parameters and collection strategy
 
     The output dictionary is updated with:
@@ -52,6 +52,7 @@ def before(**kwargs):
      - log_path: path to the collection log
      - output_path: path to the collection output
 
+    :param Executable executable: full collected command with arguments and workload
     :param kwargs: dictionary containing the configuration settings for the collector
     :returns: tuple (int as a status code, nonzero values for errors,
                     string as a status message, mainly for error states,
@@ -62,12 +63,13 @@ def before(**kwargs):
 
         # Update the configuration dictionary with some additional values
         kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        _, kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(kwargs['cmd'])
+        _, kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(executable.cmd)
         kwargs['script_path'] = _create_collector_file('script', '.stp', **kwargs)
         kwargs['log_path'] = _create_collector_file('log', **kwargs)
         kwargs['output_path'] = _create_collector_file('record', **kwargs)
 
         # Validate collection parameters
+        kwargs['executable'] = executable
         kwargs = _validate_input(**kwargs)
 
         # Extract and / or post-process the collect configuration
@@ -181,7 +183,7 @@ def _validate_input(**kwargs):
 
     # Set the binary to cmd if not provided and check that it exists
     if not kwargs['binary']:
-        kwargs['binary'] = kwargs['cmd']
+        kwargs['binary'] = kwargs['executable'].cmd
     kwargs['binary'] = os.path.realpath(kwargs['binary'])
     if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
         raise exceptions.InvalidBinaryException(kwargs['binary'])

@@ -63,7 +63,7 @@ def test_name_generation(capsys):
             'workload': 'input.txt'
         },
         'postprocessors': [
-            {'name': 'filter', 'params': {}},
+            {'name': 'clusterizer', 'params': {}},
             {'name': 'normalizer', 'params': {}},
         ],
         'collector_info': {
@@ -72,7 +72,7 @@ def test_name_generation(capsys):
         }
     })
     assert profile_name == \
-           "memory-after-filter-and-normalizer-c4592b902b7c5773d20693021b76d83de63e4a3a.perf"
+           "memory-after-clusterizer-and-normalizer-c4592b902b7c5773d20693021b76d83de63e4a3a.perf"
 
     # Lookup of collectors params
     rt_config.set('format.output_profile_template', '%collector%-sampling-[%memory.sampling%]')
@@ -84,7 +84,7 @@ def test_name_generation(capsys):
             'workload': 'input.txt'
         },
         'postprocessors': [
-            {'name': 'filter', 'params': {}},
+            {'name': 'clusterizer', 'params': {}},
             {'name': 'normalizer', 'params': {}},
         ],
         'collector_info': {
@@ -107,7 +107,7 @@ def test_name_generation(capsys):
                 'workload': 'input.txt'
             },
             'postprocessors': [
-                {'name': 'filter', 'params': {}},
+                {'name': 'clusterizer', 'params': {}},
                 {'name': 'normalizer', 'params': {}},
             ],
             'collector_info': {

@@ -266,7 +266,7 @@ def _find_all_braces(target, opening, ending):
 
      :return list: the list of brace indices
      """
-    return [i for i, char in enumerate(target) if char == opening or char == ending]
+    return [i for i, char in enumerate(target) if char in (opening, ending)]
 
 
 def _split_prototype(function_prototype):
@@ -339,8 +339,7 @@ def _remove_return_type(function_body):
     # Check if function might contain return type specification
     return_type_delim = -1
     if ' ' in function_body:
-        control_sequence = [i for i, c in enumerate(function_body)
-                            if c == '<' or c == '>' or c == ' ']
+        control_sequence = [i for i, c in enumerate(function_body) if c in ('<', '>', ' ')]
         inner_state = 0
         for i in control_sequence:
             # Find first whitespace that is not in a template specification

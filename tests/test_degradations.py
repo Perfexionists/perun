@@ -24,7 +24,10 @@ def test_degradation_precollect(monkeypatch, pcs_full, capsys):
         'args': ['-al'],
         'workloads': ['.', '..'],
         'collectors': [
-            {'name': 'time', 'params': {}}
+            {'name': 'time', 'params': {
+                'warmup': 1,
+                'repeat': 1
+            }}
         ],
         'postprocessors': [],
         'execute': {
@@ -162,7 +165,7 @@ def test_strategies():
     rule = {
         'method': 'average_amount_threshold',
         'collector': 'complexity',
-        'postprocessor': 'filter'
+        'postprocessor': 'normalizer'
     }
     assert not check.is_rule_applicable_for(rule, profile)
 

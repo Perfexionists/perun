@@ -6,8 +6,8 @@ import perun.logic.config as config
 import perun.workload as workload
 import perun.logic.runner as runner
 
-from perun.utils.helpers import Job, CollectStatus
-from perun.utils.structs import Unit
+from perun.utils.helpers import Job
+from perun.utils.structs import Unit, Executable, CollectStatus
 from perun.workload.integer_generator import IntegerGenerator
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.workload.string_generator import StringGenerator
@@ -20,8 +20,9 @@ __author__ = 'Tomas Fiedor'
 
 def test_integer_generator():
     """Tests generation of integers from given range"""
-    collector = Unit('time', {})
-    integer_job = Job(collector, [], 'factor', '', '')
+    collector = Unit('time', {'warmup': 1, 'repeat': 1})
+    executable = Executable('factor')
+    integer_job = Job(collector, [], executable)
     integer_generator = IntegerGenerator(integer_job, 10, 100, 10)
 
     for c_status, profile in integer_generator.generate(runner.run_collector):
@@ -38,8 +39,9 @@ def test_integer_generator():
 def test_integer_generator_for_each():
     """Tests the profile_for_each_workload option"""
     # When profile_for_each_workload is not set, we yield profiles for each workload
-    collector = Unit('time', {})
-    integer_job = Job(collector, [], 'factor', '', '')
+    collector = Unit('time', {'warmup': 1, 'repeat': 1})
+    executable = Executable('factor')
+    integer_job = Job(collector, [], executable)
     integer_generator = IntegerGenerator(integer_job, 10, 100, 10, profile_for_each_workload=True)
 
     collection_pairs = list(
@@ -58,8 +60,9 @@ def test_integer_generator_for_each():
 def test_loading_generators_from_config(monkeypatch, pcs_full):
     """Tests loading generator specification from config"""
     # Initialize the testing configurations
-    collector = Unit('time', {})
-    integer_job = Job(collector, [], 'factor', '', '')
+    collector = Unit('time', {'warmup': 1, 'repeat': 1})
+    executable = Executable('factor')
+    integer_job = Job(collector, [], executable)
     temp_local = config.Config('local', '', {
         'generators': {
             'workload': [
@@ -115,7 +118,8 @@ def test_loading_generators_from_config(monkeypatch, pcs_full):
 def test_singleton():
     """Tests singleton generator"""
     collector = Unit('time', {})
-    integer_job = Job(collector, [], 'factor', '', '')
+    executable = Executable('factor')
+    integer_job = Job(collector, [], executable)
     singleton_generator = SingletonGenerator(integer_job, "10")
 
     job_count = 0
@@ -129,8 +133,9 @@ def test_singleton():
 
 def test_string_generator():
     """Tests string generator"""
-    collector = Unit('time', {})
-    string_job = Job(collector, [], 'echo', '', '')
+    collector = Unit('time', {'warmup': 1, 'repeat': 1})
+    executable = Executable('echo')
+    string_job = Job(collector, [], executable)
     string_generator = StringGenerator(string_job, 10, 20, 1)
 
     for c_status, profile in string_generator.generate(runner.run_collector):
@@ -141,8 +146,9 @@ def test_string_generator():
 
 def test_file_generator():
     """Tests file generator"""
-    collector = Unit('time', {})
-    file_job = Job(collector, [], 'wc', '-l', '')
+    collector = Unit('time', {'warmup': 1, 'repeat': 1})
+    executable = Executable('wc', '-l')
+    file_job = Job(collector, [], executable)
     file_generator = TextfileGenerator(file_job, 2, 5)
 
     for c_status, profile in file_generator.generate(runner.run_collector):

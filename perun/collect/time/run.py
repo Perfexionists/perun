@@ -5,21 +5,23 @@ several warm-up executions, followed by the actual timing.
 """
 
 import sys
-import click
 import time as systime
+import click
 
 import perun.logic.runner as runner
 import perun.utils as utils
-from perun.utils.helpers import CollectStatus
+import perun.utils.helpers as helpers
+from perun.utils.structs import CollectStatus
 
 __author__ = 'Tomas Fiedor'
 
 TIME_TYPES = ('real', 'user', 'sys')
 
 
-def collect(repeat=10, warmup=3, **kwargs):
+def collect(executable, repeat=10, warmup=3, **kwargs):
     """Times the runtime of the given command, with stated repeats.
 
+    :param Executable executable: executed command, with arguments and workloads
     :param int warmup: number of warm-up pahses, i.e. number of times the binary will be run, but
         the resulting collection will not be stored
     :param int repeat: number of repeats of the the timing, by default 10
@@ -28,24 +30,20 @@ def collect(repeat=10, warmup=3, **kwargs):
     """
     print('Executing the warmup-phase ', end='')
     for timing in range(0, warmup):
-        command = " ".join([
-            'time -p', kwargs['cmd'], kwargs.get('args', ''), kwargs['workload']
-        ]).split(' ')
+        command = " ".join(['time -p', str(executable)]).split(' ')
         utils.get_stdout_from_external_command(command).split('\n')
         print('.', end='')
         sys.stdout.flush()
     print("")
 
-    print('Begin timing of {} {} time{} '.format(
-        kwargs.get('cmd'), repeat, "s" if repeat != 1 else ""
+    print('Begin timing of {} {}'.format(
+        executable.cmd, helpers.str_to_plural(repeat, "time")
     ), end='')
     times = []
 
     before_timing = systime.time()
     for timing in range(1, repeat + 1):
-        command = " ".join([
-            'time -p', kwargs['cmd'], kwargs.get('args', ''), kwargs['workload']
-        ]).split(' ')
+        command = " ".join(['time -p', str(executable)]).split(' ')
         collected_data = utils.get_stdout_from_external_command(command).split('\n')
 
         times.extend([
@@ -63,7 +61,7 @@ def collect(repeat=10, warmup=3, **kwargs):
             "resources": [
                 {
                     "amount": float(timing),
-                    "uid": kwargs['cmd'],
+                    "uid": executable.cmd,
                     "order": order,
                     "subtype": key,
                     "type": "time",
@@ -75,7 +73,7 @@ def collect(repeat=10, warmup=3, **kwargs):
 
 
 @click.command()
-@click.option('--warm-up-repetition', '-w', 'warmup',
+@click.option('--warmup', '-w', 'warmup',
               default=3, nargs=1, type=click.INT, metavar='<int>',
               help='Before the actual timing, the collector will execute <int> warm-up executions.')
 @click.option('--repeat', '-r',

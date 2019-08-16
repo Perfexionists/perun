@@ -41,12 +41,13 @@ _COLLECTOR_SUBTYPES = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(**kwargs):
+def before(executable, **kwargs):
     """ Builds, links and configures the complexity collector executable
     In total, this function creates the so-called configuration executable (used to obtain
     information about the available functions for profiling) and the collector executable
     (used for the data collection itself)
 
+    :param Executable executable: executed profiled command
     :param kwargs: the configuration settings for the complexity collector
 
     :return tuple:  int as a status code, nonzero values for errors
@@ -81,7 +82,7 @@ def before(**kwargs):
 
         # Create the internal configuration file
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
-        kwargs['cmd'] = exec_path
+        executable.cmd = exec_path
         return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
     # The "expected" exception types
@@ -91,9 +92,10 @@ def before(**kwargs):
         return 1, repr(exception), kwargs
 
 
-def collect(**kwargs):
+def collect(executable, **kwargs):
     """ Runs the collector executable and extracts the performance data
 
+    :param Executable executable: executable configuration (command, arguments and workloads)
     :param kwargs: the configuration settings for the complexity collector
 
     :return tuple:  int as a status code, nonzero values for errors
@@ -101,11 +103,10 @@ def collect(**kwargs):
                     dict of unmodified kwargs
     """
     log.cprint('Running the collector...', 'white')
-    collect_dir = os.path.dirname(kwargs['cmd'])
-    cmd = utils.build_command_str(kwargs['cmd'], kwargs['args'], kwargs['workload'])
+    collect_dir = os.path.dirname(executable.cmd)
     # Run the command and evaluate the returncode
     try:
-        utils.run_safely_external_command(cmd, cwd=collect_dir)
+        utils.run_safely_external_command(str(executable), cwd=collect_dir)
         log.done()
         return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
     except (CalledProcessError, IOError) as err:
@@ -113,9 +114,10 @@ def collect(**kwargs):
         return 21, _COLLECTOR_STATUS_MSG[21] + ": {}".format(str(err)), dict(kwargs)
 
 
-def after(**kwargs):
+def after(executable, **kwargs):
     """ Performs the transformation of the raw data output into the profile format
 
+    :param Executable executable: full collected command with arguments and workload
     :param kwargs: the configuration settings for the complexity collector
 
     :return tuple:  int as a status code, nonzero values for errors
@@ -124,8 +126,8 @@ def after(**kwargs):
     """
     # Get the trace log path
     log.cprint('Starting the post-processing phase...', 'white')
-    data_path = os.path.join(os.path.dirname(kwargs['cmd']), kwargs['internal_data_filename'])
-    address_map = symbols.extract_symbol_address_map(kwargs['cmd'])
+    data_path = os.path.join(os.path.dirname(executable.cmd), kwargs['internal_data_filename'])
+    address_map = symbols.extract_symbol_address_map(executable.cmd)
 
     resources, call_stack = [], []
     profile_start, profile_end = 0, 0
@@ -209,11 +211,11 @@ def _validate_input(**kwargs):
         raise click.exceptions.BadParameter("At least one --files parameter must be supplied.")
 
 
-def _sampling_to_dictionary(ctx, param, value):
+def _sampling_to_dictionary(_, __, value):
     """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
 
-    :param dict ctx: click context
-    :param object param: the parameter object
+    :param dict _: click context
+    :param object __: the parameter object
     :param list value: the list of sampling values
 
     :return list of dict: list of sampling dictionaries

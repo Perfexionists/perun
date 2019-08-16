@@ -29,10 +29,7 @@ def process_title(ctx, _, value):
     :param object value: value that is being processed ad add to parameter
     :returns object: either value (if it is non-None) or default title of the graph
     """
-    if not value:
-        # Construct default title of the graph
-        return "Plot of '{}' per '{}'".format(ctx.params['of_key'], ctx.params['per_key'])
-    return value
+    return value or "Plot of '{}' per '{}'".format(ctx.params['of_key'], ctx.params['per_key'])
 
 
 @click.command()

@@ -1,6 +1,7 @@
 """List of helper and globally used structures and named tuples"""
 
 import collections
+import shlex
 
 from enum import Enum
 
@@ -12,6 +13,124 @@ PerformanceChange = Enum(
     'PerformanceChange',
     'Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization'
 )
+
+
+class CollectStatus(Enum):
+    """Simple enumeration for statuses of the collectors"""
+    OK = 0
+    ERROR = 1
+
+
+class PostprocessStatus(Enum):
+    """Simple enumeration for statuses of the postprocessors"""
+    OK = 0
+    ERROR = 1
+
+
+class RunnerReport:
+    """Collection of results reported during the running of the unit
+
+    :ivar object status: overall status of the whole run of the unit, one of the CollectStatus or
+        PostprocessStatus enum
+    :ivar module runner: module of the collector or postprocessor
+    :ivar str runner_type: string name of the runner type, either collector or postprocessor
+    :ivar int stat_code: sub status returned by the unit, 0 if nothing happened
+    :ivar str phase: name of the last executed phase (before, collect/postprocess, after)
+    :ivar Exception exception: exception (if it was raised) during the run otherwise None
+    :ivar str message: string message describing the result of run
+    :ivar dict kwargs: kwargs of the process (should include "profile")
+    """
+    ok_statuses = {
+        'collector': CollectStatus.OK,
+        'postprocessor': PostprocessStatus.OK
+    }
+    error_statues = {
+        'collector': CollectStatus.ERROR,
+        'postprocessor': PostprocessStatus.ERROR
+    }
+    def __init__(self, runner, runner_type, kwargs):
+        """
+        :param module runner: module of the runner
+        :param str runner_type: type of the runner (either 'collector' or 'postprocessor'
+        :param dict kwargs: initial keyword arguments
+        """
+        self.ok_status = RunnerReport.ok_statuses[runner_type]
+        self.error_status = RunnerReport.error_statues[runner_type]
+
+        self.runner = runner
+        self.runner_type = runner_type
+        self.status = self.ok_status
+        self.stat_code = 0
+        self.phase = "init"
+        self.exception = None
+        self.message = "OK"
+        self.kwargs = kwargs
+
+    def update_from(self, stat_code, message, params):
+        """Updates the report according to the successful results of one of the phases
+
+        :param int stat_code: returned code of the run
+        :param str message: additional message about the run process
+        :param dict params: updated params
+        :return:
+        """
+        self.stat_code = stat_code
+        self.message += message
+        self.kwargs.update(params or {})
+
+        is_enum = hasattr(self.stat_code, 'value')
+        if not (self.stat_code == 0 or (is_enum and self.stat_code.value == 0)):
+            self.status = self.error_status
+
+    def is_ok(self):
+        """Checks if the status of the collection or postprocessing is so far ok
+
+        :return: true if the status is OK
+        """
+        return self.status == self.ok_status
+
+
+class Executable:
+    """Represents executable command with arguments and workload
+
+    :ivar str cmd: command to be executed (i.e. script, binary, etc.)
+    :ivar str args: optional arguments of the command (such as -q, --pretty=no, etc.)
+    :ivar str workload: optional workloads (or inputs) of the command (i.e. files, whatever)
+    :ivar str original_workload: workload that was used as an origin (stated from the configration,
+        note that this is to differentiate between actually generated workloads from generators and
+        names of the generators.
+    """
+    def __init__(self, cmd, args="", workload=""):
+        """Initializes the executable
+
+        :param str cmd: command to be executed
+        :param str args: optional arguments of the command
+        :param str workload: optional workloads of the command
+        """
+        self.cmd = str(cmd)
+        self.args = str(args)
+        self.workload = str(workload)
+        self.origin_workload = str(workload)
+
+    def __str__(self):
+        """Returns nonescaped, nonlexed string representation of the executable
+
+        :return: string representation of executable
+        """
+        executable = self.cmd
+        executable += " " + self.args if self.args else ""
+        executable += " " + self.workload if self.workload else ""
+        return executable
+
+    def to_escaped_string(self):
+        """Returns escaped string representation of executable
+
+        :return: escaped string representation of executable
+        """
+        executable = shlex.quote(self.cmd)
+        executable += " " + self.args if self.args else ""
+        executable += " " + self.workload if self.workload else ""
+        return executable
 
 
 class Unit:

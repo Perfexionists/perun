@@ -12,7 +12,7 @@ import perun.utils.log as log
 import perun.profile.helpers as profile
 import perun.profile.factory as factory
 
-from perun.utils.helpers import CollectStatus
+from perun.utils.structs import CollectStatus
 
 __author__ = 'Tomas Fiedor'
 
@@ -32,7 +32,7 @@ class Generator:
         :param dict _: additional keyword arguments
         """
         self.job = job
-        self.generator_name = self.job.workload
+        self.generator_name = self.job.executable.origin_workload
         self.for_each = dutils.strtobool(str(profile_for_each_workload))
 
     def generate(self, collect_function):
@@ -44,8 +44,11 @@ class Generator:
 
         for workload in self._generate_next_workload():
             self.job.collector.params['workload'] = str(workload)
-            self.job.workload = "{}_{}".format(self.generator_name, str(workload)) \
-                if self.for_each else self.generator_name
+            # Update the workload: the executed one (workload) and config one (origin_workload)
+            self.job.executable.workload = str(workload)
+            self.job.executable.origin_workload = "{}_{}".format(
+                self.generator_name, str(workload)
+            ) if self.for_each else self.generator_name
             c_status, prof = collect_function(self.job.collector, self.job)
             if self.for_each:
                 yield c_status, prof

@@ -34,10 +34,10 @@
             "name": "b1"
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
         "r_square": 0.0008114073836928499,
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "model": "quadratic",
@@ -56,10 +56,10 @@
             "name": "b2"
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
         "r_square": 0.007999701297937256,
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "model": "exponential",
@@ -74,10 +74,10 @@
             "name": "b1"
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
         "r_square": 0.0028495784489828983,
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "model": "logarithmic",
@@ -92,10 +92,10 @@
             "name": "b1"
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
         "r_square": 0.0008472704553399315,
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "model": "linear",
@@ -110,10 +110,10 @@
             "name": "b1"
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
         "r_square": 0.002927320652343462,
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "model": "constant",
@@ -128,10 +128,10 @@
             "name": "b1"
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
         "r_square": 1,
-        "x_interval_start": 1
+        "x_start": 1
       }
     ],
     "resources": [

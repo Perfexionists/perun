@@ -301,7 +301,7 @@ def get_supported_module_names(package):
     return {
         'vcs': ['git'],
         'collect': ['trace', 'memory', 'time', 'complexity'],
-        'postprocess': ['clusterizer', 'filter', 'normalizer', 'regression-analysis',
+        'postprocess': ['clusterizer', 'normalizer', 'regression-analysis',
                         'regressogram', 'moving-average', 'kernel-regression'],
         'view': ['bars', 'flamegraph', 'flow', 'heapmap', 'raw', 'scatter']
     }[package]
@@ -413,24 +413,6 @@ def check_dependency(command):
     return True
 
 
-def build_command_str(cmd, args, workload):
-    """Creates the full command as concatenation of the cmd, args and workload values
-
-    :param str cmd: the command itself
-    :param str args: the arguments of the command
-    :param str workload: the workload parameter of the command, behaves the same as args
-
-    :return str: the full command with all the arguments appended
-    """
-    # Build the command, the args and workload should be only str as multiple options get
-    # get sliced and iterated by perun
-    if args:
-        cmd += ' ' + args
-    if workload:
-        cmd += ' ' + workload
-    return cmd
-
-
 def format_file_size(size):
     """Format file size in Bytes into a fixed-length output so that it can be easily printed.
 
@@ -453,3 +435,21 @@ def format_file_size(size):
             return "{:6.1f} {}B".format(size, unit)
         size /= 1024.0
     return "{:.1f} PiB".format(size)
+
+
+def create_empty_pass(return_code):
+    """Returns a function which will do nothing
+
+    This is used to handle collectors and postprocessors that do not have before or after phases.
+
+    :param object return_code: either CollectStatus.OK or PostprocessorStatus.OK
+    :return: function that does nothing
+    """
+    def empty_pass(**kwargs):
+        """Empty collection or postprocessing phase, doing nothing
+
+        :param dict kwargs: arguments of the phase
+        :return: return code, empty return message, non-modified arguments
+        """
+        return return_code, "", kwargs
+    return empty_pass
