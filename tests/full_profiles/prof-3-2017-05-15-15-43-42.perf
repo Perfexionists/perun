@@ -1,51 +1,857 @@
 {
-  "resources": {
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#2": {
-      "amount": [
-        0
+  "resource_type_map": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#4": {
+      "time": "0.172",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
       ],
-      "address": [
-        30577392
-      ]
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 171
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#2": {
+      "time": "0.125",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 124
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:63#0": {
+      "time": "0.047",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 63,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 63,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 46
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#1": {
+      "time": "0.110",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 109
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#4": {
+      "time": "0.188",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 187
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#1": {
+      "time": "0.204",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 203
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:55#0": {
+      "time": "0.032",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 55,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 55,
+        "function": "main"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 31
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:59#1": {
+      "time": "0.032",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 59,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 59,
+        "function": "main"
+      },
+      "subtype": "memalign",
+      "type": "memory",
+      "snapshot": 31
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#1": {
+      "time": "0.094",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 93
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#3": {
+      "time": "0.250",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 249
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:main:59#0": {
-      "amount": [
-        0
+      "time": "0.032",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 59,
+          "function": "main"
+        }
       ],
-      "address": [
-        30577232
-      ]
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 59,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 31
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:53#0": {
+      "time": "0.016",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 53,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 53,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 15
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:63#1": {
+      "time": "0.047",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 63,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 63,
+        "function": "main"
+      },
+      "subtype": "posix_memalign",
+      "type": "memory",
+      "snapshot": 46
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#3": {
+      "time": "0.266",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 265
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#0": {
+      "time": "0.079",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 78
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#2": {
+      "time": "0.110",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 109
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:main:45#0": {
+      "time": "0.001",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 45,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 45,
+        "function": "main"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 0
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#0": {
+      "time": "0.204",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 203
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#3": {
+      "time": "0.141",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 140
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#3": {
+      "time": "0.157",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 156
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#0": {
+      "time": "0.188",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 187
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:71#0": {
+      "time": "0.063",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 71,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 62
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#1": {
+      "time": "0.094",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 93
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:49#0": {
+      "time": "0.016",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 49,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 49,
+        "function": "main"
+      },
+      "subtype": "realloc",
+      "type": "memory",
+      "snapshot": 15
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#0": {
+      "time": "0.063",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 62
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:67#0": {
+      "time": "0.063",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 67,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 67,
+        "function": "main"
+      },
+      "subtype": "valloc",
+      "type": "memory",
+      "snapshot": 62
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#2": {
+      "time": "0.219",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 218
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#2": {
+      "time": "0.235",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 234
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#1": {
+      "time": "0.219",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 218
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#0": {
+      "time": "0.079",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 78
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#2": {
+      "time": "0.125",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 124
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#4": {
+      "type": "memory",
+      "time": "0.265625",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 77,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free"
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#3": {
+      "time": "0.157",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 156
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#4": {
+      "time": "0.172",
+      "trace": [
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+          "line": 71,
+          "function": "main"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/playground/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 171
+    }
+  },
+  "collector_info": {
+    "name": "memory",
+    "params": {}
+  },
+  "postprocessors": [],
+  "resources": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#4": {
+      "amount": [
+        16
+      ],
+      "address": [
+        30577360
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#2": {
       "amount": [
         4
       ],
       "address": [
-        30577232
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#2": {
-      "amount": [
-        0
-      ],
-      "address": [
         30577296
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#1": {
-      "amount": [
-        0
-      ],
-      "address": [
-        30577392
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#3": {
-      "amount": [
-        0
-      ],
-      "address": [
-        30577328
       ]
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:main:63#0": {
@@ -56,12 +862,20 @@
         30577232
       ]
     },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:63#1": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#1": {
       "amount": [
         4
       ],
       "address": [
-        30577232
+        30577264
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#4": {
+      "amount": [
+        4
+      ],
+      "address": [
+        30577360
       ]
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#1": {
@@ -72,20 +886,20 @@
         30577392
       ]
     },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#4": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:55#0": {
       "amount": [
-        0
+        20
       ],
       "address": [
-        30577360
+        30577232
       ]
     },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#2": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:59#1": {
       "amount": [
         4
       ],
       "address": [
-        30577392
+        30577232
       ]
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#1": {
@@ -104,28 +918,12 @@
         30577392
       ]
     },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#3": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:59#0": {
       "amount": [
         0
       ],
       "address": [
-        30577392
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#4": {
-      "amount": [
-        0
-      ],
-      "address": [
-        30577392
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#4": {
-      "amount": [
-        4
-      ],
-      "address": [
-        30577360
+        30577232
       ]
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:main:53#0": {
@@ -134,6 +932,30 @@
       ],
       "address": [
         30577232
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:63#1": {
+      "amount": [
+        4
+      ],
+      "address": [
+        30577232
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#3": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577392
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#0": {
+      "amount": [
+        4
+      ],
+      "address": [
+        30580736
       ]
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#2": {
@@ -144,100 +966,20 @@
         30577296
       ]
     },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#4": {
-      "amount": [
-        16
-      ],
-      "address": [
-        30577360
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#0": {
-      "amount": [
-        4
-      ],
-      "address": [
-        30580736
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:67#0": {
-      "amount": [
-        4
-      ],
-      "address": [
-        30580736
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#0": {
-      "amount": [
-        0
-      ],
-      "address": [
-        30580736
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#3": {
-      "amount": [
-        4
-      ],
-      "address": [
-        30577328
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:55#0": {
-      "amount": [
-        20
-      ],
-      "address": [
-        30577232
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:49#0": {
-      "amount": [
-        20
-      ],
-      "address": [
-        30577232
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#1": {
-      "amount": [
-        0
-      ],
-      "address": [
-        30577264
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#1": {
-      "amount": [
-        4
-      ],
-      "address": [
-        30577264
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#0": {
-      "amount": [
-        0
-      ],
-      "address": [
-        30580736
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#2": {
-      "amount": [
-        4
-      ],
-      "address": [
-        30577296
-      ]
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:59#1": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:45#0": {
       "amount": [
         4
       ],
       "address": [
         30577232
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577392
       ]
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#3": {
@@ -248,12 +990,12 @@
         30577328
       ]
     },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:71#0": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#3": {
       "amount": [
-        0
+        4
       ],
       "address": [
-        30580736
+        30577328
       ]
     },
     "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#0": {
@@ -264,861 +1006,119 @@
         30577392
       ]
     },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#0": {
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:71#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30580736
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#1": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577264
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:49#0": {
+      "amount": [
+        20
+      ],
+      "address": [
+        30577232
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30580736
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:main:67#0": {
+      "amount": [
+        4
+      ],
+      "address": [
+        30580736
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#2": {
+      "amount": [
+        4
+      ],
+      "address": [
+        30577392
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#2": {
       "amount": [
         0
       ],
       "address": [
         30577392
       ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#1": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577392
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30580736
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#2": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577296
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#4": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577392
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#3": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577328
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#4": {
+      "amount": [
+        0
+      ],
+      "address": [
+        30577360
+      ]
     }
   },
+  "models": [],
   "header": {
+    "type": "memory",
     "units": {
       "memory": "B"
     },
-    "args": "",
-    "cmd": "./test",
     "workload": "test",
-    "type": "memory"
-  },
-  "models": [],
-  "collector_info": {
-    "params": {},
-    "name": "memory"
-  },
-  "resource_type_map": {
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:45#0": {
-      "snapshot": 0,
-      "time": "0.001",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "main",
-          "line": 45,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 45,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:67#0": {
-      "snapshot": 62,
-      "time": "0.063",
-      "subtype": "valloc",
-      "trace": [
-        {
-          "function": "main",
-          "line": 67,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 67,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#3": {
-      "snapshot": 156,
-      "time": "0.157",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 37,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 37,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:59#0": {
-      "snapshot": 31,
-      "time": "0.032",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "main",
-          "line": 59,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 59,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#3": {
-      "snapshot": 140,
-      "time": "0.141",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 36,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 36,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#2": {
-      "snapshot": 234,
-      "time": "0.235",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 25,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#0": {
-      "snapshot": 62,
-      "time": "0.063",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 36,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 36,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#3": {
-      "snapshot": 156,
-      "time": "0.157",
-      "subtype": "calloc",
-      "trace": [
-        {
-          "function": "foo2",
-          "line": 31,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "foo1",
-          "line": 38,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo2",
-        "line": 31,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#2": {
-      "snapshot": 124,
-      "time": "0.125",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 37,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 37,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#2": {
-      "snapshot": 124,
-      "time": "0.125",
-      "subtype": "calloc",
-      "trace": [
-        {
-          "function": "foo2",
-          "line": 31,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "foo1",
-          "line": 38,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo2",
-        "line": 31,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#4": {
-      "snapshot": 171,
-      "time": "0.172",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 37,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 37,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:55#0": {
-      "snapshot": 31,
-      "time": "0.032",
-      "subtype": "calloc",
-      "trace": [
-        {
-          "function": "main",
-          "line": 55,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 55,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:63#0": {
-      "snapshot": 46,
-      "time": "0.047",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "main",
-          "line": 63,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 63,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#1": {
-      "snapshot": 93,
-      "time": "0.094",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 37,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 37,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:63#1": {
-      "snapshot": 46,
-      "time": "0.047",
-      "subtype": "posix_memalign",
-      "trace": [
-        {
-          "function": "main",
-          "line": 63,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 63,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:59#1": {
-      "snapshot": 31,
-      "time": "0.032",
-      "subtype": "memalign",
-      "trace": [
-        {
-          "function": "main",
-          "line": 59,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 59,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#1": {
-      "snapshot": 109,
-      "time": "0.110",
-      "subtype": "calloc",
-      "trace": [
-        {
-          "function": "foo2",
-          "line": 31,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "foo1",
-          "line": 38,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo2",
-        "line": 31,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:49#0": {
-      "snapshot": 15,
-      "time": "0.016",
-      "subtype": "realloc",
-      "trace": [
-        {
-          "function": "main",
-          "line": 49,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 49,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#2": {
-      "snapshot": 218,
-      "time": "0.219",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 23,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 23,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:37#0": {
-      "snapshot": 78,
-      "time": "0.079",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 37,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 37,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#1": {
-      "snapshot": 218,
-      "time": "0.219",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 25,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:71#0": {
-      "snapshot": 62,
-      "time": "0.063",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 71,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#1": {
-      "snapshot": 203,
-      "time": "0.204",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 23,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 23,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#1": {
-      "snapshot": 93,
-      "time": "0.094",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 36,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 36,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#3": {
-      "snapshot": 249,
-      "time": "0.250",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 23,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 23,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#3": {
-      "snapshot": 265,
-      "time": "0.266",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 25,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#4": {
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 25,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory",
-      "time": "0.265625",
-      "subtype": "free"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#4": {
-      "snapshot": 187,
-      "time": "0.188",
-      "subtype": "calloc",
-      "trace": [
-        {
-          "function": "foo2",
-          "line": 31,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "foo1",
-          "line": 38,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo2",
-        "line": 31,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:main:53#0": {
-      "snapshot": 15,
-      "time": "0.016",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "main",
-          "line": 53,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "main",
-        "line": 53,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo2:31#0": {
-      "snapshot": 78,
-      "time": "0.079",
-      "subtype": "calloc",
-      "trace": [
-        {
-          "function": "foo2",
-          "line": 31,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "foo1",
-          "line": 38,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo2",
-        "line": 31,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#2": {
-      "snapshot": 109,
-      "time": "0.110",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 36,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 36,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:foo1:36#4": {
-      "snapshot": 171,
-      "time": "0.172",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "foo1",
-          "line": 36,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 71,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "foo1",
-        "line": 36,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:23#0": {
-      "snapshot": 187,
-      "time": "0.188",
-      "subtype": "malloc",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 23,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 23,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    },
-    "/mnt/f/phdwork/perun/git/playground/test.c:factorial:25#0": {
-      "snapshot": 203,
-      "time": "0.204",
-      "subtype": "free",
-      "trace": [
-        {
-          "function": "factorial",
-          "line": 25,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        },
-        {
-          "function": "main",
-          "line": 77,
-          "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-        }
-      ],
-      "uid": {
-        "function": "factorial",
-        "line": 25,
-        "source": "/mnt/f/phdwork/perun/git/playground/test.c"
-      },
-      "type": "memory"
-    }
-  },
-  "postprocessors": []
+    "args": "",
+    "cmd": "./test"
+  }
 }

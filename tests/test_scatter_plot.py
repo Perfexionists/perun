@@ -35,8 +35,6 @@ def test_scatter_plot_regression_models(postprocess_profiles):
             assert len(results) == 4
         elif 'interval_computation.perf' in profile[0]:
             assert len(results) == 6
-        else:
-            assert False
 
 
 def test_scatter_plot_non_param_methods(postprocess_profiles):
@@ -61,8 +59,6 @@ def test_scatter_plot_non_param_methods(postprocess_profiles):
             assert len(results) == 3
         elif 'lin_datapoints_rg_ma_kr.perf' in profile[0]:
             assert len(results) == 2
-        else:
-            assert False
 
 
 def test_scatter_plot_no_models(full_profiles):

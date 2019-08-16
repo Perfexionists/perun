@@ -7053,9 +7053,9 @@
             "value": 0.0
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "r_square": 0.7966921409207554,
@@ -7071,9 +7071,9 @@
             "value": 1.0000028865370754
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "r_square": 0.9995002079669725,
@@ -7089,9 +7089,9 @@
             "value": 0.04901423681058994
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "r_square": 0.6865137664881328,
@@ -7107,9 +7107,9 @@
             "value": 11026.804911263713
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "r_square": 0.9602803912407135,
@@ -7125,14 +7125,14 @@
             "value": 0.8602497252317243
           }
         ],
-        "x_interval_end": 1000000,
+        "x_end": 1000000,
         "uid": "skiplistSearch(skiplist*, int)",
-        "x_interval_start": 1
+        "x_start": 1
       },
       {
         "model": "quadratic",
-        "x_interval_start": 1,
-        "x_interval_end": 1000000,
+        "x_start": 1,
+        "x_end": 1000000,
         "method": "full",
         "r_square": 0.817765837402249,
         "coeffs": [

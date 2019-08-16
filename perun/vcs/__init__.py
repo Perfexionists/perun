@@ -11,6 +11,7 @@ import inspect
 
 import perun.utils.log as perun_log
 import perun.logic.pcs as pcs
+import perun.utils.decorators as decorators
 from perun.utils import dynamic_module_function_call
 
 __author__ = 'Tomas Fiedor'
@@ -127,6 +128,7 @@ def walk_major_versions():
     )
 
 
+@decorators.singleton_with_args
 def get_minor_version_info(minor_version):
     """Yields the specification of concrete minor version in form of
     the ``MinorVersion`` named tuples containing the following information:
@@ -169,6 +171,7 @@ def get_head_major_version():
     )
 
 
+@decorators.singleton_with_args
 def check_minor_version_validity(minor_version):
     """Checks whether the given minor version specification corresponds to the
     wrapped version control system, and is not in wrong format.

@@ -19,11 +19,6 @@ def donothing(*_):
     pass
 
 
-def returnnothing(*_):
-    """Helper function for monkeypatching stuff to do nothing"""
-    return ''
-
-
 def test_flow_cli(pcs_full, valid_profile_pool):
     """Test runing and creating bokeh flow from the cli
 
@@ -110,7 +105,7 @@ def test_curses_flow(monkeypatch, mock_curses_window, memory_profiles):
     Expecting no errors
     """
     monkeypatch.setattr(curses, 'curs_set', donothing)
-    monkeypatch.setattr(curses, 'color_pair', returnnothing)
+    monkeypatch.setattr(curses, 'color_pair', donothing)
     monkeypatch.setattr(curses, 'start_color', donothing)
     monkeypatch.setattr(curses, 'use_default_colors', donothing)
     monkeypatch.setattr(curses, 'napms', donothing)
@@ -134,7 +129,7 @@ def test_curses_logic(monkeypatch, mock_curses_window, memory_profiles):
     Expecting no errors, eventually the visualization should end.
     """
     monkeypatch.setattr(curses, 'curs_set', donothing)
-    monkeypatch.setattr(curses, 'color_pair', returnnothing)
+    monkeypatch.setattr(curses, 'color_pair', donothing)
     monkeypatch.setattr(curses, 'start_color', donothing)
     monkeypatch.setattr(curses, 'use_default_colors', donothing)
     monkeypatch.setattr(curses, 'napms', donothing)

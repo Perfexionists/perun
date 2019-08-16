@@ -40,9 +40,6 @@ def test_get_exists(pcs_full, capsys):
     # First verify there is nothing in local
     with pytest.raises(MissingConfigSectionException):
         commands.config_get('local', 'general.editor')
-        out, err = capsys.readouterr()
-        assert out == err
-        assert 'fatal' in err
 
     # Now try to recursively obtain the same thing
     commands.config_get('recursive', 'general.editor')

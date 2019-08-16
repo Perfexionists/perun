@@ -187,9 +187,9 @@ Examples
             "bucket_method": "doane",
             "method": "regressogram",
             "r_square": 0.7575757575757576,
-            "x_interval_end": 9.0,
+            "x_end": 9.0,
             "statistic_function": "mean",
-            "x_interval_start": 0.0
+            "x_start": 0.0
         }
 
 .. _Doanes: https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
@@ -252,11 +252,11 @@ Examples
             ],
             "per_key": "structure-unit-size",
             "uid": "pow::test3",
-            "x_interval_end": 5,
+            "x_end": 5,
             "r_square": 1.0,
             "method": "moving_average",
             "moving_method": "sma",
-            "x_interval_start": 0,
+            "x_start": 0,
             "window_width": 1
         }
 
@@ -334,9 +334,9 @@ Examples
             "kernel_mode": "estimator",
             "r_square": 0.9990518378010778,
             "method": "kernel_regression",
-            "x_interval_start": 10,
+            "x_start": 10,
             "bandwidth": 2.672754640321602,
-            "x_interval_end": 64,
+            "x_end": 64,
             "kernel_stats": [
                   115.6085941489687,
                   155.95838478107163,

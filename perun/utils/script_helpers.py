@@ -81,7 +81,7 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
             template_handle.write(env.get_template(template_file).render(**kwargs))
 
         print(' [', end='')
-        log.cprint('DONE', 'green', attrs=['bold'])
+        log.done(ending='')
         print(']')
 
     # Add the registration point to the set of file

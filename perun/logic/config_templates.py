@@ -228,6 +228,7 @@ execute:
 #     - make
 {% endif %}
 """
+CONFIG_FILE_TEMPLATE = None
 
 
 def get_predefined_configuration(name, kwargs):
@@ -240,19 +241,23 @@ def get_predefined_configuration(name, kwargs):
     :param dict kwargs: additional keyword arguments
     :return: rendered template
     """
-    env = jinja2.Environment(
-        lstrip_blocks=True,
-        trim_blocks=True,
-        line_statement_prefix='//',
-        autoescape=True
-    )
-    template = env.from_string(CONFIG_FILE_STRING)
+    # Lazy initialization of config template
+    global CONFIG_FILE_TEMPLATE
+    if not CONFIG_FILE_TEMPLATE:
+        env = jinja2.Environment(
+            lstrip_blocks=True,
+            trim_blocks=True,
+            line_statement_prefix='//',
+            autoescape=True
+        )
+        CONFIG_FILE_TEMPLATE = env.from_string(CONFIG_FILE_STRING)
+
     options = {
         'MasterConfiguration': MasterConfiguration,
         'DeveloperConfiguration': DeveloperConfiguration,
         'UserConfiguration': UserConfiguration
     }.get("{}Configuration".format(name.title()), "MasterConfiguration")()
-    return template.render(dict(vars(options), **kwargs))
+    return CONFIG_FILE_TEMPLATE.render(dict(vars(options), **kwargs))
 
 
 class MasterConfiguration:

@@ -35,19 +35,6 @@ class Helpers(object):
     Helper class with various static functions for helping with profiles
     """
     @staticmethod
-    def list_contents_on_path(path):
-        """Helper function for listing the contents of the path
-
-        Arguments:
-            path(str): path to the director which we will list
-        """
-        for root, dirs, files in os.walk(path):
-            for file_on_path in files:
-                print("file: ", os.path.join(root, file_on_path))
-            for dir_on_path in dirs:
-                print("dirs: ", os.path.join(root, dir_on_path))
-
-    @staticmethod
     def count_contents_on_path(path):
         """Helper function for counting the contents of the path
 
@@ -434,11 +421,9 @@ def pcs_with_degradations():
 
 
 @pytest.fixture(scope="function")
-def pcs_full():
-    """
-    """
+def pcs_full(stored_profile_pool):
     # Change working dir into the temporary directory
-    profiles = stored_profile_pool()
+    profiles = stored_profile_pool
     pcs_path = tempfile.mkdtemp()
     os.chdir(pcs_path)
     commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})

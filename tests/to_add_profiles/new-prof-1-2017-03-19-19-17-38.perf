@@ -1,60 +1,60 @@
 {
+  "header": {
+    "type": "time",
+    "workload": "world",
+    "cmd": "echo",
+    "units": {
+      "time": "s"
+    },
+    "args": "-e"
+  },
+  "models": [],
   "resources": {
+    "sys#0": {
+      "amount": [
+        1.0
+      ]
+    },
     "real#0": {
       "amount": [
         1.0
       ]
     },
     "user#0": {
-      "amount": [
-        1.0
-      ]
-    },
-    "sys#0": {
       "amount": [
         1.0
       ]
     }
   },
-  "header": {
-    "units": {
-      "time": "s"
-    },
-    "args": "-e",
-    "type": "time",
-    "workload": "world",
-    "cmd": "echo"
-  },
-  "models": [],
-  "collector_info": {
-    "params": "",
-    "name": "time"
-  },
   "resource_type_map": {
+    "sys#0": {
+      "uid": "sys",
+      "type": "time",
+      "time": "0.0"
+    },
     "real#0": {
       "uid": "real",
-      "time": "0.0",
-      "type": "time"
+      "type": "time",
+      "time": "0.0"
     },
     "user#0": {
       "uid": "user",
-      "time": "0.0",
-      "type": "time"
-    },
-    "sys#0": {
-      "uid": "sys",
-      "time": "0.0",
-      "type": "time"
+      "type": "time",
+      "time": "0.0"
     }
   },
   "postprocessors": [
     {
-      "params": "",
-      "name": "filter"
+      "name": "filter",
+      "params": ""
     },
     {
-      "params": "",
-      "name": "normalizer"
+      "name": "normalizer",
+      "params": ""
     }
-  ]
+  ],
+  "collector_info": {
+    "name": "time",
+    "params": ""
+  }
 }

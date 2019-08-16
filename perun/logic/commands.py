@@ -9,9 +9,9 @@ import collections
 import os
 import re
 
-import colorama
-import termcolor
 from operator import itemgetter
+
+import colorama
 
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
@@ -19,6 +19,7 @@ import perun.logic.store as store
 import perun.logic.index as index
 import perun.profile.helpers as profile
 import perun.utils as utils
+import perun.utils.helpers as helpers
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamp
 import perun.vcs as vcs
@@ -257,28 +258,46 @@ def add(profile_names, minor_version, keep_profile=False, force=False):
 
     profile_names_len = len(profile_names)
     if added_profile_count != profile_names_len:
-        perun_log.error("could not register {}{} profile{} in index: {} failed".format(
-            "all " if added_profile_count > 1 else "",
-            added_profile_count, "s" if added_profile_count > 1 else "",
+        perun_log.error("could not register {} in index: {} failed".format(
+            helpers.str_to_plural(added_profile_count, "profile"),
             added_profile_count - profile_names_len
         ))
     perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
 
 
 @vcs.lookup_minor_version
-def remove(profile_generator, minor_version, **kwargs):
+def remove_from_index(profile_generator, minor_version):
     """Removes @p profile from the @p minor_version inside the @p pcs
 
     :param generator profile_generator: profile that will be stored for the minor version
     :param str minor_version: SHA-1 representation of the minor version
-    :param dict kwargs: dictionary with additional options
     :raisesEntryNotFoundException: when the given profile_generator points to non-tracked profile
     """
-    perun_log.msg_to_stdout("Running inner wrapper of the 'perun rm'", 2)
-
     object_directory = pcs.get_object_directory()
-    index.remove_from_index(object_directory, minor_version, profile_generator, **kwargs)
-    perun_log.info("successfully removed {} from index".format(len(profile_generator)))
+    index.remove_from_index(object_directory, minor_version, profile_generator)
+
+
+def remove_from_pending(profile_generator):
+    """Removes profiles from the pending jobs directory (i.e, `.perun/jobs`
+
+    :param generator profile_generator: generator of profiles that will be removed from pending jobs
+    """
+    removed_profile_number = len(profile_generator)
+    for i, pending_file in enumerate(profile_generator):
+        os.remove(pending_file)
+        perun_log.info("{}/{} deleted {} from pending jobs".format(
+            helpers.format_counter_number(i+1, removed_profile_number),
+            removed_profile_number,
+            perun_log.in_color(os.path.split(pending_file)[1], 'grey'),
+        ))
+
+    if removed_profile_number:
+        result_string = perun_log.in_color("{}".format(
+            helpers.str_to_plural(removed_profile_number, "profile")
+        ), 'white', 'bold')
+        perun_log.info("successfully removed {} from pending jobs".format(
+            result_string
+        ))
 
 
 def calculate_profile_numbers_per_type(profile_list):
@@ -445,38 +464,38 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
     minor_version_output_colour = 'white'
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
     fmt_tokens, _ = FMT_SCANNER.scan(minor_version_info_fmt)
-    slash = termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
+    slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
 
     # Print header (2 is padding for id)
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             if attr_type == 'stats':
-                end_msg = termcolor.colored(' profiles', HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS)
-                print(termcolor.colored("{0}{4}{1}{4}{2}{4}{3}{5}".format(
-                    termcolor.colored(
-                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, attrs=HEADER_ATTRS
+                end_msg = perun_log.in_color(' profiles', HEADER_SLASH_COLOUR, HEADER_ATTRS)
+                print(perun_log.in_color("{0}{4}{1}{4}{2}{4}{3}{5}".format(
+                    perun_log.in_color(
+                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, HEADER_ATTRS
                     ),
-                    termcolor.colored(
+                    perun_log.in_color(
                         'm'.rjust(max_lengths['memory']),
-                        PROFILE_TYPE_COLOURS['memory'], attrs=HEADER_ATTRS
+                        PROFILE_TYPE_COLOURS['memory'], HEADER_ATTRS
                     ),
-                    termcolor.colored(
+                    perun_log.in_color(
                         'x'.rjust(max_lengths['mixed']),
-                        PROFILE_TYPE_COLOURS['mixed'], attrs=HEADER_ATTRS),
-                    termcolor.colored(
+                        PROFILE_TYPE_COLOURS['mixed'], HEADER_ATTRS),
+                    perun_log.in_color(
                         't'.rjust(max_lengths['time']),
-                        PROFILE_TYPE_COLOURS['time'], attrs=HEADER_ATTRS),
+                        PROFILE_TYPE_COLOURS['time'], HEADER_ATTRS),
                     slash,
                     end_msg
-                ), HEADER_SLASH_COLOUR, attrs=HEADER_ATTRS), end='')
+                ), HEADER_SLASH_COLOUR, HEADER_ATTRS), end='')
             else:
                 limit = adjust_limit(limit, attr_type, max_lengths)
                 token_string = attr_type.center(limit, ' ')
-                cprint(token_string, minor_version_output_colour, attrs=HEADER_ATTRS)
+                cprint(token_string, minor_version_output_colour, HEADER_ATTRS)
         else:
             # Print the rest (non token stuff)
-            cprint(token, minor_version_output_colour, attrs=HEADER_ATTRS)
+            cprint(token, minor_version_output_colour, HEADER_ATTRS)
     print("")
     # Print profiles
     for minor_version in minor_version_list:
@@ -489,29 +508,28 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
                         pcs.get_object_directory(), minor_version.checksum
                     )
                     if tracked_profiles['all']:
-                        print(termcolor.colored("{:{}}".format(
+                        print(perun_log.in_color("{:{}}".format(
                             tracked_profiles['all'], max_lengths['all']
-                        ), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS), end='')
+                        ), TEXT_EMPH_COLOUR, TEXT_ATTRS), end='')
 
                         # Print the coloured numbers
                         for profile_type in SUPPORTED_PROFILE_TYPES:
                             print("{}{}".format(
-                                termcolor.colored(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
-                                termcolor.colored("{:{}}".format(
+                                perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
+                                perun_log.in_color("{:{}}".format(
                                     tracked_profiles[profile_type], max_lengths[profile_type]
                                 ), PROFILE_TYPE_COLOURS[profile_type])
                             ), end='')
 
                         print(
-                            termcolor.colored(
-                                " profiles", HEADER_INFO_COLOUR, attrs=TEXT_ATTRS
+                            perun_log.in_color(
+                                " profiles", HEADER_INFO_COLOUR, TEXT_ATTRS
                             ), end=''
                         )
                     else:
                         print(
-                            termcolor.colored(
-                                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR,
-                                attrs=TEXT_ATTRS
+                            perun_log.in_color(
+                                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, TEXT_ATTRS
                             ), end=''
                         )
                 elif attr_type == 'changes':
@@ -666,7 +684,7 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
             token_string = attr_type.center(limit, ' ')
-            cprint(token_string, profile_output_colour, [])
+            cprint(token_string, profile_output_colour)
         else:
             # Print the rest (non token stuff)
             cprint(token, profile_output_colour)
@@ -773,12 +791,12 @@ def status(short=False, **_):
 
     # Print the status of major head.
     print("On major version {} ".format(
-        termcolor.colored(major_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+        perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
     ), end='')
 
     # Print the index of the current head
     print("(minor version: {})".format(
-        termcolor.colored(minor_head, TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+        perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
     ))
 
     # Print in long format, the additional information about head commit, by default print
@@ -872,46 +890,43 @@ def print_temp_files(root, **kwargs):
         tmp_files.sort(key=itemgetter(sort_map['pos']), reverse=sort_map['reverse'])
 
     # Print the total files size if needed
-    _print_total_size(sum(size for _, _, size in tmp_files), not kwargs['no_color'],
-                      not kwargs['no_total_size'])
+    _print_total_size(sum(size for _, _, size in tmp_files), not kwargs['no_total_size'])
     # Print the file records
-    print_formatted_temp_files(tmp_files, not kwargs['no_file_size'],
-                               not kwargs['no_protection_level'], not kwargs['no_color'])
+    print_formatted_temp_files(
+        tmp_files, not kwargs['no_file_size'], not kwargs['no_protection_level']
+    )
 
 
-def print_formatted_temp_files(records, show_size, show_protection, use_color):
+def print_formatted_temp_files(records, show_size, show_protection):
     """Format and print temporary file records as:
     size | protection level | path from tmp/ directory
 
     :param list records: the list of temporary file records as tuple (size, protection, path)
     :param bool show_size: flag indicating whether size for each file should be shown
     :param bool show_protection: if set to True, show the protection level of each file
-    :param bool use_color: if set to True, certain parts of the output will be colored
     """
     # Absolute path might be a bit too long, we remove the path component to the tmp/ directory
     prefix = len(pcs.get_tmp_directory()) + 1
     for file_name, protection, size in records:
         # Print the size of each file
         if show_size:
-            print('{}'.format(perun_log.set_color(utils.format_file_size(size),
-                                                  TEXT_EMPH_COLOUR, use_color)),
-                  end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
+            print('{}'.format(perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
+                  end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
                 print('{}'.format(temp.UNPROTECTED),
-                      end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
+                      end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
             else:
-                print('{}  '.format(perun_log.set_color(temp.PROTECTED, TEXT_WARN_COLOUR,
-                                                        use_color)),
-                      end=perun_log.set_color(' | ', TEXT_WARN_COLOUR, use_color))
+                print('{}  '.format(perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)),
+                      end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
 
         # Print the file path, emphasize the directory to make it a bit more readable
         file_name = file_name[prefix:]
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            print('{}'.format(perun_log.set_color(file_dir, TEXT_EMPH_COLOUR, use_color)), end='')
+            print('{}'.format(perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)), end='')
         print('{}'.format(os.path.basename(file_name)))
 
 
@@ -967,8 +982,11 @@ def list_stat_objects(mode, **kwargs):
         # We need to print the versions, aggregate the files and their sizes
         results = [(sum(size for _, size in files), version, len(files))
                    for version, files in versions]
-        properties = [(not kwargs['no_dir_size'], not kwargs['no_color']), (True, False),
-                      (not kwargs['no_file_count'], False)]
+        properties = [
+            (not kwargs['no_dir_size'], True),
+            (True, False),
+            (not kwargs['no_file_count'], False)
+        ]
     else:
         # We need to print the files, create separate record for each file
         results = []
@@ -979,8 +997,11 @@ def list_stat_objects(mode, **kwargs):
             else:
                 results.append((None, version, '-= No stats file =-'))
         # results = [(size, version, file) for version, files in versions for file, size in files]
-        properties = [(not kwargs['no_file_size'], not kwargs['no_color']),
-                      (not kwargs['no_minor'], False), (True, False)]
+        properties = [
+            (not kwargs['no_file_size'], True),
+            (not kwargs['no_minor'], False),
+            (True, False)
+        ]
 
     # Separate the results with no files since they cannot be properly sorted but still need
     # to be printed
@@ -990,8 +1011,9 @@ def list_stat_objects(mode, **kwargs):
     )
 
     # Print the total size if needed
-    _print_total_size(sum(record_size(record) for record in valid_results),
-                      not kwargs['no_color'], not kwargs['no_total_size'])
+    _print_total_size(
+        sum(record_size(record) for record in valid_results), not kwargs['no_total_size']
+    )
     # Sort by size if needed
     if kwargs['sort_by_size']:
         if mode == 'versions':
@@ -1003,24 +1025,23 @@ def list_stat_objects(mode, **kwargs):
     # Format the size so that is's suitable for output
     results = [(utils.format_file_size(size), version, file) for size, version, file in results]
     # Print all the results
-    _print_stat_objects(results, properties, not kwargs['no_color'])
+    _print_stat_objects(results, properties)
 
 
-def _print_total_size(total_size, colored, enabled):
+def _print_total_size(total_size, enabled):
     """ Prints the formatted total size of all displayed results.
 
     :param int total_size: the total size in bytes
-    :param bool colored: a flag describing if the output should be colored
     :param bool enabled: a flag describing if the total size should be displayed at all
     """
     if enabled:
         total_size = utils.format_file_size(total_size)
         print('Total size of all the displayed files / directories: {}'.format(
-            perun_log.set_color(total_size, TEXT_EMPH_COLOUR, colored))
+            perun_log.in_color(total_size, TEXT_EMPH_COLOUR))
         )
 
 
-def _print_stat_objects(stats_objects, properties, colored_delimiters):
+def _print_stat_objects(stats_objects, properties):
     """ Prints stats objects (files, versions, other iterable etc.) in a general way.
 
     The stats object should be a list of items to print, where each item consists of some
@@ -1031,19 +1052,18 @@ def _print_stat_objects(stats_objects, properties, colored_delimiters):
 
     :param list stats_objects: list of stat objects to print
     :param list properties: list of settings for item properties / parts
-    :param bool colored_delimiters: enables/disables the coloring of delimiters for item properties
     """
     # Iterate all the stats objects and parts of each object
     for item in stats_objects:
         record = ''
         for pos, prop in enumerate(item):
             # Check if we should print the property and if it should be colored
-            show_property, property_colored = properties[pos]
+            show_property, colored = properties[pos]
             if show_property:
                 # Add the delimiter if the record already has some properties to print
                 if record:
-                    record += perun_log.set_color(' | ', TEXT_WARN_COLOUR, colored_delimiters)
-                record += perun_log.set_color(str(prop), TEXT_EMPH_COLOUR, property_colored)
+                    record += perun_log.in_color(' | ', TEXT_WARN_COLOUR)
+                record += perun_log.in_color(str(prop), TEXT_EMPH_COLOUR) if colored else str(prop)
         print(record)
 
 

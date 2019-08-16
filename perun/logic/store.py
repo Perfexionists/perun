@@ -10,13 +10,13 @@ import os
 import string
 import struct
 import zlib
+import demandimport
 
 from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
 from perun.profile.factory import Profile
 
-import demandimport
 with demandimport.enabled():
     import hashlib
 
