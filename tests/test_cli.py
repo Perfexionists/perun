@@ -1154,6 +1154,19 @@ def test_collect_correct(pcs_full):
     ])
     assert result.exit_code == 0
 
+    current_dir = os.path.split(__file__)[0]
+    src_dir = os.path.join(current_dir, 'collect_bounds')
+    src_file = os.path.join(src_dir, 'partitioning.c')
+    result = runner.invoke(cli.collect, [
+        '-c echo', '-w hello', 'bounds', '-d', '{}'.format(src_dir)
+    ])
+    assert result.exit_code == 0
+
+    result = runner.invoke(cli.collect, [
+        '-c echo', '-w hello', 'bounds', '-s', '{}'.format(src_file)
+    ])
+    assert result.exit_code == 0
+
 
 def test_show_help(pcs_full):
     """Test running show to see if there are registered modules for showing

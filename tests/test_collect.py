@@ -21,6 +21,8 @@ import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
 import perun.utils.log as log
 
+from subprocess import SubprocessError
+
 from perun.profile.factory import Profile
 from perun.utils.helpers import Job
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
@@ -634,6 +636,45 @@ def test_collect_memory_with_generator(pcs_full, memory_collect_job):
     integer_generator = IntegerGenerator(integer_job, 1, 3, 1)
     memory_profiles = list(integer_generator.generate(run.run_collector))
     assert len(memory_profiles) == 1
+
+
+def test_collect_bounds(monkeypatch, pcs_full):
+    """Test collecting the profile using the bounds collector"""
+    current_dir = os.path.split(__file__)[0]
+    test_dir = os.path.join(current_dir, 'collect_bounds')
+    sources = [
+        os.path.join(test_dir, src) for src in os.listdir(test_dir) if src.endswith('.c')
+    ]
+    single_sources = [os.path.join(test_dir, "partitioning.c")]
+    job = Job(Unit('bounds', {'sources': sources}), [], Executable('echo', '', 'hello'))
+
+    status, prof = run.run_collector(job.collector, job)
+    assert status == CollectStatus.OK
+    assert len(prof['global']['resources']) == 8
+
+    job = Job(Unit('bounds', {'sources': single_sources}), [], Executable('echo', '', 'hello'))
+
+    status, prof = run.run_collector(job.collector, job)
+    assert status == CollectStatus.OK
+    assert len(prof['global']['resources']) == 4
+
+    original_function = utils.run_safely_external_command
+
+    def before_returning_error(cmd, **kwargs):
+        if cmd.startswith('clang'):
+            raise SubprocessError("something happened")
+    monkeypatch.setattr("perun.utils.run_safely_external_command", before_returning_error)
+    status, prof = run.run_collector(job.collector, job)
+    assert status == CollectStatus.ERROR
+
+    def collect_returning_error(cmd, **kwargs):
+        if 'loopus' in cmd:
+            raise SubprocessError("something happened")
+        else:
+            original_function(cmd, **kwargs)
+    monkeypatch.setattr("perun.utils.run_safely_external_command", collect_returning_error)
+    status, prof = run.run_collector(job.collector, job)
+    assert status == CollectStatus.ERROR
 
 
 def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
