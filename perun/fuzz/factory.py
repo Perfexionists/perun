@@ -15,6 +15,7 @@ import threading
 from subprocess import CalledProcessError, TimeoutExpired
 from uuid import uuid4
 
+import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.fuzz.interpret as interpret
 import perun.fuzz.filesystem as filesystem
