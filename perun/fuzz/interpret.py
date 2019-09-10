@@ -1,7 +1,8 @@
+""" Module contains a set of functions for fuzzing results interpretation."""
+
 import perun.fuzz.filesystem as filesystem
 import scipy.stats.mstats as stats
 import os.path as path
-""" Module contains a set of functions for interpretation the results of fuzzing."""
 
 __author__ = 'Matus Liscinsky'
 
@@ -10,6 +11,17 @@ import matplotlib.pyplot as plt
 # Force matplotlib to not use any Xwindows backend.
 plt.switch_backend('agg')
 
+DATA_LINE_WIDTH = 4
+DATA_LINE_ALPHA = 0.9
+GREY_COLOR = '#555555'
+MEDIAN_ALPHA = 0.7
+PLOT_SIZE_X = 10
+PLOT_SIZE_Y = 5
+TEXT_FONTSIZE = 11
+TEXT_SPACE_CONSTANT_X = 25
+TEXT_SPACE_CONSTANT_Y = 40
+QUARTILE_ALPHA = 0.4
+QUARTILE_LINE_WIDTH = 2
 
 def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, parents_fitness_values, base_cov, hangs, faults):
     """ Saves information about fuzzing in log file. Note: refactor
@@ -29,13 +41,13 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, par
     cov_data_file = open(log_dir + "/coverage_plot_data.txt", "w")
     results_data_file = open(log_dir + "/results_data.txt", "w")
 
-    for index in range(len(time_data)):
+    for index, degs in enumerate(degradations):
         deg_data_file.write(
-            str(time_data[index]) + " " + str(degradations[index]) + "\n")
+            str(time_data[index]) + " " + str(degs) + "\n")
 
-    for index in range(len(time_for_cov)):
+    for index, cov in enumerate(max_covs):
         cov_data_file.write(
-            str(time_for_cov[index]) + " " + str(max_covs[index]) + "\n")
+            str(time_for_cov[index]) + " " + str(cov) + "\n")
 
     for mut in (parents_fitness_values):
         results_data_file.write(str(mut["value"]) + " " + str(mut["mut"]["cov"]/base_cov) + " " +
@@ -81,7 +93,7 @@ def plot_fuzz_time_series(time_data, data, filename, title, xlabel, ylabel):
     :param str xlabel: name of x-axis
     :param str ylabel: name of y-axis
     """
-    _, ax = plt.subplots(figsize=(10, 5))
+    _, ax = plt.subplots(figsize=(PLOT_SIZE_X, PLOT_SIZE_Y))
 
     ax.set_title(title)
     ax.set_xlabel(xlabel)
@@ -99,30 +111,31 @@ def plot_fuzz_time_series(time_data, data, filename, title, xlabel, ylabel):
     q3_time = get_time_value(q3, time_data, data)
 
     ax.axvline(x=q1_time, ymin=0, ymax=1, linestyle='--',
-               linewidth=2, alpha=0.4, color='k')
+               linewidth=QUARTILE_LINE_WIDTH, alpha=QUARTILE_ALPHA, color='k')
     ax.axhline(y=q1, xmin=0, xmax=1, linestyle='--',
-               linewidth=2, alpha=0.4, color='k')
+               linewidth=QUARTILE_LINE_WIDTH, alpha=QUARTILE_ALPHA, color='k')
 
     ax.axvline(x=q2_time, ymin=0, ymax=1, linestyle='-',
-               linewidth=2, alpha=0.7, color='r')
+               linewidth=QUARTILE_LINE_WIDTH, alpha=MEDIAN_ALPHA, color='r')
     ax.axhline(y=q2, xmin=0, xmax=1, linestyle='-',
-               linewidth=2, alpha=0.7, color='r')
+               linewidth=QUARTILE_LINE_WIDTH, alpha=MEDIAN_ALPHA, color='r')
 
     ax.axvline(x=q3_time, ymin=0, ymax=1, linestyle='--',
-               linewidth=2, alpha=0.4, color='k')
+               linewidth=QUARTILE_LINE_WIDTH, alpha=QUARTILE_ALPHA, color='k')
     ax.axhline(y=q3, xmin=0, xmax=1, linestyle='--',
-               linewidth=2, alpha=0.4, color='k')
+               linewidth=QUARTILE_LINE_WIDTH, alpha=QUARTILE_ALPHA, color='k')
 
-    TEXT_SPACE_X = -(max(time_data)/25)
-    TEXT_SPACE_Y = max(data)/40
+    TEXT_SPACE_X = -(max(time_data)/TEXT_SPACE_CONSTANT_X)
+    TEXT_SPACE_Y = max(data)/TEXT_SPACE_CONSTANT_Y
 
-    plt.plot(time_data, data, 'c', alpha=0.90, linewidth=4)
+    plt.plot(time_data, data, 'c', alpha=DATA_LINE_ALPHA,
+             linewidth=DATA_LINE_WIDTH)
     plt.text(q1_time + TEXT_SPACE_X, q1 + TEXT_SPACE_Y, str(int(q1)),
-             fontweight='bold', color='#555555', fontsize=11)
+             fontweight='bold', color=GREY_COLOR, fontsize=TEXT_FONTSIZE)
     plt.text(q2_time + TEXT_SPACE_X, q2 + TEXT_SPACE_Y, str(int(q2)),
-             fontweight='bold', color='red', alpha=1, fontsize=11)
+             fontweight='bold', color='red', alpha=MEDIAN_ALPHA, fontsize=TEXT_FONTSIZE)
     plt.text(q3_time + TEXT_SPACE_X, q3 + TEXT_SPACE_Y, str(int(q3)),
-             fontweight='bold', color='#555555', fontsize=11)
+             fontweight='bold', color=GREY_COLOR, fontsize=TEXT_FONTSIZE)
     plt.savefig(filename, bbox_inches='tight', format='pdf')
 
 

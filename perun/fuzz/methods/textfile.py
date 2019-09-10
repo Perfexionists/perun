@@ -1,6 +1,6 @@
 """Collects fuzzing rules specific for text files."""
 
-import random
+import perun.fuzz.randomizer as randomizer
 
 __author__ = 'Matus Liscinsky'
 
@@ -17,11 +17,11 @@ def change_char(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        index = random.randrange(len(lines[rand]))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
+        index = randomizer.rand_index(len(lines[rand]))
         lines[rand] = lines[rand][:index] + \
-            chr(random.randint(0, 255)) + lines[rand][index + 1:]
+            chr(randomizer.rand_from_range(0, 255)) + lines[rand][index + 1:]
 
 
 def divide_line(lines):
@@ -33,9 +33,9 @@ def divide_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        index = random.randrange(len(lines[rand]))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
+        index = randomizer.rand_index(len(lines[rand]))
         lines[rand] = lines[rand][:index] + "\n" + lines[rand][index:]
 
 
@@ -48,11 +48,11 @@ def fuzz_insert_ws(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        index = random.randrange(len(lines[rand]))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
+        index = randomizer.rand_index(len(lines[rand]))
         lines[rand] = lines[rand][:index] + " " * \
-            random.randint(WS_MIN, WS_MAX) + lines[rand][index:]
+            randomizer.rand_from_range(WS_MIN, WS_MAX) + lines[rand][index:]
 
 
 def fuzz_double_line(lines):
@@ -63,8 +63,8 @@ def fuzz_double_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         lines[rand] = lines[rand][:-1] * 2 + lines[rand][-1:]
 
 
@@ -77,10 +77,10 @@ def fuzz_append_ws(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         lines[rand] = lines[rand][:-1] + " " * \
-            random.randint(WS_MIN, WS_MAX) + lines[rand][-1:]
+            randomizer.rand_from_range(WS_MIN, WS_MAX) + lines[rand][-1:]
 
 
 def fuzz_bloat_word(lines):
@@ -91,8 +91,8 @@ def fuzz_bloat_word(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         lines[rand] = "".join(lines[rand].split())+"\n"
 
 
@@ -106,8 +106,8 @@ def multiplicate_ws(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         lines[rand] = lines[rand].replace(" ", " "*10, 100)
 
 
@@ -120,9 +120,9 @@ def prepend_ws(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        lines[rand] = " "*random.randint(WS_MIN, WS_MAX) + lines[rand]
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
+        lines[rand] = " "*randomizer.rand_from_range(WS_MIN, WS_MAX) + lines[rand]
 
 
 def fuzz_duplicate_line(lines):
@@ -134,9 +134,9 @@ def fuzz_duplicate_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
-        lines.insert(rand, lines[random.randint(0, len(lines)-1)])
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
+        lines.insert(rand, lines[randomizer.rand_from_range(0, len(lines)-1)])
 
 
 def fuzz_sort_line(lines):
@@ -147,8 +147,8 @@ def fuzz_sort_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         words = lines[rand].split()
         try:
             lines[rand] = " ".join(sorted(words, key=int))
@@ -164,8 +164,8 @@ def fuzz_rsort_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         words = lines[rand].split()
         try:
             lines[rand] = " ".join(sorted(words, reverse=True, key=int))
@@ -182,13 +182,13 @@ def repeat_word(lines):
     :param list lines: lines of the workload, which has been choosen for mutating
     """
     REPETITIONS = 100
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         try:
-            word = random.choice(lines[rand].split())
+            word = randomizer.rand_choice(lines[rand].split())
             lines[rand] = lines[rand][:-1] + \
                 (" " + (word[100]))*(REPETITIONS) + lines[rand][-1:]
-        except IndexError:
+        except (ValueError, IndexError):
             pass
 
 
@@ -199,9 +199,9 @@ def del_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
         if len(lines):
-            del lines[random.randint(0, len(lines)-1)]
+            del lines[randomizer.rand_from_range(0, len(lines)-1)]
 
 
 def del_word(lines):
@@ -211,12 +211,12 @@ def del_word(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         try:
-            word = random.choice(lines[rand].split())
+            word = randomizer.rand_choice(lines[rand].split())
             lines[rand] = lines[rand].replace(word, "")
-        except IndexError:
+        except ValueError:
             pass
 
 
@@ -227,10 +227,10 @@ def del_char(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    for _ in range(random.randint(1, RULE_ITERATIONS)):
-        rand = random.randrange(len(lines))
+    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
+        rand = randomizer.rand_index(len(lines))
         try:
-            index = random.randrange(len(lines[rand]))
+            index = randomizer.rand_index(len(lines[rand]))
             lines[rand] = lines[rand][:index] + lines[rand][index + 1:]
         except ValueError:
             pass

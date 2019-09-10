@@ -2314,7 +2314,6 @@ def test_error_runs(pcs_full, monkeypatch):
     assert result.exit_code == 1
 
 
-
 def test_temp(pcs_with_empty_git):
     """Test the CLI operations on the temporary files"""
     runner = CliRunner()

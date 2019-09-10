@@ -2,9 +2,9 @@
 
 import binaryornot.check as binaryornot
 import mimetypes
-import random
 import re
 
+import perun.fuzz.randomizer as randomizer
 
 __author__ = 'Matus Liscinsky'
 
@@ -22,8 +22,8 @@ def custom_rules(regex_rules, fuzzing_methods):
     for key, value in regex_rules.items():
         def custom_rule(lines):
             comp_regexp = re.compile(key, flags=re.IGNORECASE)
-            rand = random.randrange(len(lines))
-            lines[rand] = comp_regexp.sub(value, lines[rand])
+            index = randomizer.rand_index(len(lines))
+            lines[index] = comp_regexp.sub(value, lines[index])
 
         fuzzing_methods.append(
             (custom_rule, "User rule: \"" + key + "\" -> \"" + value + "\""))
