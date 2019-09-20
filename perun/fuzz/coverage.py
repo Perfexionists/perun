@@ -200,7 +200,7 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     """
     os.chdir(gcno_path)
 
-    if gcov_version > GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+    if gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
         command = ["gcov", "-i", "-o", "."]
     else:
         command = ["gcov", "-o", "."]
@@ -214,7 +214,7 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     execs = 0
     for gcov_file in gcov_files:
         fp = open(gcov_file, "r")
-        if gcov_version > GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+        if gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
             # intermediate text format
             for line in fp:
                 if "lcount" in line:

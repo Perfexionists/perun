@@ -83,7 +83,7 @@ def test(cmd, args, workload, collector, postprocessor,
         # check
         workload["deg_ratio"] = check_for_change(base_result, target_pg_copy)
         return (workload["deg_ratio"] > DEGRADATION_RATIO_TRESHOLD)
-    except (NameError, ZeroDivisionError):
+    except ZeroDivisionError:
         return False
 
 

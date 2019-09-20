@@ -1964,7 +1964,6 @@ def test_fuzzing_correct(pcs_full):
         '--initial-workload', wierd_workload,
         '--timeout', '1',
         '--max-size-percentual', '3.5',
-        '--mut-count-strategy', 'proportional',
         '--source-path', '.',
         '--gcno-path', '.',
         '--no-plotting',
@@ -2026,7 +2025,7 @@ def test_fuzzing_correct(pcs_full):
         '--initial-workload', num_workload,
         '--source-path', os.path.dirname(hang_init),
         '--gcno-path', os.path.dirname(hang_init),
-        '--hang-timeout', '0.001',
+        '--hang-timeout', '0.05',
         '--no-plotting',
     ])
     assert result.exit_code == 1
@@ -2047,54 +2046,27 @@ def test_fuzzing_correct(pcs_full):
         '--timeout', '1',
         '--source-path', os.path.dirname(hang_test),
         '--gcno-path', os.path.dirname(hang_test),
-        '--hang-timeout', '0.001',
+        '--mut-count-strategy', 'proportional',
+        '--hang-timeout', '0.05',
         '--execs', '1',
         '--no-plotting',
     ])
     assert result.exit_code == 0
     assert 'Timeout' in result.output
 
-    # 10. Testing UBT for degs
-    process = subprocess.Popen(
-        ["make", "-C", os.path.dirname(examples)+"/UBT"])
-    process.communicate()
-    process.wait()
-
-    ubt_test = os.path.dirname(examples) + "/UBT/build/ubt"
-
+    # 10. Testing for performance degradations during fuzz testing
     result = runner.invoke(cli.fuzz_cmd, [
-        '--cmd', ubt_test,
+        '--cmd', hang_test,
         '--output-dir', '.',
-        '--initial-workload', os.path.dirname(examples) + '/UBT/input.txt',
+        '--initial-workload', num_workload,
         '--timeout', '1',
-        '--hang-timeout', '1',
-        '--source-path', os.path.dirname(examples) + '/UBT/src',
-        '--gcno-path', os.path.dirname(examples) + '/UBT/build',
-        '--max-size-percentual', '1',
-        '--mut-count-strategy', 'unitary',
-        '--execs', '1',
+        '--source-path', os.path.dirname(hang_test),
+        '--gcno-path', os.path.dirname(hang_test),
         '--no-plotting',
+        '--interesting-files-limit', '1'
     ])
     assert result.exit_code == 0
-    assert 'Fuzzing successfully finished' in result.output
-
-    # 11. Testing UBT for deg in initial test
-
-    result = runner.invoke(cli.fuzz_cmd, [
-        '--cmd', ubt_test,
-        '--output-dir', '.',
-        '--initial-workload', os.path.dirname(examples) +
-        '/UBT/a_small_input.txt',
-        '--initial-workload', os.path.dirname(examples) +
-        '/UBT/sorted_input.txt',
-        '--timeout', '1',
-        '--hang-timeout', '0.01',
-        '--max-size-percentual', '2',
-        '--mut-count-strategy', 'unitary',
-        '--no-plotting',
-    ])
-    assert result.exit_code == 0
-    assert 'Fuzzing successfully finished' in result.output
+    assert 'Founded degradation mutations: 0' not in result.output
 
 
 def test_fuzzing_incorrect(pcs_full):
