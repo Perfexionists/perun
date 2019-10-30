@@ -141,11 +141,11 @@ def test_binaries_lookup():
     # Build test binaries using non-blocking make
     script_dir = os.path.split(__file__)[0]
     testdir = os.path.join(script_dir, 'utils_tree')
-    p = utils.start_nonblocking_process('make', cwd=testdir, shell=True, universal_newlines=True,
-                                        stdout=subprocess.PIPE)
-    # Verify if the call is non blocking
-    for _ in p.stdout:
-        pass
+    args = {'cwd': testdir, 'shell': True, 'universal_newlines': True, 'stdout':subprocess.PIPE}
+    with utils.nonblocking_subprocess('make', args) as p:
+        # Verify if the call is non blocking
+        for _ in p.stdout:
+            pass
 
     # Find all executables in tree with build directories
     binaries = utils.get_project_elf_executables(testdir)

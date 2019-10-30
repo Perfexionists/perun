@@ -10,6 +10,7 @@ import subprocess
 import os
 import shutil
 import magic
+from contextlib import contextmanager
 
 from .log import error, cprint, warn
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
@@ -128,24 +129,42 @@ def run_external_command(cmd_args, **subprocess_kwargs):
     return process.returncode
 
 
-def start_nonblocking_process(cmd, **subprocess_kwargs):
-    """Safely start non-blocking process using subprocess without shell
+@contextmanager
+def nonblocking_subprocess(command, subprocess_kwargs, termination=None, termination_kwargs=None):
+    """ Runs a non-blocking process in the background using subprocess without shell.
 
-    :param str cmd: string with command that should be executed
-    :param subprocess_kwargs: additional arguments to the Popen subprocess
-    :return: Popen object representing the process
+    The process handle is available by using the context manager approach. It is possible to
+    supply custom process termination function (and its arguments) that will be used instead of
+    the subprocess.terminate().
 
+    :param str command: the command to run in the background
+    :param dict subprocess_kwargs: additional arguments for the subprocess Popen
+    :param function termination: the custom termination function or None
+    :param dict termination_kwargs: the arguments for the termination function
     """
     # Split process and arguments
-    parsed_cmd = shlex.split(cmd)
+    parsed_cmd = shlex.split(command)
 
     # Do not allow shell=True
     if 'shell' in subprocess_kwargs:
         del subprocess_kwargs['shell']
 
     # Start the process and do not block it (user can tho)
-    proc = subprocess.Popen(parsed_cmd, shell=False, **subprocess_kwargs)
-    return proc
+    with subprocess.Popen(parsed_cmd, shell=False, **subprocess_kwargs) as proc:
+        try:
+            yield proc
+        finally:
+            # Don't terminate the process if it has already finished
+            if proc.poll() is not None:
+                return
+            # Use the default termination if the termination handler is not set
+            if termination is None:
+                proc.terminate()
+            else:
+                # Otherwise use the supplied termination function
+                if termination_kwargs is None:
+                    termination_kwargs = {}
+                termination(**termination_kwargs)
 
 
 def run_safely_external_command(cmd, check_results=True, **kwargs):

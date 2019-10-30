@@ -11,21 +11,10 @@
     extract_configuration serves as a recommended module interface
 """
 
-from enum import IntEnum
+from perun.collect.trace.values import RecordType, STRATEGIES, DEFAULT_SAMPLE, SUFFIX_DELIMITERS
+from perun.collect.trace.watchdog import WD
 
 import perun.utils as utils
-from perun.collect.trace.systemtap_script import RecordType
-
-
-class _Status(IntEnum):
-    OK = 0
-    STAP_DEP = 1
-    NM_DEP = 2
-    AWK_DEP = 3
-
-
-# The default global sampling for 'sample' strategies if global sampling is not set
-_DEFAULT_SAMPLE = 20
 
 
 def get_supported_strategies():
@@ -33,7 +22,7 @@ def get_supported_strategies():
 
     :return: list -- the names of supported strategies
     """
-    return _STRATEGIES
+    return STRATEGIES
 
 
 def get_default_strategy():
@@ -41,7 +30,7 @@ def get_default_strategy():
 
     :return: str -- the name of the default strategy used
     """
-    return _STRATEGIES[-1]
+    return STRATEGIES[-1]
 
 
 # TODO: add test to check the existence of specified probes (needs cross-comparison)
@@ -69,8 +58,13 @@ def extract_configuration(func, func_sampled, static, static_sampled, **kwargs):
 
     :return kwargs: the updated dictionary with post processed rules
     """
+    WD.info("Attempting to build the probes configuration")
+
     # Do some strategy specific actions (e.g. extracting symbols)
-    kwargs['global_sampling'], extracted_func, extracted_static = _extract_strategy_specifics(kwargs['method'], **kwargs)
+    kwargs['global_sampling'], extracted_func, extracted_static = \
+        _extract_strategy_specifics(kwargs['method'], **kwargs)
+    WD.debug("Number of extracted function probes: '{}', static probes: '{}'"
+             .format(len(extracted_func), len(extracted_static)))
 
     # Create one dictionary of function probes specification
     kwargs['func'] = _merge_probes(func, func_sampled, extracted_func, kwargs['global_sampling'])
@@ -81,6 +75,7 @@ def extract_configuration(func, func_sampled, static, static_sampled, **kwargs):
         # We also need to do some automated pairing of static rules
         kwargs['static'] = _pair_rules(
             _merge_probes(static, static_sampled, extracted_static, kwargs['global_sampling']))
+    WD.info("Configuration built successfully")
     return kwargs
 
 
@@ -89,7 +84,7 @@ def _extract_strategy_specifics(strategy, binary, with_static, global_sampling, 
     and static probe symbols.
 
     :param str strategy: the collection strategy
-    :param str binary: path to the binary file that is profiled
+    :param str binary: the binary file that is profiled
     :param bool with_static: True if static probes are being profiled
     :param int global_sampling: the global sampling value
 
@@ -97,7 +92,7 @@ def _extract_strategy_specifics(strategy, binary, with_static, global_sampling, 
     """
     # Set the default sampling if sampled strategy is required but sampling is not provided
     if strategy in ('u_sampled', 'a_sampled') and global_sampling == 1:
-        global_sampling = _DEFAULT_SAMPLE
+        global_sampling = DEFAULT_SAMPLE
 
     # Extract the functions and static probes if needed
     func, static = {}, {}
@@ -239,10 +234,9 @@ def _classify_static_probes(probes, suffix_pairs):
         if not _check_suffix_of(prb_conf, suffix_pairs.values(), endings):
             if not _check_suffix_of(prb_conf, suffix_pairs.keys(), beginnings):
                 # Not starting nor ending suffix, treat as regular probe name
-                beginnings.setdefault(prb_conf['name'], {
-                                          'sample': prb_conf['sample'],
-                                          'suffix': []
-                                      })
+                beginnings.setdefault(
+                    prb_conf['name'], {'sample': prb_conf['sample'], 'suffix': []}
+                )
     return delimited, beginnings, endings
 
 
@@ -264,7 +258,7 @@ def _check_suffix_of(probe, suffix_group, cls):
             name = probe['name'][:-len(suffix)]
             # Store the delimiter if any
             delimiter = ''
-            while name[-1] in _SUFFIX_DELIMITERS:
+            while name[-1] in SUFFIX_DELIMITERS:
                 delimiter = name[-1] + delimiter
                 name = name[:-1]
             cls.setdefault(name, default)['suffix'].append((suffix, delimiter))
@@ -342,15 +336,13 @@ def _add_suffix_rules(name, suffixes, sample, result):
     :param dict result: the static probe dictionary
     """
     if not suffixes:
-        result.setdefault(name, {
-                              'name': name,
-                              'sample': sample
-                          })
+        result.setdefault(
+            name, {'name': name, 'sample': sample}
+        )
     for (suffix, delimiter) in suffixes:
-        result.setdefault(name + delimiter + suffix, {
-                              'name': name + delimiter + suffix,
-                              'sample': sample
-                          })
+        result.setdefault(
+            name + delimiter + suffix, {'name': name + delimiter + suffix, 'sample': sample}
+        )
 
 
 def _extract_functions(binary, strategy, global_sampling, **_):
@@ -400,7 +392,7 @@ def _extract_static(binary, global_sampling, **_):
         probe: {
             'name': probe,
             'sample': global_sampling
-        } for probe in _cut_out_static_name(probes)}
+        } for probe in _parse_static_name(probes)}
 
 
 def _load_function_names(binary, only_user):
@@ -411,14 +403,11 @@ def _load_function_names(binary, only_user):
 
     :return str: the output of the symbol extraction as a string
     """
-    # Check if nm and awk utils are available, both are needed for the extraction
-    if utils.check_dependency('nm') and utils.check_dependency('awk'):
-        # Extract user function symbols from the supplied binary
-        awk_filter = '$2 == "T"' if only_user else '$2 == "T" || $2 == "W"'
-        output, _ = utils.run_safely_external_command(
-            'nm -P {bin} | awk \'{filt} {{print $1}}\''.format(bin=binary, filt=awk_filter))
-        return output.decode('utf-8')
-    return ''
+    # Extract user function symbols from the supplied binary
+    awk_filter = '$2 == "T"' if only_user else '$2 == "T" || $2 == "W"'
+    output, _ = utils.run_safely_external_command(
+        'nm -P {bin} | awk \'{filt} {{print $1}}\''.format(bin=binary, filt=awk_filter))
+    return output.decode('utf-8')
 
 
 def _load_static_probes(binary):
@@ -428,14 +417,12 @@ def _load_static_probes(binary):
 
     :return str: the decoded standard output
     """
-    if utils.check_dependency('stap'):
-        out, _ = utils.run_safely_external_command(
-            'sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary), False)
-        return out.decode('utf-8')
-    return ''
+    out, _ = utils.run_safely_external_command(
+        'sudo stap -l \'process("{bin}").mark("*")\''.format(bin=binary), False)
+    return out.decode('utf-8')
 
 
-def _cut_out_static_name(static_list):
+def _parse_static_name(static_list):
     """Cut the static probe location name from the extract output.
 
     :param str static_list: the extraction output
@@ -465,9 +452,3 @@ def _filter_user_symbol(func):
         if func[:2] != '_Z' or flen < 3:
             return False
     return True
-
-
-# The set of supported strategies
-_STRATEGIES = ['userspace', 'all', 'u_sampled', 'a_sampled', 'custom']
-# The set of supported delimiters between probe and its suffix
-_SUFFIX_DELIMITERS = ('_', '-')

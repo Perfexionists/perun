@@ -1,579 +1,590 @@
-"""Module wrapping SystemTap related operations such as:
-    - starting the SystemTap with generated script
-    - killing the SystemTap process
-    - collected data transformation to profile format
-    - etc.
-
-This module serves as a SystemTap controller.
+""" Wrapper module for SystemTap related operations such as the script compilation, running
+the SystemTap collection process and profiled command, correctly terminating the collection
+processes and also properly cleaning up and releasing the used resources.
 """
 
 import time
-import shutil
-import shlex
 import os
-import collections
-from subprocess import TimeoutExpired
-from enum import IntEnum
+from signal import SIGINT
+from subprocess import PIPE, STDOUT, DEVNULL, TimeoutExpired
+
+from perun.collect.trace.locks import LockType, ResourceLock, get_active_locks_for
+from perun.collect.trace.watchdog import WD
+from perun.collect.trace.threads import HeartbeatThread, NonBlockingTee, TimeoutThread
+from perun.collect.trace.values import Res, FileSize, OutputHandling, \
+    LOG_WAIT, HARD_TIMEOUT, CLEANUP_TIMEOUT, CLEANUP_REFRESH, HEARTBEAT_INTERVAL, \
+    STAP_MODULE_REGEX, PS_FORMAT, STAP_PHASES
 
 import perun.utils as utils
-import perun.utils.exceptions as exceptions
-import perun.utils.log as log
-from perun.collect.trace.systemtap_script import RecordType
+from perun.utils.exceptions import SystemTapStartupException, SystemTapScriptCompilationException
 
 
-# The default sleep value
-_DEFAULT_SLEEP = 0.5
-# Avoid endless loops with hard timeout value, that breaks the loop in specific cases
-_HARD_TIMEOUT = 30
+def systemtap_collect(executable, **kwargs):
+    """Collects performance data using the SystemTap wrapper, assembled script and the
+    executable.
 
-
-# Collection statuses
-class Status(IntEnum):
-    """Status codes for before / collect / after phases. """
-    OK = 0
-    STAP = 1
-    STAP_DEP = 2
-    EXCEPT = 3
-
-
-# The trace record template
-_TraceRecord = collections.namedtuple('record',
-                                      ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence'])
-
-
-def systemtap_collect(script_path, log_path, output_path, executable, **kwargs):
-    """Collects performance data using the system tap wrapper, assembled script and
-    external command. This function serves as a interface to the system tap collector.
-
-    :param str script_path: path to the assembled system tap script file
-    :param str log_path: path to the collection log file
-    :param str output_path: path to the collection output file
-    :param Executable executable: executable profiled program
+    :param Executable executable: full collection command with arguments and workload
     :param kwargs: additional collector configuration
-    :return tuple: containing the collection status, path to the output file of the collector
     """
-    # Perform the cleanup
-    if kwargs['cleanup']:
-        _stap_cleanup()
+    # Get the systemtap log, script and output files
+    res = kwargs['res']
+    log, script, data = res[Res.log()], res[Res.script()], res[Res.data()]
 
-    # Create the output and log file for collection
-    with open(log_path, 'w') as logfile:
-        # Start the SystemTap process
-        log.cprint(' Starting the SystemTap process... ', 'white')
-        stap_pgid = set()
-        try:
-            stap_runner, code = start_systemtap_in_background(script_path, output_path, logfile,
-                                                              **kwargs)
-            if code != Status.OK:
-                return code, None
-            stap_pgid.add(os.getpgid(stap_runner.pid))
-            log.done()
+    # Check that the lock for binary is still valid and log resources with corresponding locks
+    res[Res.lock_binary()].check_validity()
+    WD.log_resources(*_check_used_resources(kwargs['locks_dir']))
 
-            # Run the command that is supposed to be profiled
-            log.cprint(' SystemTap up and running, execute the profiling target... ', 'white')
-            run_profiled_command(executable, **kwargs)
-            log.done()
+    # Open the log file for collection
+    with open(log, 'w') as logfile:
+        # Assemble the SystemTap command and log it
+        stap_cmd = 'sudo stap -v {} -o {}'.format(script, data)
+        WD.log_variable('stap_cmd', stap_cmd)
+        # Compile the script, extract the module name from the compilation log and lock it
+        compile_systemtap_script(stap_cmd, logfile, **kwargs)
+        _lock_kernel_module(log, **kwargs)
 
-            # Terminate SystemTap process after the file was fully written
-            log.cprint(' Data collection complete, terminating the SystemTap process... ', 'white')
-            _wait_for_output_file(output_path, kwargs['binary'])
-            kill_systemtap_in_background(stap_pgid)
-            log.done()
-            return Status.OK, output_path
-        # Timeout was reached, inform the user but continue normally
-        except exceptions.HardTimeoutException as e:
-            kill_systemtap_in_background(stap_pgid)
-            log.cprintln('', 'white')
-            log.warn(e.msg)
-            log.warn('The profile creation might fail or be inaccurate.')
-            return Status.OK, output_path
-        # Critical error during profiling or collection interrupted
-        # make sure we terminate the collector and remove module
-        except (Exception, KeyboardInterrupt):
-            if not stap_pgid:
-                stap_pgid = None
-            # Clean only our mess
-            _stap_cleanup(stap_pgid, output_path)
-            raise
+        # Run the SystemTap collection
+        run_systemtap_collection(stap_cmd, executable, logfile, **kwargs)
 
 
-def start_systemtap_in_background(stap_script, output, logfile, **_):
-    """Sets up the system tap process in the background with root privileges
+def cleanup(res, **kwargs):
+    """ Cleans up the SystemTap resources that are still being used.
 
-    :param str stap_script: path to the assembled system tap script file
-    :param str output: path to the collector output file
-    :param file logfile: file handle of the opened status log for collection
-    :return tuple: consisting of the subprocess object, Status value
+    Specifically, terminates any still running processes - compilation, collection or the profiled
+    executable - and any related spawned child processes. Unloads the kernel module if it is
+    still loaded and unlocks all the resource locks.
+
+    :param Res res: the resources object
+    :param kwargs: additional configuration options
     """
-    # Resolve the systemtap path
-    stap = shutil.which('stap')
-    if not stap:
-        return Status.STAP_DEP
+    WD.info('Releasing and cleaning up the SystemTap-related resources')
 
-    # Basically no-op, but fetches root password so os.setpgrp does not halt due to missing password
+    # Terminate perun related processes that are still running
+    _cleanup_processes(res, kwargs['pid'])
+    # Reset the resource records so that another cleanup is not necessary
+    for resource_type in [Res.stap_compile(), Res.stap_collect(), Res.profiled_command()]:
+        res[resource_type] = None
+
+    # Unload the SystemTap kernel module if still loaded and unlock it
+    # The kernel module should already be unloaded since terminating the SystemTap collection
+    # process automatically unloads the module
+    _cleanup_kernel_module(res)
+    res[Res.stap_module()] = None
+    res[Res.stapio()] = None
+
+
+def compile_systemtap_script(command, logfile, res, **kwargs):
+    """ Compiles the SystemTap script without actually running it.
+
+    This step allows the trace collector to identify the resulting kernel module, check if
+    the module is not already being used and to lock it.
+
+    :param str command: the 'stap' compilation command to run
+    :param TextIO logfile: the handle of the opened SystemTap log file
+    :param Res res: the resources object
+    :param kwargs: additional configuration options
+    """
+    WD.info('Attempting to compile the SystemTap script into a kernel module. This may take'
+            'a while depending on the number of probe points.')
+    # Lock the SystemTap process we're about to start
+    process_lock = 'process_{}'.format(os.path.basename(kwargs['binary']))
+    # No need to check the lock validity more than once since the SystemTap lock is tied
+    # to the binary file which was already checked
+    ResourceLock(
+        LockType.SystemTap, process_lock, kwargs['pid'], kwargs['locks_dir']
+    ).lock(res)
+
+    # Run the compilation process
+    # Fetch the password so that the preexec_fn doesn't halt
     utils.run_safely_external_command('sudo sleep 0')
-    # The setpgrp is needed for killing the root process which spawns child processes
-    process = utils.start_nonblocking_process(
-        'sudo stap -v {0} -o {1}'.format(shlex.quote(stap_script), shlex.quote(output)),
-        universal_newlines=True, stderr=logfile, preexec_fn=os.setpgrp
-    )
-    # Wait until systemtap process is ready or error occurs
-    return process, _wait_for_systemtap_startup(logfile.name, process)
+    # Run only the first 4 phases of the stap command, before actually running the collection
+    with utils.nonblocking_subprocess(
+            command + ' -p 4', {'stderr': logfile, 'stdout': PIPE, 'preexec_fn': os.setpgrp},
+            _terminate_process, {'proc_name': Res.stap_compile(), 'res': res}
+    ) as compilation_process:
+        # Store the compilation process PID and wait for the compilation to finish
+        res[Res.stap_compile()] = compilation_process
+        WD.debug("Compilation process: '{}'".format(compilation_process.pid))
+        _wait_for_script_compilation(logfile.name, compilation_process)
+        # The SystemTap seems to print the resulting kernel module into stdout
+        # However this may not be universal behaviour so a backup method should be available
+        res[Res.stap_module()] = compilation_process.communicate()[0].decode('utf-8')
+    WD.info('SystemTap script compilation successfully finished.')
 
 
-def run_profiled_command(executable, timeout, **_):
-    """Runs the profiled external command with arguments.
+def run_systemtap_collection(command, executable, logfile, **kwargs):
+    """ Runs the performance data collection step.
 
-    :param Executable executable: executable profiled command
-    :param int timeout: if the process does not end before the specified timeout,
-                        the process is terminated
+    That means starting up the SystemTap collection process and running the profiled command.
+
+    :param str command: the 'stap' collection command
+    :param Executable executable: full collection command with arguments and workload
+    :param TextIO logfile: the handle of the opened SystemTap log file
+    :param kwargs: additional configuration options
     """
-    # Run the profiled command and block it with wait if timeout is specified
-    process = utils.start_nonblocking_process(executable.to_escaped_string())
+    WD.info('Starting up the SystemTap collection process.')
+    with utils.nonblocking_subprocess(
+            command, {'stderr': logfile, 'preexec_fn': os.setpgrp},
+            _terminate_process, {'proc_name': Res.stap_collect(), 'res': kwargs['res']}
+    ) as stap:
+        kwargs['res'][Res.stap_collect()] = stap
+        WD.debug("Collection process: '{}'".format(stap.pid))
+        _wait_for_systemtap_startup(logfile.name, stap)
+        WD.info('SystemTap collection process is up and running.')
+        _fetch_stapio_pid(kwargs['res'])
+        run_profiled_command(executable, **kwargs)
+        # _terminate_process(Res.stap_collect(), kwargs['res'])
+
+
+def run_profiled_command(executable, timeout, res, **kwargs):
+    """ Runs the profiled external command with arguments.
+
+    :param Executable executable: full collection command with arguments and workload
+    :param int timeout: the time limit for the collection process
+    :param Res res: the resources object
+    :param kwargs: additional configuration options
+    """
+
+    def _heartbeat_command(data_file):
+        """ The profiled command heartbeat function that updates the user on the collection
+        progress, which is measured by the size of the output data file.
+
+        :param str data_file: the name of the output data file
+        """
+        WD.info("Command execution status update, collected raw data size so far: {}"
+                .format(utils.format_file_size(os.stat(data_file).st_size)))
+
+    # Set the process pipes according to the selected output handling mode
+    # DEVNULL for suppress mode, STDERR -> STDOUT = PIPE for capture
+    output_mode = kwargs['output_handling']
+    profiled_args = {}
+    if output_mode == OutputHandling.Suppress:
+        profiled_args = dict(stderr=DEVNULL, stdout=DEVNULL)
+    elif output_mode == OutputHandling.Capture:
+        profiled_args = dict(stderr=STDOUT, stdout=PIPE, bufsize=1)
+
+    # Start the profiled command
+    WD.info("Launching the profiled command '{}'".format(executable.to_escaped_string()))
+    with utils.nonblocking_subprocess(
+            executable.to_escaped_string(), profiled_args,
+            _terminate_process, {'proc_name': Res.profiled_command(), 'res': res}
+    ) as profiled:
+        # Store the command process
+        res[Res.profiled_command()] = profiled
+        WD.debug("Profiled command process: '{}'".format(profiled.pid))
+        # Start the Heartbeat thread so that the user is periodically updated about the progress
+        with HeartbeatThread(HEARTBEAT_INTERVAL, _heartbeat_command, res[Res.data()]):
+            if output_mode == OutputHandling.Capture:
+                # Start the 'tee' thread if the output is being captured
+                NonBlockingTee(profiled.stdout, res[Res.capture()])
+            # Wait indefinitely (until the process ends) or for a 'timeout' seconds
+            if timeout is None:
+                profiled.wait()
+            else:
+                time.sleep(timeout)
+                WD.info('The profiled command has reached a timeout after {}s.'.format(timeout))
+                return
+    # Wait for the SystemTap to finish writing to the data file
+    _wait_for_systemtap_data(res[Res.data()], kwargs['binary'])
+
+
+def get_last_line_of(file, length):
+    """ Fetches the last line of a file. Based on the length of the file, the appropriate
+    extraction method is chosen:
+     - Short file: simply iterate the lines until the stream ends
+     - Long file: open the file in binary mode, seek to the end of the file and backtrack
+                  byte by byte until a newline character is found
+
+    :param str file: the file name (path)
+    :param FileSize length: the expected length of the file
+    :return tuple: (line number, line content)
+                   note: the line number is not available for long files
+    """
+    # In order to use the optimized version for long files, the file has to be opened in binary mode
+    if length == FileSize.Long:
+        with open(file, 'rb') as file_handle:
+            try:
+                file_handle.seek(-1, os.SEEK_END)
+                # Skip all empty lines at the end
+                while file_handle.read(1) in (b'\n', b'\r'):
+                    file_handle.seek(-2, os.SEEK_CUR)
+                # Go back to the first non-newline character
+                file_handle.seek(-1, os.SEEK_CUR)
+
+                # Go backwards by one byte at a time and check if it is a newline
+                while file_handle.read(1) != b'\n':
+                    # Check if the last read character was actually the first character in a file
+                    if file_handle.tell() == 1:
+                        file_handle.seek(-1, os.SEEK_CUR)
+                        break
+                    file_handle.seek(-2, os.SEEK_CUR)
+                # Newline character found, read the whole line
+                return 0, file_handle.readline().decode()
+            except OSError:
+                # The file might be empty or somehow broken
+                return 0, ''
+    # Otherwise use simple line enumeration until we hit the last one
+    else:
+        with open(file, 'r') as file_handle:
+            last = (0, '')
+            for line_num, line in enumerate(file_handle):
+                last = (line_num + 1, line)
+            return last
+
+
+def _fetch_stapio_pid(res):
+    """ Fetches the PID of the running stapio process and stores it into resources since
+    it may be needed for unloading the kernel module.
+
+    :param Res res: the resources object
+    """
+    # In kernel, the module name is appended with the stapio process PID
+    # Scan the running processes for the stapio process and filter out the grep itself
+    proc = _extract_processes(
+        'ps -eo {} | grep "[s]tapio.*{}"'.format(PS_FORMAT, res[Res.data()])
+    )
+    # Check the results - there should be only one result
+    if proc:
+        if len(proc) != 1:
+            # This shouldn't ever happen
+            WD.debug("Multiple stapio processes found: '{}'".format(proc))
+        # Store the PID of the first record
+        res[Res.stapio()] = proc[0][0]
+    else:
+        # This also should't ever happen
+        WD.debug('No stapio processes found')
+
+
+def _lock_kernel_module(logfile, res, **kwargs):
+    """ Locks the kernel module resource.
+
+    The module name has either been obtained from the output of the SystemTap compilation process
+    or it has to be extracted from the SystemTap log file.
+
+    :param str logfile: the SystemTap log file name
+    :param kwargs: additional configuration options
+    """
     try:
-        process.wait(timeout=timeout)
-    except TimeoutExpired:
-        process.terminate()
+        # The module name might have been extracted from the compilation process output
+        match = STAP_MODULE_REGEX.search(res[Res.stap_module()])
+    except ValueError:
+        # If not, he kernel module should be in the last log line
+        line = get_last_line_of(logfile, FileSize.Short)[1]
+        match = STAP_MODULE_REGEX.search(line)
+    if not match:
+        # No kernel module found, warn the user that something is not right
+        WD.warn('Unable to extract the name of the compiled SystemTap module from the log. '
+                'This may cause corruption of the collected data since it cannot be ensured '
+                'that this will be the only active instance of the given kernel module.')
         return
+    # The kernel module name has the following format: 'modulename_PID'
+    # The first group contains just the PID-independent module name
+    kernel_module = match.group(1)
+    res[Res.stap_module()] = kernel_module
+    WD.debug("Compiled kernel module name: '{}'".format(kernel_module))
+    # Lock the kernel module
+    ResourceLock(
+        LockType.Module, kernel_module, kwargs['pid'], kwargs['locks_dir']
+    ).lock(res)
+
+
+def _wait_for_script_compilation(logfile, stap_process):
+    """ Waits for the script compilation process to finish - either successfully or not.
+
+    An exception is raised in case of failed compilation.
+
+    :param str logfile: the name (path) of the SystemTap log file
+    :param Subprocess stap_process: the subprocess object representing the compilation process
+    """
+    # Start a HeartbeatThread that periodically informs the user of the compilation progress
+    with HeartbeatThread(HEARTBEAT_INTERVAL, _heartbeat_stap, (logfile, 'Compilation')):
+        while True:
+            # Check the status of the process
+            status = stap_process.poll()
+            if status is None:
+                # The compilation process has not finished yet, take a small break
+                time.sleep(LOG_WAIT)
+            elif status == 0:
+                # The process has successfully finished
+                return
+            else:
+                # The stap process terminated with non-zero code which means failure
+                WD.debug("SystemTap build process failed with exit code '{}'".format(status))
+                raise SystemTapScriptCompilationException(logfile, status)
 
 
 def _wait_for_systemtap_startup(logfile, stap_process):
-    """The system tap startup takes some time and it is necessary to wait until the process
-    is ready before the data collection itself. This function periodically scans the status
-    log for updates until the process is ready.
+    """ Waits for the SystemTap collection process to startup.
 
-    :param str logfile: name of the status log to check
-    :param subprocess object stap_process: object representing the system tap process
-    :return Status value: the Status code
+    The SystemTap startup may take some time and it is necessary to wait until the process is ready
+    before launching the profiled command so that the command output is being collected.
+
+    :param str logfile: the name (path) of the SystemTap log file
+    :param Subprocess stap_process: the subprocess object representing the collection process
     """
-    with open(logfile, 'r') as scanlog:
-        while True:
-            try:
-                # Take a break before the next status check
-                stap_process.wait(timeout=_DEFAULT_SLEEP)
-                # The process actually terminated which means that error occurred
-                return Status.STAP
-            except TimeoutExpired:
-                # Check process status and reload the log file
-                scanlog.seek(0)
-                # Read the last line of logfile and return if the systemtap is ready
-                last = (0, '')
-                for line_num, line in enumerate(scanlog):
-                    last = (line_num, line)
-                # The line we are looking for is at least 5th, use language-neutral test
-                if last[0] >= 4 and ' 5: ' in last[1]:
-                    return Status.OK
-
-
-def _wait_for_output_file(output, process):
-    """Due to the system tap process being in the background, the output file is generally
-    not fully written after the external command is finished and system tap process killed.
-    Thus we scan the output file for ending marker that indicates finished writing.
-
-    :param str output: name of the collection output file
-    """
-    # Wait until the file exists and something is written
-    timeout = 0
-    while not os.path.exists(output) or os.path.getsize(output) == 0:
-        timeout = _sleep_with_timeout(timeout)
-
-    # Find the last line of the file
     while True:
-        # Explicitly reopen the file for every iteration to refresh the contents
-        with open(output, 'rb') as content:
-            # Move to the end of the file
-            try:
-                content.seek(-3, os.SEEK_END)  # Cover the case of '\n\n' at the end
-            except OSError:
-                timeout = _sleep_with_timeout(timeout)
-                continue
-            # Do backward steps until we find the next to last newline
-            found = True
-            while content.read(1) != b'\n':
-                if content.tell() < 2:
-                    # The file ends too soon, try again later
-                    found = False
-                    break
-                content.seek(-2, os.SEEK_CUR)
-            if found:
-                # The file is ready if its last line is end marker
-                if content.readline().decode().startswith('end {proc}'.format(proc=process)):
-                    return
-            timeout = _sleep_with_timeout(timeout)
+        # Check the status of the process
+        # The process should be running in background - if it terminates it means that it has failed
+        status = stap_process.poll()
+        if status is None:
+            # Check the last line of the SystemTap log file if the process is still running
+            line_no, line = get_last_line_of(logfile, FileSize.Short)
+            # The log file should contain at least 4 lines from the compilation and another
+            # 5 lines from the startup
+            if line_no >= ((2 * STAP_PHASES) - 1) and ' 5: ' in line:
+                # If the line contains a mention about the 5. phase, consider the process ready
+                return
+            # Otherwise wait a bit before the next check
+            time.sleep(LOG_WAIT)
+        else:
+            WD.debug("SystemTap collection process failed with exit code '{}'".format(status))
+            raise SystemTapStartupException(logfile)
 
 
-def _sleep_with_timeout(counter):
-    """Performs sleep and keeps track of total time slept to indicate hard timeout condition
-    fulfilled. Raises HardTimeoutException if the timeout threshold was reached.
+def _wait_for_systemtap_data(datafile, binary):
+    """ Waits until the collection process has finished writing the profiling output to the
+    data file. This can be checked by observing the last line of the data file where the
+    ending marker 'end <binary>' should be present.
 
-    :param int counter: the counter variable for hard timeout detection
-    :return int: the updated counter value
+    :param str datafile: the name (path) of the data file
+    :param str binary: the binary file that is profiled
     """
-    if counter >= _HARD_TIMEOUT:
-        raise exceptions.HardTimeoutException('Timeout reached during waiting for the collection'
-                                              ' output file to fully load.')
-    time.sleep(_DEFAULT_SLEEP)
-    counter += _DEFAULT_SLEEP
-    return counter
+    # Start the TimeoutThread so that the waiting is not indefinite
+    WD.info('The profiled command has terminated, waiting for the process to finish writing '
+            'output to the data file.')
+    with TimeoutThread(HARD_TIMEOUT) as timeout:
+        while not timeout.reached():
+            # Periodically scan the last line of the data file
+            # The file can be potentially very long, use the optimized method to get the last line
+            last_line = get_last_line_of(datafile, FileSize.Long)[1]
+            if last_line.startswith('end {}'.format(binary)):
+                WD.info('The data file is fully written.')
+                return
+            time.sleep(LOG_WAIT)
+        # Timeout reached
+        WD.info('Timeout reached while waiting for the collection process to fully write output '
+                'into the output data file.')
 
 
-def _stap_cleanup(stap_pgid=None, target=''):
-    """Performs cleanup of the possibly running systemtap processes and loaded kernel modules
+def _heartbeat_stap(logfile, phase):
+    """ The SystemTap heartbeat function that scans the log file and reports the last record.
 
-    :param set stap_pgid: list of the systemtap processes to terminate
-    :param str target: if set to some collect_record_<timestamp>.txt, then only the process
-                       associated with this collection will be searched for
+    :param str logfile: the SystemTap log file name (path)
+    :param str phase: the SystemTap phase (compilation or collection)
     """
-    if stap_pgid is None:
-        stap_pgid = _running_stap_processes(target)
-    kill_systemtap_in_background(stap_pgid)
-    # Remove also the loaded kernel modules that were not removed by the systemtap
-    time.sleep(_DEFAULT_SLEEP)  # Stap processes are in background, the unloading can take some time
-    _remove_stap_modules(_loaded_stap_kernel_modules())
+    # Report log line count and the last record
+    WD.info("{} status update: 'log lines count' ; 'last log line'".format(phase))
+    WD.info("'{}' ; '{}'".format(*get_last_line_of(logfile, FileSize.Short)))
 
 
-def _running_stap_processes(target=''):
-    """Extracts gpid of all systemtap processes that are currently running on the system
-    or only the systemtap process that is associated with the specified profiling
+def _cleanup_processes(res, pid):
+    """ Attempts to terminate all collection-related processes that are still running - consisting
+    of script compilation, collection and profiled command child processes. Also scans the system
+    for any leftover spawned child processes and informs the user about them.
 
-    :param str target: if set to some collect_record_<timestamp>.txt, then only the process
-                       associated with this collection will be searched for
-    :return set: the set of gpid of running stap processes
+    Releases the resource locks for SystemTap and Binary.
+
+    :param Res res: the resources object
+    :param int pid: the PID of the
     """
-    # Check that dependencies are not missing
-    if (not utils.check_dependency('ps') or not utils.check_dependency('grep')
-            or not utils.check_dependency('awk')):
-        log.warn(' Unable to perform cleanup of systemtap processes, please terminate them manually'
-                 ' or install the missing dependencies')
+    try:
+        # Terminate the known spawned processes
+        proc_names = [Res.stap_compile(), Res.stap_collect(), Res.profiled_command()]
+        for proc_name in proc_names:
+            _terminate_process(proc_name, res)
 
-    # Create command for extraction of stap processes that are currently running on the system
-    extractor = 'ps aux | grep stap'
-    if target:
-        # We look only for the process that was possibly used in this collection
-        extractor += ' | grep {record}'.format(record=target)
-    # Filter only the root stap process, not the spawned children
-    extractor += ' | awk \'$11" "$12 == "sudo stap" {print $2}\''
+        # Fetch all processes that are still running and their PPID is tied to either the
+        # perun process itself or to the known spawned processes
+        processes = [res[proc].pid for proc in proc_names if res[proc] is not None] + [pid]
+        extractor = 'ps -o {} --ppid {}'.format(PS_FORMAT, ','.join(map(str, processes)))
+        extracted_procs = _extract_processes(extractor)
+        WD.log_variable('cleanup::extracted_processes', extracted_procs)
 
-    # Get the pid list and kill the processes
-    out, _ = utils.run_safely_external_command(extractor, False)
-    gpid = set()
-    for line in out.decode('utf-8').splitlines():
+        # Inform the user about such processes
+        if extracted_procs:
+            WD.warn("Found still running spawned processes:")
+            for proc_pid, _, _, cmd in extracted_procs:
+                WD.warn(" PID {}: '{}'".format(proc_pid, cmd))
+    finally:
+        # Make sure that whatever happens, the locks are released
+        ResourceLock.unlock(res[Res.lock_stap()], res)
+        ResourceLock.unlock(res[Res.lock_binary()], res)
+
+
+def _terminate_process(proc_name, res):
+    """ Terminates the given subprocess (identified by the Res name).
+
+    The process has to terminated by a 'sudo kill' operation since it has been probably invoked
+    with 'sudo' rights (this may or may not be true for the user-supplied command) and thus
+    the subprocess.terminate() would fail due to insufficient permission.
+
+    The subprocess.wait() is then needed to get rid of the resulting zombie process (since the
+    perun process holds a reference to the subprocess until wait() or poll() is used).
+
+    :param str proc_name: the name of the process as used in the Res class
+    :param Res res: the resources object
+    """
+    # Check if the process is registered
+    proc = res[proc_name]
+    if proc is None:
+        return
+
+    # Attempt to terminate the process if it's still running
+    if proc.poll() is None:
+        WD.debug("Attempting to terminate the '{}' subprocess with PID '{}'"
+                 .format(proc_name, proc.pid))
+        utils.run_safely_external_command('sudo kill -{} {}'.format(SIGINT, proc.pid), False)
+        # The wait is needed to get rid of the resulting zombie process
         try:
-            gpid.add(os.getpgid(int(line)))
-        except ProcessLookupError:
-            # The process might have been already somehow terminated
-            continue
-    return gpid
+            proc.wait(timeout=CLEANUP_TIMEOUT)
+            WD.debug("Successfully terminated the subprocess")
+        except TimeoutExpired:
+            # However the process hasn't terminated, report to the user
+            WD.warn("Failed to terminate the '{}' subprocess with PID '{}', manual termination "
+                    "is advised".format(proc_name, proc.pid))
 
 
-# TODO: There seems to be useless to test for only_self, as the same module can be used from cache
-# and loaded again, check again for possible distinction
-def _loaded_stap_kernel_modules():
-    """Extracts the names of all systemtap kernel modules that are currently loaded
+def _extract_processes(extract_command):
+    """ Extracts and sorts the running processes according to the extraction command.
 
-    :return set: the list of names of loaded systemtap kernel modules
+    :param str extract_command: the processes extraction command
+
+    :return list: a list of (PID, PPID, PGID, CMD) records representing the corresponding
+                  attributes of the extracted processes
     """
-    # Check that dependencies are not missing
-    if (not utils.check_dependency('lsmod') or not utils.check_dependency('grep')
-            or not utils.check_dependency('awk') or not utils.check_dependency('rmmod')):
-        log.warn(' Unable to perform cleanup of systemtap kernel modules, please terminate them '
-                 ' manually or install the missing dependencies')
-        return []
+    procs = []
+    out = utils.run_safely_external_command(extract_command, False)[0].decode('utf-8')
+    for line in out.splitlines():
+        process_record = line.split()
+
+        # Skip the optional first header line
+        if process_record[0] == 'PID':
+            continue
+
+        # Get the (PID, PPID, PGID, CMD) tuples representing the running parent stap processes
+        pid, ppid, pgid = int(process_record[0]), int(process_record[1]), int(process_record[2])
+        cmd = ' '.join(process_record[3:])
+
+        # Skip self (the extracting process)
+        if extract_command in cmd:
+            continue
+        procs.append((pid, ppid, pgid, cmd))
+    return procs
+
+
+def _cleanup_kernel_module(res):
+    """ Unloads the SystemTap kernel module from the system and releases the resource lock.
+
+    :param Res res: the resources object
+    """
+    try:
+        # We might have acquired the module name but the collect process might not have been started
+        if res[Res.stap_module()] is None or res[Res.stapio()] is None:
+            return
+
+        # Form the module name which consists of the base module name and stapio PID
+        module_name = '{}__{}'.format(res[Res.stap_module()], res[Res.stapio()])
+        # Attempts to unload the module
+        utils.run_safely_external_command('sudo rmmod {}'.format(module_name), False)
+        if not _wait_for_resource_release(_loaded_stap_kernel_modules, [module_name]):
+            WD.debug("Unloading the kernel module '{}' failed".format(module_name))
+    finally:
+        # Always unlock the module
+        ResourceLock.unlock(res[Res.lock_module()], res)
+
+
+def _loaded_stap_kernel_modules(module=None):
+    """Extracts the names of all the SystemTap kernel modules - or a specific one - that
+    are currently loaded.
+
+    :param str module: the name of the specific module to lookup or None for all of them
+
+    :return list: the list of names of loaded systemtap kernel modules
+    """
     # Build the extraction command
-    extractor = 'lsmod | grep stap_ | awk \'{print $1}\''
+    module_filter = 'stap_' if module is None else module
+    extractor = 'lsmod | grep {} | awk \'{{print $1}}\''.format(module_filter)
 
     # Run the command and save the found modules
     out, _ = utils.run_safely_external_command(extractor, False)
+    # Make sure that we have a list of unique modules
     modules = set()
-    for line in out.decode('utf-8'):
+    for line in out.decode('utf-8').splitlines():
         modules.add(line)
-    return modules
+    return list(modules)
 
 
-def kill_systemtap_in_background(stap_processes):
-    """Terminates the system tap processes that are running in the background and all child
-    processes that were spawned.
+def _wait_for_resource_release(check_function, function_args):
+    """ Waits for a resource to be released. The state of the resource is tested by the
+    check function invoked with the function args.
 
-    :param set stap_processes: the list of PGID of the stap processes to kill
+    :param function check_function: the function for checking the resource
+    :param function_args: the arguments for the check function
+
+    :return bool: True if the resource has been released, False otherwise
     """
-    for pgid in stap_processes:
-        utils.run_safely_external_command('sudo kill {0}'.format(pgid), False)
+    # Check the state of the resource once before starting the timeout thread
+    time.sleep(CLEANUP_REFRESH)
+    if not check_function(*function_args):
+        return True
+    # The resource is still active, periodically check the state
+    with TimeoutThread(CLEANUP_TIMEOUT) as timeout:
+        while not timeout.reached():
+            if not check_function(*function_args):
+                return True
+            time.sleep(CLEANUP_REFRESH)
+    # Despite all the waiting, the resource is still active
+    return False
 
 
-def _remove_stap_modules(modules):
-    """Removes (unloads) the specified systemtap modules from the kernel
+def _check_used_resources(locks_dir):
+    """ Scans the system for currently running SystemTap processes and loaded kernel modules. Then
+    pairs the results with known locks in order to find out which resources are properly locked
+    and which aren't, i.e. if there is a possibility of corrupted output data despite using the
+    locks.
 
-    :param set modules: the list of modules to unload
-    """
-    for module in modules:
-        rm_cmd = 'sudo rmmod {mod}'.format(mod=module)
-        utils.run_safely_external_command(rm_cmd, False)
-
-
-def trace_to_profile(output_path, func, static, **kwargs):
-    """Transforms the collection output into the performance profile, where the
-    collected time data are paired and stored as a resources.
-
-    :param str output_path: name of the collection output file
-    :param dict func: the function probe specifications
-    :param dict static: the static probe specifications as a dictionaries
-    :param kwargs: additional parameters
-    :return object: the generator object that produces dictionaries representing the resources
-    """
-    trace_stack, sequence_map = {}, {}
-
-    with open(output_path, 'r') as trace:
-        # Create demangled counterparts of the function names
-        # trace = _demangle(trace)
-        cnt = 0
-        try:
-            # Initialize just in case the trace doesn't have 'begin' statement
-            trace_stack, sequence_map = _init_stack_and_map(func, static)
-            for cnt, line in enumerate(trace):
-                # File starts or ends
-                if line.startswith('begin '):
-                    # Initialize stack and map
-                    trace_stack, sequence_map = _init_stack_and_map(func, static)
-                    continue
-                elif line.startswith('end '):
-                    return
-                # Parse the line into the _TraceRecord tuple
-                record = _parse_record(line)
-                # Process the record
-                resource = _process_record(record, trace_stack, sequence_map, static,
-                                           kwargs['global_sampling'])
-                if resource:
-                    resource['workload'] = kwargs.get('workload', ' '.join(kwargs['workload']))
-                    yield resource
-        except Exception:
-            # Log the status in case of unhandled exception
-            log.cprintln(' Error while parsing the raw trace record.', 'white')
-            # Log the line that failed
-            log.cprintln('  Line: {}'.format(str(cnt)), 'white')
-            log.cprintln('  Func stack:', 'white')
-            # Log the function probe stack
-            if 'func' in trace_stack:
-                for thread, stack in trace_stack['func'].items():
-                    log.cprintln('   Thread {}:'.format(str(thread)), 'white')
-                    log.cprintln('    ' + '\n    '.join(map(str, stack[0])), 'white')
-            # Log the static probe stack
-            log.cprintln('  Static stack:', 'white')
-            if 'static' in trace_stack:
-                for thread, probes in trace_stack['static'].items():
-                    log.cprintln('   Thread {}:'.format(str(thread)), 'white')
-                    for name, stack in probes.items():
-                        log.cprintln('    Probe {}:'.format(name), 'white')
-                        log.cprintln('     ' + '\n     '.join(map(str, stack)), 'white')
-            raise
-
-
-def _init_stack_and_map(func, static):
-    """Initializes the data structures of function and static stacks for the trace parsing
-
-    :param dict func: the function probes
-    :param dict static: the static probes
-    :return tuple: initialized trace stack and sequence map
-    """
-    # func: thread -> stack (stack list, faults list)
-    # static: thread -> name -> stack
-    trace_stack = {
-        'func': collections.defaultdict(lambda: ([], [])),
-        'static': collections.defaultdict(lambda: collections.defaultdict(list))
-    }
-    # name -> sequence values
-    sequence_map = {
-        'func': {
-            record['name']: {
-                'seq': 0,
-                'sample': record['sample']
-            } for record in func.values()},
-        'static': {
-            record['name']: {
-                'seq': 0,
-                'sample': record['sample']
-            } for record in static.values()}
-    }
-    return trace_stack, sequence_map
-
-
-# TODO: this should be used only after symbol cross-compare is functional
-# def _demangle(trace):
-#     """ Demangles the c++ function names in the collection output file if possible,
-#     otherwise does nothing.
-#
-#     :param handle trace: the opened collection output file
-#     :return iterable: (demangled) file contents
-#     """
-#     # Demangle the output if demangler is present
-#     demangler = shutil.which('c++filt')
-#     if demangler:
-#         return utils.get_stdout_from_external_command([demangler], stdin=trace)
-#     else:
-#         return trace
-
-
-def _process_record(record, trace_stack, sequence_map, static, global_sampling):
-    """Process one output file line = record by calling corresponding functions for
-    the given record type.
-
-    :param namedtuple record: the _TraceRecord namedtuple with parsed line values
-    :param dict trace_stack: the trace stack dictionary containing trace stacks for
-                             function / static / etc. probes
-    :param dict sequence_map: the map of sequence numbers for function / static / etc. probe names
-    :param dict static: the list of static probes used for pairing the static records
-    :return dict: the record transformed into the performance resource or empty dict if no resource
-                  could be produced
-    """
-    # The record was corrupted and thus not parsed properly
-    if record.type == RecordType.Corrupt:
-        return {}
-
-    # The record is function begin or end point
-    if record.type == RecordType.FuncBegin or record.type == RecordType.FuncEnd:
-        resource = _process_func_record(record, trace_stack['func'][record.thread],
-                                        sequence_map['func'], global_sampling)
-        return resource
-    # The record is static probe point
-    resource = _process_static_record(record, trace_stack['static'][record.thread],
-                                      sequence_map['static'], static, global_sampling)
-    return resource
-
-
-def _process_func_record(record, trace_stack, sequence_map, global_sampling):
-    """Processes the function output record and tries to pair it with stack record if possible
-
-    :param namedtuple record: the _TraceRecord namedtuple with parsed line values
-    :param list trace_stack: the trace stack for function records
-    :param dict sequence_map: stores the sequence counter for every function
-    :returns dict: the resource dictionary or empty dict
-    """
-    stack = trace_stack[0]
-    faults = trace_stack[1]
-
-    # Get the top element in stack or create 'stack bottom' element if there is none
-    try:
-        top = stack[-1]
-    except IndexError:
-        top = _TraceRecord(RecordType.FuncBegin, -1, '!stack_bottom', -1, 0, 0)
-
-    # Function entry
-    if record.type == RecordType.FuncBegin:
-        if record.offset != top.offset + 1 and stack:
-            faults.append(len(stack) - 1)
-        _add_to_stack(stack, sequence_map, record, global_sampling)
-        return {}
-
-    # Function return, handle various offset / timestamp corruptions
-    matching_record = False
-    # Depending on the verbose mode, we might also be able to check if the names match
-    if record.offset != top.offset or (record.name and record.name != top.name):
-
-        # Search the faults for possible match
-        for fault in reversed(faults):
-            # Offset, timestamp and name (if any) must match
-            if (fault < len(stack) and stack[fault].offset == record.offset
-                    and stack[fault].timestamp < record.timestamp
-                    and (not record.name or stack[fault].name == record.name)):
-                # Match found
-                matching_record = fault
-                break
-        # No matching fault found, search the whole stack for match
-        if not matching_record:
-            for idx, elem in enumerate(reversed(stack)):
-                if (elem.offset == record.offset and elem.timestamp < record.timestamp
-                        and (not record.name or elem.name == record.name)):
-                    matching_record = len(stack) - idx - 1
-                    break
-
-        # Still no match found, simply ignore the return statement
-        if not matching_record:
-            return {}
-
-        # A match was found, update the stack and faults
-        stack[:] = stack[:matching_record + 1]
-        faults[:] = [f for f in faults if f < len(stack) - 1]
-    # The matching record is on top of the stack, create resource
-    matching_record = stack.pop()
-    return {'amount': int(record.timestamp) - int(matching_record.timestamp),
-            'uid': matching_record.name,
-            'type': 'mixed',
-            'subtype': 'time delta',
-            'thread': record.thread,
-            'structure-unit-size': matching_record.sequence}
-
-
-def _process_static_record(record, trace_stack, sequence_map, probes, global_sampling):
-    """Processes the static output record and tries to pair it with stack record if possible
-
-    :param namedtuple record: the _TraceRecord namedtuple with parsed line values
-    :param dict trace_stack: the dictionary containing trace stack (list) for each static probe
-    :param dict sequence_map: stores the sequence counter for every static probe
-    :param dict probes: the list of all static probe definitions for pairing
-    :returns dict: the resource dictionary or empty dict
-    """
-    matching_record = None
-
-    try:
-        if record.type == RecordType.StaticSingle:
-            # The probe is paired with itself, find the last record in the stack if there is any
-            if trace_stack[record.name]:
-                matching_record = trace_stack[record.name].pop()
-            # Add the record into the trace stack to correctly measure time between each two hits
-            _add_to_stack(trace_stack[record.name], sequence_map, record, global_sampling)
-        elif record.type == RecordType.StaticBegin:
-            # Static starting probe, just insert into the stack
-            _add_to_stack(trace_stack[record.name], sequence_map, record, global_sampling)
-        elif record.type == RecordType.StaticEnd:
-            # Static end probe, find the starting probe
-            pair = probes[record.name]['pair'][1]
-            matching_record = trace_stack[pair].pop()
-    except (KeyError, IndexError):
-        return {}
-
-    if matching_record:
-        return {'amount': int(record.timestamp) - int(matching_record.timestamp),
-                'uid': matching_record.name + '#' + record.name,
-                'type': 'mixed',
-                'subtype': 'time delta',
-                'structure-unit-size': matching_record.sequence}
-    return {}
-
-
-def _add_to_stack(trace_stack, sequence_map, record, global_sampling):
-    """Updates the trace stack and sequence mapping structures.
-
-    :param list trace_stack: the trace stack list
-    :param dict sequence_map: the sequence mapping dictionary
-    :param namedtuple record: the _TraceRecord namedtuple representing the parsed record
-    """
-    trace_stack.append(record._replace(
-        sequence=sequence_map.setdefault(
-            record.name, {'seq': 0, 'sample': global_sampling})['seq']))
-    sequence_map[record.name]['seq'] += sequence_map[record.name]['sample']
-
-
-def _parse_record(line):
-    """ Parses line from collector output into record tuple consisting of:
-        record type, call stack offset, rule name, timestamp, thread and sequence.
-
-    :param str line: one line from the collection output
-    :returns namedtuple: the _TraceRecord tuple
+    :param str locks_dir: the directory of the lock files
+    :return tuple: (locked processes, processes without locks),
+                   (locked kernel modules, kernel modules without locks)
     """
 
-    try:
-        # Split the line into = 'type' 'timestamp' 'process(pid)' : 'offset' 'rule'
-        left, _, right = line.partition(':')
-        rtype, timestamp, thread = left.split()
-        # Parse the type = '0 - 9 decimal'
-        rtype = RecordType(int(rtype))
-        # Parse the pid - find the rightmost '(' and read the number between braces
-        thread = int(thread[thread.rfind('(') + 1:-1])
+    def _match(resources, resource_locks, condition):
+        """ Match the resources with the active resource locks based on the condition.
 
-        # Parse the offset and rule name = 'offset-spaces rule\n'
-        right = right.rstrip('\n')
-        name = right.lstrip(' ')
-        offset = len(right) - len(name)
-        return _TraceRecord(rtype, offset, name, timestamp, thread, 0)
-    except Exception:
-        # In case there is any issue with parsing, return corrupted trace record
-        return _TraceRecord(RecordType.Corrupt, -1, '', -1, 0, 0)
+        :param list resources: the list of resource names
+        :param list resource_locks: the list of lock objects
+        :param function condition: the condition that determines if a resource is tied to a lock
+        :return tuple: (list of locked resources, list of resources not tied to a lock)
+        """
+        locked, lockless = [], []
+        for resource in resources:
+            # Find all the locks that are matching the resource
+            matching_locks = [lock for lock in resource_locks if condition(resource, lock)]
+            record = (resource, matching_locks)
+            # Save the resource as locked or lockless
+            locked.append(record) if matching_locks else lockless.append(record)
+        return locked, lockless
+
+    # First list relevant lock files and then resources (in case some resource is closed in-between)
+    # since locks without corresponding resource are not a big issue unlike the other way around.
+    active_locks = get_active_locks_for(
+        locks_dir, resource_types=[LockType.Module, LockType.SystemTap]
+    )
+    processes = _extract_processes('ps -eo {} | awk \'$4" "$5 == "sudo stap"\''.format(PS_FORMAT))
+    modules = _loaded_stap_kernel_modules()
+
+    # Partition the locks into Systemtap and module locks
+    stap_locks, mod_locks = utils.partition_list(
+        active_locks, lambda lock: lock.type == LockType.SystemTap
+    )
+
+    # Match the locks and resources
+    # Specifically, systamtap processes are locked using PPID (i.e. the parent perun process)
+    locked_proc, lockless_proc = _match(
+        processes, stap_locks, lambda proc, lock: lock.pid == proc[1]
+    )
+    # Module locks are tied to their name
+    locked_mod, lockless_mod = _match(
+        modules, mod_locks, lambda module, lock: lock.name == module
+    )
+    return (locked_proc, lockless_proc), (locked_mod, lockless_mod)
