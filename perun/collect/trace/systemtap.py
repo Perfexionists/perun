@@ -133,7 +133,6 @@ def run_systemtap_collection(command, executable, logfile, **kwargs):
         WD.info('SystemTap collection process is up and running.')
         _fetch_stapio_pid(kwargs['res'])
         run_profiled_command(executable, **kwargs)
-        # _terminate_process(Res.stap_collect(), kwargs['res'])
 
 
 def run_profiled_command(executable, timeout, res, **kwargs):
@@ -267,7 +266,7 @@ def _lock_kernel_module(logfile, res, **kwargs):
     try:
         # The module name might have been extracted from the compilation process output
         match = STAP_MODULE_REGEX.search(res[Res.stap_module()])
-    except ValueError:
+    except TypeError:
         # If not, he kernel module should be in the last log line
         line = get_last_line_of(logfile, FileSize.Short)[1]
         match = STAP_MODULE_REGEX.search(line)

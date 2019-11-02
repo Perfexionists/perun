@@ -41,8 +41,7 @@ def before(executable, **kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WD.header('Pre-processing phase... ')
-
+    WD.header('Pre-processing phase...')
     # Validate and normalize collection parameters
     kwargs = _normalize_config(executable, **kwargs)
     # Initialize the watchdog and log the kwargs dictionary after it's fully initialized
@@ -134,12 +133,13 @@ def teardown(**kwargs):
     # Zip and delete the temporary and watchdog files
     timestamp = kwargs.get('timestamp', time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
     pid = kwargs.get('pid', os.getpid())
+    keep_temps = kwargs.get('keep_temps', False)
     pack_name = os.path.join(
-        get_log_directory(), 'trace', 'collect_files_{}_{}.zip'.format(timestamp, pid)
+        get_log_directory(), 'trace', 'collect_files_{}_{}.zip.lzma'.format(timestamp, pid)
     )
     with Zipper(kwargs.get('zip_temps', False), pack_name) as temp_pack:
         if 'res' in kwargs:
-            _cleanup_collect_files(kwargs['res'], temp_pack)
+            _cleanup_collect_files(kwargs['res'], temp_pack, keep_temps)
         WD.end_session(temp_pack)
 
     stdout.done('\n\n')
@@ -165,6 +165,7 @@ def _normalize_config(executable, **kwargs):
     # Set the some default values if not provided
     kwargs.setdefault('with_static', True)
     kwargs.setdefault('zip_temps', False)
+    kwargs.setdefault('keep_temps', False)
     kwargs.setdefault('verbose_trace', False)
     kwargs.setdefault('quiet', False)
     kwargs.setdefault('watchdog', False)
@@ -179,7 +180,7 @@ def _normalize_config(executable, **kwargs):
         kwargs['output_handling'] = OutputHandling.Capture.value
 
     # Transform the output handling value to the enum element
-    kwargs['output_handling'] = OutputHandling(kwargs['output_handling']).name
+    kwargs['output_handling'] = OutputHandling(kwargs['output_handling'])
 
     # Normalize global sampling
     if 'global_sampling' not in kwargs or kwargs['global_sampling'] < 1:
@@ -188,13 +189,21 @@ def _normalize_config(executable, **kwargs):
     if 'timeout' not in kwargs or kwargs['timeout'] <= 0:
         kwargs['timeout'] = None
 
-    # Check that the binary file exists and is valid
-    # If binary is set then probe the 'binary' file instead of executable
-    if not kwargs['binary']:
+    # No runnable command was given, terminate the collection
+    if not kwargs['binary'] and not executable.cmd:
+        raise InvalidBinaryException('')
+    # Otherwise copy the cmd or binary parameter
+    elif not executable.cmd:
+        executable.cmd = kwargs['binary']
+    elif not kwargs['binary']:
         kwargs['binary'] = executable.cmd
+
+    # Check that the binary / executable file exists and is valid
     kwargs['binary'] = os.path.realpath(kwargs['binary'])
     if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
         raise InvalidBinaryException(kwargs['binary'])
+    elif not os.path.exists(executable.cmd):
+        raise InvalidBinaryException(executable.cmd)
 
     # Update the configuration dictionary with some additional values
     kwargs['executable'] = executable
@@ -233,18 +242,20 @@ def _create_collect_files(timestamp, pid, res, output_handling, **kwargs):
         WD.debug("Temporary file '{}' successfully created".format(file_name))
 
 
-def _cleanup_collect_files(res, pack):
-    """ Zips (optionally) and deletes (always) the temporary collection files.
+def _cleanup_collect_files(res, pack, keep):
+    """ Zips (optionally) and deletes (optionally) the temporary collection files.
 
     :param Res res: the resources object
     :param Zipper pack: the zipper object responsible for zipping the files
+    :param bool keep: keeps the temporary files in the file system
     """
     for collect_file in [Res.script(), Res.log(), Res.data(), Res.capture()]:
         if res[collect_file] is not None:
             # If zipping the files is disabled in the configuration, the pack.write does nothing
             pack.write(res[collect_file], os.path.basename(res[collect_file]))
-            temp.delete_temp_file(res[collect_file], force=True)
-            WD.debug("Temporary file '{}' deleted".format(res[collect_file]))
+            if not keep:
+                temp.delete_temp_file(res[collect_file], force=True)
+                WD.debug("Temporary file '{}' deleted".format(res[collect_file]))
             res[collect_file] = None
 
 
@@ -293,6 +304,8 @@ def _check_dependencies():
 @click.option('--zip-temps', '-z', is_flag=True, default=False,
               help='Zip and compress the temporary files (SystemTap log, raw performance data, '
                    'watchdog log ...) in the perun log directory before deleting them.')
+@click.option('--keep-temps', '-k', is_flag=True, default=False,
+              help='Do not delete the temporary files in the file system.')
 @click.option('--verbose-trace', '-vt', is_flag=True, default=False,
               help='Set the trace file output to be more verbose, useful for debugging.')
 @click.option('--quiet', '-q', is_flag=True, default=False,

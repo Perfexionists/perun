@@ -148,7 +148,7 @@ def _build_static_probe(rule, process, process_id):
     :return str: the script component with the static probe(s)
     """
     # Create static start probe
-    begin_probe = ('probe process("{proc}").mark("{loc}") {{\n'
+    begin_probe = ('probe process("{proc}").mark("{loc}")? {{\n'
                    .format(proc=process, loc=rule['name']))
     begin_body = ('printf("{type} %s {loc}\\n", thread_indent(0))'
                   .format(loc=rule['name'], type=int(RecordType.StaticSingle)))
@@ -158,7 +158,7 @@ def _build_static_probe(rule, process, process_id):
         # Update the body record type
         begin_body = ('printf("{type} %s{loc}\\n", thread_indent(0))'
                       .format(loc=rule['name'], type=int(RecordType.StaticBegin)))
-        end_probe = ('probe process("{proc}").mark("{loc}") {{\n'
+        end_probe = ('probe process("{proc}").mark("{loc}")? {{\n'
                      .format(proc=process, loc=rule['pair'][1]))
         end_body = ('printf("{type} %s{loc}\\n", thread_indent(0))'
                     .format(loc=rule['pair'][1], type=int(RecordType.StaticEnd)))

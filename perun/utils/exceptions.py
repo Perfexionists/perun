@@ -315,7 +315,7 @@ class InvalidBinaryException(Exception):
         """
         super().__init__("")
         self.binary = binary
-        self.msg = ("Supplied binary parameter '{0}' does not exists or is not an "
+        self.msg = ("Supplied binary parameter '{0}' does not exist or is not an "
                     "executable ELF file.".format(self.binary))
 
     def __str__(self):

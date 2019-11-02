@@ -153,18 +153,20 @@ def nonblocking_subprocess(command, subprocess_kwargs, termination=None, termina
     with subprocess.Popen(parsed_cmd, shell=False, **subprocess_kwargs) as proc:
         try:
             yield proc
+        except Exception:
+            # Re-raise the encountered exception
+            raise
         finally:
             # Don't terminate the process if it has already finished
-            if proc.poll() is not None:
-                return
-            # Use the default termination if the termination handler is not set
-            if termination is None:
-                proc.terminate()
-            else:
-                # Otherwise use the supplied termination function
-                if termination_kwargs is None:
-                    termination_kwargs = {}
-                termination(**termination_kwargs)
+            if proc.poll() is None:
+                # Use the default termination if the termination handler is not set
+                if termination is None:
+                    proc.terminate()
+                else:
+                    # Otherwise use the supplied termination function
+                    if termination_kwargs is None:
+                        termination_kwargs = {}
+                    termination(**termination_kwargs)
 
 
 def run_safely_external_command(cmd, check_results=True, **kwargs):
