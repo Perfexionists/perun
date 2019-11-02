@@ -26,22 +26,22 @@ probe process("cmp").function("test").return? {
 	printf("1 %s\n", thread_indent(-1))
 }
 
-probe process("cmp").mark("BEFORE_CYCLE") {
+probe process("cmp").mark("BEFORE_CYCLE")? {
 	printf("3 %sBEFORE_CYCLE\n", thread_indent(0))
 }
 
-probe process("cmp").mark("BEFORE_CYCLE_end") {
+probe process("cmp").mark("BEFORE_CYCLE_end")? {
 	printf("4 %sBEFORE_CYCLE_end\n", thread_indent(0))
 }
 
-probe process("cmp").mark("TEST_SINGLE") {
+probe process("cmp").mark("TEST_SINGLE")? {
 	samp_0[1] ++
 	if(samp_0[1] == 4) {
 		printf("2 %s TEST_SINGLE\n", thread_indent(0))
 		samp_0[1] = 0
 	}
 }
-probe process("cmp").mark("TEST_SINGLE2") {
+probe process("cmp").mark("TEST_SINGLE2")? {
 	printf("2 %s TEST_SINGLE2\n", thread_indent(0))
 }
 
