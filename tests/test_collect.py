@@ -395,6 +395,14 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     )
     assert result.exit_code == 0
 
+    # Test that invalid command is not accepted
+    result = runner.invoke(
+        cli.collect, ['-c{}'.format(os.path.join('invalid', 'executable', 'path')), 'trace',
+                      '-f', 'main']
+    )
+    assert result.exit_code == 1
+    assert 'Supplied binary' in result.output
+
 
 def test_collect_trace_utils(pcs_full):
     """ Test some utility function cases that are hard to reproduce in the usual collector runs.
@@ -437,16 +445,13 @@ def test_collect_trace(pcs_full, trace_collect_job):
 
     Expecting no errors
     """
-    if not shutil.which('stap'):
-        return
-
     runner = CliRunner()
 
     target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
     target = os.path.join(target_dir, 'tst')
     job_params = trace_collect_job[5]['collector_params']['trace']
 
-    # Get the trace parameters
+    # Test loading the trace parameters
     func = ['-f{}'.format(func) for func in job_params['func']]
     func_sampled = []
     for f in job_params['func_sampled']:
@@ -456,12 +461,20 @@ def test_collect_trace(pcs_full, trace_collect_job):
     static = ['-s{}'.format(rule) for rule in job_params['static']]
     binary = ['-b{}'.format(target)]
 
-    # Test the suppress output handling
+    # Test the suppress output handling and that missing stap actually terminates the collection
     result = runner.invoke(
         cli.collect, ['-c{}'.format(target), 'trace', '-o', 'suppress'] +
         func + func_sampled + static + binary
     )
-    assert result.exit_code == 0
+    if not shutil.which('stap'):
+        assert result.exit_code == 1
+        assert 'Missing dependency command' in result.output
+    else:
+        assert result.exit_code == 0
+
+    # Running the collection itself requires SystemTap support
+    if not shutil.which('stap'):
+        return
 
     # Test running the job from the params using the job file
     # Fixme: yaml parameters applied after the cli, thus cli reports missing parameters
@@ -517,7 +530,7 @@ def test_collect_trace(pcs_full, trace_collect_job):
     # Try missing parameter -c but with 'binary' present
     # This should use the binary parameter as executable
     result = runner.invoke(cli.collect, ['trace', '-i'] + binary + func)
-    archives = glob.glob(os.path.join(log_path, 'collect_files_*.zip'))
+    archives = glob.glob(os.path.join(log_path, 'collect_files_*.zip.lzma'))
     assert len(archives) == 1
     assert result.exit_code == 0
     # Try it the other way around

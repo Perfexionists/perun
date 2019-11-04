@@ -561,7 +561,10 @@ def _check_used_resources(locks_dir):
             matching_locks = [lock for lock in resource_locks if condition(resource, lock)]
             record = (resource, matching_locks)
             # Save the resource as locked or lockless
-            locked.append(record) if matching_locks else lockless.append(record)
+            if matching_locks:
+                locked.append(record)
+            else:
+                lockless.append(record)
         return locked, lockless
 
     # First list relevant lock files and then resources (in case some resource is closed in-between)

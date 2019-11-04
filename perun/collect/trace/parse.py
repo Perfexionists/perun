@@ -58,6 +58,15 @@ def _init_stack_and_map(func, static):
     :param dict static: the static probes
     :return tuple: initialized trace stack and sequence map
     """
+
+    def default_sequence_records(records):
+        """ Initializes the default dictionaries for the sequence map
+
+        :param iterable records: the iterable records
+        :return dict: the resulting dictionary
+        """
+        return {record['name']: {'seq': 0, 'sample': record['sample']} for record in records}
+
     # func: thread -> stack (stack list, faults list)
     # static: thread -> name -> stack
     trace_stack = {
@@ -66,16 +75,8 @@ def _init_stack_and_map(func, static):
     }
     # name -> sequence values
     sequence_map = {
-        'func': {
-            record['name']: {
-                'seq': 0,
-                'sample': record['sample']
-            } for record in func.values()},
-        'static': {
-            record['name']: {
-                'seq': 0,
-                'sample': record['sample']
-            } for record in static.values()}
+        'func': default_sequence_records(func.values()),
+        'static': default_sequence_records(static.values())
     }
     return trace_stack, sequence_map
 
