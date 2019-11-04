@@ -395,10 +395,18 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     )
     assert result.exit_code == 0
 
-    # Test that invalid command is not accepted
+    # Test that non-existing command is not accepted
     result = runner.invoke(
         cli.collect, ['-c{}'.format(os.path.join('invalid', 'executable', 'path')), 'trace',
                       '-f', 'main']
+    )
+    assert result.exit_code == 1
+    assert 'Supplied binary' in result.output
+
+    # Test that non-elf files are not accepted
+    not_elf = os.path.join(target_dir, 'job.yml')
+    result = runner.invoke(
+        cli.collect, ['-c{}'.format(not_elf), 'trace', '-f', 'main']
     )
     assert result.exit_code == 1
     assert 'Supplied binary' in result.output
@@ -630,7 +638,6 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     global _mocked_stap_code
     global _mocked_stap_file
 
-    head = vcs.get_minor_version_info(vcs.get_minor_head())
     before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
 
     runner = CliRunner()

@@ -411,29 +411,6 @@ def abs_in_absolute_range(value, border):
     return -abs(border) <= value <= abs(border)
 
 
-def get_path_dir_file(target):
-    """ Extracts the target's absolute path, location directory and base name
-
-    :param str target: name or path
-    :returns: tuple (the absolute target path, the target directory, the target base name)
-    """
-    path = os.path.realpath(target)
-    path_dir = os.path.join(os.path.dirname(path), '')  # Add directory slash if missing
-    return path, path_dir, os.path.basename(path)
-
-
-def check_dependency(command):
-    """Check possibly missing dependency utility (such as awk, nm, ls, ...)
-
-    :param str command: the dependency utility to check
-    :return bool: True if dependency utility is present on the system, False otherwise
-    """
-    if not shutil.which(command):
-        warn(("Missing dependency utility '{util}'".format(util=command)))
-        return False
-    return True
-
-
 def format_file_size(size):
     """Format file size in Bytes into a fixed-length output so that it can be easily printed.
 
