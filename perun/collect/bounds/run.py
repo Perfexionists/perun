@@ -68,7 +68,7 @@ def collect(sources, **kwargs):
     before_analysis = systime.time()
     try:
         cmd = loopus_bin + " -zPrintComplexity " + " ".join(source_filenames)
-        out, err = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
+        out, _ = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
         out = out.decode('utf-8')
     except SubprocessError as sub_err:
         log.failed()
