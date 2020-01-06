@@ -42,10 +42,11 @@ Total Complexity: FAILED
 """
 import re
 
-re_function = re.compile(r"Function (?P<funcname>\S+)")
-re_file = re.compile(r"file (?P<filename>\S+)")
-re_line = re.compile(r"line (?P<line>\d+) / (?P<column>\d+)")
-re_total = re.compile(r"Total Complexity: (?P<total>.+)")
+RE_FUNCTION = re.compile(r"Function (?P<funcname>\S+)")
+RE_FILE = re.compile(r"file (?P<filename>\S+)")
+RE_LINE = re.compile(r"line (?P<line>\d+) / (?P<column>\d+)")
+RE_TOTAL = re.compile(r"Total Complexity: (?P<total>.+)")
+
 
 def partition_list(source_list, pred):
     """Helper function that partitions the list to several chunks according to the given predicate.
@@ -75,7 +76,7 @@ def parse_file(file_info):
     :return: list of resources
     """
     filtered_file = list(filter(lambda line: not re.match(r"^\s*$", line), file_info.split("\n")))
-    file_name = re_file.search(filtered_file[0]).group('filename')
+    file_name = RE_FILE.search(filtered_file[0]).group('filename')
     resources = []
     for func in partition_list(filtered_file, lambda x: 'Function' in x):
         resources.extend(parse_function(func, file_name))
@@ -107,9 +108,9 @@ def parse_function(func_info, file_name):
     :return: list of resources
     """
     resources = []
-    function_name = re_function.search(func_info[0]).group('funcname')
+    function_name = RE_FUNCTION.search(func_info[0]).group('funcname')
     for resource in partition_list(func_info[1:-1], lambda x: 'line' in x):
-        line_match = re_line.search(resource[0])
+        line_match = RE_LINE.search(resource[0])
         line, col = line_match.group('line'), line_match.group('column')
         if len(resource) == 3:
             # Case (1): the bounds were successfully inferred; case (2) is omitted
@@ -142,4 +143,3 @@ def parse_output(output):
     for file_info in files:
         resources.extend(parse_file(file_info))
     return resources
-

@@ -3,15 +3,14 @@
 First compiles the given sources using clang into LLVM IR representation,
 each compiled file is then analysed by loopus. The output of loopus is finally
 parsed by internal scanner resulting into profile.
-
-TODO: Add context manager that changes and compiles file to different (temporary files)
 """
 
 import os
-import click
 import time as systime
 
 from subprocess import SubprocessError
+
+import click
 
 import perun.collect.bounds.parser as parser
 import perun.logic.runner as runner
@@ -19,10 +18,10 @@ import perun.utils.log as log
 import perun.utils as utils
 from perun.utils.structs import CollectStatus
 
-_CLANG_COMPILER='clang-3.5'
-_CLANG_COMPILATION_PARAMS=['-g', '-emit-llvm', '-c']
-_LLVM_EXT='.bc'
-_LIB_Z3="libz3.so"
+_CLANG_COMPILER = 'clang-3.5'
+_CLANG_COMPILATION_PARAMS = ['-g', '-emit-llvm', '-c']
+_LLVM_EXT = '.bc'
+_LIB_Z3 = "libz3.so"
 
 
 def before(sources, **kwargs):
@@ -31,7 +30,6 @@ def before(sources, **kwargs):
         $ clang-3.5 -g -emit-llvm -c ${sources}
     """
     cmd = " ".join([_CLANG_COMPILER] + _CLANG_COMPILATION_PARAMS + list(sources))
-    # TODO: If there is nothing, fail
     print("Compiling source codes: {}".format(
         ",".join(sources)
     ))
@@ -52,8 +50,6 @@ def collect(sources, **kwargs):
         $ ./loopus -zPrintComplexity ${src}.bc
 
     Finally, parses the output of Loopus into a profile
-
-    TODO: more precise paths for files
     """
     pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin')
     loopus_bin = os.path.join(pwd, 'loopus')
