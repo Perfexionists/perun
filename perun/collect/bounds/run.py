@@ -73,8 +73,11 @@ def collect(sources, **kwargs):
 
     # Parse the out, but first fix the one file analysis, which has different format
     if len(sources) == 1:
-        out = "file {}\n".format(sources[0]) + out
-    resources = parser.parse_output(out)
+        out = "file {}\n".format(source_filenames[0]) + out
+    source_map = {
+        bc: src for (bc, src) in zip(source_filenames, sources)
+    }
+    resources = parser.parse_output(out, source_map)
 
     log.done()
     return CollectStatus.OK, "status message", {'profile': {

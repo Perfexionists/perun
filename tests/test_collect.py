@@ -650,13 +650,13 @@ def test_collect_bounds(monkeypatch, pcs_full):
 
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.OK
-    assert len(prof['global']['resources']) == 8
+    assert len(prof['global']['resources']) == 17
 
     job = Job(Unit('bounds', {'sources': single_sources}), [], Executable('echo', '', 'hello'))
 
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.OK
-    assert len(prof['global']['resources']) == 4
+    assert len(prof['global']['resources']) == 8
 
     original_function = utils.run_safely_external_command
 
