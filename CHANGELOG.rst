@@ -7,6 +7,8 @@ HEAD
 **To be included in next release**
 
   - fix an issue in profiles which contained only persistent properties
+  - add bounds collector, wrapper over Loopus tool
+
 1.17.2 (2019-08-16)
 -------------------
 

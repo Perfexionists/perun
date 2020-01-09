@@ -83,6 +83,9 @@ Collect units
 .. click:: perun.collect.time.run:time
    :prog: perun collect time
 
+.. click:: perun.collect.bounds.run:bounds
+   :prog: perun collect bounds
+
 .. _cli-postprocess-ref:
 
 Postprocess Commands
