@@ -1,0 +1,96 @@
+{
+  "origin": "409dd7468a328038c9a1ea5a6a0f7baa89f8997a",
+  "header": {
+    "type": "bound",
+    "args": "",
+    "workload": "",
+    "units": {
+      "bound": "iterations"
+    },
+    "cmd": "partitioning"
+  },
+  "resources": {
+    "int_partitioning.c:partitioning:34:42#0": {},
+    "int_partitioning.c:partitioning:49:60#0": {},
+    "int_partitioning.c:partitioning:64:69#0": {},
+    "int_partitioning.c:partitioning:18:4#0": {},
+    "int_partitioning.c:partitioning:55:58#0": {}
+  },
+  "models": [],
+  "postprocessors": [],
+  "collector_info": {
+    "params": {
+      "sources": [
+        "int_partitioning.c"
+      ],
+      "workload": "",
+      "source_dir": [],
+      "source": [
+        "int_partitioning.c"
+      ]
+    },
+    "name": "bounds"
+  },
+  "resource_type_map": {
+    "int_partitioning.c:partitioning:34:42#0": {
+      "uid": {
+        "line": 34,
+        "column": 42,
+        "source": "int_partitioning.c",
+        "function": "partitioning"
+      },
+      "type": "local bound",
+      "bound": "1 + max(0, (k + -1))",
+      "time": "0.0",
+      "class": "O(n^1)"
+    },
+    "int_partitioning.c:partitioning:49:60#0": {
+      "uid": {
+        "line": 49,
+        "column": 60,
+        "source": "int_partitioning.c",
+        "function": "partitioning"
+      },
+      "type": "local bound",
+      "bound": "2 + max(0, (k + -1))",
+      "time": "0.0",
+      "class": "O(n^1)"
+    },
+    "int_partitioning.c:partitioning:64:69#0": {
+      "uid": {
+        "line": 64,
+        "column": 69,
+        "source": "int_partitioning.c",
+        "function": "partitioning"
+      },
+      "type": "local bound",
+      "bound": "2 + max(0, (k + -1))",
+      "time": "0.0",
+      "class": "O(n^1)"
+    },
+    "int_partitioning.c:partitioning:18:4#0": {
+      "uid": {
+        "line": 18,
+        "column": 4,
+        "source": "int_partitioning.c",
+        "function": "partitioning"
+      },
+      "type": "total bound",
+      "bound": "6 + 4 × max(0, (k + -1))",
+      "time": "0.0",
+      "class": "O(n^1)"
+    },
+    "int_partitioning.c:partitioning:55:58#0": {
+      "uid": {
+        "line": 55,
+        "column": 58,
+        "source": "int_partitioning.c",
+        "function": "partitioning"
+      },
+      "type": "local bound",
+      "bound": "1 + max(0, (k + -1))",
+      "time": "0.0",
+      "class": "O(n^1)"
+    }
+  }
+}
