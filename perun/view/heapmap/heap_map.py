@@ -374,7 +374,6 @@ class HeapMapVisualization(object):
 
         for row in range(rows):
             for col in range(cols):
-
                 if record is not None:
                     # if is record address not in the next field,
                     # let's put there empty field

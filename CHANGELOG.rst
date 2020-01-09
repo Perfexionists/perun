@@ -6,6 +6,16 @@ HEAD
 
 **To be included in next release**
 
+1.17.3 (2020-01-09)
+-------------------
+
+`commit: f3819834803b1eed878feeee51b697b260988c65`
+
+**Add Loopus collector in Perun**
+
+  - fix an issue in profiles which contained only persistent properties
+  - add bounds collector, wrapper over Loopus tool
+
 1.17.2 (2019-08-16)
 -------------------
 
