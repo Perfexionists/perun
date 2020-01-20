@@ -6,6 +6,7 @@ HEAD
 
 **To be included in next release**
 
+  - add table view module
   - fix minor bug in bounds collector (unknown collector type)
   - fix templates for generating units
 
