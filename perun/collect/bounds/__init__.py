@@ -9,7 +9,7 @@ notation highlighting the main source of the complexity.
 .. _loopus: https://forsyte.at/software/loopus/page/11/
 """
 
-COLLECTOR_TYPE = "bound"
+COLLECTOR_TYPE = "time:"
 COLLECTOR_DEFAULT_UNITS = {
     "bound": "iterations"
 }
