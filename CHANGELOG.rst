@@ -7,6 +7,7 @@ HEAD
 **To be included in next release**
 
   - fix minor bug in bounds collector (unknown collector type)
+  - fix templates for generating units
 
 1.17.3 (2020-01-09)
 -------------------
