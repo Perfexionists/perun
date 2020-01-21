@@ -29,6 +29,20 @@ def profile_filter(generator, rule):
             return profile[1]
 
 
+def test_convert_models_to_dataframe(postprocess_profiles):
+    """Test conversion of models"""
+    # Acquire the models query profile
+    models_profile = profile_filter(postprocess_profiles, 'complexity-models.perf')
+    assert models_profile is not None
+
+    df = convert.models_to_pandas_dataframe(models_profile)
+    assert sorted(list(df)) == sorted([
+        'coeffs', 'coeffs:b0', 'coeffs:b1', 'coeffs:b2', 'method', 'model', 'r_square', 'uid',
+        'x_end', 'x_start'
+    ])
+    assert len(df) == 12
+
+
 def test_flame_graph(memory_profiles):
     """Test creation of flame graph format out of the profile of memory type
 

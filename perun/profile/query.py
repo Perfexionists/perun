@@ -45,6 +45,12 @@ def flattened_values(root_key, root_value):
         if isinstance(root_key, str):
             nested_values.sort(key=helpers.uid_getter)
             yield root_key, ":".join(map(str, map(operator.itemgetter(1), nested_values)))
+    # Lists that represent variable length dictionary
+    elif helpers.is_variable_len_dict(root_value):
+        dictionary = {
+            v['name']: v['value'] for v in root_value
+        }
+        yield from flattened_values(root_key, dictionary)
     # Lists are merged as comma separated keys
     elif isinstance(root_value, list):
         yield root_key, ','.join(
@@ -121,6 +127,25 @@ def all_resource_fields_of(profile):
     :returns: iterable stream of resource field keys represented as `str`
     """
     yield from _all_fields_of(profile.all_resources)
+
+
+def all_model_fields_of(profile):
+    """Generator for iterating through all of the fields (both flattened and
+    original) that are occurring in the models.
+
+    E.g. considering the example profiles from :ref:`postprocessors-regression-analysis`, the function
+    yields the following model keys:
+
+        model_keys = ['coeffs:b1', 'coeffs:b0', 'coeffs', 'r_square', 'x_interval_end', 'model', 'method', 'uid', 'x_interval_start', 'coeffs:b2']
+        memory_resource_fields = [
+            'type', 'address', 'amount', 'uid:function', 'uid:source',
+            'uid:line', 'uid', 'trace', 'subtype'
+        ]
+
+    :param Profile profile: performance profile w.r.t :ref:`profile-spec`
+    :returns: iterable stream of model field keys represented as `str`
+    """
+    yield from _all_fields_of(profile.all_models)
 
 
 def _all_fields_of(item_generator):
