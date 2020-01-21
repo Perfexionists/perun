@@ -7,6 +7,7 @@ HEAD
 **To be included in next release**
 
   - add table view module
+  - add conversion functions of models to dataframe
   - fix minor bug in bounds collector (unknown collector type)
   - fix templates for generating units
 
