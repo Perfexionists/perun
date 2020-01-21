@@ -24,7 +24,7 @@ def create_table_from(profile, conversion_function):
 
 @click.group()
 @pass_profile
-def table(_, **__):
+def tableof(_, **__):
     """Textual representation of the profile as a table.
 
     .. _tabulate: https://pypi.org/project/tabulate/
@@ -48,7 +48,7 @@ def table(_, **__):
     pass
 
 
-@table.command()
+@tableof.command()
 @pass_profile
 def resources(profile, **_):
     """Outputs the resources of the profile as a table"""
@@ -56,7 +56,7 @@ def resources(profile, **_):
     print(profile_as_table)
 
 
-@table.command()
+@tableof.command()
 @pass_profile
 def models(profile, **_):
     """Outputs the models of the profile as a table"""

@@ -30,7 +30,7 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     """Test outputing profiles as tables"""
     runner = CliRunner()
     result = runner.invoke(cli.show, [
-        '0@i', 'table', 'resources'
+        '0@i', 'tableof', 'resources'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_resources_ref_basic'), 'r') as trb:
@@ -44,7 +44,7 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     assert result.exit_code == 0
 
     result = runner.invoke(cli.show, [
-        '0@i', 'table', 'models'
+        '0@i', 'tableof', 'models'
     ])
     assert result.exit_code == 0
     print(result.output)
