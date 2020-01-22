@@ -47,6 +47,18 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
         '0@i', 'tableof', 'models'
     ])
     assert result.exit_code == 0
-    print(result.output)
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_basic'), 'r') as trb:
         assert sorted(result.output) == sorted("".join(trb.readlines()))
+
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+    ])
+    assert result.exit_code == 0
+    with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_pruned'), 'r') as trb:
+        assert sorted(result.output) == sorted("".join(trb.readlines()))
+
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', 'models', '-h', 'non-existant', '-h', 'model', '-h', 'coeffs'
+    ])
+    assert result.exit_code == 2
+    assert "invalid choice for table header: non-existant" in result.output

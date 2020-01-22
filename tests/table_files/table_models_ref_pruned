@@ -1,0 +1,14 @@
+uid                          model        coeffs
+---------------------------  -----------  ------------------------------------------------------------
+SLList_insert(SLList*, int)  constant     1.5:0.0
+SLList_insert(SLList*, int)  exponential  1.7657239018047561:0.9458006943320207
+SLList_insert(SLList*, int)  linear       1.9636363636363634:-0.10303030303030296
+SLList_insert(SLList*, int)  logarithmic  1.5321216194684828:-0.13975306088134845
+SLList_insert(SLList*, int)  power        1.446054192053253:-0.09686944012452892
+SLList_insert(SLList*, int)  quadratic    2.5090909090909093:-0.5121212121212121:0.045454545454545456
+SLListcls::Insert(int)       constant     1.9:0.0
+SLListcls::Insert(int)       exponential  1.901677661894164:0.9958079194005149
+SLListcls::Insert(int)       linear       1.9272727272727266:-0.0060606060606058845
+SLListcls::Insert(int)       logarithmic  1.9531630153034125:-0.04518629380303375
+SLListcls::Insert(int)       power        1.9361128097806388:-0.03132075214952577
+SLListcls::Insert(int)       quadratic    2.1090909090909093:-0.14242424242424243:0.015151515151515152

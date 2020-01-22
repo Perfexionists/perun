@@ -8,6 +8,7 @@ HEAD
 
   - add tableof view module
   - add conversion functions of models to dataframe
+  - add headers to tableof view
   - add two modes of tableof (resources and models)
   - fix minor bug in bounds collector (unknown collector type)
   - fix templates for generating units
