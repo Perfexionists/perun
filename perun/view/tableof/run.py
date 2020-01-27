@@ -10,6 +10,22 @@ import perun.profile.query as query
 import perun.profile.helpers as profiles
 
 
+def get_headers(ctx):
+    """According to the loaded profile, checks the list of possible keys that can be used for
+    filtering, sorting, etc.
+
+    :param click Context ctx: context of the called click
+    :return: candidate headers for resources or models
+    """
+    headers = []
+    if ctx.command.name == 'resources':
+        headers = list(query.all_resource_fields_of(ctx.parent.parent.params['profile'])) \
+                  + ['snapshots']
+    elif ctx.command.name == 'models':
+        headers = list(query.all_model_fields_of(ctx.parent.parent.params['profile']))
+    return headers
+
+
 def output_table_to(table, target, target_file):
     """Outputs the table either to stdout or file
 
@@ -63,12 +79,7 @@ def process_filter(ctx, option, value):
     :param list value: list of (key, value) tuples
     :return: valid filtering keys
     """
-    headers = []
-    if ctx.command.name == 'resources':
-        headers = list(query.all_resource_fields_of(ctx.parent.parent.params['profile'])) \
-                  + ['snapshots']
-    elif ctx.command.name == 'models':
-        headers = list(query.all_model_fields_of(ctx.parent.parent.params['profile']))
+    headers = get_headers(ctx)
 
     if value:
         for val in value:
@@ -91,12 +102,7 @@ def process_sort_key(ctx, option, value):
     :param str value: key used for sorting
     :return: valid key for sorting
     """
-    headers = []
-    if ctx.command.name == 'resources':
-        headers = list(query.all_resource_fields_of(ctx.parent.parent.params['profile'])) \
-                  + ['snapshots']
-    elif ctx.command.name == 'models':
-        headers = list(query.all_model_fields_of(ctx.parent.parent.params['profile']))
+    headers = get_headers(ctx)
 
     if value and value not in headers:
         raise click.BadOptionUsage(
@@ -115,12 +121,7 @@ def process_headers(ctx, option, value):
     :param tuple value: tuple of stated header keys
     :return: list of headers of the table
     """
-    headers = []
-    if ctx.command.name == 'resources':
-        headers = list(query.all_resource_fields_of(ctx.parent.parent.params['profile'])) \
-                  + ['snapshots']
-    elif ctx.command.name == 'models':
-        headers = list(query.all_model_fields_of(ctx.parent.parent.params['profile']))
+    headers = get_headers(ctx)
 
     # In case something was stated in the CLI we use these headers
     if value:
