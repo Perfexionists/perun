@@ -10,6 +10,32 @@ TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], "table_files")
 __author__ = 'Tomas Fiedor'
 
 
+def output_to_list(output):
+    """
+    :param list output: list of lines
+    :return: sorted list of lines without newlines and filtered out empty lines
+    """
+    return sorted([l.rstrip() for l in output if l.rstrip()])
+
+
+def assert_files_match(lhs, rhs):
+    """Asserts that two files handles match
+
+    :param handle lhs: left file handle
+    :param handle rhs: right file handle
+    """
+    assert output_to_list(lhs.readlines()) == output_to_list(rhs.readlines())
+
+
+def assert_files_match_output(result, rhs):
+    """Asserts that file and stdout output match
+
+    :param list result: left stdout
+    :param handle rhs: right file handle
+    """
+    assert output_to_list(result.output.split('\n')) == output_to_list(rhs.readlines())
+
+
 def profile_filter(generator, rule):
     """Finds concrete profile by the rule in profile generator.
 
@@ -30,11 +56,11 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     """Test outputing profiles as tables"""
     runner = CliRunner()
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', 'resources'
+        '0@i', 'tableof', '--to-stdout', 'resources'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_resources_ref_basic'), 'r') as trb:
-        assert sorted(result.output) == sorted("".join(trb.readlines()))
+        assert_files_match_output(result, trb)
 
     models_profile = profile_filter(postprocess_profiles, 'complexity-models.perf')
     added = helpers.prepare_profile(
@@ -44,29 +70,40 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     assert result.exit_code == 0
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', 'models'
+        '0@i', 'tableof', '--to-stdout', 'models'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_basic'), 'r') as trb:
-        assert sorted(result.output) == sorted("".join(trb.readlines()))
+        assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+        '0@i', 'tableof', '--to-stdout', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_pruned'), 'r') as trb:
-        assert sorted(result.output) == sorted("".join(trb.readlines()))
+        assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', 'models', '-h', 'non-existant', '-h', 'model', '-h', 'coeffs'
+        '0@i', 'tableof', '--to-stdout', 'models', '-h', 'non-existant', '-h', 'model', '-h', 'coeffs'
     ])
     assert result.exit_code == 2
     assert "invalid choice for table header: non-existant" in result.output
 
     # Test different format
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '-f', 'latex', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+        '0@i', 'tableof', '--to-stdout', '-f', 'latex', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_latex'), 'r') as trb:
-        assert sorted(result.output) == sorted("".join(trb.readlines()))
+        assert_files_match_output(result, trb)
+
+    # Test output to file
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', '--output-file', 'test_output', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+    ])
+    output_file = os.path.join(os.getcwd(), 'test_output')
+    assert result.exit_code == 0
+    assert os.path.exists(output_file)
+    with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_pruned'), 'r') as trb:
+        with open(output_file, 'r') as of:
+            assert_files_match(trb, of)

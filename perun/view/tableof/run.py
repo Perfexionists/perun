@@ -1,9 +1,25 @@
 
+import os
 import click
 import tabulate
 
 import perun.profile.convert as convert
 import perun.profile.query as query
+import perun.profile.helpers as profiles
+
+
+def output_table_to(table, target, target_file):
+    """Outputs the table either to stdout or file
+
+    :param str table: outputted table
+    :param str target: either file or stdout
+    :param str target_file: name of the output file
+    """
+    if target == 'file':
+        with open(target_file, 'w') as wtf:
+            wtf.write(table)
+    else:
+        print(table)
 
 
 def create_table_from(profile, conversion_function, headers, tablefmt):
@@ -53,12 +69,38 @@ def process_headers(ctx, option, value):
         return sorted(headers)
 
 
+def process_output_file(ctx, _, value):
+    """Generates the name of the output file, if no value is issued
+
+    If no output file is set, then we generate the profile name according to the profile
+    and append the "resources_of" or "models_of" prefix to the file.
+
+    :param click.Context ctx: context of the called command
+    :param click.Option _: called option
+    :param str value: output file of the show
+    :return: output file of the show
+    """
+    if value:
+        return value
+    else:
+        prof_name = profiles.generate_profile_name(ctx.parent.params['profile'])
+        return ctx.command.name + "_of_" + os.path.splitext(prof_name)[0]
+
+
 @click.group()
+@click.option('--to-file', '-tf', 'output_to', flag_value='file',
+              help='The table will be saved into a file. By default, the name of the output file'
+                   ' is automatically generated, unless `--output-file` option does not specify'
+                   ' the name of the output file.', default=True)
+@click.option('--to-stdout', '-ts', 'output_to', flag_value='stdout',
+              help='The table will be output to standard output.')
+@click.option('--output-file', '-of', default=None, callback=process_output_file,
+              help='Target output file, where the transformed table will be saved.')
 @click.option('--format', '-f', 'tablefmt', default='simple',
               type=click.Choice(tabulate.tabulate_formats),
               help='Format of the outputted table')
 @click.pass_context
-def tableof(ctx, tablefmt, **_):
+def tableof(*_, **__):
     """Textual representation of the profile as a table.
 
     .. _tabulate: https://pypi.org/project/tabulate/
@@ -75,8 +117,6 @@ def tableof(ctx, tablefmt, **_):
     `table` interpretation possibilities.
 
     TODO: Enhance documentation
-    TODO: Add format
-    TODO: Add output to file
     """
     pass
 
@@ -94,7 +134,9 @@ def resources(ctx, headers, **_):
     profile_as_table = create_table_from(
         profile, convert.resources_to_pandas_dataframe, headers, tablefmt
     )
-    print(profile_as_table)
+    output_table_to(
+        profile_as_table, ctx.parent.params['output_to'], ctx.parent.params['output_file']
+    )
 
 
 @tableof.command()
@@ -110,4 +152,6 @@ def models(ctx, headers, **_):
     profile_as_table = create_table_from(
         profile, convert.models_to_pandas_dataframe, headers, tablefmt
     )
-    print(profile_as_table)
+    output_table_to(
+        profile_as_table, ctx.parent.params['output_to'], ctx.parent.params['output_file']
+    )
