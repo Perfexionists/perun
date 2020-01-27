@@ -107,3 +107,31 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_pruned'), 'r') as trb:
         with open(output_file, 'r') as of:
             assert_files_match(trb, of)
+
+    # Test sorts and filters
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', '--to-stdout', 'models', '--sort-by', 'r_square', '--filter-by', 'model', 'linear', '--filter-by', 'model', 'quadratic'
+    ])
+    assert result.exit_code == 0
+    with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_sorted_filtered'), 'r') as trb:
+        assert_files_match_output(result, trb)
+
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', '--to-stdout', 'models', '--sort-by', 'class'
+    ])
+    assert "Error: invalid key choice for sorting the table: class " in str(result.output)
+    assert result.exit_code == 2
+
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', '--to-stdout', 'models', '--filter-by', 'class', 'linear'
+    ])
+    assert "Error: invalid key choice for filtering: class" in str(result.output)
+    assert result.exit_code == 2
+
+    # Test sorts and filters
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', '--to-stdout', 'models', '--filter-by', 'r_square', '0', '--filter-by', 'model', 'linear'
+    ])
+    assert result.exit_code == 0
+    with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_empty'), 'r') as trb:
+        assert_files_match_output(result, trb)

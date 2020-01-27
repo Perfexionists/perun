@@ -10,6 +10,8 @@ HEAD
   - add conversion functions of models to dataframe
   - add headers to tableof view
   - add formats to tableof view
+  - add sorting to tableof view
+  - add filtering to tableof view
   - add two modes of tableof (resources and models)
   - fix minor bug in bounds collector (unknown collector type)
   - fix templates for generating units

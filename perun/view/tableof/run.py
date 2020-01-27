@@ -1,5 +1,7 @@
 
 import os
+import operator
+from itertools import groupby
 import click
 import tabulate
 
@@ -22,7 +24,7 @@ def output_table_to(table, target, target_file):
         print(table)
 
 
-def create_table_from(profile, conversion_function, headers, tablefmt):
+def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, filter_by):
     """Using the tabulate package, transforms the profile into table.
 
     Currently, the representation contains all of the possible keys.
@@ -34,8 +36,75 @@ def create_table_from(profile, conversion_function, headers, tablefmt):
     :return: tabular representation of the profile in string
     """
     dataframe = conversion_function(profile)
+
+    # Sort the dataframe inplace (to modify the values)
+    if sort_by:
+        dataframe.sort_values(sort_by, inplace=True)
+
+    # Filter the values according to set rules
+    if filter_by:
+        groups = [(k, list(v)) for (k, v) in groupby(filter_by, operator.itemgetter(0))]
+        q = " & ".join(
+            '@dataframe.get("{0}") in [{1}]'.format(
+                key, ', '.join('"{}"'.format(v[1]) for v in list(value))
+            ) for (key, value) in groups
+        )
+        dataframe.query(q, inplace=True)
+
     resource_table = dataframe[headers].values.tolist()
     return tabulate.tabulate(resource_table, headers=headers, tablefmt=tablefmt)
+
+
+def process_filter(ctx, option, value):
+    """Processes option for filtering of the table, according to the profile keys
+
+    :param click.Context ctx: context of the called command
+    :param click.Option option: called option
+    :param list value: list of (key, value) tuples
+    :return: valid filtering keys
+    """
+    headers = []
+    if ctx.command.name == 'resources':
+        headers = list(query.all_resource_fields_of(ctx.parent.parent.params['profile'])) \
+                  + ['snapshots']
+    elif ctx.command.name == 'models':
+        headers = list(query.all_model_fields_of(ctx.parent.parent.params['profile']))
+
+    if value:
+        for val in value:
+            if val[0] not in headers:
+                raise click.BadOptionUsage(
+                    option, "invalid key choice for filtering: {} (choose from {})".format(
+                        val[0], ", ".join(headers)
+                    )
+                )
+        else:
+            return list(value)
+    return value
+
+
+def process_sort_key(ctx, option, value):
+    """Processes the key for sorting the table
+
+    :param click.Context ctx: context of the called command
+    :param click.Option option: called option
+    :param str value: key used for sorting
+    :return: valid key for sorting
+    """
+    headers = []
+    if ctx.command.name == 'resources':
+        headers = list(query.all_resource_fields_of(ctx.parent.parent.params['profile'])) \
+                  + ['snapshots']
+    elif ctx.command.name == 'models':
+        headers = list(query.all_model_fields_of(ctx.parent.parent.params['profile']))
+
+    if value and value not in headers:
+        raise click.BadOptionUsage(
+            option, "invalid key choice for sorting the table: {} (choose from {})".format(
+                value, ", ".join(headers)
+            )
+        )
+    return value
 
 
 def process_headers(ctx, option, value):
@@ -126,13 +195,21 @@ def tableof(*_, **__):
               metavar="<key>", callback=process_headers,
               help="Sets the headers that will be displayed in the table. If none are stated "
                    "then all of the headers will be outputed")
+@click.option('--sort-by', '-s', default=None,
+              metavar="<key>", callback=process_sort_key,
+              help="Sorts the table by <key>.")
+@click.option('--filter-by', '-f', 'filter_by',
+              nargs=2, metavar='<key> <value>', callback=process_filter, multiple=True,
+              help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
+                   " several times, then rows satisfying all rules will be selected for different"
+                   " keys; and the rows satisfying some rule will be sellected for same key.")
 @click.pass_context
-def resources(ctx, headers, **_):
+def resources(ctx, headers, sort_by, filter_by, **_):
     """Outputs the resources of the profile as a table"""
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
     profile_as_table = create_table_from(
-        profile, convert.resources_to_pandas_dataframe, headers, tablefmt
+        profile, convert.resources_to_pandas_dataframe, headers, tablefmt, sort_by, filter_by
     )
     output_table_to(
         profile_as_table, ctx.parent.params['output_to'], ctx.parent.params['output_file']
@@ -145,12 +222,20 @@ def resources(ctx, headers, **_):
               metavar="<key>", callback=process_headers,
               help="Sets the headers that will be displayed in the table. If none are stated "
                    "then all of the headers will be outputed")
-def models(ctx, headers, **_):
+@click.option('--sort-by', '-s', default=None,
+              metavar="<key>", callback=process_sort_key,
+              help="Sorts the table by <key>.")
+@click.option('--filter-by', '-f', 'filter_by',
+              nargs=2, metavar='<key> <value>', callback=process_filter, multiple=True,
+              help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
+                   " several times, then rows satisfying all rules will be selected for different"
+                   " keys; and the rows satisfying some rule will be sellected for same key.")
+def models(ctx, headers, sort_by, filter_by, **_):
     """Outputs the models of the profile as a table"""
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
     profile_as_table = create_table_from(
-        profile, convert.models_to_pandas_dataframe, headers, tablefmt
+        profile, convert.models_to_pandas_dataframe, headers, tablefmt, sort_by, filter_by
     )
     output_table_to(
         profile_as_table, ctx.parent.params['output_to'], ctx.parent.params['output_file']
