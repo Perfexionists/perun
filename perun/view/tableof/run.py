@@ -1,3 +1,4 @@
+"""Table interpretation of the profile"""
 
 import os
 import operator
@@ -48,6 +49,8 @@ def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, 
     :param dict profile: profile transformed into the table
     :param function conversion_function: function that converts profile to table
     :param list headers: list of headers of the table
+    :param str sort_by: key for which we will sort
+    :param list filter_by list of keys that will be potentially filtered
     :param str tablefmt: format of the table
     :return: tabular representation of the profile in string
     """
@@ -60,12 +63,12 @@ def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, 
     # Filter the values according to set rules
     if filter_by:
         groups = [(k, list(v)) for (k, v) in groupby(filter_by, operator.itemgetter(0))]
-        q = " & ".join(
+        filter_query = " & ".join(
             '@dataframe.get("{0}") in [{1}]'.format(
                 key, ', '.join('"{}"'.format(v[1]) for v in list(value))
             ) for (key, value) in groups
         )
-        dataframe.query(q, inplace=True)
+        dataframe.query(filter_query, inplace=True)
 
     resource_table = dataframe[headers].values.tolist()
     return tabulate.tabulate(resource_table, headers=headers, tablefmt=tablefmt)
@@ -89,8 +92,7 @@ def process_filter(ctx, option, value):
                         val[0], ", ".join(headers)
                     )
                 )
-        else:
-            return list(value)
+        return list(value)
     return value
 
 
@@ -132,8 +134,7 @@ def process_headers(ctx, option, value):
                         val, ", ".join(headers)
                     )
                 )
-        else:
-            return list(value)
+        return list(value)
     # Else we output everything
     else:
         return sorted(headers)
