@@ -62,3 +62,11 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     ])
     assert result.exit_code == 2
     assert "invalid choice for table header: non-existant" in result.output
+
+    # Test different format
+    result = runner.invoke(cli.show, [
+        '0@i', 'tableof', '-f', 'latex', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+    ])
+    assert result.exit_code == 0
+    with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_latex'), 'r') as trb:
+        assert sorted(result.output) == sorted("".join(trb.readlines()))

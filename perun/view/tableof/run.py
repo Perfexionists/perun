@@ -6,7 +6,7 @@ import perun.profile.convert as convert
 import perun.profile.query as query
 
 
-def create_table_from(profile, conversion_function, headers):
+def create_table_from(profile, conversion_function, headers, tablefmt):
     """Using the tabulate package, transforms the profile into table.
 
     Currently, the representation contains all of the possible keys.
@@ -14,11 +14,12 @@ def create_table_from(profile, conversion_function, headers):
     :param dict profile: profile transformed into the table
     :param function conversion_function: function that converts profile to table
     :param list headers: list of headers of the table
+    :param str tablefmt: format of the table
     :return: tabular representation of the profile in string
     """
     dataframe = conversion_function(profile)
     resource_table = dataframe[headers].values.tolist()
-    return tabulate.tabulate(resource_table, headers=headers)
+    return tabulate.tabulate(resource_table, headers=headers, tablefmt=tablefmt)
 
 
 def process_headers(ctx, option, value):
@@ -53,8 +54,11 @@ def process_headers(ctx, option, value):
 
 
 @click.group()
+@click.option('--format', '-f', 'tablefmt', default='simple',
+              type=click.Choice(tabulate.tabulate_formats),
+              help='Format of the outputted table')
 @click.pass_context
-def tableof(ctx, **kwargs):
+def tableof(ctx, tablefmt, **_):
     """Textual representation of the profile as a table.
 
     .. _tabulate: https://pypi.org/project/tabulate/
@@ -85,8 +89,11 @@ def tableof(ctx, **kwargs):
 @click.pass_context
 def resources(ctx, headers, **_):
     """Outputs the resources of the profile as a table"""
+    tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
-    profile_as_table = create_table_from(profile, convert.resources_to_pandas_dataframe, headers)
+    profile_as_table = create_table_from(
+        profile, convert.resources_to_pandas_dataframe, headers, tablefmt
+    )
     print(profile_as_table)
 
 
@@ -98,6 +105,9 @@ def resources(ctx, headers, **_):
                    "then all of the headers will be outputed")
 def models(ctx, headers, **_):
     """Outputs the models of the profile as a table"""
+    tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
-    profile_as_table = create_table_from(profile, convert.models_to_pandas_dataframe, headers)
+    profile_as_table = create_table_from(
+        profile, convert.models_to_pandas_dataframe, headers, tablefmt
+    )
     print(profile_as_table)
