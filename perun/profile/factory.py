@@ -202,12 +202,16 @@ class Profile(collections.MutableMapping):
         for resource_type, resources in self._storage['resources'].items():
             # uid: {...}
             persistent_properties = self._storage['resource_type_map'][resource_type]
-            resource_keys = resources.keys()
-            for resource_values in zip(*resources.values()):
-                collectable_properties = dict(zip(resource_keys, resource_values))
-                collectable_properties.update(persistent_properties)
-                snapshot_number = collectable_properties.get('snapshot', 0)
-                yield snapshot_number, collectable_properties
+            if resources:
+                resource_keys = resources.keys()
+                for resource_values in zip(*resources.values()):
+                    collectable_properties = dict(zip(resource_keys, resource_values))
+                    collectable_properties.update(persistent_properties)
+                    snapshot_number = collectable_properties.get('snapshot', 0)
+                    yield snapshot_number, collectable_properties
+            else:
+                # In case we have only persistent properties
+                yield persistent_properties.get('snapshot', 0), persistent_properties
 
     def all_filtered_models(self, models_strategy):
         """

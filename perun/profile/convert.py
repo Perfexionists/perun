@@ -34,7 +34,7 @@ def resources_to_pandas_dataframe(profile):
     `pandas`_ library.
 
     Queries through all of the resources in the `profile`, and flattens each
-    key and value to the tabular representation. Refer to `pandas`_ libray for
+    key and value to the tabular representation. Refer to `pandas`_ library for
     more possibilities how to work with the tabular representation of collected
     resources.
 
@@ -60,6 +60,7 @@ def resources_to_pandas_dataframe(profile):
     :returns: converted profile to ``pandas.DataFramelist`` with resources
         flattened as a pandas dataframe
     """
+    # Note that we need to to this inefficiently, because some keys can be missing in resources
     resource_keys = list(query.all_resource_fields_of(profile))
     values = {key: [] for key in resource_keys}
     values['snapshots'] = []
@@ -69,6 +70,29 @@ def resources_to_pandas_dataframe(profile):
         flattened_resource = dict(list(query.all_items_of(resource)))
         for resource_key in resource_keys:
             values[resource_key].append(flattened_resource.get(resource_key, numpy.nan))
+
+    return pandas.DataFrame(values)
+
+
+def models_to_pandas_dataframe(profile):
+    """Converts the models of profile (w.r.t :ref:`profile-spec`) to format
+    supported by `pandas`_ library.
+
+    Queries through all of the models in the `profile`, and flattens each
+    key and value to the tabular representation. Refer to `pandas`_ library for
+    more possibilities how to work with the tabular representation of models.
+
+    :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
+    :returns: converted models of profile to ``pandas.DataFramelist``
+    """
+    # Note that we need to to this inefficiently, because some keys can be missing in resources
+    model_keys = list(query.all_model_fields_of(profile))
+    values = {key: [] for key in model_keys}
+
+    for _, model in profile.all_models():
+        flattened_resources = dict(list(query.all_items_of(model)))
+        for model_key in model_keys:
+            values[model_key].append(flattened_resources.get(model_key, numpy.nan))
 
     return pandas.DataFrame(values)
 

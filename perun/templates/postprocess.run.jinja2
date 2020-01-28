@@ -6,7 +6,8 @@ TODO: Write long docstring of the new postprocessor
 import click
 
 import perun.logic.runner as runner
-from perun.utils.helpers import PostprocessStatus, pass_profile
+from perun.profile.factory import pass_profile
+from perun.utils.structs import PostprocessStatus
 
 {% if not no_before_phase %}
 def before(**kwargs):

@@ -1,0 +1,10 @@
+uid:function          class
+--------------------  -------
+dwtint_decode_strip   O(n^2)
+dwtint_decode_band    O(n^2)
+dwtint_decode_block   O(n^2)
+dwtint_encode_band    O(n^2)
+dwtint_encode_block   O(n^2)
+dwtint_weight_band    O(n^2)
+dwtint_encode_strip   O(n^2)
+dwtint_unweight_band  O(n^2)
