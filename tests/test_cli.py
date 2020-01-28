@@ -1348,6 +1348,7 @@ def test_remove_pending(helpers, pcs_full, stored_profile_pool):
     assert result.exit_code == 0
     assert len(os.listdir(jobs_dir)) == 1
 
+
 def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     """Test running postprocessby with various valid and invalid tags
 

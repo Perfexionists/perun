@@ -17,6 +17,7 @@ from perun.utils.exceptions import ExternalEditorErrorException
 __author__ = 'Tomas Fiedor'
 __coauthor__ = 'Jiri Pavela'
 
+
 @click.group('utils')
 def utils_group():
     """Contains set of developer commands, wrappers over helper scripts and other functions that are
