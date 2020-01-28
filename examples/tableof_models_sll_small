@@ -1,0 +1,14 @@
+uid                          model           r_square
+---------------------------  -----------  -----------
+SLList_insert(SLList*, int)  logarithmic  0.000870412
+SLList_insert(SLList*, int)  linear       0.001756
+SLList_insert(SLList*, int)  quadratic    0.00199925
+SLList_insert(SLList*, int)  power        0.00348063
+SLList_insert(SLList*, int)  exponential  0.00707644
+SLList_search(SLList*, int)  constant     0.0114714
+SLList_search(SLList*, int)  logarithmic  0.728343
+SLList_search(SLList*, int)  exponential  0.839136
+SLList_search(SLList*, int)  power        0.970912
+SLList_search(SLList*, int)  linear       0.98401
+SLList_search(SLList*, int)  quadratic    0.984263
+SLList_insert(SLList*, int)  constant     1

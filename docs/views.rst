@@ -10,6 +10,7 @@ Visualizations Overview
 Supported Visualizations
 ------------------------
 
+.. _tabulate: https://pypi.org/project/tabulate/
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
 .. _ncurses: https://www.gnu.org/software/ncurses/ncurses.html
 
@@ -36,6 +37,11 @@ Perun's tool suite currently contains the following visualizations:
     5. :ref:`views-heapmap` visualizes the `memory` consumption as a heap map of allocation
        resources to target memory addresses. Note that the output is dependent on ncurses_ library and hence
        can currently be used only from UNIX terminals.
+
+    5. :ref:`views-tableof` transforms either the resources or models of the profile into a tabular
+       representation. The table can be further modified by (1) changing the format (see tabulate_
+       for table formats), (2) limiting rows or columns displayed, or (3) sorting w.r.t specified
+       keys.
 
 All of the listed visualizations can be run from command line. For more information about command
 line interface for individual visualization either refer to :ref:`cli-collect-units-ref` or to
@@ -196,10 +202,62 @@ running time based on the structural size is best fitted by `linear` models.
 The next `scatter plot` displays the same data as previous, but regressed using the `initial guess`
 strategy. This strategy first does a computation of all models on small sample of data points. Such
 computation yields initial estimate of fitness of models (the initial sample is selected by
-random). The best fitted model is then chosen and fully computed on the rest of the data points. 
+random). The best fitted model is then chosen and fully computed on the rest of the data points.
 
 The picture shows only one model, namely `linear` which was fully computed to best fit the given
 data points. The rest of the models had worse estimation and hence was not computed at all.
+
+.. _views-tableof:
+
+Table Of
+~~~~~~~~
+
+.. automodule:: perun.view.tableof
+
+Overview and Command Line Interface
+"""""""""""""""""""""""""""""""""""
+.. click:: perun.view.tableof.run:tableof
+   :prog: perun show tableof
+
+.. click:: perun.view.tableof.run:resources
+   :prog: perun show tableof resources
+
+.. click:: perun.view.tableof.run:models
+   :prog: perun show tableof models
+
+.. _views-tableof-examples:
+
+Examples of Output
+""""""""""""""""""
+
+In the following, we show several outputs of the :ref:`views-tableof`.
+
+.. literalinclude:: /../examples/tableof_models_sll
+    :linenos:
+
+The table above shows list of models for `SLList_insert` and `SLList_search` functions for
+Singly-linked List implementation of test complexity repository sorted by the value of coefficient
+of determination `r_square` (see :ref:`postprocessors-regression-analysis` for more details about
+models and coefficient of determination). For each type of model (e.g. linear) we list the value of
+its coefficients (e.g. for linear function `b1` corresponds to the slope of the function
+and `b0` to interception of the function).
+
+From the measured data the insert is estimated to be constant and search to be linear.
+
+.. literalinclude:: /../examples/tableof_resources_ccsds
+    :linenos:
+
+The second table shows list of function with quadratic complexities inferred by
+:ref:`collector-bounds` for `dwtint.c` module of the CCSDS codec (will be publically available in
+near future). The rest of the function either could not be inferred (e.g. due to unsupported
+construction, or requiring more elaborate static resource bounds analysis---e.g. due to the missing
+heap analysis) or were linear or constant.
+
+.. literalinclude:: /../examples/tableof_models_fancy_vim
+    :linenos:
+
+The last example, shows list of estimated linear functions for `vim` *v7.4.2293* sorted by
+coefficient of determination `r_square`. The output uses different format (`fancy_grid`).
 
 .. _views-custom:
 
