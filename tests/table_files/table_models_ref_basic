@@ -1,0 +1,14 @@
+coeffs                                                          coeffs:b0    coeffs:b1    coeffs:b2  method    model          r_square  uid                            x_end    x_start
+------------------------------------------------------------  -----------  -----------  -----------  --------  -----------  ----------  ---------------------------  -------  ---------
+1.5:0.0                                                           1.5       0           nan          full      constant     0           SLList_insert(SLList*, int)        9          0
+1.7657239018047561:0.9458006943320207                             1.76572   0.945801    nan          full      exponential  0.156363    SLList_insert(SLList*, int)        9          0
+1.9636363636363634:-0.10303030303030296                           1.96364  -0.10303     nan          full      linear       0.194613    SLList_insert(SLList*, int)        9          0
+1.5321216194684828:-0.13975306088134845                           1.53212  -0.139753    nan          full      logarithmic  0.0404163   SLList_insert(SLList*, int)        9          0
+1.446054192053253:-0.09686944012452892                            1.44605  -0.0968694   nan          full      power        0.0404163   SLList_insert(SLList*, int)        9          0
+2.5090909090909093:-0.5121212121212121:0.045454545454545456       2.50909  -0.512121      0.0454545  full      quadratic    0.437037    SLList_insert(SLList*, int)        9          0
+1.9:0.0                                                           1.9       0           nan          full      constant     0           SLListcls::Insert(int)             9          0
+1.901677661894164:0.9958079194005149                              1.90168   0.995808    nan          full      exponential  0.003367    SLListcls::Insert(int)             9          0
+1.9272727272727266:-0.0060606060606058845                         1.92727  -0.00606061  nan          full      linear       0.003367    SLListcls::Insert(int)             9          0
+1.9531630153034125:-0.04518629380303375                           1.95316  -0.0451863   nan          full      logarithmic  0.00950671  SLListcls::Insert(int)             9          0
+1.9361128097806388:-0.03132075214952577                           1.93611  -0.0313208   nan          full      power        0.00950671  SLListcls::Insert(int)             9          0
+2.1090909090909093:-0.14242424242424243:0.015151515151515152      2.10909  -0.142424      0.0151515  full      quadratic    0.138047    SLListcls::Insert(int)             9          0

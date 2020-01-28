@@ -1,0 +1,12 @@
+uid            model           coeffs:b1    coeffs:b0     r_square
+-------------  -----------  ------------  -----------  -----------
+SLList_insert  logarithmic   0.0240681      0.362624   0.000870412
+SLList_insert  linear        9.93516e-06    0.505375   0.001756
+SLList_insert  power         0.00978141     0.93533    0.00348063
+SLList_insert  exponential   1              0.990979   0.00707644
+SLList_search  constant      0             23.7107     0.0114714
+SLList_search  logarithmic  11.6352       -73.8534     0.728343
+SLList_search  exponential   1.00023        4.6684     0.839136
+SLList_search  power         0.882763       0.0110015  0.970912
+SLList_search  linear        0.00393897     0.262121   0.98401
+SLList_insert  constant      0              0.56445    1
