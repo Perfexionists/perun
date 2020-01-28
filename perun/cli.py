@@ -195,8 +195,7 @@ def init(dst, configure, config_template, **kwargs):
     except (UnsupportedModuleException, UnsupportedModuleFunctionException) as unsup_module_exp:
         perun_log.error("error while initializing perun: {}".format(str(unsup_module_exp)))
     except PermissionError:
-        perun_log.error(
-            "writing to shared config 'shared.yml' requires root permissions")
+        perun_log.error("writing to shared config 'shared.yml' requires root permissions")
     except (ExternalEditorErrorException, MissingConfigSectionException):
         err_msg = "cannot launch default editor for configuration.\n"
         err_msg += "Please set 'general.editor' key to a valid text editor (e.g. vim)."
@@ -538,7 +537,7 @@ def postprocessby(ctx, profile, **_):
     in index of commit preceeding the current head using interval regression
     analysis::
 
-        perun postprocessby -m HEAD~1 1@i regression_analysis --method=interval
+        perun postprocessby -m HEAD~1 1@i regression-analysis --method=interval
 
     For a thorough list and description of supported postprocessors refer to
     :ref:`postprocessors-list`. For a more subtle running of profiling jobs and
@@ -550,8 +549,7 @@ def postprocessby(ctx, profile, **_):
 
 @cli.group()
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
-              callback=cli_helpers.minor_version_list_callback, default=[
-                  'HEAD'],
+              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
 @click.option('--crawl-parents', '-cp', is_flag=True, default=False, is_eager=True,
               help='If set to true, then for each specified minor versions, profiles for parents'
@@ -616,8 +614,7 @@ def collect(ctx, **kwargs):
               help='Additional parameters for the <collector> read from the'
                    ' file in YAML format')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
-              type=click.Choice(
-                  utils.get_supported_module_names('postprocess')),
+              type=click.Choice(utils.get_supported_module_names('postprocess')),
               help='After each collection of data will run <postprocessor> to '
                    'postprocess the collected resources.')
 @click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
@@ -625,8 +622,7 @@ def collect(ctx, **kwargs):
               help='Additional parameters for the <postprocessor> read from the'
                    ' file in YAML format')
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1,
-              callback=cli_helpers.minor_version_list_callback, default=[
-                  'HEAD'],
+              callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the fuzzing will be performed.')
 @click.option('--workloads-filter', '-wf', nargs=1, required=False,
               type=str, metavar='<regexp>', default="",
@@ -694,8 +690,7 @@ def init_unit_commands(lazy_init=True):
     like e.g. show has different forms (raw, graphs, etc.).
     """
     for (unit, cli_cmd, cli_arg) in [(perun.view, show, 'show'),
-                                     (perun.postprocess,
-                                      postprocessby, 'postprocessby'),
+                                     (perun.postprocess, postprocessby, 'postprocessby'),
                                      (perun.collect, collect, 'collect')]:
         if lazy_init and cli_arg not in sys.argv:
             continue
