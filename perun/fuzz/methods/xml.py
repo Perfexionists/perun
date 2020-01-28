@@ -20,6 +20,7 @@ def random_regex_replace(lines, pattern, repl):
             pattern.sub(repl, lines[rand][picked_match.start():], 1)
 
 
+@randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute_value(lines):
     """ Selects random line and removes random attribute value.
 
@@ -28,10 +29,10 @@ def remove_attribute_value(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
-        random_regex_replace(lines, r"\"\s*\S+\s*\"", "\"\"")
+    random_regex_replace(lines, r"\"\s*\S+\s*\"", "\"\"")
 
 
+@randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute_name(lines):
     """ Selects random line and removes random attribute name.
 
@@ -40,11 +41,10 @@ def remove_attribute_name(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
-        random_regex_replace(
-            lines, r"\S*\s*=\s*(?P<quote>[\"|\'])", r"\g<quote>")
+    random_regex_replace(lines, r"\S*\s*=\s*(?P<quote>[\"|\'])", r"\g<quote>")
 
 
+@randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute(lines):
     """ Selects random line and removes random attribute(name and value).
 
@@ -53,10 +53,10 @@ def remove_attribute(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
-        random_regex_replace(lines, r"\S*\s*=\s*\"\s*\S*\s*\"", "")
+    random_regex_replace(lines, r"\S*\s*=\s*\"\s*\S*\s*\"", "")
 
 
+@randomizer.random_repeats(RULE_ITERATIONS)
 def remove_tag(lines):
     """ Selects random line and removes random tag.
 
@@ -65,11 +65,12 @@ def remove_tag(lines):
 
     :param list lines: lines of the file in list
     """
-    for _ in range(randomizer.rand_from_range(1, RULE_ITERATIONS)):
-        random_regex_replace(lines, r"<[^>]*>", "")
+    random_regex_replace(lines, r"<[^>]*>", "")
 
 
-fuzzing_methods = [(remove_attribute_value, "Remove random attribute value"),
-                   (remove_attribute_name, "Remove random attribute name"),
-                   (remove_attribute, "Remove random attribute"),
-                   (remove_tag, "Remove random tag")]
+fuzzing_methods = [
+    (remove_attribute_value, "Remove random attribute value"),
+    (remove_attribute_name, "Remove random attribute name"),
+    (remove_attribute, "Remove random attribute"),
+    (remove_tag, "Remove random tag")
+]

@@ -6,12 +6,38 @@ __author__ = 'Matus Liscinsky'
 import random
 
 
+def random_repeats(repeats):
+    """Decorator for random number of repeats of inner function
+
+    Note that the return value of the wrapped function is NOT checked or passed anywhere
+
+    :param int repeats: the upper bound of number of repeats
+    :return: decorator that takes function and repeats its call up to @p repeats times
+    """
+    def inner_wrapper(func):
+        """Inner wrapper
+
+        :param function func: wrapped function
+        :return: innermost wrapper
+        """
+        def innermost_wrapper(*args, **kwargs):
+            """Innermost wrapper
+
+            :param list args: list of arguments
+            :param dict kwargs: list of keyword arguments
+            """
+            for _ in range(rand_from_range(1, repeats)):
+                func(*args, **kwargs)
+        return innermost_wrapper
+    return inner_wrapper
+
+
 def rand_from_range(start, stop):
     """Basic function that randomly choose an integer from range bounded by `start` and `stop`
     parameters. Matematically expressed as `start` <= random_number <= `stop`.
 
     :param int start: lower bound of the interval
-    :param str pattern: upper limit of the interval
+    :param int stop: upper limit of the interval
     :return int: random integer from given range
     """
     return random.randint(start, stop)
