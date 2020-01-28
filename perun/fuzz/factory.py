@@ -15,7 +15,6 @@ import threading
 from subprocess import CalledProcessError, TimeoutExpired
 from uuid import uuid4
 
-import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.fuzz.interpret as interpret
 import perun.fuzz.filesystem as filesystem
@@ -53,8 +52,8 @@ def get_max_size(seeds, max_size, max_percentual, max_adjunct):
             seed_max = file_size
 
     # --max option was not specified
-    if max_size == None:
-        if max_percentual != None:
+    if max_size is None:
+        if max_percentual is not None:
             return int(seed_max * max_percentual)  # percentual adjusting
         else:
             return seed_max + max_adjunct  # adjusting by size(B)
@@ -418,7 +417,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
         output_dir, ["hangs", "faults", "diffs", "logs", "graphs"])
 
     general_fuzz_information["coverage_testing"] = (kwargs.get("source_path")
-                                                    and kwargs.get("gcno_path")) != None
+                                                    and kwargs.get("gcno_path")) is not None
 
     # getting wokload corpus
     parents = filesystem.get_corpus(

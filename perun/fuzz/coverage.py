@@ -208,7 +208,7 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     execute_bin(command)
 
     # searching for gcov files, if they are not already known
-    if gcov_files == None:
+    if gcov_files is None:
         gcov_files = get_gcov_files(".")
 
     execs = 0
