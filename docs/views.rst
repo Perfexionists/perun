@@ -253,11 +253,11 @@ near future). The rest of the function either could not be inferred (e.g. due to
 construction, or requiring more elaborate static resource bounds analysis---e.g. due to the missing
 heap analysis) or were linear or constant.
 
-.. literalinclude:: /../examples/tableof_models_fancy_vim
+.. literalinclude:: /../examples/tableof_models_latex_vim
     :linenos:
 
 The last example, shows list of estimated linear functions for `vim` *v7.4.2293* sorted by
-coefficient of determination `r_square`. The output uses different format (`fancy_grid`).
+coefficient of determination `r_square`. The output uses different format (`latex`).
 
 .. _views-custom:
 

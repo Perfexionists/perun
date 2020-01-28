@@ -1,0 +1,25 @@
+\begin{tabular}{llrr}
+\hline
+ uid              & model   &    coeffs:b1 &    r\_square \\
+\hline
+ test\_for\_static  & linear  &  3.36163e-08 & 4.46927e-07 \\
+ expand\_tag\_fname & linear  &  7.3574e-08  & 2.32882e-06 \\
+ vim\_strncpy      & linear  & -1.23499e-08 & 9.71476e-06 \\
+ vim\_strsave      & linear  &  2.10692e-08 & 1.10401e-05 \\
+ vim\_free         & linear  & -1.15839e-08 & 0.000216828 \\
+ parse\_tag\_line   & linear  &  1.04969e-06 & 0.004604    \\
+ vim\_strchr       & linear  & -8.84782e-08 & 0.00629398  \\
+ skiptowhite      & linear  & -0.00058116  & 0.00714483  \\
+ lalloc           & linear  & -1.19402e-07 & 0.0101609   \\
+ alloc            & linear  & -1.83755e-07 & 0.0136817   \\
+ ga\_grow          & linear  &  3.86559e-06 & 0.0160297   \\
+ vim\_regexec      & linear  &  2.398e-06   & 0.0161956   \\
+ ga\_clear         & linear  &  0.535088    & 0.0187932   \\
+ vim\_strnsave     & linear  & -0.000529842 & 0.0210357   \\
+ ga\_init2         & linear  &  0.00913043  & 0.0365217   \\
+ test\_for\_current & linear  &  1.00515e-05 & 0.126627    \\
+ skipwhite        & linear  &  4.98823e-06 & 0.192099    \\
+ vim\_isblankline  & linear  &  8.68793e-06 & 0.195017    \\
+ vim\_regfree      & linear  &  5           & 0.75        \\
+\hline
+\end{tabular}

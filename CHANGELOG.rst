@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+1.17.4 (2020-01-28)
+-------------------
+
+`commit: cfb264ed53155a4aabf3874729c2c573533b0d1d`
+
+**Add tabular view**
+
   - add tableof view module
   - add conversion functions of models to dataframe
   - add headers to tableof view
