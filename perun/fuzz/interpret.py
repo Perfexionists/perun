@@ -5,6 +5,7 @@ import difflib
 import scipy.stats.mstats as stats
 import matplotlib.pyplot as plt
 
+import perun.utils.log as log
 import perun.fuzz.filesystem as filesystem
 
 __author__ = 'Matus Liscinsky'
@@ -25,6 +26,23 @@ QUARTILE_ALPHA = 0.4
 QUARTILE_LINE_WIDTH = 2
 
 
+def save_anomalies(anomalies, anomaly_type, file_handle):
+    """Saves anomalies (faults and hangs) into the file
+
+    :param list anomalies: list of
+    :param str anomaly_type: type of the anomalies (e.g. Faults, Hangs)
+    :param File file_handle: file, where the anomalies are written
+    :return:
+    """
+    if anomalies:
+        file_handle.write("{}s:\n".format(anomaly_type.capitalize()))
+        for anomaly in anomalies:
+            file_handle.write(
+                anomaly["path"] + " " + str(anomaly["history"]) + "\n"
+            )
+            log.info('.')
+
+
 def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, parents_fitness_values,
                    base_cov, hangs, faults):
     """ Saves information about fuzzing in log file. Note: refactor
@@ -39,34 +57,36 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, par
     :param list hangs: mutations that caused hang
     :param list faults: mutations that caused error
     """
-    print("Saving log files ...")
+    log.info("Saving log files")
     deg_data_file = open(log_dir + "/degradation_plot_data.txt", "w")
     cov_data_file = open(log_dir + "/coverage_plot_data.txt", "w")
     results_data_file = open(log_dir + "/results_data.txt", "w")
 
     for index, degs in enumerate(degradations):
         deg_data_file.write(
-            str(time_data[index]) + " " + str(degs) + "\n")
+            str(time_data[index]) + " " + str(degs) + "\n"
+        )
+        log.info('.')
 
     for index, cov in enumerate(max_covs):
         cov_data_file.write(
-            str(time_for_cov[index]) + " " + str(cov) + "\n")
+            str(time_for_cov[index]) + " " + str(cov) + "\n"
+        )
+        log.info('.')
 
     for mut in parents_fitness_values:
-        results_data_file.write(str(mut["value"]) + " " + str(mut["mut"]["cov"]/base_cov) + " " +
-                                str(mut["mut"]["deg_ratio"]) + " " + mut["mut"]["path"] + " " +
-                                str(mut["mut"]["history"]) + "\n")
+        results_data_file.write(
+            str(mut["value"]) + " " + str(mut["mut"]["cov"]/base_cov) + " " +
+            str(mut["mut"]["deg_ratio"]) + " " + mut["mut"]["path"] + " " +
+            str(mut["mut"]["history"]) + "\n"
+        )
+        log.info('.')
+    log.done()
 
-    if hangs:
-        results_data_file.write("Hangs:\n")
-        for hang in hangs:
-            results_data_file.write(
-                hang["path"] + " " + str(hang["history"]) + "\n")
-    if faults:
-        results_data_file.write("Faults:\n")
-        for fault in faults:
-            results_data_file.write(
-                fault["path"] + " " + str(fault["history"]) + "\n")
+    save_anomalies(hangs, 'hang', results_data_file)
+    log.done()
+    save_anomalies(faults, 'fault', results_data_file)
+    log.done()
 
     deg_data_file.close()
     cov_data_file.close()
@@ -152,7 +172,7 @@ def files_diff(final_results, faults, hangs, diffs_dir):
     :param list faults: mutations that caused error
     :param str diffs_dir: path to the directory where diffs will be stored
     """
-    print("Computing deltas ...")
+    log.info("Computing deltas")
     for mutations in [final_results, faults, hangs]:
         for res in mutations:
             pred = open(res["predecessor"]["path"], "r").readlines()
@@ -180,3 +200,5 @@ def files_diff(final_results, faults, hangs, diffs_dir):
 
             open(diff_file_name, "w").writelines(diff)
             filesystem.move_file_to(diff_file_name, diffs_dir)
+            log.info('.')
+    log.done()

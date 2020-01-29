@@ -33,6 +33,23 @@ MAX_FILES_PER_RULE = 100
 SAMPLING = 1.0
 
 
+def compute_safe_ratio(lhs, rhs):
+    """Computes safely the ratio between lhs and rhs
+
+    In case the @p rhs is equal to zero, then the ratio is approximated
+
+    :param int lhs: statistic of method
+    :param int rhs: overall statistic
+    :return: probability for applying
+    """
+    try:
+        ratio = lhs / rhs
+        ratio = 0.1 if (ratio < 0.1) else ratio
+    except ZeroDivisionError:
+        ratio = 1
+    return ratio
+
+
 def get_max_size(seeds, max_size, max_percentual, max_adjunct):
     """ Finds out max size among the sample files and compare it to specified
     max size of mutated file.
@@ -59,7 +76,7 @@ def get_max_size(seeds, max_size, max_percentual, max_adjunct):
             return seed_max + max_adjunct  # adjusting by size(B)
     else:
         if seed_max >= max_size:
-            print("Warning: Specified max size is smaller than the largest workload.")
+            log.warn("Warning: Specified max size is smaller than the largest workload.")
         return max_size
 
 
@@ -83,21 +100,13 @@ def fuzz_question(strategy, fuzz_stats, index):
     elif strategy == "proportional":
         return min(int(fuzz_stats[index])+1, MAX_FILES_PER_RULE)
     elif strategy == "probabilistic":
-        try:
-            probability = fuzz_stats[index] / fuzz_stats[-1]
-            probability = 0.1 if (probability < 0.1) else probability
-        except ZeroDivisionError:
-            probability = 1
-        rand = randomizer.rand_from_range(0, 10)/10
-        return 1 if rand <= probability else 0
+        ratio = compute_safe_ratio(fuzz_stats[index], fuzz_stats[-1])
+        rand = randomizer.rand_from_range(0, 10) / 10
+        return 1 if rand <= ratio else 0
     elif strategy == "mixed":
-        try:
-            probability = fuzz_stats[index] / fuzz_stats[-1]
-            probability = 0.1 if (probability < 0.1) else probability
-        except ZeroDivisionError:
-            probability = 1
-        rand = randomizer.rand_from_range(0, 10)/10
-        return min(int(fuzz_stats[index])+1, MAX_FILES_PER_RULE) if rand <= probability else 0
+        ratio = compute_safe_ratio(fuzz_stats[index], fuzz_stats[-1])
+        rand = randomizer.rand_from_range(0, 10) / 10
+        return min(int(fuzz_stats[index])+1, MAX_FILES_PER_RULE) if rand <= ratio else 0
 
 
 def same_lines(lines, fuzzed_lines, is_binary):
@@ -105,7 +114,7 @@ def same_lines(lines, fuzzed_lines, is_binary):
 
     :param list lines: lines of original file
     :param list fuzzed_lines: lines fo fuzzed file
-    :param is_binary bool: determines whether a files are binaries or not
+    :param bool is_binary: determines whether a files are binaries or not
     :return bool: True if lines are the same, False otherwise
     """
     if is_binary:
@@ -128,7 +137,6 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
     would be bigger than specified limit (`max_bytes`), the remainder is cut off.
 
     :param str parent: path of parent workload file, which will be fuzzed
-    :param list fuzz_history: history of used fuzz methods on parent file
     :param list fuzz_stats: stats of fuzzing (mutation) strategies
     :param str output_dir: path to the output directory
     :param list fuzzing_methods: selected fuzzing (mutation) strategies
@@ -137,7 +145,6 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
     :return list: list of touples(new_file, its_fuzzing_history)
     """
 
-    lines = []
     mutations = []
 
     is_binary, _ = filetype.get_filetype(parent["path"])

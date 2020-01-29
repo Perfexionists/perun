@@ -58,7 +58,8 @@ def execute_bin(command, timeout=None, stdin=None):
     command = list(filter(None, command))
     try:
         process = subprocess.Popen(
-            command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
 
         output, _ = process.communicate(timeout=timeout)
         exit_code = process.wait()
@@ -85,23 +86,27 @@ def get_src_files(source_path):
 
     for root, _, files in os.walk(source_path):
         if files:
-            sources.extend(
-                [path.abspath(root) + "/" + filename for filename in files
-                 if path.splitext(filename)[-1] in [".c", ".cpp", ".cc", ".h"]])
+            sources.extend([
+                path.join(path.abspath(root), filename) for filename in files
+                if path.splitext(filename)[-1] in [".c", ".cpp", ".cc", ".h"]
+            ])
 
     return sources
 
 
-def init(*args, **kwargs):
+def init(cmd, args, workloads, *_, **kwargs):
     """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
-    :param list args: list of arguments for initial testing [cmd, args, workloads]
+    :param str cmd: called command
+    :param str args: arguments for initial testing
+    :param list workloads: workloads for initial testing
+    :param list _: rest of the arguments
     :param kwargs: additional information about paths to .gcno files and source files
     :return tuple: median of measured coverages, paths to .gcov files, paths to source_files
     """
-    return get_initial_coverage(kwargs["gcno_path"],
-                                kwargs["source_path"], kwargs["hang_timeout"],
-                                args[0], args[1], args[2])
+    return get_initial_coverage(
+        kwargs["gcno_path"], kwargs["source_path"], kwargs["hang_timeout"], cmd, args, workloads
+    )
 
 
 def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):

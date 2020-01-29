@@ -128,11 +128,12 @@ def msg_to_file(msg, msg_verbosity, log_level=logging.INFO):
     _log_msg(logging.log, msg, msg_verbosity, log_level)
 
 
-def info(msg):
+def info(msg, end='\n'):
     """
     :param str msg: info message that will be printed only when there is at least lvl1 verbosity
+    :param str end:
     """
-    print("{}".format(msg))
+    print("{}".format(msg), end=end)
 
 
 def quiet_info(msg):
@@ -567,6 +568,7 @@ def aggregate_intervals(intervals):
         ))
 
     return agg_intervals
+
 
 def print_elapsed_time(func):
     """Prints elapsed time after the execution of the wrapped function
