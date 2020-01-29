@@ -5,7 +5,6 @@ __author__ = 'Tomas Fiedor, Matus Liscinsky'
 import copy
 import difflib
 import itertools
-import numpy as np
 import os
 import os.path as path
 import signal
@@ -14,6 +13,7 @@ import time
 import threading
 from subprocess import CalledProcessError, TimeoutExpired
 from uuid import uuid4
+import numpy as np
 
 import perun.utils.decorators as decorators
 import perun.fuzz.interpret as interpret
@@ -109,8 +109,10 @@ def same_lines(lines, fuzzed_lines, is_binary):
     :return bool: True if lines are the same, False otherwise
     """
     if is_binary:
-        delta = difflib.unified_diff([line.decode('utf-8', errors='ignore') for line in lines],
-                                     [f_line.decode('utf-8', errors='ignore') for f_line in fuzzed_lines])
+        delta = difflib.unified_diff(
+            [line.decode('utf-8', errors='ignore') for line in lines],
+            [f_line.decode('utf-8', errors='ignore') for f_line in fuzzed_lines]
+        )
     else:
         delta = difflib.unified_diff(lines, fuzzed_lines)
     return len(list(delta)) == 0
@@ -357,8 +359,9 @@ def choose_parent(parents_fitness_values, num_intervals=5):
     interval_idx = np.random.choice(
         range(num_intervals), replace=False, p=weights)
     # choose a parent from the interval
-    return (randomizer.rand_choice(parents_fitness_values[intervals[interval_idx][0]:
-                                                 intervals[interval_idx][1]]))["mut"]
+    return (randomizer.rand_choice(
+        parents_fitness_values[intervals[interval_idx][0]:intervals[interval_idx][1]]
+    ))["mut"]
 
 
 def print_msg(msg):
@@ -407,9 +410,11 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     parents_fitness_values = []
     final_results = []
     timeout = kwargs["timeout"]
-    general_fuzz_information = {"start_time": 0.0, "end_time": 0.0, "cov_execs": 0, "perun_execs": 0,
-                                "degradations": 0, "max_cov": 1.0, "coverage_testing": False,
-                                "worst-case": None, "hangs": 0, "faults": 0}
+    general_fuzz_information = {
+        "start_time": 0.0, "end_time": 0.0, "cov_execs": 0, "perun_execs": 0,
+        "degradations": 0, "max_cov": 1.0, "coverage_testing": False,
+        "worst-case": None, "hangs": 0, "faults": 0
+    }
     base_cov = 1
 
     output_dir = path.abspath(kwargs["output_dir"])
@@ -459,8 +464,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
         print_msg("No .gcno files were found.")
 
     # Rate seeds
-    for s in parents:
-        rate_parent(parents_fitness_values, s, base_cov)
+    for parent_seed in parents:
+        rate_parent(parents_fitness_values, parent_seed, base_cov)
 
     print_msg("INITIAL TESTING COMPLETED")
     execs = 0
@@ -478,16 +483,16 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
         save_fuzz_state(time_for_cov, max_covs,
                         general_fuzz_information["max_cov"])
 
-        t = threading.Timer(SAMPLING, save_state,)
-        t.daemon = True
-        t.start()
+        timer = threading.Timer(SAMPLING, save_state,)
+        timer.daemon = True
+        timer.start()
 
     save_state()
     general_fuzz_information["start_time"] = time.time()
 
     # SIGINT (CTRL-C) signal handler
-    def signal_handler(sig, frame):
-        print("Fuzzing process interrupted ...")
+    def signal_handler(sig, _):
+        print("Fuzzing process interrupted by signal {}...".format(sig))
         finish_fuzzing()
 
     def finish_fuzzing():
@@ -568,7 +573,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                             # the same file as previously generated
                             os.remove(mutations[i]["path"])
                         else:
-                            general_fuzz_information["max_cov"] = parents_fitness_values[-1]["mut"]["cov"] / base_cov
+                            general_fuzz_information["max_cov"] = \
+                                parents_fitness_values[-1]["mut"]["cov"] / base_cov
                             parents.append(mutations[i])
                             interesting_workloads.append(mutations[i])
                             fuzz_stats[(mutations[i]["history"])[-1]] += 1
@@ -604,8 +610,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                                  postprocessor, minor_version_list, base_result=base_copy,
                                  **kwargs)
             # temporarily we ignore error within individual perf testing without previous cov test
-            except Exception as e:
-                print("Executing binary raised an exception: ", e)
+            except Exception as exc:
+                print("Executing binary raised an exception: ", exc)
                 result = False
 
             if result:

@@ -21,7 +21,7 @@ def init(cmd, args, seeds, collector, postprocessor,
 
     :param list cmd: list of commands that will be run
     :param list args: lists of additional arguments to the job
-    :param list workload: list of workloads
+    :param list seeds: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
     :param list minor_version_list: list of MinorVersion info
@@ -47,7 +47,7 @@ def init(cmd, args, seeds, collector, postprocessor,
         try:
             # check
             file["deg_ratio"] = check_for_change(base_pg_copy, target_pg_copy)
-            if (file["deg_ratio"] > DEGRADATION_RATIO_TRESHOLD):
+            if file["deg_ratio"] > DEGRADATION_RATIO_TRESHOLD:
                 base_pg = target_pg
         except ZeroDivisionError:
             pass
@@ -82,7 +82,7 @@ def test(cmd, args, workload, collector, postprocessor,
     try:
         # check
         workload["deg_ratio"] = check_for_change(base_result, target_pg_copy)
-        return (workload["deg_ratio"] > DEGRADATION_RATIO_TRESHOLD)
+        return workload["deg_ratio"] > DEGRADATION_RATIO_TRESHOLD
     except ZeroDivisionError:
         return False
 
@@ -103,7 +103,7 @@ def check_for_change(base_pg, target_pg, models_strategy='best-model'):
                                                               models_strategy):
             checks += 1
             print(perf_change.result)
-            if(perf_change.result == PerformanceChange.Degradation):
+            if perf_change.result == PerformanceChange.Degradation:
                 degs += 1
         return degs/checks
     return 0

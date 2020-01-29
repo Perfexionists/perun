@@ -1,10 +1,14 @@
 """Module for automatic recognizing file type and choosing appropriate fuzzing rules."""
 
-import binaryornot.check as binaryornot
 import mimetypes
 import re
+import binaryornot.check as binaryornot
 
 import perun.fuzz.randomizer as randomizer
+
+import perun.fuzz.methods.binary as binary
+import perun.fuzz.methods.xml as xml
+import perun.fuzz.methods.textfile as textfile
 
 __author__ = 'Matus Liscinsky'
 
@@ -25,8 +29,7 @@ def custom_rules(regex_rules, fuzzing_methods):
             index = randomizer.rand_index(len(lines))
             lines[index] = comp_regexp.sub(value, lines[index])
 
-        fuzzing_methods.append(
-            (custom_rule, "User rule: \"" + key + "\" -> \"" + value + "\""))
+        fuzzing_methods.append((custom_rule, "User rule: \"" + key + "\" -> \"" + value + "\""))
 
 
 def get_filetype(file):
@@ -53,14 +56,11 @@ def choose_methods(file, regex_rules=None):
     if regex_rules:
         custom_rules(regex_rules, fuzzing_methods)
 
-    binary, filetype = get_filetype(file)
-    if binary:
-        from perun.fuzz.methods.binary import fuzzing_methods as binary_fm
-        fuzzing_methods.extend(binary_fm)
+    is_binary, filetype = get_filetype(file)
+    if is_binary:
+        fuzzing_methods.extend(binary.fuzzing_methods)
     else:
         if filetype in ["xml", "html", "svg", "xhtml", "xul"]:
-            from perun.fuzz.methods.xml import fuzzing_methods as markup_fm
-            fuzzing_methods.extend(markup_fm)
-        from perun.fuzz.methods.textfile import fuzzing_methods as text_fm
-        fuzzing_methods.extend(text_fm)
+            fuzzing_methods.extend(xml.fuzzing_methods)
+        fuzzing_methods.extend(textfile.fuzzing_methods)
     return fuzzing_methods

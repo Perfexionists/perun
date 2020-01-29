@@ -7,22 +7,24 @@ executing gcov tool and parsing its output.
 
 import os
 import os.path as path
+import sys
 import subprocess
 import statistics
 
 __author__ = 'Matus Liscinsky'
 
 GCOV_VERSION_W_INTERMEDIATE_FORMAT = 4.9
-
-ProgramErrorSignals = {"8": "SIGFPE",
-                       "4": "SIGILL",
-                       "11": "SIGSEGV",
-                       "10": "SIGBUS",
-                       "7": "SIGBUS",
-                       "6": "SIGABRT",
-                       "12": "SIGSYS",
-                       "31": "SIGSYS",
-                       "5": "SIGTRAP"}
+PROGRAM_ERROR_SIGNALS = {
+    "8": "SIGFPE",
+    "4": "SIGILL",
+    "11": "SIGSEGV",
+    "10": "SIGBUS",
+    "7": "SIGBUS",
+    "6": "SIGABRT",
+    "12": "SIGSYS",
+    "31": "SIGSYS",
+    "5": "SIGTRAP"
+}
 
 
 def prepare_workspace(source_path):
@@ -39,9 +41,9 @@ def prepare_workspace(source_path):
 
     :param str source_path: path to dir with source files, where coverage info files are stored
     """
-    for f in os.listdir(source_path):
-        if f.endswith(".gcda") or f.endswith(".gcov"):
-            os.remove(path.join(source_path, f))
+    for file in os.listdir(source_path):
+        if file.endswith(".gcda") or file.endswith(".gcov"):
+            os.remove(path.join(source_path, file))
 
 
 def execute_bin(command, timeout=None, stdin=None):
@@ -65,8 +67,8 @@ def execute_bin(command, timeout=None, stdin=None):
         process.terminate()
         raise
 
-    if exit_code != 0 and str(-exit_code) in ProgramErrorSignals:
-        return {"exit_code": (-exit_code), "output": ProgramErrorSignals[str(-exit_code)]}
+    if exit_code != 0 and str(-exit_code) in PROGRAM_ERROR_SIGNALS:
+        return {"exit_code": (-exit_code), "output": PROGRAM_ERROR_SIGNALS[str(-exit_code)]}
     return {"exit_code": 0, "output": output.decode('utf-8')}
 
 
@@ -133,7 +135,7 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
         if exit_report["exit_code"] != 0:
             print("Initial testing with file " +
                   file["path"] + " causes " + exit_report["output"])
-            exit(1)
+            sys.exit(1)
         file["cov"], gcov_files = get_coverage_info(
             gcov_version, source_files, gcno_path, os.getcwd(), None)
 
@@ -166,7 +168,7 @@ def test(*args, **kwargs):
 
     workload["cov"], _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],
                                            gcno_path, os.getcwd(), kwargs["gcov_files"])
-    return set_cond(kwargs["base_cov"], workload["cov"], kwargs["parent"]["cov"],  kwargs["icovr"])
+    return set_cond(kwargs["base_cov"], workload["cov"], kwargs["parent"]["cov"], kwargs["icovr"])
 
 
 def get_gcov_files(directory):
@@ -175,9 +177,9 @@ def get_gcov_files(directory):
     :return list: absolute paths of found gcov files
     """
     gcov_files = []
-    for f in os.listdir("."):
-        if path.isfile(f) and f.endswith("gcov"):
-            gcov_file = path.abspath(path.join(".", f))
+    for file in os.listdir(directory):
+        if path.isfile(file) and file.endswith("gcov"):
+            gcov_file = path.abspath(path.join(".", file))
             gcov_files.append(gcov_file)
     return gcov_files
 
@@ -232,7 +234,7 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     return execs, gcov_files
 
 
-def set_cond(base_cov, cov, parent_cov,  increase_ratio=1.5):
+def set_cond(base_cov, cov, parent_cov, increase_ratio=1.5):
     """ Condition for adding mutated input to set of canditates(parents).
 
     :param int base_cov: base coverage
@@ -242,4 +244,4 @@ def set_cond(base_cov, cov, parent_cov,  increase_ratio=1.5):
     :return bool: True if `cov` is greater than `base_cov` * `deg_ratio`, False otherwise
     """
     tresh_cov = int(base_cov * increase_ratio)
-    return True if cov > tresh_cov and cov > parent_cov else False
+    return cov > tresh_cov and cov > parent_cov

@@ -22,15 +22,16 @@ def get_corpus(workloads, pattern):
     except re.error:
         filter_regexp = re.compile("")
 
-    for w in workloads:
-        if path.isdir(w) and os.access(w, os.R_OK):
-            for root, _, files in os.walk(w):
+    for workload in workloads:
+        if path.isdir(workload) and os.access(workload, os.R_OK):
+            for root, _, files in os.walk(workload):
                 if files:
-                    init_seeds.extend(
-                        [{"path": path.abspath(root) + "/" + filename, "history": [], "cov": 0,
-                          "deg_ratio": 0, "predecessor": None} for filename in files if filter_regexp.match(filename)])
+                    init_seeds.extend([{
+                        "path": path.abspath(root) + "/" + filename, "history": [], "cov": 0,
+                        "deg_ratio": 0, "predecessor": None
+                    } for filename in files if filter_regexp.match(filename)])
         else:
-            init_seeds.append({"path": path.abspath(w), "history": [],
+            init_seeds.append({"path": path.abspath(workload), "history": [],
                                "cov": 0, "deg_ratio": 0, "predecessor": None})
     return init_seeds
 
