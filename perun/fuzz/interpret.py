@@ -79,12 +79,6 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, par
     save_time_series(deg_data_file, time_data, degradations)
     save_time_series(cov_data_file, time_for_cov, max_covs)
 
-    for index, cov in enumerate(max_covs):
-        cov_data_file.write(
-            str(time_for_cov[index]) + " " + str(cov) + "\n"
-        )
-        log.info('.')
-
     for mut in parents_fitness_values:
         results_data_file.write(
             str(mut["value"]) + " " + str(mut["mut"]["cov"]/base_cov) + " " +

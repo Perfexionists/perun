@@ -232,7 +232,7 @@ def del_char(lines):
     rand = randomizer.rand_index(len(lines))
     try:
         index = randomizer.rand_index(len(lines[rand]))
-        lines[rand] = lines[rand][:index] + lines[rand][index + 1:]
+        helpers.remove_at_split(lines, rand, index)
     except ValueError:
         pass
 
