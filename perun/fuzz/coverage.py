@@ -11,6 +11,8 @@ import sys
 import subprocess
 import statistics
 
+import perun.utils.log as log
+
 __author__ = 'Matus Liscinsky'
 
 GCOV_VERSION_W_INTERMEDIATE_FORMAT = 4.9
@@ -130,20 +132,19 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
     coverages = []
 
     # run program with each seed
-    for file in seeds:
+    for seed in seeds:
 
         prepare_workspace(gcno_path)
 
-        command = " ".join([path.abspath(cmd), args, file["path"]]).split(' ')
+        command = " ".join([path.abspath(cmd), args, seed.path]).split(' ')
 
         exit_report = execute_bin(command, timeout)
         if exit_report["exit_code"] != 0:
-            print("Initial testing with file " + file["path"] + " causes " + exit_report["output"])
-            sys.exit(1)
-        file["cov"], gcov_files = get_coverage_info(
+            log.error("Initial testing with file " + seed.path + " caused " + exit_report["output"])
+        seed.cov, gcov_files = get_coverage_info(
             gcov_version, source_files, gcno_path, os.getcwd(), None)
 
-        coverages.append(file["cov"])
+        coverages.append(seed.cov)
 
     return int(statistics.median(coverages)), gcov_version, gcov_files, source_files
 
@@ -162,16 +163,16 @@ def test(*args, **kwargs):
     prepare_workspace(gcno_path)
     workload = args[2]
 
-    command = " ".join([args[0], args[1], workload["path"]]).split(' ')
+    command = " ".join([args[0], args[1], workload.path]).split(' ')
 
     exit_report = execute_bin(command, kwargs["hang_timeout"])
     if exit_report["exit_code"] != 0:
-        print("Testing with file " + workload["path"] + " causes " + exit_report["output"])
+        print("Testing with file " + workload.path + " causes " + exit_report["output"])
         raise subprocess.CalledProcessError(exit_report, command)
 
-    workload["cov"], _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],
+    workload.cov, _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],
                                            gcno_path, os.getcwd(), kwargs["gcov_files"])
-    return set_cond(kwargs["base_cov"], workload["cov"], kwargs["parent"]["cov"], kwargs["icovr"])
+    return set_cond(kwargs["base_cov"], workload.cov, kwargs["parent"].cov, kwargs["icovr"])
 
 
 def get_gcov_files(directory):

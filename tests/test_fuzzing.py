@@ -40,6 +40,8 @@ def test_fuzzing_correct(pcs_full):
         '--max', '10',
         '--no-plotting',
     ])
+    import traceback
+    print(traceback.print_tb(result.exc_info[2]))
     assert result.exit_code == 0
 
     # 02. Testing tail on a directory of txt files with coverage

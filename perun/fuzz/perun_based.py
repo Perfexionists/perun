@@ -30,13 +30,13 @@ def init(cmd, args, seeds, collector, postprocessor, minor_version_list, **kwarg
 
     # create baseline profile
     base_pg = run.generate_profiles_for(
-        [cmd], [args], [seeds[0]["path"]], [collector], postprocessor, minor_version_list, **kwargs
+        [cmd], [args], [seeds[0].path], [collector], postprocessor, minor_version_list, **kwargs
     )
 
     for file in seeds[1:]:
         # target profile
         target_pg = run.generate_profiles_for(
-            [cmd], [args], [file["path"]], [collector], postprocessor, minor_version_list, **kwargs
+            [cmd], [args], [file.path], [collector], postprocessor, minor_version_list, **kwargs
         )
 
         # making copies of generators
@@ -45,8 +45,8 @@ def init(cmd, args, seeds, collector, postprocessor, minor_version_list, **kwarg
 
         try:
             # check
-            file["deg_ratio"] = check_for_change(base_pg_copy, target_pg_copy)
-            if file["deg_ratio"] > DEGRADATION_RATIO_TRESHOLD:
+            file.deg_ratio = check_for_change(base_pg_copy, target_pg_copy)
+            if file.deg_ratio > DEGRADATION_RATIO_TRESHOLD:
                 base_pg = target_pg
         except ZeroDivisionError:
             pass
@@ -72,7 +72,7 @@ def test(cmd, args, workload, collector, postprocessor,
 
     # target profile with a new workload
     target_pg = run.generate_profiles_for(
-        [cmd], [args], [workload["path"]], [collector], postprocessor, minor_version_list, **kwargs
+        [cmd], [args], [workload.path], [collector], postprocessor, minor_version_list, **kwargs
     )
 
     # copy of target profile generator
@@ -80,8 +80,8 @@ def test(cmd, args, workload, collector, postprocessor,
 
     try:
         # check
-        workload["deg_ratio"] = check_for_change(base_result, target_pg_copy)
-        return workload["deg_ratio"] > DEGRADATION_RATIO_TRESHOLD
+        workload.deg_ratio = check_for_change(base_result, target_pg_copy)
+        return workload.deg_ratio > DEGRADATION_RATIO_TRESHOLD
     except ZeroDivisionError:
         return False
 

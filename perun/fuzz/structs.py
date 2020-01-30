@@ -8,6 +8,32 @@ __author__ = 'Tomas Fiedor'
 TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
 
 
+class Mutation:
+    """
+    :ivar str path: path to the workload
+    :ivar list history: list of predecessors
+    :ivar Mutation predecessor: predecessor of the mutation (form which we mutated)
+    :ivar int cov: achieved coverage
+    :ivar int deg_ratio: achieved degradation ration
+    :ivar float fitness: fitness of the mutation
+    """
+    def __init__(self, path, history, predecessor, cov=0, deg_ratio=0, fitness=0):
+        """
+        :param str path: path to the workload
+        :param list history: list of predecessors
+        :param Mutation predecessor: predecessor of the mutation (form which we mutated)
+        :param int cov: achieved coverage
+        :param int deg_ratio: achieved degradation ration
+        :param float fitness: fitness of the mutation
+        """
+        self.path = path
+        self.history = history
+        self.predecessor = predecessor
+        self.cov = cov
+        self.deg_ratio = deg_ratio
+        self.fitness = fitness
+
+
 class FuzzingProgress:
     """Collection of statistics and states used during fuzzing
 

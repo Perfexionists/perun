@@ -38,7 +38,7 @@ def save_anomalies(anomalies, anomaly_type, file_handle):
         file_handle.write("{}s:\n".format(anomaly_type.capitalize()))
         for anomaly in anomalies:
             file_handle.write(
-                anomaly["path"] + " " + str(anomaly["history"]) + "\n"
+                anomaly.path + " " + str(anomaly.history) + "\n"
             )
             log.info('.')
 
@@ -49,7 +49,6 @@ def save_time_series(file_handle, time_series):
     :param File file_handle: opened file handle for writing
     :param TimeSeries time_series: list of times for values
     """
-    assert len(time_series.x_axis) == len(time_series.y_axis)
     for x_value, y_value in zip(time_series.x_axis, time_series.y_axis):
         file_handle.write(
             str(x_value) + " " + str(y_value) + "\n"
@@ -73,9 +72,8 @@ def save_log_files(log_dir, fuzz_progress):
 
     for mut in fuzz_progress.parents_fitness_values:
         results_data_file.write(
-            str(mut["value"]) + " " + str(mut["mut"]["cov"]/fuzz_progress.base_cov) + " " +
-            str(mut["mut"]["deg_ratio"]) + " " + mut["mut"]["path"] + " " +
-            str(mut["mut"]["history"]) + "\n"
+            str(mut.fitness) + " " + str(mut.cov/fuzz_progress.base_cov) + " " +
+            str(mut.deg_ratio) + " " + mut.path + " " + str(mut.history) + "\n"
         )
         log.info('.')
     log.done()
@@ -169,13 +167,13 @@ def files_diff(fuzz_progress, diffs_dir):
     log.info("Computing deltas")
     for mutations in [fuzz_progress.final_results, fuzz_progress.faults, fuzz_progress.hangs]:
         for res in mutations:
-            pred = open(res["predecessor"]["path"], "r").readlines()
-            result = open(res["path"], "r").readlines()
+            pred = open(res.predecessor.path, "r").readlines()
+            result = open(res.path, "r").readlines()
 
             delta = difflib.unified_diff(pred, result, lineterm='')
 
             # split the file to name and extension
-            _, file = path.split(res["path"])
+            _, file = path.split(res.path)
             file, _ = path.splitext(file)
 
             diff_file_name = file + "-diff.html"

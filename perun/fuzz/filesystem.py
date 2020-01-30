@@ -7,6 +7,8 @@ import os
 import os.path as path
 import re
 
+from perun.fuzz.structs import Mutation
+
 
 def get_corpus(workloads, pattern):
     """ Iteratively search for files to fill input corpus.
@@ -26,13 +28,15 @@ def get_corpus(workloads, pattern):
         if path.isdir(workload) and os.access(workload, os.R_OK):
             for root, _, files in os.walk(workload):
                 if files:
-                    init_seeds.extend([{
-                        "path": path.abspath(root) + "/" + filename, "history": [], "cov": 0,
-                        "deg_ratio": 0, "predecessor": None
-                    } for filename in files if filter_regexp.match(filename)])
+                    init_seeds.extend([
+                        Mutation(
+                            path.join(path.abspath(root), filename), [], None, 0, 0, 0
+                        ) for filename in files if filter_regexp.match(filename)
+                    ])
         else:
-            init_seeds.append({"path": path.abspath(workload), "history": [],
-                               "cov": 0, "deg_ratio": 0, "predecessor": None})
+            init_seeds.append(Mutation(
+                path.abspath(workload), [], None, 0, 0, 0
+            ))
     return init_seeds
 
 
@@ -71,11 +75,11 @@ def del_temp_files(parents, fuzz_progress, output_dir):
     """
 
     print("Removing remaining mutations ...")
-    for mut in parents:
-        if mut not in fuzz_progress.final_results and mut not in fuzz_progress.hangs \
-                and mut not in fuzz_progress.faults and \
-                mut["path"].startswith(output_dir) and path.isfile(mut["path"]):
+    for mutation in parents:
+        if mutation not in fuzz_progress.final_results and mutation not in fuzz_progress.hangs \
+                and mutation not in fuzz_progress.faults and \
+                mutation.path.startswith(output_dir) and path.isfile(mutation.path):
             try:
-                os.remove(mut["path"])
+                os.remove(mutation.path)
             except FileNotFoundError:
                 pass

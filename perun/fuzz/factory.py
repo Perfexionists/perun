@@ -22,7 +22,7 @@ import perun.fuzz.filetype as filetype
 import perun.utils.log as log
 import perun.fuzz.randomizer as randomizer
 import perun.utils as utils
-from perun.fuzz.structs import FuzzingProgress
+from perun.fuzz.structs import FuzzingProgress, Mutation
 
 # to ignore numpy division warnings
 np.seterr(divide='ignore', invalid='ignore')
@@ -64,8 +64,8 @@ def get_max_size(seeds, max_size, max_percentual, max_adjunct):
     """
     seed_max = 0
     # gets the largest seed's size
-    for file in seeds:
-        file_size = path.getsize(file["path"])
+    for seed in seeds:
+        file_size = path.getsize(seed.path)
         if file_size > seed_max:
             seed_max = file_size
 
@@ -137,7 +137,7 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
     `fuzz_history`, append the id of used fuzz method and assign it to the new file. If the new file
     would be bigger than specified limit (`max_bytes`), the remainder is cut off.
 
-    :param str parent: path of parent workload file, which will be fuzzed
+    :param Mutation parent: path of parent workload file, which will be fuzzed
     :param list fuzz_stats: stats of fuzzing (mutation) strategies
     :param str output_dir: path to the output directory
     :param list fuzzing_methods: selected fuzzing (mutation) strategies
@@ -148,11 +148,8 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
 
     mutations = []
 
-    is_binary, _ = filetype.get_filetype(parent["path"])
-    if is_binary:
-        fp_in = open(parent["path"], "rb")
-    else:
-        fp_in = open(parent["path"], "r")
+    is_binary, _ = filetype.get_filetype(parent.path)
+    fp_in = open(parent.path, "rb") if is_binary else open(parent.path, "r")
 
     # reads the file
     lines = fp_in.readlines()
@@ -163,7 +160,7 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
         return []
 
     # split the file to name and extension
-    _, file = path.split(parent["path"])
+    _, file = path.split(parent.path)
     file, file_extension = path.splitext(file)
 
     # fuzzing
@@ -181,13 +178,11 @@ def fuzz(parent, max_bytes, fuzz_stats, output_dir, fuzzing_methods, strategy):
             filename = output_dir + "/" +\
                 file.split("-")[0] + "-" + \
                 str(uuid4().hex) + file_extension
-            new_fh = copy.copy(parent["history"])
+            new_fh = copy.copy(parent.history)
             new_fh.append(i)
 
-            predecessor = parent if parent["predecessor"] is None else parent["predecessor"]
-            mutations.append(
-                {"path": filename, "history": new_fh, "cov": 0,
-                 "deg_ratio": 0, "predecessor": predecessor})
+            predecessor = parent.predecessor or parent
+            mutations.append(Mutation(filename, new_fh, predecessor, 0, 0, 0))
 
             if is_binary:
                 fp_out = open(filename, "wb")
@@ -275,32 +270,31 @@ def rate_parent(fuzz_progress, parent):
     """ Rate the `parent` with fitness function and adds it to list with fitness values.
 
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
-    :param str parent: path to a file which is classified as parent
+    :param Mutation parent: path to a file which is classified as parent
     :return int: 1 if a file is the same as any parent, otherwise 0
     """
-    increase_cov_rate = parent["cov"] / fuzz_progress.base_cov
+    increase_cov_rate = parent.cov / fuzz_progress.base_cov
 
-    fitness_value = increase_cov_rate + parent["deg_ratio"]
+    fitness_value = increase_cov_rate + parent.deg_ratio
+    parent.fitness = fitness_value
 
     # empty list or the value is actually the largest
     if not fuzz_progress.parents_fitness_values \
-            or fitness_value >= fuzz_progress.parents_fitness_values[-1]["value"]:
-        fuzz_progress.parents_fitness_values.append(
-            {"value": fitness_value, "mut": parent})
+            or fitness_value >= fuzz_progress.parents_fitness_values[-1].fitness:
+        fuzz_progress.parents_fitness_values.append(parent)
         return 0
     else:
         for index, par_fit_val in enumerate(fuzz_progress.parents_fitness_values):
-            if fitness_value <= par_fit_val["value"]:
-                fuzz_progress.parents_fitness_values.insert(
-                    index, {"value": fitness_value, "mut": parent})
+            if fitness_value <= par_fit_val.fitness:
+                fuzz_progress.parents_fitness_values.insert(index, parent)
                 return 0
             # if the same file was generated before
-            elif abs(fitness_value - par_fit_val["value"]) <= FP_ALLOWED_ERROR:
+            elif abs(fitness_value - par_fit_val.fitness) <= FP_ALLOWED_ERROR:
                 # additional file comparing
-                is_binary_file = filetype.get_filetype(parent["path"])[0]
+                is_binary_file = filetype.get_filetype(parent.path)[0]
                 mode = "rb" if is_binary_file else "r"
-                if same_lines(open(par_fit_val["mut"]["path"], mode).readlines(),
-                              open(parent["path"], mode).readlines(), is_binary_file):
+                if same_lines(open(par_fit_val.path, mode).readlines(),
+                              open(parent.path, mode).readlines(), is_binary_file):
                     return 1
 
 
@@ -308,25 +302,24 @@ def update_rate(parents_fitness_values, parent):
     """ Update rate of the `parent` according to degradation ratio yielded from perf testing.
 
     :param list parents_fitness_values: sorted list of fitness score of parents
-    :param str parent: path to a file which is classified as parent
+    :param Mutation parent: path to a file which is classified as parent
     """
     for index, par_fit_val in enumerate(parents_fitness_values):
-        if par_fit_val["mut"] == parent:
-            fitness_value = par_fit_val["value"] * (
-                1 + parent["deg_ratio"])
+        if par_fit_val == parent:
+            fitness_value = par_fit_val.fitness * (1 + parent.deg_ratio)
             del parents_fitness_values[index]
             break
 
     # if its the best rated yet, we save the program from looping
-    if fitness_value >= parents_fitness_values[-1]["value"]:
-        parents_fitness_values.append(
-            {"value": fitness_value, "mut": parent})
+    if fitness_value >= parents_fitness_values[-1].fitness:
+        parent.fitness = fitness_value
+        parents_fitness_values.append(parent)
         return
 
     for i in range(index, len(parents_fitness_values)):
-        if fitness_value <= parents_fitness_values[i]["value"]:
-            parents_fitness_values.insert(
-                i, {"value": fitness_value, "mut": parent})
+        if fitness_value <= parents_fitness_values[i].fitness:
+            parent.fitness = fitness_value
+            parents_fitness_values.insert(i, parent)
             break
 
 
@@ -344,7 +337,7 @@ def choose_parent(parents_fitness_values, num_intervals=5):
     """
     num_of_parents = len(parents_fitness_values)
     if num_of_parents < num_intervals:
-        return (randomizer.rand_choice(parents_fitness_values))["mut"]
+        return randomizer.rand_choice(parents_fitness_values)
 
     triangle_num = (num_intervals*num_intervals + num_intervals) / 2
     bottom = 0
@@ -367,9 +360,9 @@ def choose_parent(parents_fitness_values, num_intervals=5):
     interval_idx = np.random.choice(
         range(num_intervals), replace=False, p=weights)
     # choose a parent from the interval
-    return (randomizer.rand_choice(
+    return randomizer.rand_choice(
         parents_fitness_values[intervals[interval_idx][0]:intervals[interval_idx][1]]
-    ))["mut"]
+    )
 
 
 def save_fuzz_state(time_series, state):
@@ -419,7 +412,7 @@ def teardown(fuzz_progress, output_dirs, parents, fuzz_stats, fuzzing_methods, o
     filesystem.del_temp_files(parents, fuzz_progress, output_dir)
 
     fuzz_progress.stats["end_time"] = time.time()
-    fuzz_progress.stats["worst-case"] = fuzz_progress.parents_fitness_values[-1]["mut"]["path"]
+    fuzz_progress.stats["worst-case"] = fuzz_progress.parents_fitness_values[-1].path
     print_results(fuzz_progress.stats, fuzz_stats, fuzzing_methods)
     log.done()
     sys.exit(0)
@@ -457,7 +450,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     )
     # choosing appropriate fuzzing methods
     fuzzing_methods = filetype.choose_methods(
-        parents[0]["path"], kwargs["regex_rules"]
+        parents[0].path, kwargs["regex_rules"]
     )
 
     # last element is for total num of cov increases or perf degradations
@@ -559,8 +552,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                     except CalledProcessError:
                         fuzz_progress.stats["faults"] += 1
                         result = True
-                        mutations[i]["path"] = filesystem.move_file_to(
-                            mutations[i]["path"], output_dirs["faults"]
+                        mutations[i].path = filesystem.move_file_to(
+                            mutations[i].path, output_dirs["faults"]
                         )
                         fuzz_progress.faults.append(mutations[i])
                     # timeout expired
@@ -569,8 +562,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                         print("Timeout ({}s) reached when testing. See {}.".format(
                             kwargs["hang_timeout"], output_dirs["hangs"])
                         )
-                        mutations[i]["path"] = filesystem.move_file_to(
-                            mutations[i]["path"], output_dirs["hangs"]
+                        mutations[i].path = filesystem.move_file_to(
+                            mutations[i].path, output_dirs["hangs"]
                         )
                         fuzz_progress.hangs.append(mutations[i])
                         continue
@@ -579,15 +572,15 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                     if result and not rate_parent(fuzz_progress, mutations[i]):
                         # TODO: Fix this ugly
                         fuzz_progress.stats["max_cov"] = \
-                            fuzz_progress.parents_fitness_values[-1]["mut"]["cov"] / \
+                            fuzz_progress.parents_fitness_values[-1].cov / \
                             fuzz_progress.base_cov
                         parents.append(mutations[i])
                         fuzz_progress.interesting_workloads.append(mutations[i])
-                        fuzz_stats[(mutations[i]["history"])[-1]] += 1
+                        fuzz_stats[mutations[i].history[-1]] += 1
                         fuzz_stats[-1] += 1
                     # not successful mutation or the same file as previously generated
                     else:
-                        os.remove(mutations[i]["path"])
+                        os.remove(mutations[i].path)
 
             # adapting increase coverage ratio
             if fuzz_progress.interesting_workloads:
@@ -619,11 +612,11 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                 )
             # temporarily we ignore error within individual perf testing without previous cov test
             except Exception as exc:
-                log.warn("Executing binary raised an exception: ", exc)
+                log.warn("Executing binary raised an exception: {}".format(exc))
                 result = False
 
             if result:
-                fuzz_stats[(fuzz_progress.interesting_workloads[i]["history"])[-1]] += 1
+                fuzz_stats[fuzz_progress.interesting_workloads[i].history[-1]] += 1
                 fuzz_stats[-1] += 1
                 # without cov testing we firstly rate the new parents here
                 if not fuzz_progress.stats["coverage_testing"]:
@@ -641,7 +634,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
             else:
                 # in case of testing with coverage, parent wont be removed but used for mutation
                 if not fuzz_progress.stats["coverage_testing"]:
-                    os.remove(fuzz_progress.interesting_workloads[i]["path"])
+                    os.remove(fuzz_progress.interesting_workloads[i].path)
 
         # deletes interesting workloads for next run
         del fuzz_progress.interesting_workloads[:]
