@@ -138,8 +138,7 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
 
         exit_report = execute_bin(command, timeout)
         if exit_report["exit_code"] != 0:
-            print("Initial testing with file " +
-                  file["path"] + " causes " + exit_report["output"])
+            print("Initial testing with file " + file["path"] + " causes " + exit_report["output"])
             sys.exit(1)
         file["cov"], gcov_files = get_coverage_info(
             gcov_version, source_files, gcno_path, os.getcwd(), None)
@@ -167,8 +166,7 @@ def test(*args, **kwargs):
 
     exit_report = execute_bin(command, kwargs["hang_timeout"])
     if exit_report["exit_code"] != 0:
-        print("Testing with file " +
-              workload["path"] + " causes " + exit_report["output"])
+        print("Testing with file " + workload["path"] + " causes " + exit_report["output"])
         raise subprocess.CalledProcessError(exit_report, command)
 
     workload["cov"], _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],

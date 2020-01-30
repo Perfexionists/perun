@@ -15,8 +15,7 @@ __author__ = 'Matus Liscinsky'
 DEGRADATION_RATIO_TRESHOLD = 0
 
 
-def init(cmd, args, seeds, collector, postprocessor,
-         minor_version_list, **kwargs):
+def init(cmd, args, seeds, collector, postprocessor, minor_version_list, **kwargs):
     """ Generates a profile for specified command with init seeds, compares each other.
 
     :param list cmd: list of commands that will be run

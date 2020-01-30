@@ -15,7 +15,6 @@ def random_regex_replace(lines, pattern, repl):
     # pick random match
     if matches:
         picked_match = randomizer.rand_choice(matches)
-        # lines[rand] = lines[rand][:picked_match.start()] + repl + lines[rand][picked_match.end():]
         lines[rand] = lines[rand][:picked_match.start()] + \
             pattern.sub(repl, lines[rand][picked_match.start():], 1)
 

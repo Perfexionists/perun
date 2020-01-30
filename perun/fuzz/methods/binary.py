@@ -5,6 +5,7 @@ __author__ = 'Matus Liscinsky'
 import os
 
 import perun.fuzz.randomizer as randomizer
+import perun.fuzz.helpers as helpers
 
 RULE_ITERATIONS = 10
 
@@ -21,7 +22,7 @@ def insert_byte(lines):
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
     byte = os.urandom(1)
-    lines[rand] = lines[rand][:index] + byte + lines[rand][index:]
+    helpers.insert_at_split(lines, rand, index, byte)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -35,7 +36,7 @@ def remove_byte(lines):
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
-    lines[rand] = lines[rand][:index] + lines[rand][index+1:]
+    helpers.remove_at_split(lines, rand, index)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -88,7 +89,8 @@ def bit_flip(lines):
 
     char_ascii_val = lines[rand][index]
     char_ascii_val = char_ascii_val ^ (1 << (randomizer.rand_index(8)))
-    lines[rand] = lines[rand][:index] + chr((char_ascii_val)).encode() + lines[rand][index + 1:]
+    inserted_byte = chr(char_ascii_val).encode()
+    helpers.replace_at_split(lines, rand, index, inserted_byte)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -104,7 +106,7 @@ def remove_zero_byte(lines):
     positions = [pos for pos, char in enumerate(lines[rand]) if char == 0]
     if positions:
         index = randomizer.rand_choice(positions)
-        lines[rand] = lines[rand][:index] + lines[rand][index+1:]
+        helpers.remove_at_split(lines, rand, index)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -118,7 +120,7 @@ def insert_zero_byte(lines):
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
-    lines[rand] = lines[rand][:index] + b'\0' + lines[rand][index:]
+    helpers.insert_at_split(lines, rand, index, b'\0')
 
 
 fuzzing_methods = [

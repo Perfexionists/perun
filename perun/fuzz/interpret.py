@@ -43,6 +43,20 @@ def save_anomalies(anomalies, anomaly_type, file_handle):
             log.info('.')
 
 
+def save_time_series(file_handle, time_series, values):
+    """Saves the time series data into the file handle
+
+    :param File file_handle: opened file handle for writing
+    :param list time_series: list of times for values
+    :param list values: list of values
+    """
+    for index, val in enumerate(values):
+        file_handle.write(
+            str(time_series[index]) + " " + str(val) + "\n"
+        )
+        log.info('.')
+
+
 def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, parents_fitness_values,
                    base_cov, hangs, faults):
     """ Saves information about fuzzing in log file. Note: refactor
@@ -62,11 +76,8 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, par
     cov_data_file = open(log_dir + "/coverage_plot_data.txt", "w")
     results_data_file = open(log_dir + "/results_data.txt", "w")
 
-    for index, degs in enumerate(degradations):
-        deg_data_file.write(
-            str(time_data[index]) + " " + str(degs) + "\n"
-        )
-        log.info('.')
+    save_time_series(deg_data_file, time_data, degradations)
+    save_time_series(cov_data_file, time_for_cov, max_covs)
 
     for index, cov in enumerate(max_covs):
         cov_data_file.write(

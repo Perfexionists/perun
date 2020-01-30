@@ -1,6 +1,7 @@
 """Collects fuzzing rules specific for text files."""
 
 import perun.fuzz.randomizer as randomizer
+import perun.fuzz.helpers as helpers
 
 __author__ = 'Matus Liscinsky'
 
@@ -20,8 +21,8 @@ def change_char(lines):
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
-    lines[rand] = \
-        lines[rand][:index] + chr(randomizer.rand_from_range(0, 255)) + lines[rand][index + 1:]
+    changed_char = chr(randomizer.rand_from_range(0, 255))
+    helpers.replace_at_split(lines, rand, index, changed_char)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -36,7 +37,7 @@ def divide_line(lines):
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
-    lines[rand] = lines[rand][:index] + "\n" + lines[rand][index:]
+    helpers.insert_at_split(lines, rand, index, "\n")
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -51,8 +52,8 @@ def fuzz_insert_ws(lines):
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
-    lines[rand] = \
-        lines[rand][:index] + " " * randomizer.rand_from_range(WS_MIN, WS_MAX) + lines[rand][index:]
+    inserted_ws = " " * randomizer.rand_from_range(WS_MIN, WS_MAX)
+    helpers.insert_at_split(lines, rand, index, inserted_ws)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -79,8 +80,8 @@ def fuzz_append_ws(lines):
     :param list lines: lines of the workload, which has been choosen for mutating
     """
     rand = randomizer.rand_index(len(lines))
-    lines[rand] = \
-        lines[rand][:-1] + " " * randomizer.rand_from_range(WS_MIN, WS_MAX) + lines[rand][-1:]
+    appended_whitespace = " " * randomizer.rand_from_range(WS_MIN, WS_MAX)
+    lines[rand] = lines[rand][:-1] + appended_whitespace + lines[rand][-1:]
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -182,12 +183,12 @@ def repeat_word(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    REPETITIONS = 100
+    repetitions = 100
     rand = randomizer.rand_index(len(lines))
     try:
         word = randomizer.rand_choice(lines[rand].split())
         lines[rand] = lines[rand][:-1] + \
-            (" " + (word[100]))*(REPETITIONS) + lines[rand][-1:]
+            (" " + (word[100]))*repetitions + lines[rand][-1:]
     except (ValueError, IndexError):
         pass
 

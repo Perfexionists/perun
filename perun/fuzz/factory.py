@@ -449,11 +449,10 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     # Init coverage testing with seeds
     if general_fuzz_information["coverage_testing"]:
         try:
-            base_cov, gcov_version, gcov_files, source_files = init_testing("coverage", cmd, args,
-                                                                            parents, collector,
-                                                                            postprocessor,
-                                                                            minor_version_list,
-                                                                            **kwargs)
+            base_cov, gcov_version, gcov_files, source_files = init_testing(
+                "coverage", cmd, args, parents, collector, postprocessor, minor_version_list,
+                **kwargs
+            )
         except TimeoutExpired:
             print(
                 "Timeout ({}s) reached when testing with initial files. Adjust hang timeout using"
@@ -461,8 +460,9 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
             sys.exit(1)
 
     # Init performance testing with seeds
-    base_result_profile = init_testing("perun_based", cmd, args, parents, collector,
-                                       postprocessor, minor_version_list, **kwargs)
+    base_result_profile = init_testing(
+        "perun_based", cmd, args, parents, collector, postprocessor, minor_version_list, **kwargs
+    )
 
     # No gcno files were found, no coverage testing
     if base_cov == 0:
