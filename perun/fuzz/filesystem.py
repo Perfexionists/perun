@@ -62,18 +62,18 @@ def make_output_dirs(output_dir, new_dirs):
     return dirs_dict
 
 
-def del_temp_files(parents, final_results, hangs, faults, output_dir):
+def del_temp_files(parents, fuzz_progress, output_dir):
     """ Deletes temporary files that are not positive results of fuzz testing
 
-    :param list final_results: succesfully mutated files causing degradation, yield of testing
-    :param list hangs: mutations that couses reaching timeout
-    :param list faults: mutations that couses error
+    :param list parents: list of parent mutations
+    :param FuzzingProgress fuzz_progress: progress of the fuzzing
     :param str output_dir: path to directory, where fuzzed files are stored
     """
 
     print("Removing remaining mutations ...")
     for mut in parents:
-        if mut not in final_results and mut not in hangs and mut not in faults and \
+        if mut not in fuzz_progress.final_results and mut not in fuzz_progress.hangs \
+                and mut not in fuzz_progress.faults and \
                 mut["path"].startswith(output_dir) and path.isfile(mut["path"]):
             try:
                 os.remove(mut["path"])

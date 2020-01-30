@@ -41,7 +41,6 @@ def test_fuzzing_correct(pcs_full):
         '--no-plotting',
     ])
     assert result.exit_code == 0
-    assert 'Fuzzing successfully finished' in result.output
 
     # 02. Testing tail on a directory of txt files with coverage
     txt_workload = os.path.dirname(examples) + '/samples/txt'
@@ -60,7 +59,6 @@ def test_fuzzing_correct(pcs_full):
         '--no-plotting',
     ])
     assert result.exit_code == 0
-    assert 'Fuzzing successfully finished' in result.output
 
     # 03. Testing tail with xml files and regex_rules
     xml_workload = os.path.dirname(examples) + '/samples/xml/input.xml'
@@ -77,7 +75,6 @@ def test_fuzzing_correct(pcs_full):
         '--no-plotting',
     ])
     assert result.exit_code == 0
-    assert 'Fuzzing successfully finished' in result.output
 
     # 04. Testing tail with empty xml file
     xml_workload = os.path.dirname(examples) + '/samples/xml/empty.xml'
@@ -90,7 +87,6 @@ def test_fuzzing_correct(pcs_full):
         '--no-plotting',
     ])
     assert result.exit_code == 0
-    assert 'Fuzzing successfully finished' in result.output
 
     # 05. Testing tail with wierd file type and bad paths for coverage testing (-s, -g)
     wierd_workload = os.path.dirname(
@@ -107,7 +103,6 @@ def test_fuzzing_correct(pcs_full):
         '--no-plotting',
     ])
     assert result.exit_code == 0
-    assert 'Fuzzing successfully finished' in result.output
 
     # 06. Testing for SIGABRT during init testing
     num_workload = os.path.dirname(examples) + '/samples/txt/number.txt'

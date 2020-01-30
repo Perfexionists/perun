@@ -57,8 +57,7 @@ def save_time_series(file_handle, time_series, values):
         log.info('.')
 
 
-def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, parents_fitness_values,
-                   base_cov, hangs, faults):
+def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, fuzz_progress):
     """ Saves information about fuzzing in log file. Note: refactor
 
     :param str log_dir: path to the output log directory
@@ -66,10 +65,7 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, par
     :param list degradations: raw degradations data for graph showing degradations
     :param list time_for_cov: raw time data for graph showing coverage growth
     :param list max_covs: raw max_cov data for graph showing coverage growth
-    :param list parents_fitness_values: sorted list of parents by their fitness values
-    :param int base_cov: base coverage measured on intial seeds
-    :param list hangs: mutations that caused hang
-    :param list faults: mutations that caused error
+    :param FuzzingProgress fuzz_progress: progress of the fuzzing
     """
     log.info("Saving log files")
     deg_data_file = open(log_dir + "/degradation_plot_data.txt", "w")
@@ -79,18 +75,18 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, par
     save_time_series(deg_data_file, time_data, degradations)
     save_time_series(cov_data_file, time_for_cov, max_covs)
 
-    for mut in parents_fitness_values:
+    for mut in fuzz_progress.parents_fitness_values:
         results_data_file.write(
-            str(mut["value"]) + " " + str(mut["mut"]["cov"]/base_cov) + " " +
+            str(mut["value"]) + " " + str(mut["mut"]["cov"]/fuzz_progress.base_cov) + " " +
             str(mut["mut"]["deg_ratio"]) + " " + mut["mut"]["path"] + " " +
             str(mut["mut"]["history"]) + "\n"
         )
         log.info('.')
     log.done()
 
-    save_anomalies(hangs, 'hang', results_data_file)
+    save_anomalies(fuzz_progress.hangs, 'hang', results_data_file)
     log.done()
-    save_anomalies(faults, 'fault', results_data_file)
+    save_anomalies(fuzz_progress.faults, 'fault', results_data_file)
     log.done()
 
     deg_data_file.close()
@@ -168,17 +164,15 @@ def plot_fuzz_time_series(time_data, data, filename, title, xlabel, ylabel):
     plt.savefig(filename, bbox_inches='tight', format='pdf')
 
 
-def files_diff(final_results, faults, hangs, diffs_dir):
+def files_diff(fuzz_progress, diffs_dir):
     """Creates html files showing the difference between mutations and its predecessor
     in diff unified format.
 
-    :param list final_results: list contatining mutations causing degradation
-    :param list hangs: mutations that caused hang
-    :param list faults: mutations that caused error
+    :param FuzzingProgress fuzz_progress: collection of statistics of fuzzing process
     :param str diffs_dir: path to the directory where diffs will be stored
     """
     log.info("Computing deltas")
-    for mutations in [final_results, faults, hangs]:
+    for mutations in [fuzz_progress.final_results, fuzz_progress.faults, fuzz_progress.hangs]:
         for res in mutations:
             pred = open(res["predecessor"]["path"], "r").readlines()
             result = open(res["path"], "r").readlines()
