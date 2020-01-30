@@ -243,26 +243,26 @@ def print_results(general_fuzz_information, fuzz_stats, fuzzing_methods):
 def init_testing(method, *args, **kwargs):
     """ Calls initializing function for `method` testing.
 
-    :param method: testing method, can be "perun_based" or "coverage"
+    :param method: testing method, can be "by_perun" or "by_coverage"
     :param list args: list of arguments for testing
     :param kwargs: additional information for testing
     :return: result of initial testing depending on `method`
     """
     result = utils.dynamic_module_function_call(
-        "perun.fuzz", method, "init", *args, **kwargs)
+        "perun.fuzz.evaluate", method, "init", *args, **kwargs)
     return result
 
 
 def testing(method, *args, **kwargs):
     """ Calls testing function for `method` testing.
 
-    :param method: testing method, can be "perun_based" or "coverage"
+    :param method: testing method, can be "by_perun" or "by_coverage"
     :param list args: list of arguments for testing
     :param kwargs: additional information for testing
     :return: result of testing, type depends on `method`
     """
     result = utils.dynamic_module_function_call(
-        "perun.fuzz", method, "test", *args, **kwargs)
+        "perun.fuzz.evaluate", method, "test", *args, **kwargs)
     return result
 
 
@@ -466,7 +466,7 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
         log.info("Performing coverage-based testing on parent seeds.")
         try:
             fuzz_progress.base_cov, gcov_version, gcov_files, source_files = init_testing(
-                "coverage", executable, parents, collector, postprocessor, minor_version_list,
+                "by_coverage", executable, parents, collector, postprocessor, minor_version_list,
                 **kwargs
             )
             log.done()
@@ -485,7 +485,7 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
     log.info("Performing perun-based testing on parent seeds.")
     # Init performance testing with seeds
     base_result_profile = init_testing(
-        "perun_based", executable, parents, collector, postprocessor, minor_version_list, **kwargs
+        "by_perun", executable, parents, collector, postprocessor, minor_version_list, **kwargs
     )
     log.done()
 
@@ -524,7 +524,7 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
 
         # Gathering interesting workloads
         if fuzz_progress.stats["coverage_testing"]:
-            method = "coverage"
+            method = "by_coverage"
             execs = 0
 
             while len(fuzz_progress.interesting_workloads) < kwargs["interesting_files_limit"] and \
@@ -595,7 +595,7 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
                 current_workload, max_bytes, fuzz_stats, output_dir, fuzzing_methods,
                 kwargs["mut_count_strategy"]
             )
-        method = "perun_based"
+        method = "by_perun"
 
         for i, _ in enumerate(fuzz_progress.interesting_workloads):
             base_result_profile, base_copy = itertools.tee(
