@@ -7,7 +7,6 @@ executing gcov tool and parsing its output.
 
 import os
 import os.path as path
-import sys
 import subprocess
 import statistics
 
@@ -96,29 +95,27 @@ def get_src_files(source_path):
     return sources
 
 
-def init(cmd, args, workloads, *_, **kwargs):
+def init(executable, workloads, *_, **kwargs):
     """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
-    :param str cmd: called command
-    :param str args: arguments for initial testing
+    :param Executable executable: called command with arguments
     :param list workloads: workloads for initial testing
     :param list _: rest of the arguments
     :param kwargs: additional information about paths to .gcno files and source files
     :return tuple: median of measured coverages, paths to .gcov files, paths to source_files
     """
     return get_initial_coverage(
-        kwargs["gcno_path"], kwargs["source_path"], kwargs["hang_timeout"], cmd, args, workloads
+        kwargs["gcno_path"], kwargs["source_path"], kwargs["hang_timeout"], executable, workloads
     )
 
 
-def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
+def get_initial_coverage(gcno_path, source_path, timeout, executable, seeds):
     """ Provides initial testing with initial samples given by user.
 
     :param str gcno_path: path to .gcno files, created within building the project (--coverage flag)
     :param str source_path: path to project source files
     :param int timeout: specified timeout for run of target application
-    :param str cmd: string with command that will be executed
-    :param str args: additional parameters to command
+    :param Executable executable: called command with arguments
     :param list seeds: initial sample files
     :return tuple: median of measured coverages, paths to .gcov files, paths to source_files
     """
@@ -136,7 +133,7 @@ def get_initial_coverage(gcno_path, source_path, timeout, cmd, args, seeds):
 
         prepare_workspace(gcno_path)
 
-        command = " ".join([path.abspath(cmd), args, seed.path]).split(' ')
+        command = " ".join([path.abspath(executable.cmd), executable.args, seed.path]).split(' ')
 
         exit_report = execute_bin(command, timeout)
         if exit_report["exit_code"] != 0:
@@ -161,9 +158,10 @@ def test(*args, **kwargs):
     """
     gcno_path = kwargs["gcno_path"]
     prepare_workspace(gcno_path)
-    workload = args[2]
+    command = args[0]
+    workload = args[1]
 
-    command = " ".join([args[0], args[1], workload.path]).split(' ')
+    command = " ".join([command.cmd, command.args, workload.path]).split(' ')
 
     exit_report = execute_bin(command, kwargs["hang_timeout"])
     if exit_report["exit_code"] != 0:

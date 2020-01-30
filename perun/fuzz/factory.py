@@ -420,12 +420,11 @@ def teardown(fuzz_progress, output_dirs, parents, fuzz_stats, fuzzing_methods, o
 
 @log.print_elapsed_time
 @decorators.phase_function('fuzz performance')
-def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocessor,
+def run_fuzzing_for_command(executable, initial_workload, collector, postprocessor,
                             minor_version_list, **kwargs):
     """Runs fuzzing for a command w.r.t initial set of workloads
 
-    :param str cmd: command to which we will send the fuzzed data
-    :param str args: additional commandline args for the command
+    :param Executable executable: called command with arguments
     :param list initial_workload: initial sample of workloads for fuzzing
     :param str collector: collector used to collect profiling data
     :param list postprocessor: list of postprocessors, which are run after collection
@@ -467,7 +466,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
         log.info("Performing coverage-based testing on parent seeds.")
         try:
             fuzz_progress.base_cov, gcov_version, gcov_files, source_files = init_testing(
-                "coverage", cmd, args, parents, collector, postprocessor, minor_version_list,
+                "coverage", executable, parents, collector, postprocessor, minor_version_list,
                 **kwargs
             )
             log.done()
@@ -486,7 +485,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     log.info("Performing perun-based testing on parent seeds.")
     # Init performance testing with seeds
     base_result_profile = init_testing(
-        "perun_based", cmd, args, parents, collector, postprocessor, minor_version_list, **kwargs
+        "perun_based", executable, parents, collector, postprocessor, minor_version_list, **kwargs
     )
     log.done()
 
@@ -543,7 +542,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
                         fuzz_progress.stats["cov_execs"] += 1
                         # testing for coverage
                         result = testing(
-                            method, cmd, args, mutations[i], collector, postprocessor,
+                            method, executable, mutations[i], collector, postprocessor,
                             minor_version_list, base_cov=fuzz_progress.base_cov,
                             source_files=source_files, gcov_version=gcov_version,
                             gcov_files=gcov_files, parent=current_workload, **kwargs
@@ -607,7 +606,7 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
             try:
                 fuzz_progress.stats["perun_execs"] += 1
                 result = testing(
-                    method, cmd, args, fuzz_progress.interesting_workloads[i], collector,
+                    method, executable, fuzz_progress.interesting_workloads[i], collector,
                     postprocessor, minor_version_list, base_result=base_copy, **kwargs
                 )
             # temporarily we ignore error within individual perf testing without previous cov test

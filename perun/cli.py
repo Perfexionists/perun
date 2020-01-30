@@ -59,6 +59,7 @@ import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException
+from perun.utils.structs import Executable
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
@@ -678,8 +679,9 @@ def collect(ctx, **kwargs):
               ' written in YAML format file.')
 @click.option('--no-plotting', '-np', is_flag=True, required=False,
               help='Avoiding sometimes lengthy plotting of graphs.')
-def fuzz_cmd(**kwargs):
+def fuzz_cmd(cmd, args, **kwargs):
     """Performs fuzzing for the specified command according to the initial sample of workload."""
+    kwargs['executable'] = Executable(cmd, args)
     fuzz.run_fuzzing_for_command(**kwargs)
 
 

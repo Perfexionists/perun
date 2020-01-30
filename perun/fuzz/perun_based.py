@@ -15,11 +15,10 @@ __author__ = 'Matus Liscinsky'
 DEGRADATION_RATIO_TRESHOLD = 0
 
 
-def init(cmd, args, seeds, collector, postprocessor, minor_version_list, **kwargs):
+def init(executable, seeds, collector, postprocessor, minor_version_list, **kwargs):
     """ Generates a profile for specified command with init seeds, compares each other.
 
-    :param list cmd: list of commands that will be run
-    :param list args: lists of additional arguments to the job
+    :param Executable executable: called command with arguments
     :param list seeds: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
@@ -30,13 +29,15 @@ def init(cmd, args, seeds, collector, postprocessor, minor_version_list, **kwarg
 
     # create baseline profile
     base_pg = run.generate_profiles_for(
-        [cmd], [args], [seeds[0].path], [collector], postprocessor, minor_version_list, **kwargs
+        [executable.cmd], [executable.args], [seeds[0].path], [collector], postprocessor,
+        minor_version_list, **kwargs
     )
 
     for file in seeds[1:]:
         # target profile
         target_pg = run.generate_profiles_for(
-            [cmd], [args], [file.path], [collector], postprocessor, minor_version_list, **kwargs
+            [executable.cmd], [executable.args], [file.path], [collector], postprocessor,
+            minor_version_list, **kwargs
         )
 
         # making copies of generators
@@ -53,13 +54,12 @@ def init(cmd, args, seeds, collector, postprocessor, minor_version_list, **kwarg
     return base_pg
 
 
-def test(cmd, args, workload, collector, postprocessor,
+def test(executable, workload, collector, postprocessor,
          minor_version_list, **kwargs):
     """ Generates a profile for specified command with fuzzed workload, compares with
     baseline profile.
 
-    :param list cmd: list of commands that will be run
-    :param list args: lists of additional arguments to the job
+    :param Executable executable: called command with arguments
     :param list workload: list of workloads
     :param list collector: list of collectors
     :param list postprocessor: list of postprocessors
@@ -72,7 +72,8 @@ def test(cmd, args, workload, collector, postprocessor,
 
     # target profile with a new workload
     target_pg = run.generate_profiles_for(
-        [cmd], [args], [workload.path], [collector], postprocessor, minor_version_list, **kwargs
+        [executable.cmd], [executable.args], [workload.path], [collector], postprocessor,
+        minor_version_list, **kwargs
     )
 
     # copy of target profile generator
