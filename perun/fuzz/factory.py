@@ -372,28 +372,57 @@ def choose_parent(parents_fitness_values, num_intervals=5):
     ))["mut"]
 
 
-def print_msg(msg):
-    """Temporary solution for printing fuzzing messages to the output.
-
-    :param str msg: message to be printed
-    """
-    print("-"*70)
-    print(msg)
-    print("-"*70)
-
-
-def save_fuzz_state(xdata, ydata, state):
+def save_fuzz_state(time_series, state):
     """Saves current state of fuzzing for plotting.
 
-    :param list xdata: list of data for x-axis (typically time values)
-    :param list ydata: list of data for y-axis
+    :param TimeSeries time_series: list of data for x-axis (typically time values) and y-axis
     :param state: current value of measured variable
     """
-    if len(ydata) > 1 and state == ydata[-2]:
-        xdata[-1] += SAMPLING
+    if len(time_series.y_axis) > 1 and state == time_series.y_axis[-2]:
+        time_series.x_axis[-1] += SAMPLING
     else:
-        xdata.append(xdata[-1] + SAMPLING)
-        ydata.append(state)
+        time_series.x_axis.append(time_series.x_axis[-1] + SAMPLING)
+        time_series.y_axis.append(state)
+
+
+def teardown(fuzz_progress, output_dirs, parents, fuzz_stats, fuzzing_methods, output_dir, **kwargs
+             ):
+    """Teardown function at the end of the fuzzing, either by natural rundown of timeout or because
+    of unnatural circumstances (e.g. exception)
+
+    :param FuzzingProgress fuzz_progress: Progress of the fuzzing process
+    :param str output_dir: output dir for the logs and files
+    :param dict output_dirs: dictionary of output dirs for distinct files
+    :param list parents: list of parents
+    :param list fuzz_stats: list of stats for individual fuzzing methods
+    :param list fuzzing_methods: list of fuzzing methods
+    :param dict kwargs: rest of the options
+    """
+    log.info("Executing teardown of the fuzzing. ")
+    if not kwargs["no_plotting"]:
+        # Plot the results as time series
+        log.info("Plotting time series of fuzzing process...")
+        interpret.plot_fuzz_time_series(
+            fuzz_progress.deg_time_series, output_dirs["graphs"] + "/degradations_ts.pdf",
+            "Fuzzing in time", "time (s)", "degradations"
+        )
+        if fuzz_progress.stats["coverage_testing"]:
+            interpret.plot_fuzz_time_series(
+                fuzz_progress.cov_time_series, output_dirs["graphs"] + "/coverage_ts.pdf",
+                "Max path during fuzing", "time (s)", "executed lines ratio"
+            )
+    # Plot the differences between seeds and inferred mutation
+    interpret.files_diff(fuzz_progress, output_dirs["diffs"])
+    # Save log files
+    interpret.save_log_files(output_dirs["logs"], fuzz_progress)
+    # Clean-up remaining mutations
+    filesystem.del_temp_files(parents, fuzz_progress, output_dir)
+
+    fuzz_progress.stats["end_time"] = time.time()
+    fuzz_progress.stats["worst-case"] = fuzz_progress.parents_fitness_values[-1]["mut"]["path"]
+    print_results(fuzz_progress.stats, fuzz_stats, fuzzing_methods)
+    log.done()
+    sys.exit(0)
 
 
 @log.print_elapsed_time
@@ -475,17 +504,14 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
         log.info('.', end='')
     log.info('')
 
-    # Time series plotting
-    time_data = [0]
-    degradations = [0]
-
-    time_for_cov = [0]
-    max_covs = [1.0]
-
     # function for saving the state, stores information about run used for plotting graphs
     def save_state():
-        save_fuzz_state(time_data, degradations, fuzz_progress.stats["degradations"])
-        save_fuzz_state(time_for_cov, max_covs, fuzz_progress.stats["max_cov"])
+        save_fuzz_state(
+            fuzz_progress.deg_time_series, fuzz_progress.stats["degradations"]
+        )
+        save_fuzz_state(
+            fuzz_progress.cov_time_series, fuzz_progress.stats["max_cov"]
+        )
 
         timer = threading.Timer(SAMPLING, save_state,)
         timer.daemon = True
@@ -497,36 +523,8 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     # SIGINT (CTRL-C) signal handler
     def signal_handler(sig, _):
         print("Fuzzing process interrupted by signal {}...".format(sig))
-        teardown()
+        teardown(fuzz_progress, output_dirs, parents, fuzz_stats, fuzzing_methods, **kwargs)
 
-    def teardown():
-        if not kwargs["no_plotting"]:
-            # Plot the results as time series
-            log.info("Plotting time series of fuzzing process...")
-            interpret.plot_fuzz_time_series(
-                time_data, degradations, output_dirs["graphs"] +
-                "/degradations_ts.pdf", "Fuzzing in time",
-                "time (s)", "degradations"
-            )
-            if fuzz_progress.stats["coverage_testing"]:
-                interpret.plot_fuzz_time_series(
-                    time_for_cov, max_covs, output_dirs["graphs"] +
-                    "/coverage_ts.pdf",
-                    "Max path during fuzing", "time (s)", "executed lines ratio"
-                )
-        # Plot the differences between seeds and inferred mutation
-        interpret.files_diff(fuzz_progress, output_dirs["diffs"])
-        # Save log files
-        interpret.save_log_files(
-            output_dirs["logs"], time_data, degradations, time_for_cov, max_covs, fuzz_progress
-        )
-        # Clean-up remaining mutations
-        filesystem.del_temp_files(parents, fuzz_progress, output_dir)
-
-        fuzz_progress.stats["end_time"] = time.time()
-        fuzz_progress.stats["worst-case"] = fuzz_progress.parents_fitness_values[-1]["mut"]["path"]
-        print_results(fuzz_progress.stats, fuzz_stats, fuzzing_methods)
-        sys.exit(0)
     signal.signal(signal.SIGINT, signal_handler)
 
     # MAIN LOOP
@@ -651,4 +649,4 @@ def run_fuzzing_for_command(cmd, args, initial_workload, collector, postprocesso
     # get end time
     fuzz_progress.stats["end_time"] = time.time()
 
-    teardown()
+    teardown(fuzz_progress, output_dirs, parents, fuzz_stats, fuzzing_methods, **kwargs)

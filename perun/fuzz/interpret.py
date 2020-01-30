@@ -43,28 +43,24 @@ def save_anomalies(anomalies, anomaly_type, file_handle):
             log.info('.')
 
 
-def save_time_series(file_handle, time_series, values):
+def save_time_series(file_handle, time_series):
     """Saves the time series data into the file handle
 
     :param File file_handle: opened file handle for writing
-    :param list time_series: list of times for values
-    :param list values: list of values
+    :param TimeSeries time_series: list of times for values
     """
-    for index, val in enumerate(values):
+    assert len(time_series.x_axis) == len(time_series.y_axis)
+    for x_value, y_value in zip(time_series.x_axis, time_series.y_axis):
         file_handle.write(
-            str(time_series[index]) + " " + str(val) + "\n"
+            str(x_value) + " " + str(y_value) + "\n"
         )
         log.info('.')
 
 
-def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, fuzz_progress):
+def save_log_files(log_dir, fuzz_progress):
     """ Saves information about fuzzing in log file. Note: refactor
 
     :param str log_dir: path to the output log directory
-    :param list time_data: raw time data for graph showing degradations
-    :param list degradations: raw degradations data for graph showing degradations
-    :param list time_for_cov: raw time data for graph showing coverage growth
-    :param list max_covs: raw max_cov data for graph showing coverage growth
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
     """
     log.info("Saving log files")
@@ -72,8 +68,8 @@ def save_log_files(log_dir, time_data, degradations, time_for_cov, max_covs, fuz
     cov_data_file = open(log_dir + "/coverage_plot_data.txt", "w")
     results_data_file = open(log_dir + "/results_data.txt", "w")
 
-    save_time_series(deg_data_file, time_data, degradations)
-    save_time_series(cov_data_file, time_for_cov, max_covs)
+    save_time_series(deg_data_file, fuzz_progress.deg_time_series)
+    save_time_series(cov_data_file, fuzz_progress.cov_time_series)
 
     for mut in fuzz_progress.parents_fitness_values:
         results_data_file.write(
@@ -108,11 +104,10 @@ def get_time_value(value, time_data, data):
     return 0
 
 
-def plot_fuzz_time_series(time_data, data, filename, title, xlabel, ylabel):
+def plot_fuzz_time_series(time_series, filename, title, xlabel, ylabel):
     """Plots the measured values to time series graph.
 
-    :param list time_data: time values (x-axis)
-    :param list data: measured values (y-axis)
+    :param TimeSeries time_series: measured values (x and y-axis)
     :param str filename: name of the output .pdf file
     :param str title: title of graph
     :param str xlabel: name of x-axis
@@ -129,11 +124,11 @@ def plot_fuzz_time_series(time_data, data, filename, title, xlabel, ylabel):
 
     axis.grid(color='grey', linestyle='-', linewidth=0.5, alpha=0.2)
 
-    st_quartile, nd_quartile, rd_quartile = stats.mquantiles(data)
+    st_quartile, nd_quartile, rd_quartile = stats.mquantiles(time_series.y_axis)
     st_quartile, nd_quartile, rd_quartile = int(st_quartile), int(nd_quartile), int(rd_quartile)
-    st_time = get_time_value(st_quartile, time_data, data)
-    nd_time = get_time_value(nd_quartile, time_data, data)
-    rd_time = get_time_value(rd_quartile, time_data, data)
+    st_time = get_time_value(st_quartile, time_series.x_axis, time_series.y_axis)
+    nd_time = get_time_value(nd_quartile, time_series.x_axis, time_series.y_axis)
+    rd_time = get_time_value(rd_quartile, time_series.x_axis, time_series.y_axis)
 
     axis.axvline(x=st_time, ymin=0, ymax=1, linestyle='--',
                  linewidth=QUARTILE_LINE_WIDTH, alpha=QUARTILE_ALPHA, color='k')
@@ -150,10 +145,10 @@ def plot_fuzz_time_series(time_data, data, filename, title, xlabel, ylabel):
     axis.axhline(y=rd_quartile, xmin=0, xmax=1, linestyle='--',
                  linewidth=QUARTILE_LINE_WIDTH, alpha=QUARTILE_ALPHA, color='k')
 
-    text_space_x = -(max(time_data)/TEXT_SPACE_CONSTANT_X)
-    text_space_y = max(data)/TEXT_SPACE_CONSTANT_Y
+    text_space_x = -(max(time_series.x_axis)/TEXT_SPACE_CONSTANT_X)
+    text_space_y = max(time_series.y_axis)/TEXT_SPACE_CONSTANT_Y
 
-    plt.plot(time_data, data, 'c', alpha=DATA_LINE_ALPHA,
+    plt.plot(time_series.x_axis, time_series.y_axis, 'c', alpha=DATA_LINE_ALPHA,
              linewidth=DATA_LINE_WIDTH)
     plt.text(st_time + text_space_x, st_quartile + text_space_y, str(int(st_quartile)),
              fontweight='bold', color=GREY_COLOR, fontsize=TEXT_FONTSIZE)

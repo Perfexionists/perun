@@ -1,5 +1,11 @@
 """Collection of helpers structures for fuzzing"""
+
+from collections import namedtuple
+
 __author__ = 'Tomas Fiedor'
+
+
+TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
 
 
 class FuzzingProgress:
@@ -23,6 +29,13 @@ class FuzzingProgress:
         self.parents_fitness_values = []
         self.final_results = []
         self.timeout = timeout
+
+        # Time series plotting
+        self.deg_time_series = TimeSeries([0], [0])
+        self.cov_time_series = TimeSeries([0], [1.0])
+
+        self.base_cov = 1
+
         self.stats = {
             "start_time": 0.0,
             "end_time": 0.0,
@@ -35,4 +48,3 @@ class FuzzingProgress:
             "hangs": 0,
             "faults": 0
         }
-        self.base_cov = 1
