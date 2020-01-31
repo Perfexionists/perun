@@ -15,7 +15,7 @@ __author__ = 'Matus Liscinsky'
 DEGRADATION_RATIO_TRESHOLD = 0
 
 
-def init(executable, seeds, collector, postprocessor, minor_version_list, **kwargs):
+def baseline_testing(executable, seeds, collector, postprocessor, minor_version_list, **kwargs):
     """ Generates a profile for specified command with init seeds, compares each other.
 
     :param Executable executable: called command with arguments
@@ -54,8 +54,8 @@ def init(executable, seeds, collector, postprocessor, minor_version_list, **kwar
     return base_pg
 
 
-def test(executable, workload, collector, postprocessor,
-         minor_version_list, **kwargs):
+def target_testing(executable, workload, collector, postprocessor,
+                   minor_version_list, **kwargs):
     """ Generates a profile for specified command with fuzzed workload, compares with
     baseline profile.
 

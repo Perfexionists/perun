@@ -95,7 +95,7 @@ def get_src_files(source_path):
     return sources
 
 
-def init(executable, workloads, *_, **kwargs):
+def baseline_testing(executable, workloads, *_, **kwargs):
     """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
     :param Executable executable: called command with arguments
@@ -146,7 +146,7 @@ def get_initial_coverage(gcno_path, source_path, timeout, executable, seeds):
     return int(statistics.median(coverages)), gcov_version, gcov_files, source_files
 
 
-def test(*args, **kwargs):
+def target_testing(*args, **kwargs):
     """
     Testing function for coverage based fuzzing. Before testing it prepares the workspace
     using `prepare_workspace` func, executes given command and `get_coverage_info` to

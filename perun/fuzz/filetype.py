@@ -9,6 +9,7 @@ import perun.fuzz.randomizer as randomizer
 import perun.fuzz.methods.binary as binary
 import perun.fuzz.methods.xml as xml
 import perun.fuzz.methods.textfile as textfile
+from perun.fuzz.structs import RuleSet
 
 __author__ = 'Matus Liscinsky'
 
@@ -45,7 +46,7 @@ def get_filetype(file):
     return binaryornot.is_binary(file), filetype
 
 
-def choose_methods(file, regex_rules=None):
+def choose_ruleset(file, regex_rules=None):
     """ Automatically collects appropriate fuzz methods according to file type.
 
     :param str file: path to file
@@ -63,4 +64,6 @@ def choose_methods(file, regex_rules=None):
         if filetype in ["xml", "html", "svg", "xhtml", "xul"]:
             fuzzing_methods.extend(xml.fuzzing_methods)
         fuzzing_methods.extend(textfile.fuzzing_methods)
-    return fuzzing_methods
+
+    # last element is for total num of cov increases or perf degradations
+    return RuleSet(fuzzing_methods, [0] * (len(fuzzing_methods) + 1))

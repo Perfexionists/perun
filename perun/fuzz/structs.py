@@ -6,6 +6,7 @@ __author__ = 'Tomas Fiedor'
 
 
 TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
+RuleSet = namedtuple("RuleSet", "rules hits")
 
 
 class Mutation:
@@ -74,3 +75,7 @@ class FuzzingProgress:
             "hangs": 0,
             "faults": 0
         }
+
+    def update_max_coverage(self):
+        """Updates the maximal achieved coverage according to the parent fitness values"""
+        self.stats["max_cov"] = self.parents_fitness_values[-1].cov / self.base_cov
