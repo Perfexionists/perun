@@ -8,6 +8,7 @@ import os.path as path
 import re
 
 from perun.fuzz.structs import Mutation
+import perun.utils.log as log
 
 
 def get_corpus(workloads, pattern):
@@ -48,8 +49,8 @@ def move_file_to(filename, directory):
     :return str: new path of the moved file
     """
     _, file = path.split(filename)
-    os.rename(filename, directory + "/" + file)
-    return directory + "/" + file
+    os.rename(filename, os.path.join(directory, file))
+    return os.path.join(directory, file)
 
 
 def make_output_dirs(output_dir, new_dirs):
@@ -61,8 +62,8 @@ def make_output_dirs(output_dir, new_dirs):
     """
     dirs_dict = {}
     for dir_name in new_dirs:
-        os.makedirs(output_dir + "/" + dir_name, exist_ok=True)
-        dirs_dict[dir_name] = output_dir + "/" + dir_name
+        os.makedirs(os.path.join(output_dir, dir_name), exist_ok=True)
+        dirs_dict[dir_name] = os.path.join(output_dir, dir_name)
     return dirs_dict
 
 
@@ -73,13 +74,15 @@ def del_temp_files(parents, fuzz_progress, output_dir):
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
     :param str output_dir: path to directory, where fuzzed files are stored
     """
-
-    print("Removing remaining mutations ...")
+    log.info("Removing remaining mutations", end='')
     for mutation in parents:
         if mutation not in fuzz_progress.final_results and mutation not in fuzz_progress.hangs \
                 and mutation not in fuzz_progress.faults and \
                 mutation.path.startswith(output_dir) and path.isfile(mutation.path):
             try:
                 os.remove(mutation.path)
+                log.info('.')
             except FileNotFoundError:
                 pass
+        log.info('-')
+    log.done()

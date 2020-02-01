@@ -14,6 +14,7 @@ import threading
 from subprocess import CalledProcessError, TimeoutExpired
 from uuid import uuid4
 import numpy as np
+import tabulate
 
 import perun.utils.decorators as decorators
 import perun.fuzz.interpret as interpret
@@ -62,12 +63,8 @@ def get_max_size(seeds, max_size, max_percentual, max_adjunct):
     :return int: `max_size` if defined, otherwise value depending on adjusting method
                  (percentage portion, adding constant size)
     """
-    seed_max = 0
     # gets the largest seed's size
-    for seed in seeds:
-        file_size = path.getsize(seed.path)
-        if file_size > seed_max:
-            seed_max = file_size
+    seed_max = max(path.getsize(seed.path) for seed in seeds)
 
     # --max option was not specified
     if max_size is None:
@@ -75,10 +72,10 @@ def get_max_size(seeds, max_size, max_percentual, max_adjunct):
             return int(seed_max * max_percentual)  # percentual adjusting
         else:
             return seed_max + max_adjunct  # adjusting by size(B)
-    else:
-        if seed_max >= max_size:
-            log.warn("Warning: Specified max size is smaller than the largest workload.")
-        return max_size
+
+    if seed_max >= max_size:
+        log.warn("Warning: Specified max size is smaller than the largest workload.")
+    return max_size
 
 
 def strategy_to_generation_repeats(strategy, rule_set, index):
@@ -138,7 +135,7 @@ def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
     would be bigger than specified limit (`max_bytes`), the remainder is cut off.
 
     :param Mutation parent: path of parent workload file, which will be fuzzed
-    :param list rule_set: stats of fuzzing (mutation) strategies
+    :param RuleSet rule_set: stats of fuzzing (mutation) strategies
     :param str output_dir: path to the output directory
     :param int max_bytes: specify maximum size of created file in bytes
     :param str strategy: string determining strategy for selection number of allowed muts for rules
@@ -148,11 +145,8 @@ def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
     mutations = []
 
     is_binary, _ = filetype.get_filetype(parent.path)
-    fp_in = open(parent.path, "rb") if is_binary else open(parent.path, "r")
-
-    # reads the file
-    lines = fp_in.readlines()
-    fp_in.close()
+    with open(parent.path, "rb") if is_binary else open(parent.path, "r") as fp_in:
+        lines = fp_in.readlines()
 
     # "blank file"
     if len(lines) == 0:
@@ -160,7 +154,7 @@ def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
 
     # split the file to name and extension
     _, file = path.split(parent.path)
-    file, file_extension = path.splitext(file)
+    file, ext = path.splitext(file)
 
     # fuzzing
     for i, method in enumerate(rule_set.rules):
@@ -174,13 +168,12 @@ def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
                 continue
 
             # new mutation filename and fuzz history
-            filename = \
-                output_dir + "/" + file.split("-")[0] + "-" + str(uuid4().hex) + file_extension
+            filename = os.path.join(output_dir, file.split("-")[0] + "-" + str(uuid4().hex) + ext)
             new_fh = copy.copy(parent.history)
             new_fh.append(i)
 
             predecessor = parent.predecessor or parent
-            mutations.append(Mutation(filename, new_fh, predecessor, 0, 0, 0))
+            mutations.append(Mutation(filename, new_fh, predecessor))
 
             if is_binary:
                 fp_out = open(filename, "wb")
@@ -199,40 +192,47 @@ def print_legend(rule_set):
 
     :param RuleSet rule_set: selected fuzzing (mutation) strategies and their stats
     """
-    print("="*32 + " MUTATION RULES " + "="*32)
-    print("id\t Caused deg | cov incr\t Desription ")
-    for i, method in enumerate(rule_set.rules):
-        print(str(i) + "\t " +
-              str(rule_set.hits[i]) + " times" + "\t\t " + method[1])
+    log.info("Statistics of rule set")
+    log.info(tabulate.tabulate([
+        [
+            i, rule_set.hits[i], method[1]
+        ] for (i, method) in enumerate(rule_set.rules)
+    ], headers=["id", "Rule Efficiency", "Description"]))
 
 
-def print_results(general_fuzz_information, rule_set):
+def print_results(fuzzing_report, rule_set):
     """Prints results of fuzzing.
 
-    :param dict general_fuzz_information: general information about current fuzzing
+    :param dict fuzzing_report: general information about current fuzzing
     :param RuleSet rule_set: selected fuzzing (mutation) strategies and their stats
     """
-    print("="*35 + " RESULTS " + "="*35)
-    print("Fuzzing time: " + "%.2f" %
-          (general_fuzz_information["end_time"] - general_fuzz_information["start_time"]) + "s")
-    print("Coverage testing:", general_fuzz_information["coverage_testing"])
-    if general_fuzz_information["coverage_testing"]:
-        print("Program executions for coverage testing:",
-              general_fuzz_information["cov_execs"])
-        print("Program executions for performance testing:",
-              general_fuzz_information["perun_execs"])
-        print("Total program tests:", str(
-            general_fuzz_information["perun_execs"] + general_fuzz_information["cov_execs"]))
-        print("Maximum coverage ratio:", str(
-            general_fuzz_information["max_cov"]))
+    log.info("Fuzzing: ", end="")
+    log.done("\n")
+    log.info("Fuzzing time: {:.2f}s".format(
+        fuzzing_report["end_time"] - fuzzing_report["start_time"]
+    ))
+    log.info("Coverage testing: {}".format(fuzzing_report["coverage_testing"]))
+    if fuzzing_report["coverage_testing"]:
+        log.info("Program executions for coverage testing: {}".format(
+            fuzzing_report["cov_execs"]
+        ))
+        log.info("Program executions for performance testing: {}".format(
+            fuzzing_report["perun_execs"]
+        ))
+        log.info("Total program tests: {}".format(
+            str(fuzzing_report["perun_execs"] + fuzzing_report["cov_execs"])
+        ))
+        log.info("Maximum coverage ratio: {}".format(
+            str(fuzzing_report["max_cov"])
+        ))
     else:
-        print("Program executions for performance testing:",
-              general_fuzz_information["perun_execs"])
-    print("Founded degradation mutations:", str(
-        general_fuzz_information["degradations"]))
-    print("Hangs:", str(general_fuzz_information["hangs"]))
-    print("Faults:", str(general_fuzz_information["faults"]))
-    print("Worst-case mutation:", str(general_fuzz_information["worst-case"]))
+        log.info("Program executions for performance testing: {}".format(
+              fuzzing_report["perun_execs"]
+        ))
+    log.info("Founded degradation mutations: {}".format(str(fuzzing_report["degradations"])))
+    log.info("Hangs: {}".format(str(fuzzing_report["hangs"])))
+    log.info("Faults: {}".format(str(fuzzing_report["faults"])))
+    log.info("Worst-case mutation: {}".format(str(fuzzing_report["worst-case"])))
     print_legend(rule_set)
 
 
@@ -341,8 +341,7 @@ def choose_parent(parents_fitness_values, num_intervals=5):
         top += tresh
 
     # choose an interval
-    interval_idx = np.random.choice(
-        range(num_intervals), replace=False, p=weights)
+    interval_idx = np.random.choice(range(num_intervals), replace=False, p=weights)
     # choose a parent from the interval
     return randomizer.rand_choice(
         parents_fitness_values[intervals[interval_idx][0]:intervals[interval_idx][1]]
@@ -400,6 +399,50 @@ def teardown(fuzz_progress, output_dirs, parents, rule_set, output_dir, **kwargs
     sys.exit(0)
 
 
+def process_successful_mutation(mutation, parents, fuzz_progress, rule_set):
+    """If the @p mutation is successful during the evaluation, we update the parent queue
+    @p parents, as well as statistics for given rule in rule_set and stats stored in fuzzing
+    progress.
+
+    :param Mutation mutation: sucessfully evaluated mutation
+    :param FuzzingProgress fuzz_progress: collective state of fuzzing
+    :param list parents: list of parents, i.e. mutations which will be furter mutated
+    :param RuleSet rule_set: set of applied rules
+    """
+    rule_set.hits[mutation.history[-1]] += 1
+    rule_set.hits[-1] += 1
+    # without cov testing we firstly rate the new parents here
+    if not fuzz_progress.stats["coverage_testing"]:
+        parents.append(mutation)
+        rate_parent(fuzz_progress, mutation)
+    # for only updating the parent rate
+    else:
+        update_parent_rate(
+            fuzz_progress.parents_fitness_values, mutation
+        )
+
+    # appending to final results
+    fuzz_progress.final_results.append(mutation)
+    fuzz_progress.stats["degradations"] += 1
+
+
+def save_state(fuzz_progress):
+    """Saves the state of the fuzzing at given time and schedules next save after SAMPLING time
+
+    :param FuzzingProgress fuzz_progress:
+    """
+    save_fuzz_state(
+        fuzz_progress.deg_time_series, fuzz_progress.stats["degradations"]
+    )
+    save_fuzz_state(
+        fuzz_progress.cov_time_series, fuzz_progress.stats["max_cov"]
+    )
+
+    timer = threading.Timer(SAMPLING, lambda: save_state(fuzz_progress),)
+    timer.daemon = True
+    timer.start()
+
+
 @log.print_elapsed_time
 @decorators.phase_function('fuzz performance')
 def run_fuzzing_for_command(executable, initial_workload, collector, postprocessor,
@@ -425,7 +468,7 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
     fuzz_progress.stats["coverage_testing"] = \
         (kwargs.get("source_path") and kwargs.get("gcno_path")) is not None
 
-    # getting wokload corpus
+    # getting workload corpus
     parents = filesystem.get_corpus(initial_workload, kwargs["workloads_filter"])
     # choosing appropriate fuzzing methods
     rule_set = filetype.choose_ruleset(parents[0].path, kwargs["regex_rules"])
@@ -472,52 +515,38 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
         log.info('.', end='')
     log.info('')
 
-    # function for saving the state, stores information about run used for plotting graphs
-    def save_state():
-        save_fuzz_state(
-            fuzz_progress.deg_time_series, fuzz_progress.stats["degradations"]
-        )
-        save_fuzz_state(
-            fuzz_progress.cov_time_series, fuzz_progress.stats["max_cov"]
-        )
-
-        timer = threading.Timer(SAMPLING, save_state,)
-        timer.daemon = True
-        timer.start()
-
-    save_state()
+    save_state(fuzz_progress)
     fuzz_progress.stats["start_time"] = time.time()
 
     # SIGINT (CTRL-C) signal handler
     def signal_handler(sig, _):
-        print("Fuzzing process interrupted by signal {}...".format(sig))
+        log.warn("Fuzzing process interrupted by signal {}...".format(sig))
         teardown(fuzz_progress, output_dirs, parents, rule_set, **kwargs)
 
     signal.signal(signal.SIGINT, signal_handler)
 
     # MAIN LOOP
     while (time.time() - fuzz_progress.stats["start_time"]) < fuzz_progress.timeout:
-
         # Gathering interesting workloads
         if fuzz_progress.stats["coverage_testing"]:
             method = "by_coverage"
-            execs = 0
+            execs = kwargs["execs"]
 
             while len(fuzz_progress.interesting_workloads) < kwargs["interesting_files_limit"] and \
-                    execs < kwargs["execs"]:
+                    execs > 0:
 
                 current_workload = choose_parent(fuzz_progress.parents_fitness_values)
                 mutations = fuzz(
                     current_workload, max_bytes, rule_set, output_dir, kwargs["mut_count_strategy"]
                 )
 
-                for i, _ in enumerate(mutations):
+                for mutation in mutations:
                     try:
-                        execs += 1
+                        execs -= 1
                         fuzz_progress.stats["cov_execs"] += 1
                         # testing for coverage
                         result = evaluate_workloads(
-                            method, "target_testing", executable, mutations[i],
+                            method, "target_testing", executable, mutation,
                             collector, postprocessor,
                             minor_version_list, base_cov=fuzz_progress.base_cov,
                             source_files=source_files, gcov_version=gcov_version,
@@ -526,33 +555,33 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
                     # error occured
                     except CalledProcessError:
                         fuzz_progress.stats["faults"] += 1
-                        result = True
-                        mutations[i].path = filesystem.move_file_to(
-                            mutations[i].path, output_dirs["faults"]
+                        mutation.path = filesystem.move_file_to(
+                            mutation.path, output_dirs["faults"]
                         )
-                        fuzz_progress.faults.append(mutations[i])
+                        fuzz_progress.faults.append(mutation)
+                        result = True
                     # timeout expired
                     except TimeoutExpired:
                         fuzz_progress.stats["hangs"] += 1
-                        print("Timeout ({}s) reached when testing. See {}.".format(
-                            kwargs["hang_timeout"], output_dirs["hangs"])
+                        log.warn("Timeout ({}s) reached when testing. See {}.".format(
+                            kwargs["hang_timeout"], output_dirs["hangs"]
+                        ))
+                        mutation.path = filesystem.move_file_to(
+                            mutation.path, output_dirs["hangs"]
                         )
-                        mutations[i].path = filesystem.move_file_to(
-                            mutations[i].path, output_dirs["hangs"]
-                        )
-                        fuzz_progress.hangs.append(mutations[i])
+                        fuzz_progress.hangs.append(mutation)
                         continue
 
                     # if successful mutation
-                    if result and not rate_parent(fuzz_progress, mutations[i]):
+                    if result and not rate_parent(fuzz_progress, mutation):
                         fuzz_progress.update_max_coverage()
-                        parents.append(mutations[i])
-                        fuzz_progress.interesting_workloads.append(mutations[i])
-                        rule_set.hits[mutations[i].history[-1]] += 1
+                        parents.append(mutation)
+                        fuzz_progress.interesting_workloads.append(mutation)
+                        rule_set.hits[mutation.history[-1]] += 1
                         rule_set.hits[-1] += 1
                     # not successful mutation or the same file as previously generated
                     else:
-                        os.remove(mutations[i].path)
+                        os.remove(mutation.path)
 
             # adapting increase coverage ratio
             if fuzz_progress.interesting_workloads:
@@ -560,7 +589,6 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
             else:
                 if kwargs["icovr"] > RATIO_DECR_CONST:
                     kwargs["icovr"] -= RATIO_DECR_CONST
-
         # not coverage testing, only performance testing
         else:
             current_workload = choose_parent(fuzz_progress.parents_fitness_values)
@@ -569,43 +597,26 @@ def run_fuzzing_for_command(executable, initial_workload, collector, postprocess
             )
         method = "by_perun"
 
-        for i, _ in enumerate(fuzz_progress.interesting_workloads):
-            base_result_profile, base_copy = itertools.tee(
-                base_result_profile
-            )  # creates copy of generator
+        for mutation in fuzz_progress.interesting_workloads:
+            # creates copy of generator
+            base_result_profile, base_copy = itertools.tee(base_result_profile)
 
             # testing with perun
             try:
                 fuzz_progress.stats["perun_execs"] += 1
-                result = evaluate_workloads(
-                    method, "target_testing", executable, fuzz_progress.interesting_workloads[i],
-                    collector, postprocessor, minor_version_list, base_result=base_copy, **kwargs
-                )
+                if evaluate_workloads(
+                        method, "target_testing", executable, mutation, collector, postprocessor,
+                        minor_version_list, base_result=base_copy, **kwargs
+                ):
+                    process_successful_mutation(mutation, parents, fuzz_progress, rule_set)
             # temporarily we ignore error within individual perf testing without previous cov test
             except Exception as exc:
                 log.warn("Executing binary raised an exception: {}".format(exc))
                 result = False
 
-            if result:
-                rule_set.hits[fuzz_progress.interesting_workloads[i].history[-1]] += 1
-                rule_set.hits[-1] += 1
-                # without cov testing we firstly rate the new parents here
-                if not fuzz_progress.stats["coverage_testing"]:
-                    parents.append(fuzz_progress.interesting_workloads[i])
-                    rate_parent(fuzz_progress, fuzz_progress.interesting_workloads[i])
-                # for only updating the parent rate
-                else:
-                    update_parent_rate(
-                        fuzz_progress.parents_fitness_values, fuzz_progress.interesting_workloads[i]
-                    )
-
-                # appending to final results
-                fuzz_progress.final_results.append(fuzz_progress.interesting_workloads[i])
-                fuzz_progress.stats["degradations"] += 1
-            else:
-                # in case of testing with coverage, parent wont be removed but used for mutation
-                if not fuzz_progress.stats["coverage_testing"]:
-                    os.remove(fuzz_progress.interesting_workloads[i].path)
+            # in case of testing with coverage, parent wont be removed but used for mutation
+            if not fuzz_progress.stats["coverage_testing"]:
+                os.remove(mutation.path)
 
         # deletes interesting workloads for next run
         del fuzz_progress.interesting_workloads[:]

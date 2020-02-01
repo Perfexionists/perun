@@ -165,7 +165,10 @@ def target_testing(*args, **kwargs):
 
     exit_report = execute_bin(command, kwargs["hang_timeout"])
     if exit_report["exit_code"] != 0:
-        print("Testing with file " + workload.path + " causes " + exit_report["output"])
+        log.error(
+            "Testing with file " + workload.path + " caused " + exit_report["output"],
+            recoverable=True
+        )
         raise subprocess.CalledProcessError(exit_report, command)
 
     workload.cov, _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],
@@ -217,21 +220,19 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
 
     execs = 0
     for gcov_file in gcov_files:
-        fp = open(gcov_file, "r")
-        if gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
-            # intermediate text format
-            for line in fp:
-                if "lcount" in line:
-                    execs += int(line.split(",")[1])
-        else:
-            # standard gcov file format
-            for line in fp:
-                try:
-                    execs += int(line.split(":")[0])
-
-                except ValueError:
-                    continue
-        fp.close()
+        with open(gcov_file, "r") as fp:
+            if gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+                # intermediate text format
+                for line in fp:
+                    if "lcount" in line:
+                        execs += int(line.split(",")[1])
+            else:
+                # standard gcov file format
+                for line in fp:
+                    try:
+                        execs += int(line.split(":")[0])
+                    except ValueError:
+                        continue
     os.chdir(cwd)
     return execs, gcov_files
 

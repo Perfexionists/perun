@@ -102,7 +102,6 @@ def check_for_change(base_pg, target_pg, models_strategy='best-model'):
         for perf_change in check.degradation_between_profiles(base_prof[1], target_prof[1],
                                                               models_strategy):
             checks += 1
-            print(perf_change.result)
             if perf_change.result == PerformanceChange.Degradation:
                 degs += 1
         return degs/checks
