@@ -1,5 +1,6 @@
 """Collection of helpers structures for fuzzing"""
 
+import os
 from collections import namedtuple
 
 __author__ = 'Tomas Fiedor'
@@ -35,6 +36,72 @@ class Mutation:
         self.fitness = fitness
 
 
+class CoverageConfiguration:
+    """Configuration of the coverage testing
+
+    :ivar str gcno_path: path to the directory, where .gcno files are stored
+    :ivar str source_path: path to the directory, where source codes are stored
+    :ivar int gcov_version: version of the gcov utility
+    :ivar list gcov_files: list of gcov files
+    :ivar list source_files: list of source files
+    """
+    def __init__(self, **kwargs):
+        """
+        :param dict kwargs: set of keyword configurations
+        """
+        self.gcno_path = kwargs['gcno_path']
+        self.source_path = kwargs['source_path']
+        self.gcov_version = None
+        self.gcov_files = []
+        self.source_files = []
+
+
+class FuzzingConfiguration:
+    """Collection of (mostly persistent) configuration of the fuzzing process
+
+    This encapsulates all of the possibly used configurations to be passed around functions, in
+    order to reduce the number of local variables and parameters.
+
+    :ivar int timeout: specifies how long the fuzzing should be running
+    :ivar int hang_timeout: specifies how long the tested program should run with the mutations
+    :ivar str output_dir: directory, where resulting logs, workloads etc. are generated
+    :ivar str workloads_filter: regular expression used to filter workloads
+    :ivar list regex_rules: list of user defined rules (described by regular expressions
+    :ivar int max: maximal size of the generated workloads in B
+    :ivar int max_size_percentual: maximal percentual increase in the size of the workloads
+    :ivar int max_size_adjunct: the maximal increase in size of the mutated workload, in comparison
+        with input seeds.
+    :ivar int execs: limit to number of execution of number of mutation per fuzzing loop
+    :ivar int interesting_files_limit: limit for number of generated mutations per fuzzing loop
+    :ivar str mut_count_strategy: strategy used for determining how many workloads will be generated
+        per mutation rule.
+    :ivar bool no_plotting: specifies if the result of the fuzzing should be plotted by graphs
+    :ivar int icovr: threshold for the increase of the
+    :ivar bool coverage_testing: specifies if the mutations should be tested for coverage also,
+        or only using perun
+    :ivar CoverageConfiguration coverage_config
+    """
+    def __init__(self, **kwargs):
+        """
+        :param dict kwargs: set of keyword configurations
+        """
+        self.timeout = kwargs['timeout']
+        self.hang_timeout = kwargs['hang_timeout']
+        self.output_dir = os.path.abspath(kwargs['output_dir'])
+        self.workloads_filter = kwargs['workloads_filter']
+        self.regex_rules = kwargs['regex_rules']
+        self.max = kwargs.get('max', None)
+        self.max_size_percentual = kwargs.get("max_size_percentual", None)
+        self.max_size_adjunct = kwargs.get("max_size_adjunct")
+        self.execs = kwargs['execs']
+        self.interesting_files_limit = kwargs["interesting_files_limit"]
+        self.mut_count_strategy = kwargs["mut_count_strategy"]
+        self.no_plotting = kwargs['no_plotting']
+        self.icovr = kwargs['icovr']
+        self.coverage_testing = (kwargs.get("source_path") and kwargs.get("gcno_path")) is not None
+        self.coverage_config = CoverageConfiguration(**kwargs)
+
+
 class FuzzingProgress:
     """Collection of statistics and states used during fuzzing
 
@@ -46,7 +113,7 @@ class FuzzingProgress:
     :ivar int timeout: timeout of the fuzzing
     :ivar dict stats: additional stats of fuzz testing
     """
-    def __init__(self, timeout):
+    def __init__(self):
         """
         :param int timeout: timeout for the fuzzing
         """
@@ -55,7 +122,6 @@ class FuzzingProgress:
         self.interesting_workloads = []
         self.parents_fitness_values = []
         self.final_results = []
-        self.timeout = timeout
 
         # Time series plotting
         self.deg_time_series = TimeSeries([0], [0])
@@ -70,7 +136,6 @@ class FuzzingProgress:
             "perun_execs": 0,
             "degradations": 0,
             "max_cov": 1.0,
-            "coverage_testing": False,
             "worst-case": None,
             "hangs": 0,
             "faults": 0

@@ -54,8 +54,7 @@ def baseline_testing(executable, seeds, collector, postprocessor, minor_version_
     return base_pg
 
 
-def target_testing(executable, workload, collector, postprocessor,
-                   minor_version_list, **kwargs):
+def target_testing(executable, workload, collector, postprocessor, minor_version_list, **kwargs):
     """ Generates a profile for specified command with fuzzed workload, compares with
     baseline profile.
 

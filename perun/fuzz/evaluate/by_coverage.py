@@ -11,6 +11,7 @@ import subprocess
 import statistics
 
 import perun.utils.log as log
+from perun.fuzz.structs import FuzzingConfiguration, CoverageConfiguration
 
 __author__ = 'Matus Liscinsky'
 
@@ -95,75 +96,77 @@ def get_src_files(source_path):
     return sources
 
 
-def baseline_testing(executable, workloads, *_, **kwargs):
+def baseline_testing(executable, workloads, fuzz_config, **_):
     """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
     :param Executable executable: called command with arguments
     :param list workloads: workloads for initial testing
-    :param list _: rest of the arguments
-    :param kwargs: additional information about paths to .gcno files and source files
-    :return tuple: median of measured coverages, paths to .gcov files, paths to source_files
-    """
-    return get_initial_coverage(
-        kwargs["gcno_path"], kwargs["source_path"], kwargs["hang_timeout"], executable, workloads
-    )
-
-
-def get_initial_coverage(gcno_path, source_path, timeout, executable, seeds):
-    """ Provides initial testing with initial samples given by user.
-
-    :param str gcno_path: path to .gcno files, created within building the project (--coverage flag)
-    :param str source_path: path to project source files
-    :param int timeout: specified timeout for run of target application
-    :param Executable executable: called command with arguments
-    :param list seeds: initial sample files
+    :param FuzzingConfiguration fuzz_config: configuration of the fuzzing
+    :param dict _: additional information about paths to .gcno files and source files
     :return tuple: median of measured coverages, paths to .gcov files, paths to source_files
     """
     # get source files (.c, .cc, .cpp, .h)
-    source_files = get_src_files(source_path)
+    fuzz_config.coverage_config.source_files = \
+        get_src_files(fuzz_config.coverage_config.source_path)
 
     # get gcov version
     gcov_output = execute_bin(["gcov", "--version"])
-    gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
+    fuzz_config.coverage_config.gcov_version = \
+        int((gcov_output["output"].split("\n")[0]).split()[-1][0])
 
+    return get_initial_coverage(executable, workloads, fuzz_config.hang_timeout, fuzz_config)
+
+
+def get_initial_coverage(executable, seeds, timeout, fuzzing_config):
+    """ Provides initial testing with initial samples given by user.
+
+    :param int timeout: specified timeout for run of target application
+    :param Executable executable: called command with arguments
+    :param list seeds: initial sample files
+    :param FuzzingConfiguration fuzzing_config: configuration of the fuzzing
+    :return int: median of measured coverages
+    """
     coverages = []
 
     # run program with each seed
     for seed in seeds:
-
-        prepare_workspace(gcno_path)
+        prepare_workspace(fuzzing_config.coverage_config.gcno_path)
 
         command = " ".join([path.abspath(executable.cmd), executable.args, seed.path]).split(' ')
 
         exit_report = execute_bin(command, timeout)
         if exit_report["exit_code"] != 0:
             log.error("Initial testing with file " + seed.path + " caused " + exit_report["output"])
-        seed.cov, gcov_files = get_coverage_info(
-            gcov_version, source_files, gcno_path, os.getcwd(), None)
+        seed.cov = get_coverage_info(os.getcwd(), fuzzing_config.coverage_config)
 
         coverages.append(seed.cov)
 
-    return int(statistics.median(coverages)), gcov_version, gcov_files, source_files
+    return int(statistics.median(coverages))
 
 
-def target_testing(*args, **kwargs):
+def target_testing(executable, workload, *_,
+                   fuzzing_config=None, parent=None, fuzzing_progress=None, **__):
     """
     Testing function for coverage based fuzzing. Before testing it prepares the workspace
     using `prepare_workspace` func, executes given command and `get_coverage_info` to
     obtain coverage information.
 
-    :param list args: list of arguments for testing
-    :param kwargs: additional information containing base result and path to .gcno files
+    :param Executable executable: called command with arguments
+    :param list workload: list of workloads
+    :param Mutation parent: parent we are mutating
+    :param FuzzingConfiguration fuzzing_config: config of the fuzzing
+    :param FuzzingProgress fuzzing_progress: progress of the fuzzing process
+    :param list _: additional information containing base result and path to .gcno files
+    :param dict __: additional information containing base result and path to .gcno files
     :return int: Greater coverage of the two (base coverage, just measured coverage)
     """
-    gcno_path = kwargs["gcno_path"]
+    gcno_path = fuzzing_config.coverage_config.gcno_path
     prepare_workspace(gcno_path)
-    command = args[0]
-    workload = args[1]
+    command = executable
 
     command = " ".join([command.cmd, command.args, workload.path]).split(' ')
 
-    exit_report = execute_bin(command, kwargs["hang_timeout"])
+    exit_report = execute_bin(command, fuzzing_config.hang_timeout)
     if exit_report["exit_code"] != 0:
         log.error(
             "Testing with file " + workload.path + " caused " + exit_report["output"],
@@ -171,9 +174,8 @@ def target_testing(*args, **kwargs):
         )
         raise subprocess.CalledProcessError(exit_report, command)
 
-    workload.cov, _ = get_coverage_info(kwargs["gcov_version"], kwargs["source_files"],
-                                           gcno_path, os.getcwd(), kwargs["gcov_files"])
-    return set_cond(kwargs["base_cov"], workload.cov, kwargs["parent"].cov, kwargs["icovr"])
+    workload.cov = get_coverage_info(os.getcwd(), fuzzing_config.coverage_config)
+    return set_cond(fuzzing_progress.base_cov, workload.cov, parent.cov, fuzzing_config.icovr)
 
 
 def get_gcov_files(directory):
@@ -184,12 +186,12 @@ def get_gcov_files(directory):
     gcov_files = []
     for file in os.listdir(directory):
         if path.isfile(file) and file.endswith("gcov"):
-            gcov_file = path.abspath(path.join(".", file))
+            gcov_file = path.abspath(path.join(directory, file))
             gcov_files.append(gcov_file)
     return gcov_files
 
 
-def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
+def get_coverage_info(cwd, coverage_config):
     """ Executes gcov utility with source files, and gathers all output .gcov files.
 
     First of all, it changes current working directory to directory specified by
@@ -198,30 +200,27 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
     Otherwise, standard gcov output file format  will be parsed.
     Current working directory is now changed back.
 
-    :param int gcov_version: version of gcov
-    :param str gcno_path: path to the directory with files containing coverage information
-    :param str source_files: source files of the target project
     :param str cwd: current working directory for changing back
-    :param list gcov_files: paths to gcov files
+    :param CoverageConfiguration coverage_config: configuration for coverage
     :return list: absolute paths of generated .gcov files
     """
-    os.chdir(gcno_path)
+    os.chdir(coverage_config.gcno_path)
 
-    if gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+    if coverage_config.gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
         command = ["gcov", "-i", "-o", "."]
     else:
         command = ["gcov", "-o", "."]
-    command.extend(source_files)
+    command.extend(coverage_config.source_files)
     execute_bin(command)
 
     # searching for gcov files, if they are not already known
-    if gcov_files is None:
-        gcov_files = get_gcov_files(".")
+    if not coverage_config.gcov_files:
+        coverage_config.gcov_files = get_gcov_files(".")
 
     execs = 0
-    for gcov_file in gcov_files:
+    for gcov_file in coverage_config.gcov_files:
         with open(gcov_file, "r") as fp:
-            if gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+            if coverage_config.gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
                 # intermediate text format
                 for line in fp:
                     if "lcount" in line:
@@ -234,7 +233,7 @@ def get_coverage_info(gcov_version, source_files, gcno_path, cwd, gcov_files):
                     except ValueError:
                         continue
     os.chdir(cwd)
-    return execs, gcov_files
+    return execs
 
 
 def set_cond(base_cov, cov, parent_cov, increase_ratio=1.5):
