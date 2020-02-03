@@ -86,22 +86,20 @@ def target_testing(executable, workload, collector, postprocessor, minor_version
         return False
 
 
-def check_for_change(base_pg, target_pg, models_strategy='best-model'):
+def check_for_change(base_pg, target_pg, method='best-model'):
     """Function that randomly choose an index from list.
 
     :param generator base_pg: base performance profile generator
     :param generator target_pg: target performance profile generator
-    :param models_strategy: name of detection models strategy to obtains relevant model kinds
+    :param method: name of detection models strategy to obtains relevant model kinds
 
     :return int: ratio between checks and founded degradations
     """
     for base_prof, target_prof in zip(base_pg, target_pg):
         checks = 0
         degs = 0
-        for perf_change in check.degradation_between_profiles(base_prof[1], target_prof[1],
-                                                              models_strategy):
+        for perf_change in check.degradation_between_profiles(base_prof[1], target_prof[1], method):
             checks += 1
-            if perf_change.result == PerformanceChange.Degradation:
-                degs += 1
+            degs += perf_change.result == PerformanceChange.Degradation
         return degs/checks
     return 0

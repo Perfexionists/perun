@@ -320,7 +320,7 @@ def run_detection_with_strategy(
     """
     The wrapper for running detection methods for all kinds of models.
 
-    According to the given `models_strategy` this function obtains the relevant
+    According to the given `method` this function obtains the relevant
     models from both given profiles and subsequently calls the function, that
     ensure the executing of detection between them. In the end, this function
     returns the structure `DegradationInfo` with the detected information.
@@ -369,7 +369,7 @@ def _run_detection_for_models(
     :param kwargs: contains name of detection models strategy to obtains relevant model kinds
     :return: tuple - degradation result (structure DegradationInfo)
     """
-    uid_flag = kwargs['models_strategy'] in ('all-param', 'all-nonparam')
+    uid_flag = kwargs['method'] in ('all-param', 'all-nonparam')
     for uid, target_model in target_models.items():
         baseline_model = baseline_models.get(uid)
 

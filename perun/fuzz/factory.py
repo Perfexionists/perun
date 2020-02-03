@@ -125,7 +125,7 @@ def contains_same_lines(lines, fuzzed_lines, is_binary):
     return len(list(delta)) == 0
 
 
-def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
+def fuzz(parent, max_bytes, rule_set, config):
     """ Provides fuzzing on workload parent using all the implemented methods.
 
     Reads the file and store the lines in list. Makes a copy of the list to send it to every
@@ -136,9 +136,8 @@ def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
 
     :param Mutation parent: path of parent workload file, which will be fuzzed
     :param RuleSet rule_set: stats of fuzzing (mutation) strategies
-    :param str output_dir: path to the output directory
     :param int max_bytes: specify maximum size of created file in bytes
-    :param str strategy: string determining strategy for selection number of allowed muts for rules
+    :param FuzzingConfiguration config: configuration of the fuzzing
     :return list: list of tuples(new_file, its_fuzzing_history)
     """
 
@@ -158,7 +157,7 @@ def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
 
     # fuzzing
     for i, method in enumerate(rule_set.rules):
-        for _ in range(strategy_to_generation_repeats(strategy, rule_set, i)):
+        for _ in range(strategy_to_generation_repeats(config.mutations_per_rule, rule_set, i)):
             fuzzed_lines = lines[:]
             # calling specific fuzz method with copy of parent
             method[0](fuzzed_lines)
@@ -168,7 +167,8 @@ def fuzz(parent, max_bytes, rule_set, output_dir, strategy):
                 continue
 
             # new mutation filename and fuzz history
-            filename = os.path.join(output_dir, file.split("-")[0] + "-" + str(uuid4().hex) + ext)
+            mutation_name = file.split("-")[0] + "-" + str(uuid4().hex) + ext
+            filename = os.path.join(config.output_dir, mutation_name)
             new_fh = copy.copy(parent.history)
             new_fh.append(i)
 
@@ -251,36 +251,35 @@ def evaluate_workloads(method, phase, *args, **kwargs):
     return result
 
 
-def rate_parent(fuzz_progress, parent):
-    """ Rate the `parent` with fitness function and adds it to list with fitness values.
+def rate_parent(fuzz_progress, mutation):
+    """ Rate the `mutation` with fitness function and adds it to list with fitness values.
 
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
-    :param Mutation parent: path to a file which is classified as parent
-    :return int: 1 if a file is the same as any parent, otherwise 0
+    :param Mutation mutation: path to a file which is classified as mutation
+    :return bool: True if a file is the same as any parent, otherwise False
     """
-    increase_cov_rate = parent.cov / fuzz_progress.base_cov
+    increase_cov_rate = mutation.cov / fuzz_progress.base_cov
 
-    fitness_value = increase_cov_rate + parent.deg_ratio
-    parent.fitness = fitness_value
+    fitness_value = increase_cov_rate + mutation.deg_ratio
+    mutation.fitness = fitness_value
 
     # empty list or the value is actually the largest
-    if not fuzz_progress.parents \
-            or fitness_value >= fuzz_progress.parents[-1].fitness:
-        fuzz_progress.parents.append(parent)
-        return 0
+    if not fuzz_progress.parents or fitness_value >= fuzz_progress.parents[-1].fitness:
+        fuzz_progress.parents.append(mutation)
+        return False
     else:
-        for index, par_fit_val in enumerate(fuzz_progress.parents):
-            if fitness_value <= par_fit_val.fitness:
-                fuzz_progress.parents.insert(index, parent)
-                return 0
+        for index, parent in enumerate(fuzz_progress.parents):
+            if fitness_value <= parent.fitness:
+                fuzz_progress.parents.insert(index, mutation)
+                return False
             # if the same file was generated before
-            elif abs(fitness_value - par_fit_val.fitness) <= FP_ALLOWED_ERROR:
+            elif abs(fitness_value - parent.fitness) <= FP_ALLOWED_ERROR:
                 # additional file comparing
-                is_binary_file = filetype.get_filetype(parent.path)[0]
+                is_binary_file = filetype.get_filetype(mutation.path)[0]
                 mode = "rb" if is_binary_file else "r"
-                if contains_same_lines(open(par_fit_val.path, mode).readlines(),
-                                       open(parent.path, mode).readlines(), is_binary_file):
-                    return 1
+                parent_lines = open(parent.path, mode).readlines()
+                mutation_lines = open(mutation.path, mode).readlines()
+                return contains_same_lines(parent_lines, mutation_lines, is_binary_file)
 
 
 def update_parent_rate(parents, mutation):
@@ -521,10 +520,7 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
 
             while len(fuzz_progress.interesting_workloads) < config.precollect_limit and execs > 0:
                 current_workload = choose_parent(fuzz_progress.parents)
-                mutations = fuzz(
-                    current_workload, max_bytes, rule_set,
-                    config.output_dir, config.mutations_per_rule
-                )
+                mutations = fuzz(current_workload, max_bytes, rule_set, config)
 
                 for mutation in mutations:
                     try:
@@ -579,7 +575,7 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
         else:
             current_workload = choose_parent(fuzz_progress.parents)
             fuzz_progress.interesting_workloads = fuzz(
-                current_workload, max_bytes, rule_set, config.output_dir, config.mutations_per_rule
+                current_workload, max_bytes, rule_set, config
             )
 
         log.info("Evaluating gathered mutations ")

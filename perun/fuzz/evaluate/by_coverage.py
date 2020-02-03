@@ -189,6 +189,26 @@ def get_gcov_files(directory):
     return gcov_files
 
 
+def parse_line(line, coverage_config):
+    """
+
+    :param str line: one line in coverage info
+    :param CoverageConfiguration coverage_config: configuration of the coverage
+    :return: coverage info from one line
+    """
+    try:
+        # intermediate text format
+        if coverage_config.gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT and "lcount" in line:
+            return int(line.split(",")[1])
+        # standard gcov file format
+        elif coverage_config.gcov_version < GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+            return int(line.split(":")[0])
+        else:
+            return 0
+    except ValueError:
+        return 0
+
+
 def get_coverage_info(cwd, coverage_config):
     """ Executes gcov utility with source files, and gathers all output .gcov files.
 
@@ -218,18 +238,8 @@ def get_coverage_info(cwd, coverage_config):
     execs = 0
     for gcov_file in coverage_config.gcov_files:
         with open(gcov_file, "r") as fp:
-            if coverage_config.gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
-                # intermediate text format
-                for line in fp:
-                    if "lcount" in line:
-                        execs += int(line.split(",")[1])
-            else:
-                # standard gcov file format
-                for line in fp:
-                    try:
-                        execs += int(line.split(":")[0])
-                    except ValueError:
-                        continue
+            for line in fp:
+                execs += parse_line(line, coverage_config)
     os.chdir(cwd)
     return execs
 
