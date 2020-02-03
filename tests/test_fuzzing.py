@@ -35,7 +35,7 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
-        '--initial-workload', bin_workload,
+        '--input-sample', bin_workload,
         '--timeout', '1',
         '--max', '10',
         '--no-plotting',
@@ -48,12 +48,12 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
-        '--initial-workload', txt_workload,
+        '--input-sample', txt_workload,
         '--timeout', '1',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
-        '--max-size-adjunct', '35000',
-        '--icovr', '1.05',
+        '--max-size-gain', '35000',
+        '--coverage-increase-rate', '1.05',
         '--interesting-files-limit', '2',
         '--workloads-filter', '(?notvalidregex?)',
         '--no-plotting',
@@ -67,10 +67,10 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
-        '--initial-workload', xml_workload,
+        '--input-sample', xml_workload,
         '--timeout', '1',
-        '--max-size-percentual', '3.5',
-        '--mut-count-strategy', 'probabilistic',
+        '--max-size-ratio', '3.5',
+        '--mutations-per-rule', 'probabilistic',
         '--regex-rules', regex_file,
         '--no-plotting',
     ])
@@ -82,7 +82,7 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
-        '--initial-workload', xml_workload,
+        '--input-sample', xml_workload,
         '--timeout', '1',
         '--no-plotting',
     ])
@@ -95,9 +95,9 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
-        '--initial-workload', wierd_workload,
+        '--input-sample', wierd_workload,
         '--timeout', '1',
-        '--max-size-percentual', '3.5',
+        '--max-size-ratio', '3.5',
         '--source-path', '.',
         '--gcno-path', '.',
         '--no-plotting',
@@ -116,7 +116,7 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', sigabrt_init,
         '--output-dir', '.',
-        '--initial-workload', num_workload,
+        '--input-sample', num_workload,
         '--source-path', os.path.dirname(sigabrt_init),
         '--gcno-path', os.path.dirname(sigabrt_init),
     ])
@@ -134,12 +134,12 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', sigabrt_test,
         '--output-dir', '.',
-        '--initial-workload', num_workload,
+        '--input-sample', num_workload,
         '--timeout', '1',
         '--source-path', os.path.dirname(sigabrt_test),
         '--gcno-path', os.path.dirname(sigabrt_test),
-        '--mut-count-strategy', 'unitary',
-        '--execs', '1',
+        '--mutations-per-rule', 'unitary',
+        '--exec_limit', '1',
     ])
     assert result.exit_code == 0
     assert 'SIGABRT' in result.output
@@ -155,7 +155,7 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_init,
         '--output-dir', '.',
-        '--initial-workload', num_workload,
+        '--input-sample', num_workload,
         '--source-path', os.path.dirname(hang_init),
         '--gcno-path', os.path.dirname(hang_init),
         '--hang-timeout', '0.05',
@@ -175,13 +175,13 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,
         '--output-dir', '.',
-        '--initial-workload', num_workload,
+        '--input-sample', num_workload,
         '--timeout', '1',
         '--source-path', os.path.dirname(hang_test),
         '--gcno-path', os.path.dirname(hang_test),
-        '--mut-count-strategy', 'proportional',
+        '--mutations-per-rule', 'proportional',
         '--hang-timeout', '0.05',
-        '--execs', '1',
+        '--exec_limit', '1',
         '--no-plotting',
     ])
     assert result.exit_code == 0
@@ -191,7 +191,7 @@ def test_fuzzing_correct(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,
         '--output-dir', '.',
-        '--initial-workload', num_workload,
+        '--input-sample', num_workload,
         '--timeout', '1',
         '--source-path', os.path.dirname(hang_test),
         '--gcno-path', os.path.dirname(hang_test),
@@ -210,25 +210,25 @@ def test_fuzzing_incorrect(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--args', '-al',
         '--output-dir', '.',
-        '--initial-workload', '.',
+        '--input-sample', '.',
     ])
     assert result.exit_code == 2
     assert '--cmd' in result.output
 
-    # Missing option --initial-workload
+    # Missing option --input-sample
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
         '--output-dir', '.',
     ])
     assert result.exit_code == 2
-    assert '--initial-workload"' in result.output
+    assert '--input-sample"' in result.output
 
     # Missing option --output-dir
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
     ])
     assert result.exit_code == 2
     assert '--output-dir' in result.output
@@ -237,7 +237,7 @@ def test_fuzzing_incorrect(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
         '--source-path', 'WTF~~notexisting'
     ])
@@ -248,7 +248,7 @@ def test_fuzzing_incorrect(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
         '--gcno-path', 'WTF~~notexisting'
     ])
@@ -259,7 +259,7 @@ def test_fuzzing_incorrect(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
         '--timeout', 'not_number'
     ])
@@ -270,7 +270,7 @@ def test_fuzzing_incorrect(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
         '--hang-timeout', '0'
     ])
@@ -281,73 +281,73 @@ def test_fuzzing_incorrect(pcs_full):
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
         '--max', '1.5'
     ])
     assert result.exit_code == 2
     assert '--max' in result.output
 
-    # Wrong value for option --max-size-adjunct
+    # Wrong value for option --max-size-gain
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
-        '--max-size-adjunct', 'ola'
+        '--max-size-gain', 'ola'
     ])
     assert result.exit_code == 2
-    assert '--max-size-adjunct' in result.output
+    assert '--max-size-gain' in result.output
 
-    # Wrong value for option --max-size-percentual
+    # Wrong value for option --max-size-ratio
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
-        '--max-size-percentual', 'two_hundred'
+        '--max-size-ratio', 'two_hundred'
     ])
     assert result.exit_code == 2
-    assert '--max-size-percentual' in result.output
+    assert '--max-size-ratio' in result.output
 
-    # Wrong value for option --execs
+    # Wrong value for option --exec_limit
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
-        '--execs', '1.6'
+        '--exec_limit', '1.6'
     ])
     assert result.exit_code == 2
-    assert '--execs' in result.output
+    assert '--exec_limit' in result.output
 
     # Wrong value for option --interesting-files-limit
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
         '--interesting-files-limit', '-1'
     ])
     assert result.exit_code == 2
     assert '--interesting-files-limit' in result.output
 
-    # Wrong value for option --icovr
+    # Wrong value for option --coverage-increase-rate
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
-        '--icovr', 'notvalidfloat'
+        '--coverage-increase-rate', 'notvalidfloat'
     ])
     assert result.exit_code == 2
-    assert '--icovr' in result.output
+    assert '--coverage-increase-rate' in result.output
 
     # Wrong value for option --regex-rules
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
-        '--initial-workload', '.',
+        '--input-sample', '.',
         '--output-dir', '.',
         '--regex-rules', 'e'
     ])

@@ -70,7 +70,7 @@ def save_log_files(log_dir, fuzz_progress):
     save_time_series(deg_data_file, fuzz_progress.deg_time_series)
     save_time_series(cov_data_file, fuzz_progress.cov_time_series)
 
-    for mut in fuzz_progress.parents_fitness_values:
+    for mut in fuzz_progress.parents:
         results_data_file.write(
             str(mut.fitness) + " " + str(mut.cov/fuzz_progress.base_cov) + " " +
             str(mut.deg_ratio) + " " + mut.path + " " + str(mut.history) + "\n"

@@ -31,13 +31,11 @@ def get_corpus(workloads, pattern):
                 if files:
                     init_seeds.extend([
                         Mutation(
-                            path.join(path.abspath(root), filename), [], None, 0, 0, 0
+                            path.join(path.abspath(root), filename), [], None
                         ) for filename in files if filter_regexp.match(filename)
                     ])
         else:
-            init_seeds.append(Mutation(
-                path.abspath(workload), [], None, 0, 0, 0
-            ))
+            init_seeds.append(Mutation(path.abspath(workload), [], None))
     return init_seeds
 
 

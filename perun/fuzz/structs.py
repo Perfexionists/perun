@@ -68,18 +68,18 @@ class FuzzingConfiguration:
     :ivar str workloads_filter: regular expression used to filter workloads
     :ivar list regex_rules: list of user defined rules (described by regular expressions
     :ivar int max: maximal size of the generated workloads in B
-    :ivar int max_size_percentual: maximal percentual increase in the size of the workloads
-    :ivar int max_size_adjunct: the maximal increase in size of the mutated workload, in comparison
+    :ivar int max_size_ratio: maximal percentual increase in the size of the workloads
+    :ivar int max_size_gain: the maximal increase in size of the mutated workload, in comparison
         with input seeds.
-    :ivar int execs: limit to number of execution of number of mutation per fuzzing loop
-    :ivar int interesting_files_limit: limit for number of generated mutations per fuzzing loop
-    :ivar str mut_count_strategy: strategy used for determining how many workloads will be generated
+    :ivar int exec_limit: limit to number of execution of number of mutation per fuzzing loop
+    :ivar int precollect_limit: limit for number of generated mutations per fuzzing loop
+    :ivar str mutations_per_rule: strategy used for determining how many workloads will be generated
         per mutation rule.
     :ivar bool no_plotting: specifies if the result of the fuzzing should be plotted by graphs
-    :ivar int icovr: threshold for the increase of the
+    :ivar int cov_rate: threshold for the increase of the
     :ivar bool coverage_testing: specifies if the mutations should be tested for coverage also,
         or only using perun
-    :ivar CoverageConfiguration coverage_config
+    :ivar CoverageConfiguration coverage
     """
     def __init__(self, **kwargs):
         """
@@ -90,16 +90,16 @@ class FuzzingConfiguration:
         self.output_dir = os.path.abspath(kwargs['output_dir'])
         self.workloads_filter = kwargs['workloads_filter']
         self.regex_rules = kwargs['regex_rules']
-        self.max = kwargs.get('max', None)
-        self.max_size_percentual = kwargs.get("max_size_percentual", None)
-        self.max_size_adjunct = kwargs.get("max_size_adjunct")
-        self.execs = kwargs['execs']
-        self.interesting_files_limit = kwargs["interesting_files_limit"]
-        self.mut_count_strategy = kwargs["mut_count_strategy"]
+        self.max_size = kwargs.get('max', None)
+        self.max_size_ratio = kwargs.get("max_size_ratio", None)
+        self.max_size_gain = kwargs.get("max_size_gain")
+        self.exec_limit = kwargs['exec_limit']
+        self.precollect_limit = kwargs["interesting_files_limit"]
+        self.mutations_per_rule = kwargs["mutations_per_rule"]
         self.no_plotting = kwargs['no_plotting']
-        self.icovr = kwargs['icovr']
+        self.cov_rate = kwargs['coverage_increase_rate']
         self.coverage_testing = (kwargs.get("source_path") and kwargs.get("gcno_path")) is not None
-        self.coverage_config = CoverageConfiguration(**kwargs)
+        self.coverage = CoverageConfiguration(**kwargs)
 
 
 class FuzzingProgress:
@@ -108,7 +108,7 @@ class FuzzingProgress:
     :ivar list faults: list of workloads leading to faults
     :ivar list hangs: list of workloads leading to hangs
     :ivar list interesting_workloads: list of potentially interesting workloads
-    :ivar list parents_fitness_values: list of fitness values for parents
+    :ivar list parents: list of fitness values for parents
     :ivar list final_results: list of final results
     :ivar int timeout: timeout of the fuzzing
     :ivar dict stats: additional stats of fuzz testing
@@ -120,7 +120,7 @@ class FuzzingProgress:
         self.faults = []
         self.hangs = []
         self.interesting_workloads = []
-        self.parents_fitness_values = []
+        self.parents = []
         self.final_results = []
 
         # Time series plotting
@@ -136,11 +136,11 @@ class FuzzingProgress:
             "perun_execs": 0,
             "degradations": 0,
             "max_cov": 1.0,
-            "worst-case": None,
+            "worst_case": None,
             "hangs": 0,
             "faults": 0
         }
 
     def update_max_coverage(self):
         """Updates the maximal achieved coverage according to the parent fitness values"""
-        self.stats["max_cov"] = self.parents_fitness_values[-1].cov / self.base_cov
+        self.stats["max_cov"] = self.parents[-1].cov / self.base_cov

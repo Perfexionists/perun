@@ -11,7 +11,6 @@ import subprocess
 import statistics
 
 import perun.utils.log as log
-from perun.fuzz.structs import FuzzingConfiguration, CoverageConfiguration
 
 __author__ = 'Matus Liscinsky'
 
@@ -96,25 +95,23 @@ def get_src_files(source_path):
     return sources
 
 
-def baseline_testing(executable, workloads, fuzz_config, **_):
+def baseline_testing(executable, workloads, config, **_):
     """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
     :param Executable executable: called command with arguments
     :param list workloads: workloads for initial testing
-    :param FuzzingConfiguration fuzz_config: configuration of the fuzzing
+    :param FuzzingConfiguration config: configuration of the fuzzing
     :param dict _: additional information about paths to .gcno files and source files
     :return tuple: median of measured coverages, paths to .gcov files, paths to source_files
     """
     # get source files (.c, .cc, .cpp, .h)
-    fuzz_config.coverage_config.source_files = \
-        get_src_files(fuzz_config.coverage_config.source_path)
+    config.coverage.source_files = get_src_files(config.coverage.source_path)
 
     # get gcov version
     gcov_output = execute_bin(["gcov", "--version"])
-    fuzz_config.coverage_config.gcov_version = \
-        int((gcov_output["output"].split("\n")[0]).split()[-1][0])
+    config.coverage.gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
 
-    return get_initial_coverage(executable, workloads, fuzz_config.hang_timeout, fuzz_config)
+    return get_initial_coverage(executable, workloads, config.hang_timeout, config)
 
 
 def get_initial_coverage(executable, seeds, timeout, fuzzing_config):
@@ -130,22 +127,21 @@ def get_initial_coverage(executable, seeds, timeout, fuzzing_config):
 
     # run program with each seed
     for seed in seeds:
-        prepare_workspace(fuzzing_config.coverage_config.gcno_path)
+        prepare_workspace(fuzzing_config.coverage.gcno_path)
 
         command = " ".join([path.abspath(executable.cmd), executable.args, seed.path]).split(' ')
 
         exit_report = execute_bin(command, timeout)
         if exit_report["exit_code"] != 0:
             log.error("Initial testing with file " + seed.path + " caused " + exit_report["output"])
-        seed.cov = get_coverage_info(os.getcwd(), fuzzing_config.coverage_config)
+        seed.cov = get_coverage_info(os.getcwd(), fuzzing_config.coverage)
 
         coverages.append(seed.cov)
 
     return int(statistics.median(coverages))
 
 
-def target_testing(executable, workload, *_,
-                   fuzzing_config=None, parent=None, fuzzing_progress=None, **__):
+def target_testing(executable, workload, *_, config=None, parent=None, fuzzing_progress=None, **__):
     """
     Testing function for coverage based fuzzing. Before testing it prepares the workspace
     using `prepare_workspace` func, executes given command and `get_coverage_info` to
@@ -154,19 +150,19 @@ def target_testing(executable, workload, *_,
     :param Executable executable: called command with arguments
     :param list workload: list of workloads
     :param Mutation parent: parent we are mutating
-    :param FuzzingConfiguration fuzzing_config: config of the fuzzing
+    :param FuzzingConfiguration config: config of the fuzzing
     :param FuzzingProgress fuzzing_progress: progress of the fuzzing process
     :param list _: additional information containing base result and path to .gcno files
     :param dict __: additional information containing base result and path to .gcno files
     :return int: Greater coverage of the two (base coverage, just measured coverage)
     """
-    gcno_path = fuzzing_config.coverage_config.gcno_path
+    gcno_path = config.coverage.gcno_path
     prepare_workspace(gcno_path)
     command = executable
 
     command = " ".join([command.cmd, command.args, workload.path]).split(' ')
 
-    exit_report = execute_bin(command, fuzzing_config.hang_timeout)
+    exit_report = execute_bin(command, config.hang_timeout)
     if exit_report["exit_code"] != 0:
         log.error(
             "Testing with file " + workload.path + " caused " + exit_report["output"],
@@ -174,8 +170,10 @@ def target_testing(executable, workload, *_,
         )
         raise subprocess.CalledProcessError(exit_report, command)
 
-    workload.cov = get_coverage_info(os.getcwd(), fuzzing_config.coverage_config)
-    return set_cond(fuzzing_progress.base_cov, workload.cov, parent.cov, fuzzing_config.icovr)
+    workload.cov = get_coverage_info(os.getcwd(), config.coverage)
+    return evaluate_coverage(
+        fuzzing_progress.base_cov, workload.cov, parent.cov, config.cov_rate
+    )
 
 
 def get_gcov_files(directory):
@@ -236,8 +234,8 @@ def get_coverage_info(cwd, coverage_config):
     return execs
 
 
-def set_cond(base_cov, cov, parent_cov, increase_ratio=1.5):
-    """ Condition for adding mutated input to set of canditates(parents).
+def evaluate_coverage(base_cov, cov, parent_cov, increase_ratio=1.5):
+    """ Condition for adding mutated input to set of candidates(parents).
 
     :param int base_cov: base coverage
     :param int cov: measured coverage
