@@ -26,6 +26,12 @@ Perun's tool suite currently contains the following three collectors:
   3. :ref:`collectors-time`, collects overall running times of arbitrary commands. Internally
      implemented as a simple wrapper over ``time`` utility
 
+  4. :ref:`collectors-bounds`, collects bounds of integer and, to some extent, heap-manipulating
+     loops represented as so called ranking function. The collectors works as a wrapper over
+     the Loopus_ tool. The collection is limited to source codes only, written in subset of C
+     language, i.e. for some construction it might return wrong bounds (e.g. for `switch`
+     statement). Moreover, the runtime of `bounds` depends on Z3 library.
+
 All of the listed collectors can be run from command line. For more information about command line
 interface for individual collectors refer to :ref:`cli-collect-units-ref`.
 
@@ -162,6 +168,42 @@ Examples
 The above is an example of profiled data using the `time` wrapper with important regions and keys
 highlighted. The given command was profiled two times.
 
+.. _collectors-bounds:
+
+Bounds Collector
+~~~~~~~~~~~~~~~~
+
+.. automodule:: perun.collect.bounds
+
+Overview and Command Line Interface
+"""""""""""""""""""""""""""""""""""
+
+.. click:: perun.collect.bounds.run:bounds
+   :prog: perun collect bounds
+
+.. _collectors-bounds-examples:
+
+Examples
+""""""""
+
+.. literalinclude:: /../examples/bounds-short.perf
+    :language: json
+    :linenos:
+    :emphasize-lines: 42,43,45,78-79
+
+The above is an example of profiled data using the `bounds` with important regions and keys
+highlighted. The bounds corresponds to the program listed below, which contains four highlighted
+loops. For each loop we have a local bound that is represented as a ranking function based on input
+function parameters. For each bound, we also list its class, i.e. the highest polynom of the ranking
+function, or Big-O complexity. In case, the complexity cannot be inferred, the Loopus returns failure
+and we report infinite bound, which is safe approximation. Each function then gets a cummulative total
+bound, that represents the whole complexity of the function.
+
+.. literalinclude:: /../examples/bounds.c
+    :language: c
+    :linenos:
+    :emphasize-lines: 16,31,37,46
+
 .. _collectors-custom:
 
 Creating your own Collector
@@ -244,3 +286,4 @@ You can register your new collector as follows:
 
 .. _Pull Request: https://github.com/tfiedor/perun/pull/new/develop
 .. _Click: http://click.pocoo.org/5/
+.. _Loopus: https://forsyte.at/software/loopus/
