@@ -84,7 +84,7 @@ def compile_systemtap_script(command, logfile, res, **kwargs):
     :param Res res: the resources object
     :param kwargs: additional configuration options
     """
-    WD.info('Attempting to compile the SystemTap script into a kernel module. This may take'
+    WD.info('Attempting to compile the SystemTap script into a kernel module. This may take '
             'a while depending on the number of probe points.')
     # Lock the SystemTap process we're about to start
     process_lock = 'process_{}'.format(os.path.basename(kwargs['binary']))
@@ -172,7 +172,7 @@ def run_profiled_command(executable, timeout, res, **kwargs):
         res[Res.profiled_command()] = profiled
         WD.debug("Profiled command process: '{}'".format(profiled.pid))
         # Start the Heartbeat thread so that the user is periodically updated about the progress
-        with HeartbeatThread(HEARTBEAT_INTERVAL, _heartbeat_command, res[Res.data()]):
+        with HeartbeatThread(HEARTBEAT_INTERVAL, _heartbeat_command, [res[Res.data()]]):
             if output_mode == OutputHandling.Capture:
                 # Start the 'tee' thread if the output is being captured
                 NonBlockingTee(profiled.stdout, res[Res.capture()])
@@ -296,7 +296,7 @@ def _wait_for_script_compilation(logfile, stap_process):
     :param Subprocess stap_process: the subprocess object representing the compilation process
     """
     # Start a HeartbeatThread that periodically informs the user of the compilation progress
-    with HeartbeatThread(HEARTBEAT_INTERVAL, _heartbeat_stap, (logfile, 'Compilation')):
+    with HeartbeatThread(HEARTBEAT_INTERVAL, _heartbeat_stap, [logfile, 'Compilation']):
         while True:
             # Check the status of the process
             status = stap_process.poll()

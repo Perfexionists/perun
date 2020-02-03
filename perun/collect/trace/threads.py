@@ -64,14 +64,14 @@ class HeartbeatThread(Thread):
     :ivar Event _stop_event: the threading.Event object used to interrupt the sleeping thread
     :ivar float _timer: the interval of the periodical action
     :ivar function _callback: the action to perform periodically
-    :ivar tuple callback_args: the arguments of the action function
+    :ivar list callback_args: the arguments of the action function
     """
     def __init__(self, timer, callback, callback_args):
         """ Creates the HeartbeatThread object
 
         :param float timer: the interval of the periodical action
         :param function callback: the action to perform periodically
-        :param tuple callback_args: the arguments of the action function
+        :param list callback_args: the arguments of the action function
         """
         super().__init__()
         self._stop_event = Event()

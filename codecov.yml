@@ -1,2 +1,4 @@
 ignore: 
   - "perun/collect/trace"
+  - "tests/test_collect"
+
