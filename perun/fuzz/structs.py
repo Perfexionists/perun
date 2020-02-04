@@ -101,6 +101,19 @@ class FuzzingConfiguration:
         self.coverage_testing = (kwargs.get("source_path") and kwargs.get("gcno_path")) is not None
         self.coverage = CoverageConfiguration(**kwargs)
 
+    RATIO_INCR_CONST = 0.05
+    RATIO_DECR_CONST = 0.01
+
+    def refine_coverage_rate(self, found_workloads):
+        """Refines the coverage rate according to so far founded interesting workloads
+
+        :param list found_workloads: list of interesting workloads
+        """
+        if found_workloads:
+            self.cov_rate += FuzzingConfiguration.RATIO_INCR_CONST
+        elif self.cov_rate > FuzzingConfiguration.RATIO_DECR_CONST:
+            self.cov_rate -= FuzzingConfiguration.RATIO_DECR_CONST
+
 
 class FuzzingProgress:
     """Collection of statistics and states used during fuzzing

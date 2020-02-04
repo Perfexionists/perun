@@ -29,8 +29,6 @@ from perun.fuzz.structs import FuzzingProgress, Mutation, FuzzingConfiguration
 np.seterr(divide='ignore', invalid='ignore')
 
 FP_ALLOWED_ERROR = 0.00001
-RATIO_INCR_CONST = 0.05
-RATIO_DECR_CONST = 0.01
 MAX_FILES_PER_RULE = 100
 SAMPLING = 1.0
 
@@ -435,6 +433,30 @@ def save_state(fuzz_progress):
     timer.start()
 
 
+def perform_baseline_coverage_testing(executable, parents, config):
+    """Performs the baseline testing for the coverage
+
+    :param Executable executable: tested executable
+    :param list parents: list of parents
+    :param FuzzingConfig config: configuration of the fuzzing process
+    :return: base coverage of parents
+    """
+    base_cov = 0
+    log.info("Performing coverage-based testing on parent seeds.")
+    try:
+        # Note that evaluate workloads modifies config as sideeffect
+        base_cov = evaluate_workloads(
+            "by_coverage", "baseline_testing", executable, parents, config
+        )
+        log.done()
+    except TimeoutExpired:
+        log.error(
+            "Timeout ({}s) reached when testing with initial files. Adjust hang timeout using"
+            " option --hang-timeout, resp. -h.".format(config.hang_timeout)
+        )
+    return base_cov
+
+
 @log.print_elapsed_time
 @decorators.phase_function('fuzz performance')
 def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, minor_version_list,
@@ -467,18 +489,7 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
 
     # Init coverage testing with seeds
     if config.coverage_testing:
-        log.info("Performing coverage-based testing on parent seeds.")
-        try:
-            # Note that evaluate workloads modifies config as sideeffect
-            fuzz_progress.base_cov = evaluate_workloads(
-                "by_coverage", "baseline_testing", executable, parents, config
-            )
-            log.done()
-        except TimeoutExpired:
-            log.error(
-                "Timeout ({}s) reached when testing with initial files. Adjust hang timeout using"
-                " option --hang-timeout, resp. -h.".format(config.hang_timeout)
-            )
+        fuzz_progress.base_cov = perform_baseline_coverage_testing(executable, parents, config)
 
     # No gcno files were found, no coverage testing
     if not fuzz_progress.base_cov:
@@ -566,11 +577,8 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
             log.done()
 
             # adapting increase coverage ratio
-            if fuzz_progress.interesting_workloads:
-                config.cov_rate += RATIO_INCR_CONST
-            else:
-                if config.cov_rate > RATIO_DECR_CONST:
-                    config.cov_rate -= RATIO_DECR_CONST
+            config.refine_coverage_rate(fuzz_progress.interesting_workloads)
+
         # not coverage testing, only performance testing
         else:
             current_workload = choose_parent(fuzz_progress.parents)
