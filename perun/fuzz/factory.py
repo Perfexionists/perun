@@ -52,14 +52,14 @@ def compute_safe_ratio(lhs, rhs):
     return ratio
 
 
-def get_max_size(seeds, max_size, max_percentual, max_adjunct):
+def get_max_size(seeds, max_size, max_size_ratio, max_size_gain):
     """ Finds out max size among the sample files and compare it to specified
     max size of mutated file.
 
     :param list seeds: list of paths to sample files and their fuzz history
     :param int max_size: user defined max size of mutated file
-    :param max_percentual: size specified by percentage
-    :param max_adjunct: size to adjunct to max
+    :param max_size_ratio: size specified by percentage
+    :param max_size_gain: size to adjunct to max
     :return int: `max_size` if defined, otherwise value depending on adjusting method
                  (percentage portion, adding constant size)
     """
@@ -68,10 +68,10 @@ def get_max_size(seeds, max_size, max_percentual, max_adjunct):
 
     # --max option was not specified
     if max_size is None:
-        if max_percentual is not None:
-            return int(seed_max * max_percentual)  # percentual adjusting
+        if max_size_ratio is not None:
+            return int(seed_max * max_size_ratio)  # percentual adjusting
         else:
-            return seed_max + max_adjunct  # adjusting by size(B)
+            return seed_max + max_size_gain  # adjusting by size(B)
 
     if seed_max >= max_size:
         log.warn("Warning: Specified max size is smaller than the largest workload.")
@@ -228,7 +228,7 @@ def print_results(fuzzing_report, fuzzing_config, rule_set):
         ))
     else:
         log.info("Program executions for performance testing: {}".format(
-              fuzzing_report["perun_execs"]
+            fuzzing_report["perun_execs"]
         ))
     log.info("Founded degradation mutations: {}".format(str(fuzzing_report["degradations"])))
     log.info("Hangs: {}".format(str(fuzzing_report["hangs"])))

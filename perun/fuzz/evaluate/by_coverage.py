@@ -237,8 +237,8 @@ def get_coverage_info(cwd, coverage_config):
 
     execs = 0
     for gcov_file in coverage_config.gcov_files:
-        with open(gcov_file, "r") as fp:
-            for line in fp:
+        with open(gcov_file, "r") as gcov_fp:
+            for line in gcov_fp:
                 execs += parse_line(line, coverage_config)
     os.chdir(cwd)
     return execs

@@ -15,7 +15,7 @@ def change_char(lines):
     """ Changes a random character of a line.
 
     Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</a!uthor>                    "
+        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</a!uthor>"
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
@@ -201,7 +201,7 @@ def del_line(lines):
 
     :param list lines: lines of the workload, which has been choosen for mutating
     """
-    if len(lines):
+    if len(lines) > 0:
         del lines[randomizer.rand_from_range(0, len(lines)-1)]
 
 
@@ -237,7 +237,7 @@ def del_char(lines):
         pass
 
 
-fuzzing_methods = [
+FUZZING_METHODS = [
     (change_char, "Change random characters at random places"),
     (fuzz_insert_ws, "Insert whitespaces at random places"),
     (divide_line, "Divide a random line"),

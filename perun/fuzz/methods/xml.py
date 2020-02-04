@@ -8,6 +8,12 @@ RULE_ITERATIONS = 10
 
 
 def random_regex_replace(lines, pattern, repl):
+    """Helper function for replacing the string in lines given a pattern
+
+    :param list lines: list of lines
+    :param str pattern: pattern which will be replaced
+    :param str repl: string which will replace the pattern
+    """
     rand = randomizer.rand_index(len(lines))
     pattern = re.compile(pattern)
     matches = pattern.finditer(lines[rand])
@@ -67,7 +73,7 @@ def remove_tag(lines):
     random_regex_replace(lines, r"<[^>]*>", "")
 
 
-fuzzing_methods = [
+FUZZING_METHODS = [
     (remove_attribute_value, "Remove random attribute value"),
     (remove_attribute_name, "Remove random attribute name"),
     (remove_attribute, "Remove random attribute"),

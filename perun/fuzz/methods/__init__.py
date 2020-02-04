@@ -11,5 +11,3 @@ Currently, we support the following types of rules:
      structure.
 """
 __author__ = 'Tomas Fiedor'
-
-

@@ -59,11 +59,11 @@ def choose_ruleset(file, regex_rules=None):
 
     is_binary, filetype = get_filetype(file)
     if is_binary:
-        fuzzing_methods.extend(binary.fuzzing_methods)
+        fuzzing_methods.extend(binary.FUZZING_METHODS)
     else:
         if filetype in ["xml", "html", "svg", "xhtml", "xul"]:
-            fuzzing_methods.extend(xml.fuzzing_methods)
-        fuzzing_methods.extend(textfile.fuzzing_methods)
+            fuzzing_methods.extend(xml.FUZZING_METHODS)
+        fuzzing_methods.extend(textfile.FUZZING_METHODS)
 
     # last element is for total num of cov increases or perf degradations
     return RuleSet(fuzzing_methods, [0] * (len(fuzzing_methods) + 1))

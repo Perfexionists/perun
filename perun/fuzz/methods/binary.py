@@ -123,7 +123,7 @@ def insert_zero_byte(lines):
     helpers.insert_at_split(lines, rand, index, b'\0')
 
 
-fuzzing_methods = [
+FUZZING_METHODS = [
     (remove_zero_byte, "Remove zero byte"),
     (insert_zero_byte, "Insert zero byte to random position"),
     (insert_byte, "Insert a random byte to random position"),
