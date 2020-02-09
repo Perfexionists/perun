@@ -1,5 +1,6 @@
 """Basic tests for utility package and sanity checks"""
 
+import glob
 import pkgutil
 import os
 import subprocess
@@ -159,6 +160,9 @@ def test_binaries_lookup():
     assert len(binaries2) == 2
     assert binaries2[0].endswith('utils_tree/testdir/quicksort')
     assert binaries2[1].endswith('utils_tree/testdir/nobuild/quicksort')
+
+    # Remove all testing executable files in the build directory (all 'quicksort' files)
+    [os.remove(filename) for filename in glob.glob(testdir + "**/**/quicksort", recursive=True)]
 
 
 def test_size_formatting():
