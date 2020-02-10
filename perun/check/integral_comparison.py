@@ -7,10 +7,9 @@ import numpy as np
 import scipy.integrate as integrate
 
 import perun.check.factory as factory
+import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.postprocess.regression_analysis.tools as tools
-
-from perun.check.factory import PerformanceChange
 
 __author__ = 'Simon Stupinsky'
 
@@ -39,7 +38,7 @@ def compute_param_integral(model):
     return integrate.quad(formula, model.x_start, model.x_end, args=coeffs)[0]
 
 
-def compute_nparam_integral(model):
+def compute_nparam_integral(x_pts, y_pts):
     """
     Computation of integral of non-parametric model.
 
@@ -48,49 +47,14 @@ def compute_nparam_integral(model):
     length of `y`-interval and then execute the computation with using `scipy`
     package.
 
-    :param ModelRecord model: regressogram model with its required metrics
-        (bucket_stats, x_start, x_end, ...)
+    :param list x_pts: list of x-coordinates from non-parametric model
+    :param list y_pts: list of y-coordinates from non-parametric model
     :return float: the value of integral computed using samples
     """
-    x_pts = np.linspace(model.x_start, model.x_end, num=len(model.b0))
-    return integrate.simps(model.b0, x_pts)
+    return integrate.simps(y_pts, x_pts)
 
 
-def classify_change(diff_value, no_change, change, baseline_per=1):
-    """
-    Classification of changes according to the value of relative error.
-
-    A method performs an evaluation of relative error value, that was
-    computed between two compared profiles. This value is compared
-    with threshold values and subsequently is specified the type
-    of changes. Following rules are applied:
-
-        * if DIFF_VALUE > 0 then change=DEGRADATION
-        ** else DIFF_VALUE <= 0 then change=OPTIMIZATION
-
-        | -> if DIFF_VALUE <= NO_CHANGE_THRESHOLD then state=NO_CHANGE
-        || -> elif DIFF_VALUE <= CHANGE_THRESHOLD then state=MAYBE_CHANGE
-        ||| -> else DIFF_VALUE > CHANGE_THRESHOLD then state=CHANGE
-
-    :param float diff_value: value of diff value computed between compared profiles
-    :param float no_change: threshold to determine `no_change` state
-    :param float change: threshold to determine remaining two states (`maybe_change` and `change`)
-    :param float baseline_per: percentage rate from the threshold according to the baseline value
-    :return PerformanceChange: determined changes in the basis of given arguments
-    """
-    if abs(diff_value) <= no_change * baseline_per:
-        change = PerformanceChange.NoChange
-    elif abs(diff_value) <= change * baseline_per:
-        change = PerformanceChange.MaybeOptimization if diff_value < 0 else \
-            PerformanceChange.MaybeDegradation
-    else:
-        change = PerformanceChange.Optimization if diff_value < 0 else \
-            PerformanceChange.Degradation
-
-    return change
-
-
-def execute_analysis(_, baseline_model, target_model, **__):
+def execute_analysis(uid, baseline_model, target_model, **kwargs):
     """
     A method performs the primary analysis for pair of models.
 
@@ -100,34 +64,25 @@ def execute_analysis(_, baseline_model, target_model, **__):
     models with using of the threshold value. At the end is returned the dictionary
     with relevant information about the detected change.
 
-    :param str _: unique identification of given models (not used in this detection method)
+    :param str uid: unique identification of given models (not used in this detection method)
     :param ModelRecord baseline_model: dictionary of baseline model with its required properties
     :param ModelRecord target_model: dictionary of target_model with its required properties
-    :param dict __: unification with remaining detection methods (i.e. Integral Comparison)
+    :param dict kwargs: unification with remaining detection methods (i.e. Integral Comparison)
     :return DegradationInfo: tuple with degradation info between pair of models:
         (deg. result, deg. location, deg. rate, confidence type and rate, etc.)
     """
-    def compute_integral(model):
-        """
-        This function computes the integral under the curve of the given model.
+    x_pts, baseline_y_pts, target_y_pts = nparam_helpers.preprocess_nonparam_models(
+        uid, baseline_model, kwargs.get('target_profile'), target_model
+    )
 
-        According to the kind of the given model, the function determines the
-        calculating function, that subsequently calculates the value of integral
-        from the given model.
+    baseline_integral = compute_param_integral(baseline_model) if baseline_model.b1 is not None else \
+        compute_nparam_integral(x_pts, baseline_y_pts)
+    target_integral = compute_param_integral(target_model) if target_model.b1 is not None else \
+        compute_nparam_integral(x_pts, target_y_pts)
 
-        :param ModelRecord model: dictionary of model with its required properties
-        :return float: the result of the integral
-        """
-        integral_method = compute_param_integral if model.b1 is not None \
-            else compute_nparam_integral
-        return integral_method(model)
+    rel_error = tools.safe_division(float(target_integral - baseline_integral), float(baseline_integral))
 
-    baseline_integral = compute_integral(baseline_model)
-    target_integral = compute_integral(target_model)
-
-    rel_error = tools.safe_division(target_integral - baseline_integral, baseline_integral)
-
-    change_info = classify_change(
+    change_info = nparam_helpers.classify_change(
         rel_error if np.isfinite(rel_error) else 0,
         _INTEGRATE_DIFF_NO_CHANGE, _INTEGRATE_DIFF_CHANGE
     )
