@@ -1,4 +1,13 @@
-"""Collects fuzzing rules specific for xml files and similar markup format files."""
+"""
+Exploiting more domain-specific knowledge about the workload we
+devised specific rules for concrete formats. We propose rules for
+removing tags, attributes, names or values of attributes used in XML
+based files (i.e. .\ ``xml``, ``.svg``, ``.xhtml``, ``.xul``).
+For example, we can assume a situation, when fuzzer removes closing tag,
+which will increase the nesting. Then a recursively implemented parser
+will fail to find one or more of closing brackets (representing recursion
+stop condition) and may hit a stack overflow error.
+"""
 
 import re
 
@@ -27,48 +36,48 @@ def random_regex_replace(lines, pattern, repl):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute_value(lines):
-    """ Selects random line and removes random attribute value.
+    """**Rule D.3: Removed attribute value.**
 
-    Example:
-        <book id="bk106" pages="457"> -> <book id="bk106" pages="">
-
-    :param list lines: lines of the file in list
+     * **Input**: <book id="bk106" pages="457">
+     * **Mutation**: <book id="bk106" pages="">
+     * **Description**: Removes random value of the attribute in the random line and tag.
+     * **Known Issues**: none
     """
     random_regex_replace(lines, r"\"\s*\S+\s*\"", "\"\"")
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute_name(lines):
-    """ Selects random line and removes random attribute name.
+    """**Rule D.2: Remove attribute name.**
 
-    Example:
-        <book id="bk106" pages="457"> -> <book id="bk106" "457">
-
-    :param list lines: lines of the file in list
+     * **Input**: <book id="bk106" pages="457">
+     * **Mutation**: <book id="bk106" "457">
+     * **Description**: Removes name of the attribute in random tag in the random line.
+     * **Known Issues**: none
     """
     random_regex_replace(lines, r"\S*\s*=\s*(?P<quote>[\"|\'])", r"\g<quote>")
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_attribute(lines):
-    """ Selects random line and removes random attribute(name and value).
+    """**Rule D.1: Remove an attribute.**
 
-    Example:
-        <book id="bk106" pages="457"> -> <book id="bk106" >
-
-    :param list lines: lines of the file in list
+     * **Input**: <book id="bk106" pages="457">
+     * **Mutation**: <book id="bk106">
+     * **Description**: Selects random tag and removes a random attribute.
+     * **Known Issues**: none
     """
     random_regex_replace(lines, r"\S*\s*=\s*\"\s*\S*\s*\"", "")
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_tag(lines):
-    """ Selects random line and removes random tag.
+    """**Rule D.: **
 
-    Example:
-        "<book id="bk106" pages="457">" -> ""
-
-    :param list lines: lines of the file in list
+     * **Input**: <book id="bk106" pages="457">
+     * **Mutation**:
+     * **Description**: Removes a random tag.
+     * **Known Issues**: none
     """
     random_regex_replace(lines, r"<[^>]*>", "")
 

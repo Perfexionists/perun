@@ -11,13 +11,14 @@ WS_MAX = 1000
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def change_char(lines):
-    """ Changes a random character of a line.
+def change_character(lines):
+    """**Rule T.4: Change random character**
 
-    Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</a!uthor>"
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the quack brown ``b``ox jumps over the lazy dog"
+     * **Description**: Adaptation of classical rule for text files. Changes a random character at
+       at random line to different character.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
@@ -27,13 +28,12 @@ def change_char(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def divide_line(lines):
-    """ Divides a line by inserting newline to random position.
+    """**Rule T.3:**
 
-    Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</au"
-                                                   "thor>                    "
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "<author>Gambardella, Matthew</author>"
+     * **Mutation**: "<author>Gambardella, Matthew</au", "thor>"
+     * **Description**: Divides a line by inserting newline character in random position.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
@@ -41,14 +41,17 @@ def divide_line(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def fuzz_insert_ws(lines):
-    """ Inserts 100-1000 spaces to random position in a line.
+def insert_whitespace(lines):
+    """**Rule T.10: Insert whitespaces on a random place.**
 
-    Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>
-                                                                            "
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "The quick bro``   ``wn fox jumps over the lazy dog"
+     * **Description**: The rule inserts random number of whitespaces at random place in the random
+       line. There are several intuitions behind this rule: (1) some trimming regular expressions
+       can induce the excessive number of backtracking, and (2) some structures, such as hash
+       tables, can have bad properties and lead to a singly-linked list when induced with lots of
+       words (e.g. when one chooses wrong size of the table or bad hash-function.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
@@ -57,27 +60,32 @@ def fuzz_insert_ws(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def fuzz_double_line(lines):
-    """ Doubles the size of a line by its duplicating.
+def double_line(lines):
+    """**Rule T.1: Double the size of a line**
 
-    Example:
-        "The quick brown fox." -> "The quick brown fox.The quick brown fox."
+     * **Input**: "The quick brown fox."
+     * **Mutation**: "The quick brown fox.The quick brown fox."
+     * **Description**: This rule focuses on possible performance issues associated with long lines
+       appearing in files. The rule doubles the selected random line in the input.
+     * **Known Issues**:
 
-    :param list lines: lines of the workload, which has been choosen for mutating
-    """
+        1. gedit_ text editor (issue with too long lines)
+        2. Poorly validated regexps (issue with lenghty backtracking)
+
+     .. _gedit: https://wiki.gnome.org/Apps/Gedit
+     """
     rand = randomizer.rand_index(len(lines))
     lines[rand] = lines[rand][:-1] * 2 + lines[rand][-1:]
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def fuzz_append_ws(lines):
-    """ Appends 100-1000 spaces to a line.
+def append_whitespace(lines):
+    """**Rule T.8: Append whitespaces**
 
-    Example:
-        "<author>Gambardella, Matthew</author>" -> "<author>Gambardella, Matthew</author>
-                                                                            "
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the quick brown fox jumps over the lazy dog``    ``"
+     * **Description**: The rule appends random number of whitespaces at random line.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     appended_whitespace = " " * randomizer.rand_from_range(WS_MIN, WS_MAX)
@@ -85,69 +93,75 @@ def fuzz_append_ws(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def fuzz_bloat_word(lines):
-    """ Creates big words by removing whitespaces of a line.
+def bloat_words(lines):
+    """**Rule T.12: Remove whitespaces.**
 
-    Example:
-        "The quick brown fox." -> "Thequickbrownfox."
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "The quick brown fox."
+     * **Mutation**: "The quickbrown fox."
+     * **Description**: Removes whitespace from a random line. The intuition is to create a bigger
+       words that might bloat the underlying structures.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     lines[rand] = "".join(lines[rand].split()) + "\n"
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def multiplicate_ws(lines):
-    """ Replaces white spaces with more white spaces.
+def repeat_whitespace(lines):
+    """**Rule T.11: Repeat whitespaces.**
 
-    Example:
-        "The quick brown fox." -> "The quick brown fox.,
-
-                    The quick brown fox."
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "The quick brown``    `` fox jumps over the lazy dog"
+     * **Description**: The rule repeats random number of whitespaces at random place in the random
+       line. There intuition behind this rule is that some trimming regular expressions
+       can induce the excessive number of backtracking.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     lines[rand] = lines[rand].replace(" ", " "*10, 100)
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def prepend_ws(lines):
-    """ Prepends a line with 100-1000 white spaces.
+def prepend_whitespace(lines):
+    """**Rule T.9: Prepend whitespaces**
 
-    Example:
-        "The quick brown fox." -> "
-                                                           The quick brown fox."
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "``    ``The quick brown fox jumps over the lazy dog"
+     * **Description**: The rule prepends random number of whitespaces at random line.
+     * **Known Issues**:
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+       1. StackOverflow_ regular expression with quadratic number of backtrackings.
+
+    .. _StackOverflow: https://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016
     """
     rand = randomizer.rand_index(len(lines))
     lines[rand] = " "*randomizer.rand_from_range(WS_MIN, WS_MAX) + lines[rand]
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def fuzz_duplicate_line(lines):
-    """ Duplicates random line in file.
+def duplicate_line(lines):
+    """**Rule T.2: Duplicate a line **
 
-    Example:
-        "The quick brown fox." -> "The quick brown fox."
-                                  "The quick brown fox."
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "The quick brown fox."
+     * **Mutation**: "The quick brown fox.", "The quick brown fox."
+     * **Description**: Extends the file vertically, by duplicating random
+       line in the file.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     lines.insert(rand, lines[randomizer.rand_from_range(0, len(lines)-1)])
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def fuzz_sort_line(lines):
-    """ Sorts the words or numbers.
+def sort_line(lines):
+    """**Rule T.6: Sort words or numbers of a line.**
 
-    Example:
-        "The quick brown fox." -> "brown fox quick The"
-
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "The quick brown fox."
+     * **Mutation**: "brown fox quick The.
+     * **Description**: The intuition of this rule is to force bad behaviour, e.g. to sorting
+       algorithm, that in some cases perform worse for sorted output, or to balanced trees, which
+       might be unbalanced for sorted values.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     words = lines[rand].split()
@@ -158,14 +172,16 @@ def fuzz_sort_line(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def fuzz_rsort_line(lines):
-    """ Reversely sorts the words or numbers.
+def sort_line_in_reverse(lines):
+    """**Rule T.7: Sort words or numbers of a line in reverse.**
 
-    Example:
-        "The quick brown fox." -> "brown fox quick The"
-
-    :param list lines: lines of the workload, which has been choosen for mutating
-    """
+     * **Input**: "The quick brown fox."
+     * **Mutation**: "brown fox quick The.
+     * **Description**: The intuition of this rule is to force bad behaviour, e.g. to sorting
+       algorithm, that in some cases perform worse for sorted output, or to balanced trees, which
+       might be unbalanced for sorted values.
+     * **Known Issues**: none
+    """""
     rand = randomizer.rand_index(len(lines))
     words = lines[rand].split()
     try:
@@ -176,12 +192,16 @@ def fuzz_rsort_line(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def repeat_word(lines):
-    """ 100 times repeats a random word and append it to a line.
-        The length of a word is limited to 100, to prevent from DoS.
-    Example:
-        "The quick brown fox." -> "The quick brown fox.brown brown brown brown
+    """**Rule T.5: Repeat random word of a line**
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the quick brown ``brown`` fox jumps over the lazy dog"
+     * **Description**: The rule picks a random word in random line and repeats it several times.
+       The intuition is, that there e.g. exist certain vulnerabilities, when repeated occurrences
+       of words can either lead to faster (e.g. when the word is cached) or slower time
+       (e.g. when in hash-table the underlying structure is degradated to list). Moreover, some
+       algorithms, such as quick sort are forced to worst-case, when all elements are same.
+     * **Known Issues**: none
     """
     repetitions = 100
     rand = randomizer.rand_index(len(lines))
@@ -194,24 +214,26 @@ def repeat_word(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def del_line(lines):
-    """ Deletes random line.
-    Example:
-        "The quick brown fox." -> ""
+def delete_line(lines):
+    """**Rule T.13: Remove random line**
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: ""
+     * **Description**: Removes random line.
+     * **Known Issues**:
     """
     if len(lines) > 0:
         del lines[randomizer.rand_from_range(0, len(lines)-1)]
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def del_word(lines):
-    """ Deletes random word of line.
-    Example:
-        "The quick brown fox." -> " quick brown fox."
+def delete_word(lines):
+    """**Rule T.14: Remove random word**
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the brown fox jumps over the lazy dog"
+     * **Description**: Removes random word in random line.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     try:
@@ -222,12 +244,13 @@ def del_word(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def del_char(lines):
-    """ Deletes random character from random line.
-    Example:
-        "The quick brown fox." -> "The quick brown fo."
+def delete_character(lines):
+    """**Rule T.15: remove a random character.**
 
-    :param list lines: lines of the workload, which has been choosen for mutating
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the quck brown fox jumps over the lazy dog"
+     * **Description**: Removes a random character in random word in random line.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     try:
@@ -238,19 +261,19 @@ def del_char(lines):
 
 
 FUZZING_METHODS = [
-    (change_char, "Change random characters at random places"),
-    (fuzz_insert_ws, "Insert whitespaces at random places"),
+    (change_character, "Change random characters at random places"),
+    (insert_whitespace, "Insert whitespaces at random places"),
     (divide_line, "Divide a random line"),
-    (fuzz_double_line, "Double the size of random line"),
-    (fuzz_append_ws, "Append WS at the end of the line"),
-    (fuzz_bloat_word, "Remove WS of random line"),
-    (multiplicate_ws, "Multiplicate WS of random line"),
-    (prepend_ws, "Prepend WS to random line"),
-    (fuzz_duplicate_line, "Duplicate random line"),
-    (fuzz_sort_line, "Sort words of random line"),
-    (fuzz_rsort_line, "Reversely sort words of random line"),
+    (double_line, "Double the size of random line"),
+    (append_whitespace, "Append WS at the end of the line"),
+    (bloat_words, "Remove WS of random line"),
+    (repeat_whitespace, "Multiplicate WS of random line"),
+    (prepend_whitespace, "Prepend WS to random line"),
+    (duplicate_line, "Duplicate random line"),
+    (sort_line, "Sort words of random line"),
+    (sort_line_in_reverse, "Reversely sort words of random line"),
     (repeat_word, "Multiplicate word of random line"),
-    (del_line, "Remove random line"),
-    (del_word, "Remove random word of line"),
-    (del_char, "Remove random character of line "),
+    (delete_line, "Remove random line"),
+    (delete_word, "Remove random word of line"),
+    (delete_character, "Remove random character of line "),
 ]

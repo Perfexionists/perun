@@ -28,6 +28,7 @@ def random_repeats(repeats):
             """
             for _ in range(rand_from_range(1, repeats)):
                 func(*args, **kwargs)
+        innermost_wrapper.__doc__ = func.__doc__
         return innermost_wrapper
     return inner_wrapper
 

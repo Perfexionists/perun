@@ -1,4 +1,7 @@
-"""Collects fuzzing rules specific for binary files."""
+"""
+In case of binary files we cannot apply specific domain knowledge nor can we be inspired by
+existing performance issues. Instead, we mostly adapt the classical fuzzing rules.
+"""
 
 __author__ = 'Matus Liscinsky'
 
@@ -12,12 +15,12 @@ RULE_ITERATIONS = 10
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def insert_byte(lines):
-    """ Selects random line and inserts a random byte to any position.
+    """**Rule B.3: Insert random byte.**
 
-    Example:
-        Defenestration -> Def%enestration
-
-    :param list lines: lines of the file in list
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the qui#ck brown fox jumps over the lazy dog"
+     * **Description**: Implementation of classical fuzzing rule.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
@@ -27,12 +30,12 @@ def insert_byte(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_byte(lines):
-    """ Selects random line and removes random byte.
+    """**Rule B.4: Remove random byte.**
 
-    Example:
-        #ef15ac -> ef15ac
-
-    :param list lines: lines of the file in list
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the quik brown fox jumps over the lazy dog"
+     * **Description**: Implementation of classical fuzzing rule.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
@@ -40,18 +43,14 @@ def remove_byte(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def byte_swap(lines):
-    """ Selects two random lines and switch theirs random bytes.
+def swap_byte(lines):
+    """**Rule B.5: Swap random bytes.**
 
-    Example:
-    before:
-        Defenestration
-        #ef15ac
-    after:
-        Def5nestration
-        #ef1eac
-
-    :param list lines: lines of the file in list
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the quock brown fix jumps over the lazy dog"
+     * **Description**: Implementation of classical fuzzing rule. Picks two random lines and
+       two random bytes in the line and swaps them.
+     * **Known Issues**: none
     """
     line_num1 = randomizer.rand_index(len(lines))
     line_num2 = randomizer.rand_index(len(lines))
@@ -73,16 +72,13 @@ def byte_swap(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def bit_flip(lines):
-    """ Selects random line and flips random bit.
+def flip_bit(lines):
+    """**Rule B.6: Flip random bit.**
 
-    Example:
-    before:
-        Defenestration
-    after:
-        Defenestratinn
-
-    :param list lines: lines of the file in list
+     * **Input**: "the quick brown fox jumps over the lazy dog"
+     * **Mutation**: "the quack brown fox jumps over the lazy dog"
+     * **Description**: Implementation of classical fuzzing rule.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
@@ -95,12 +91,15 @@ def bit_flip(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_zero_byte(lines):
-    """ Selects random line and removes random zero byte.
+    """**Rule B.1: Remove random zero byte**
 
-    Example:
-        This is C string.\0 You are gonna love it.\0 -> This is string. You are gonna love it.\0
-
-    :param list lines: lines of the file in list
+     * **Input**: This is C string.\0 You are gonna love it.\0
+     * **Mutation**: This is string. You are gonna love it.\0
+     * **Description**: The rule removes random zero byte ``\0`` in the string. The intuition is to
+       target the C language application, that process the strings as zero-terminated string of
+       bytes. Removing the zero byte could lead to program non-termination, or at least crashing
+       when reading the whole memory.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     positions = [pos for pos, char in enumerate(lines[rand]) if char == 0]
@@ -111,12 +110,14 @@ def remove_zero_byte(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def insert_zero_byte(lines):
-    """ Selects random line and inserts zero byte to any position.
+    """**Rule B.2: Insert random zero byte.**
 
-    Example:
-        This is C string.\0You are gonna love it.\0 -> This is C\0 string.\0You are gonna love it.\0
-
-    :param list lines: lines of the file in list
+     * **Input**: This is C string. You are gonna love it.\0
+     * **Mutation**: This is string.``\0`` You are gonna love it.\0
+     * **Description**: The rule inserts random zero byte ``\0`` in the string. The intuition is to
+       target the C language application, that process the strings as zero-terminated string of
+       bytes.
+     * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
     index = randomizer.rand_index(len(lines[rand]))
@@ -128,6 +129,6 @@ FUZZING_METHODS = [
     (insert_zero_byte, "Insert zero byte to random position"),
     (insert_byte, "Insert a random byte to random position"),
     (remove_byte, "Remove random byte"),
-    (byte_swap, "Switch two random bytes"),
-    (bit_flip, "Flip random bit")
+    (swap_byte, "Switch two random bytes"),
+    (flip_bit, "Flip random bit")
 ]
