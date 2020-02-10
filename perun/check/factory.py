@@ -295,6 +295,9 @@ def get_strategies_for(profile):
     try:
         application_strategy = config.lookup_key_recursively('degradation.apply')
     except exceptions.MissingConfigSectionException:
+        # set the default application strategy, when it was not found in any configuration
+        # - protection before the reference to the local variable before its assignment below
+        application_strategy = 'all'
         log.error("'degradation.apply' could not be found in any configuration\n"
                   "Run either 'perun config --local edit' or 'perun config --shared edit' and set "
                   " the 'degradation.apply' to suitable value (either 'first' or 'all').")
