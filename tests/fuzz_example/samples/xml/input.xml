@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<breakfast_menu attr="value">
+  <food attr="value">
+    <name attr="value">Strawberry Belgian Waffles</name>
+    <price attr="value">$7.95</price>
+    <description attr="value">Light Belgian waffles covered with strawberries and whipped cream</description>
+    <calories attr="value" >900</calories></food><food>
+    <name attr="value">Berry-Berry Belgian Waffles</name>
+    <price attr="value">$8.95</price>
+    <description attr="value">Light Belgian waffles covered with an assortment of fresh berries and whipped cream</description>
+    <calories attr="value">900</calories></food><food>
+    <name attr="value">French Toast</name>
+    <price attr="value">$4.50</price>
+    <description attr="value">Thick slices made from our homemade sourdough bread</description>
+    <calories attr="value">600</calories></food><food>
+	<name attr="value">Homestyle Breakfast</name>
+  <price attr="value">$6.95</price>
+  <description attr="value">Two eggs, bacon or sausage, toast, and our ever-popular hash browns</description>
+   <calories attr="value">950</calories></food></breakfast_menu>

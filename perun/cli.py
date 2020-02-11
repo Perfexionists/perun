@@ -59,6 +59,7 @@ import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException
+from perun.utils.structs import Executable
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
@@ -604,7 +605,7 @@ def collect(ctx, **kwargs):
               help='The command which will be fuzzed.')
 @click.option('--args', '-a', nargs=1, required=False, default='',
               help='Arguments for the fuzzed command.')
-@click.option('--initial-workload', '-w', nargs=1, required=True, multiple=True,
+@click.option('--input-sample', '-w', nargs=1, required=True, multiple=True,
               help='Initial sample of workloads, that will be source of the fuzzing.')
 @click.option('--collector', '-c', nargs=1, default='time',
               type=click.Choice(utils.get_supported_module_names('collect')),
@@ -624,8 +625,64 @@ def collect(ctx, **kwargs):
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1,
               callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the fuzzing will be performed.')
-def fuzz_cmd(**kwargs):
+@click.option('--workloads-filter', '-wf', nargs=1, required=False,
+              type=str, metavar='<regexp>', default="",
+              help='Regular expression for filtering the workloads.')
+@click.option('--source-path', '-s', nargs=1, required=False,
+              type=click.Path(exists=True, readable=True), metavar='<path>',
+              help='The path to the directory of the project source files.')
+@click.option('--gcno-path', '-g', nargs=1, required=False,
+              type=click.Path(exists=True, writable=True), metavar='<path>',
+              help='The path to the directory where .gcno files are stored.')
+@click.option('--output-dir', '-o', nargs=1, required=True,
+              type=click.Path(exists=True, writable=True), metavar='<path>',
+              help='The path to the directory where generated outputs will be stored.')
+@click.option('--timeout', '-t', nargs=1, required=False, default=1800,
+              type=click.IntRange(1, None, False), metavar='<int>',
+              help='Time limit for fuzzing (in seconds).  Default value is 1800s.')
+@click.option('--hang-timeout', '-h', nargs=1, required=False, default=10,
+              type=click.FloatRange(0.001, None, False), metavar='<int>',
+              help='The time limit before input is classified as a hang (in seconds).'
+              ' Default value is 30s.')
+@click.option('--max', '-N', nargs=1, required=False,
+              type=click.IntRange(1, None, False), metavar='<int>',
+              help='The maximum size limit of the generated input file.'
+              ' Value should be larger than any of the initial workload,'
+              ' otherwise it will be adjusted, see \033[1m-a\033[0m resp. \033[1m-p\033[0m')
+@click.option('--max-size-gain', '-mg', nargs=1, required=False,default=1000000,
+              type=click.IntRange(0, None, False), metavar='<int>',
+              help='Max size expressed by gain. Using this option, max size of generated input'
+              ' file will be set to (size of the largest workload + value).'
+              'Default value is 1 000 000 B = 1MB.')
+@click.option('--max-size-ratio', '-mp', nargs=1, required=False,
+              type=click.FloatRange(0.1, None, False), metavar='<float>',
+              help='Max size expressed by percentage. Using this option, max size of generated'
+              ' input file will be set to (size of the largest workload * value).'
+              ' E.g. 1.5, max_size=largest_workload_size * 1.5')
+@click.option('--exec-limit', '-e', nargs=1, required=False, default=100,
+              type=click.IntRange(1, None, False), metavar='<int>',
+              help='Defines maximum number executions while gathering interesting inputs.')
+@click.option('--interesting-files-limit', '-l', nargs=1, required=False,
+              type=click.IntRange(1, None, False), metavar='<int>', default=20,
+              help='Defines minimum number of gathered interesting inputs before perun testing.')
+@click.option('--coverage-increase-rate', '-cr', nargs=1, required=False, default=1.5,
+              type=click.FloatRange(0, None, False), metavar='<int>',
+              help='Represents threshold of coverage increase against base coverage.'
+              '  E.g 1.5, base coverage = 100 000, so threshold = 150 000.')
+@click.option('--mutations-per-rule', '-mpr', nargs=1, required=False, default='mixed',
+              type=click.Choice(['unitary', 'proportional', 'probabilistic', 'mixed']),
+              metavar='<str>',
+              help='Strategy which determines how many mutations will be generated by certain'
+              ' fuzzing rule in one iteration: unitary|proportional|probabilistic|mixed')
+@click.option('--regex-rules', '-r', nargs=1, required=False, multiple=True,
+              callback=cli_helpers.single_yaml_param_callback, metavar='<file>',
+              help='Option for adding custom rules specified by regular expressions,'
+              ' written in YAML format file.')
+@click.option('--no-plotting', '-np', is_flag=True, required=False,
+              help='Avoiding sometimes lengthy plotting of graphs.')
+def fuzz_cmd(cmd, args, **kwargs):
     """Performs fuzzing for the specified command according to the initial sample of workload."""
+    kwargs['executable'] = Executable(cmd, args)
     fuzz.run_fuzzing_for_command(**kwargs)
 
 
