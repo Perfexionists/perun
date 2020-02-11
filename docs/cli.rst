@@ -61,6 +61,9 @@ Perun Commands
 .. click:: perun.cli:check_profiles
    :prog: perun check profiles
 
+.. click:: perun.cli:fuzz_cmd
+   :prog: perun fuzz
+
 .. _cli-collect-ref:
 
 Collect Commands

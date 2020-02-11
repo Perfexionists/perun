@@ -1,0 +1,52 @@
+Downloading a Text File
+Web pages are text files and are easy to download. For 
+example, to save the file that you are reading right now, 
+click "File--Save As" on your browser's toolbar, and save the 
+file on your hard drive or floppy disk, either as a plain text 
+(.TXT) or HyperText Markup Language (.HTM or .HTML) file. You 
+should be able to open such files in your word processor or 
+browser.
+Since saving an HTML file as a simple text file strips out all 
+the hypertext code, note that the saved file will require some 
+editing in your word processor. It may have odd line lengths 
+and other odd format features. Open it in your word processor 
+to edit it.
+Internet information providers often make word-processed files 
+more immediately accessible by providing simple text files 
+(usually with a "TXT" file extension). Text files are simple, 
+universal, and transportable, but unfortunately they cannot 
+convey attributes (such as underlining or bold). Here, for 
+example, is a text file of the page you are reading. Try 
+saving it and opening it in your word processor. This time the 
+simple text file will look much better, because I've 
+edited it for you beforehand.
+[Text file]
+
+To make formatted files that will travel well from one type of 
+computer or software to another, programmers created a format 
+that can handle text formatting. It is called "Rich Text." 
+Files in this format have an "RTF" extension. "Rich Text" 
+files can be opened by the major word processors in both IBM 
+and Mac environments. Here's a link to another version of the 
+page you're looking at, in Rich Text format: (Go ahead and 
+click it, but be aware that his link may behave differently 
+from the previous ones. Your browser may have opened the "TXT" 
+file directly, but it may download the "RTF" file to your hard 
+drive or floppy disk, where you can open it with your word 
+processor. Or, depending upon how your software is configured, 
+your computer may open your word processor automatically to 
+read the file.)
+[Rich Text file]
+For really large blocks of text, Internet sites sometimes use 
+yet another format: "zipped" or compressed files, usually with 
+the file extension "ZIP." Such files are usually, but not 
+always, self-extracting; that is, when you double-click on 
+such a file, it automatically decompresses itself. Note: 
+unlike text and image files that contain only data, compressed 
+files can contain executable code such as computer viruses. 
+Avoid downloading a ZIP file unless you are confident of the 
+source's integrity, and even then, run a virus checker after 
+downloading, just to be safe.
+Back to "Downloading a Text File"
+Back to beginning of The Research Process CD--Trial Version
+Back to home page
