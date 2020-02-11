@@ -139,7 +139,7 @@ def test_fuzzing_correct(pcs_full):
         '--source-path', os.path.dirname(sigabrt_test),
         '--gcno-path', os.path.dirname(sigabrt_test),
         '--mutations-per-rule', 'unitary',
-        '--exec_limit', '1',
+        '--exec-limit', '1',
     ])
     assert result.exit_code == 0
     assert 'SIGABRT' in result.output
@@ -181,7 +181,7 @@ def test_fuzzing_correct(pcs_full):
         '--gcno-path', os.path.dirname(hang_test),
         '--mutations-per-rule', 'proportional',
         '--hang-timeout', '0.05',
-        '--exec_limit', '1',
+        '--exec-limit', '1',
         '--no-plotting',
     ])
     assert result.exit_code == 0
@@ -310,16 +310,16 @@ def test_fuzzing_incorrect(pcs_full):
     assert result.exit_code == 2
     assert '--max-size-ratio' in result.output
 
-    # Wrong value for option --exec_limit
+    # Wrong value for option --exec-limit
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
         '--input-sample', '.',
         '--output-dir', '.',
-        '--exec_limit', '1.6'
+        '--exec-limit', '1.6'
     ])
     assert result.exit_code == 2
-    assert '--exec_limit' in result.output
+    assert '--exec-limit' in result.output
 
     # Wrong value for option --interesting-files-limit
     result = runner.invoke(cli.fuzz_cmd, [

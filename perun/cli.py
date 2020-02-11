@@ -659,7 +659,7 @@ def collect(ctx, **kwargs):
               help='Max size expressed by percentage. Using this option, max size of generated'
               ' input file will be set to (size of the largest workload * value).'
               ' E.g. 1.5, max_size=largest_workload_size * 1.5')
-@click.option('--exec_limit', '-e', nargs=1, required=False, default=100,
+@click.option('--exec-limit', '-e', nargs=1, required=False, default=100,
               type=click.IntRange(1, None, False), metavar='<int>',
               help='Defines maximum number executions while gathering interesting inputs.')
 @click.option('--interesting-files-limit', '-l', nargs=1, required=False,
