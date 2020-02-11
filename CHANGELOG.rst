@@ -6,6 +6,15 @@ HEAD
 
 **To be included in next release**
 
+1.18 (2020-02-11)
+-----------------
+
+`commit: 252078825559d67b6c915ab01827a9433af92dfa`
+
+**Add performance fuzz-testing**
+
+  - add ``perun fuzz`` mode implementing mutation based fuzzer. See :ref:`fuzzing-overview` for more details.
+
 1.17.4 (2020-01-28)
 -------------------
 
