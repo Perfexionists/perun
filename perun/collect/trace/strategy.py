@@ -12,7 +12,7 @@
 """
 
 from perun.collect.trace.values import RecordType, STRATEGIES, DEFAULT_SAMPLE, SUFFIX_DELIMITERS
-from perun.collect.trace.watchdog import WD
+from perun.collect.trace.watchdog import WATCH_DOG
 
 import perun.utils as utils
 
@@ -58,13 +58,13 @@ def extract_configuration(func, func_sampled, static, static_sampled, **kwargs):
 
     :return kwargs: the updated dictionary with post processed rules
     """
-    WD.info("Attempting to build the probes configuration")
+    WATCH_DOG.info("Attempting to build the probes configuration")
 
     # Do some strategy specific actions (e.g. extracting symbols)
     kwargs['global_sampling'], extracted_func, extracted_static = \
         _extract_strategy_specifics(kwargs['method'], **kwargs)
-    WD.debug("Number of extracted function probes: '{}', static probes: '{}'"
-             .format(len(extracted_func), len(extracted_static)))
+    WATCH_DOG.debug("Number of extracted function probes: '{}', static probes: '{}'"
+                    .format(len(extracted_func), len(extracted_static)))
 
     # Create one dictionary of function probes specification
     kwargs['func'] = _merge_probes(func, func_sampled, extracted_func, kwargs['global_sampling'])
@@ -75,7 +75,7 @@ def extract_configuration(func, func_sampled, static, static_sampled, **kwargs):
         # We also need to do some automated pairing of static rules
         kwargs['static'] = _pair_rules(
             _merge_probes(static, static_sampled, extracted_static, kwargs['global_sampling']))
-    WD.info("Configuration built successfully")
+    WATCH_DOG.info("Configuration built successfully")
     return kwargs
 
 

@@ -8,8 +8,8 @@ import os
 from signal import SIGINT
 from subprocess import PIPE, STDOUT, DEVNULL, TimeoutExpired
 
-from perun.collect.trace.locks import LockType, ResourceLock, get_active_locks_for
-from perun.collect.trace.watchdog import WD
+from perun.logic.locks import LockType, ResourceLock, get_active_locks_for
+from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.threads import HeartbeatThread, NonBlockingTee, TimeoutThread
 from perun.collect.trace.values import Res, FileSize, OutputHandling, \
     LOG_WAIT, HARD_TIMEOUT, CLEANUP_TIMEOUT, CLEANUP_REFRESH, HEARTBEAT_INTERVAL, \
@@ -32,13 +32,13 @@ def systemtap_collect(executable, **kwargs):
 
     # Check that the lock for binary is still valid and log resources with corresponding locks
     res[Res.lock_binary()].check_validity()
-    WD.log_resources(*_check_used_resources(kwargs['locks_dir']))
+    WATCH_DOG.log_resources(*_check_used_resources(kwargs['locks_dir']))
 
     # Open the log file for collection
     with open(log, 'w') as logfile:
         # Assemble the SystemTap command and log it
         stap_cmd = 'sudo stap -v {} -o {}'.format(script, data)
-        WD.log_variable('stap_cmd', stap_cmd)
+        WATCH_DOG.log_variable('stap_cmd', stap_cmd)
         # Compile the script, extract the module name from the compilation log and lock it
         compile_systemtap_script(stap_cmd, logfile, **kwargs)
         _lock_kernel_module(log, **kwargs)
@@ -57,7 +57,7 @@ def cleanup(res, **kwargs):
     :param Res res: the resources object
     :param kwargs: additional configuration options
     """
-    WD.info('Releasing and cleaning up the SystemTap-related resources')
+    WATCH_DOG.info('Releasing and cleaning up the SystemTap-related resources')
 
     # Terminate perun related processes that are still running
     _cleanup_processes(res, kwargs['pid'])
@@ -84,8 +84,8 @@ def compile_systemtap_script(command, logfile, res, **kwargs):
     :param Res res: the resources object
     :param kwargs: additional configuration options
     """
-    WD.info('Attempting to compile the SystemTap script into a kernel module. This may take '
-            'a while depending on the number of probe points.')
+    WATCH_DOG.info('Attempting to compile the SystemTap script into a kernel module. This may take'
+                   ' a while depending on the number of probe points.')
     # Lock the SystemTap process we're about to start
     process_lock = 'process_{}'.format(os.path.basename(kwargs['binary']))
     # No need to check the lock validity more than once since the SystemTap lock is tied
@@ -104,12 +104,12 @@ def compile_systemtap_script(command, logfile, res, **kwargs):
     ) as compilation_process:
         # Store the compilation process PID and wait for the compilation to finish
         res[Res.stap_compile()] = compilation_process
-        WD.debug("Compilation process: '{}'".format(compilation_process.pid))
+        WATCH_DOG.debug("Compilation process: '{}'".format(compilation_process.pid))
         _wait_for_script_compilation(logfile.name, compilation_process)
         # The SystemTap seems to print the resulting kernel module into stdout
         # However this may not be universal behaviour so a backup method should be available
         res[Res.stap_module()] = compilation_process.communicate()[0].decode('utf-8')
-    WD.info('SystemTap script compilation successfully finished.')
+    WATCH_DOG.info('SystemTap script compilation successfully finished.')
 
 
 def run_systemtap_collection(command, executable, logfile, **kwargs):
@@ -122,15 +122,15 @@ def run_systemtap_collection(command, executable, logfile, **kwargs):
     :param TextIO logfile: the handle of the opened SystemTap log file
     :param kwargs: additional configuration options
     """
-    WD.info('Starting up the SystemTap collection process.')
+    WATCH_DOG.info('Starting up the SystemTap collection process.')
     with utils.nonblocking_subprocess(
             command, {'stderr': logfile, 'preexec_fn': os.setpgrp},
             _terminate_process, {'proc_name': Res.stap_collect(), 'res': kwargs['res']}
     ) as stap:
         kwargs['res'][Res.stap_collect()] = stap
-        WD.debug("Collection process: '{}'".format(stap.pid))
+        WATCH_DOG.debug("Collection process: '{}'".format(stap.pid))
         _wait_for_systemtap_startup(logfile.name, stap)
-        WD.info('SystemTap collection process is up and running.')
+        WATCH_DOG.info('SystemTap collection process is up and running.')
         _fetch_stapio_pid(kwargs['res'])
         run_profiled_command(executable, **kwargs)
 
@@ -150,8 +150,8 @@ def run_profiled_command(executable, timeout, res, **kwargs):
 
         :param str data_file: the name of the output data file
         """
-        WD.info("Command execution status update, collected raw data size so far: {}"
-                .format(utils.format_file_size(os.stat(data_file).st_size)))
+        WATCH_DOG.info("Command execution status update, collected raw data size so far: {}"
+                       .format(utils.format_file_size(os.stat(data_file).st_size)))
 
     # Set the process pipes according to the selected output handling mode
     # DEVNULL for suppress mode, STDERR -> STDOUT = PIPE for capture
@@ -163,14 +163,14 @@ def run_profiled_command(executable, timeout, res, **kwargs):
         profiled_args = dict(stderr=STDOUT, stdout=PIPE, bufsize=1)
 
     # Start the profiled command
-    WD.info("Launching the profiled command '{}'".format(executable.to_escaped_string()))
+    WATCH_DOG.info("Launching the profiled command '{}'".format(executable.to_escaped_string()))
     with utils.nonblocking_subprocess(
             executable.to_escaped_string(), profiled_args,
             _terminate_process, {'proc_name': Res.profiled_command(), 'res': res}
     ) as profiled:
         # Store the command process
         res[Res.profiled_command()] = profiled
-        WD.debug("Profiled command process: '{}'".format(profiled.pid))
+        WATCH_DOG.debug("Profiled command process: '{}'".format(profiled.pid))
         # Start the Heartbeat thread so that the user is periodically updated about the progress
         with HeartbeatThread(HEARTBEAT_INTERVAL, _heartbeat_command, [res[Res.data()]]):
             if output_mode == OutputHandling.Capture:
@@ -181,7 +181,9 @@ def run_profiled_command(executable, timeout, res, **kwargs):
                 profiled.wait()
             else:
                 time.sleep(timeout)
-                WD.info('The profiled command has reached a timeout after {}s.'.format(timeout))
+                WATCH_DOG.info(
+                    'The profiled command has reached a timeout after {}s.'.format(timeout)
+                )
                 return
     # Wait for the SystemTap to finish writing to the data file
     _wait_for_systemtap_data(res[Res.data()], kwargs['binary'])
@@ -246,12 +248,12 @@ def _fetch_stapio_pid(res):
     if proc:
         if len(proc) != 1:
             # This shouldn't ever happen
-            WD.debug("Multiple stapio processes found: '{}'".format(proc))
+            WATCH_DOG.debug("Multiple stapio processes found: '{}'".format(proc))
         # Store the PID of the first record
         res[Res.stapio()] = proc[0][0]
     else:
         # This also should't ever happen
-        WD.debug('No stapio processes found')
+        WATCH_DOG.debug('No stapio processes found')
 
 
 def _lock_kernel_module(logfile, res, **kwargs):
@@ -272,15 +274,15 @@ def _lock_kernel_module(logfile, res, **kwargs):
         match = STAP_MODULE_REGEX.search(line)
     if not match:
         # No kernel module found, warn the user that something is not right
-        WD.warn('Unable to extract the name of the compiled SystemTap module from the log. '
-                'This may cause corruption of the collected data since it cannot be ensured '
-                'that this will be the only active instance of the given kernel module.')
+        WATCH_DOG.warn('Unable to extract the name of the compiled SystemTap module from the log. '
+                       'This may cause corruption of the collected data since it cannot be ensured '
+                       'that this will be the only active instance of the given kernel module.')
         return
     # The kernel module name has the following format: 'modulename_PID'
     # The first group contains just the PID-independent module name
     kernel_module = match.group(1)
     res[Res.stap_module()] = kernel_module
-    WD.debug("Compiled kernel module name: '{}'".format(kernel_module))
+    WATCH_DOG.debug("Compiled kernel module name: '{}'".format(kernel_module))
     # Lock the kernel module
     ResourceLock(
         LockType.Module, kernel_module, kwargs['pid'], kwargs['locks_dir']
@@ -308,7 +310,7 @@ def _wait_for_script_compilation(logfile, stap_process):
                 return
             else:
                 # The stap process terminated with non-zero code which means failure
-                WD.debug("SystemTap build process failed with exit code '{}'".format(status))
+                WATCH_DOG.debug("SystemTap build process failed with exit code '{}'".format(status))
                 raise SystemTapScriptCompilationException(logfile, status)
 
 
@@ -336,7 +338,9 @@ def _wait_for_systemtap_startup(logfile, stap_process):
             # Otherwise wait a bit before the next check
             time.sleep(LOG_WAIT)
         else:
-            WD.debug("SystemTap collection process failed with exit code '{}'".format(status))
+            WATCH_DOG.debug(
+                "SystemTap collection process failed with exit code '{}'".format(status)
+            )
             raise SystemTapStartupException(logfile)
 
 
@@ -349,20 +353,20 @@ def _wait_for_systemtap_data(datafile, binary):
     :param str binary: the binary file that is profiled
     """
     # Start the TimeoutThread so that the waiting is not indefinite
-    WD.info('The profiled command has terminated, waiting for the process to finish writing '
-            'output to the data file.')
+    WATCH_DOG.info('The profiled command has terminated, waiting for the process to finish writing '
+                   'output to the data file.')
     with TimeoutThread(HARD_TIMEOUT) as timeout:
         while not timeout.reached():
             # Periodically scan the last line of the data file
             # The file can be potentially very long, use the optimized method to get the last line
             last_line = get_last_line_of(datafile, FileSize.Long)[1]
             if last_line.startswith('end {}'.format(binary)):
-                WD.info('The data file is fully written.')
+                WATCH_DOG.info('The data file is fully written.')
                 return
             time.sleep(LOG_WAIT)
         # Timeout reached
-        WD.info('Timeout reached while waiting for the collection process to fully write output '
-                'into the output data file.')
+        WATCH_DOG.info('Timeout reached while waiting for the collection process to fully '
+                       'write output into the output data file.')
 
 
 def _heartbeat_stap(logfile, phase):
@@ -372,8 +376,8 @@ def _heartbeat_stap(logfile, phase):
     :param str phase: the SystemTap phase (compilation or collection)
     """
     # Report log line count and the last record
-    WD.info("{} status update: 'log lines count' ; 'last log line'".format(phase))
-    WD.info("'{}' ; '{}'".format(*get_last_line_of(logfile, FileSize.Short)))
+    WATCH_DOG.info("{} status update: 'log lines count' ; 'last log line'".format(phase))
+    WATCH_DOG.info("'{}' ; '{}'".format(*get_last_line_of(logfile, FileSize.Short)))
 
 
 def _cleanup_processes(res, pid):
@@ -397,13 +401,13 @@ def _cleanup_processes(res, pid):
         processes = [res[proc].pid for proc in proc_names if res[proc] is not None] + [pid]
         extractor = 'ps -o {} --ppid {}'.format(PS_FORMAT, ','.join(map(str, processes)))
         extracted_procs = _extract_processes(extractor)
-        WD.log_variable('cleanup::extracted_processes', extracted_procs)
+        WATCH_DOG.log_variable('cleanup::extracted_processes', extracted_procs)
 
         # Inform the user about such processes
         if extracted_procs:
-            WD.warn("Found still running spawned processes:")
+            WATCH_DOG.warn("Found still running spawned processes:")
             for proc_pid, _, _, cmd in extracted_procs:
-                WD.warn(" PID {}: '{}'".format(proc_pid, cmd))
+                WATCH_DOG.warn(" PID {}: '{}'".format(proc_pid, cmd))
     finally:
         # Make sure that whatever happens, the locks are released
         ResourceLock.unlock(res[Res.lock_stap()], res)
@@ -430,17 +434,19 @@ def _terminate_process(proc_name, res):
 
     # Attempt to terminate the process if it's still running
     if proc.poll() is None:
-        WD.debug("Attempting to terminate the '{}' subprocess with PID '{}'"
-                 .format(proc_name, proc.pid))
+        WATCH_DOG.debug("Attempting to terminate the '{}' subprocess with PID '{}'"
+                        .format(proc_name, proc.pid))
         utils.run_safely_external_command('sudo kill -{} {}'.format(SIGINT, proc.pid), False)
         # The wait is needed to get rid of the resulting zombie process
         try:
             proc.wait(timeout=CLEANUP_TIMEOUT)
-            WD.debug("Successfully terminated the subprocess")
+            WATCH_DOG.debug("Successfully terminated the subprocess")
         except TimeoutExpired:
             # However the process hasn't terminated, report to the user
-            WD.warn("Failed to terminate the '{}' subprocess with PID '{}', manual termination "
-                    "is advised".format(proc_name, proc.pid))
+            WATCH_DOG.warn(
+                "Failed to terminate the '{}' subprocess with PID '{}', manual termination "
+                "is advised".format(proc_name, proc.pid)
+            )
 
 
 def _extract_processes(extract_command):
@@ -486,7 +492,7 @@ def _cleanup_kernel_module(res):
         # Attempts to unload the module
         utils.run_safely_external_command('sudo rmmod {}'.format(module_name), False)
         if not _wait_for_resource_release(_loaded_stap_kernel_modules, [module_name]):
-            WD.debug("Unloading the kernel module '{}' failed".format(module_name))
+            WATCH_DOG.debug("Unloading the kernel module '{}' failed".format(module_name))
     finally:
         # Always unlock the module
         ResourceLock.unlock(res[Res.lock_module()], res)

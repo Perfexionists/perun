@@ -14,8 +14,8 @@ import perun.collect.trace.strategy as strategy
 import perun.collect.trace.systemtap as systemtap
 import perun.collect.trace.systemtap_script as stap_script
 import perun.collect.trace.parse as parse
-from perun.collect.trace.locks import LockType, ResourceLock
-from perun.collect.trace.watchdog import WD
+from perun.logic.locks import LockType, ResourceLock
+from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import Res, OutputHandling, Zipper, \
     DEPENDENCIES, MICRO_TO_SECONDS
 
@@ -41,12 +41,12 @@ def before(executable, **kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WD.header('Pre-processing phase...')
+    WATCH_DOG.header('Pre-processing phase...')
     # Validate and normalize collection parameters
     kwargs = _normalize_config(executable, **kwargs)
     # Initialize the watchdog and log the kwargs dictionary after it's fully initialized
-    WD.start_session(kwargs['watchdog'], kwargs['pid'], kwargs['timestamp'], kwargs['quiet'])
-    WD.log_variable('before::kwargs', kwargs)
+    WATCH_DOG.start_session(kwargs['watchdog'], kwargs['pid'], kwargs['timestamp'], kwargs['quiet'])
+    WATCH_DOG.log_variable('before::kwargs', kwargs)
 
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
@@ -62,7 +62,7 @@ def collect(executable, **kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WD.header('Collect phase...')
+    WATCH_DOG.header('Collect phase...')
 
     # Check all the required dependencies
     _check_dependencies()
@@ -100,7 +100,7 @@ def after(res, **kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WD.header('Post-processing phase... ')
+    WATCH_DOG.header('Post-processing phase... ')
 
     # TODO: change the output according to the new format so that it doesn't use as much memory?
     # Parse the records and create the profile
@@ -125,7 +125,7 @@ def teardown(**kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WD.header('Teardown phase...')
+    WATCH_DOG.header('Teardown phase...')
 
     # Cleanup all the SystemTap related resources
     if 'res' in kwargs:
@@ -140,7 +140,7 @@ def teardown(**kwargs):
     with Zipper(kwargs.get('zip_temps', False), pack_name) as temp_pack:
         if 'res' in kwargs:
             _cleanup_collect_files(kwargs['res'], temp_pack, keep_temps)
-        WD.end_session(temp_pack)
+        WATCH_DOG.end_session(temp_pack)
 
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
@@ -239,7 +239,7 @@ def _create_collect_files(timestamp, pid, res, output_handling, **kwargs):
         file_name = 'collect_{}_{}_{}{}'.format(name, timestamp, pid, suffix)
         res[name] = os.path.join(kwargs['files_dir'], file_name)
         temp.touch_temp_file(res[name], protect=True)
-        WD.debug("Temporary file '{}' successfully created".format(file_name))
+        WATCH_DOG.debug("Temporary file '{}' successfully created".format(file_name))
 
 
 def _cleanup_collect_files(res, pack, keep):
@@ -255,7 +255,7 @@ def _cleanup_collect_files(res, pack, keep):
             pack.write(res[collect_file], os.path.basename(res[collect_file]))
             if not keep:
                 temp.delete_temp_file(res[collect_file], force=True)
-                WD.debug("Temporary file '{}' deleted".format(res[collect_file]))
+                WATCH_DOG.debug("Temporary file '{}' deleted".format(res[collect_file]))
             res[collect_file] = None
 
 
@@ -264,12 +264,12 @@ def _check_dependencies():
     Otherwise an exception is raised.
     """
     # Check that all the dependencies are present
-    WD.debug("Checking that all the dependencies '{}' are present".format(DEPENDENCIES))
+    WATCH_DOG.debug("Checking that all the dependencies '{}' are present".format(DEPENDENCIES))
     for dependency in DEPENDENCIES:
         if not shutil.which(dependency):
-            WD.debug("Missing dependency command '{}' detected".format(dependency))
+            WATCH_DOG.debug("Missing dependency command '{}' detected".format(dependency))
             raise MissingDependencyException(dependency)
-    WD.debug("Dependencies check successfully completed, no missing dependency")
+    WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
 
 
 # TODO: allow multiple executables to be specified

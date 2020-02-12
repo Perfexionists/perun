@@ -4,7 +4,7 @@
 import sys
 from threading import Thread, Event
 
-from perun.collect.trace.watchdog import WD
+from perun.collect.trace.watchdog import WATCH_DOG
 
 
 class NonBlockingTee(Thread):
@@ -33,7 +33,7 @@ class NonBlockingTee(Thread):
     def run(self):
         """ The thread loop which blocks until new output from the stream is available.
         """
-        WD.debug("NonBlockingTee thread starting, output stored in '{}'".format(self._file))
+        WATCH_DOG.debug("NonBlockingTee thread starting, output stored in '{}'".format(self._file))
         with open(self._file, 'wb') as tee_file:
             try:
                 # Wait for a next line from the stream
@@ -51,7 +51,7 @@ class NonBlockingTee(Thread):
                 # Flush all the buffers before terminating the thread
                 sys.stdout.buffer.flush()
                 tee_file.flush()
-                WD.debug("NonBlockingTee thread terminating")
+                WATCH_DOG.debug("NonBlockingTee thread terminating")
 
 
 class HeartbeatThread(Thread):
@@ -83,7 +83,9 @@ class HeartbeatThread(Thread):
         """ The thread loop that waits for a stop event to happen. After each _timer amount
         of time, the waiting is interrupted and the action is invoked.
         """
-        WD.debug("HeartbeatThread starting, action will be performed every {}s".format(self._timer))
+        WATCH_DOG.debug(
+            "HeartbeatThread starting, action will be performed every {}s".format(self._timer)
+        )
         # Repeat the wait as long as the stop event is not set
         while not self._stop_event.is_set():
             # Wait the _timer seconds or until the stop event is set
@@ -92,7 +94,7 @@ class HeartbeatThread(Thread):
                 break
             # The sleep was interrupted by a wait timeout, perform the action
             self._callback(*self._callback_args)
-        WD.debug("HeartbeatThread stop_event detected, terminating the thread")
+        WATCH_DOG.debug("HeartbeatThread stop_event detected, terminating the thread")
 
     def __enter__(self):
         """ The context manager entry sentinel, starts the thread loop.
@@ -134,13 +136,13 @@ class TimeoutThread(Thread):
     def run(self):
         """ The thread loop that waits for the timeout to be reached.
         """
-        WD.debug("TimeoutThread started, waiting for {}s".format(self._timer))
+        WATCH_DOG.debug("TimeoutThread started, waiting for {}s".format(self._timer))
         if self.timeout_event.wait(self._timer):
-            WD.debug("TimeoutThread interrupted before reaching the timeout")
+            WATCH_DOG.debug("TimeoutThread interrupted before reaching the timeout")
             return
         # Set the event so that the main thread can check, that the timeout has been reached
         self.timeout_event.set()
-        WD.debug("Timeout reached")
+        WATCH_DOG.debug("Timeout reached")
 
     def reached(self):
         """ Checks if the timeout has already been reached.

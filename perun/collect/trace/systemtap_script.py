@@ -2,7 +2,7 @@
 rules such as function or static locations and sampling.
 """
 
-from perun.collect.trace.watchdog import WD
+from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import RecordType
 
 
@@ -16,7 +16,7 @@ def assemble_system_tap_script(script_file, func, static, binary, verbose_trace,
     :param str binary: the executable file that contains specified probe points
     :param bool verbose_trace: produces more verbose raw output if set to True
     """
-    WD.info("Attempting to assembly the SystemTap script '{}'".format(script_file))
+    WATCH_DOG.info("Attempting to assembly the SystemTap script '{}'".format(script_file))
 
     script = ''
 
@@ -41,8 +41,8 @@ def assemble_system_tap_script(script_file, func, static, binary, verbose_trace,
     # Create the file and save the script
     with open(script_file, 'w') as stp_handle:
         stp_handle.write(script)
-    WD.info("SystemTap script successfully assembled")
-    WD.log_probes(len(func), len(static), script_file)
+    WATCH_DOG.info("SystemTap script successfully assembled")
+    WATCH_DOG.log_probes(len(func), len(static), script_file)
 
 
 def _add_end_marker(process):

@@ -24,7 +24,7 @@ their resources against each other.
 import os
 from enum import Enum
 
-from perun.collect.trace.watchdog import WD
+from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import Res, LOCK_SUFFIX_LEN, PS_FORMAT
 
 import perun.logic.temp as temp
@@ -108,7 +108,7 @@ class ResourceLock:
 
         :param Res res: the Res object responsible for keeping track of resources
         """
-        WD.debug("Attempting to lock a resource '{}' with pid '{}'".format(self.name, self.pid))
+        WATCH_DOG.debug("Attempting to lock a resource '{}' with pid '{}'".format(self.name, self.pid))
 
         # Lock the resource first
         temp.touch_temp_dir(self.locks_dir)
@@ -118,7 +118,7 @@ class ResourceLock:
         # The check should be done again later since data race might have happened
         self.check_validity()
 
-        WD.debug("Resource locked: '{}'".format(self.file))
+        WATCH_DOG.debug("Resource locked: '{}'".format(self.file))
 
     @staticmethod
     def unlock(lock, res):
@@ -137,8 +137,8 @@ class ResourceLock:
         same resource (e.g. the profiled binary). If a collision is encountered, an exception
         is raised.
         """
-        WD.debug("Checking lock validity for a resource '{}' with pid '{}'"
-                 .format(self.name, self.pid))
+        WATCH_DOG.debug("Checking lock validity for a resource '{}' with pid '{}'"
+                        .format(self.name, self.pid))
 
         # Iterate all the lock files related to the resource + resource type
         for active_lock in get_active_locks_for(self.locks_dir, [self.name], [self.type]):
@@ -148,16 +148,16 @@ class ResourceLock:
 
             # Check if the resource is actually locked by a running perun process
             if _is_running_perun_process(active_lock.pid):
-                WD.debug("Resource '{}' already locked by a process '{}'"
-                         .format(self.name, active_lock.pid))
+                WATCH_DOG.debug("Resource '{}' already locked by a process '{}'"
+                                .format(self.name, active_lock.pid))
                 raise ResourceLockedException(self.name, active_lock.pid)
             # If not, remove the lock file and report the obsolete lock
-            WD.info("Encountered obsolete lock file that should have been deleted during teardown: "
+            WATCH_DOG.info("Encountered obsolete lock file that should have been deleted during teardown: "
                     "Resource '{}', pid '{}'. Attempting to remove the lock."
-                    .format(self.name, active_lock.pid))
+                           .format(self.name, active_lock.pid))
             active_lock.delete_file()
 
-        WD.debug("Lock for '{}:{}' is valid".format(self.name, self.pid))
+        WATCH_DOG.debug("Lock for '{}:{}' is valid".format(self.name, self.pid))
 
     def delete_file(self):
         """ Attempts to remove the lock file from the file system. This function is mainly intended
@@ -166,13 +166,13 @@ class ResourceLock:
         """
         try:
             if os.path.exists(self.file):
-                WD.debug("Attempting to remove a lock file '{}'".format(self.file))
+                WATCH_DOG.debug("Attempting to remove a lock file '{}'".format(self.file))
                 temp.delete_temp_file(self.file, force=True)
-                WD.debug("Lock file '{}' removed".format(self.file))
+                WATCH_DOG.debug("Lock file '{}' removed".format(self.file))
         except (InvalidTempPathException, OSError) as exc:
             # Issue a warning only if the file still exists after a deletion attempt
             if temp.exists_temp_file(self.file):
-                WD.warn("Failed to delete resource lock file '{}'".format(str(exc)))
+                WATCH_DOG.warn("Failed to delete resource lock file '{}'".format(str(exc)))
 
 
 def get_active_locks_for(locks_dir, names=None, resource_types=None, pids=None):
@@ -219,10 +219,10 @@ def _is_running_perun_process(pid):
     :return bool: true if the PID belongs to a running perun process, false otherwise
     """
     # Request information about process with the given PID
-    WD.debug("Checking the details of a process '{}'".format(pid))
+    WATCH_DOG.debug("Checking the details of a process '{}'".format(pid))
     query = 'ps -o {} -p {}'.format(PS_FORMAT, pid)
     result = utils.run_safely_external_command(query, False)[0].decode('utf-8').splitlines()
-    WD.log_variable('process::{}'.format(pid), result)
+    WATCH_DOG.log_variable('process::{}'.format(pid), result)
     # If no such process exists then the output contains only header line
     if len(result) < 2:
         return False

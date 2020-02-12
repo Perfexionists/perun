@@ -241,7 +241,7 @@ class Watchdog:
                         self.__logger.debug('%s', '    ' + '\n    '.join(map(str, stack)))
 
 
-WD = Watchdog()
+WATCH_DOG = Watchdog()
 
 
 def _count_script_probes(script_path):

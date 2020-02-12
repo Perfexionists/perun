@@ -4,7 +4,7 @@ a perun profile.
 
 import collections
 
-from perun.collect.trace.watchdog import WD
+from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import RecordType, TraceRecord
 
 
@@ -18,7 +18,7 @@ def trace_to_profile(data_file, func, static, **kwargs):
     :param kwargs: additional parameters
     :return object: the generator object that produces dictionaries representing the resources
     """
-    WD.info('Transforming the raw performance data into a perun profile format')
+    WATCH_DOG.info('Transforming the raw performance data into a perun profile format')
     trace_stack, sequence_map = {}, {}
 
     with open(data_file, 'r') as trace:
@@ -43,11 +43,11 @@ def trace_to_profile(data_file, func, static, **kwargs):
                 if resource:
                     resource['workload'] = kwargs.get('workload', ' '.join(kwargs['workload']))
                     yield resource
-            WD.info('Data to profile transformation finished')
+            WATCH_DOG.info('Data to profile transformation finished')
         except Exception:
-            WD.info('Error while parsing the raw trace record')
+            WATCH_DOG.info('Error while parsing the raw trace record')
             # Log the status in case of unhandled exception
-            WD.log_trace_stack(line, cnt, trace_stack)
+            WATCH_DOG.log_trace_stack(line, cnt, trace_stack)
             raise
 
 
@@ -261,5 +261,5 @@ def _parse_record(line):
         return TraceRecord(rtype, offset, name, timestamp, thread, 0)
     except Exception:
         # In case there is any issue with parsing, return corrupted trace record
-        WD.debug("Corrupted data record: '{}'".format(line))
+        WATCH_DOG.debug("Corrupted data record: '{}'".format(line))
         return TraceRecord(RecordType.Corrupt, -1, '', -1, 0, 0)

@@ -7,7 +7,7 @@ import collections
 from enum import IntEnum, Enum
 from zipfile import ZipFile, ZIP_LZMA
 
-from perun.collect.trace.watchdog import WD
+from perun.collect.trace.watchdog import WATCH_DOG
 
 
 class Res:
@@ -157,7 +157,9 @@ class Zipper:
         """
         if self.__enabled:
             self.pack = ZipFile(self.pack_name, 'w', compression=ZIP_LZMA).__enter__()
-            WD.info("Packing the temporary files into an archive '{}'.".format(self.pack_name))
+            WATCH_DOG.info(
+                "Packing the temporary files into an archive '{}'.".format(self.pack_name)
+            )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -179,7 +181,7 @@ class Zipper:
         """
         if self.__enabled and file is not None:
             self.pack.write(file, arcname=arcname)
-            WD.debug("Temporary file '{}' packed as '{}'.".format(file, arcname))
+            WATCH_DOG.debug("Temporary file '{}' packed as '{}'.".format(file, arcname))
 
 
 class FileSize(IntEnum):
