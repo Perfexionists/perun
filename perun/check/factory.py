@@ -1,4 +1,6 @@
-"""Collection of global methods for detection of performance changes"""
+"""
+Collection of global methods for detection of performance changes
+"""
 
 import contextlib
 import os

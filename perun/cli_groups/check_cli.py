@@ -66,6 +66,12 @@ def check_group(**_):
       \b
       1. Best Model Order Equality (BMOE)
       2. Average Amount Threshold (AAT)
+      3. Polynomial Regression (PREG)
+      4. Linear Regression (LREG)
+      5. Fast Check (FAST)
+      6. Integral Comparison (INT)
+      7. Local Statistics (LOC)
+
     """
     should_precollect = dutils.strtobool(str(
         perun_config.lookup_key_recursively('degradation.collect_before_check', 'false')
