@@ -299,7 +299,8 @@ def run_collector_from_cli_context(ctx, collector_name, collector_params):
     run_params = {
         'collector_params': {
             collector_name: collector_params
-        }
+        },
+        'profile_name': ctx.obj['profile_name']
     }
     collect_status = run_single_job(
         cmd, args, workload, [collector_name], [], minor_versions, **run_params
@@ -346,14 +347,15 @@ def run_postprocessor(postprocessor, job, prof):
     return postprocess_report.status, prof
 
 
-def store_generated_profile(prof, job):
+def store_generated_profile(prof, job, profile_name=None):
     """Stores the generated profile in the pending jobs directory.
 
-    :param dict prof: profile that we are storing in the repository
+    :param Profile prof: profile that we are storing in the repository
     :param Job job: job with additional information about generated profiles
+    :param optional profile_name: user-defined name of the profile
     """
     full_profile = profile.finalize_profile_for_job(prof, job)
-    full_profile_name = profile.generate_profile_name(full_profile)
+    full_profile_name = profile_name or profile.generate_profile_name(full_profile)
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
     streams.store_json(full_profile.serialize(), full_profile_path)
@@ -546,7 +548,7 @@ def run_single_job(cmd, args, workload, collector, postprocessor, minor_version_
     status = CollectStatus.OK
     finished_jobs = 0
     for status, prof, job in generator_function(minor_version_list, job_matrix, number_of_jobs):
-        store_generated_profile(prof, job)
+        store_generated_profile(prof, job, kwargs.get('profile_name'))
         finished_jobs += 1
     return status if finished_jobs > 0 else CollectStatus.ERROR
 

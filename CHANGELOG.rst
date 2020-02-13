@@ -6,6 +6,17 @@ HEAD
 
 **To be included in next release**
 
+0.18.2 (2020-02-13)
+-------------------
+
+`commit: c68ba580d53b6e40df48bcef4e2bd6af3c9754e6`
+
+**Fix errors in novel check methods**
+
+  - fix selected errors in novel check methods
+  - automatically remove testing files
+  - extend the collection process with specifying custom name
+
 0.18.1 (2020-02-13)
 -------------------
 

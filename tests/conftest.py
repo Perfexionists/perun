@@ -1,6 +1,7 @@
 """Shared fixtures for the testing of functionality of Perun commands."""
 
 import curses
+import glob
 import os
 import shutil
 import subprocess
@@ -179,7 +180,10 @@ def memory_collect_job():
     target_bin_path = os.path.join(target_dir, 'mct')
     assert 'mct' in list(os.listdir(target_dir))
 
-    return [target_bin_path], '', [''], ['memory'], []
+    yield [target_bin_path], '', [''], ['memory'], []
+
+    # Remove the testing stuff
+    os.remove(os.path.join(target_dir, 'mct'))
 
 
 @pytest.fixture(scope="session")
@@ -200,7 +204,10 @@ def memory_collect_no_debug_job():
     target_bin_path = os.path.join(target_dir, 'mct-no-dbg')
     assert 'mct-no-dbg' in list(os.listdir(target_dir))
 
-    return [target_bin_path], '', [''], ['memory'], []
+    yield [target_bin_path], '', [''], ['memory'], []
+
+    # Remove the testing stuff
+    os.remove(os.path.join(target_dir, 'mct-no-dbg'))
 
 
 @pytest.fixture(scope="session")
@@ -222,9 +229,12 @@ def complexity_collect_job():
     assert 'target_dir' in job_config.keys()
     job_config['target_dir'] = target_dir
 
-    return [target_dir], '', [''], ['complexity'], [], {'collector_params': {
+    yield [target_dir], '', [''], ['complexity'], [], {'collector_params': {
         'complexity': job_config
     }}
+
+    # Remove target testing directory
+    shutil.rmtree(target_dir)
 
 
 @pytest.fixture(scope="session")
@@ -242,9 +252,12 @@ def trace_collect_job():
     job_config_file = os.path.join(source_dir, 'job.yml')
     job_config = streams.safely_load_yaml_from_file(job_config_file)
 
-    return [target_dir + '/tst'], '', [''], ['trace'], [], {'collector_params': {
+    yield [target_dir + '/tst'], '', [''], ['trace'], [], {'collector_params': {
         'trace': job_config
     }}
+
+    # Remove trace collect scripts generated at testing
+    [os.remove(filename) for filename in glob.glob(source_dir + "/*.stp")]
 
 
 def all_profiles_in(directory, sort=False):

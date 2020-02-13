@@ -549,6 +549,8 @@ def postprocessby(ctx, profile, **_):
 
 
 @cli.group()
+@click.option('--profile-name', '-pn', nargs=1, required=False, multiple=False,
+              type=str, help="Specifies the name of the profile, which will be collected, e.g. profile.perf.")
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
               callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the profiles will be collected.')
