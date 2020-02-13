@@ -214,16 +214,10 @@ INTEGRAL_COMPARISON_RESULTS = [
         res=pc.MaybeOptimization, loc='alloc', fb='constant', tt='constant', rd=-0.18
     ),
     DegradationInfo(
-        res=pc.MaybeOptimization, loc='alloc', fb='moving_average', tt='moving_average', rd=-0.18
+        res=pc.MaybeDegradation, loc='alloc', fb='regressogram', tt='regressogram', rd=0.16
     ),
     DegradationInfo(
         res=pc.Degradation, loc='ga_grow', fb='constant', tt='constant', rd=1210.03
-    ),
-    DegradationInfo(
-        res=pc.Degradation, loc='ga_grow', fb='moving_average', tt='moving_average', rd=1276.95
-    ),
-    DegradationInfo(
-        res=pc.Degradation, loc='ga_init2', fb='moving_average', tt='moving_average', rd=2.32
     ),
     DegradationInfo(
         res=pc.Degradation, loc='ga_init2', fb='quadratic', tt='quadratic', rd=2.33

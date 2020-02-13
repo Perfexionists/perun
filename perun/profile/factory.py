@@ -231,7 +231,7 @@ class Profile(collections.MutableMapping):
         elif models_strategy in ('best-nonparam', 'best-model', 'best-param'):
             return get_filtered_best_models_of(self, group=group)
 
-    def all_models(self, group='both'):
+    def all_models(self, group='model'):
         """Generator of all 'models' records from the performance profile w.r.t.
         :ref:`profile-spec`.
 
@@ -262,7 +262,7 @@ class Profile(collections.MutableMapping):
             :ref:`postprocessors-regression-analysis`)
         """
         for model_idx, model in enumerate(self._storage['models']):
-            if group == 'both' or\
+            if group == 'model' or\
                (group == 'param' and model.get('model') in get_supported_models()) or\
                (group == 'nonparam' and model.get('model') in get_supported_nparam_methods()):
                 yield model_idx, model
