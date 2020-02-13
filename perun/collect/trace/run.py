@@ -1,206 +1,275 @@
 """Wrapper for trace collector, which collects profiling data about
-running times and sizes of structures.
+running times for each of the specified functions or static markers in the code.
 
-Specifies before, collect and after functions to perform the initialization,
+Specifies before, collect, after and teardown functions to perform the initialization,
 collection and postprocessing of collection data.
 """
 
-from subprocess import CalledProcessError
-import time
 import os
-
+import shutil
+import time
 import click
 
 import perun.collect.trace.strategy as strategy
 import perun.collect.trace.systemtap as systemtap
 import perun.collect.trace.systemtap_script as stap_script
+import perun.collect.trace.parse as parse
+from perun.logic.locks import LockType, ResourceLock
+from perun.collect.trace.watchdog import WATCH_DOG
+from perun.collect.trace.values import Res, OutputHandling, Zipper, \
+    DEPENDENCIES, MICRO_TO_SECONDS
+
 import perun.logic.runner as runner
-import perun.utils.exceptions as exceptions
+import perun.logic.temp as temp
 import perun.utils as utils
-import perun.utils.log as log
-
+import perun.utils.log as stdout
+from perun.logic.pcs import get_log_directory
 from perun.utils.structs import CollectStatus
-
-
-# The collector subtypes
-_COLLECTOR_SUBTYPES = {
-    'delta': 'time delta'
-}
-
-
-# The converter for collector statuses
-_COLLECTOR_STATUS = {
-    systemtap.Status.OK: (CollectStatus.OK, 'Ok'),
-    systemtap.Status.STAP: (CollectStatus.ERROR,
-                            'SystemTap related issue, see the corresponding {} file.'),
-    systemtap.Status.STAP_DEP: (CollectStatus.ERROR, 'SystemTap dependency missing.'),
-    systemtap.Status.EXCEPT: (CollectStatus.ERROR, '')  # The msg should be set by the exception
-}
-
-
-# The time conversion constant
-_MICRO_TO_SECONDS = 1000000.0
+from perun.utils.exceptions import InvalidBinaryException, MissingDependencyException
 
 
 def before(executable, **kwargs):
-    """ Assembles the SystemTap script according to input parameters and collection strategy
+    """ Validates and normalizes the collection configuration.
 
-    The output dictionary is updated with:
-     - timestamp: current timestamp that is used for saved files
-     - cmd, cmd_dir, cmd_base: absolute path to the command, its directory and the command base name
-     - script_path: path to the generated script file
-     - log_path: path to the collection log
-     - output_path: path to the collection output
+    This phase shouldn't contain anything more than this so that the teardown phase has all the
+    options set if the collection ends prematurely, e.g. the 'zip-temps' wouldn't be updated in
+    the kwargs (thus in the teardown phase) if a signal is raised in this phase.
 
-    :param Executable executable: full collected command with arguments and workload
-    :param kwargs: dictionary containing the configuration settings for the collector
-    :returns: tuple (int as a status code, nonzero values for errors,
+    :param Executable executable: full collection command with arguments and workload
+    :param kwargs: dictionary containing the normalized configuration settings for the collector
+    :returns: tuple (CollectStatus enum code,
                     string as a status message, mainly for error states,
-                    dict of kwargs and new values)
+                    dict of kwargs (possibly with some new values))
     """
-    try:
-        log.cprint('Starting the pre-processing phase... ', 'white')
+    WATCH_DOG.header('Pre-processing phase...')
+    # Validate and normalize collection parameters
+    kwargs = _normalize_config(executable, **kwargs)
+    # Initialize the watchdog and log the kwargs dictionary after it's fully initialized
+    WATCH_DOG.start_session(kwargs['watchdog'], kwargs['pid'], kwargs['timestamp'], kwargs['quiet'])
+    WATCH_DOG.log_variable('before::kwargs', kwargs)
 
-        # Update the configuration dictionary with some additional values
-        kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-        _, kwargs['cmd_dir'], kwargs['cmd_base'] = utils.get_path_dir_file(executable.cmd)
-        kwargs['script_path'] = _create_collector_file('script', '.stp', **kwargs)
-        kwargs['log_path'] = _create_collector_file('log', **kwargs)
-        kwargs['output_path'] = _create_collector_file('record', **kwargs)
-
-        # Validate collection parameters
-        kwargs['executable'] = executable
-        kwargs = _validate_input(**kwargs)
-
-        # Extract and / or post-process the collect configuration
-        kwargs = strategy.extract_configuration(**kwargs)
-        if not kwargs['func'] and not kwargs['static'] and not kwargs['dynamic']:
-            return CollectStatus.ERROR, ('No function, static or dynamic probes to be profiled '
-                                         '(due to invalid specification, failed extraction or '
-                                         'filtering)'), dict(kwargs)
-
-        # Assemble script according to the parameters
-        stap_script.assemble_system_tap_script(**kwargs)
-
-        log.done()
-        result = _COLLECTOR_STATUS[systemtap.Status.OK]
-        return result[0], result[1], dict(kwargs)
-
-    except (OSError, ValueError, CalledProcessError,
-            UnicodeError, exceptions.InvalidBinaryException) as exception:
-        log.failed()
-        return _COLLECTOR_STATUS[systemtap.Status.EXCEPT][0], str(exception), dict(kwargs)
+    stdout.done('\n\n')
+    return CollectStatus.OK, "", dict(kwargs)
 
 
-def collect(**kwargs):
-    """ Runs the created SystemTap script and the profiled command
+def collect(executable, **kwargs):
+    """ Assembles the SystemTap script according to input parameters and collection strategy.
+    Runs the created SystemTap script and the profiled command.
 
-    The output dictionary is updated with:
-     - output: path to the collector output file
-
-    :param dict kwargs: dictionary containing the configuration settings for the collector
-    :returns: (int as a status code, nonzero values for errors,
-              string as a status message, mainly for error states,
-              dict of kwargs and new values)
-    """
-    log.cprintln('Running the collector, progress output stored in collect_log_{0}.txt\n'
-                 'This may take a while... '.format(kwargs['timestamp']), 'white')
-    try:
-        # Call the system tap
-        code, kwargs['output_path'] = systemtap.systemtap_collect(**kwargs)
-        result = _COLLECTOR_STATUS[code]
-        if code != systemtap.Status.OK:
-            log.failed()
-            # Add specific return for STAP error which includes the precise log file path
-            if code == systemtap.Status.STAP:
-                return result[0], result[1].format(kwargs['log_path']), dict(kwargs)
-        return result[0], result[1], dict(kwargs)
-
-    except (OSError, CalledProcessError) as exception:
-        log.failed()
-        return CollectStatus.ERROR, str(exception), dict(kwargs)
-
-
-def after(**kwargs):
-    """ Handles the trace collector output and transforms it into resources
-
-    The output dictionary is updated with:
-     - profile: the performance profile contents created from the collector output
-
+    :param Executable executable: full collection command with arguments and workload
     :param kwargs: dictionary containing the configuration settings for the collector
-    :returns: tuple (int as a status code, nonzero values for errors,
+    :returns: tuple (CollectStatus enum code,
                     string as a status message, mainly for error states,
-                    dict of kwargs and new values)
+                    dict of kwargs (possibly with some new values))
     """
-    log.cprint('Starting the post-processing phase... ', 'white')
+    WATCH_DOG.header('Collect phase...')
 
-    # Get the trace log path
-    try:
-        resources = list(systemtap.trace_to_profile(**kwargs))
+    # Check all the required dependencies
+    _check_dependencies()
+    # Try to lock the binary so that no other concurrent trace collector process can
+    # profile the same binary and produce corrupted performance data
+    ResourceLock(
+        LockType.Binary, os.path.basename(executable.cmd), kwargs['pid'], kwargs['locks_dir']
+    ).lock(kwargs['res'])
+    # Create the collect files
+    _create_collect_files(**kwargs)
 
-        # Update the profile dictionary
-        kwargs['profile'] = {
-            'global': {
-                'timestamp': sum(res['amount'] for res in resources) / _MICRO_TO_SECONDS,
-                'resources': resources
-            }
+    # Extract and / or post-process the collect configuration
+    kwargs = strategy.extract_configuration(**kwargs)
+    if not kwargs['func'] and not kwargs['static'] and not kwargs['dynamic']:
+        msg = ('No profiling probes created (due to invalid specification, failed extraction or '
+               'filtering)')
+        return CollectStatus.ERROR, msg, dict(kwargs)
+
+    # Assemble script according to the parameters
+    stap_script.assemble_system_tap_script(kwargs['res'][Res.script()], **kwargs)
+
+    # Run the SystemTap and profiled command
+    systemtap.systemtap_collect(executable, **kwargs)
+
+    stdout.done('\n\n')
+    return CollectStatus.OK, "", dict(kwargs)
+
+
+def after(res, **kwargs):
+    """ Parses the trace collector output and transforms it into profile resources
+
+    :param Res res: the resources object
+    :param kwargs: the configuration settings for the collector
+    :returns: tuple (CollectStatus enum code,
+                    string as a status message, mainly for error states,
+                    dict of kwargs (possibly with some new values))
+    """
+    WATCH_DOG.header('Post-processing phase... ')
+
+    # TODO: change the output according to the new format so that it doesn't use as much memory?
+    # Parse the records and create the profile
+    records = list(parse.trace_to_profile(res[Res.data()], **kwargs))
+    kwargs['profile'] = {
+        'global': {
+            'timestamp': sum(record['amount'] for record in records) / MICRO_TO_SECONDS,
+            'resources': records
         }
-        log.done()
-        result = _COLLECTOR_STATUS[systemtap.Status.OK]
-        return result[0], result[1], dict(kwargs)
+    }
 
-    except CalledProcessError as exception:
-        log.failed()
-        return _COLLECTOR_STATUS[systemtap.Status.EXCEPT], str(exception), dict(kwargs)
+    stdout.done('\n\n')
+    return CollectStatus.OK, "", dict(kwargs)
 
 
-def _validate_input(**kwargs):
-    """Validate the collector input parameters and transform them to expected format.
+def teardown(**kwargs):
+    """ Perform a cleanup of all the collection resources that need it, i.e. files, locks,
+    processes, kernel modules etc.
 
+    :param kwargs: the configuration settings for the collector
+    :returns: tuple (CollectStatus enum code,
+                    string as a status message, mainly for error states,
+                    dict of kwargs (possibly with some new values))
+    """
+    WATCH_DOG.header('Teardown phase...')
+
+    # Cleanup all the SystemTap related resources
+    if 'res' in kwargs:
+        systemtap.cleanup(**kwargs)
+    # Zip and delete the temporary and watchdog files
+    timestamp = kwargs.get('timestamp', time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
+    pid = kwargs.get('pid', os.getpid())
+    keep_temps = kwargs.get('keep_temps', False)
+    pack_name = os.path.join(
+        get_log_directory(), 'trace', 'collect_files_{}_{}.zip.lzma'.format(timestamp, pid)
+    )
+    with Zipper(kwargs.get('zip_temps', False), pack_name) as temp_pack:
+        if 'res' in kwargs:
+            _cleanup_collect_files(kwargs['res'], temp_pack, keep_temps)
+        WATCH_DOG.end_session(temp_pack)
+
+    stdout.done('\n\n')
+    return CollectStatus.OK, "", dict(kwargs)
+
+
+def _normalize_config(executable, **kwargs):
+    """ Normalizes the collector input configuration, i.e. validates the provided configuration
+    arguments, transforms them into the expected format and adds some extra values.
+
+    :param Executable executable: full collection command with arguments and workload
     :param kwargs: the collector input parameters
     :return dict: validated and transformed input parameters
     """
+    # Normalize the collection probes types
     kwargs['func'] = list(kwargs.get('func', ''))
     kwargs['func_sampled'] = list(kwargs.get('func_sampled', ''))
     kwargs['static'] = list(kwargs.get('static', ''))
     kwargs['static_sampled'] = list(kwargs.get('static_sampled', ''))
     kwargs['dynamic'] = list(kwargs.get('dynamic', ''))
     kwargs['dynamic_sampled'] = list(kwargs.get('dynamic_sampled', ''))
-    kwargs['global_sampling'] = kwargs.get('global_sampling', 1)
+
+    # Set the some default values if not provided
+    kwargs.setdefault('with_static', True)
+    kwargs.setdefault('zip_temps', False)
+    kwargs.setdefault('keep_temps', False)
+    kwargs.setdefault('verbose_trace', False)
+    kwargs.setdefault('quiet', False)
+    kwargs.setdefault('watchdog', False)
+    kwargs.setdefault('output_handling', OutputHandling.Default.value)
+    kwargs.setdefault('diagnostics', False)
+
+    # Enable some additional flags if diagnostics is enabled
+    if kwargs['diagnostics']:
+        kwargs['zip_temps'] = True
+        kwargs['verbose_trace'] = True
+        kwargs['watchdog'] = True
+        kwargs['output_handling'] = OutputHandling.Capture.value
+
+    # Transform the output handling value to the enum element
+    kwargs['output_handling'] = OutputHandling(kwargs['output_handling'])
 
     # Normalize global sampling
-    if kwargs['global_sampling'] <= 1:
+    if 'global_sampling' not in kwargs or kwargs['global_sampling'] < 1:
         kwargs['global_sampling'] = 1
-
     # Normalize timeout value
     if 'timeout' not in kwargs or kwargs['timeout'] <= 0:
         kwargs['timeout'] = None
 
-    # Set the some default values if not provided
-    kwargs.setdefault('with_static', True)
-    kwargs.setdefault('cleanup', True)
-    kwargs.setdefault('verbose_trace', False)
+    # No runnable command was given, terminate the collection
+    if not kwargs['binary'] and not executable.cmd:
+        raise InvalidBinaryException('')
+    # Otherwise copy the cmd or binary parameter
+    elif not executable.cmd:
+        executable.cmd = kwargs['binary']
+    elif not kwargs['binary']:
+        kwargs['binary'] = executable.cmd
 
-    # Set the binary to cmd if not provided and check that it exists
-    if not kwargs['binary']:
-        kwargs['binary'] = kwargs['executable'].cmd
+    # Check that the binary / executable file exists and is valid
     kwargs['binary'] = os.path.realpath(kwargs['binary'])
     if not os.path.exists(kwargs['binary']) or not utils.is_executable_elf(kwargs['binary']):
-        raise exceptions.InvalidBinaryException(kwargs['binary'])
+        raise InvalidBinaryException(kwargs['binary'])
+    elif not os.path.exists(executable.cmd):
+        raise InvalidBinaryException(executable.cmd)
+
+    # Update the configuration dictionary with some additional values
+    kwargs['executable'] = executable
+    kwargs['timestamp'] = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+    kwargs['pid'] = os.getpid()
+    kwargs['files_dir'] = temp.temp_path(os.path.join('trace', 'files'))
+    kwargs['locks_dir'] = temp.temp_path(os.path.join('trace', 'locks'))
+    # Init the resources object that is used for a clean teardown and store it in the resources list
+    # This makes the resources available even if 'before' fails and kwargs is not updated
+    kwargs['opened_resources'].append(Res())
+    kwargs['res'] = kwargs['opened_resources'][0]  # Alias for easier access to the resource object
     return kwargs
 
 
-def _create_collector_file(name, suffix='.txt', **kwargs):
-    """Prepares path to the requested file used during collection.
-    The format is as follows: 'collect_<name>_<timestamp><suffix>
+def _create_collect_files(timestamp, pid, res, output_handling, **kwargs):
+    """ Creates the temporary files required for data collection. Namely:
+      - the SystemTap script file
+      - the SystemTap log file
+      - the SystemTap data file (i.e. where the raw measured performance data are stored)
+      - the output capture file (optional) used to store stdout / stderr of the profiled command
 
-    :param str name: further specification of collector file name
-    :param str suffix: the file suffix
-    :param kwargs: additional parameters, e.g. timestamp
-    :return str: assembled path to the file
+    :param str timestamp: the perun startup timestamp
+    :param int pid: the PID of the running perun process
+    :param Res res: the resources object
+    :param OutputHandling output_handling: determines whether the output capture file is required
+    :param kwargs: additional configuration values
     """
-    return os.path.join(kwargs['cmd_dir'], 'collect_{name}_{time}{suffix}'
-                        .format(name=name, time=kwargs['timestamp'], suffix=suffix))
+    files = [(Res.script(), '.stp'), (Res.log(), '.txt'), (Res.data(), '.txt')]
+    if output_handling == OutputHandling.Capture:
+        # Create also the capture file
+        files.append((Res.capture(), '.txt'))
+    for name, suffix in files:
+        file_name = 'collect_{}_{}_{}{}'.format(name, timestamp, pid, suffix)
+        res[name] = os.path.join(kwargs['files_dir'], file_name)
+        temp.touch_temp_file(res[name], protect=True)
+        WATCH_DOG.debug("Temporary file '{}' successfully created".format(file_name))
+
+
+def _cleanup_collect_files(res, pack, keep):
+    """ Zips (optionally) and deletes (optionally) the temporary collection files.
+
+    :param Res res: the resources object
+    :param Zipper pack: the zipper object responsible for zipping the files
+    :param bool keep: keeps the temporary files in the file system
+    """
+    for collect_file in [Res.script(), Res.log(), Res.data(), Res.capture()]:
+        if res[collect_file] is not None:
+            # If zipping the files is disabled in the configuration, the pack.write does nothing
+            pack.write(res[collect_file], os.path.basename(res[collect_file]))
+            if not keep:
+                temp.delete_temp_file(res[collect_file], force=True)
+                WATCH_DOG.debug("Temporary file '{}' deleted".format(res[collect_file]))
+            res[collect_file] = None
+
+
+def _check_dependencies():
+    """ Checks that all the required dependencies are present on the system.
+    Otherwise an exception is raised.
+    """
+    # Check that all the dependencies are present
+    WATCH_DOG.debug("Checking that all the dependencies '{}' are present".format(DEPENDENCIES))
+    for dependency in DEPENDENCIES:
+        if not shutil.which(dependency):
+            WATCH_DOG.debug("Missing dependency command '{}' detected".format(dependency))
+            raise MissingDependencyException(dependency)
+    WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
 
 
 # TODO: allow multiple executables to be specified
@@ -230,13 +299,32 @@ def _create_collector_file(name, suffix='.txt', **kwargs):
               help='The profiled executable. If not set, then the command is considered '
                    'to be the profiled executable and is used as a binary parameter')
 @click.option('--timeout', '-t', type=int, default=0,
-              help='Set time limit for the profiled command, i.e. the command will be terminated '
-                   'after reaching the time limit. Useful for endless commands etc.')
-@click.option('--cleanup/--no-cleanup', default=True,
-              help='Enable/disable the pre-cleanup of possibly running systemtap processes that'
-                   ' could cause the corruption of the output file due to multiple writes.')
-@click.option('--verbose-trace', '-vt', is_flag=True,
+              help='Set time limit (in seconds) for the profiled command, i.e. the command will be '
+                   'terminated after reaching the time limit. Useful for endless commands etc.')
+@click.option('--zip-temps', '-z', is_flag=True, default=False,
+              help='Zip and compress the temporary files (SystemTap log, raw performance data, '
+                   'watchdog log ...) in the perun log directory before deleting them.')
+@click.option('--keep-temps', '-k', is_flag=True, default=False,
+              help='Do not delete the temporary files in the file system.')
+@click.option('--verbose-trace', '-vt', is_flag=True, default=False,
               help='Set the trace file output to be more verbose, useful for debugging.')
+@click.option('--quiet', '-q', is_flag=True, default=False,
+              help='Reduces the verbosity of the collector info messages.')
+@click.option('--watchdog', '-w', is_flag=True, default=False,
+              help='Enable detailed logging of the whole collection process.')
+@click.option('--output-handling', '-o', type=click.Choice(OutputHandling.to_list()),
+              default=OutputHandling.Default.value,
+              help='Sets the output handling of the profiled command:\n'
+                   ' - default: the output is displayed in the terminal\n'
+                   ' - capture: the output is being captured into a file as well as displayed'
+                   ' in the terminal (note that buffering causes a delay in the terminal output)\n'
+                   ' - suppress: redirects the output to the DEVNULL')
+@click.option('--diagnostics', '-i', is_flag=True, default=False,
+              help='Enable detailed surveillance mode of the collector. The collector turns on '
+                   'detailed logging (watchdog), verbose trace, capturing output etc. and stores '
+                   'the logs and files in an archive (zip-temps) in order to provide as much '
+                   'diagnostic data as possible for further inspection.'
+              )
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of

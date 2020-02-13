@@ -159,20 +159,20 @@ probe process("cmp").function("main").return? {
 	}
 }
 
-probe process("cmp").mark("BEFORE_CYCLE") {
+probe process("cmp").mark("BEFORE_CYCLE")? {
 	samp_0[11] ++
 	if(samp_0[11] == 20) {
 		printf("3 %sBEFORE_CYCLE\n", thread_indent(0))
 		samp_0[11] = 0
 	}
 }
-probe process("cmp").mark("BEFORE_CYCLE_end") {
+probe process("cmp").mark("BEFORE_CYCLE_end")? {
 	if(samp_0[11] == 0) {
 		printf("4 %sBEFORE_CYCLE_end\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("INSIDE_CYCLE") {
+probe process("cmp").mark("INSIDE_CYCLE")? {
 	samp_0[12] ++
 	if(samp_0[12] == 20) {
 		printf("2 %s INSIDE_CYCLE\n", thread_indent(0))

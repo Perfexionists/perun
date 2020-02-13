@@ -315,11 +315,40 @@ class InvalidBinaryException(Exception):
         """
         super().__init__("")
         self.binary = binary
-        self.msg = ("Supplied binary parameter '{0}' does not exists or is not an "
+        self.msg = ("Supplied binary parameter '{0}' does not exist or is not an "
                     "executable ELF file.".format(self.binary))
 
     def __str__(self):
         return self.msg
+
+
+class SystemTapScriptCompilationException(Exception):
+    """Raised when an error is encountered during the compilation of a SystemTap script"""
+    def __init__(self, logfile, code):
+        """
+        :param str logfile: log file that contains more details regarding the error
+        :param int code: the exit code of the compilation process
+        """
+        super().__init__("")
+        self.logfile = logfile
+        self.code = code
+
+    def __str__(self):
+        return ("SystemTap script compilation failure (code: {}), see the corresponding {} file."
+                .format(self.code, self.logfile))
+
+
+class SystemTapStartupException(Exception):
+    """Raised when a SystemTap error is encountered during its startup"""
+    def __init__(self, logfile):
+        """
+        :param str logfile: log file that contains more details regarding the error
+        """
+        super().__init__("")
+        self.logfile = logfile
+
+    def __str__(self):
+        return "SystemTap startup error, see the corresponding {} file.".format(self.logfile)
 
 
 class HardTimeoutException(Exception):
@@ -335,6 +364,28 @@ class HardTimeoutException(Exception):
 
     def __str__(self):
         return self.msg
+
+
+class ResourceLockedException(Exception):
+    """Raised when certain trace collector resource is already being used by another process"""
+    def __init__(self, resource, pid):
+        super().__init__()
+        self.resource = resource
+        self.pid = pid
+
+    def __str__(self):
+        return ("The required resource (binary or kernel module) '{}' is already being used by "
+                "another profiling process with a pid {}.".format(self.resource, self.pid))
+
+
+class MissingDependencyException(Exception):
+    """Raised when some dependency is missing on a system"""
+    def __init__(self, dependency):
+        super().__init__()
+        self.dependency = dependency
+
+    def __str__(self):
+        return "Missing dependency command '{}'".format(self.dependency)
 
 
 class UnexpectedPrototypeSyntaxError(Exception):

@@ -6,7 +6,22 @@ HEAD
 
 **To be included in next release**
 
-1.18 (2020-02-11)
+0.18.1 (2020-02-13)
+-------------------
+
+`commit: 5166ec167bddc5e72877029dc19f1302aaa8cb8b`
+
+**Refactor trace collector**
+
+  - refactor trace collector
+  - extend trace collector with watchdog module
+  - selected temporary files moved to .perun directory structure
+  - add diagnostic mode for trace collector
+  - add locking module to perun logic
+  - add diagnostic mode to tracer
+  - ignore tracer tests in codecoverage
+
+0.18 (2020-02-11)
 -----------------
 
 `commit: 252078825559d67b6c915ab01827a9433af92dfa`
@@ -15,7 +30,7 @@ HEAD
 
   - add ``perun fuzz`` mode implementing mutation based fuzzer. See :ref:`fuzzing-overview` for more details.
 
-1.17.4 (2020-01-28)
+0.17.4 (2020-01-28)
 -------------------
 
 `commit: cfb264ed53155a4aabf3874729c2c573533b0d1d`
@@ -32,7 +47,7 @@ HEAD
   - fix minor bug in bounds collector (unknown collector type)
   - fix templates for generating units
 
-1.17.3 (2020-01-09)
+0.17.3 (2020-01-09)
 -------------------
 
 `commit: f3819834803b1eed878feeee51b697b260988c65`
@@ -42,7 +57,7 @@ HEAD
   - fix an issue in profiles which contained only persistent properties
   - add bounds collector, wrapper over Loopus tool
 
-1.17.2 (2019-08-16)
+0.17.2 (2019-08-16)
 -------------------
 
 `commit: d82d15ec5635dacf8027311e44aa65b4776dc8fb`

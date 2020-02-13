@@ -175,181 +175,181 @@ probe process("cmp").function("main").return? {
 	}
 }
 
-probe process("cmp").mark("array__create") {
+probe process("cmp").mark("array__create")? {
 	samp_0[11] ++
 	if(samp_0[11] == 20) {
 		printf("2 %s array__create\n", thread_indent(0))
 		samp_0[11] = 0
 	}
 }
-probe process("cmp").mark("array__end") {
+probe process("cmp").mark("array__end")? {
 	samp_0[12] ++
 	if(samp_0[12] == 20) {
 		printf("2 %s array__end\n", thread_indent(0))
 		samp_0[12] = 0
 	}
 }
-probe process("cmp").mark("cmethod__deconstruct") {
+probe process("cmp").mark("cmethod__deconstruct")? {
 	samp_0[13] ++
 	if(samp_0[13] == 20) {
 		printf("2 %s cmethod__deconstruct\n", thread_indent(0))
 		samp_0[13] = 0
 	}
 }
-probe process("cmp").mark("cmethod__entry") {
+probe process("cmp").mark("cmethod__entry")? {
 	samp_0[14] ++
 	if(samp_0[14] == 20) {
 		printf("3 %scmethod__entry\n", thread_indent(0))
 		samp_0[14] = 0
 	}
 }
-probe process("cmp").mark("cmethod__return") {
+probe process("cmp").mark("cmethod__return")? {
 	if(samp_0[14] == 0) {
 		printf("4 %scmethod__return\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("find__require__begin") {
+probe process("cmp").mark("find__require__begin")? {
 	samp_0[15] ++
 	if(samp_0[15] == 20) {
 		printf("2 %s find__require__begin\n", thread_indent(0))
 		samp_0[15] = 0
 	}
 }
-probe process("cmp").mark("find__require__entry") {
+probe process("cmp").mark("find__require__entry")? {
 	samp_0[16] ++
 	if(samp_0[16] == 20) {
 		printf("3 %sfind__require__entry\n", thread_indent(0))
 		samp_0[16] = 0
 	}
 }
-probe process("cmp").mark("find__require__return") {
+probe process("cmp").mark("find__require__return")? {
 	if(samp_0[16] == 0) {
 		printf("4 %sfind__require__return\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("gc__mark__begin") {
+probe process("cmp").mark("gc__mark__begin")? {
 	samp_0[17] ++
 	if(samp_0[17] == 20) {
 		printf("3 %sgc__mark__begin\n", thread_indent(0))
 		samp_0[17] = 0
 	}
 }
-probe process("cmp").mark("gc__mark__end") {
+probe process("cmp").mark("gc__mark__end")? {
 	if(samp_0[17] == 0) {
 		printf("4 %sgc__mark__end\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("gc__sweep__begin") {
+probe process("cmp").mark("gc__sweep__begin")? {
 	samp_0[18] ++
 	if(samp_0[18] == 20) {
 		printf("3 %sgc__sweep__begin\n", thread_indent(0))
 		samp_0[18] = 0
 	}
 }
-probe process("cmp").mark("gc__sweep__end") {
+probe process("cmp").mark("gc__sweep__end")? {
 	if(samp_0[18] == 0) {
 		printf("4 %sgc__sweep__end\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("hash__create") {
+probe process("cmp").mark("hash__create")? {
 	samp_0[19] ++
 	if(samp_0[19] == 20) {
 		printf("2 %s hash__create\n", thread_indent(0))
 		samp_0[19] = 0
 	}
 }
-probe process("cmp").mark("load__entry") {
+probe process("cmp").mark("load__entry")? {
 	samp_0[20] ++
 	if(samp_0[20] == 20) {
 		printf("3 %sload__entry\n", thread_indent(0))
 		samp_0[20] = 0
 	}
 }
-probe process("cmp").mark("load__return") {
+probe process("cmp").mark("load__return")? {
 	if(samp_0[20] == 0) {
 		printf("4 %sload__return\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("method__cache__clear") {
+probe process("cmp").mark("method__cache__clear")? {
 	samp_0[21] ++
 	if(samp_0[21] == 20) {
 		printf("2 %s method__cache__clear\n", thread_indent(0))
 		samp_0[21] = 0
 	}
 }
-probe process("cmp").mark("method__entry") {
+probe process("cmp").mark("method__entry")? {
 	samp_0[22] ++
 	if(samp_0[22] == 20) {
 		printf("3 %smethod__entry\n", thread_indent(0))
 		samp_0[22] = 0
 	}
 }
-probe process("cmp").mark("method__return") {
+probe process("cmp").mark("method__return")? {
 	if(samp_0[22] == 0) {
 		printf("4 %smethod__return\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("object__create") {
+probe process("cmp").mark("object__create")? {
 	samp_0[23] ++
 	if(samp_0[23] == 20) {
 		printf("2 %s object__create\n", thread_indent(0))
 		samp_0[23] = 0
 	}
 }
-probe process("cmp").mark("parse__begin") {
+probe process("cmp").mark("parse__begin")? {
 	samp_0[24] ++
 	if(samp_0[24] == 20) {
 		printf("3 %sparse__begin\n", thread_indent(0))
 		samp_0[24] = 0
 	}
 }
-probe process("cmp").mark("parse__end") {
+probe process("cmp").mark("parse__end")? {
 	if(samp_0[24] == 0) {
 		printf("4 %sparse__end\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("raise") {
+probe process("cmp").mark("raise")? {
 	samp_0[25] ++
 	if(samp_0[25] == 20) {
 		printf("2 %s raise\n", thread_indent(0))
 		samp_0[25] = 0
 	}
 }
-probe process("cmp").mark("require__entry") {
+probe process("cmp").mark("require__entry")? {
 	samp_0[26] ++
 	if(samp_0[26] == 20) {
 		printf("3 %srequire__entry\n", thread_indent(0))
 		samp_0[26] = 0
 	}
 }
-probe process("cmp").mark("require__return") {
+probe process("cmp").mark("require__return")? {
 	if(samp_0[26] == 0) {
 		printf("4 %srequire__return\n", thread_indent(0))
 	}
 }
 
-probe process("cmp").mark("string__create") {
+probe process("cmp").mark("string__create")? {
 	samp_0[27] ++
 	if(samp_0[27] == 20) {
 		printf("2 %s string__create\n", thread_indent(0))
 		samp_0[27] = 0
 	}
 }
-probe process("cmp").mark("symbol__create") {
+probe process("cmp").mark("symbol__create")? {
 	samp_0[28] ++
 	if(samp_0[28] == 20) {
 		printf("3 %ssymbol__create\n", thread_indent(0))
 		samp_0[28] = 0
 	}
 }
-probe process("cmp").mark("symbol__deconstruct") {
+probe process("cmp").mark("symbol__deconstruct")? {
 	if(samp_0[28] == 0) {
 		printf("4 %ssymbol__deconstruct\n", thread_indent(0))
 	}
