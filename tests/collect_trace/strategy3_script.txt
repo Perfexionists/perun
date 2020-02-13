@@ -146,15 +146,15 @@ probe process("cmp").function("main").return? {
 	printf("1 %s\n", thread_indent(-1))
 }
 
-probe process("cmp").mark("BEFORE_CYCLE") {
+probe process("cmp").mark("BEFORE_CYCLE")? {
 	printf("3 %sBEFORE_CYCLE\n", thread_indent(0))
 }
 
-probe process("cmp").mark("BEFORE_CYCLE_end") {
+probe process("cmp").mark("BEFORE_CYCLE_end")? {
 	printf("4 %sBEFORE_CYCLE_end\n", thread_indent(0))
 }
 
-probe process("cmp").mark("INSIDE_CYCLE") {
+probe process("cmp").mark("INSIDE_CYCLE")? {
 	printf("2 %s INSIDE_CYCLE\n", thread_indent(0))
 }
 

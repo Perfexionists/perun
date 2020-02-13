@@ -1,4 +1,4 @@
-"""Complexity collector collects running times of C/C++ functions.
+"""Trace collector collects running times of C/C++ functions.
 The collected data are suitable for further postprocessing using
 the regression analysis and visualization by scatter plots.
 """

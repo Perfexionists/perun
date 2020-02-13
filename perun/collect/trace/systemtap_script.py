@@ -1,38 +1,23 @@
-"""SystemTap script generator module.
-
-Creates SystemTap script according to the specification:
- - dynamic probe locations
- - static probe locations
- - global sampling
- - custom sampling
-
+"""SystemTap script generator module. Assembles the SystemTap script according to the specified
+rules such as function or static locations and sampling.
 """
 
-
-from enum import IntEnum
-
-
-# Type of record in collector output
-class RecordType(IntEnum):
-    """Reference numbers to the various types of probes used in the collection script."""
-    FuncBegin = 0
-    FuncEnd = 1
-    StaticSingle = 2
-    StaticBegin = 3
-    StaticEnd = 4
-    Corrupt = 9
+from perun.collect.trace.watchdog import WATCH_DOG
+from perun.collect.trace.values import RecordType
 
 
-def assemble_system_tap_script(script_path, func, static, binary, verbose_trace, **_):
+def assemble_system_tap_script(script_file, func, static, binary, verbose_trace, **_):
     """Assembles system tap script according to the configuration parameters.
 
-    :param str script_path: path to the script file, that should be generated
+    :param str script_file: path to the script file, that should be generated
     :param dict func: the collection of functions to probe, each function is represented
                       with dictionary
     :param dict static: the collection of static probe locations represented as a dictionaries
-    :param str binary: the binary / executable file that contains specified probe points
+    :param str binary: the executable file that contains specified probe points
     :param bool verbose_trace: produces more verbose raw output if set to True
     """
+    WATCH_DOG.info("Attempting to assembly the SystemTap script '{}'".format(script_file))
+
     script = ''
 
     # Get sampled probes and prepare the sampling array
@@ -54,8 +39,10 @@ def assemble_system_tap_script(script_path, func, static, binary, verbose_trace,
     script += _add_end_marker(binary)
 
     # Create the file and save the script
-    with open(script_path, 'w') as stp_handle:
+    with open(script_file, 'w') as stp_handle:
         stp_handle.write(script)
+    WATCH_DOG.info("SystemTap script successfully assembled")
+    WATCH_DOG.log_probes(len(func), len(static), script_file)
 
 
 def _add_end_marker(process):
@@ -161,7 +148,7 @@ def _build_static_probe(rule, process, process_id):
     :return str: the script component with the static probe(s)
     """
     # Create static start probe
-    begin_probe = ('probe process("{proc}").mark("{loc}") {{\n'
+    begin_probe = ('probe process("{proc}").mark("{loc}")? {{\n'
                    .format(proc=process, loc=rule['name']))
     begin_body = ('printf("{type} %s {loc}\\n", thread_indent(0))'
                   .format(loc=rule['name'], type=int(RecordType.StaticSingle)))
@@ -171,7 +158,7 @@ def _build_static_probe(rule, process, process_id):
         # Update the body record type
         begin_body = ('printf("{type} %s{loc}\\n", thread_indent(0))'
                       .format(loc=rule['name'], type=int(RecordType.StaticBegin)))
-        end_probe = ('probe process("{proc}").mark("{loc}") {{\n'
+        end_probe = ('probe process("{proc}").mark("{loc}")? {{\n'
                      .format(proc=process, loc=rule['pair'][1]))
         end_body = ('printf("{type} %s{loc}\\n", thread_indent(0))'
                     .format(loc=rule['pair'][1], type=int(RecordType.StaticEnd)))

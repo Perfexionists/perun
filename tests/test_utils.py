@@ -4,6 +4,7 @@ import pkgutil
 import os
 import subprocess
 import signal
+import pytest
 
 import perun.utils as utils
 import perun.vcs as vcs
@@ -12,6 +13,8 @@ import perun.postprocess as postprocess
 import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
+from perun.utils.exceptions import SystemTapScriptCompilationException, SystemTapStartupException, \
+    ResourceLockedException
 
 from perun.utils.structs import Unit
 from perun.utils.helpers import HandledSignals
@@ -141,11 +144,11 @@ def test_binaries_lookup():
     # Build test binaries using non-blocking make
     script_dir = os.path.split(__file__)[0]
     testdir = os.path.join(script_dir, 'utils_tree')
-    p = utils.start_nonblocking_process('make', cwd=testdir, shell=True, universal_newlines=True,
-                                        stdout=subprocess.PIPE)
-    # Verify if the call is non blocking
-    for _ in p.stdout:
-        pass
+    args = {'cwd': testdir, 'shell': True, 'universal_newlines': True, 'stdout':subprocess.PIPE}
+    with utils.nonblocking_subprocess('make', args) as p:
+        # Verify if the call is non blocking
+        for _ in p.stdout:
+            pass
 
     # Find all executables in tree with build directories
     binaries = utils.get_project_elf_executables(testdir)
@@ -174,6 +177,46 @@ def test_size_formatting():
     assert utils.format_file_size(8273428342423) == '   7.5 TiB'
     assert utils.format_file_size(81273198731928371) == '72.2 PiB'
     assert utils.format_file_size(87329487294792342394293489232) == '77564166018710.8 PiB'
+
+
+def test_nonblocking_subprocess():
+    """ Test the nonblocking_process utility with interruptions caused by various exceptions
+    """
+    def termination_wrapper(pid=None):
+        """ The wrapper function for process termination that can - but doesn't have to -
+        accept one argument
+
+        :param int pid: the pid of the process to terminate
+        """
+        if pid is None:
+            pid = proc_dict['pid']
+        os.kill(pid, signal.SIGINT)
+
+    # Obtain the 'waiting' binary for testing
+    target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target = os.path.join(target_dir, 'tst_waiting')
+    # Test the subprocess interruption with default termination handler
+    with pytest.raises(SystemTapScriptCompilationException) as exception:
+        with utils.nonblocking_subprocess(target, {}):
+            raise SystemTapScriptCompilationException('testlog', 1)
+    assert 'compilation failure' in str(exception.value)
+
+    # Test the subprocess interruption with custom termination handler with no parameters
+    proc_dict = {}
+    with pytest.raises(SystemTapStartupException) as exception:
+        with utils.nonblocking_subprocess(target, {}, termination_wrapper) as waiting_process:
+            proc_dict['pid'] = waiting_process.pid
+            raise SystemTapStartupException('testlog')
+    assert 'startup error' in str(exception.value)
+
+    # Test the subprocess interruption with custom termination handler and custom parameter
+    with pytest.raises(ResourceLockedException) as exception:
+        with utils.nonblocking_subprocess(
+                target, {}, termination_wrapper, proc_dict
+        ) as waiting_process:
+            proc_dict['pid'] = waiting_process.pid
+            raise ResourceLockedException('testlog', waiting_process.pid)
+    assert 'already being used' in str(exception.value)
 
 
 def test_signal_handler():
