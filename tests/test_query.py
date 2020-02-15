@@ -3,7 +3,9 @@
 Contains tests for query results of various valid / invalid profiles.
 """
 
+import pytest
 import perun.profile.query as query
+import perun.profile.helpers as helpers
 
 
 __author__ = "Jiri Pavela"
@@ -255,3 +257,26 @@ def test_unique_model_values(query_profiles):
     # Test key that is not in the models
     unique_values = list(query.unique_resource_values_of(models_profile, 'test'))
     assert not unique_values
+
+
+def test_default_variables(query_profiles, valid_profile_pool):
+    profile = profile_filter(query_profiles, 'complexity-empty-resources.perf')
+    assert profile is not None
+
+    with pytest.raises(SystemExit):
+        helpers.get_default_dependent_variable(profile)
+
+    with pytest.raises(SystemExit):
+        helpers.get_default_independent_variable(profile)
+
+    profile = profile_filter(query_profiles, 'complexity-models.perf')
+    assert profile is not None
+
+    assert helpers.get_default_dependent_variable(profile) == 'amount'
+    assert helpers.get_default_independent_variable(profile) == 'structure-unit-size'
+
+    profile = profile_filter(query_profiles, 'memory-2017-08-25-16-03-47.perf')
+    assert profile is not None
+
+    assert helpers.get_default_dependent_variable(profile) == 'amount'
+    assert helpers.get_default_independent_variable(profile) == 'snapshot'
