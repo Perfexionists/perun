@@ -349,7 +349,7 @@ def pcs_full(stored_profile_pool):
     yield pcs
 
     # clean up the directory
-    shutil.rmtree(pcs_path)
+    # shutil.rmtree(pcs_path)
 
 
 @pytest.fixture(scope="function")

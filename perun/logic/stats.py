@@ -252,6 +252,25 @@ def delete_stats_file(stats_filename, minor_version=None, keep_directory=False):
         delete_version_dirs([minor_version], True)
 
 
+def get_latest(stats_filename, stats_ids=None, exclude_self=False):
+    """ Fetch the content of the latest stats file named 'stats_filename' according to the
+    git versions.
+
+    :param str stats_filename: the name of the stats file
+    :param list stats_ids: fetch only the specified parts of the stats file
+    :param bool exclude_self: ignore the stats file in the current git version
+    :return:
+    """
+    versions = list_stat_versions()
+    if exclude_self and versions[0][0] == vcs.get_minor_head():
+        versions = versions[1:]
+    # Traverse all the version directories and try to find it
+    for version, _ in versions:
+        with SuppressedExceptions(exceptions.StatsFileNotFoundException):
+            return get_stats_of(stats_filename, stats_ids, version)
+    return {}
+
+
 def delete_stats_file_across_versions(stats_filename, keep_directory=False):
     """ Deletes the stats file across all the minor version directories in stats.
 

@@ -94,6 +94,39 @@ SORT_ATTR_MAP = {
 }
 
 
+class TempFile:
+    """Context manager class for managing a single temporary file in a limited scope. The CM
+    ensures that the temporary file is properly created (if it does not already exist) as well as
+    deleted after the CM scope is left.
+
+    :ivar str filename: the name of the temporary file
+    :ivar str abspath: the absolute path to the temporary file
+    """
+    def __init__(self, filename):
+        """
+        :param str filename: the name of the temporary file
+        """
+        self.filename = filename
+        self.abspath = temp_path(filename)
+
+    def __enter__(self):
+        """Context manager entry sentinel, creates the temporary file
+
+        :return object: the context manager class instance
+        """
+        touch_temp_file(self.filename)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit sentinel, deletes the managed temporary file.
+
+        :param type exc_type: the type of the exception
+        :param exception exc_val: the value of the exception
+        :param traceback exc_tb: the exception traceback
+        """
+        delete_temp_file(self.filename, force=True)
+
+
 def temp_path(path):
     """Transforms the provided path to the tmp/ directory context, i.e.:
         - absolute path located in the .perun/tmp/ directory: no change

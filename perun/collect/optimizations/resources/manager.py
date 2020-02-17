@@ -1,0 +1,44 @@
+""" The dispatcher for various resource extraction and storage functions.
+
+Specifically, each resource should implement an 'extract' / 'storage' function so that the
+interface is unified.
+"""
+
+
+from enum import Enum
+
+from perun.collect.optimizations.resources import angr_wrapper
+import perun.collect.optimizations.resources.perun_call_graph as perun_cg
+import perun.collect.optimizations.resources.perun_dynamic_stats as perun_stats
+
+
+class Resources(Enum):
+    """ An enumeration for all currently used optimization resources and their corresponding
+    extraction / storage methods, if any.
+    """
+    CallGraphAngr = angr_wrapper.extract,
+    PerunCallGraph = perun_cg.extract, perun_cg.store
+    PerunStats = perun_stats.extract, perun_stats.store
+
+
+def extract(resource, **kwargs):
+    """ Extract the selected resource.
+
+    :param Resources resource: the requested optimization resource
+    :param kwargs: additional extraction parameters
+
+    :return object: the extracted resource object
+    """
+    provider_method = resource.value[0]
+    resource = provider_method(**kwargs)
+    return resource
+
+
+def store(resource, **kwargs):
+    """ Store the selected resource.
+
+    :param Resource resource: the stored optimization resource
+    :param kwargs: additional parameters for the specific methods
+    """
+    store_method = resource.value[1]
+    store_method(**kwargs)

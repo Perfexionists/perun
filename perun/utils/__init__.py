@@ -358,7 +358,7 @@ def partition_list(input_list, condition):
     Based on a SO answer featuring multiple methods and their performance comparison:
     'https://stackoverflow.com/a/31448772'
 
-    :param list input_list: the input list to be partitioned
+    :param iterator input_list: the input list to be partitioned
     :param function condition: the condition that should be evaluated on every list item
     :return tuple: (list of items evaluated to True, list of items evaluated to False)
     """

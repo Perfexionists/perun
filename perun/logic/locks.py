@@ -25,7 +25,7 @@ import os
 from enum import Enum
 
 from perun.collect.trace.watchdog import WATCH_DOG
-from perun.collect.trace.values import Res, LOCK_SUFFIX_LEN, PS_FORMAT
+from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
 
 import perun.logic.temp as temp
 import perun.utils as utils
@@ -38,9 +38,9 @@ class LockType(Enum):
     Each lock has its own unique suffix to prevent lock file overwriting in case
     of e.g. cleverly chosen binary names.
     """
-    Binary = dict(res=Res.lock_binary(), suffix='.b_lock')
-    Module = dict(res=Res.lock_module(), suffix='.m_lock')
-    SystemTap = dict(res=Res.lock_stap(), suffix='.s_lock')
+    Binary = '.b_lock'
+    Module = '.m_lock'
+    SystemTap = '.s_lock'
 
     @classmethod
     def suffix_to_type(cls, suffix):
@@ -50,7 +50,7 @@ class LockType(Enum):
         :return LockType or None: corresponding LockType or None if the suffix has none
         """
         for resource in cls:
-            if resource.value['suffix'] == suffix:
+            if resource.value == suffix:
                 return resource
         return None
 
@@ -61,7 +61,6 @@ class ResourceLock:
 
     :ivar str name: the name of the lock (e.g. the name of the profiled binary file)
     :ivar LockType type: the type of the resource that is being locked
-    :ivar str res: the name of the Res index corresponding to the type of the resource
     :ivar int pid: the PID of the locking process
     :ivar str locks_dir: the path to the .perun directory where lock files are stored
     :ivar str file: the full path of the resulting lock file
@@ -76,11 +75,10 @@ class ResourceLock:
         """
         self.name = resource_name
         self.type = resource_type
-        self.res = resource_type.value['res']
         self.pid = pid
         self.locks_dir = locks_dir
         self.file = os.path.join(
-            locks_dir, '{}:{}{}'.format(self.name, self.pid, self.type.value['suffix'])
+            locks_dir, '{}:{}{}'.format(self.name, self.pid, self.type.value)
         )
 
     @classmethod
@@ -103,16 +101,15 @@ class ResourceLock:
         except ValueError:
             return None
 
-    def lock(self, res):
+    def lock(self):
         """ Actually locks the resource represented by the lock object.
-
-        :param Res res: the Res object responsible for keeping track of resources
         """
-        WATCH_DOG.debug("Attempting to lock a resource '{}' with pid '{}'".format(self.name, self.pid))
+        WATCH_DOG.debug(
+            "Attempting to lock a resource '{}' with pid '{}'".format(self.name, self.pid)
+        )
 
         # Lock the resource first
         temp.touch_temp_dir(self.locks_dir)
-        res[self.res] = self
         temp.touch_temp_file(self.file, protect=True)
         # Check that no other currently running profiling process has locked the same resource
         # The check should be done again later since data race might have happened
@@ -120,17 +117,11 @@ class ResourceLock:
 
         WATCH_DOG.debug("Resource locked: '{}'".format(self.file))
 
-    @staticmethod
-    def unlock(lock, res):
+    def unlock(self):
         """ Unlocks the resource represented by the lock object.
-
-        :param ResourceLock lock: the lock object
-        :param Res res: the Res object responsible for keeping track of resources
         """
-        if lock is not None:
-            # Attempt to delete the lock file if it was not deleted before
-            lock.delete_file()
-            res[lock.res] = None
+        # Attempt to delete the lock file if it was not deleted before
+        self.delete_file()
 
     def check_validity(self):
         """ Checks the validity of the lock, i.e. if there are no other lock files representing the
@@ -152,17 +143,17 @@ class ResourceLock:
                                 .format(self.name, active_lock.pid))
                 raise ResourceLockedException(self.name, active_lock.pid)
             # If not, remove the lock file and report the obsolete lock
-            WATCH_DOG.info("Encountered obsolete lock file that should have been deleted during teardown: "
-                    "Resource '{}', pid '{}'. Attempting to remove the lock."
-                           .format(self.name, active_lock.pid))
+            WATCH_DOG.info(
+                "Encountered obsolete lock file that should have been deleted during teardown: "
+                "Resource '{}', pid '{}'. Attempting to remove the lock."
+                .format(self.name, active_lock.pid)
+            )
             active_lock.delete_file()
 
         WATCH_DOG.debug("Lock for '{}:{}' is valid".format(self.name, self.pid))
 
     def delete_file(self):
-        """ Attempts to remove the lock file from the file system. This function is mainly intended
-        for deleting obsolete lock files not related to the current process.
-        If used incorrectly, this operation could cause some inconsistencies.
+        """ Attempts to remove the lock file from the file system.
         """
         try:
             if os.path.exists(self.file):

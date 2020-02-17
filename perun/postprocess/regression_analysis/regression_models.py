@@ -171,7 +171,7 @@ _MODELS = {
         'f_x': 0,
         'derived': derived.derived_const,
         'required': 'linear',
-        'b1_threshold': 0.001,
+        'b1_threshold': 0.01,
         'transformations': {
             'plot_model': {
                 'computation': plot.model_plot_computation,

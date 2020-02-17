@@ -4,132 +4,38 @@ multiple other modules across the whole trace collector.
 
 import re
 import collections
+import shutil
 from enum import IntEnum, Enum
 from zipfile import ZipFile, ZIP_LZMA
 
 from perun.collect.trace.watchdog import WATCH_DOG
+from perun.utils.exceptions import MissingDependencyException
 
 
-class Res:
-    """ The resource class used to store references to all of the resources that need a proper
-    termination or teardown when the data collection is over (either successfully or not,
-    including tha cases of signal interruption).
-
-    The various static methods provide names of the internal dictionary items so that they can
-    be easily modified in the future.
-
-    :ivar dict _res: the internal resource dictionary
+class Strategy(Enum):
+    """ The supported probe extraction strategies.
     """
-    def __init__(self):
-        """ Constructs the Res object
-        """
-        self._res = dict(
-            script=None, log=None, data=None, capture=None,
-            lock_binary=None, lock_stap=None, lock_module=None,
-            stap_compile=None, stap_collect=None, stap_module=None, stapio=None,
-            profiled_command=None
-        )
-
-    def __getitem__(self, item):
-        """ Method for accessing elements using the bracket notation.
-
-        :param str item: the resource name
-
-        :return: the resource object or None if the resource is not initialized
-        """
-        return self._res[item]
-
-    def __setitem__(self, key, value):
-        """ Method for setting a resource value using the bracket notation.
-
-        :param str key: the resource name
-        :param value: the resource object to store
-        """
-        self._res[key] = value
+    Userspace = 'userspace'
+    All = 'all'
+    Userspace_sampled = 'u_sampled'
+    All_sampled = 'a_sampled'
+    Custom = 'custom'
 
     @staticmethod
-    def script():
+    def supported():
+        """ Convert the strategy options to a list of strings.
+
+        :return list: the strategies represented as strings
         """
-        :return str: the resource key of the SystemTap script file
-        """
-        return 'script'
+        return [strategy.value for strategy in Strategy]
 
     @staticmethod
-    def log():
-        """
-        :return str: the resource key of the SystemTap log file
-        """
-        return 'log'
+    def default():
+        """ Provide the default extraction strategy as a string value.
 
-    @staticmethod
-    def data():
+        :return str: the default strategy name
         """
-        :return str: the resource key of the SystemTap data file
-        """
-        return 'data'
-
-    @staticmethod
-    def capture():
-        """
-        :return str: the resource key of the output capture file
-        """
-        return 'capture'
-
-    @staticmethod
-    def lock_binary():
-        """
-        :return str: the resource key of the binary lock object
-        """
-        return 'lock_binary'
-
-    @staticmethod
-    def lock_stap():
-        """
-        :return str: the resource key of the SystemTap lock object
-        """
-        return 'lock_stap'
-
-    @staticmethod
-    def lock_module():
-        """
-        :return str: the resource key of the kernel module lock object
-        """
-        return 'lock_module'
-
-    @staticmethod
-    def stap_compile():
-        """
-        :return str: the resource key of the SystemTap compilation subprocess object
-        """
-        return 'stap_compile'
-
-    @staticmethod
-    def stap_collect():
-        """
-        :return str: the resource key of the SystemTap collection subprocess object
-        """
-        return 'stap_collect'
-
-    @staticmethod
-    def stap_module():
-        """
-        :return str: the resource key of the kernel module name
-        """
-        return 'stap_module'
-
-    @staticmethod
-    def stapio():
-        """
-        :return str: the resource key of the stapio process PID
-        """
-        return 'stapio'
-
-    @staticmethod
-    def profiled_command():
-        """
-        :return str: the resource key of the profiled command subprocess object
-        """
-        return 'profiled_command'
+        return Strategy.Custom.value
 
 
 class Zipper:
@@ -197,9 +103,9 @@ class RecordType(IntEnum):
     """
     FuncBegin = 0
     FuncEnd = 1
-    StaticSingle = 2
-    StaticBegin = 3
-    StaticEnd = 4
+    USDTSingle = 2
+    USDTBegin = 3
+    USDTEnd = 4
     Corrupt = 9
 
 
@@ -223,15 +129,26 @@ class OutputHandling(Enum):
         return [handling.value for handling in OutputHandling]
 
 
+def check(dependencies):
+    """ Checks that all the required dependencies are present on the system.
+    Otherwise an exception is raised.
+    """
+    # Check that all the dependencies are present
+    WATCH_DOG.debug("Checking that all the dependencies '{}' are present".format(dependencies))
+    for dependency in dependencies:
+        if not shutil.which(dependency):
+            WATCH_DOG.debug("Missing dependency command '{}' detected".format(dependency))
+            raise MissingDependencyException(dependency)
+    WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
+
+
 # The trace record template
 TraceRecord = collections.namedtuple(
     'record', ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence']
 )
 
 # The list of required dependencies
-DEPENDENCIES = ['ps', 'grep', 'awk', 'nm', 'stap', 'lsmod', 'rmmod']
-# The set of supported strategies by the trace collector
-STRATEGIES = ['userspace', 'all', 'u_sampled', 'a_sampled', 'custom']
+GLOBAL_DEPENDENCIES = ['ps', 'grep', 'awk', 'nm']
 
 STAP_PHASES = 5  # The number of SystemTap startup phases
 LOCK_SUFFIX_LEN = 7  # Suffix length of the lock files

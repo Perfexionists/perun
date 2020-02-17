@@ -29,6 +29,8 @@ import perun.utils.streams as streams
 import perun.utils.timestamps as timestamps
 import perun.utils.log as log
 import perun.vcs as vcs
+import perun.utils.metrics as metrics
+from perun.collect.optimizations.optimization import Optimization
 
 from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
     StatsFileNotFoundException, NotPerunRepositoryException
@@ -429,6 +431,10 @@ def lookup_any_profile_callback(ctx, _, value):
     :param click.core.Argument _: param
     :param str value: value of the profile parameter
     """
+    # TODO: only temporary
+    profile_path = os.path.join(pcs.get_job_directory(), value)
+    if os.path.exists(profile_path):
+        metrics.add_metric('profile size', os.stat(profile_path).st_size)
     # 0) First check if the value is tag or not
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
     if index_tag_match:
@@ -701,3 +707,74 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     with open(dump_file, 'w') as dump_handle:
         dump_handle.write(output)
     log.info("Saved dump to '{}'".format(dump_file))
+
+
+def set_optimization(_, param, value):
+    """ Callback for enabling or disabling optimization pipelines or methods.
+
+    :param click.core.Context _: click context
+    :param click.core.Argument param: the click parameter
+    :param str value: value of the parameter
+    :return str: the value
+    """
+    # Set the optimization pipeline
+    if param.human_readable_name == 'optimization_pipeline':
+        Optimization.set_pipeline(value)
+    # Enable certain optimization method
+    elif param.human_readable_name == 'optimization_on':
+        for method in value:
+            Optimization.enable_optimization(method)
+    # Disable certain optimization method
+    elif param.human_readable_name == 'optimization_off':
+        for method in value:
+            Optimization.disable_optimization(method)
+    return value
+
+
+def set_optimization_param(_, __, value):
+    """ Set parameter value for optimizations
+
+    :param click.core.Context _: click context
+    :param click.core.Argument __: the click parameter
+    :param str value: value of the parameter
+    :return str: the value
+    """
+    for param in value:
+        # Process all parameters as 'parameter: value' tuples
+        opt_name, opt_value = param[0], param[1]
+        if Optimization.params.add_cli_parameter(opt_name, opt_value) is None:
+            raise click.BadParameter("Invalid value '{}' for optimization parameter '{}'"
+                                     .format(opt_value, opt_name))
+    return value
+
+
+def set_optimization_cache(_, __, value):
+    """ Enable or disable the usage of optimization and collection cache.
+
+    :param click.core.Context _: click context
+    :param click.core.Argument __: the click parameter
+    :param str value: value of the parameter
+    """
+    Optimization.resource_cache = not value
+
+
+def reset_optimization_cache(_, __, value):
+    """ Remove the cache entries for the optimization, thus forcing them to recompute the cached
+    data.
+
+    :param click.core.Context _: click context
+    :param click.core.Argument __: the click parameter
+    :param str value: value of the parameter
+    """
+    Optimization.reset_cache = value
+
+
+def configure_metrics(_, __, value):
+    """ Set the temp file and ID for the collected metrics.
+
+    :param click.core.Context _: click context
+    :param click.core.Argument __: the click parameter
+    :param str value: value of the parameter
+    """
+    if value[0] and value[1]:
+        metrics.Metrics.configure(value[0], value[1])
