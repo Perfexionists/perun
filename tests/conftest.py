@@ -352,7 +352,7 @@ def query_profiles():
     Returns:
         generator: generator of fully loaded query profiles as tuple (profile_name, dictionary)
     """
-    yield load_all_profiles_in("query_profiles")
+    yield list(load_all_profiles_in("query_profiles"))
 
 
 @pytest.fixture(scope="function")

@@ -13,9 +13,8 @@ def profile_filter(generator, rule, return_type='prof'):
     Returns:
         Profile: first profile with name containing the rule
     """
-    generator, teed_generator = itertools.tee(generator, 2)
     # Loop the generator and test the rule
-    for profile in teed_generator:
+    for profile in generator:
         if rule in profile[0]:
             if return_type == 'prof':
                 return profile[1]

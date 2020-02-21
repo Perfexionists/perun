@@ -244,7 +244,7 @@ def test_unique_model_values(query_profiles):
     assert not unique_values
 
 
-def test_default_variables(query_profiles, valid_profile_pool):
+def test_default_variables(query_profiles):
     profile = test_utils.profile_filter(query_profiles, 'complexity-empty-resources.perf')
     assert profile is not None
 
@@ -254,14 +254,14 @@ def test_default_variables(query_profiles, valid_profile_pool):
     with pytest.raises(SystemExit):
         helpers.get_default_independent_variable(profile)
 
-    profile = test_utils.profile_filter(query_profiles, 'complexity-models.perf')
-    assert profile is not None
-
-    assert helpers.get_default_dependent_variable(profile) == 'amount'
-    assert helpers.get_default_independent_variable(profile) == 'structure-unit-size'
-
     profile = test_utils.profile_filter(query_profiles, 'memory-basic.perf')
     assert profile is not None
 
     assert helpers.get_default_dependent_variable(profile) == 'amount'
     assert helpers.get_default_independent_variable(profile) == 'snapshot'
+
+    profile = test_utils.profile_filter(query_profiles, 'complexity-models.perf')
+    assert profile is not None
+
+    assert helpers.get_default_dependent_variable(profile) == 'amount'
+    assert helpers.get_default_independent_variable(profile) == 'structure-unit-size'
