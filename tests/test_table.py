@@ -70,28 +70,28 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     assert result.exit_code == 0
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', 'models'
+        '0@p', 'tableof', '--to-stdout', 'models'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_basic'), 'r') as trb:
         assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+        '0@p', 'tableof', '--to-stdout', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_pruned'), 'r') as trb:
         assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', 'models', '-h', 'non-existant', '-h', 'model', '-h', 'coeffs'
+        '0@p', 'tableof', '--to-stdout', 'models', '-h', 'non-existant', '-h', 'model', '-h', 'coeffs'
     ])
     assert result.exit_code == 2
     assert "invalid choice for table header: non-existant" in result.output
 
     # Test different format
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', '-f', 'latex', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+        '0@p', 'tableof', '--to-stdout', '-f', 'latex', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_latex'), 'r') as trb:
@@ -99,7 +99,7 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
 
     # Test output to file
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--output-file', 'test_output', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
+        '0@p', 'tableof', '--output-file', 'test_output', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
     output_file = os.path.join(os.getcwd(), 'test_output')
     assert result.exit_code == 0
@@ -110,27 +110,27 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
 
     # Test sorts and filters
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', 'models', '--sort-by', 'r_square', '--filter-by', 'model', 'linear', '--filter-by', 'model', 'quadratic'
+        '0@p', 'tableof', '--to-stdout', 'models', '--sort-by', 'r_square', '--filter-by', 'model', 'linear', '--filter-by', 'model', 'quadratic'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_sorted_filtered'), 'r') as trb:
         assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', 'models', '--sort-by', 'class'
+        '0@p', 'tableof', '--to-stdout', 'models', '--sort-by', 'class'
     ])
     assert "Error: invalid key choice for sorting the table: class " in str(result.output)
     assert result.exit_code == 2
 
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', 'models', '--filter-by', 'class', 'linear'
+        '0@p', 'tableof', '--to-stdout', 'models', '--filter-by', 'class', 'linear'
     ])
     assert "Error: invalid key choice for filtering: class" in str(result.output)
     assert result.exit_code == 2
 
     # Test sorts and filters
     result = runner.invoke(cli.show, [
-        '0@i', 'tableof', '--to-stdout', 'models', '--filter-by', 'r_square', '0', '--filter-by', 'model', 'linear'
+        '0@p', 'tableof', '--to-stdout', 'models', '--filter-by', 'r_square', '0', '--filter-by', 'model', 'linear'
     ])
     assert result.exit_code == 0
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_empty'), 'r') as trb:
