@@ -21,12 +21,11 @@ def test_stats_filenames(pcs_full):
     """
     # Test stats name generation based on profile source and identified by a tag
     generated_name = stats.build_stats_filename_as_profile_source('0@i', False)
-    assert generated_name == 'prof-2-2017-03-20-21-40-42'
+    assert generated_name == 'prof-2-complexity-2017-03-20-21-40-42'
 
     # Test stats name generation with removed timestamps and identified by the source name
-    generated_name = stats.build_stats_filename_as_profile_source('prof-3-2017-05-15-15-43-42.perf',
-                                                                  True)
-    assert generated_name == 'prof-3'
+    generated_name = stats.build_stats_filename_as_profile_source('prof-3-memory-2017-05-15-15-43-42.perf', True)
+    assert generated_name == 'prof-3-memory'
 
     # Prepare the git-related values
     _, minor_root = _get_vcs_versions()

@@ -67,7 +67,7 @@ def test_scatter_plot_no_models(full_profiles):
     Expecting no errors or exceptions.
     """
     # Filter the full profiles, only the complexity one is needed
-    complexity_prof = [p for p in list(full_profiles) if 'prof-2-2017' in p[0]]
+    complexity_prof = [p for p in list(full_profiles) if 'prof-2-complexity-2017' in p[0]]
     assert len(complexity_prof) == 1
     profile = complexity_prof[0]
 

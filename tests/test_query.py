@@ -97,7 +97,7 @@ def test_memory_prof_resources(query_profiles):
     Expected _MEMORY_RESOURCES_COUNT resources.
     """
     # Acquire the memory query profile
-    mem_profile = profile_filter(query_profiles, 'memory-2017-08-25-16-03-47.perf')
+    mem_profile = profile_filter(query_profiles, 'memory-basic.perf')
     assert mem_profile is not None
 
     # Get all resource fields of the memory profile
@@ -125,7 +125,7 @@ def test_complexity_prof_resources(query_profiles):
     Expected _COMPLEXITY_RESOURCES_COUNT resources.
     """
     # Acquire the complexity query profile
-    complexity_profile = profile_filter(query_profiles, 'complexity-2017-08-25-19-19-16.perf')
+    complexity_profile = profile_filter(query_profiles, 'complexity-basic.perf')
     assert complexity_profile is not None
 
     # Get all resource fields of the complexity profile
@@ -167,7 +167,7 @@ def test_all_models_empty(query_profiles):
     Expected 0 models.
     """
     # Acquire the complexity query profile
-    models_profile = profile_filter(query_profiles, 'complexity-2017-08-25-19-19-16.perf')
+    models_profile = profile_filter(query_profiles, 'complexity-basic.perf')
     assert models_profile is not None
 
     # Get all models in profile that has none
@@ -181,7 +181,7 @@ def test_all_items_of_memory_resources(query_profiles):
     Expected _MEMORY_RESOURCE_ITEMS_COUNT items and content match.
     """
     # Acquire the memory query profile
-    mem_profile = profile_filter(query_profiles, 'memory-2017-08-25-16-03-47.perf')
+    mem_profile = profile_filter(query_profiles, 'memory-basic.perf')
     assert mem_profile is not None
 
     # Get the first resource in the profile
@@ -207,7 +207,7 @@ def test_unique_resource_values(query_profiles):
     Expected no exception, all assertions passed.
     """
     # Acquire the memory query profile
-    mem_profile = profile_filter(query_profiles, 'memory-2017-08-25-16-03-47.perf')
+    mem_profile = profile_filter(query_profiles, 'memory-basic.perf')
     assert mem_profile is not None
 
     # Test the searching in first level of hierarchy
@@ -275,7 +275,7 @@ def test_default_variables(query_profiles, valid_profile_pool):
     assert helpers.get_default_dependent_variable(profile) == 'amount'
     assert helpers.get_default_independent_variable(profile) == 'structure-unit-size'
 
-    profile = profile_filter(query_profiles, 'memory-2017-08-25-16-03-47.perf')
+    profile = profile_filter(query_profiles, 'memory-basic.perf')
     assert profile is not None
 
     assert helpers.get_default_dependent_variable(profile) == 'amount'

@@ -1534,7 +1534,7 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
 
     # Try getting something from index
     result = runner.invoke(
-        cli.show, ['prof-2-2017-03-20-21-40-42.perf', 'raw'])
+        cli.show, ['prof-2-complexity-2017-03-20-21-40-42.perf', 'raw'])
     assert result.exit_code == 0
 
 
