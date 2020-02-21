@@ -6,6 +6,7 @@ Contains tests for query results of various valid / invalid profiles.
 import pytest
 import perun.profile.query as query
 import perun.profile.helpers as helpers
+import tests.helpers.utils as test_utils
 
 
 __author__ = "Jiri Pavela"
@@ -55,22 +56,6 @@ _MODELS_COEFFS_NAME_COUNT = 2
 _MODELS_COEFFS_NAME_LIST = ['b0', 'b1']
 
 
-def profile_filter(generator, rule):
-    """Finds concrete profile by the rule in profile generator.
-
-    Arguments:
-        generator(generator): stream of profiles as tuple: (name, dict)
-        rule(str): string to search in the name
-
-    Returns:
-        Profile: first profile with name containing the rule
-    """
-    # Loop the generator and test the rule
-    for profile in generator:
-        if rule in profile[0]:
-            return profile[1]
-
-
 def sort_flattened_structure(structure):
     """Lexicographically sorts elements (i.e. primitive values) in the flattened structure
     with ':' and ',' symbols.
@@ -97,7 +82,7 @@ def test_memory_prof_resources(query_profiles):
     Expected _MEMORY_RESOURCES_COUNT resources.
     """
     # Acquire the memory query profile
-    mem_profile = profile_filter(query_profiles, 'memory-basic.perf')
+    mem_profile = test_utils.profile_filter(query_profiles, 'memory-basic.perf')
     assert mem_profile is not None
 
     # Get all resource fields of the memory profile
@@ -111,7 +96,7 @@ def test_memory_prof_resources_empty(query_profiles):
     Expected 0 resources.
     """
     # Acquire the memory query profile with empty resources
-    mem_profile = profile_filter(query_profiles, 'memory-empty-resources.perf')
+    mem_profile = test_utils.profile_filter(query_profiles, 'memory-empty-resources.perf')
     assert mem_profile is not None
 
     # Get all resource fields of the memory profile
@@ -125,7 +110,7 @@ def test_complexity_prof_resources(query_profiles):
     Expected _COMPLEXITY_RESOURCES_COUNT resources.
     """
     # Acquire the complexity query profile
-    complexity_profile = profile_filter(query_profiles, 'complexity-basic.perf')
+    complexity_profile = test_utils.profile_filter(query_profiles, 'complexity-basic.perf')
     assert complexity_profile is not None
 
     # Get all resource fields of the complexity profile
@@ -139,7 +124,7 @@ def test_complexity_prof_resources_empty(query_profiles):
     Expected 0 resources.
     """
     # Acquire the complexity query profile with empty resources
-    complexity_profile = profile_filter(query_profiles, 'complexity-empty-resources.perf')
+    complexity_profile = test_utils.profile_filter(query_profiles, 'complexity-empty-resources.perf')
     assert complexity_profile is not None
 
     # Get all resource fields of the complexity profile
@@ -153,7 +138,7 @@ def test_all_models(query_profiles):
     Expected _MODELS_COUNT models.
     """
     # Acquire the models query profile
-    models_profile = profile_filter(query_profiles, 'complexity-models.perf')
+    models_profile = test_utils.profile_filter(query_profiles, 'complexity-models.perf')
     assert models_profile is not None
 
     # Get all models in profile that contains them
@@ -167,7 +152,7 @@ def test_all_models_empty(query_profiles):
     Expected 0 models.
     """
     # Acquire the complexity query profile
-    models_profile = profile_filter(query_profiles, 'complexity-basic.perf')
+    models_profile = test_utils.profile_filter(query_profiles, 'complexity-basic.perf')
     assert models_profile is not None
 
     # Get all models in profile that has none
@@ -181,7 +166,7 @@ def test_all_items_of_memory_resources(query_profiles):
     Expected _MEMORY_RESOURCE_ITEMS_COUNT items and content match.
     """
     # Acquire the memory query profile
-    mem_profile = profile_filter(query_profiles, 'memory-basic.perf')
+    mem_profile = test_utils.profile_filter(query_profiles, 'memory-basic.perf')
     assert mem_profile is not None
 
     # Get the first resource in the profile
@@ -207,7 +192,7 @@ def test_unique_resource_values(query_profiles):
     Expected no exception, all assertions passed.
     """
     # Acquire the memory query profile
-    mem_profile = profile_filter(query_profiles, 'memory-basic.perf')
+    mem_profile = test_utils.profile_filter(query_profiles, 'memory-basic.perf')
     assert mem_profile is not None
 
     # Test the searching in first level of hierarchy
@@ -239,7 +224,7 @@ def test_unique_model_values(query_profiles):
     Expected no exception, all assertions passed.
     """
     # Acquire the models query profile
-    models_profile = profile_filter(query_profiles, 'complexity-models.perf')
+    models_profile = test_utils.profile_filter(query_profiles, 'complexity-models.perf')
     assert models_profile is not None
 
     # Test the searching in first level of hierarchy
@@ -260,7 +245,7 @@ def test_unique_model_values(query_profiles):
 
 
 def test_default_variables(query_profiles, valid_profile_pool):
-    profile = profile_filter(query_profiles, 'complexity-empty-resources.perf')
+    profile = test_utils.profile_filter(query_profiles, 'complexity-empty-resources.perf')
     assert profile is not None
 
     with pytest.raises(SystemExit):
@@ -269,13 +254,13 @@ def test_default_variables(query_profiles, valid_profile_pool):
     with pytest.raises(SystemExit):
         helpers.get_default_independent_variable(profile)
 
-    profile = profile_filter(query_profiles, 'complexity-models.perf')
+    profile = test_utils.profile_filter(query_profiles, 'complexity-models.perf')
     assert profile is not None
 
     assert helpers.get_default_dependent_variable(profile) == 'amount'
     assert helpers.get_default_independent_variable(profile) == 'structure-unit-size'
 
-    profile = profile_filter(query_profiles, 'memory-basic.perf')
+    profile = test_utils.profile_filter(query_profiles, 'memory-basic.perf')
     assert profile is not None
 
     assert helpers.get_default_dependent_variable(profile) == 'amount'

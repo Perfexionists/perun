@@ -5,6 +5,7 @@ from click.testing import CliRunner
 
 import perun.cli as cli
 import perun.vcs as vcs
+import tests.helpers.utils as test_utils
 
 TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], "table_files")
 __author__ = 'Tomas Fiedor'
@@ -36,22 +37,6 @@ def assert_files_match_output(result, rhs):
     assert output_to_list(result.output.split('\n')) == output_to_list(rhs.readlines())
 
 
-def profile_filter(generator, rule):
-    """Finds concrete profile by the rule in profile generator.
-
-    Arguments:
-        generator(generator): stream of profiles as tuple: (name, dict)
-        rule(str): string to search in the name
-
-    Returns:
-        Profile: first profile with name containing the rule
-    """
-    # Loop the generator and test the rule
-    for profile in generator:
-        if rule in profile[0]:
-            return profile[0]
-
-
 def test_table_cli(helpers, pcs_full, postprocess_profiles):
     """Test outputing profiles as tables"""
     runner = CliRunner()
@@ -62,7 +47,7 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     with open(os.path.join(TABLE_TEST_DIR, 'table_resources_ref_basic'), 'r') as trb:
         assert_files_match_output(result, trb)
 
-    models_profile = profile_filter(postprocess_profiles, 'complexity-models.perf')
+    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf', return_type='name')
     added = helpers.prepare_profile(
         pcs_full.get_job_directory(), models_profile, vcs.get_minor_head()
     )

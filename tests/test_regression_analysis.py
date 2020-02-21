@@ -11,24 +11,9 @@ import pytest
 
 import perun.utils.exceptions as exceptions
 from perun.postprocess.regression_analysis.run import postprocess
+import tests.helpers.utils as test_utils
 
 __author__ = 'Jiri Pavela'
-
-
-def profile_filter(generator, rule):
-    """Finds concrete profile by the rule in profile generator.
-
-    Arguments:
-        generator(generator): stream of profiles as tuple: (name, dict)
-        rule(str): string to search in the name
-
-    Returns:
-        dict: first profile with name containing the rule
-    """
-    # Loop the generator and test the rule
-    for profile in generator:
-        if rule in profile[0]:
-            return profile[1]
 
 
 def compare_results(expected, actual, eps=0.0001):
@@ -63,7 +48,7 @@ def generate_models_by_uid(profile, value, uid_sequence, key='model'):
 def test_incorrect_calls(postprocess_profiles):
     """Test various incorrect calls and exceptions"""
     # Get any profile, in following we will try to
-    const_model = profile_filter(postprocess_profiles, 'const_model')
+    const_model = test_utils.profile_filter(postprocess_profiles, 'const_model')
     assert const_model is not None
 
     # Try calling postprocess, while missing keys
@@ -84,7 +69,7 @@ def test_const_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    const_model = profile_filter(postprocess_profiles, 'const_model')
+    const_model = test_utils.profile_filter(postprocess_profiles, 'const_model')
     assert const_model is not None
 
     # Perform the analysis
@@ -125,7 +110,7 @@ def test_linear_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    linear_model = profile_filter(postprocess_profiles, 'linear_model')
+    linear_model = test_utils.profile_filter(postprocess_profiles, 'linear_model')
     assert linear_model is not None
 
     # Perform the analysis
@@ -166,7 +151,7 @@ def test_quad_model_using_power(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with quadratic model testing data
-    quad_model = profile_filter(postprocess_profiles, 'quad_model')
+    quad_model = test_utils.profile_filter(postprocess_profiles, 'quad_model')
     assert quad_model is not None
 
     # Perform the analysis of quadratic-expected models
@@ -197,7 +182,7 @@ def test_log_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with logarithmic model testing data
-    pow_model = profile_filter(postprocess_profiles, 'log_model')
+    pow_model = test_utils.profile_filter(postprocess_profiles, 'log_model')
     assert pow_model is not None
 
     # Perform the analysis
@@ -237,7 +222,7 @@ def test_power_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with power model testing data
-    pow_model = profile_filter(postprocess_profiles, 'pow_model')
+    pow_model = test_utils.profile_filter(postprocess_profiles, 'pow_model')
     assert pow_model is not None
 
     # Perform the analysis
@@ -288,7 +273,7 @@ def test_exp_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    exp_model = profile_filter(postprocess_profiles, 'exp_model')
+    exp_model = test_utils.profile_filter(postprocess_profiles, 'exp_model')
     assert exp_model is not None
 
     # Perform the analysis

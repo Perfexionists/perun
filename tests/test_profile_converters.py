@@ -6,33 +6,16 @@ heap and heat map visualizations, etc.
 import pytest
 import perun.utils.exceptions as exceptions
 import perun.profile.convert as convert
-import perun.profile.query as query
+import tests.helpers.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = 'Jiri Pavela'
 
 
-# TODO: duplication, where to store common useful functions for tests?
-def profile_filter(generator, rule):
-    """Finds concrete profile by the rule in profile generator.
-
-    Arguments:
-        generator(generator): stream of profiles as tuple: (name, dict)
-        rule(str): string to search in the name
-
-    Returns:
-        Profile: first profile with name containing the rule
-    """
-    # Loop the generator and test the rule
-    for profile in generator:
-        if rule in profile[0]:
-            return profile[1]
-
-
 def test_convert_models_to_dataframe(postprocess_profiles):
     """Test conversion of models"""
     # Acquire the models query profile
-    models_profile = profile_filter(postprocess_profiles, 'complexity-models.perf')
+    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf')
     assert models_profile is not None
 
     df = convert.models_to_pandas_dataframe(models_profile)
@@ -88,7 +71,7 @@ def test_coefficients_to_points_correct(postprocess_profiles):
     Expecting no errors and updated dictionary
     """
     # Acquire the models query profile
-    models_profile = profile_filter(postprocess_profiles, 'complexity-models.perf')
+    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf')
     assert models_profile is not None
 
     # Get all models and perform the conversion on all of them
@@ -106,7 +89,7 @@ def test_coefficients_to_points_corrupted_model(postprocess_profiles):
     Expecting to catch InvalidModelException exception.
     """
     # Acquire the corrupted models query profile with invalid model
-    models_profile = profile_filter(postprocess_profiles, 'complexity-models-corrupted-model.perf')
+    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models-corrupted-model.perf')
     assert models_profile is not None
 
     # Get all models and perform the conversion on all of them
