@@ -7,7 +7,7 @@ import perun.cli as cli
 import perun.vcs as vcs
 import tests.helpers.utils as test_utils
 
-TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], "table_files")
+TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], 'references', "table_files")
 __author__ = 'Tomas Fiedor'
 
 

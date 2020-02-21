@@ -13,7 +13,7 @@ import perun.cli as cli
 def test_fuzzing_correct(pcs_full):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
-    examples = os.path.dirname(__file__) + '/fuzz_example/'
+    examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
 
     # Testing option --help
     result = runner.invoke(cli.fuzz_cmd, ['--help'])
@@ -22,15 +22,15 @@ def test_fuzzing_correct(pcs_full):
 
     # building custom tail program for testing
     process = subprocess.Popen(
-        ["make", "-C", os.path.dirname(examples)+"/tail"])
+        ["make", "-C", os.path.join(examples, "tail")])
     process.communicate()
     process.wait()
 
     # path to the tail binary
-    tail = os.path.dirname(examples) + "/tail/tail"
+    tail = os.path.join(examples, "tail", "tail")
 
     # 01. Testing tail with binary file
-    bin_workload = os.path.dirname(examples) + '/samples/binary/libhtab.so'
+    bin_workload = os.path.join(examples, 'samples', 'binary', 'libhtab.so')
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
@@ -43,7 +43,7 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 0
 
     # 02. Testing tail on a directory of txt files with coverage
-    txt_workload = os.path.dirname(examples) + '/samples/txt'
+    txt_workload = os.path.join(examples, 'samples', 'txt')
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
@@ -61,8 +61,8 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 0
 
     # 03. Testing tail with xml files and regex_rules
-    xml_workload = os.path.dirname(examples) + '/samples/xml/input.xml'
-    regex_file = os.path.dirname(examples) + '/rules.yaml'
+    xml_workload = os.path.join(examples, 'samples', 'xml', 'input.xml')
+    regex_file = os.path.join(examples, 'rules.yaml')
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
@@ -77,7 +77,7 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 0
 
     # 04. Testing tail with empty xml file
-    xml_workload = os.path.dirname(examples) + '/samples/xml/empty.xml'
+    xml_workload = os.path.join(examples, 'samples', 'xml', 'empty.xml')
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
@@ -89,8 +89,7 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 0
 
     # 05. Testing tail with wierd file type and bad paths for coverage testing (-s, -g)
-    wierd_workload = os.path.dirname(
-        examples) + '/samples/undefined/wierd.california'
+    wierd_workload = os.path.join(examples, 'samples', 'undefined', 'wierd.california')
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
@@ -105,13 +104,13 @@ def test_fuzzing_correct(pcs_full):
     assert result.exit_code == 0
 
     # 06. Testing for SIGABRT during init testing
-    num_workload = os.path.dirname(examples) + '/samples/txt/number.txt'
+    num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
     process = subprocess.Popen(
-        ["make", "-C", os.path.dirname(examples)+"/sigabrt-init"])
+        ["make", "-C", os.path.join(examples, "sigabrt-init")])
     process.communicate()
     process.wait()
 
-    sigabrt_init = os.path.dirname(examples) + "/sigabrt-init/sigabrt"
+    sigabrt_init = os.path.join(examples, "sigabrt-init", "sigabrt")
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', sigabrt_init,
@@ -125,11 +124,11 @@ def test_fuzzing_correct(pcs_full):
 
     # 07. Testing for SIGABRT during fuzz testing
     process = subprocess.Popen(
-        ["make", "-C", os.path.dirname(examples)+"/sigabrt-test"])
+        ["make", "-C", os.path.join(examples, "sigabrt-test")])
     process.communicate()
     process.wait()
 
-    sigabrt_test = os.path.dirname(examples) + "/sigabrt-test/sigabrt"
+    sigabrt_test = os.path.join(examples, "sigabrt-test", "sigabrt")
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', sigabrt_test,
@@ -146,11 +145,11 @@ def test_fuzzing_correct(pcs_full):
 
     # 08. Testing for hang during init testing
     process = subprocess.Popen(
-        ["make", "-C", os.path.dirname(examples)+"/hang-init"])
+        ["make", "-C", os.path.join(examples, "hang-init")])
     process.communicate()
     process.wait()
 
-    hang_init = os.path.dirname(examples) + "/hang-init/hang"
+    hang_init = os.path.join(examples, "hang-init", "hang")
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_init,
@@ -166,11 +165,11 @@ def test_fuzzing_correct(pcs_full):
 
     # 09. Testing for hang during fuzz testing
     process = subprocess.Popen(
-        ["make", "-C", os.path.dirname(examples)+"/hang-test"])
+        ["make", "-C", os.path.join(examples, "hang-test")])
     process.communicate()
     process.wait()
 
-    hang_test = os.path.dirname(examples) + "/hang-test/hang"
+    hang_test = os.path.join(examples,  "hang-test", "hang")
 
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,

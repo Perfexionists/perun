@@ -83,7 +83,7 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
 
     # Fixme: Add check that the profile was correctly generated
 
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    script_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_complexity', 'target')
     job_params = complexity_collect_job[5]['collector_params']['complexity']
 
     files = [
@@ -144,7 +144,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     """Test various scenarios where something goes wrong during the collection process.
     """
     # Get the job.yml parameters
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    script_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_complexity', 'target')
     job_params = complexity_collect_job[5]['collector_params']['complexity']
 
     files = [
@@ -291,7 +291,7 @@ def test_collect_memory_with_generator(pcs_full, memory_collect_job):
 def test_collect_bounds(monkeypatch, pcs_full):
     """Test collecting the profile using the bounds collector"""
     current_dir = os.path.split(__file__)[0]
-    test_dir = os.path.join(current_dir, 'collect_bounds')
+    test_dir = os.path.join(current_dir, 'sources', 'collect_bounds')
     sources = [
         os.path.join(test_dir, src) for src in os.listdir(test_dir) if src.endswith('.c')
     ]

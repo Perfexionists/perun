@@ -144,7 +144,7 @@ def test_paging_and_config(monkeypatch, capsys):
 def test_binaries_lookup():
     # Build test binaries using non-blocking make
     script_dir = os.path.split(__file__)[0]
-    testdir = os.path.join(script_dir, 'utils_tree')
+    testdir = os.path.join(script_dir, 'sources', 'utils_tree')
     args = {'cwd': testdir, 'shell': True, 'universal_newlines': True, 'stdout':subprocess.PIPE}
     with utils.nonblocking_subprocess('make', args) as p:
         # Verify if the call is non blocking
@@ -197,7 +197,7 @@ def test_nonblocking_subprocess():
         os.kill(pid, signal.SIGINT)
 
     # Obtain the 'waiting' binary for testing
-    target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_trace')
     target = os.path.join(target_dir, 'tst_waiting')
     # Test the subprocess interruption with default termination handler
     with pytest.raises(SystemTapScriptCompilationException) as exception:

@@ -32,7 +32,7 @@ def _mocked_stap(_, **__):
 
 def _mocked_stap2(_, **kwargs):
     """System tap mock, provide OK code and pre-fabricated collection output"""
-    data_file = os.path.join(os.path.dirname(__file__), 'collect_trace', _mocked_stap_file)
+    data_file = os.path.join(os.path.dirname(__file__), 'sources', 'collect_trace', _mocked_stap_file)
     target_file = os.path.join(get_tmp_directory(), 'trace', 'files', _mocked_stap_file)
     shutil.copyfile(data_file, target_file)
     if kwargs['res'][Res.data()] is not None:
@@ -51,9 +51,9 @@ def _mocked_after(**kwargs):
 
 
 def _mocked_stap_extraction(_):
-    return ('process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE")\n'
-            'process("/home/jirka/perun/tests/collect_trace/tst").mark("BEFORE_CYCLE_end")\n'
-            'process("/home/jirka/perun/tests/collect_trace/tst").mark("INSIDE_CYCLE")\n')
+    return ('process("/home/jirka/perun/tests/sources/collect_trace/tst").mark("BEFORE_CYCLE")\n'
+            'process("/home/jirka/perun/tests/sources/collect_trace/tst").mark("BEFORE_CYCLE_end")\n'
+            'process("/home/jirka/perun/tests/sources/collect_trace/tst").mark("INSIDE_CYCLE")\n')
 
 
 def _mocked_stap_extraction2(_):
@@ -180,7 +180,7 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     """ Test the trace collector cli options without SystemTap present
     """
     runner = CliRunner()
-    target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_trace')
     target = os.path.join(target_dir, 'tst')
 
     # Patch the collect and after so that the missing stap doesn't break the test
@@ -225,7 +225,7 @@ def test_collect_trace_utils(pcs_full):
     assert locks.ResourceLock.fromfile('invalid:as445.m_lock') is None
 
     # Test get_last_line scenario where the last line is also the first
-    target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_trace')
     target = os.path.join(target_dir, 'last_line_test.txt')
 
     last_line = stap.get_last_line_of(target, FileSize.Long)
@@ -255,7 +255,7 @@ def test_collect_trace(pcs_full, trace_collect_job):
     """
     runner = CliRunner()
 
-    target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_trace')
     target = os.path.join(target_dir, 'tst')
     job_params = trace_collect_job[5]['collector_params']['trace']
 
@@ -287,7 +287,7 @@ def test_collect_trace(pcs_full, trace_collect_job):
     # Test running the job from the params using the job file
     # Fixme: yaml parameters applied after the cli, thus cli reports missing parameters
     # script_dir = os.path.split(__file__)[0]
-    # source_dir = os.path.join(script_dir, 'collect_trace')
+    # source_dir = os.path.join(script_dir, 'sources', 'collect_trace')
     # job_config_file = os.path.join(source_dir, 'job.yml')
     # result = runner.invoke(cli.collect, ['-c{}'.format(target), '-p{}'.format(job_config_file),
     #                                      'trace'])
@@ -368,7 +368,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
     monkeypatch.setattr(stap, 'systemtap_collect', _mocked_stap)
     runner = CliRunner()
 
-    target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_trace')
     target = os.path.join(target_dir, 'tst')
 
     # Test simple userspace strategy without external modification or sampling
@@ -442,7 +442,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
 
     runner = CliRunner()
 
-    target_dir = os.path.join(os.path.split(__file__)[0], 'collect_trace')
+    target_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_trace')
     target = os.path.join(target_dir, 'tst')
 
     # Try missing 'command' and 'binary'

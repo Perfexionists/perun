@@ -170,7 +170,7 @@ def memory_collect_job():
     """
     # First compile the stuff, so we know it will work
     script_dir = os.path.split(__file__)[0]
-    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_dir = os.path.join(script_dir, 'sources', 'collect_memory')
     target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
 
     # Compile the testing stuff with debugging information set
@@ -194,7 +194,7 @@ def memory_collect_no_debug_job():
     """
     # First compile the stuff, so we know it will work
     script_dir = os.path.split(__file__)[0]
-    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_dir = os.path.join(script_dir, 'sources', 'collect_memory')
     target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
 
     # Compile the testing stuff with debugging information set
@@ -220,7 +220,7 @@ def complexity_collect_job():
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
-    source_dir = os.path.join(script_dir, 'collect_complexity')
+    source_dir = os.path.join(script_dir, 'sources', 'collect_complexity')
     target_dir = os.path.join(source_dir, 'target')
     job_config_file = os.path.join(source_dir, 'job.yml')
     job_config = streams.safely_load_yaml_from_file(job_config_file)
@@ -247,7 +247,7 @@ def trace_collect_job():
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
-    source_dir = os.path.join(script_dir, 'collect_trace')
+    source_dir = os.path.join(script_dir, 'sources', 'collect_trace')
     target_dir = source_dir
     job_config_file = os.path.join(source_dir, 'job.yml')
     job_config = streams.safely_load_yaml_from_file(job_config_file)
@@ -271,7 +271,7 @@ def all_profiles_in(directory, sort=False):
         generator: stream of profile paths located in the given directory
     """
     # Build the directory path and list of all profiles in it
-    pool_path = os.path.join(os.path.split(__file__)[0], directory)
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', directory)
     profiles = [os.path.join(pool_path, prof_file) for prof_file in os.listdir(pool_path)]
     # Sort if required
     if sort:
@@ -379,7 +379,7 @@ def full_profiles():
 def pcs_with_degradations():
     """
     """
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profiles = [
         os.path.join(pool_path, 'linear_base.perf'),
         os.path.join(pool_path, 'linear_base_degradated.perf'),

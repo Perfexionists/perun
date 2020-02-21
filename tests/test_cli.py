@@ -826,7 +826,7 @@ def test_kernel_regression_correct(pcs_full):
 
     # Instantiate the runner first
     runner = CliRunner()
-    pool_path = os.path.join(os.path.split(__file__)[0], 'postprocess_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'postprocess_profiles')
     profile = os.path.join(pool_path, 'kernel_datapoints.perf')
 
     # Perform the testing
@@ -1246,7 +1246,7 @@ def test_collect_correct(pcs_full):
     assert result.exit_code == 0
 
     current_dir = os.path.split(__file__)[0]
-    src_dir = os.path.join(current_dir, 'collect_bounds')
+    src_dir = os.path.join(current_dir, 'sources', 'collect_bounds')
     src_file = os.path.join(src_dir, 'partitioning.c')
     result = runner.invoke(cli.collect, [
         '-c echo', '-w hello', 'bounds', '-d', '{}'.format(src_dir)
@@ -1622,7 +1622,7 @@ def test_reset(pcs_full):
 def test_check_profiles(helpers, pcs_with_degradations):
     """Tests checking degradation between two profiles"""
     pool_path = os.path.join(os.path.split(
-        __file__)[0], 'degradation_profiles')
+        __file__)[0], 'profiles', 'degradation_profiles')
     profiles = [
         os.path.join(pool_path, 'linear_base.perf'),
         os.path.join(pool_path, 'linear_base_degradated.perf'),
@@ -1653,7 +1653,7 @@ def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
 
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profiles = [
         os.path.join(pool_path, 'baseline_strategies.perf'),
         os.path.join(pool_path, 'target_strategies.perf')
@@ -1855,7 +1855,7 @@ def test_run(pcs_full, monkeypatch):
     config.runtime().set('profiles.register_after_run', 'false')
 
     script_dir = os.path.split(__file__)[0]
-    source_dir = os.path.join(script_dir, 'collect_trace')
+    source_dir = os.path.join(script_dir, 'sources', 'collect_trace')
     job_config_file = os.path.join(source_dir, 'job.yml')
     result = runner.invoke(run_cli.run, [
         'job',
@@ -1953,7 +1953,7 @@ def test_error_runs(pcs_full, monkeypatch):
 def test_temp(pcs_with_empty_git):
     """Test the CLI operations on the temporary files"""
     runner = CliRunner()
-    files_dir = os.path.join(os.path.split(__file__)[0], 'tmp_files')
+    files_dir = os.path.join(os.path.split(__file__)[0], 'references', 'tmp_files')
 
     # Try to list temporary files with empty tmp/ directory
     result = runner.invoke(utils_cli.temp_list, [pcs.get_tmp_directory()])
@@ -2084,7 +2084,7 @@ def test_stats(pcs_with_more_commits):
     middle_dir = os.path.join(minor_middle[:2], minor_middle[2:])
     root_dir = os.path.join(minor_root[:2], minor_root[2:])
     stats_dir = pcs.get_stats_directory()
-    files_dir = os.path.join(os.path.split(__file__)[0], 'stats_files')
+    files_dir = os.path.join(os.path.split(__file__)[0], 'references', 'stats_files')
 
     # Prepare the reference values for minor versions and the valid mapping between them and the
     # actual ones during the test run

@@ -92,7 +92,7 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
 
     Expects correct behaviour
     """
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profiles = [
         store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True),
         store.load_profile_from_file(os.path.join(pool_path, 'linear_base_degradated.perf'), True),
@@ -139,7 +139,7 @@ def test_strategies():
 
     Expects correct behaviour
     """
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profile = store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True)
     rule = {
         'method': 'average_amount_threshold',
