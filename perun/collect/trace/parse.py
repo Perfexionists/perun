@@ -184,7 +184,7 @@ def _process_func_record(record, trace_stack, sequence_map, global_sampling):
             'type': 'mixed',
             'subtype': 'time delta',
             'thread': record.thread,
-            'structure-unit-size': matching_record.sequence}
+            'call-order': matching_record.sequence}
 
 
 def _process_static_record(record, trace_stack, sequence_map, probes, global_sampling):
@@ -220,7 +220,7 @@ def _process_static_record(record, trace_stack, sequence_map, probes, global_sam
                 'uid': matching_record.name + '#' + record.name,
                 'type': 'mixed',
                 'subtype': 'time delta',
-                'structure-unit-size': matching_record.sequence}
+                'call-order': matching_record.sequence}
     return {}
 
 
