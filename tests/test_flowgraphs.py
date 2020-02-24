@@ -11,6 +11,8 @@ import perun.logic.store as store
 import perun.view.flow.bokeh_factory as bokeh_graphs
 import perun.view.flow.ncurses_factory as curses_graphs
 
+import tests.helpers.asserts as asserts
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -35,14 +37,14 @@ def test_flow_cli(pcs_full, valid_profile_pool):
         result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                           '--stacked', '--filename=flow.html'])
 
-        assert result.exit_code == 0
+        asserts.predicate_from_cli(result, result.exit_code == 0)
         assert 'flow.html' in os.listdir(os.getcwd())
 
         # Run without accumulation
         result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                           '--stacked', '--no-accumulate', '--filename=flow2.html',
                                           '--graph-title=Test'])
-        assert result.exit_code == 0
+        asserts.predicate_from_cli(result, result.exit_code == 0)
         assert 'flow2.html' in os.listdir(os.getcwd())
 
 
@@ -80,7 +82,7 @@ def test_flow_cli_errors(helpers, pcs_full, valid_profile_pool):
         for valid_func in ('count', 'nunique'):
             result = runner.invoke(cli.show, [valid_profile, 'flow', valid_func, '--of=subtype',
                                               '--by=uid', '--through=snapshots'])
-            assert result.exit_code == 0
+            asserts.predicate_from_cli(result, result.exit_code == 0)
             assert 'flow.html' in os.listdir(os.getcwd())
 
 

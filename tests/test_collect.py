@@ -22,6 +22,8 @@ from perun.utils.helpers import Job
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
 from perun.workload.integer_generator import IntegerGenerator
 
+import tests.helpers.asserts as asserts
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -101,7 +103,7 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
                                          '-a test', '-w input', 'complexity',
                                          '-t{}'.format(job_params['target_dir']),
                                          ] + files + rules + samplings)
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Test running the job from the params using the job file
     # TODO: troubles with paths in job.yml, needs some proper solving
@@ -120,8 +122,8 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']), 'complexity',
                                          '-t{}'.format(job_params['target_dir']),
                                          ] + files + rules + samplings)
-    assert result.exit_code == 0
-    assert 'stored profile' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, 'stored profile' in result.output)
 
     original_run = utils.run_safely_external_command
     def patched_run(cmd, *args, **kwargs):
@@ -137,7 +139,7 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
                                          '-a test', '-w input', 'complexity',
                                          '-t{}'.format(job_params['target_dir']),
                                          ] + files + rules + samplings)
-    assert result.exit_code == 1
+    asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
 def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
@@ -163,18 +165,18 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
 
     # Try missing parameters --target-dir and --files
     result = runner.invoke(cli.collect, ['complexity'])
-    assert result.exit_code == 1
-    assert '--target-dir parameter must be supplied' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, '--target-dir parameter must be supplied' in result.output)
 
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
-    assert result.exit_code == 1
-    assert '--files parameter must be supplied' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, '--files parameter must be supplied' in result.output)
 
     # Try supplying invalid directory path, which is a file instead
     invalid_target = os.path.join(os.path.dirname(script_dir), 'job.yml')
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(invalid_target)])
-    assert result.exit_code == 1
-    assert 'already exists' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, 'already exists' in result.output)
 
     # Simulate the failure of 'cmake' utility
     old_run = utils.run_external_command
@@ -182,33 +184,33 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     command = ['-c{}'.format(job_params['target_dir']), 'complexity',
                '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
     result = runner.invoke(cli.collect, command)
-    assert 'CalledProcessError(1, \'cmake\')' in result.output
+    asserts.predicate_from_cli(result, 'CalledProcessError(1, \'cmake\')' in result.output)
     monkeypatch.setattr(utils, 'run_external_command', old_run)
 
     # Simulate that the flag is supported, which leads to failure in build process for older g++
     old_flag = makefiles._is_flag_support
     monkeypatch.setattr(makefiles, '_is_flag_support', _mocked_flag_support)
     result = runner.invoke(cli.collect, command)
-    assert 'stored profile' in result.output or 'CalledProcessError(2, \'make\')' in result.output
+    asserts.predicate_from_cli(result, 'stored profile' in result.output or 'CalledProcessError(2, \'make\')' in result.output)
     monkeypatch.setattr(makefiles, '_is_flag_support', old_flag)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
     monkeypatch.setattr(makefiles, '_libraries_exist', _mocked_libs_existence_fails)
     result = runner.invoke(cli.collect, command)
-    assert 'libraries are missing' in result.output
+    asserts.predicate_from_cli(result, 'libraries are missing' in result.output)
 
     # Simulate that the libraries directory path cannot be found
     monkeypatch.setattr(makefiles, '_libraries_exist', _mocked_libs_existence_exception)
     result = runner.invoke(cli.collect, command)
-    assert 'Unable to locate' in result.output
+    asserts.predicate_from_cli(result, 'Unable to locate' in result.output)
     monkeypatch.setattr(makefiles, '_libraries_exist', old_libs_existence)
 
     # Simulate the failure of output processing
     old_record_processing = complexity._process_file_record
     monkeypatch.setattr(complexity, '_process_file_record', _mocked_record_processing)
     result = runner.invoke(cli.collect, command)
-    assert 'Call stack error' in result.output
+    asserts.predicate_from_cli(result, 'Call stack error' in result.output)
     monkeypatch.setattr(complexity, '_process_file_record', old_record_processing)
 
 

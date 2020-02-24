@@ -20,6 +20,8 @@ import perun.utils.decorators as decorators
 import perun.utils.streams as streams
 import perun.vcs as vcs
 
+import tests.helpers.asserts as asserts
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -111,8 +113,8 @@ class Helpers(object):
             choice(str): choice that we tried
             file(str): name of the file that should not be created (optional)
         """
-        assert cli_result.exit_code == 2
-        assert "invalid choice: {}".format(choice) in cli_result.output
+        asserts.predicate_from_cli(cli_result, cli_result.exit_code == 2)
+        asserts.predicate_from_cli(cli_result, "invalid choice: {}".format(choice) in cli_result.output)
         if file:
             assert file not in os.listdir(os.getcwd())
 
@@ -124,9 +126,8 @@ class Helpers(object):
             choice(str): choice that we tried
             file(str): name of the file that should not be created (optional)
         """
-        print(cli_result.output)
-        assert cli_result.exit_code == 1
-        assert "Invalid value '{}'".format(choice) in cli_result.output
+        asserts.predicate_from_cli(cli_result, cli_result.exit_code == 1)
+        asserts.predicate_from_cli(cli_result, "Invalid value '{}'".format(choice) in cli_result.output)
         if file:
             assert file not in os.listdir(os.getcwd())
 

@@ -9,6 +9,8 @@ from click.testing import CliRunner
 
 import perun.cli as cli
 
+import tests.helpers.asserts as asserts
+
 
 def test_fuzzing_correct(pcs_full):
     """Runs basic tests for fuzzing CLI """
@@ -17,8 +19,8 @@ def test_fuzzing_correct(pcs_full):
 
     # Testing option --help
     result = runner.invoke(cli.fuzz_cmd, ['--help'])
-    assert result.exit_code == 0
-    assert 'Usage' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, 'Usage' in result.output)
 
     # building custom tail program for testing
     process = subprocess.Popen(
@@ -40,7 +42,7 @@ def test_fuzzing_correct(pcs_full):
         '--max', '10',
         '--no-plotting',
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 02. Testing tail on a directory of txt files with coverage
     txt_workload = os.path.join(examples, 'samples', 'txt')
@@ -58,7 +60,7 @@ def test_fuzzing_correct(pcs_full):
         '--workloads-filter', '(?notvalidregex?)',
         '--no-plotting',
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 03. Testing tail with xml files and regex_rules
     xml_workload = os.path.join(examples, 'samples', 'xml', 'input.xml')
@@ -74,7 +76,7 @@ def test_fuzzing_correct(pcs_full):
         '--regex-rules', regex_file,
         '--no-plotting',
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 04. Testing tail with empty xml file
     xml_workload = os.path.join(examples, 'samples', 'xml', 'empty.xml')
@@ -86,7 +88,7 @@ def test_fuzzing_correct(pcs_full):
         '--timeout', '1',
         '--no-plotting',
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 05. Testing tail with wierd file type and bad paths for coverage testing (-s, -g)
     wierd_workload = os.path.join(examples, 'samples', 'undefined', 'wierd.california')
@@ -101,7 +103,7 @@ def test_fuzzing_correct(pcs_full):
         '--gcno-path', '.',
         '--no-plotting',
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # 06. Testing for SIGABRT during init testing
     num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
@@ -119,8 +121,8 @@ def test_fuzzing_correct(pcs_full):
         '--source-path', os.path.dirname(sigabrt_init),
         '--gcno-path', os.path.dirname(sigabrt_init),
     ])
-    assert result.exit_code == 1
-    assert 'SIGABRT' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, 'SIGABRT' in result.output)
 
     # 07. Testing for SIGABRT during fuzz testing
     process = subprocess.Popen(
@@ -140,8 +142,8 @@ def test_fuzzing_correct(pcs_full):
         '--mutations-per-rule', 'unitary',
         '--exec-limit', '1',
     ])
-    assert result.exit_code == 0
-    assert 'SIGABRT' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, 'SIGABRT' in result.output)
 
     # 08. Testing for hang during init testing
     process = subprocess.Popen(
@@ -160,8 +162,8 @@ def test_fuzzing_correct(pcs_full):
         '--hang-timeout', '0.05',
         '--no-plotting',
     ])
-    assert result.exit_code == 1
-    assert 'Timeout' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, 'Timeout' in result.output)
 
     # 09. Testing for hang during fuzz testing
     process = subprocess.Popen(
@@ -183,8 +185,8 @@ def test_fuzzing_correct(pcs_full):
         '--exec-limit', '1',
         '--no-plotting',
     ])
-    assert result.exit_code == 0
-    assert 'Timeout' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, 'Timeout' in result.output)
 
     # 10. Testing for performance degradations during fuzz testing
     result = runner.invoke(cli.fuzz_cmd, [
@@ -197,8 +199,8 @@ def test_fuzzing_correct(pcs_full):
         '--no-plotting',
         '--interesting-files-limit', '1'
     ])
-    assert result.exit_code == 0
-    assert 'Founded degradation mutations: 0' not in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, 'Founded degradation mutations: 0' not in result.output)
 
 
 def test_fuzzing_incorrect(pcs_full):
@@ -211,8 +213,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--input-sample', '.',
     ])
-    assert result.exit_code == 2
-    assert '--cmd' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--cmd' in result.output)
 
     # Missing option --input-sample
     result = runner.invoke(cli.fuzz_cmd, [
@@ -220,8 +222,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--args', '-al',
         '--output-dir', '.',
     ])
-    assert result.exit_code == 2
-    assert '--input-sample"' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--input-sample"' in result.output)
 
     # Missing option --output-dir
     result = runner.invoke(cli.fuzz_cmd, [
@@ -229,8 +231,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--args', '-al',
         '--input-sample', '.',
     ])
-    assert result.exit_code == 2
-    assert '--output-dir' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--output-dir' in result.output)
 
     # Wrong value for option --source-path
     result = runner.invoke(cli.fuzz_cmd, [
@@ -240,8 +242,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--source-path', 'WTF~~notexisting'
     ])
-    assert result.exit_code == 2
-    assert '--source-path' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--source-path' in result.output)
 
     # Wrong value for option --gcno-path
     result = runner.invoke(cli.fuzz_cmd, [
@@ -251,8 +253,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--gcno-path', 'WTF~~notexisting'
     ])
-    assert result.exit_code == 2
-    assert '--gcno-path' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--gcno-path' in result.output)
 
     # Wrong value for option --timeout
     result = runner.invoke(cli.fuzz_cmd, [
@@ -262,8 +264,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--timeout', 'not_number'
     ])
-    assert result.exit_code == 2
-    assert '--timeout' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--timeout' in result.output)
 
     # Wrong value for option --hang-timeout
     result = runner.invoke(cli.fuzz_cmd, [
@@ -273,8 +275,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--hang-timeout', '0'
     ])
-    assert result.exit_code == 2
-    assert '--hang-timeout' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--hang-timeout' in result.output)
 
     # Wrong value for option --max
     result = runner.invoke(cli.fuzz_cmd, [
@@ -284,8 +286,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--max', '1.5'
     ])
-    assert result.exit_code == 2
-    assert '--max' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--max' in result.output)
 
     # Wrong value for option --max-size-gain
     result = runner.invoke(cli.fuzz_cmd, [
@@ -295,8 +297,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--max-size-gain', 'ola'
     ])
-    assert result.exit_code == 2
-    assert '--max-size-gain' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--max-size-gain' in result.output)
 
     # Wrong value for option --max-size-ratio
     result = runner.invoke(cli.fuzz_cmd, [
@@ -306,8 +308,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--max-size-ratio', 'two_hundred'
     ])
-    assert result.exit_code == 2
-    assert '--max-size-ratio' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--max-size-ratio' in result.output)
 
     # Wrong value for option --exec-limit
     result = runner.invoke(cli.fuzz_cmd, [
@@ -317,8 +319,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--exec-limit', '1.6'
     ])
-    assert result.exit_code == 2
-    assert '--exec-limit' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--exec-limit' in result.output)
 
     # Wrong value for option --interesting-files-limit
     result = runner.invoke(cli.fuzz_cmd, [
@@ -328,8 +330,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--interesting-files-limit', '-1'
     ])
-    assert result.exit_code == 2
-    assert '--interesting-files-limit' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--interesting-files-limit' in result.output)
 
     # Wrong value for option --coverage-increase-rate
     result = runner.invoke(cli.fuzz_cmd, [
@@ -339,8 +341,8 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--coverage-increase-rate', 'notvalidfloat'
     ])
-    assert result.exit_code == 2
-    assert '--coverage-increase-rate' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, '--coverage-increase-rate' in result.output)
 
     # Wrong value for option --regex-rules
     result = runner.invoke(cli.fuzz_cmd, [
@@ -350,4 +352,4 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
         '--regex-rules', 'e'
     ])
-    assert result.exit_code == 1
+    asserts.predicate_from_cli(result, result.exit_code == 1)

@@ -8,6 +8,8 @@ from click.testing import CliRunner
 import perun.cli as cli
 import perun.view.scatter.factory as scatter
 
+import tests.helpers.asserts as asserts
+
 __author__ = 'Jiri Pavela'
 
 
@@ -97,7 +99,7 @@ def test_scatter_plot_cli(pcs_full, postprocess_profiles):
                                       '--per=structure-unit-size', '--filename=scatter',
                                       '-xl=structure-unit-size', '-yl=amount [us]'])
 
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     assert 'scatter_SLList_insert(SLList_,_int).html' in os.listdir(os.getcwd())
     assert 'scatter_SLListcls__Insert(int).html' in os.listdir(os.getcwd())
 
@@ -116,17 +118,17 @@ def test_scatter_plot_cli_errors(pcs_full, postprocess_profiles):
     # Try invalid view argument
     result = runner.invoke(cli.show, [profile[0], 'scatterr', '--of=amount',
                                       '--per=structure-unit-size'])
-    assert result.exit_code == 2
-    assert 'No such command "scatterr"' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, 'No such command "scatterr"' in result.output)
 
     # Try invalid --of value
     result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amou',
                                       '--per=structure-unit-size'])
-    assert result.exit_code == 2
-    assert 'invalid choice: amou' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, 'invalid choice: amou' in result.output)
 
     # Try invalid --per value
     result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amount',
                                       '--per=struct'])
-    assert result.exit_code == 2
-    assert 'invalid choice: struct' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, 'invalid choice: struct' in result.output)

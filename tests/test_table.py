@@ -6,6 +6,7 @@ from click.testing import CliRunner
 import perun.cli as cli
 import perun.vcs as vcs
 import tests.helpers.utils as test_utils
+import tests.helpers.asserts as asserts
 
 TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], 'references', "table_files")
 __author__ = 'Tomas Fiedor'
@@ -43,7 +44,7 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     result = runner.invoke(cli.show, [
         '0@i', 'tableof', '--to-stdout', 'resources'
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, 'table_resources_ref_basic'), 'r') as trb:
         assert_files_match_output(result, trb)
 
@@ -52,33 +53,33 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
         pcs_full.get_job_directory(), models_profile, vcs.get_minor_head()
     )
     result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added)])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', 'models'
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_basic'), 'r') as trb:
         assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_pruned'), 'r') as trb:
         assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', 'models', '-h', 'non-existant', '-h', 'model', '-h', 'coeffs'
     ])
-    assert result.exit_code == 2
-    assert "invalid choice for table header: non-existant" in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+    asserts.predicate_from_cli(result, "invalid choice for table header: non-existant" in result.output)
 
     # Test different format
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', '-f', 'latex', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_latex'), 'r') as trb:
         assert_files_match_output(result, trb)
 
@@ -87,7 +88,7 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
         '0@p', 'tableof', '--output-file', 'test_output', 'models', '-h', 'uid', '-h', 'model', '-h', 'coeffs'
     ])
     output_file = os.path.join(os.getcwd(), 'test_output')
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     assert os.path.exists(output_file)
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_pruned'), 'r') as trb:
         with open(output_file, 'r') as of:
@@ -97,26 +98,26 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', 'models', '--sort-by', 'r_square', '--filter-by', 'model', 'linear', '--filter-by', 'model', 'quadratic'
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_sorted_filtered'), 'r') as trb:
         assert_files_match_output(result, trb)
 
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', 'models', '--sort-by', 'class'
     ])
-    assert "Error: invalid key choice for sorting the table: class " in str(result.output)
-    assert result.exit_code == 2
+    asserts.predicate_from_cli(result, "Error: invalid key choice for sorting the table: class " in str(result.output))
+    asserts.predicate_from_cli(result, result.exit_code == 2)
 
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', 'models', '--filter-by', 'class', 'linear'
     ])
-    assert "Error: invalid key choice for filtering: class" in str(result.output)
-    assert result.exit_code == 2
+    asserts.predicate_from_cli(result, "Error: invalid key choice for filtering: class" in str(result.output))
+    asserts.predicate_from_cli(result, result.exit_code == 2)
 
     # Test sorts and filters
     result = runner.invoke(cli.show, [
         '0@p', 'tableof', '--to-stdout', 'models', '--filter-by', 'r_square', '0', '--filter-by', 'model', 'linear'
     ])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
     with open(os.path.join(TABLE_TEST_DIR, 'table_models_ref_empty'), 'r') as trb:
         assert_files_match_output(result, trb)

@@ -10,6 +10,8 @@ import perun.utils.log as log
 import perun.postprocess.clusterizer.run as clusterizer
 import perun.logic.store as store
 
+import tests.helpers.asserts as asserts
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -19,7 +21,7 @@ def test_from_cli(pcs_full):
     object_no = len(os.listdir(object_dir))
     runner = CliRunner()
     result = runner.invoke(cli.postprocessby, ["0@i", "clusterizer"])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Test that something was created
     object_no_after = len(os.listdir(object_dir))
@@ -28,7 +30,7 @@ def test_from_cli(pcs_full):
     # Test verbosity of printing the groups
     log.VERBOSITY = log.VERBOSE_DEBUG
     result = runner.invoke(cli.postprocessby, ["0@i", "clusterizer"])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
 def test_sort_order(full_profiles):
@@ -56,7 +58,7 @@ def test_sliding_window(pcs_full):
     """Tests sliding window method"""
     runner = CliRunner()
     result = runner.invoke(cli.postprocessby, ["0@i", "clusterizer", "-s", "sliding_window"])
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'clustering_profiles')
     clustered_profile = store.load_profile_from_file(os.path.join(pool_path, 'clustering-workload.perf'), True)
