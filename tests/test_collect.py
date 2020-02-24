@@ -23,6 +23,7 @@ from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
 from perun.workload.integer_generator import IntegerGenerator
 
 import tests.helpers.asserts as asserts
+import tests.helpers.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 
@@ -65,9 +66,9 @@ def _mocked_symbols_extraction(_):
             'ENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEEEC1Ev']
 
 
-def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
+def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
     head = vcs.get_minor_version_info(vcs.get_minor_head())
@@ -75,9 +76,9 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     assert result == CollectStatus.OK
 
     # Assert that nothing was removed
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 2 == after_object_count
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
 
     new_profile = profiles[0]
     assert len(profiles) == 1
@@ -214,20 +215,20 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     monkeypatch.setattr(complexity, '_process_file_record', old_record_processing)
 
 
-def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_collect_no_debug_job):
+def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_debug_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     memory_collect_job += ([head], )
 
     run.run_single_job(*memory_collect_job)
 
     # Assert that nothing was removed
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 2 == after_object_count
 
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
@@ -235,13 +236,13 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     cmd, args, _, colls, posts, _ = memory_collect_job
     run.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
 
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
     assert len(profiles) == 2
     assert new_smaller_profile.endswith(".perf")
 
     # Assert that nothing was removed
-    after_second_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_second_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert after_object_count + 1 == after_second_object_count
 
     # Fixme: Add check that the profile was correctly generated
@@ -249,7 +250,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     log.VERBOSITY = log.VERBOSE_DEBUG
     memory_collect_no_debug_job += ([head], )
     run.run_single_job(*memory_collect_no_debug_job)
-    last_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    last_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     _, err = capsys.readouterr()
     assert after_second_object_count == last_object_count
     assert 'debug info' in err
@@ -329,10 +330,10 @@ def test_collect_bounds(monkeypatch, pcs_full):
     assert status == CollectStatus.ERROR
 
 
-def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
+def test_collect_time(monkeypatch, pcs_full, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     head = vcs.get_minor_version_info(vcs.get_minor_head())
 
     run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
@@ -344,10 +345,10 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
 
     # Assert that just one profile was created
     # + 1 for index
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 2 == after_object_count
 
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")

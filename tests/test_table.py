@@ -38,7 +38,7 @@ def assert_files_match_output(result, rhs):
     assert output_to_list(result.output.split('\n')) == output_to_list(rhs.readlines())
 
 
-def test_table_cli(helpers, pcs_full, postprocess_profiles):
+def test_table_cli(pcs_full, postprocess_profiles):
     """Test outputing profiles as tables"""
     runner = CliRunner()
     result = runner.invoke(cli.show, [
@@ -49,7 +49,7 @@ def test_table_cli(helpers, pcs_full, postprocess_profiles):
         assert_files_match_output(result, trb)
 
     models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf', return_type='name')
-    added = helpers.prepare_profile(
+    added = test_utils.prepare_profile(
         pcs_full.get_job_directory(), models_profile, vcs.get_minor_head()
     )
     result = runner.invoke(cli.add, ['--keep-profile', '{}'.format(added)])

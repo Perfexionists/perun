@@ -32,6 +32,7 @@ import perun.logic.pcs as pcs
 from perun.utils.structs import CollectStatus, RunnerReport
 
 import tests.helpers.asserts as asserts
+import tests.helpers.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 
@@ -1153,7 +1154,7 @@ def test_init_correct_with_params():
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_init_correct_with_params_and_flags(helpers):
+def test_init_correct_with_params_and_flags():
     """Test running init from cli with parameters and flags for git, without any problems
 
     Expecting no exceptions, no errors, zero status.
@@ -1173,13 +1174,13 @@ def test_init_correct_with_params_and_flags(helpers):
     assert 'branches' in dir_content
 
 
-def test_add_correct(helpers, pcs_full, valid_profile_pool):
+def test_add_correct(pcs_full, valid_profile_pool):
     """Test running add from cli, without any problems
 
     Expecting no exceptions, no errors, zero status.
     """
     runner = CliRunner()
-    added_profile = helpers.prepare_profile(
+    added_profile = test_utils.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0],
         vcs.get_minor_head()
     )
@@ -1190,12 +1191,12 @@ def test_add_correct(helpers, pcs_full, valid_profile_pool):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_cli_outside_pcs(helpers, valid_profile_pool):
+def test_cli_outside_pcs(valid_profile_pool):
     """Test running add from cli, with problems"""
     # Calling add outside of the perun repo
     runner = CliRunner()
     dst_dir = os.getcwd()
-    added_profile = helpers.prepare_profile(dst_dir, valid_profile_pool[0], "")
+    added_profile = test_utils.prepare_profile(dst_dir, valid_profile_pool[0], "")
     result = runner.invoke(
         cli.add, ['--keep-profile', '{}'.format(added_profile)])
     asserts.predicate_from_cli(result, result.exit_code == 1)
@@ -1210,7 +1211,7 @@ def test_cli_outside_pcs(helpers, valid_profile_pool):
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
-def test_rm_correct(helpers, pcs_full, stored_profile_pool):
+def test_rm_correct(pcs_full, stored_profile_pool):
     """Test running rm from cli, without any problems
 
     Expecting no exceptions, no errors, zero status
@@ -1273,17 +1274,17 @@ def test_show_help(pcs_full):
     asserts.predicate_from_cli(result, 'raw' in result.output)
 
 
-def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
+def test_add_massaged_head(pcs_full, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should, or errors for incorrect revs
     """
     git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    helpers.populate_repo_with_untracked_profiles(
+    test_utils.populate_repo_with_untracked_profiles(
         pcs_full.get_path(), valid_profile_pool)
     first_tagged = os.path.relpath(
-        helpers.prepare_profile(
+        test_utils.prepare_profile(
             pcs_full.get_job_directory(), valid_profile_pool[0], head
         )
     )
@@ -1308,7 +1309,7 @@ def test_add_massaged_head(helpers, pcs_full, valid_profile_pool):
     asserts.predicate_from_cli(result, "Ref 'tag2' did not resolve to an object" in result.output)
 
 
-def test_add_tag(monkeypatch, helpers, pcs_full, valid_profile_pool):
+def test_add_tag(monkeypatch, pcs_full, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should
@@ -1316,12 +1317,12 @@ def test_add_tag(monkeypatch, helpers, pcs_full, valid_profile_pool):
     git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
     parent = str(git_repo.head.commit.parents[0])
-    helpers.populate_repo_with_untracked_profiles(
+    test_utils.populate_repo_with_untracked_profiles(
         pcs_full.get_path(), valid_profile_pool)
-    first_sha = os.path.relpath(helpers.prepare_profile(
+    first_sha = os.path.relpath(test_utils.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0], head)
     )
-    second_sha = os.path.relpath(helpers.prepare_profile(
+    second_sha = os.path.relpath(test_utils.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[1], parent)
     )
 
@@ -1347,19 +1348,19 @@ def test_add_tag(monkeypatch, helpers, pcs_full, valid_profile_pool):
     asserts.predicate_from_cli(result, '0@p' in result.output)
 
 
-def test_add_tag_range(helpers, pcs_full, valid_profile_pool):
+def test_add_tag_range(pcs_full, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should
     """
     git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
     head = str(git_repo.head.commit)
-    helpers.populate_repo_with_untracked_profiles(
+    test_utils.populate_repo_with_untracked_profiles(
         pcs_full.get_path(), valid_profile_pool)
-    os.path.relpath(helpers.prepare_profile(
+    os.path.relpath(test_utils.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[0], head)
     )
-    os.path.relpath(helpers.prepare_profile(
+    os.path.relpath(test_utils.prepare_profile(
         pcs_full.get_job_directory(), valid_profile_pool[1], head)
     )
 
@@ -1388,7 +1389,7 @@ def test_remove_tag(pcs_full):
     asserts.predicate_from_cli(result, "1/1 deregistered" in result.output)
 
 
-def test_remove_tag_range(helpers, pcs_full):
+def test_remove_tag_range(pcs_full):
     """Test running remove with range of tags instead of profile
 
     Expecting no errors and profile removed as it should
@@ -1407,12 +1408,12 @@ def test_remove_tag_range(helpers, pcs_full):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_remove_pending(helpers, pcs_full, stored_profile_pool):
+def test_remove_pending(pcs_full, stored_profile_pool):
     """Test running remove with pending tags and ranges"""
     jobs_dir = pcs_full.get_job_directory()
     runner = CliRunner()
 
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
     result = runner.invoke(cli.status, [])
     asserts.predicate_from_cli(result, "no untracked" not in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -1438,46 +1439,46 @@ def test_remove_pending(helpers, pcs_full, stored_profile_pool):
     asserts.predicate_from_cli(result, "no untracked" in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
     assert len(os.listdir(jobs_dir)) == 4 # 3 profiles and .index
     result = runner.invoke(cli.remove, ['0@p-10@p'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(os.listdir(jobs_dir)) == 1
 
 
-def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
+def test_postprocess_tag(pcs_full, valid_profile_pool):
     """Test running postprocessby with various valid and invalid tags
 
     Expecting no errors (or caught errors), everything postprocessed as it should be
     """
-    helpers.populate_repo_with_untracked_profiles(
+    test_utils.populate_repo_with_untracked_profiles(
         pcs_full.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
-    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 2
+    assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 2
 
     runner = CliRunner()
     result = runner.invoke(cli.postprocessby, ['0@p', 'normalizer'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 3
+    assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try incorrect tag -> expect failure and return code 2 (click error)
     result = runner.invoke(cli.postprocessby, ['666@p', 'normalizer'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 3
+    assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try correct index tag
     result = runner.invoke(cli.postprocessby, ['1@i', 'normalizer'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 4
+    assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try incorrect index tag -> expect failure and return code 2 (click error)
     result = runner.invoke(cli.postprocessby, ['1337@i', 'normalizer'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    assert len(list(filter(helpers.index_filter, os.listdir(pending_dir)))) == 4
+    assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 4
 
     # Try absolute postprocessing
     first_in_jobs = list(
-        filter(helpers.index_filter, os.listdir(pending_dir)))[0]
+        filter(test_utils.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.postprocessby, [
                            absolute_first_in_jobs, 'normalizer'])
@@ -1488,12 +1489,12 @@ def test_postprocess_tag(helpers, pcs_full, valid_profile_pool):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
+def test_show_tag(pcs_full, valid_profile_pool, monkeypatch):
     """Test running show with several valid and invalid tags
 
     Expecting no errors (or caught errors), everythig shown as it should be
     """
-    helpers.populate_repo_with_untracked_profiles(
+    test_utils.populate_repo_with_untracked_profiles(
         pcs_full.get_path(), valid_profile_pool)
     pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
 
@@ -1514,8 +1515,7 @@ def test_show_tag(helpers, pcs_full, valid_profile_pool, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 2)
 
     # Try absolute showing
-    first_in_jobs = list(
-        filter(helpers.index_filter, os.listdir(pending_dir)))[0]
+    first_in_jobs = list(filter(test_utils.index_filter, os.listdir(pending_dir)))[0]
     absolute_first_in_jobs = os.path.join(pending_dir, first_in_jobs)
     result = runner.invoke(cli.show, [absolute_first_in_jobs, 'raw'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -1621,7 +1621,7 @@ def test_reset(pcs_full):
         assert 'collect_before_check' in contents
 
 
-def test_check_profiles(helpers, pcs_with_degradations):
+def test_check_profiles(pcs_with_degradations):
     """Tests checking degradation between two profiles"""
     pool_path = os.path.join(os.path.split(
         __file__)[0], 'profiles', 'degradation_profiles')
@@ -1630,7 +1630,7 @@ def test_check_profiles(helpers, pcs_with_degradations):
         os.path.join(pool_path, 'linear_base_degradated.perf'),
         os.path.join(pool_path, 'quad_base.perf')
     ]
-    helpers.populate_repo_with_untracked_profiles(
+    test_utils.populate_repo_with_untracked_profiles(
         pcs_with_degradations.get_path(), profiles)
 
     runner = CliRunner()
@@ -1639,7 +1639,7 @@ def test_check_profiles(helpers, pcs_with_degradations):
         asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
+def test_model_strategies(pcs_with_degradations, monkeypatch):
     """Test checking detection model strategies
 
     Expecting correct behaviors
@@ -1660,7 +1660,7 @@ def test_model_strategies(helpers, pcs_with_degradations, monkeypatch):
         os.path.join(pool_path, 'baseline_strategies.perf'),
         os.path.join(pool_path, 'target_strategies.perf')
     ]
-    helpers.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_degradations.get_path(), profiles)
 
     for model_strategy in ['best-param', 'all-nonparam', 'best-both']:
         result = runner.invoke(

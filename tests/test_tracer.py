@@ -20,6 +20,7 @@ from perun.utils.structs import CollectStatus
 from perun.utils.exceptions import SystemTapStartupException
 from perun.collect.trace.values import TraceRecord, RecordType, Res, FileSize
 
+import tests.helpers.utils as test_utils
 
 _mocked_stap_code = 0
 _mocked_stap_file = 'tst_stap_record.txt'
@@ -430,7 +431,7 @@ def test_collect_trace_strategies(monkeypatch, pcs_full):
                                     os.path.join(target_dir, 'strategy8_script.txt'))
 
 
-def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
+def test_collect_trace_fail(monkeypatch, pcs_full, trace_collect_job):
     """Test failed collecting using trace collector"""
 
     if not shutil.which('stap'):
@@ -438,7 +439,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     global _mocked_stap_code
     global _mocked_stap_file
 
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
 
     runner = CliRunner()
 
@@ -472,7 +473,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     )
     # However, the collector should still be able to correctly process it
     assert result.exit_code == 0
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     # 3 new objects - two indexes and resulting profile
     assert before_object_count + 3 == after_object_count
     before_object_count = after_object_count
@@ -482,7 +483,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 2', 'trace', '-m', 'userspace'])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 1 == after_object_count
     before_object_count = after_object_count
 
@@ -491,7 +492,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 3', 'trace', '-m', 'userspace'])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 1 == after_object_count
     before_object_count = after_object_count
 
@@ -500,7 +501,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     result = runner.invoke(cli.collect, ['-c{}'.format(target), '-w 4', 'trace', '-m', 'userspace'])
     # Check if the collector managed to process the file
     assert result.exit_code == 0
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 1 == after_object_count
     before_object_count = after_object_count
 
@@ -508,7 +509,7 @@ def test_collect_trace_fail(monkeypatch, helpers, pcs_full, trace_collect_job):
     _mocked_stap_code = 1
     runner.invoke(cli.collect, ['-c{}'.format(target), 'trace', '-m', 'userspace'])
     # Assert that nothing was added
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count == after_object_count
     _mocked_stap_code = 0
 
