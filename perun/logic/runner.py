@@ -79,7 +79,7 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
     matrix = {
         str(b): {
             str(w): [
-                Job(c, posts, Executable(b, w, a)) for c in collector_pairs for a in args or ['']
+                Job(c, posts, Executable(b, a, w)) for c in collector_pairs for a in args or ['']
                 ] for w in workload
             } for b in cmd
         }
