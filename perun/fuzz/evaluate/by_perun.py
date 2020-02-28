@@ -28,25 +28,21 @@ def baseline_testing(executable, seeds, collector, postprocessor, minor_version_
     """
 
     # create baseline profile
-    base_pg = run.generate_profiles_for(
+    base_pg = list(run.generate_profiles_for(
         [executable.cmd], [executable.args], [seeds[0].path], [collector], postprocessor,
         minor_version_list, **kwargs
-    )
+    ))
 
     for file in seeds[1:]:
         # target profile
-        target_pg = run.generate_profiles_for(
+        target_pg = list(run.generate_profiles_for(
             [executable.cmd], [executable.args], [file.path], [collector], postprocessor,
             minor_version_list, **kwargs
-        )
-
-        # making copies of generators
-        base_pg_copy, base_pg = itertools.tee(base_pg)
-        target_pg_copy, target_pg = itertools.tee(target_pg)
+        ))
 
         try:
             # check
-            file.deg_ratio = check_for_change(base_pg_copy, target_pg_copy)
+            file.deg_ratio = check_for_change(base_pg, target_pg)
             if file.deg_ratio > DEGRADATION_RATIO_TRESHOLD:
                 base_pg = target_pg
         except ZeroDivisionError:
@@ -70,17 +66,14 @@ def target_testing(executable, workload, collector, postprocessor, minor_version
     base_result = kwargs["base_result"]
 
     # target profile with a new workload
-    target_pg = run.generate_profiles_for(
+    target_pg = list(run.generate_profiles_for(
         [executable.cmd], [executable.args], [workload.path], [collector], postprocessor,
         minor_version_list, **kwargs
-    )
-
-    # copy of target profile generator
-    target_pg_copy, target_pg = itertools.tee(target_pg)
+    ))
 
     try:
         # check
-        workload.deg_ratio = check_for_change(base_result, target_pg_copy)
+        workload.deg_ratio = check_for_change(base_result, target_pg)
         return workload.deg_ratio > DEGRADATION_RATIO_TRESHOLD
     except ZeroDivisionError:
         return False
