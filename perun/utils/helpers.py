@@ -303,3 +303,23 @@ def is_variable_len_dict(value):
         isinstance(v, dict) and set(v.keys()) == {'name', 'value'} for v in value
     )
 
+
+def get_key_with_aliases(dictionary, key_aliases, default=None):
+    """Safely returns the key in the dictionary that has several aliases.
+
+    This function assures the backward compatibility with older profiles, after renaming the keys.
+
+    :param dict dictionary: dictionary
+    :param tuple key_aliases: tuple of aliases of the same key in the dictionary, ordered
+        according to the order of the versions
+    :param object default: default value that is returned if none of the aliases is found in
+        the dictionary
+    :return: value of the key in the dictionary
+    :raises KeyError: if default is set to None and none of the keys in key_aliases is in the dict
+    """
+    for key in key_aliases:
+        if key in dictionary.keys():
+            return dictionary[key]
+    if default:
+        return default
+    raise KeyError("None of the keys {} found int he dictionary".format(key_aliases))

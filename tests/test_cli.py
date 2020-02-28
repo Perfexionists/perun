@@ -1707,7 +1707,7 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     log_dir = pcs_with_degradations.get_log_directory()
     shutil.rmtree(log_dir)
     store.touch_dir(log_dir)
-    config.runtime().data['degradation']  = {
+    config.runtime().data['degradation'] = {
         'collect_before_check': 'true',
         'log_collect': 'false'
     }
@@ -1733,7 +1733,7 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     config.runtime().data.clear()
 
 
-def test_check_all(pcs_with_degradations):
+def test_check_all(pcs_with_degradations, monkeypatch):
     """Test checking degradation for whole history
 
     Expecting correct behaviours
@@ -1744,6 +1744,17 @@ def test_check_all(pcs_with_degradations):
 
     result = runner.invoke(check_cli.check_all, [])
     asserts.predicate_from_cli(result, result.exit_code == 0)
+
+    runner = CliRunner()
+    result = runner.invoke(cli.status)
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+
+    def raise_value_error(*args):
+        raise ValueError
+    monkeypatch.setattr('perun.logic.store.parse_changelog_line', raise_value_error)
+    result = runner.invoke(cli.status)
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, "Malformed changelog line in " in result.output)
 
 
 @pytest.mark.usefixtures('cleandir')

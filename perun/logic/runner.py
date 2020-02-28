@@ -15,6 +15,7 @@ import perun.utils as utils
 import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.utils.decorators as decorators
+import perun.utils.helpers as helpers
 import perun.workload as workloads
 
 from perun.utils import get_module
@@ -118,10 +119,10 @@ def load_job_info_from_config():
 
     info = {
         'cmd': local_config['cmds'],
+        'args': helpers.get_key_with_aliases(local_config, ('args', 'params'), default=[]),
         'workload': local_config.get('workloads', ['']),
         'postprocessor': [post.get('name', '') for post in postprocessors],
         'collector': [collect.get('name', '') for collect in collectors],
-        'args': local_config['args'] if 'args' in local_config.keys() else [],
         'collector_params': {
             collect.get('name', ''): collect.get('params', {}) for collect in collectors
             },

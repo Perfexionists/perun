@@ -23,6 +23,8 @@ def predicate_from_cli(cli_result, predicate):
             print("=== Captured output ===")
             print(cli_result.output)
         print("=== Inner traceback ===")
+        if cli_result.exception:
+            print(cli_result.exception)
         traceback.print_tb(cli_result.exc_info[2])
         raise failed_assertion
 

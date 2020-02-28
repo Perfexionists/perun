@@ -14,6 +14,7 @@ import perun.postprocess as postprocess
 import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
+import perun.utils.helpers as helpers
 from perun.utils.exceptions import SystemTapScriptCompilationException, SystemTapStartupException, \
     ResourceLockedException
 
@@ -227,3 +228,14 @@ def test_signal_handler():
     """Tests default signal handler"""
     with HandledSignals(signal.SIGINT):
         os.kill(os.getpid(), signal.SIGINT)
+
+
+def test_safe_key_get():
+    """Tests the get_key_with_aliases functions"""
+    test_dict = {
+        'key': 1
+    }
+    assert helpers.get_key_with_aliases(test_dict, ('hello', 'key')) == 1
+    assert helpers.get_key_with_aliases(test_dict, ('foku', 'me', 'kokakola'), 2) == 2
+    with pytest.raises(KeyError):
+        helpers.get_key_with_aliases(test_dict, ('foku', 'me', 'kokakola'))

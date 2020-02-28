@@ -218,9 +218,9 @@ class DegradationInfo:
         self.location = loc
         self.from_baseline = fb
         self.to_target = tt
-        self.rate_degradation = rd
+        self.rate_degradation = float(rd)
         self.confidence_type = ct
-        self.confidence_rate = cr
+        self.confidence_rate = float(cr)
         self.partial_intervals = pi
 
     def to_storage_record(self):

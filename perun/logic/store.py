@@ -12,6 +12,8 @@ import struct
 import zlib
 import demandimport
 
+import perun.utils.log as log
+
 from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
 from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
@@ -330,9 +332,15 @@ def load_degradation_list_for(base_dir, minor_version):
         lines = read_handle.readlines()
 
     degradation_list = []
+    warned_about_error = False
     for line in lines:
-        parsed_triple = parse_changelog_line(line.strip())
-        degradation_list.append(parsed_triple)
+        try:
+            parsed_triple = parse_changelog_line(line.strip())
+            degradation_list.append(parsed_triple)
+        except ValueError:
+            if not warned_about_error:
+                log.warn('Malformed changelog line in {}'.format(minor_storage_file))
+                warned_about_error = True
     return degradation_list
 
 

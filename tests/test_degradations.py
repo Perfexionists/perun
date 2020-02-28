@@ -71,7 +71,7 @@ def test_degradation_in_minor(pcs_with_degradations, capsys):
 
     check.degradation_in_minor(head)
     out, err = capsys.readouterr()
-    assert "Optimization" in out #
+    assert "Optimization" in out
     assert err == ""
 
 

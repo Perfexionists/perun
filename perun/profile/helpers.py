@@ -27,6 +27,7 @@ import perun.logic.index as index
 import perun.vcs as vcs
 import perun.profile.query as query
 import perun.utils.log as perun_log
+import perun.utils.helpers as helpers
 
 from perun.utils import get_module
 from perun.profile.factory import Profile
@@ -361,7 +362,7 @@ def extract_job_from_profile(profile):
         posts.append(Unit(postprocessor['name'], postprocessor['params']))
 
     cmd = profile['header']['cmd']
-    args = profile['header']['args']
+    args = helpers.get_key_with_aliases(profile['header'], ('args', 'params'))
     workload = profile['header']['workload']
     executable = Executable(cmd, args, workload)
 
@@ -511,7 +512,7 @@ class ProfileInfo:
         self.time = mtime
         self.type = profile_info['header']['type']
         self.cmd = profile_info['header']['cmd']
-        self.args = profile_info['header']['args']
+        self.args = helpers.get_key_with_aliases(profile_info['header'], ('args', 'params'))
         self.workload = profile_info['header']['workload']
         self.collector = profile_info['collector_info']['name']
         self.postprocessors = [
