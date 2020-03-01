@@ -733,13 +733,16 @@ def safely_run_cli():
     debugging information, such as the environment, perun version, perun commands, etc.
     """
     try:
+        stdout_log = perun_log.Logger(sys.stdout)
+        stderr_log = perun_log.Logger(sys.stderr)
+        sys.stdout, sys.stderr = stdout_log, stderr_log
         cli()
     except Exception as catched_exception:
         perun_log.error("Unexpected error: {}".format(
             str(catched_exception)), recoverable=True
         )
         with helpers.SuppressedExceptions(Exception):
-            cli_helpers.generate_cli_dump()
+            cli_helpers.generate_cli_dump(catched_exception, stdout_log, stderr_log)
 
 
 if __name__ == "__main__":

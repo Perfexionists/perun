@@ -7,9 +7,14 @@ and returning default values.
 import time
 import functools
 import os
+import sys
 import re
 import click
 import jinja2
+import platform
+import pip
+import json
+import traceback
 
 import perun
 import perun.profile.helpers as profiles
@@ -528,8 +533,8 @@ def resources_key_options(func):
 CLI_DUMP_TEMPLATE = None
 CLI_DUMP_TEMPLATE_STRING = """Environment Info
 ----------------
-  * Perun: {{ env.perun }}
-  * OS: {{ env.os.type }} {% if env.os.distro is defined %}{{ env.os.distro}}{% endif %} ({{ env.os.arch }})
+  * {{ env.perun }}
+  * OS: {{ env.os.type }}, {{ env.os.distro }} ({{ env.os.arch }})
   * Python:  {{ env.python.version }}
   * Python packages:
   // for pkg in env.python.packages
@@ -554,11 +559,17 @@ Standard and Error Output
     {{ exception }}
     {{ trace}}
   
-  * Captured output:
+  * Captured stdout:
 
   .. code-block:: bash
   
     {{ output }}
+    
+  * Captured stderr:
+  
+  .. code-block:: bash
+  
+    {{ error }}
 
 Context
 -------
@@ -582,7 +593,7 @@ Context
 """
 
 
-def generate_cli_dump():
+def generate_cli_dump(catched_exception, stdout, stderr):
     """Generates the dump of the current snapshot of the CLI
 
     In particular this yields the dump template with the following information:
@@ -592,6 +603,10 @@ def generate_cli_dump():
         3. Caught exception
         4. Traceback of the exception
         5. Whole profile (if used)
+
+    :param Exception catched_exception: exception that led to the dump
+    :param Logger stdout: logged stdout
+    :param Logger stderr: logged stderr
     """
     global CLI_DUMP_TEMPLATE
     if not CLI_DUMP_TEMPLATE:
@@ -602,37 +617,52 @@ def generate_cli_dump():
             autoescape=True
         )
         CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
-    output = CLI_DUMP_TEMPLATE.render(
-        {
-            'env': {
-                'perun': '',
-                'os': {
-                    'type': '',
-                    'distro': '???',
-                    'arch': '',
-                    'shell': ''
-                },
-                'python': {
-                    'version': '',
-                    'packages': []
-                }
-            },
-            'command': '',
-            'output': '',
-            'exception': '',
-            'trace': '',
-            'config': {
-                'runtime': '',
-                'local': '',
-                'global': ''
-            }
-        }
-    )
+    req_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'requirements.txt'))
+    with open(req_file, 'r') as requirements_handle:
+        reqs = set([
+            req.split('==')[0] for req in requirements_handle.readlines()
+        ])
 
     dump_directory = pcs.get_safe_path(os.getcwd())
     dump_file = os.path.join(dump_directory, 'dump-{}'.format(
         timestamps.timestamp_to_str(time.time()).replace(' ', '-').replace(':', '-')
     ) + '.rst')
+
+    stdout.log.seek(0)
+    stderr.log.seek(0)
+
+    output = CLI_DUMP_TEMPLATE.render(
+        {
+            'env': {
+                'perun': perun.__version__,
+                'os': {
+                    'type': os.environ.get('OSTYPE', '???'),
+                    'distro': platform.platform(()),
+                    'arch': os.environ.get('HOSTTYPE', '???'),
+                    'shell': os.environ.get('SHELL', '???')
+                },
+                'python': {
+                    'version': sys.version.replace('\n', ''),
+                    'packages': [
+                        inst.key for inst in pip.get_installed_distributions() if inst.key in reqs
+                    ]
+                }
+            },
+            'command': " ".join(['perun'] + click.get_os_args()),
+            'output': "".join(stdout.log.readlines()),
+            'error': "".join(stderr.log.readlines()),
+            'exception': str(catched_exception),
+            'trace': traceback.format_tb(catched_exception.__traceback__),
+            'config': {
+                'runtime': re.sub(r",\s+(\d+)", r", \1", json.dumps(config.runtime().data)),
+                'local':
+                    {} if '.perun' not in dump_directory else
+                    re.sub(r",\s+(\d+)", r", \1", json.dumps(config.local(dump_directory).data)),
+                'global': re.sub(r",\s+(\d+)", r", \1", json.dumps(config.shared().data)),
+            }
+        }
+    )
+
     with open(dump_file, 'w') as dump_handle:
         dump_handle.write(output)
     log.info("Saved dump to '{}'".format(dump_file))

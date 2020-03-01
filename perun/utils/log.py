@@ -921,3 +921,27 @@ class History:
                     line[2*lhs-1] = origin.to_ascii('/')
                 src_index_map[i] += diff
             print("".join(line))
+
+
+class Logger:
+    """Helper object that logs the stream into isolate string io
+
+    :ivar object original: original stream
+    :ivar StringIO log: log saving the stream
+    """
+    def __init__(self, stream):
+        self.original = stream
+        self.log = io.StringIO()
+
+    def write(self, message):
+        """Writes the message to both streams
+
+        :param object message: written message
+        """
+        self.original.write(message)
+        self.original.flush()
+        self.log.write(message)
+
+    def flush(self):
+        """Flushes the original stream"""
+        self.original.flush()
