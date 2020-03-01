@@ -2336,3 +2336,15 @@ def _compare_file_outputs(runner_result, reference_file):
         expected_output = f_handle.readlines()
     runner_result = runner_result.splitlines(keepends=True)
     asserts.predicate_from_cli(runner_result, sorted(runner_result) == sorted(expected_output))
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_safe_cli(monkeypatch, capsys):
+    """Test call of the safe cli, which is meant for release mostly."""
+    def raise_exception():
+        raise Exception("Something happened")
+    monkeypatch.setattr('perun.cli.cli', raise_exception)
+    cli.safely_run_cli()
+    out, err = capsys.readouterr()
+    assert "Unexpected error: Something happened" in err
+    assert "Saved dump" in out

@@ -4,10 +4,12 @@ Contains functions for click api, for processing parameters from command line, v
 and returning default values.
 """
 
+import time
 import functools
 import os
 import re
 import click
+import jinja2
 
 import perun
 import perun.profile.helpers as profiles
@@ -18,6 +20,7 @@ import perun.logic.config as config
 import perun.logic.pcs as pcs
 import perun.profile.query as query
 import perun.utils.streams as streams
+import perun.utils.timestamps as timestamps
 import perun.utils.log as log
 import perun.vcs as vcs
 
@@ -520,3 +523,117 @@ def resources_key_options(func):
                      help='Sets key for which we are finding the model (y-coordinates).')
     ]
     return functools.reduce(lambda x, option: option(x), options, func)
+
+
+CLI_DUMP_TEMPLATE = None
+CLI_DUMP_TEMPLATE_STRING = """Environment Info
+----------------
+  * Perun: {{ env.perun }}
+  * OS: {{ env.os.type }} {% if env.os.distro is defined %}{{ env.os.distro}}{% endif %} ({{ env.os.arch }})
+  * Python:  {{ env.python.version }}
+  * Python packages:
+  // for pkg in env.python.packages
+    * {{ pkg }}
+  // endfor
+  * Shell: {{ env.shell }}
+
+Command Line Commands
+---------------------
+
+  .. code-block:: bash
+  
+    $ {{ command }}
+
+Standard and Error Output
+-------------------------
+
+  * Raised exception and trace:
+  
+  .. code-block:: bash
+  
+    {{ exception }}
+    {{ trace}}
+  
+  * Captured output:
+
+  .. code-block:: bash
+  
+    {{ output }}
+
+Context
+-------
+ * Runtime Config
+ 
+ .. code-block:: json
+ 
+   {{ config.runtime }}
+   
+ * Local Config
+ 
+ .. code-block:: json
+ 
+   {{ config.local }}
+   
+ * Global Config
+ 
+ .. code-block:: json
+ 
+   {{ config.global }}
+"""
+
+
+def generate_cli_dump():
+    """Generates the dump of the current snapshot of the CLI
+
+    In particular this yields the dump template with the following information:
+
+        1. Version of the Perun
+        2. Called command and its parameters
+        3. Caught exception
+        4. Traceback of the exception
+        5. Whole profile (if used)
+    """
+    global CLI_DUMP_TEMPLATE
+    if not CLI_DUMP_TEMPLATE:
+        env = jinja2.Environment(
+            lstrip_blocks=True,
+            trim_blocks=True,
+            line_statement_prefix='//',
+            autoescape=True
+        )
+        CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
+    output = CLI_DUMP_TEMPLATE.render(
+        {
+            'env': {
+                'perun': '',
+                'os': {
+                    'type': '',
+                    'distro': '???',
+                    'arch': '',
+                    'shell': ''
+                },
+                'python': {
+                    'version': '',
+                    'packages': []
+                }
+            },
+            'command': '',
+            'output': '',
+            'exception': '',
+            'trace': '',
+            'config': {
+                'runtime': '',
+                'local': '',
+                'global': ''
+            }
+        }
+    )
+
+    dump_directory = pcs.get_safe_path(os.getcwd())
+    dump_file = os.path.join(dump_directory, 'dump-{}'.format(
+        timestamps.timestamp_to_str(time.time()).replace(' ', '-').replace(':', '-')
+    ) + '.rst')
+    with open(dump_file, 'w') as dump_handle:
+        dump_handle.write(output)
+    log.info("Saved dump to '{}'".format(dump_file))
+

@@ -11,8 +11,22 @@ import perun.logic.store as store
 import perun.logic.config as config
 
 from perun.utils.decorators import singleton, singleton_with_args
+from perun.utils.exceptions import NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
+
+
+def get_safe_path(default):
+    """Locates the instance of the perun starting from the current directory. In case the
+    directory is not Perun repository, returns the safe default.
+
+    :param str default: default path that is returned in case there is no perun
+    :return: string path where the perun instance is located or default
+    """
+    try:
+        return get_path()
+    except NotPerunRepositoryException:
+        return default
 
 
 @singleton

@@ -53,6 +53,7 @@ import perun.logic.config as perun_config
 import perun.postprocess
 import perun.profile.helpers as profiles
 import perun.utils as utils
+import perun.utils.helpers as helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
 import perun.view
@@ -723,6 +724,22 @@ cli.add_command(check_cli.check_group)
 cli.add_command(config_cli.config)
 cli.add_command(run_cli.run)
 cli.add_command(utils_cli.utils_group)
+
+
+def safely_run_cli():
+    """Safely runs the cli.
+
+    In case any exceptions are raised, they are catched and dump is created with additional
+    debugging information, such as the environment, perun version, perun commands, etc.
+    """
+    try:
+        cli()
+    except Exception as catched_exception:
+        perun_log.error("Unexpected error: {}".format(
+            str(catched_exception)), recoverable=True
+        )
+        with helpers.SuppressedExceptions(Exception):
+            cli_helpers.generate_cli_dump()
 
 
 if __name__ == "__main__":

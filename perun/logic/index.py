@@ -36,6 +36,7 @@ IndexVersion = Enum(
     'SlowLorris FastSloth'
 )
 
+
 class BasicIndexEntry:
     """Class representation of one index entry
 
