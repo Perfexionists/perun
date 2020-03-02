@@ -736,13 +736,16 @@ def safely_run_cli():
         stdout_log = perun_log.Logger(sys.stdout)
         stderr_log = perun_log.Logger(sys.stderr)
         sys.stdout, sys.stderr = stdout_log, stderr_log
+        print("Aho")
         cli()
     except Exception as catched_exception:
-        perun_log.error("Unexpected error: {}".format(
-            str(catched_exception)), recoverable=True
+        reported_error = ".".join(
+            [catched_exception.__module__, catched_exception.__class__.__name__]
         )
+        reported_error += ": " + str(catched_exception)
+        perun_log.error("Unexpected error: {}".format(reported_error), recoverable=True)
         with helpers.SuppressedExceptions(Exception):
-            cli_helpers.generate_cli_dump(catched_exception, stdout_log, stderr_log)
+            cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 
 if __name__ == "__main__":

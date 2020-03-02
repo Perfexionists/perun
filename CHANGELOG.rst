@@ -6,6 +6,18 @@ HEAD
 
 **To be included in next release**
 
+  - fix issue with backward incompatible repositories which contained profiles with 'params' instead of 'args'
+  - fix issue with loading degradation changes as strings (instead of doubles)
+  - fix issue with loading degradation changes with less information than in the new versions
+  - remove useless fixtures (Helpers) and move them to isolate package
+  - add helper assertions for tests
+  - categorize test data to several directories
+  - fix minor issues
+  - add automatical lookup of (in)dependent variable as default for various commands
+  - update the documentation and fix missing stuff
+  - fix minor issues in fuzzing
+  - add crash dump in case of unexpected error
+
 0.18.2 (2020-02-13)
 -------------------
 

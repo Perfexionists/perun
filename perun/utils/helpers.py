@@ -323,3 +323,15 @@ def get_key_with_aliases(dictionary, key_aliases, default=None):
     if default:
         return default
     raise KeyError("None of the keys {} found int he dictionary".format(key_aliases))
+
+
+def escape_ansi(line):
+    """Escapes the font/colour ansi characters in the line
+
+    Based on: https://stackoverflow.com/a/38662876
+
+    :param str line: line with ansi control characters
+    :return: ansi control-free string
+    """
+    ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+    return ansi_escape.sub('', line)

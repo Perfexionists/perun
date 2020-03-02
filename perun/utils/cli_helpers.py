@@ -13,7 +13,6 @@ import click
 import jinja2
 import platform
 import pip
-import json
 import traceback
 
 import perun
@@ -24,6 +23,7 @@ import perun.logic.stats as stats
 import perun.logic.config as config
 import perun.logic.pcs as pcs
 import perun.profile.query as query
+import perun.utils.helpers as helpers
 import perun.utils.streams as streams
 import perun.utils.timestamps as timestamps
 import perun.utils.log as log
@@ -533,14 +533,15 @@ def resources_key_options(func):
 CLI_DUMP_TEMPLATE = None
 CLI_DUMP_TEMPLATE_STRING = """Environment Info
 ----------------
-  * {{ env.perun }}
-  * OS: {{ env.os.type }}, {{ env.os.distro }} ({{ env.os.arch }})
+
+  * Perun {{ env.perun }}
   * Python:  {{ env.python.version }}
-  * Python packages:
+  * Installed Python packages:
+  
   // for pkg in env.python.packages
     * {{ pkg }}
   // endfor
-  * Shell: {{ env.shell }}
+  * OS: {{ env.os.type }}, {{ env.os.distro }} ({{ env.os.arch }})
 
 Command Line Commands
 ---------------------
@@ -557,43 +558,53 @@ Standard and Error Output
   .. code-block:: bash
   
     {{ exception }}
-    {{ trace}}
+{{ trace}}
   
+{% if output %}
   * Captured stdout:
 
-  .. code-block:: bash
-  
-    {{ output }}
+  .. code-block:: 
+
+{{ output }}
+{% endif %}
     
+{% if error %}
   * Captured stderr:
   
-  .. code-block:: bash
-  
-    {{ error }}
+  .. code-block:: 
+
+{{ error }}
+{% endif %}
 
 Context
 -------
+{% if config.runtime %}
  * Runtime Config
  
- .. code-block:: json
+ .. code-block:: yaml
  
-   {{ config.runtime }}
+{{ config.runtime }}
+{% endif %}
    
+{% if config.local %}
  * Local Config
  
- .. code-block:: json
+ .. code-block:: yaml
  
-   {{ config.local }}
+{{ config.local }}
+{% endif %}
    
+{% if config.global %}
  * Global Config
  
- .. code-block:: json
+ .. code-block:: yaml
  
-   {{ config.global }}
+{{ config.global }}
+{% endif %}
 """
 
 
-def generate_cli_dump(catched_exception, stdout, stderr):
+def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     """Generates the dump of the current snapshot of the CLI
 
     In particular this yields the dump template with the following information:
@@ -604,6 +615,7 @@ def generate_cli_dump(catched_exception, stdout, stderr):
         4. Traceback of the exception
         5. Whole profile (if used)
 
+    :param str reported_error: string representation of the catched exception / error
     :param Exception catched_exception: exception that led to the dump
     :param Logger stdout: logged stdout
     :param Logger stderr: logged stderr
@@ -611,10 +623,8 @@ def generate_cli_dump(catched_exception, stdout, stderr):
     global CLI_DUMP_TEMPLATE
     if not CLI_DUMP_TEMPLATE:
         env = jinja2.Environment(
-            lstrip_blocks=True,
             trim_blocks=True,
             line_statement_prefix='//',
-            autoescape=True
         )
         CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
     req_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'requirements.txt'))
@@ -644,21 +654,25 @@ def generate_cli_dump(catched_exception, stdout, stderr):
                 'python': {
                     'version': sys.version.replace('\n', ''),
                     'packages': [
-                        inst.key for inst in pip.get_installed_distributions() if inst.key in reqs
+                        inst.key + " (" + inst.version + ")"
+                        for inst in pip.get_installed_distributions() if inst.key in reqs
                     ]
                 }
             },
             'command': " ".join(['perun'] + click.get_os_args()),
-            'output': "".join(stdout.log.readlines()),
-            'error': "".join(stderr.log.readlines()),
+            'output': helpers.escape_ansi("".join([" "*4 + l for l in stdout.log.readlines()])),
+            'error': helpers.escape_ansi("".join([" "*4 + l for l in stderr.log.readlines()])),
             'exception': str(catched_exception),
-            'trace': traceback.format_tb(catched_exception.__traceback__),
+            'trace': "\n".join(
+                [' '*4 + t for t in "".join(
+                    traceback.format_tb(catched_exception.__traceback__)
+                ).split('\n')]
+            ),
             'config': {
-                'runtime': re.sub(r",\s+(\d+)", r", \1", json.dumps(config.runtime().data)),
-                'local':
-                    {} if '.perun' not in dump_directory else
-                    re.sub(r",\s+(\d+)", r", \1", json.dumps(config.local(dump_directory).data)),
-                'global': re.sub(r",\s+(\d+)", r", \1", json.dumps(config.shared().data)),
+                'runtime': streams.yaml_to_string(config.runtime().data),
+                'local': '' if '.perun' not in dump_directory
+                else streams.yaml_to_string(config.local(dump_directory).data),
+                'global': streams.yaml_to_string(config.shared().data)
             }
         }
     )
