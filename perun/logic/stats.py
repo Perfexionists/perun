@@ -46,6 +46,7 @@ import perun.logic.index as index
 import perun.logic.pcs as pcs
 import perun.utils as utils
 import perun.utils.exceptions as exceptions
+import perun.utils.helpers as utils_helpers
 import perun.vcs as vcs
 import perun.profile.helpers as helpers
 import perun.utils.log as perun_log
@@ -326,7 +327,7 @@ def reset_stats(keep_directories=False):
         # No need to keep the version directories, simply recreate the stats directory
         stats_dir = pcs.get_stats_directory()
         shutil.rmtree(stats_dir)
-        store.touch_dir(stats_dir)
+        utils_helpers.touch_dir(stats_dir)
 
 
 def clean_stats(keep_custom=False, keep_empty=False):
@@ -437,7 +438,7 @@ def _touch_minor_stats_directory(minor_version):
         _add_versions_to_index([_get_version_info(store.version_path_to_sha(lower_level_dir))])
 
     # Create the directory for storing statistics in the given minor version
-    store.touch_dir(lower_level_dir)
+    utils_helpers.touch_dir(lower_level_dir)
     return lower_level_dir
 
 

@@ -19,9 +19,9 @@ import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
 import perun.cli_groups.check_cli as check_cli
 import perun.utils as utils
+import perun.utils.helpers as helpers
 import perun.utils.log as log
 import perun.logic.config as config
-import perun.logic.store as store
 import perun.logic.temp as temp
 import perun.logic.stats as stats
 import perun.utils.exceptions as exceptions
@@ -1706,7 +1706,7 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     # Try to sink it to black hole
     log_dir = pcs_with_degradations.get_log_directory()
     shutil.rmtree(log_dir)
-    store.touch_dir(log_dir)
+    helpers.touch_dir(log_dir)
     config.runtime().data['degradation'] = {
         'collect_before_check': 'true',
         'log_collect': 'false'
@@ -1718,7 +1718,7 @@ def test_check_head(pcs_with_degradations, monkeypatch):
     # First lets clear all the objects
     object_dir = pcs_with_degradations.get_object_directory()
     shutil.rmtree(object_dir)
-    store.touch_dir(object_dir)
+    helpers.touch_dir(object_dir)
     # Clear the pre_collect_profiles cache
     check.pre_collect_profiles.minor_version_cache.clear()
     assert len(os.listdir(object_dir)) == 0
@@ -2139,10 +2139,10 @@ def test_stats(pcs_with_more_commits):
     os.makedirs(os.path.join(stats_dir, root_dir))
     os.makedirs(os.path.join(stats_dir, stats_custom_dir))
     os.mkdir(os.path.join(stats_dir, head_custom_dir))
-    store.touch_file(os.path.join(stats_dir, root_custom))
+    helpers.touch_file(os.path.join(stats_dir, root_custom))
     with open(os.path.join(stats_dir, root_custom), 'w+') as f_handle:
         f_handle.write('Some custom data')
-    store.touch_file(os.path.join(stats_dir, head_custom))
+    helpers.touch_file(os.path.join(stats_dir, head_custom))
 
     # Test the list functions on populated stats directory and some custom objects
     result = runner.invoke(utils_cli.stats_list_files, [])
@@ -2346,5 +2346,5 @@ def test_safe_cli(monkeypatch, capsys):
     monkeypatch.setattr('perun.cli.cli', raise_exception)
     cli.safely_run_cli()
     out, err = capsys.readouterr()
-    assert "Unexpected error: Something happened" in err
+    assert "Unexpected error: Exception: Something happened" in err
     assert "Saved dump" in out

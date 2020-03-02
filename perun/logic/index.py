@@ -343,7 +343,7 @@ def touch_index(index_path):
     :param str index_path: path to the index
     """
     if not os.path.exists(index_path):
-        store.touch_file(index_path)
+        helpers.touch_file(index_path)
 
         # create the index
         with open(index_path, 'wb') as index_handle:
@@ -531,7 +531,7 @@ def register_in_minor_index(base_dir, minor_version, registered_file, registered
     """
     # Create the directory and index (if it does not exist)
     minor_dir, minor_index_file = store.split_object_name(base_dir, minor_version)
-    store.touch_dir(minor_dir)
+    helpers.touch_dir(minor_dir)
     touch_index(minor_index_file)
 
     register_in_index(minor_index_file, registered_file, registered_checksum, profile)
@@ -678,7 +678,7 @@ def load_custom_index(index_path):
     """
     # Create and init the index file if it does not exist yet
     if not os.path.exists(index_path):
-        store.touch_file(index_path)
+        helpers.touch_file(index_path)
         save_custom_index(index_path, {})
     # Open and load the file
     try:

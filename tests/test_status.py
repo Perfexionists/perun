@@ -11,11 +11,11 @@ import os
 import re
 
 import git
-import perun.logic.store as store
 import pytest
 
 import perun.logic.config as config
 import perun.logic.commands as commands
+import perun.utils.helpers as helpers
 import perun.utils.timestamps as timestamps
 import perun.utils.decorators as decorators
 from perun.utils.exceptions import NotPerunRepositoryException
@@ -252,7 +252,7 @@ def test_status_no_profiles(pcs_full, capsys):
     # First we will do a new commit, with no profiles
     git_repo = git.Repo(pcs_full.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')
-    store.touch_file(file)
+    helpers.touch_file(file)
     git_repo.index.add([file])
     git_repo.index.commit("new commit")
 
@@ -270,7 +270,7 @@ def test_status_short_no_profiles(pcs_full, capsys):
     # First we will do a new commit, with no profiles
     git_repo = git.Repo(pcs_full.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')
-    store.touch_file(file)
+    helpers.touch_file(file)
     git_repo.index.add([file])
     git_repo.index.commit("new commit")
 

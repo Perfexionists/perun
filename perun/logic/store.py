@@ -14,9 +14,9 @@ import demandimport
 
 import perun.utils.log as log
 
-from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES
+from perun.utils.helpers import LINE_PARSING_REGEX, SUPPORTED_PROFILE_TYPES, touch_file, touch_dir
 from perun.utils.structs import PerformanceChange, DegradationInfo
-from perun.utils.exceptions import NotPerunRepositoryException, IncorrectProfileFormatException
+from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.profile.factory import Profile
 
 with demandimport.enabled():
@@ -28,63 +28,6 @@ INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
 INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")
 PENDING_TAG_REGEX = re.compile(r"^(\d+)@p$")
 PENDING_TAG_RANGE_REGEX = re.compile(r"^(\d+)@p-(\d+)@p$")
-
-
-def touch_file(touched_filename, times=None):
-    """
-    Corresponding implementation of touch inside python.
-    Courtesy of:
-    http://stackoverflow.com/questions/1158076/implement-touch-using-python
-
-    :param str touched_filename: filename that will be touched
-    :param time times: access times of the file
-    """
-    with open(touched_filename, 'a'):
-        os.utime(touched_filename, times)
-
-
-def touch_dir(touched_dir):
-    """
-    Touches directory, i.e. if it exists it does nothing and
-    if the directory does not exist, then it creates it.
-
-    :param str touched_dir: path that will be touched
-    """
-    if not os.path.exists(touched_dir):
-        os.makedirs(touched_dir)
-
-
-def path_to_subpaths(path):
-    """Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
-
-    >>> path_to_subpaths('/dir/subdir/subsubdir')
-    ['/dir', '/dir/subdir', '/dir/subdir/subsubdir']
-
-    :param str path: path separated by os.sep separator
-    :returns list: list of subpaths
-    """
-    components = path.split(os.sep)
-    return [os.sep + components[0]] + \
-           [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
-
-
-def locate_perun_dir_on(path):
-    """Locates the nearest perun directory
-
-    Locates the nearest perun directory starting from the @p path. It walks all of the
-    subpaths sorted by their lenght and checks if .perun directory exists there.
-
-    :param str path: starting point of the perun dir search
-    :returns str: path to perun dir or "" if the path is not underneath some underlying perun
-        control
-    """
-    # convert path to subpaths and reverse the list so deepest subpaths are traversed first
-    lookup_paths = path_to_subpaths(path)[::-1]
-
-    for tested_path in lookup_paths:
-        if os.path.isdir(tested_path) and '.perun' in os.listdir(tested_path):
-            return tested_path
-    raise NotPerunRepositoryException(path)
 
 
 def compute_checksum(content):

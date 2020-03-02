@@ -7,8 +7,8 @@ by its path.
 
 import os
 
-import perun.logic.store as store
 import perun.logic.config as config
+import perun.utils.helpers as helpers
 
 from perun.utils.decorators import singleton, singleton_with_args
 from perun.utils.exceptions import NotPerunRepositoryException
@@ -38,7 +38,7 @@ def get_path():
     :return: string path where the perun instance is located
     :raises NotPerunRepositoryException: when we cannot locate perun on the current directory tree
     """
-    return os.path.join(store.locate_perun_dir_on(os.getcwd()), '.perun')
+    return os.path.join(helpers.locate_perun_dir_on(os.getcwd()), '.perun')
 
 
 @singleton
@@ -88,7 +88,7 @@ def get_object_directory():
     :returns str: directory, where the objects are stored
     """
     object_directory = os.path.join(get_path(), "objects")
-    store.touch_dir(object_directory)
+    helpers.touch_dir(object_directory)
     return object_directory
 
 
@@ -99,7 +99,7 @@ def get_log_directory():
     :return str: directory, where logs are stored
     """
     logs_directory = os.path.join(get_path(), "logs")
-    store.touch_dir(logs_directory)
+    helpers.touch_dir(logs_directory)
     return logs_directory
 
 
@@ -110,7 +110,7 @@ def get_job_directory():
     :returns str: directory, where job outputs are stored
     """
     jobs_directory = os.path.join(get_path(), "jobs")
-    store.touch_dir(jobs_directory)
+    helpers.touch_dir(jobs_directory)
     return jobs_directory
 
 
@@ -131,7 +131,7 @@ def get_stats_directory():
     :return str: path to the statistics directory
     """
     stats_directory = os.path.join(get_path(), 'stats')
-    store.touch_dir(stats_directory)
+    helpers.touch_dir(stats_directory)
     return stats_directory
 
 
@@ -152,7 +152,7 @@ def get_tmp_directory():
     :return str: path to the tmp directory
     """
     tmp_directory = os.path.join(get_path(), 'tmp')
-    store.touch_dir(tmp_directory)
+    helpers.touch_dir(tmp_directory)
     return tmp_directory
 
 
