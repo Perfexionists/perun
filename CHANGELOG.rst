@@ -6,17 +6,17 @@ HEAD
 
 **To be included in next release**
 
-  - fix issue with backward incompatible repositories which contained profiles with 'params' instead of 'args'
-  - fix issue with loading degradation changes as strings (instead of doubles)
-  - fix issue with loading degradation changes with less information than in the new versions
-  - remove useless fixtures (Helpers) and move them to isolate package
-  - add helper assertions for tests
+  - add helper assertions for tests available in `asserts.py` file
+  - remove useless fixtures (Helpers), move the helpers functions to isolate package
   - categorize test data to several directories
-  - fix minor issues
-  - add automatical lookup of (in)dependent variable as default for various commands
-  - update the documentation and fix missing stuff
+  - add automatical lookup of (in)dependent variable as default for selected commands (postprocess, etc.)
+  - add crash dump in case of unexpected error (can be suppressed by `--dev-mode` option)
+  - update the documentation with latest features and fix missing stuff
+  - fix the issue with backward incompatible repositories which contained profiles with 'params' instead of 'args'
+  - fix the issue with loading certain parts of degradation changes as strings (instead of doubles)
+  - fix the issue with loading degradation changes which contained less information than in the new versions (missing the `drate`)
+  - fix other minor issues
   - fix minor issues in fuzzing
-  - add crash dump in case of unexpected error
   - fix issue with clang-3.5 binary missing in systems (add the binary)
 
 0.18.2 (2020-02-13)
