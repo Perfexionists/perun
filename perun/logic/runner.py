@@ -277,7 +277,7 @@ def run_collector(collector, job):
     if not collection_report.is_ok():
         log.error("while collecting by {}: {}".format(
             collector.name, collection_report.message
-        ), recoverable=True)
+        ), recoverable=True, raised_exception=collection_report.exception)
     else:
         print("Successfully collected data from {}".format(job.executable.cmd))
 

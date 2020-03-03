@@ -18,6 +18,7 @@ HEAD
   - fix other minor issues
   - fix minor issues in fuzzing
   - fix issue with clang-3.5 binary missing in systems (add the binary)
+  - fix the incorrectly printed trace
 
 0.18.2 (2020-02-13)
 -------------------

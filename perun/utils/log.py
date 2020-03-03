@@ -154,7 +154,7 @@ def extract_stack_frame_info(frame):
     return (frame[0], frame[1]) if isinstance(frame, tuple) else (frame.filename, frame.name)
 
 
-def print_current_stack(colour='red'):
+def print_current_stack(colour='red', raised_exception=None):
     """Prints the information about stack track leading to an event
 
     Be default this is used in error traces, so the colour of the printed trace is red.
@@ -162,9 +162,12 @@ def print_current_stack(colour='red'):
     those that takes care of the actual trace).
 
     :param str colour: colour of the printed stack trace
+    :param Exception raised_exception: exception that was raised before the error
     """
     reduced_trace = []
-    for frame in traceback.extract_stack():
+    trace = traceback.extract_tb(raised_exception.__traceback__) if raised_exception \
+        else traceback.extract_stack()
+    for frame in trace:
         frame_file, frame_name = extract_stack_frame_info(frame)
         filtering_conditions = [
             # We filter frames that are outside of perun's scope
@@ -181,14 +184,15 @@ def print_current_stack(colour='red'):
     ), file=sys.stderr)
 
 
-def error(msg, recoverable=False):
+def error(msg, recoverable=False, raised_exception=None):
     """
     :param str msg: error message printed to standard output
     :param bool recoverable: whether we can recover from the error
+    :param Exception raised_exception: exception that was raised before the error
     """
     print(in_color("fatal: {}".format(msg), 'red'), file=sys.stderr)
     if is_verbose_enough(VERBOSE_DEBUG):
-        print_current_stack()
+        print_current_stack(raised_exception=raised_exception)
 
     # If we cannot recover from this error, we end
     if not recoverable:
