@@ -2,6 +2,7 @@
 
 import perun.fuzz.randomizer as randomizer
 import perun.fuzz.helpers as helpers
+from perun.utils.helpers import SuppressedExceptions
 
 __author__ = 'Matus Liscinsky'
 
@@ -205,12 +206,10 @@ def repeat_word(lines):
     """
     repetitions = 100
     rand = randomizer.rand_index(len(lines))
-    try:
+    with SuppressedExceptions(ValueError, IndexError):
         word = randomizer.rand_choice(lines[rand].split())
         lines[rand] = lines[rand][:-1] + \
             (" " + (word[100]))*repetitions + lines[rand][-1:]
-    except (ValueError, IndexError):
-        pass
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -236,11 +235,9 @@ def delete_word(lines):
      * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
-    try:
+    with SuppressedExceptions(ValueError):
         word = randomizer.rand_choice(lines[rand].split())
         lines[rand] = lines[rand].replace(word, "")
-    except ValueError:
-        pass
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -253,11 +250,9 @@ def delete_character(lines):
      * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
-    try:
+    with SuppressedExceptions(ValueError):
         index = randomizer.rand_index(len(lines[rand]))
         helpers.remove_at_split(lines, rand, index)
-    except ValueError:
-        pass
 
 
 FUZZING_METHODS = [

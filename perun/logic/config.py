@@ -22,6 +22,8 @@ import perun.utils.helpers as helpers
 import perun.utils.log as perun_log
 import perun.utils.streams as streams
 
+from perun.utils.helpers import SuppressedExceptions
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -391,11 +393,8 @@ def get_hierarchy():
     :returns: iterable stream of configurations in the priority order
     """
     yield runtime()
-    try:
+    with SuppressedExceptions(exceptions.NotPerunRepositoryException):
         yield local(os.path.join(helpers.locate_perun_dir_on(os.getcwd()), ".perun"))
-    except exceptions.NotPerunRepositoryException:
-        # We skip if we are not within any perun repository
-        pass
     yield shared()
 
 

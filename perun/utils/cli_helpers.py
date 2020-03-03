@@ -32,6 +32,7 @@ import perun.vcs as vcs
 
 from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
     StatsFileNotFoundException, NotPerunRepositoryException
+from perun.utils.helpers import SuppressedExceptions
 
 __author__ = 'Tomas Fiedor'
 
@@ -334,7 +335,7 @@ def lookup_removed_profile_callback(ctx, _, value):
 
     massaged_values = set()
     for single_value in value:
-        try:
+        with SuppressedExceptions(NotPerunRepositoryException):
             index_match = store.INDEX_TAG_REGEX.match(single_value)
             index_range_match = store.INDEX_TAG_RANGE_REGEX.match(single_value)
             pending_match = store.PENDING_TAG_REGEX.match(single_value)
@@ -364,8 +365,6 @@ def lookup_removed_profile_callback(ctx, _, value):
             # other profiles that are specified by the path are removed from index only
             else:
                 ctx.params['from_index_generator'].add(single_value)
-        except NotPerunRepositoryException:
-            pass
     massaged_values.update(ctx.params['from_index_generator'])
     massaged_values.update(ctx.params['from_jobs_generator'])
     return massaged_values
@@ -701,4 +700,5 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     with open(dump_file, 'w') as dump_handle:
         dump_handle.write(output)
     log.info("Saved dump to '{}'".format(dump_file))
+
 

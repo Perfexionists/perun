@@ -4,8 +4,7 @@ In general, this testing is trying to find performance degradation in newly gene
 profile comparing with baseline profile.
 """
 
-import itertools
-
+import perun.utils.helpers as helpers
 import perun.check.factory as check
 import perun.logic.runner as run
 from perun.utils.structs import PerformanceChange
@@ -40,13 +39,10 @@ def baseline_testing(executable, seeds, collector, postprocessor, minor_version_
             minor_version_list, **kwargs
         ))
 
-        try:
-            # check
+        with helpers.SuppressedExceptions(ZeroDivisionError):
             file.deg_ratio = check_for_change(base_pg, target_pg)
             if file.deg_ratio > DEGRADATION_RATIO_TRESHOLD:
                 base_pg = target_pg
-        except ZeroDivisionError:
-            pass
     return base_pg
 
 
