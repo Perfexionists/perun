@@ -2348,3 +2348,8 @@ def test_safe_cli(monkeypatch, capsys):
     out, err = capsys.readouterr()
     assert "Unexpected error: Exception: Something happened" in err
     assert "Saved dump" in out
+
+    cli.DEV_MODE = True
+    with pytest.raises(Exception):
+        cli.safely_run_cli()
+    cli.DEV_MODE = False

@@ -68,9 +68,13 @@ import perun.cli_groups.utils_cli as utils_cli
 
 
 __author__ = 'Tomas Fiedor'
+DEV_MODE = False
 
 
 @click.group()
+@click.option('--dev-mode', '-d', default=False, is_flag=True,
+              help='Suppresses the catching of all exceptions from the CLI and generating of the '
+                   'dump.')
 @click.option('--no-pager', default=False, is_flag=True,
               help='Disables the paging of the long standard output (currently'
               ' affects only ``status`` and ``log`` outputs). See '
@@ -83,7 +87,7 @@ __author__ = 'Tomas Fiedor'
 @click.option('--version', help='Prints the current version of Perun.',
               is_eager=True, is_flag=True, default=False,
               callback=cli_helpers.print_version)
-def cli(no_color, verbose=0, no_pager=False, **_):
+def cli(dev_mode, no_color, verbose=0, no_pager=False, **_):
     """Perun is an open source light-weight Performance Versioning System.
 
     In order to initialize Perun in current directory run the following::
@@ -108,6 +112,8 @@ def cli(no_color, verbose=0, no_pager=False, **_):
     """
     # by default the pager is suppressed, and only calling it from the CLI enables it,
     # through --no-pager set by default to False you enable the paging
+    global DEV_MODE
+    DEV_MODE = dev_mode
     perun_log.SUPPRESS_PAGING = no_pager
     perun_log.COLOR_OUTPUT = not no_color
 
@@ -738,6 +744,8 @@ def safely_run_cli():
         sys.stdout, sys.stderr = stdout_log, stderr_log
         cli()
     except Exception as catched_exception:
+        if DEV_MODE:
+            raise catched_exception
         error_module = catched_exception.__module__ + '.' \
             if hasattr(catched_exception, '__module__') else ''
         error_name = error_module + catched_exception.__class__.__name__
