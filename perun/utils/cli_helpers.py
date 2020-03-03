@@ -14,6 +14,7 @@ import jinja2
 import platform
 import pip
 import traceback
+import json
 
 import perun
 import perun.profile.helpers as profiles
@@ -601,6 +602,18 @@ Context
  
 {{ config.global }}
 {% endif %}
+
+{% if context %}
+ * Manipulated profiles
+ 
+  // for profile in context
+  
+ .. code-block:: json
+   
+{{ profile }} 
+
+  // endfor
+{% endif %}
 """
 
 
@@ -641,6 +654,12 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     stdout.log.seek(0)
     stderr.log.seek(0)
 
+    ctx = [
+        "\n".join([" "*4 + l for l in json.dumps(p.serialize(), indent=2).split('\n')])
+        for p in config.runtime().safe_get('context.profiles', [])
+    ]
+    config.runtime().set('context.profiles', [])
+
     output = CLI_DUMP_TEMPLATE.render(
         {
             'env': {
@@ -662,7 +681,7 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
             'command': " ".join(['perun'] + click.get_os_args()),
             'output': helpers.escape_ansi("".join([" "*4 + l for l in stdout.log.readlines()])),
             'error': helpers.escape_ansi("".join([" "*4 + l for l in stderr.log.readlines()])),
-            'exception': str(catched_exception),
+            'exception': reported_error,
             'trace': "\n".join(
                 [' '*4 + t for t in "".join(
                     traceback.format_tb(catched_exception.__traceback__)
@@ -673,7 +692,8 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
                 'local': '' if '.perun' not in dump_directory
                 else streams.yaml_to_string(config.local(dump_directory).data),
                 'global': streams.yaml_to_string(config.shared().data)
-            }
+            },
+            'context': ctx,
         }
     )
 

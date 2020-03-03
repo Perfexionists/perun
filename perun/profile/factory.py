@@ -12,6 +12,7 @@ import itertools
 import click
 
 import perun.profile.convert as convert
+import perun.logic.config as config
 
 from perun.check.general_detection import get_filtered_best_models_of
 from perun.postprocess.regression_analysis.regression_models import get_supported_models
@@ -55,6 +56,7 @@ class Profile(collections.MutableMapping):
                 self.update_resources(value, key)
             else:
                 self._storage[key] = value
+        config.runtime().append('context.profiles', self)
 
     def update_resources(self, resource_list, resource_type='list', clear_existing_resources=False):
         """Given by @p resource_type updates the storage with new flattened resources
