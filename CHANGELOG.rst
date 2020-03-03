@@ -17,6 +17,7 @@ HEAD
   - update the documentation and fix missing stuff
   - fix minor issues in fuzzing
   - add crash dump in case of unexpected error
+  - fix issue with clang-3.5 binary missing in systems (add the binary)
 
 0.18.2 (2020-02-13)
 -------------------
