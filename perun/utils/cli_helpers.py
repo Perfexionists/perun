@@ -654,10 +654,11 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     stdout.log.seek(0)
     stderr.log.seek(0)
 
-    ctx = [
-        "\n".join([" "*4 + l for l in json.dumps(p.serialize(), indent=2).split('\n')])
-        for p in config.runtime().safe_get('context.profiles', [])
-    ]
+    ctx = set([
+        "\n".join([
+            " "*4 + l for l in json.dumps(p.serialize(), indent=2, sort_keys=True).split('\n')
+        ]) for p in config.runtime().safe_get('context.profiles', []) if 'origin' in p.keys()
+    ])
     config.runtime().set('context.profiles', [])
 
     output = CLI_DUMP_TEMPLATE.render(
