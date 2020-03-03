@@ -29,7 +29,9 @@ def before(sources, **kwargs):
 
         $ clang-3.5 -g -emit-llvm -c ${sources}
     """
-    cmd = " ".join([_CLANG_COMPILER] + _CLANG_COMPILATION_PARAMS + list(sources))
+    pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin')
+    clang_bin = os.path.join(pwd, _CLANG_COMPILER)
+    cmd = " ".join([clang_bin] + _CLANG_COMPILATION_PARAMS + list(sources))
     print("Compiling source codes: {}".format(
         ",".join(sources)
     ))
