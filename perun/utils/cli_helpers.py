@@ -9,12 +9,12 @@ import functools
 import os
 import sys
 import re
-import click
-import jinja2
 import platform
-import pip
 import traceback
 import json
+import pip
+import click
+import jinja2
 
 import perun
 import perun.profile.helpers as profiles
@@ -343,7 +343,8 @@ def lookup_removed_profile_callback(ctx, _, value):
             if index_match:
                 add_to_removed_from_index(int(index_match.group(1)))
             elif index_range_match:
-                from_range, to_range = int(index_range_match.group(1)), int(index_range_match.group(2))
+                from_range, to_range \
+                    = int(index_range_match.group(1)), int(index_range_match.group(2))
                 for i in range(from_range, to_range+1):
                     try:
                         add_to_removed_from_index(i)
@@ -352,13 +353,14 @@ def lookup_removed_profile_callback(ctx, _, value):
             elif pending_match:
                 add_to_removed_from_pending(int(pending_match.group(1)))
             elif pending_range_match:
-                from_range, to_range = int(pending_range_match.group(1)), int(pending_range_match.group(2))
+                from_range, to_range \
+                    = int(pending_range_match.group(1)), int(pending_range_match.group(2))
                 for i in range(from_range, to_range+1):
                     try:
                         add_to_removed_from_pending(i)
                     except click.BadParameter:
                         log.warn("skipping nonexisting tag {}@p".format(i))
-            # We check if this is actually something from pending, then we will remove it from pending
+            # We check if this is actually something from pending, then we will remove it
             elif os.path.exists(single_value) and \
                 os.path.samefile(os.path.split(single_value)[0], pcs.get_job_directory()):
                 ctx.params['from_jobs_generator'].add(single_value)
@@ -641,9 +643,7 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
         CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
     req_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'requirements.txt'))
     with open(req_file, 'r') as requirements_handle:
-        reqs = set([
-            req.split('==')[0] for req in requirements_handle.readlines()
-        ])
+        reqs = {req.split('==')[0] for req in requirements_handle.readlines()}
 
     dump_directory = pcs.get_safe_path(os.getcwd())
     dump_file = os.path.join(dump_directory, 'dump-{}'.format(
@@ -653,11 +653,11 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     stdout.log.seek(0)
     stderr.log.seek(0)
 
-    ctx = set([
+    ctx = {
         "\n".join([
             " "*4 + l for l in json.dumps(p.serialize(), indent=2, sort_keys=True).split('\n')
         ]) for p in config.runtime().safe_get('context.profiles', []) if 'origin' in p.keys()
-    ])
+    }
     config.runtime().set('context.profiles', [])
 
     output = CLI_DUMP_TEMPLATE.render(
@@ -689,8 +689,9 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
             ),
             'config': {
                 'runtime': streams.yaml_to_string(config.runtime().data),
-                'local': '' if '.perun' not in dump_directory
-                else streams.yaml_to_string(config.local(dump_directory).data),
+                'local': '' if '.perun' not in dump_directory else streams.yaml_to_string(
+                    config.local(dump_directory).data
+                ),
                 'global': streams.yaml_to_string(config.shared().data)
             },
             'context': ctx,
@@ -700,5 +701,3 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     with open(dump_file, 'w') as dump_handle:
         dump_handle.write(output)
     log.info("Saved dump to '{}'".format(dump_file))
-
-

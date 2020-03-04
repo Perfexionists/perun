@@ -10,8 +10,8 @@ import io
 import pydoc
 import functools
 import traceback
-import numpy as np
 import time
+import numpy as np
 
 import termcolor
 

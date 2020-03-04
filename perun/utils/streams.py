@@ -23,7 +23,7 @@ def store_json(profile, file_path):
     """
     with open(file_path, 'w') as profile_handle:
         serialized_profile = json.dumps(profile, indent=2)
-        serialized_profile = re.sub(r",\s+(\d+)",  r", \1", serialized_profile)
+        serialized_profile = re.sub(r",\s+(\d+)", r", \1", serialized_profile)
         profile_handle.write(serialized_profile)
 
 
@@ -78,4 +78,3 @@ def yaml_to_string(dictionary):
     yaml_dumper.dump(dictionary, string_stream)
     string_stream.seek(0)
     return "".join([" "*4 + s for s in string_stream.readlines()])
-

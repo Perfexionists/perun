@@ -3,8 +3,8 @@ import os
 import re
 import operator
 import collections
-import namedlist
 import signal
+import namedlist
 
 from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
@@ -139,7 +139,7 @@ def uid_getter(uid):
     )
 
 
-class SuppressedExceptions(object):
+class SuppressedExceptions:
     """Context manager class for code blocks that need to suppress / ignore some exceptions
     and simply continue in the execution if those exceptions are encountered.
 
@@ -193,7 +193,7 @@ def format_counter_number(count, max_number):
     )
 
 
-class HandledSignals(object):
+class HandledSignals:
     """Context manager for code blocks that need to handle one or more signals during their
     execution.
 
