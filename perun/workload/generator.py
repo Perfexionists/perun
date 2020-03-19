@@ -42,7 +42,7 @@ class Generator:
         """
         collective_profile, collective_status = factory.Profile(), CollectStatus.OK
 
-        for workload in self._generate_next_workload():
+        for workload, _ in self._generate_next_workload():
             self.job.collector.params['workload'] = str(workload)
             # Update the workload: the executed one (workload) and config one (origin_workload)
             self.job.executable.workload = str(workload)

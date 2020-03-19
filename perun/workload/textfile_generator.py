@@ -113,6 +113,6 @@ class TextfileGenerator(Generator):
                 print("Generating {}".format(path))
                 with os.fdopen(fd, 'w') as tmpfile:
                     tmpfile.write(self._get_file_content(file_len))
-                yield path
+                yield path, {}
             finally:
                 os.remove(path)

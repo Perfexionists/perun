@@ -76,5 +76,5 @@ class ExternalGenerator(Generator):
 
         for workload in os.listdir(self.output_dir):
             path_to_workload = os.path.join(self.output_dir, workload)
-            yield path_to_workload
+            yield path_to_workload, {}
 
