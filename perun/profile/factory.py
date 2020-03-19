@@ -28,11 +28,11 @@ class Profile(collections.MutableMapping):
         unique identifier of those resources
     :ivar Counter _uid_counter: counter of how many resources type uid has
     """
-    collectable = {'amount', 'structure-unit-size', 'call-order', 'address'}
-    persistent = {'trace', 'type', 'subtype', 'uid'}
+    collectable = ['amount', 'structure-unit-size', 'call-order', 'address']
+    persistent = ['trace', 'type', 'subtype', 'uid']
 
-    independent = {'structure-unit-size', 'snapshot', 'call-order', 'address', }
-    dependent = {'amount', }
+    independent = ['structure-unit-size', 'snapshot', 'call-order', 'address']
+    dependent = ['amount']
 
     def __init__(self, *args, **kwargs):
         """Initializes the internal storage
@@ -101,16 +101,23 @@ class Profile(collections.MutableMapping):
         :param additional_params:
         :return:
         """
+        ctx = config.runtime().safe_get('context.workload', {})
+        ctx_persistent_properties = [
+            (key, value) for (key, value) in ctx.items() if isinstance(value, str)
+        ]
+        ctx_collectable_properties = [
+            (key, value) for (key, value) in ctx.items() if not isinstance(value, str)
+        ]
         # Fixme: what if there is already something? Test update
         for resource in resource_list:
             persistent_properties = [
                 (key, value) for (key, value) in resource.items() if key not in Profile.collectable
-            ]
+            ] + ctx_persistent_properties
             persistent_properties.extend(list(additional_params.items()))
             persistent_properties.sort(key=operator.itemgetter(0))
             collectable_properties = [
                 (key, value) for (key, value) in resource.items() if key in Profile.collectable
-            ]
+            ] + ctx_collectable_properties
             resource_type = self.register_resource_type(
                 resource['uid'], tuple(persistent_properties)
             )

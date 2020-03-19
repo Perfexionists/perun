@@ -8,6 +8,8 @@
 """
 
 import distutils.util as dutils
+
+import perun.logic.config as config
 import perun.utils.log as log
 import perun.profile.helpers as profile
 import perun.profile.factory as factory
@@ -42,7 +44,8 @@ class Generator:
         """
         collective_profile, collective_status = factory.Profile(), CollectStatus.OK
 
-        for workload, _ in self._generate_next_workload():
+        for workload, workload_ctx in self._generate_next_workload():
+            config.runtime().set('context.workload', workload_ctx)
             self.job.collector.params['workload'] = str(workload)
             # Update the workload: the executed one (workload) and config one (origin_workload)
             self.job.executable.workload = str(workload)

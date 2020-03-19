@@ -41,7 +41,6 @@ def trace_to_profile(data_file, func, static, **kwargs):
                 resource = _process_record(record, trace_stack, sequence_map, static,
                                            kwargs['global_sampling'])
                 if resource:
-                    resource['workload'] = kwargs.get('workload', ' '.join(kwargs['workload']))
                     yield resource
             WATCH_DOG.info('Data to profile transformation finished')
         except Exception:
