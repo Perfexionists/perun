@@ -28,11 +28,11 @@ class Profile(collections.MutableMapping):
         unique identifier of those resources
     :ivar Counter _uid_counter: counter of how many resources type uid has
     """
-    collectable = ('amount', 'structure-unit-size', 'call-order', 'address')
-    persistent = ('trace', 'type', 'subtype', 'uid')
+    collectable = {'amount', 'structure-unit-size', 'call-order', 'address'}
+    persistent = {'trace', 'type', 'subtype', 'uid'}
 
-    independent = ('structure-unit-size', 'snapshot', 'call-order', 'address', )
-    dependent = ('amount', )
+    independent = {'structure-unit-size', 'snapshot', 'call-order', 'address', }
+    dependent = {'amount', }
 
     def __init__(self, *args, **kwargs):
         """Initializes the internal storage

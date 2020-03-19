@@ -12,6 +12,7 @@ HEAD
   - add automatical lookup of (in)dependent variable as default for selected commands (postprocess, etc.)
   - add crash dump in case of unexpected error (can be suppressed by `--dev-mode` option)
   - update the documentation with latest features and fix missing stuff
+  - add external generator of the
   - fix the issue with backward incompatible repositories which contained profiles with 'params' instead of 'args'
   - fix the issue with loading certain parts of degradation changes as strings (instead of doubles)
   - fix the issue with loading degradation changes which contained less information than in the new versions (missing the `drate`)
