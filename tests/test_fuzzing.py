@@ -4,6 +4,7 @@ Basic tests for fuzz-testing mode of perun
 
 import os
 import subprocess
+import pytest
 
 from click.testing import CliRunner
 
@@ -12,6 +13,7 @@ import perun.cli as cli
 import tests.helpers.asserts as asserts
 
 
+@pytest.mark.usefixtures('cleandir')
 def test_fuzzing_correct(pcs_full):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
@@ -203,6 +205,7 @@ def test_fuzzing_correct(pcs_full):
     asserts.predicate_from_cli(result, 'Founded degradation mutations: 0' not in result.output)
 
 
+@pytest.mark.usefixtures('cleandir')
 def test_fuzzing_incorrect(pcs_full):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()

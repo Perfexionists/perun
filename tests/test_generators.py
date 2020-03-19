@@ -1,10 +1,13 @@
 """Basic tests of generators"""
 
+import os
+import shutil
 import pytest
 
 import perun.logic.config as config
 import perun.workload as workload
 import perun.logic.runner as runner
+import perun.logic.store as store
 
 from perun.utils.helpers import Job
 from perun.utils.structs import Unit, Executable, CollectStatus
@@ -12,8 +15,10 @@ from perun.workload.integer_generator import IntegerGenerator
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.workload.string_generator import StringGenerator
 from perun.workload.textfile_generator import TextfileGenerator
+from perun.workload.external_generator import ExternalGenerator
 from perun.workload.generator import Generator
 
+from subprocess import CalledProcessError
 
 __author__ = 'Tomas Fiedor'
 
@@ -155,3 +160,47 @@ def test_file_generator():
         assert c_status == CollectStatus.OK
         assert profile
         assert len(profile['resources']) > 0
+
+
+def _generate_temp_files(temp_dir, num):
+    """Helper function for generating some temporary files
+    :param temp_dir:
+    :param num:
+    :return:
+    """
+    store.touch_dir(temp_dir)
+    for i in range(num):
+        temp_file = os.path.join(temp_dir, "tmp{}_{}".format(num, num*10))
+        with open(temp_file, 'w') as tmp_handle:
+            tmp_handle.write(("."*num*10 + "\n")*num)
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_external_generator(monkeypatch):
+    """Tests external file generator"""
+
+    collector = Unit('time', {'warmup': 1, 'repeat': 1})
+    executable = Executable('wc', '-l')
+    file_job = Job(collector, [], executable)
+    target_dir = os.path.join(os.getcwd(), 'test')
+    external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")
+
+    # replace the running of generator
+    def correct_generation(*_, **__):
+        _generate_temp_files(target_dir, 3)
+    monkeypatch.setattr('perun.utils.run_safely_external_command', correct_generation)
+
+    for c_status, profile in external_generator.generate(runner.run_collector):
+        assert c_status == CollectStatus.OK
+        assert profile
+        assert len(profile['resources']) > 0
+
+    def incorrect_generation(*_, **__):
+        raise CalledProcessError(-1, "failed")
+    target_dir = os.path.join(os.getcwd(), 'test2')
+    store.touch_dir(target_dir)
+    external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}")
+    monkeypatch.setattr('perun.utils.run_safely_external_command', incorrect_generation)
+    profiles = list(external_generator.generate(runner.run_collector))
+    assert len(profiles) == 1
+    assert len(list(profiles[0][1].all_resources())) == 0

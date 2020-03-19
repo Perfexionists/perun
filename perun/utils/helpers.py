@@ -319,9 +319,9 @@ def get_key_with_aliases(dictionary, key_aliases, default=None):
     for key in key_aliases:
         if key in dictionary.keys():
             return dictionary[key]
-    if default:
+    if default is not None:
         return default
-    raise KeyError("None of the keys {} found int he dictionary".format(key_aliases))
+    raise KeyError("None of the keys {} found in the dictionary".format(key_aliases))
 
 
 def escape_ansi(line):
