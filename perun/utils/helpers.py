@@ -391,3 +391,16 @@ def locate_perun_dir_on(path):
         if os.path.isdir(tested_path) and '.perun' in os.listdir(tested_path):
             return tested_path
     raise NotPerunRepositoryException(path)
+
+
+def try_convert(value, list_of_types):
+    """Tries to convert a value into one of the specified types
+
+    :param object value: object that is going to be converted to one of the types
+    :param list list_of_types: list or tuple of supported types
+    :return: converted value or value, if conversion failed for all of the types
+    """
+    for checked_type in list_of_types:
+        with SuppressedExceptions(Exception):
+            return checked_type(value)
+    return value

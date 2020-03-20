@@ -28,10 +28,10 @@ class Profile(collections.MutableMapping):
         unique identifier of those resources
     :ivar Counter _uid_counter: counter of how many resources type uid has
     """
-    collectable = ['amount', 'structure-unit-size', 'call-order', 'address']
-    persistent = ['trace', 'type', 'subtype', 'uid']
+    collectable = {'amount', 'structure-unit-size', 'call-order', 'order', 'address'}
+    persistent = {'trace', 'type', 'subtype', 'uid'}
 
-    independent = ['structure-unit-size', 'snapshot', 'call-order', 'address']
+    independent = ['structure-unit-size', 'snapshot', 'order', 'call-order', 'address']
     dependent = ['amount']
 
     def __init__(self, *args, **kwargs):
@@ -108,7 +108,11 @@ class Profile(collections.MutableMapping):
         ctx_collectable_properties = [
             (key, value) for (key, value) in ctx.items() if not isinstance(value, str)
         ]
-        # Fixme: what if there is already something? Test update
+
+        # Update collectable and persistent keys (needed for merge)
+        Profile.persistent.update({key for key, val in ctx.items() if isinstance(val, str)})
+        Profile.collectable.update({key for key, val in ctx.items() if not isinstance(val, str)})
+
         for resource in resource_list:
             persistent_properties = [
                 (key, value) for (key, value) in resource.items() if key not in Profile.collectable

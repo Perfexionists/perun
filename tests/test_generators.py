@@ -1,7 +1,6 @@
 """Basic tests of generators"""
 
 import os
-import shutil
 import pytest
 
 import perun.logic.config as config
@@ -176,7 +175,7 @@ def _generate_temp_files(temp_dir, num):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_external_generator(monkeypatch):
+def test_external_generator(monkeypatch, capsys):
     """Tests external file generator"""
 
     collector = Unit('time', {'warmup': 1, 'repeat': 1})
@@ -194,6 +193,17 @@ def test_external_generator(monkeypatch):
         assert c_status == CollectStatus.OK
         assert profile
         assert len(profile['resources']) > 0
+
+    # Test when values are incorrectly paired in format
+    target_dir = os.path.join(os.getcwd(), 'test3')
+    store.touch_dir(target_dir)
+    external_generator = ExternalGenerator(file_job, "generate", target_dir, "tmp{rows}_{cols}_{chars}")
+    for c_status, profile in external_generator.generate(runner.run_collector):
+        assert c_status == CollectStatus.OK
+        assert profile
+        assert len(profile['resources']) > 0
+    out, _ = capsys.readouterr()
+    assert 'Could not match format' in out
 
     def incorrect_generation(*_, **__):
         raise CalledProcessError(-1, "failed")
