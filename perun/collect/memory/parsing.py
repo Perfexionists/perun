@@ -72,15 +72,13 @@ def parse_allocation_location(trace):
     return {}
 
 
-def parse_resources(allocation, workload):
+def parse_resources(allocation):
     """ Parse resources of one allocation
 
     :param list allocation: list of raw allocation data
-    :param str workload: workload of the resource
-    :param str workload: workload of the memory collector
     :returns structure: formatted structure representing resources of one allocation
     """
-    data = {'workload': workload}
+    data = {}
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
@@ -180,7 +178,7 @@ def parse_log(filename, executable, snapshots_interval):
 
         # using parse_resources()
         # parsing resources,
-        data['resources'].append(parse_resources(allocation, executable.workload))
+        data['resources'].append(parse_resources(allocation))
 
     if data:
         snapshots.append(data)

@@ -1,0 +1,87 @@
+{
+  "resources": {
+    "skiplistSearch(skiplist*, int)#0": {
+      "amount": [
+        4310.180936395099, 4384.978480029307, 4503.062376017413
+      ],
+      "structure-unit-size": [
+        1, 1001, 2001
+      ]
+    }
+  },
+  "header": {
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "args": "",
+    "type": "mixed",
+    "workload": "wl",
+    "cmd": "cmd"
+  },
+  "models": [
+    {
+      "coeffs": [
+        {
+          "value": 25703.159215696418,
+          "name": "b0"
+        },
+        {
+          "value": 0.0,
+          "name": "b1"
+        }
+      ],
+      "x_start": 1,
+      "x_end": 1000000,
+      "method": "full",
+      "model": "constant",
+      "uid": "skiplistSearch(skiplist*, int)",
+      "r_square": 0.0
+    },
+    {
+      "coeffs": [
+        {
+          "value": 4.59074017916881,
+          "name": "b0"
+        },
+        {
+          "value": 0.6483671438009997,
+          "name": "b1"
+        }
+      ],
+      "x_start": 1,
+      "x_end": 1000000,
+      "method": "full",
+      "model": "power",
+      "uid": "skiplistSearch(skiplist*, int)",
+      "r_square": 0.6844937271954514
+    }
+  ],
+  "collector_info": {
+    "params": {
+      "target_dir": "./target",
+      "internal_direct_output": false,
+      "files": [
+        "../example_sources/skiplist_parameters_cpp/skiplist_height_low.cpp",
+        "../example_sources/structures/skiplist.cpp",
+        "../example_sources/structures/skiplist.h"
+      ],
+      "rules": [
+        "skiplistSearch"
+      ],
+      "internal_data_filename": "trace.log",
+      "sampling": [],
+      "internal_storage_size": 20000
+    },
+    "name": "complexity"
+  },
+  "resource_type_map": {
+    "skiplistSearch(skiplist*, int)#0": {
+      "uid": "skiplistSearch(skiplist*, int)",
+      "type": "mixed",
+      "time": "18.484409s",
+      "subtype": "time delta"
+    }
+  },
+  "postprocessors": [],
+  "origin": "f7f3dcea69b97f2b03c421a223a770917149cfae"
+}

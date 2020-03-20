@@ -4,9 +4,9 @@ import os
 import jinja2
 
 import perun.utils as utils
+import perun.utils.helpers as helpers
 import perun.utils.log as log
 import perun.logic.config as config
-import perun.logic.store as store
 
 from perun.utils.exceptions import ExternalEditorErrorException
 
@@ -58,7 +58,7 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
     if "__init__" in "".join(list_of_templates):
         # We will initialize it in the isolate package
         target_dir = os.path.join(perun_dev_dir, template_type, kwargs['unit_name'])
-        store.touch_dir(target_dir)
+        helpers.touch_dir(target_dir)
     else:
         target_dir = os.path.join(perun_dev_dir, template_type)
     print("Initializing new {} module in {}".format(

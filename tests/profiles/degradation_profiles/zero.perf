@@ -1,0 +1,63 @@
+{
+  "header": {
+    "args": "",
+    "type": "time",
+    "cmd": "factor",
+    "units": {
+      "time": "s"
+    },
+    "workload": "10"
+  },
+  "postprocessors": [],
+  "origin": "1eb3d631e73c5dad10c03b554629dff46c6abf20",
+  "resources": {
+    "factor#2": {
+      "amount": [
+        0.0
+      ]
+    },
+    "factor#1": {
+      "amount": [
+        0.0
+      ]
+    },
+    "factor#0": {
+      "amount": [
+        0.0
+      ]
+    }
+  },
+  "resource_type_map": {
+    "factor#2": {
+      "uid": "factor",
+      "subtype": "sys",
+      "workload": "10",
+      "order": 1,
+      "type": "time",
+      "time": "0.0"
+    },
+    "factor#1": {
+      "uid": "factor",
+      "subtype": "user",
+      "workload": "10",
+      "order": 1,
+      "type": "time",
+      "time": "0.0"
+    },
+    "factor#0": {
+      "uid": "factor",
+      "subtype": "real",
+      "workload": "10",
+      "order": 1,
+      "type": "time",
+      "time": "0.0"
+    }
+  },
+  "models": [],
+  "collector_info": {
+    "name": "time",
+    "params": {
+      "workload": "10"
+    }
+  }
+}

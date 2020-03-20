@@ -15,6 +15,7 @@ import perun.utils as utils
 import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.utils.decorators as decorators
+import perun.utils.helpers as helpers
 import perun.workload as workloads
 
 from perun.utils import get_module
@@ -79,7 +80,7 @@ def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs
     matrix = {
         str(b): {
             str(w): [
-                Job(c, posts, Executable(b, w, a)) for c in collector_pairs for a in args or ['']
+                Job(c, posts, Executable(b, a, w)) for c in collector_pairs for a in args or ['']
                 ] for w in workload
             } for b in cmd
         }
@@ -118,10 +119,10 @@ def load_job_info_from_config():
 
     info = {
         'cmd': local_config['cmds'],
+        'args': helpers.get_key_with_aliases(local_config, ('args', 'params'), default=[]),
         'workload': local_config.get('workloads', ['']),
         'postprocessor': [post.get('name', '') for post in postprocessors],
         'collector': [collect.get('name', '') for collect in collectors],
-        'args': local_config['args'] if 'args' in local_config.keys() else [],
         'collector_params': {
             collect.get('name', ''): collect.get('params', {}) for collect in collectors
             },
@@ -276,7 +277,7 @@ def run_collector(collector, job):
     if not collection_report.is_ok():
         log.error("while collecting by {}: {}".format(
             collector.name, collection_report.message
-        ), recoverable=True)
+        ), recoverable=True, raised_exception=collection_report.exception)
     else:
         print("Successfully collected data from {}".format(job.executable.cmd))
 

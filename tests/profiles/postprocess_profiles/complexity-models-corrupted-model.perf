@@ -1,0 +1,185 @@
+{
+  "resource_type_map": {
+    "SLListcls::SLListcls()#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::SLListcls()",
+      "subtype": "time delta"
+    },
+    "SLList_insert(SLList*, int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_insert(SLList*, int)",
+      "subtype": "time delta"
+    },
+    "SLList_search(SLList*, int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_search(SLList*, int)",
+      "subtype": "time delta"
+    },
+    "SLListcls::Search(int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::Search(int)",
+      "subtype": "time delta"
+    },
+    "SLListcls::~SLListcls()#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::~SLListcls()",
+      "subtype": "time delta"
+    },
+    "SLListcls::Insert(int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::Insert(int)",
+      "subtype": "time delta"
+    },
+    "SLList_destroy(SLList*)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_destroy(SLList*)",
+      "subtype": "time delta"
+    },
+    "SLList_init(SLList*)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_init(SLList*)",
+      "subtype": "time delta"
+    }
+  },
+  "collector_info": {
+    "name": "trace",
+    "params": {
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
+      "internal_storage_size": 20000,
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ],
+      "internal_direct_output": false,
+      "internal_data_filename": "trace.log"
+    }
+  },
+  "postprocessors": [],
+  "resources": {
+    "SLListcls::SLListcls()#0": {
+      "structure-unit-size": [
+        0
+      ],
+      "amount": [
+        12
+      ]
+    },
+    "SLList_insert(SLList*, int)#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ],
+      "amount": [
+        3, 2, 1, 1, 1, 2, 1, 1, 2, 1
+      ]
+    },
+    "SLList_search(SLList*, int)#0": {
+      "structure-unit-size": [
+        10
+      ],
+      "amount": [
+        1
+      ]
+    },
+    "SLListcls::Search(int)#0": {
+      "structure-unit-size": [
+        10
+      ],
+      "amount": [
+        2
+      ]
+    },
+    "SLListcls::~SLListcls()#0": {
+      "structure-unit-size": [
+        0
+      ],
+      "amount": [
+        2
+      ]
+    },
+    "SLListcls::Insert(int)#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ],
+      "amount": [
+        2, 2, 2, 2, 2, 1, 2, 2, 2, 2
+      ]
+    },
+    "SLList_destroy(SLList*)#0": {
+      "structure-unit-size": [
+        10
+      ],
+      "amount": [
+        48
+      ]
+    },
+    "SLList_init(SLList*)#0": {
+      "structure-unit-size": [
+        0
+      ],
+      "amount": [
+        15
+      ]
+    }
+  },
+  "models": [
+    {
+      "r_square": 0.17966835944667436,
+      "method": "full",
+      "uid": "SLList_insert(SLList*, int)",
+      "x_start": 0,
+      "model": "invalid_model",
+      "x_end": 9,
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.7657239018047568
+        },
+        {
+          "name": "b1",
+          "value": 0.9458006943320206
+        }
+      ]
+    }
+  ],
+  "origin": "a64466d9d49e5bfe15378ebd6c9086c16a968f52",
+  "header": {
+    "type": "mixed",
+    "workload": "",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "args": "",
+    "cmd": "complexity"
+  }
+}

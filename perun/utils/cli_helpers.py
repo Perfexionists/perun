@@ -4,10 +4,17 @@ Contains functions for click api, for processing parameters from command line, v
 and returning default values.
 """
 
+import time
 import functools
 import os
+import sys
 import re
+import platform
+import traceback
+import json
+import pip
 import click
+import jinja2
 
 import perun
 import perun.profile.helpers as profiles
@@ -17,12 +24,15 @@ import perun.logic.stats as stats
 import perun.logic.config as config
 import perun.logic.pcs as pcs
 import perun.profile.query as query
+import perun.utils.helpers as helpers
 import perun.utils.streams as streams
+import perun.utils.timestamps as timestamps
 import perun.utils.log as log
 import perun.vcs as vcs
 
 from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
     StatsFileNotFoundException, NotPerunRepositoryException
+from perun.utils.helpers import SuppressedExceptions
 
 __author__ = 'Tomas Fiedor'
 
@@ -325,7 +335,7 @@ def lookup_removed_profile_callback(ctx, _, value):
 
     massaged_values = set()
     for single_value in value:
-        try:
+        with SuppressedExceptions(NotPerunRepositoryException):
             index_match = store.INDEX_TAG_REGEX.match(single_value)
             index_range_match = store.INDEX_TAG_RANGE_REGEX.match(single_value)
             pending_match = store.PENDING_TAG_REGEX.match(single_value)
@@ -333,7 +343,8 @@ def lookup_removed_profile_callback(ctx, _, value):
             if index_match:
                 add_to_removed_from_index(int(index_match.group(1)))
             elif index_range_match:
-                from_range, to_range = int(index_range_match.group(1)), int(index_range_match.group(2))
+                from_range, to_range \
+                    = int(index_range_match.group(1)), int(index_range_match.group(2))
                 for i in range(from_range, to_range+1):
                     try:
                         add_to_removed_from_index(i)
@@ -342,21 +353,20 @@ def lookup_removed_profile_callback(ctx, _, value):
             elif pending_match:
                 add_to_removed_from_pending(int(pending_match.group(1)))
             elif pending_range_match:
-                from_range, to_range = int(pending_range_match.group(1)), int(pending_range_match.group(2))
+                from_range, to_range \
+                    = int(pending_range_match.group(1)), int(pending_range_match.group(2))
                 for i in range(from_range, to_range+1):
                     try:
                         add_to_removed_from_pending(i)
                     except click.BadParameter:
                         log.warn("skipping nonexisting tag {}@p".format(i))
-            # We check if this is actually something from pending, then we will remove it from pending
+            # We check if this is actually something from pending, then we will remove it
             elif os.path.exists(single_value) and \
                 os.path.samefile(os.path.split(single_value)[0], pcs.get_job_directory()):
                 ctx.params['from_jobs_generator'].add(single_value)
             # other profiles that are specified by the path are removed from index only
             else:
                 ctx.params['from_index_generator'].add(single_value)
-        except NotPerunRepositoryException:
-            pass
     massaged_values.update(ctx.params['from_index_generator'])
     massaged_values.update(ctx.params['from_jobs_generator'])
     return massaged_values
@@ -520,3 +530,174 @@ def resources_key_options(func):
                      help='Sets key for which we are finding the model (y-coordinates).')
     ]
     return functools.reduce(lambda x, option: option(x), options, func)
+
+
+CLI_DUMP_TEMPLATE = None
+CLI_DUMP_TEMPLATE_STRING = """Environment Info
+----------------
+
+  * Perun {{ env.perun }}
+  * Python:  {{ env.python.version }}
+  * Installed Python packages:
+  
+  // for pkg in env.python.packages
+    * {{ pkg }}
+  // endfor
+  * OS: {{ env.os.type }}, {{ env.os.distro }} ({{ env.os.arch }})
+
+Command Line Commands
+---------------------
+
+  .. code-block:: bash
+  
+    $ {{ command }}
+
+Standard and Error Output
+-------------------------
+
+  * Raised exception and trace:
+  
+  .. code-block:: bash
+  
+    {{ exception }}
+{{ trace}}
+  
+{% if output %}
+  * Captured stdout:
+
+  .. code-block:: 
+
+{{ output }}
+{% endif %}
+    
+{% if error %}
+  * Captured stderr:
+  
+  .. code-block:: 
+
+{{ error }}
+{% endif %}
+
+Context
+-------
+{% if config.runtime %}
+ * Runtime Config
+ 
+ .. code-block:: yaml
+ 
+{{ config.runtime }}
+{% endif %}
+   
+{% if config.local %}
+ * Local Config
+ 
+ .. code-block:: yaml
+ 
+{{ config.local }}
+{% endif %}
+   
+{% if config.global %}
+ * Global Config
+ 
+ .. code-block:: yaml
+ 
+{{ config.global }}
+{% endif %}
+
+{% if context %}
+ * Manipulated profiles
+ 
+  // for profile in context
+  
+ .. code-block:: json
+   
+{{ profile }} 
+
+  // endfor
+{% endif %}
+"""
+
+
+def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
+    """Generates the dump of the current snapshot of the CLI
+
+    In particular this yields the dump template with the following information:
+
+        1. Version of the Perun
+        2. Called command and its parameters
+        3. Caught exception
+        4. Traceback of the exception
+        5. Whole profile (if used)
+
+    :param str reported_error: string representation of the catched exception / error
+    :param Exception catched_exception: exception that led to the dump
+    :param Logger stdout: logged stdout
+    :param Logger stderr: logged stderr
+    """
+    global CLI_DUMP_TEMPLATE
+    if not CLI_DUMP_TEMPLATE:
+        env = jinja2.Environment(
+            trim_blocks=True,
+            line_statement_prefix='//',
+        )
+        CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
+    req_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'requirements.txt'))
+    with open(req_file, 'r') as requirements_handle:
+        reqs = {req.split('==')[0] for req in requirements_handle.readlines()}
+
+    dump_directory = pcs.get_safe_path(os.getcwd())
+    dump_file = os.path.join(dump_directory, 'dump-{}'.format(
+        timestamps.timestamp_to_str(time.time()).replace(' ', '-').replace(':', '-')
+    ) + '.rst')
+
+    stdout.log.seek(0)
+    stderr.log.seek(0)
+
+    ctx = {
+        "\n".join([
+            " "*4 + l for l in json.dumps(p.serialize(), indent=2, sort_keys=True).split('\n')
+        ]) for p in config.runtime().safe_get('context.profiles', []) if 'origin' in p.keys()
+    }
+    config.runtime().set('context.profiles', [])
+
+    output = CLI_DUMP_TEMPLATE.render(
+        {
+            'env': {
+                'perun': perun.__version__,
+                'os': {
+                    'type': os.environ.get('OSTYPE', '???'),
+                    'distro': platform.platform(()),
+                    'arch': os.environ.get('HOSTTYPE', '???'),
+                    'shell': os.environ.get('SHELL', '???')
+                },
+                'python': {
+                    'version': sys.version.replace('\n', ''),
+                    'packages': [
+                        inst.key + " (" + inst.version + ")"
+                        for inst in pip.get_installed_distributions() if inst.key in reqs
+                    ]
+                }
+            },
+            'command': " ".join(['perun'] + click.get_os_args()),
+            'output': helpers.escape_ansi("".join([" "*4 + l for l in stdout.log.readlines()])),
+            'error': helpers.escape_ansi("".join([" "*4 + l for l in stderr.log.readlines()])),
+            'exception': reported_error,
+            'trace': "\n".join(
+                [' '*4 + t for t in "".join(
+                    traceback.format_tb(catched_exception.__traceback__)
+                ).split('\n')]
+            ),
+            'config': {
+                'runtime': streams.yaml_to_string(config.runtime().data),
+                'local': '' if '.perun' not in dump_directory else streams.yaml_to_string(
+                    config.local(dump_directory).data
+                ),
+                'global': streams.yaml_to_string(config.shared().data)
+            },
+            'context': ctx,
+        }
+    )
+
+    with open(dump_file, 'w') as dump_handle:
+        dump_handle.write(output)
+    log.info("Saved dump to '{}'".format(dump_file))

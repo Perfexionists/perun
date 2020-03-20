@@ -1,0 +1,150 @@
+{
+  "resources": {
+    "SLList_insert(SLList*, int)#0": {
+      "amount": [
+        12, 9, 9, 8, 8, 8, 8, 9, 8, 8
+      ],
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ]
+    },
+    "SLListcls::Search(int)#0": {
+      "amount": [
+        8
+      ],
+      "structure-unit-size": [
+        10
+      ]
+    },
+    "SLList_search(SLList*, int)#0": {
+      "amount": [
+        8
+      ],
+      "structure-unit-size": [
+        10
+      ]
+    },
+    "SLListcls::Insert(int)#0": {
+      "amount": [
+        10, 9, 9, 9, 9, 9, 40, 9, 9, 8
+      ],
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ]
+    },
+    "SLList_init(SLList*)#0": {
+      "amount": [
+        44
+      ],
+      "structure-unit-size": [
+        0
+      ]
+    },
+    "SLList_destroy(SLList*)#0": {
+      "amount": [
+        9
+      ],
+      "structure-unit-size": [
+        10
+      ]
+    },
+    "SLListcls::SLListcls()#0": {
+      "amount": [
+        14
+      ],
+      "structure-unit-size": [
+        0
+      ]
+    }
+  },
+  "header": {
+    "units": {
+      "mixed (time delta)": "us"
+    },
+    "args": "",
+    "type": "mixed",
+    "workload": "/mnt/g/some.txt",
+    "cmd": "target"
+  },
+  "models": [],
+  "collector_info": {
+    "params": {
+      "target_dir": "./target",
+      "rules": [
+        "func1",
+        "SLList_init",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~Sllistcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ],
+      "files": [
+        "../cpp_sources/test_workload/main.cpp",
+        "../cpp_sources/test_workload/SLList.h",
+        "../cpp_sources/test_workload/SLListcls.h"
+      ],
+      "init-storage-size": 20000,
+      "file-name": "trace.log",
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ]
+    },
+    "name": "trace"
+  },
+  "resource_type_map": {
+    "SLList_insert(SLList*, int)#0": {
+      "uid": "SLList_insert(SLList*, int)",
+      "type": "mixed",
+      "time": "0.000525s",
+      "subtype": "time delta"
+    },
+    "SLListcls::Search(int)#0": {
+      "uid": "SLListcls::Search(int)",
+      "type": "mixed",
+      "time": "0.000525s",
+      "subtype": "time delta"
+    },
+    "SLList_search(SLList*, int)#0": {
+      "uid": "SLList_search(SLList*, int)",
+      "type": "mixed",
+      "time": "0.000525s",
+      "subtype": "time delta"
+    },
+    "SLListcls::Insert(int)#0": {
+      "uid": "SLListcls::Insert(int)",
+      "type": "mixed",
+      "time": "0.000525s",
+      "subtype": "time delta"
+    },
+    "SLList_init(SLList*)#0": {
+      "uid": "SLList_init(SLList*)",
+      "type": "mixed",
+      "time": "0.000525s",
+      "subtype": "time delta"
+    },
+    "SLList_destroy(SLList*)#0": {
+      "uid": "SLList_destroy(SLList*)",
+      "type": "mixed",
+      "time": "0.000525s",
+      "subtype": "time delta"
+    },
+    "SLListcls::SLListcls()#0": {
+      "uid": "SLListcls::SLListcls()",
+      "type": "mixed",
+      "time": "0.000525s",
+      "subtype": "time delta"
+    }
+  },
+  "postprocessors": []
+}

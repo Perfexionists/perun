@@ -6,6 +6,7 @@ parsed by internal scanner resulting into profile.
 """
 
 import os
+import shutil
 import time as systime
 
 from subprocess import SubprocessError
@@ -29,8 +30,11 @@ def before(sources, **kwargs):
 
         $ clang-3.5 -g -emit-llvm -c ${sources}
     """
-    cmd = " ".join([_CLANG_COMPILER] + _CLANG_COMPILATION_PARAMS + list(sources))
-    print("Compiling source codes: {}".format(
+    pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin')
+    clang_bin = \
+        _CLANG_COMPILER if shutil.which(_CLANG_COMPILER) else os.path.join(pwd, _CLANG_COMPILER)
+    cmd = " ".join([clang_bin] + _CLANG_COMPILATION_PARAMS + list(sources))
+    log.info("Compiling source codes: {}".format(
         ",".join(sources)
     ))
     try:
@@ -57,7 +61,7 @@ def collect(sources, **kwargs):
     my_env = os.environ.copy()
     my_env['LD_LIBRARY_PATH'] = pwd
 
-    print("Running Loopus on compiled source codes: {}". format(
+    log.info("Running Loopus on compiled source codes: {}". format(
         " ".join(source_filenames)
     ))
 
@@ -98,7 +102,6 @@ def lookup_source_files(ctx, _, value):
     :param str value: value that is being read from the commandline
     """
     # Initialize sources if it does not exist
-    print('source = "{}"'.format(value))
     if 'sources' not in ctx.params.keys():
         ctx.params['sources'] = []
 

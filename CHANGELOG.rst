@@ -6,6 +6,21 @@ HEAD
 
 **To be included in next release**
 
+  - add helper assertions for tests available in `asserts.py` file
+  - remove useless fixtures (Helpers), move the helpers functions to isolate package
+  - categorize test data to several directories
+  - add automatical lookup of (in)dependent variable as default for selected commands (postprocess, etc.)
+  - add crash dump in case of unexpected error (can be suppressed by `--dev-mode` option)
+  - update the documentation with latest features and fix missing stuff
+  - add external generator of the
+  - fix the issue with backward incompatible repositories which contained profiles with 'params' instead of 'args'
+  - fix the issue with loading certain parts of degradation changes as strings (instead of doubles)
+  - fix the issue with loading degradation changes which contained less information than in the new versions (missing the `drate`)
+  - fix other minor issues
+  - fix minor issues in fuzzing
+  - fix issue with clang-3.5 binary missing in systems (add the binary)
+  - fix the incorrectly printed trace
+
 0.18.2 (2020-02-13)
 -------------------
 
@@ -199,7 +214,7 @@ HEAD
 **Add kernel non-parametric regression**
 
   - fix minor issue in memory collector that manifests with gcc-5.5+ and Ubuntu 18.04+
-  - add three kernel non-parametrik regression models (see :ref:`_postprocessors-kernel-regression`)
+  - add three kernel non-parametrik regression models (see :ref:`postprocessors-kernel-regression`)
   - fix minor issues in moving average and regressogram
 
 0.16.3 (2019-03-02)

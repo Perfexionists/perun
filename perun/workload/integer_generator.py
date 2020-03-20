@@ -57,4 +57,4 @@ class IntegerGenerator(Generator):
         :return: integer number from the given range and after given step
         """
         for integer in range(self.min_range, self.max_range+1, self.step):
-            yield integer
+            yield integer, {}

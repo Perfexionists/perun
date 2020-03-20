@@ -1,0 +1,20 @@
+{
+  "resource_type_map": {},
+  "collector_info": {
+    "name": "memory",
+    "params": {}
+  },
+  "postprocessors": [],
+  "resources": {},
+  "models": [],
+  "origin": "1ba8c02d211d40692768b5d61c200c15d91fb2b2",
+  "header": {
+    "type": "memory",
+    "units": {
+      "memory": "B"
+    },
+    "workload": "test",
+    "args": "",
+    "cmd": "./test"
+  }
+}

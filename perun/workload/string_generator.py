@@ -64,4 +64,4 @@ class StringGenerator(Generator):
             yield "".join(
                 random.choice(string.ascii_letters + string.digits)
                 for _ in range(str_len)
-            )
+            ), {}

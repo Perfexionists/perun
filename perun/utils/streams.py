@@ -7,6 +7,7 @@ This module encapulates such functions, so they can be used in CLI, in tests, in
 import json
 import os
 import re
+import io
 from ruamel.yaml import YAML
 
 import perun.utils.log as log
@@ -22,7 +23,7 @@ def store_json(profile, file_path):
     """
     with open(file_path, 'w') as profile_handle:
         serialized_profile = json.dumps(profile, indent=2)
-        serialized_profile = re.sub(r",\s+(\d+)",  r", \1", serialized_profile)
+        serialized_profile = re.sub(r",\s+(\d+)", r", \1", serialized_profile)
         profile_handle.write(serialized_profile)
 
 
@@ -64,3 +65,31 @@ def safely_load_yaml(yaml_source):
     if os.path.exists(yaml_source):
         return safely_load_yaml_from_file(yaml_source)
     return safely_load_yaml_from_stream(yaml_source)
+
+
+def yaml_to_string(dictionary):
+    """Converts the dictionary representing the YAML into string
+
+    :param dict dictionary: yaml stored as dictionary
+    :return: string representation of the yaml
+    """
+    string_stream = io.StringIO()
+    yaml_dumper = YAML()
+    yaml_dumper.dump(dictionary, string_stream)
+    string_stream.seek(0)
+    return "".join([" "*4 + s for s in string_stream.readlines()])
+
+
+def safely_load_file(filename):
+    """Safely reads filename. In case of Unicode errors, returns empty list.
+
+    :param str filename: read filename
+    :return: list of read lines
+    """
+    with open(filename, 'r') as file_handle:
+        try:
+            return file_handle.readlines()
+        except UnicodeDecodeError as e:
+            log.warn("Could not decode '{}': {}".format(filename, str(e)))
+            return []
+

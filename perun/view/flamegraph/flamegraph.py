@@ -4,6 +4,7 @@ import os
 import subprocess
 
 import perun.profile.convert as converter
+import perun.utils.helpers as helpers
 
 __author__ = 'Radim Podola'
 _SCRIPT_FILENAME = './flamegraph.pl'
@@ -24,10 +25,10 @@ def draw_flame_graph(profile, output_file, height):
 
     header = profile['header']
     profile_type = header['type']
-    title = "{} consumption of {} {} {}".format(profile_type,
-                                                header['cmd'],
-                                                header['args'],
-                                                header['workload'])
+    title = "{} consumption of {} {} {}".format(
+        profile_type,
+        header['cmd'], helpers.get_key_with_aliases(header, ('args', 'params')), header['workload']
+    )
     units = header['units'][profile_type]
 
     pwd = os.path.dirname(os.path.abspath(__file__))

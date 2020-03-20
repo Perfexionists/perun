@@ -72,7 +72,7 @@ def remove_attribute(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def remove_tag(lines):
-    """**Rule D.: **
+    """**Rule D.4: Remove tag.**
 
      * **Input**: <book id="bk106" pages="457">
      * **Mutation**:

@@ -593,20 +593,22 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
             log.info('.', end="")
 
             # testing with perun
+            sucessful_result = False
             try:
                 fuzz_progress.stats["perun_execs"] += 1
-                if evaluate_workloads(
+                sucessful_result = evaluate_workloads(
                         "by_perun", "target_testing", executable, mutation,
                         collector, postprocessor, minor_version_list, base_result=base_copy,
                         **kwargs
-                ):
+                )
+                if sucessful_result:
                     process_successful_mutation(mutation, parents, fuzz_progress, rule_set, config)
             # temporarily we ignore error within individual perf testing without previous cov test
             except Exception as exc:
                 log.warn("Executing binary raised an exception: {}".format(exc))
 
             # in case of testing with coverage, parent wont be removed but used for mutation
-            if not config.coverage_testing:
+            if not sucessful_result and not config.coverage_testing:
                 os.remove(mutation.path)
 
         # deletes interesting workloads for next run

@@ -16,16 +16,16 @@ Perun Commands
 .. click:: perun.cli:init
    :prog: perun init
 
-.. click:: perun.cli:config
+.. click:: perun.cli_groups.config_cli:config
    :prog: perun config
 
-.. click:: perun.cli:config_get
+.. click:: perun.cli_groups.config_cli:config_get
    :prog: perun config get
 
-.. click:: perun.cli:config_set
+.. click:: perun.cli_groups.config_cli:config_set
    :prog: perun config set
 
-.. click:: perun.cli:config_edit
+.. click:: perun.cli_groups.config_cli:config_edit
    :prog: perun config edit
 
 .. click:: perun.cli:add
@@ -40,25 +40,25 @@ Perun Commands
 .. click:: perun.cli:log
    :prog: perun log
 
-.. click:: perun.cli:run
+.. click:: perun.cli_groups.run_cli:run
    :prog: perun run
 
-.. click:: perun.cli:job
+.. click:: perun.cli_groups.run_cli:job
    :prog: perun run job
 
-.. click:: perun.cli:matrix
+.. click:: perun.cli_groups.run_cli:matrix
    :prog: perun run matrix
 
-.. click:: perun.cli:check_group
+.. click:: perun.cli_groups.check_cli:check_group
    :prog: perun check
 
-.. click:: perun.cli:check_head
+.. click:: perun.cli_groups.check_cli:check_head
    :prog: perun check head
 
-.. click:: perun.cli:check_all
+.. click:: perun.cli_groups.check_cli:check_all
    :prog: perun check all
 
-.. click:: perun.cli:check_profiles
+.. click:: perun.cli_groups.check_cli:check_profiles
    :prog: perun check profiles
 
 .. click:: perun.cli:fuzz_cmd
@@ -177,8 +177,44 @@ Show units
 Utility Commands
 ----------------
 
-.. click:: perun.cli:utils_group
+.. click:: perun.cli_groups.utils_cli:utils_group
    :prog: perun utils
 
-.. click:: perun.cli:create
+.. click:: perun.cli_groups.utils_cli:create
    :prog: perun utils create
+
+.. click:: perun.cli_groups.utils_cli:temp_group
+   :prog: perun temp
+
+.. click:: perun.cli_groups.utils_cli:temp_list
+   :prog: perun temp list
+
+.. click:: perun.cli_groups.utils_cli:temp_sync
+   :prog: perun temp sync
+
+.. click:: perun.cli_groups.utils_cli:stats_group
+   :prog: perun stats
+
+.. click:: perun.cli_groups.utils_cli:stats_list_files
+   :prog: perun stats list-files
+
+.. click:: perun.cli_groups.utils_cli:stats_list_versions
+   :prog: perun stats list-versions
+
+.. click:: perun.cli_groups.utils_cli:stats_delete_group
+   :prog: perun stats delete
+
+.. click:: perun.cli_groups.utils_cli:stats_delete_file
+   :prog: perun stats delete file
+
+.. click:: perun.cli_groups.utils_cli:stats_delete_minor
+   :prog: perun stats delete minor
+
+.. click:: perun.cli_groups.utils_cli:stats_delete_all
+   :prog: perun stats delete ll
+
+.. click:: perun.cli_groups.utils_cli:stats_clean
+   :prog: perun stats clean
+
+.. click:: perun.cli_groups.utils_cli:stats_sync
+   :prog: perun stats sync

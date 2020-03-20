@@ -207,7 +207,7 @@ List of Supported Options
     ``perun status`` commands. Can be one of the following attributes specified by the class
     attribute ``ProfileInfo.valid_attributes``:
 
-.. currentmodule:: perun.profile.factory
+.. currentmodule:: perun.profile.helpers
 .. autoattribute:: ProfileInfo.valid_attributes
 
 .. confunit:: execute
@@ -359,14 +359,14 @@ We advise to manipulate with configurations using the ``perun config --edit`` co
 change the nearest local (resp. global) configuration run ``perun config --local --edit`` (resp.
 ``perun config --shared --edit``).
 
-.. click:: perun.cli:config
+.. click:: perun.cli_groups.config_cli:config
    :prog: perun config
 
-.. click:: perun.cli:config_get
+.. click:: perun.cli_groups.config_cli:config_get
    :prog: perun config get
 
-.. click:: perun.cli:config_set
+.. click:: perun.cli_groups.config_cli:config_set
    :prog: perun config set
 
-.. click:: perun.cli:config_edit
+.. click:: perun.cli_groups.config_cli:config_edit
    :prog: perun config edit

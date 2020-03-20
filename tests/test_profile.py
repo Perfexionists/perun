@@ -8,15 +8,17 @@ import perun.profile.helpers as factory
 
 from perun.profile.factory import Profile
 
+import tests.helpers.utils as test_utils
+
 __author__ = 'Tomas Fiedor'
 
 
-def test_loading(helpers, pcs_full, valid_profile_pool):
+def test_loading(pcs_full, valid_profile_pool):
     """Test new feature of loading the profile straight out of profile info
 
     Expecting correct behaviour
     """
-    helpers.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
     untracked = commands.get_untracked_profiles()
     assert len(untracked) != 0
 

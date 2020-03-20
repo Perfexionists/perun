@@ -1,14 +1,13 @@
 """Set of helper constants and helper named tuples for perun pcs"""
-
+import os
 import re
 import operator
 import collections
-import namedlist
 import signal
+import namedlist
 
 from perun.utils.structs import PerformanceChange
-from perun.utils.exceptions import SignalReceivedException
-
+from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
 
 __author__ = 'Tomas Fiedor'
 
@@ -140,7 +139,7 @@ def uid_getter(uid):
     )
 
 
-class SuppressedExceptions(object):
+class SuppressedExceptions:
     """Context manager class for code blocks that need to suppress / ignore some exceptions
     and simply continue in the execution if those exceptions are encountered.
 
@@ -194,7 +193,7 @@ def format_counter_number(count, max_number):
     )
 
 
-class HandledSignals(object):
+class HandledSignals:
     """Context manager for code blocks that need to handle one or more signals during their
     execution.
 
@@ -303,3 +302,105 @@ def is_variable_len_dict(value):
         isinstance(v, dict) and set(v.keys()) == {'name', 'value'} for v in value
     )
 
+
+def get_key_with_aliases(dictionary, key_aliases, default=None):
+    """Safely returns the key in the dictionary that has several aliases.
+
+    This function assures the backward compatibility with older profiles, after renaming the keys.
+
+    :param dict dictionary: dictionary
+    :param tuple key_aliases: tuple of aliases of the same key in the dictionary, ordered
+        according to the order of the versions
+    :param object default: default value that is returned if none of the aliases is found in
+        the dictionary
+    :return: value of the key in the dictionary
+    :raises KeyError: if default is set to None and none of the keys in key_aliases is in the dict
+    """
+    for key in key_aliases:
+        if key in dictionary.keys():
+            return dictionary[key]
+    if default is not None:
+        return default
+    raise KeyError("None of the keys {} found in the dictionary".format(key_aliases))
+
+
+def escape_ansi(line):
+    """Escapes the font/colour ansi characters in the line
+
+    Based on: https://stackoverflow.com/a/38662876
+
+    :param str line: line with ansi control characters
+    :return: ansi control-free string
+    """
+    ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+    return ansi_escape.sub('', line)
+
+
+def touch_file(touched_filename, times=None):
+    """
+    Corresponding implementation of touch inside python.
+    Courtesy of:
+    http://stackoverflow.com/questions/1158076/implement-touch-using-python
+
+    :param str touched_filename: filename that will be touched
+    :param time times: access times of the file
+    """
+    with open(touched_filename, 'a'):
+        os.utime(touched_filename, times)
+
+
+def touch_dir(touched_dir):
+    """
+    Touches directory, i.e. if it exists it does nothing and
+    if the directory does not exist, then it creates it.
+
+    :param str touched_dir: path that will be touched
+    """
+    if not os.path.exists(touched_dir):
+        os.makedirs(touched_dir)
+
+
+def path_to_subpaths(path):
+    """Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
+
+    >>> path_to_subpaths('/dir/subdir/subsubdir')
+    ['/dir', '/dir/subdir', '/dir/subdir/subsubdir']
+
+    :param str path: path separated by os.sep separator
+    :returns list: list of subpaths
+    """
+    components = path.split(os.sep)
+    return [os.sep + components[0]] + \
+           [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
+
+
+def locate_perun_dir_on(path):
+    """Locates the nearest perun directory
+
+    Locates the nearest perun directory starting from the @p path. It walks all of the
+    subpaths sorted by their lenght and checks if .perun directory exists there.
+
+    :param str path: starting point of the perun dir search
+    :returns str: path to perun dir or "" if the path is not underneath some underlying perun
+        control
+    """
+    # convert path to subpaths and reverse the list so deepest subpaths are traversed first
+    lookup_paths = path_to_subpaths(path)[::-1]
+
+    for tested_path in lookup_paths:
+        if os.path.isdir(tested_path) and '.perun' in os.listdir(tested_path):
+            return tested_path
+    raise NotPerunRepositoryException(path)
+
+
+def try_convert(value, list_of_types):
+    """Tries to convert a value into one of the specified types
+
+    :param object value: object that is going to be converted to one of the types
+    :param list list_of_types: list or tuple of supported types
+    :return: converted value or value, if conversion failed for all of the types
+    """
+    for checked_type in list_of_types:
+        with SuppressedExceptions(Exception):
+            return checked_type(value)
+    return value

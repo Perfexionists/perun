@@ -1,0 +1,60 @@
+{
+  "header": {
+    "type": "time",
+    "workload": "world",
+    "cmd": "echo",
+    "units": {
+      "time": "s"
+    },
+    "args": "-e"
+  },
+  "models": [],
+  "resources": {
+    "sys#0": {
+      "amount": [
+        1.0
+      ]
+    },
+    "real#0": {
+      "amount": [
+        1.0
+      ]
+    },
+    "user#0": {
+      "amount": [
+        1.0
+      ]
+    }
+  },
+  "resource_type_map": {
+    "sys#0": {
+      "uid": "sys",
+      "type": "time",
+      "time": "0.0"
+    },
+    "real#0": {
+      "uid": "real",
+      "type": "time",
+      "time": "0.0"
+    },
+    "user#0": {
+      "uid": "user",
+      "type": "time",
+      "time": "0.0"
+    }
+  },
+  "postprocessors": [
+    {
+      "name": "filter",
+      "params": ""
+    },
+    {
+      "name": "normalizer",
+      "params": ""
+    }
+  ],
+  "collector_info": {
+    "name": "time",
+    "params": ""
+  }
+}

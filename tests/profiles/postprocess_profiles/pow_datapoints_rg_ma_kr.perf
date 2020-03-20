@@ -1,0 +1,252 @@
+{
+  "resource_type_map": {
+    "pow::test3#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "pow::test3",
+      "subtype": "time delta"
+    },
+    "pow::test1#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "pow::test1",
+      "subtype": "time delta"
+    },
+    "pow::test2#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "pow::test2",
+      "subtype": "time delta"
+    }
+  },
+  "collector_info": {
+    "name": "trace",
+    "params": {
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
+      "internal_data_filename": "trace.log",
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "internal_storage_size": 20000,
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ],
+      "internal_direct_output": false,
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ]
+    }
+  },
+  "postprocessors": [
+    {
+      "name": "regressogram",
+      "params": {
+        "bucket_number": null,
+        "bucket_method": "doane",
+        "of_key": "amount",
+        "per_key": "structure-unit-size",
+        "statistic_function": "mean"
+      }
+    },
+    {
+      "name": "moving_average",
+      "params": {
+        "center": true,
+        "of_key": "amount",
+        "window_type": null,
+        "min_periods": null,
+        "moving_method": "sma",
+        "per_key": "structure-unit-size",
+        "window_width": null
+      }
+    },
+    {
+      "name": "kernel_regression",
+      "params": {
+        "n_re_samples": 25,
+        "reg_type": "ll",
+        "of_key": "amount",
+        "bandwidth_method": "cv_ls",
+        "randomize": false,
+        "efficient": false,
+        "kernel_mode": "estimator-settings",
+        "per_key": "structure-unit-size",
+        "return_median": false,
+        "n_sub_samples": 50
+      }
+    }
+  ],
+  "resources": {
+    "pow::test3#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5
+      ],
+      "amount": [
+        0, 3, 24, 81, 192, 375
+      ]
+    },
+    "pow::test1#0": {
+      "structure-unit-size": [
+        8.1, 69.9, 4.2, 14.1, 5.6, 52.1, 44.6, 19.6, 33, 6.7, 30.1
+      ],
+      "amount": [
+        33, 49, 19, 27, 23, 51, 34, 32, 28, 36, 43
+      ]
+    },
+    "pow::test2#0": {
+      "structure-unit-size": [
+        17.6, 26.0, 31.9, 38.9, 45.8, 51.2, 58.1, 64.7, 66.7, 80.8, 82.9
+      ],
+      "amount": [
+        159.9, 206.9, 236.8, 269.9, 300.6, 323.6, 351.7, 377.6, 384.1, 437.2, 444.7
+      ]
+    }
+  },
+  "models": [
+    {
+      "model": "regressogram",
+      "bucket_stats": [
+        27.75, 27.0, 32.0, 0.0, 35.5, 0.0, 34.0, 0.0, 51.0, 0.0, 49.0
+      ],
+      "r_square": 0.7031140196767394,
+      "uid": "pow::test1",
+      "y_start": 19,
+      "buckets_method": "doane",
+      "x_start": 4.2,
+      "statistic_function": "mean",
+      "x_end": 69.9
+    },
+    {
+      "model": "regressogram",
+      "bucket_stats": [
+        159.9, 206.9, 0.0, 236.8, 269.9, 0.0, 300.6, 323.6, 351.7, 0.0, 380.85, 0.0, 0.0, 440.95
+      ],
+      "r_square": 0.9994266342574701,
+      "uid": "pow::test2",
+      "y_start": 159.9,
+      "buckets_method": "doane",
+      "x_start": 17.6,
+      "statistic_function": "mean",
+      "x_end": 82.9
+    },
+    {
+      "model": "regressogram",
+      "bucket_stats": [
+        112.5
+      ],
+      "r_square": 0.0,
+      "uid": "pow::test3",
+      "y_start": 0,
+      "buckets_method": "doane",
+      "x_start": 0.0,
+      "statistic_function": "mean",
+      "x_end": 5.0
+    },
+    {
+      "model": "moving_average",
+      "bucket_stats": [
+        19.0, 23.0, 36.0, 33.0, 27.0, 32.0, 43.0, 28.0, 34.0, 51.0, 49.0
+      ],
+      "r_square": 1.0,
+      "uid": "pow::test1",
+      "x_start": 4.2,
+      "x_end": 69.9,
+      "moving_method": "sma",
+      "per_key": "structure-unit-size",
+      "window_width": 1
+    },
+    {
+      "model": "moving_average",
+      "bucket_stats": [
+        159.9, 206.9, 236.80000000000004, 269.90000000000003, 300.6, 323.6, 351.69999999999993, 377.59999999999997, 384.1, 437.19999999999993, 444.6999999999999
+      ],
+      "r_square": 1.0,
+      "uid": "pow::test2",
+      "x_start": 17.6,
+      "x_end": 82.9,
+      "moving_method": "sma",
+      "per_key": "structure-unit-size",
+      "window_width": 1
+    },
+    {
+      "model": "moving_average",
+      "bucket_stats": [
+        0.0, 3.0, 24.0, 81.0, 192.0, 375.0
+      ],
+      "r_square": 1.0,
+      "uid": "pow::test3",
+      "x_start": 0,
+      "x_end": 5,
+      "moving_method": "sma",
+      "per_key": "structure-unit-size",
+      "window_width": 1
+    },
+    {
+      "model": "kernel_regression",
+      "r_square": 0.5997834026574319,
+      "uid": "pow::test1",
+      "x_start": 4.2,
+      "x_end": 69.9,
+      "kernel_mode": "estimator",
+      "per_key": "structure-unit-size",
+      "bandwidth": 38036001.984519236,
+      "kernel_stats": [
+        26.175124008473617, 26.67927243804135, 27.07538906127298, 27.579537490841147, 29.740173617560647, 31.72075673371988, 35.50186995547885, 36.546177416726486, 40.72340726171728, 43.42420242011612, 49.8340895960489
+      ]
+    },
+    {
+      "model": "kernel_regression",
+      "r_square": 0.999999847606045,
+      "uid": "pow::test2",
+      "x_start": 17.6,
+      "x_end": 82.9,
+      "kernel_mode": "estimator",
+      "per_key": "structure-unit-size",
+      "bandwidth": 2.1081316666506185,
+      "kernel_stats": [
+        159.90000000022295, 206.89631055086934, 236.7839412561459, 269.89162093926495, 300.58853882925257, 323.5887330812313, 351.69391559809105, 377.48741438240006, 384.1035395592318, 437.1999999959081, 444.7000000000029
+      ]
+    },
+    {
+      "model": "kernel_regression",
+      "r_square": 0.9999999994287802,
+      "uid": "pow::test3",
+      "x_start": 0,
+      "x_end": 5,
+      "kernel_mode": "estimator",
+      "per_key": "structure-unit-size",
+      "bandwidth": 0.2302209349610233,
+      "kernel_stats": [
+        -7.367966913668367e-16, 3.001439511250745, 24.002879022501492, 81.00431853375223, 192.00575804500298, 375.00000000000006
+      ]
+    }
+  ],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
+  "header": {
+    "type": "mixed",
+    "units": {
+      "mixed(time delta)": "us"
+    },
+    "workload": "",
+    "args": "",
+    "cmd": "complexity"
+  }
+}

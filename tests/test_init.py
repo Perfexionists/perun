@@ -10,8 +10,8 @@ import distutils.spawn as spawn
 import git
 import pytest
 
-import perun.logic.store as store
 import perun.logic.commands as commands
+import perun.utils.helpers as helpers
 from perun.utils.exceptions import UnsupportedModuleException
 
 __author__ = 'Tomas Fiedor'
@@ -346,22 +346,22 @@ def test_user_config():
     # Prepare the user config with some helper data
     main_build = os.path.join(pcs_path, 'build')
     main_workload = os.path.join(pcs_path, 'workload')
-    store.touch_dir(main_build)
-    store.touch_dir(main_workload)
+    helpers.touch_dir(main_build)
+    helpers.touch_dir(main_workload)
     os.symlink(spawn.find_executable('cat'), os.path.join(main_build, 'lecat'))
-    store.touch_file(os.path.join(main_workload, 'file1'))
+    helpers.touch_file(os.path.join(main_workload, 'file1'))
 
     subproject_path = os.path.join(pcs_path, 'subproject')
     sub_build = os.path.join(subproject_path, '_build')
     sub_workload = os.path.join(subproject_path, '_workload')
     bogus_workload = os.path.join(subproject_path, "werklerd")
-    store.touch_dir(subproject_path)
-    store.touch_dir(sub_build)
-    store.touch_dir(sub_workload)
-    store.touch_dir(bogus_workload)
+    helpers.touch_dir(subproject_path)
+    helpers.touch_dir(sub_build)
+    helpers.touch_dir(sub_workload)
+    helpers.touch_dir(bogus_workload)
     os.symlink(spawn.find_executable('wc'), os.path.join(sub_build, 'lewc'))
-    store.touch_file(os.path.join(sub_workload, 'file2'))
-    store.touch_file(os.path.join(bogus_workload, 'file3'))
+    helpers.touch_file(os.path.join(sub_workload, 'file2'))
+    helpers.touch_file(os.path.join(bogus_workload, 'file3'))
 
     # Init perun together with git on different path
     commands.init(pcs_path, configuration_template='user', **{

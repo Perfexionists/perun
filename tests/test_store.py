@@ -44,7 +44,7 @@ def test_correct_index(tmpdir):
 def test_versions(tmpdir, monkeypatch):
     """Test correct working with index"""
     monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.IndexVersion.SlowLorris.value)
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profile_name = os.path.join(pool_path, 'linear_base.perf')
     profile = store.load_profile_from_file(profile_name, True)
 

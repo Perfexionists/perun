@@ -61,6 +61,7 @@ import perun.logic.pcs as pcs
 import perun.logic.store as store
 import perun.logic.index as index
 import perun.utils.exceptions as exceptions
+import perun.utils.helpers as helpers
 import perun.utils.log as perun_log
 
 # Valid protection levels of temporary files
@@ -143,7 +144,7 @@ def touch_temp_file(file_path, protect=False):
     # Make sure that the directory hierarchy for the file exists
     touch_temp_dir(os.path.dirname(file_path))
 
-    store.touch_file(file_path)
+    helpers.touch_file(file_path)
     # Register the file as protected if needed
     if protect:
         _add_to_index(file_path, protected=protect)

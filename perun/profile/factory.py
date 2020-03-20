@@ -12,6 +12,7 @@ import itertools
 import click
 
 import perun.profile.convert as convert
+import perun.logic.config as config
 
 from perun.check.general_detection import get_filtered_best_models_of
 from perun.postprocess.regression_analysis.regression_models import get_supported_models
@@ -27,8 +28,11 @@ class Profile(collections.MutableMapping):
         unique identifier of those resources
     :ivar Counter _uid_counter: counter of how many resources type uid has
     """
-    collectable = ('amount', 'structure-unit-size', 'address')
-    persistent = ('trace', 'type', 'subtype', 'uid')
+    collectable = {'amount', 'structure-unit-size', 'call-order', 'order', 'address'}
+    persistent = {'trace', 'type', 'subtype', 'uid'}
+
+    independent = ['structure-unit-size', 'snapshot', 'order', 'call-order', 'address']
+    dependent = ['amount']
 
     def __init__(self, *args, **kwargs):
         """Initializes the internal storage
@@ -52,6 +56,7 @@ class Profile(collections.MutableMapping):
                 self.update_resources(value, key)
             else:
                 self._storage[key] = value
+        config.runtime().append('context.profiles', self)
 
     def update_resources(self, resource_list, resource_type='list', clear_existing_resources=False):
         """Given by @p resource_type updates the storage with new flattened resources
@@ -96,16 +101,27 @@ class Profile(collections.MutableMapping):
         :param additional_params:
         :return:
         """
-        # Fixme: what if there is already something? Test update
+        ctx = config.runtime().safe_get('context.workload', {})
+        ctx_persistent_properties = [
+            (key, value) for (key, value) in ctx.items() if isinstance(value, str)
+        ]
+        ctx_collectable_properties = [
+            (key, value) for (key, value) in ctx.items() if not isinstance(value, str)
+        ]
+
+        # Update collectable and persistent keys (needed for merge)
+        Profile.persistent.update({key for key, val in ctx.items() if isinstance(val, str)})
+        Profile.collectable.update({key for key, val in ctx.items() if not isinstance(val, str)})
+
         for resource in resource_list:
             persistent_properties = [
                 (key, value) for (key, value) in resource.items() if key not in Profile.collectable
-            ]
+            ] + ctx_persistent_properties
             persistent_properties.extend(list(additional_params.items()))
             persistent_properties.sort(key=operator.itemgetter(0))
             collectable_properties = [
                 (key, value) for (key, value) in resource.items() if key in Profile.collectable
-            ]
+            ] + ctx_collectable_properties
             resource_type = self.register_resource_type(
                 resource['uid'], tuple(persistent_properties)
             )

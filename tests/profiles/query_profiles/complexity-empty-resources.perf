@@ -1,0 +1,52 @@
+{
+  "resource_type_map": {},
+  "collector_info": {
+    "name": "trace",
+    "params": {
+      "internal_data_filename": "trace.log",
+      "internal_storage_size": 20000,
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ],
+      "internal_direct_output": false,
+      "target_dir": "/home/jirka/Git/complexity-repo/target"
+    }
+  },
+  "postprocessors": [],
+  "resources": {},
+  "models": [],
+  "origin": "a64466d9d49e5bfe15378ebd6c9086c16a968f52",
+  "header": {
+    "type": "mixed",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "workload": "",
+    "args": "",
+    "cmd": "complexity"
+  }
+}

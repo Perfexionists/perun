@@ -376,7 +376,8 @@ ways using ``--mutations-per-rule`` option:
                 0.1  &  \text{if } stats_f / total < 0.1\\
                 stats_f / total & \text{otherwise}
             \end{cases}
-   | and we choose :math:`N` as:
+
+   and we choose :math:`N` as:
 
      .. math::
 
@@ -420,7 +421,7 @@ The threshold for discarding mutations is multiple of base coverage, set to 1.5
 threshold can be changed by specifying the ``--coverage-increase-rate``. A mutation is classified as
 an interesting workload in case two criteria are met:
 
-:math:`cov_{mut} > cov_{threshold} \And cov_{mut} > cov_{parent} `
+:math:`cov_{mut} > cov_{threshold} \And cov_{mut} > cov_{parent}`
 
 i.e. it has to exceed the given threshold and achieve a higher number of executed lines than its
 predecessor.
@@ -654,15 +655,13 @@ fuzzing, we initially generated a seed with 10000 words of 20 characters and st
 compare the results we chose the DJB hash_ function, as one of the most efficient hash functions.
 
 +--------------------------------+-----------------+--------------------+-----------------+--------------------+--------+
-|                                |                 |                    |                 |                    |        |
-+--------------------------------+-----------------+--------------------+-----------------+--------------------+--------+
 |                                | **size [kB]**   | **runtime [ms]**   | **LOC ratio**   | **runtime [ms]**   |        |
 +--------------------------------+-----------------+--------------------+-----------------+--------------------+--------+
 | :math:`seed`                   | 210             | 26                 | 1.0             | 13                 | 1.0    |
 +--------------------------------+-----------------+--------------------+-----------------+--------------------+--------+
-| :math:`worst`-:math:`case_1`   | 458             | ****               | 3.48            | ****               | 2.19   |
+| :math:`worst`-:math:`case_1`   | 458             | 115                | 3.48            | 27                 | 2.19   |
 +--------------------------------+-----------------+--------------------+-----------------+--------------------+--------+
-| :math:`worst`-:math:`case_2`   | 979             | ****               | 7.88            | ****               | 4.12   |
+| :math:`worst`-:math:`case_2`   | 979             | 187                | 7.88            | 43                 | 4.12   |
 +--------------------------------+-----------------+--------------------+-----------------+--------------------+--------+
 
 After only 10 minutes of fuzzing each test case was able to find interesting mutations. We then

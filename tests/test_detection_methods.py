@@ -10,14 +10,14 @@ import os
 import perun.logic.store as store
 from perun.utils.log import aggregate_intervals
 from perun.utils.structs import PerformanceChange
-from tests.degradation_profiles.degradation_results import (
+from tests.profiles.degradation_profiles.degradation_results import (
     PARAM_EXPECTED_RESULTS,
     NONPARAM_EXPECTED_RESULTS
 )
 
 
 def load_profiles(param):
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     if param:
         profiles = [
             [
