@@ -90,6 +90,6 @@ def safely_load_file(filename):
         try:
             return file_handle.readlines()
         except UnicodeDecodeError as e:
-            log.warn("Could not decode '{}'".format(filename))
+            log.warn("Could not decode '{}': {}".format(filename, str(e)))
             return []
 
