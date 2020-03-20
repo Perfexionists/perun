@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.18.3 (2020-03-20)
+-------------------
+
+`commit: 7b19f07eb2612899be96dfaa24b5912705c6ae42`
+
+**Extend the Perun and fix selected issues**
+
   - add helper assertions for tests available in `asserts.py` file
   - remove useless fixtures (Helpers), move the helpers functions to isolate package
   - categorize test data to several directories
