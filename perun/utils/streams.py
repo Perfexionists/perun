@@ -78,3 +78,18 @@ def yaml_to_string(dictionary):
     yaml_dumper.dump(dictionary, string_stream)
     string_stream.seek(0)
     return "".join([" "*4 + s for s in string_stream.readlines()])
+
+
+def safely_load_file(filename):
+    """Safely reads filename. In case of Unicode errors, returns empty list.
+
+    :param str filename: read filename
+    :return: list of read lines
+    """
+    with open(filename, 'r') as file_handle:
+        try:
+            return file_handle.readlines()
+        except UnicodeDecodeError as e:
+            log.warn("Could not decode '{}'".format(filename))
+            return []
+
