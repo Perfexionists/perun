@@ -1,0 +1,96 @@
+{
+  "resource_type_map": {
+    "pow::test3#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "pow::test3",
+      "subtype": "time delta"
+    },
+    "pow::test1#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "pow::test1",
+      "subtype": "time delta"
+    },
+    "pow::test2#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "pow::test2",
+      "subtype": "time delta"
+    }
+  },
+  "collector_info": {
+    "name": "trace",
+    "params": {
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
+      "internal_data_filename": "trace.log",
+      "internal_storage_size": 20000,
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
+      "internal_direct_output": false,
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ]
+    }
+  },
+  "postprocessors": [],
+  "resources": {
+    "pow::test3#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5
+      ],
+      "amount": [
+        0, 3, 24, 81, 192, 375
+      ]
+    },
+    "pow::test1#0": {
+      "structure-unit-size": [
+        8.1, 69.9, 4.2, 14.1, 5.6, 52.1, 44.6, 19.6, 33, 6.7, 30.1
+      ],
+      "amount": [
+        33, 49, 19, 27, 23, 51, 34, 32, 28, 36, 43
+      ]
+    },
+    "pow::test2#0": {
+      "structure-unit-size": [
+        17.6, 26.0, 31.9, 38.9, 45.8, 51.2, 58.1, 64.7, 66.7, 80.8, 82.9
+      ],
+      "amount": [
+        159.9, 206.9, 236.8, 269.9, 300.6, 323.6, 351.7, 377.6, 384.1, 437.2, 444.7
+      ]
+    }
+  },
+  "models": [],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
+  "header": {
+    "type": "mixed",
+    "workload": "",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "args": "",
+    "cmd": "complexity"
+  }
+}

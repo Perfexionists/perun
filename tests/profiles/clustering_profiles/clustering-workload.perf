@@ -1,0 +1,106 @@
+{
+  "resource_type_map": {
+    "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c:main:18#0": {
+      "time": "1.000000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c",
+          "line": 18,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c",
+        "line": 18,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 0
+    },
+    "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c:main:20#0": {
+      "time": "1.000000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c",
+          "line": 20,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c",
+        "line": 20,
+        "function": "main"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 0
+    }
+  },
+  "collector_info": {
+    "name": "memory",
+    "params": {
+      "sampling": 1
+    }
+  },
+  "postprocessors": [],
+  "resources": {
+    "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c:main:18#0": {
+      "amount": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ],
+      "address": [
+        34972240, 34972240, 34972240, 34972240, 34972240, 34972240, 34972240, 34972272, 34972272, 34972272
+      ]
+    },
+    "/mnt/f/phdwork/perun/git/memory-playground/memory_collect_test.c:main:20#0": {
+      "amount": [
+        0, 4, 8, 12, 16, 20, 24, 28, 32, 36
+      ],
+      "address": [
+        34972240, 34972240, 34972240, 34972240, 34972240, 34972240, 34972240, 34972272, 34972272, 34972272
+      ]
+    }
+  },
+  "models": [],
+  "origin": "74288675e4074f1ad5bbb0d3b3253911ab42267a",
+  "header": {
+    "type": "memory",
+    "workload": "",
+    "units": {
+      "memory": "B"
+    },
+    "args": "",
+    "cmd": "./mct"
+  }
+}

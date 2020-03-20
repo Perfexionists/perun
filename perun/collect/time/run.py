@@ -65,7 +65,6 @@ def collect(executable, repeat=10, warmup=3, **kwargs):
                     "order": order,
                     "subtype": key,
                     "type": "time",
-                    "workload": kwargs['workload']
                 } for (order, key, timing) in times
             ]
         }

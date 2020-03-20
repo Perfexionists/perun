@@ -131,13 +131,13 @@ def init_perun_at(perun_path, is_reinit, vcs_config, config_template='master'):
     """
     # Initialize the basic structure of the .perun directory
     perun_full_path = os.path.join(perun_path, '.perun')
-    store.touch_dir(perun_full_path)
-    store.touch_dir(os.path.join(perun_full_path, 'objects'))
-    store.touch_dir(os.path.join(perun_full_path, 'jobs'))
-    store.touch_dir(os.path.join(perun_full_path, 'logs'))
-    store.touch_dir(os.path.join(perun_full_path, 'cache'))
-    store.touch_dir(os.path.join(perun_full_path, 'stats'))
-    store.touch_dir(os.path.join(perun_full_path, 'tmp'))
+    helpers.touch_dir(perun_full_path)
+    helpers.touch_dir(os.path.join(perun_full_path, 'objects'))
+    helpers.touch_dir(os.path.join(perun_full_path, 'jobs'))
+    helpers.touch_dir(os.path.join(perun_full_path, 'logs'))
+    helpers.touch_dir(os.path.join(perun_full_path, 'cache'))
+    helpers.touch_dir(os.path.join(perun_full_path, 'stats'))
+    helpers.touch_dir(os.path.join(perun_full_path, 'tmp'))
     # If the config does not exist, we initialize the new version
     if not os.path.exists(os.path.join(perun_full_path, 'local.yml')):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
@@ -178,7 +178,7 @@ def init(dst, configuration_template='master', **kwargs):
 
     # Check if there exists perun directory above and initialize the new pcs
     try:
-        super_perun_dir = store.locate_perun_dir_on(dst)
+        super_perun_dir = helpers.locate_perun_dir_on(dst)
         is_pcs_reinitialized = (super_perun_dir == dst)
         if not is_pcs_reinitialized:
             perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))

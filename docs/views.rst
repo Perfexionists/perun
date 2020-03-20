@@ -248,7 +248,7 @@ From the measured data the insert is estimated to be constant and search to be l
     :linenos:
 
 The second table shows list of function with quadratic complexities inferred by
-:ref:`collector-bounds` for `dwtint.c` module of the CCSDS codec (will be publically available in
+:ref:`collectors-bounds` for `dwtint.c` module of the CCSDS codec (will be publically available in
 near future). The rest of the function either could not be inferred (e.g. due to unsupported
 construction, or requiring more elaborate static resource bounds analysis---e.g. due to the missing
 heap analysis) or were linear or constant.

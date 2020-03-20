@@ -1,0 +1,391 @@
+{
+  "resource_type_map": {
+    "SLListcls::SLListcls()#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::SLListcls()",
+      "subtype": "time delta"
+    },
+    "SLList_insert(SLList*, int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_insert(SLList*, int)",
+      "subtype": "time delta"
+    },
+    "SLList_search(SLList*, int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_search(SLList*, int)",
+      "subtype": "time delta"
+    },
+    "SLListcls::Search(int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::Search(int)",
+      "subtype": "time delta"
+    },
+    "SLListcls::~SLListcls()#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::~SLListcls()",
+      "subtype": "time delta"
+    },
+    "SLListcls::Insert(int)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLListcls::Insert(int)",
+      "subtype": "time delta"
+    },
+    "SLList_destroy(SLList*)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_destroy(SLList*)",
+      "subtype": "time delta"
+    },
+    "SLList_init(SLList*)#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "SLList_init(SLList*)",
+      "subtype": "time delta"
+    }
+  },
+  "collector_info": {
+    "name": "trace",
+    "params": {
+      "internal_data_filename": "trace.log",
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
+      "internal_storage_size": 20000,
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ],
+      "internal_direct_output": false,
+      "target_dir": "/home/jirka/Git/complexity-repo/target"
+    }
+  },
+  "postprocessors": [],
+  "resources": {
+    "SLListcls::SLListcls()#0": {
+      "structure-unit-size": [
+        0
+      ],
+      "amount": [
+        12
+      ]
+    },
+    "SLList_insert(SLList*, int)#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ],
+      "amount": [
+        3, 2, 1, 1, 1, 2, 1, 1, 2, 1
+      ]
+    },
+    "SLList_search(SLList*, int)#0": {
+      "structure-unit-size": [
+        10
+      ],
+      "amount": [
+        1
+      ]
+    },
+    "SLListcls::Search(int)#0": {
+      "structure-unit-size": [
+        10
+      ],
+      "amount": [
+        2
+      ]
+    },
+    "SLListcls::~SLListcls()#0": {
+      "structure-unit-size": [
+        0
+      ],
+      "amount": [
+        2
+      ]
+    },
+    "SLListcls::Insert(int)#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ],
+      "amount": [
+        2, 2, 2, 2, 2, 1, 2, 2, 2, 2
+      ]
+    },
+    "SLList_destroy(SLList*)#0": {
+      "structure-unit-size": [
+        10
+      ],
+      "amount": [
+        48
+      ]
+    },
+    "SLList_init(SLList*)#0": {
+      "structure-unit-size": [
+        0
+      ],
+      "amount": [
+        15
+      ]
+    }
+  },
+  "models": [
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.0,
+      "uid": "SLList_insert(SLList*, int)",
+      "x_start": 0,
+      "model": "constant",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.5
+        },
+        {
+          "name": "b1",
+          "value": 0.0
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.15636319364167137,
+      "uid": "SLList_insert(SLList*, int)",
+      "x_start": 0,
+      "model": "exponential",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.7657239018047561
+        },
+        {
+          "name": "b1",
+          "value": 0.9458006943320207
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.1946127946127945,
+      "uid": "SLList_insert(SLList*, int)",
+      "x_start": 0,
+      "model": "linear",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.9636363636363634
+        },
+        {
+          "name": "b1",
+          "value": -0.10303030303030296
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.04041633173535414,
+      "uid": "SLList_insert(SLList*, int)",
+      "x_start": 0,
+      "model": "logarithmic",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.5321216194684828
+        },
+        {
+          "name": "b1",
+          "value": -0.13975306088134845
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.04041633173535402,
+      "uid": "SLList_insert(SLList*, int)",
+      "x_start": 0,
+      "model": "power",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.446054192053253
+        },
+        {
+          "name": "b1",
+          "value": -0.09686944012452892
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.4370370370370382,
+      "uid": "SLList_insert(SLList*, int)",
+      "x_start": 0,
+      "model": "quadratic",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 2.5090909090909093
+        },
+        {
+          "name": "b1",
+          "value": -0.5121212121212121
+        },
+        {
+          "name": "b2",
+          "value": 0.045454545454545456
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.0,
+      "uid": "SLListcls::Insert(int)",
+      "x_start": 0,
+      "model": "constant",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.9
+        },
+        {
+          "name": "b1",
+          "value": 0.0
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.0033670033670031977,
+      "uid": "SLListcls::Insert(int)",
+      "x_start": 0,
+      "model": "exponential",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.901677661894164
+        },
+        {
+          "name": "b1",
+          "value": 0.9958079194005149
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.003367003367003152,
+      "uid": "SLListcls::Insert(int)",
+      "x_start": 0,
+      "model": "linear",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.9272727272727266
+        },
+        {
+          "name": "b1",
+          "value": -0.0060606060606058845
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.009506708948773146,
+      "uid": "SLListcls::Insert(int)",
+      "x_start": 0,
+      "model": "logarithmic",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.9531630153034125
+        },
+        {
+          "name": "b1",
+          "value": -0.04518629380303375
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.009506708948772863,
+      "uid": "SLListcls::Insert(int)",
+      "x_start": 0,
+      "model": "power",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 1.9361128097806388
+        },
+        {
+          "name": "b1",
+          "value": -0.03132075214952577
+        }
+      ]
+    },
+    {
+      "method": "full",
+      "x_end": 9,
+      "r_square": 0.13804713804714297,
+      "uid": "SLListcls::Insert(int)",
+      "x_start": 0,
+      "model": "quadratic",
+      "coeffs": [
+        {
+          "name": "b0",
+          "value": 2.1090909090909093
+        },
+        {
+          "name": "b1",
+          "value": -0.14242424242424243
+        },
+        {
+          "name": "b2",
+          "value": 0.015151515151515152
+        }
+      ]
+    }
+  ],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
+  "header": {
+    "type": "mixed",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "workload": "",
+    "args": "",
+    "cmd": "complexity"
+  }
+}

@@ -11,6 +11,8 @@ import perun.logic.store as store
 import perun.view.flow.bokeh_factory as bokeh_graphs
 import perun.view.flow.ncurses_factory as curses_graphs
 
+import tests.helpers.asserts as asserts
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -35,18 +37,18 @@ def test_flow_cli(pcs_full, valid_profile_pool):
         result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                           '--stacked', '--filename=flow.html'])
 
-        assert result.exit_code == 0
+        asserts.predicate_from_cli(result, result.exit_code == 0)
         assert 'flow.html' in os.listdir(os.getcwd())
 
         # Run without accumulation
         result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                           '--stacked', '--no-accumulate', '--filename=flow2.html',
                                           '--graph-title=Test'])
-        assert result.exit_code == 0
+        asserts.predicate_from_cli(result, result.exit_code == 0)
         assert 'flow2.html' in os.listdir(os.getcwd())
 
 
-def test_flow_cli_errors(helpers, pcs_full, valid_profile_pool):
+def test_flow_cli_errors(pcs_full, valid_profile_pool):
     """Test running and creating bokeh flow from the cli with error simulations
 
     Expecting errors, but nothing destructive
@@ -59,28 +61,28 @@ def test_flow_cli_errors(helpers, pcs_full, valid_profile_pool):
 
         result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=undefined', '--by=uid',
                                           '--stacked'])
-        helpers.assert_invalid_cli_choice(result, "undefined", 'flow.html')
+        asserts.invalid_cli_choice(result, "undefined", 'flow.html')
 
         # Try some bogus function
         result = runner.invoke(cli.show, [valid_profile, 'flow', 'oracle', '--of=amount',
                                           '--by=uid', '--stacked'])
-        helpers.assert_invalid_cli_choice(result, 'oracle', 'flow.html')
+        asserts.invalid_cli_choice(result, 'oracle', 'flow.html')
 
         # Try some through key, that is not continuous
         result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                           '--through=subtype'])
-        helpers.assert_invalid_cli_choice(result, 'subtype', 'flow.html')
+        asserts.invalid_cli_choice(result, 'subtype', 'flow.html')
 
         # Try some of key, that is not summable
         result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=subtype', '--by=uid',
                                           '--through=snapshots'])
-        helpers.assert_invalid_param_choice(result, 'subtype', 'flow.html')
+        asserts.invalid_param_choice(result, 'subtype', 'flow.html')
 
         # Try some of key, that is not summable, but is countable
         for valid_func in ('count', 'nunique'):
             result = runner.invoke(cli.show, [valid_profile, 'flow', valid_func, '--of=subtype',
                                               '--by=uid', '--through=snapshots'])
-            assert result.exit_code == 0
+            asserts.predicate_from_cli(result, result.exit_code == 0)
             assert 'flow.html' in os.listdir(os.getcwd())
 
 

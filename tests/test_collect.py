@@ -22,6 +22,9 @@ from perun.utils.helpers import Job
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
 from perun.workload.integer_generator import IntegerGenerator
 
+import tests.helpers.asserts as asserts
+import tests.helpers.utils as test_utils
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -63,9 +66,9 @@ def _mocked_symbols_extraction(_):
             'ENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEEEC1Ev']
 
 
-def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_job):
+def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
     head = vcs.get_minor_version_info(vcs.get_minor_head())
@@ -73,9 +76,9 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     assert result == CollectStatus.OK
 
     # Assert that nothing was removed
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 2 == after_object_count
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
 
     new_profile = profiles[0]
     assert len(profiles) == 1
@@ -83,7 +86,7 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
 
     # Fixme: Add check that the profile was correctly generated
 
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    script_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_complexity', 'target')
     job_params = complexity_collect_job[5]['collector_params']['complexity']
 
     files = [
@@ -101,7 +104,7 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
                                          '-a test', '-w input', 'complexity',
                                          '-t{}'.format(job_params['target_dir']),
                                          ] + files + rules + samplings)
-    assert result.exit_code == 0
+    asserts.predicate_from_cli(result, result.exit_code == 0)
 
     # Test running the job from the params using the job file
     # TODO: troubles with paths in job.yml, needs some proper solving
@@ -120,8 +123,8 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
     result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']), 'complexity',
                                          '-t{}'.format(job_params['target_dir']),
                                          ] + files + rules + samplings)
-    assert result.exit_code == 0
-    assert 'stored profile' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, 'stored profile' in result.output)
 
     original_run = utils.run_safely_external_command
     def patched_run(cmd, *args, **kwargs):
@@ -137,14 +140,14 @@ def test_collect_complexity(monkeypatch, helpers, pcs_full, complexity_collect_j
                                          '-a test', '-w input', 'complexity',
                                          '-t{}'.format(job_params['target_dir']),
                                          ] + files + rules + samplings)
-    assert result.exit_code == 1
+    asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
 def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
     """Test various scenarios where something goes wrong during the collection process.
     """
     # Get the job.yml parameters
-    script_dir = os.path.join(os.path.split(__file__)[0], 'collect_complexity', 'target')
+    script_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_complexity', 'target')
     job_params = complexity_collect_job[5]['collector_params']['complexity']
 
     files = [
@@ -163,18 +166,18 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
 
     # Try missing parameters --target-dir and --files
     result = runner.invoke(cli.collect, ['complexity'])
-    assert result.exit_code == 1
-    assert '--target-dir parameter must be supplied' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, '--target-dir parameter must be supplied' in result.output)
 
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(job_params['target_dir'])])
-    assert result.exit_code == 1
-    assert '--files parameter must be supplied' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, '--files parameter must be supplied' in result.output)
 
     # Try supplying invalid directory path, which is a file instead
     invalid_target = os.path.join(os.path.dirname(script_dir), 'job.yml')
     result = runner.invoke(cli.collect, ['complexity', '-t{}'.format(invalid_target)])
-    assert result.exit_code == 1
-    assert 'already exists' in result.output
+    asserts.predicate_from_cli(result, result.exit_code == 1)
+    asserts.predicate_from_cli(result, 'already exists' in result.output)
 
     # Simulate the failure of 'cmake' utility
     old_run = utils.run_external_command
@@ -182,50 +185,50 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     command = ['-c{}'.format(job_params['target_dir']), 'complexity',
                '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
     result = runner.invoke(cli.collect, command)
-    assert 'CalledProcessError(1, \'cmake\')' in result.output
+    asserts.predicate_from_cli(result, 'CalledProcessError(1, \'cmake\')' in result.output)
     monkeypatch.setattr(utils, 'run_external_command', old_run)
 
     # Simulate that the flag is supported, which leads to failure in build process for older g++
     old_flag = makefiles._is_flag_support
     monkeypatch.setattr(makefiles, '_is_flag_support', _mocked_flag_support)
     result = runner.invoke(cli.collect, command)
-    assert 'stored profile' in result.output or 'CalledProcessError(2, \'make\')' in result.output
+    asserts.predicate_from_cli(result, 'stored profile' in result.output or 'CalledProcessError(2, \'make\')' in result.output)
     monkeypatch.setattr(makefiles, '_is_flag_support', old_flag)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
     monkeypatch.setattr(makefiles, '_libraries_exist', _mocked_libs_existence_fails)
     result = runner.invoke(cli.collect, command)
-    assert 'libraries are missing' in result.output
+    asserts.predicate_from_cli(result, 'libraries are missing' in result.output)
 
     # Simulate that the libraries directory path cannot be found
     monkeypatch.setattr(makefiles, '_libraries_exist', _mocked_libs_existence_exception)
     result = runner.invoke(cli.collect, command)
-    assert 'Unable to locate' in result.output
+    asserts.predicate_from_cli(result, 'Unable to locate' in result.output)
     monkeypatch.setattr(makefiles, '_libraries_exist', old_libs_existence)
 
     # Simulate the failure of output processing
     old_record_processing = complexity._process_file_record
     monkeypatch.setattr(complexity, '_process_file_record', _mocked_record_processing)
     result = runner.invoke(cli.collect, command)
-    assert 'Call stack error' in result.output
+    asserts.predicate_from_cli(result, 'Call stack error' in result.output)
     monkeypatch.setattr(complexity, '_process_file_record', old_record_processing)
 
 
-def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_collect_no_debug_job):
+def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_debug_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     memory_collect_job += ([head], )
 
     run.run_single_job(*memory_collect_job)
 
     # Assert that nothing was removed
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 2 == after_object_count
 
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
@@ -233,13 +236,13 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     cmd, args, _, colls, posts, _ = memory_collect_job
     run.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
 
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
     assert len(profiles) == 2
     assert new_smaller_profile.endswith(".perf")
 
     # Assert that nothing was removed
-    after_second_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_second_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert after_object_count + 1 == after_second_object_count
 
     # Fixme: Add check that the profile was correctly generated
@@ -247,7 +250,7 @@ def test_collect_memory(capsys, helpers, pcs_full, memory_collect_job, memory_co
     log.VERBOSITY = log.VERBOSE_DEBUG
     memory_collect_no_debug_job += ([head], )
     run.run_single_job(*memory_collect_no_debug_job)
-    last_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    last_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     _, err = capsys.readouterr()
     assert after_second_object_count == last_object_count
     assert 'debug info' in err
@@ -291,7 +294,7 @@ def test_collect_memory_with_generator(pcs_full, memory_collect_job):
 def test_collect_bounds(monkeypatch, pcs_full):
     """Test collecting the profile using the bounds collector"""
     current_dir = os.path.split(__file__)[0]
-    test_dir = os.path.join(current_dir, 'collect_bounds')
+    test_dir = os.path.join(current_dir, 'sources', 'collect_bounds')
     sources = [
         os.path.join(test_dir, src) for src in os.listdir(test_dir) if src.endswith('.c')
     ]
@@ -327,10 +330,10 @@ def test_collect_bounds(monkeypatch, pcs_full):
     assert status == CollectStatus.ERROR
 
 
-def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
+def test_collect_time(monkeypatch, pcs_full, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job
-    before_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     head = vcs.get_minor_version_info(vcs.get_minor_head())
 
     run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
@@ -342,10 +345,10 @@ def test_collect_time(monkeypatch, helpers, pcs_full, capsys):
 
     # Assert that just one profile was created
     # + 1 for index
-    after_object_count = helpers.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert before_object_count + 2 == after_object_count
 
-    profiles = list(filter(helpers.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")

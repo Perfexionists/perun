@@ -27,6 +27,7 @@ import perun.logic.index as index
 import perun.vcs as vcs
 import perun.profile.query as query
 import perun.utils.log as perun_log
+import perun.utils.helpers as helpers
 
 from perun.utils import get_module
 from perun.profile.factory import Profile
@@ -361,7 +362,7 @@ def extract_job_from_profile(profile):
         posts.append(Unit(postprocessor['name'], postprocessor['params']))
 
     cmd = profile['header']['cmd']
-    args = profile['header']['args']
+    args = helpers.get_key_with_aliases(profile['header'], ('args', 'params'))
     workload = profile['header']['workload']
     executable = Executable(cmd, args, workload)
 
@@ -446,6 +447,49 @@ def merge_resources_of(lhs, rhs):
     return lhs
 
 
+def _get_default_variable(profile, supported_variables):
+    """Helper function that determines default variable for profile based on list of supported
+    variables.
+
+    Note that this returns the first suitable candidate, so it is expected that supported_variables
+    are sorted by their priority.
+
+    :param Profile profile: input profile
+    :param tuple supported_variables: list of supported fields
+    :return: default key picked from the list of supported fields (either for dependent or
+        independent variables)
+    """
+    resource_fields = list(query.all_resource_fields_of(profile))
+    candidates = [var for var in supported_variables if var in set(resource_fields)]
+    if candidates:
+        # Return first suitable candidate, according to the given order
+        return candidates[0]
+    else:
+        perun_log.error(
+            "Profile does not contain (in)dependent variable. Has to be one of: {}".format(
+                "(" + ", ".join(supported_variables) + ")"
+            )
+        )
+
+
+def get_default_independent_variable(profile):
+    """Returns default independent variable for the given profile
+
+    :param Profile profile: input profile
+    :return: default independent variable
+    """
+    return _get_default_variable(profile, Profile.independent)
+
+
+def get_default_dependent_variable(profile):
+    """Returns default dependent variable for the given profile
+
+    :param Profile profile: input profile
+    :return: default dependent variable
+    """
+    return _get_default_variable(profile, Profile.dependent)
+
+
 class ProfileInfo:
     """Structure for storing information about profiles.
 
@@ -468,7 +512,7 @@ class ProfileInfo:
         self.time = mtime
         self.type = profile_info['header']['type']
         self.cmd = profile_info['header']['cmd']
-        self.args = profile_info['header']['args']
+        self.args = helpers.get_key_with_aliases(profile_info['header'], ('args', 'params'))
         self.workload = profile_info['header']['workload']
         self.collector = profile_info['collector_info']['name']
         self.postprocessors = [

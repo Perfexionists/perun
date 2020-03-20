@@ -1,0 +1,28 @@
+{
+  "header": {
+    "cmd": "./test",
+    "workload": "test",
+    "units": {
+      "memory": "B"
+    },
+    "args": "",
+    "type": "memory"
+  },
+  "collector_info": {
+    "name": "memory",
+    "params": {}
+  },
+  "global": {
+    "resources": []
+  },
+  "postprocessors": [],
+  "snapshots": [
+    {
+      "time": "0.001000"
+    },
+    {
+      "time": "0.002000"
+    }
+  ],
+  "origin": "1ba8c02d211d40692768b5d61c200c15d91fb2b2"
+}

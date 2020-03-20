@@ -8,9 +8,8 @@ import importlib
 import shlex
 import subprocess
 import os
-import shutil
-import magic
 from contextlib import contextmanager
+import magic
 
 from .log import error, cprint, warn
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
@@ -84,10 +83,10 @@ def is_executable_elf(file, only_not_stripped=False):
     :return: bool value representing check result
     """
     # Determine file magic code, we are looking out for ELF files
-    file_magic = magic.from_file(file)
-    if file_magic.startswith('ELF') and ('executable' in file_magic or 'shared object' in file_magic):
+    f_magic = magic.from_file(file)
+    if f_magic.startswith('ELF') and ('executable' in f_magic or 'shared object' in f_magic):
         if only_not_stripped:
-            return 'not stripped' in file_magic
+            return 'not stripped' in f_magic
         return True
     return False
 
@@ -241,7 +240,7 @@ def get_stdout_from_external_command(command, stdin=None):
     :return: string representation of output of command
     """
     output = subprocess.check_output(
-        [c for c in command if c is not ''], stderr=subprocess.STDOUT, stdin=stdin
+        [c for c in command if c != ''], stderr=subprocess.STDOUT, stdin=stdin
     )
     return output.decode('utf-8')
 

@@ -1,0 +1,1616 @@
+{
+  "resource_type_map": {
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#0": {
+      "time": "0.027000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 26
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#0": {
+      "time": "0.017000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "calloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 16
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:45#0": {
+      "time": "0.008000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 45,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 45,
+        "function": "main"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 7
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:59#1": {
+      "time": "0.012000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "memalign"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 59,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 59,
+        "function": "main"
+      },
+      "subtype": "memalign",
+      "type": "memory",
+      "snapshot": 11
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:53#0": {
+      "time": "0.010000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 53,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 53,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 9
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:49#1": {
+      "time": "0.009000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "realloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 49,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 49,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 8
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:49#0": {
+      "time": "0.009000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "realloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 49,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 49,
+        "function": "main"
+      },
+      "subtype": "realloc",
+      "type": "memory",
+      "snapshot": 8
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#1": {
+      "time": "0.019000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 18
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#4": {
+      "time": "0.025000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 24
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#3": {
+      "time": "0.022000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 21
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#1": {
+      "time": "0.019000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "calloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 18
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#2": {
+      "time": "0.031000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 30
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#2": {
+      "time": "0.022000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "calloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 21
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#0": {
+      "time": "0.016000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 15
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:63#1": {
+      "time": "0.013000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "posix_memalign"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 63,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 63,
+        "function": "main"
+      },
+      "subtype": "posix_memalign",
+      "type": "memory",
+      "snapshot": 12
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#3": {
+      "time": "0.023000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 22
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#4": {
+      "time": "0.026000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "calloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 25
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#0": {
+      "time": "0.015000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 14
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#3": {
+      "time": "0.024000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "calloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 31,
+          "function": "foo2"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 38,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 31,
+        "function": "foo2"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 23
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#1": {
+      "time": "0.028000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 27
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#2": {
+      "time": "0.020000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 19
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#2": {
+      "time": "0.030000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 29
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#0": {
+      "time": "0.028000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 27
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:67#0": {
+      "time": "0.014000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "valloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 67,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 67,
+        "function": "main"
+      },
+      "subtype": "valloc",
+      "type": "memory",
+      "snapshot": 13
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:63#0": {
+      "time": "0.013000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 63,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 63,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 12
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#3": {
+      "time": "0.032000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 23,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 23,
+        "function": "factorial"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 31
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#2": {
+      "time": "0.021000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 20
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:71#0": {
+      "time": "0.015000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 71,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 14
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#3": {
+      "time": "0.033000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 32
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:55#0": {
+      "time": "0.011000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "calloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 55,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 55,
+        "function": "main"
+      },
+      "subtype": "calloc",
+      "type": "memory",
+      "snapshot": 10
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:59#0": {
+      "time": "0.011000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 59,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 59,
+        "function": "main"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 10
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#1": {
+      "time": "0.029000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 25,
+          "function": "factorial"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 77,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 25,
+        "function": "factorial"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 28
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#4": {
+      "time": "0.025000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "free"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 37,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 37,
+        "function": "foo1"
+      },
+      "subtype": "free",
+      "type": "memory",
+      "snapshot": 24
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#1": {
+      "time": "0.018000",
+      "trace": [
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "malloc"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 36,
+          "function": "foo1"
+        },
+        {
+          "source": "/home/jirka/Git/memory-repo/test.c",
+          "line": 71,
+          "function": "main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "__libc_start_main"
+        },
+        {
+          "source": "unreachable",
+          "line": 0,
+          "function": "_start"
+        }
+      ],
+      "uid": {
+        "source": "/home/jirka/Git/memory-repo/test.c",
+        "line": 36,
+        "function": "foo1"
+      },
+      "subtype": "malloc",
+      "type": "memory",
+      "snapshot": 17
+    }
+  },
+  "collector_info": {
+    "name": "memory",
+    "params": {}
+  },
+  "postprocessors": [],
+  "resources": {
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#0": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#0": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31260672
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:45#0": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:59#1": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:53#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:49#1": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:49#0": {
+      "amount": [
+        20
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#1": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257200
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#4": {
+      "amount": [
+        16
+      ],
+      "address": [
+        31257296
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#3": {
+      "amount": [
+        12
+      ],
+      "address": [
+        31257264
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#1": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257200
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#2": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#2": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257232
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31260672
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:63#1": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#3": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257264
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#4": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257296
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31260672
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo2:31#3": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257264
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#1": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#2": {
+      "amount": [
+        8
+      ],
+      "address": [
+        31257232
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#2": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:67#0": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31260672
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:63#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:23#3": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#2": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257232
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:71#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31260672
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#3": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:55#0": {
+      "amount": [
+        20
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:main:59#0": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257168
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:factorial:25#1": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257328
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:37#4": {
+      "amount": [
+        0
+      ],
+      "address": [
+        31257296
+      ]
+    },
+    "/home/jirka/Git/memory-repo/test.c:foo1:36#1": {
+      "amount": [
+        4
+      ],
+      "address": [
+        31257200
+      ]
+    }
+  },
+  "models": [],
+  "origin": "1ba8c02d211d40692768b5d61c200c15d91fb2b2",
+  "header": {
+    "type": "memory",
+    "units": {
+      "memory": "B"
+    },
+    "workload": "test",
+    "args": "",
+    "cmd": "./test"
+  }
+}

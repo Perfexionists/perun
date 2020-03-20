@@ -1,0 +1,5 @@
+Total size of all the displayed files / directories: [32m 435.9 KiB[0m
+[32m 185.8 KiB[0m[31m | [0m[31mprotected[0m  [31m | [0m[32mdegradations/results/[0mdata.out
+[32m 198.9 KiB[0m[31m | [0munprotected[31m | [0m[32mdegradations/results/[0mdata2.out
+[32m  51.1 KiB[0m[31m | [0munprotected[31m | [0m[32mtrace/data/[0mrecords.data
+[32m    19 B  [0m[31m | [0m[31mprotected[0m  [31m | [0m[32mtrace/[0mlock.txt

@@ -5,6 +5,7 @@ import difflib
 import scipy.stats.mstats as stats
 import matplotlib.pyplot as plt
 
+import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.fuzz.filesystem as filesystem
 
@@ -167,8 +168,8 @@ def files_diff(fuzz_progress, diffs_dir):
     log.info("Computing deltas")
     for mutations in [fuzz_progress.final_results, fuzz_progress.faults, fuzz_progress.hangs]:
         for res in mutations:
-            pred = open(res.predecessor.path, "r").readlines()
-            result = open(res.path, "r").readlines()
+            pred = streams.safely_load_file(res.predecessor.path)
+            result = streams.safely_load_file(res.path)
 
             delta = difflib.unified_diff(pred, result, lineterm='')
 

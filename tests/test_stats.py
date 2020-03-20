@@ -4,6 +4,7 @@ import pathlib
 
 import perun.logic.stats as stats
 import perun.logic.store as store
+import perun.utils.helpers as helpers
 import perun.vcs as vcs
 import perun.logic.pcs as pcs
 import perun.logic.index as index
@@ -21,12 +22,11 @@ def test_stats_filenames(pcs_full):
     """
     # Test stats name generation based on profile source and identified by a tag
     generated_name = stats.build_stats_filename_as_profile_source('0@i', False)
-    assert generated_name == 'prof-2-2017-03-20-21-40-42'
+    assert generated_name == 'prof-2-complexity-2017-03-20-21-40-42'
 
     # Test stats name generation with removed timestamps and identified by the source name
-    generated_name = stats.build_stats_filename_as_profile_source('prof-3-2017-05-15-15-43-42.perf',
-                                                                  True)
-    assert generated_name == 'prof-3'
+    generated_name = stats.build_stats_filename_as_profile_source('prof-3-memory-2017-05-15-15-43-42.perf', True)
+    assert generated_name == 'prof-3-memory'
 
     # Prepare the git-related values
     _, minor_root = _get_vcs_versions()
@@ -250,7 +250,7 @@ def test_stats_files_delete(pcs_with_more_commits):
 
     # Try to delete a custom file
     custom_f = os.path.join(pcs.get_stats_directory(), minor_head[:2], minor_head[2:], 'file.txt')
-    store.touch_file(custom_f)
+    helpers.touch_file(custom_f)
     _check_objects([(minor_head, []), (minor_middle, ['middle_stats']), (minor_root, [])], [],
                    [os.path.join(minor_head[:2], minor_head[2:], 'file.txt')])
     stats.delete_stats_file(custom_f, minor_head, keep_directory=True)
@@ -330,8 +330,8 @@ def test_stats_directories_delete(pcs_with_more_commits):
     # Create two custom empty directories, two custom files and one more version directory
     os.mkdir(os.path.join(stats_dir, custom_dir))
     os.mkdir(os.path.join(stats_dir, custom_root_dir))
-    store.touch_file(os.path.join(stats_dir, custom_file))
-    store.touch_file(os.path.join(stats_dir, custom_root_file))
+    helpers.touch_file(os.path.join(stats_dir, custom_file))
+    helpers.touch_file(os.path.join(stats_dir, custom_root_file))
     stats.add_stats('custom_stats', ['1'], [{'value': 1}], minor_head)
     stats.add_stats('middle_stats', ['1'], [{'value': 10}], minor_middle)
     _check_objects([(minor_head, ['custom_stats']), (minor_middle, ['middle_stats']),
@@ -347,7 +347,7 @@ def test_stats_directories_delete(pcs_with_more_commits):
     # Try to delete another custom file within version directory
     stats.add_stats('custom_stats', ['1'], [{'value': 1}], minor_root)
     stats.delete_stats_file('custom_stats', minor_root, keep_directory=True)
-    store.touch_file(os.path.join(stats_dir, custom_file))
+    helpers.touch_file(os.path.join(stats_dir, custom_file))
     _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
     stats.delete_version_dirs([custom_file], False)
     _check_objects([(minor_root, [])], [custom_root_dir], [custom_root_file, custom_file])
@@ -410,8 +410,8 @@ def test_stats_sync(pcs_with_more_commits):
     stats.delete_stats_file('middle_stats', minor_middle, True)
     os.makedirs(os.path.join(stats_dir, minor_root[:2], minor_root[2:]))
     os.makedirs(os.path.join(stats_dir, stats_custom_dir))
-    store.touch_file(os.path.join(stats_dir, root_custom))
-    store.touch_file(os.path.join(stats_dir, head_custom))
+    helpers.touch_file(os.path.join(stats_dir, root_custom))
+    helpers.touch_file(os.path.join(stats_dir, head_custom))
     # Add some custom versions that don't have a corresponding directory to the index file
     fake_minor1, fake_minor2 = _fake_checksums(minor_head, 2, [minor_head, minor_root])
     stats._add_versions_to_index([(fake_minor1, '1999-12-31 23:59:59'),
@@ -456,10 +456,10 @@ def test_stats_clean(pcs_with_more_commits):
     os.makedirs(os.path.join(stats_dir, minor_root[:2], minor_root[2:], 'custom_dir'))
     os.makedirs(os.path.join(stats_dir, nested_custom_dir))
     os.mkdir(os.path.join(stats_dir, 'custom_stats_dir'))
-    store.touch_file(os.path.join(stats_dir, root_custom_file))
-    store.touch_file(os.path.join(stats_dir, head_custom_file))
-    store.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
-    store.touch_file(os.path.join(stats_dir, root_tricky))
+    helpers.touch_file(os.path.join(stats_dir, root_custom_file))
+    helpers.touch_file(os.path.join(stats_dir, head_custom_file))
+    helpers.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
+    helpers.touch_file(os.path.join(stats_dir, root_tricky))
     # Add some custom versions that don't have a corresponding directory to the index file
     fake_minor1, fake_minor2 = _fake_checksums(minor_head, 2, [minor_head, minor_root])
     stats._add_versions_to_index([(fake_minor1, '1999-12-31 23:59:59'),
@@ -510,9 +510,9 @@ def test_stats_clear(pcs_with_more_commits):
     stats.delete_stats_file('middle_stats', minor_middle, True)
     os.makedirs(os.path.join(stats_dir, minor_root[:2], minor_root[2:], 'custom_dir'))
     os.mkdir(os.path.join(stats_dir, 'custom_stats_dir'))
-    store.touch_file(os.path.join(stats_dir, root_custom_file))
-    store.touch_file(os.path.join(stats_dir, head_custom_file))
-    store.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
+    helpers.touch_file(os.path.join(stats_dir, root_custom_file))
+    helpers.touch_file(os.path.join(stats_dir, head_custom_file))
+    helpers.touch_file(os.path.join(stats_dir, custom_stats_dir_file))
     # Add some custom versions that don't have a corresponding directory to the index file
     fake_minor1, fake_minor2 = _fake_checksums(minor_head, 2, [minor_head, minor_root])
     stats._add_versions_to_index([(fake_minor1, '1999-12-31 23:59:59'),

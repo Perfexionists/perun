@@ -2,6 +2,7 @@
 
 import perun.fuzz.randomizer as randomizer
 import perun.fuzz.helpers as helpers
+from perun.utils.helpers import SuppressedExceptions
 
 __author__ = 'Matus Liscinsky'
 
@@ -12,10 +13,10 @@ WS_MAX = 1000
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def change_character(lines):
-    """**Rule T.4: Change random character**
+    """**Rule T.4: Change random character.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
-     * **Mutation**: "the quack brown ``b``ox jumps over the lazy dog"
+     * **Mutation**: "the quack brown [b]ox jumps over the lazy dog"
      * **Description**: Adaptation of classical rule for text files. Changes a random character at
        at random line to different character.
      * **Known Issues**: none
@@ -28,7 +29,7 @@ def change_character(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def divide_line(lines):
-    """**Rule T.3:**
+    """**Rule T.3: Divide line.**
 
      * **Input**: "<author>Gambardella, Matthew</author>"
      * **Mutation**: "<author>Gambardella, Matthew</au", "thor>"
@@ -45,7 +46,7 @@ def insert_whitespace(lines):
     """**Rule T.10: Insert whitespaces on a random place.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
-     * **Mutation**: "The quick bro``   ``wn fox jumps over the lazy dog"
+     * **Mutation**: "The quick bro[   ]wn fox jumps over the lazy dog"
      * **Description**: The rule inserts random number of whitespaces at random place in the random
        line. There are several intuitions behind this rule: (1) some trimming regular expressions
        can induce the excessive number of backtracking, and (2) some structures, such as hash
@@ -61,7 +62,7 @@ def insert_whitespace(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def double_line(lines):
-    """**Rule T.1: Double the size of a line**
+    """**Rule T.1: Double the size of a line.**
 
      * **Input**: "The quick brown fox."
      * **Mutation**: "The quick brown fox.The quick brown fox."
@@ -70,7 +71,7 @@ def double_line(lines):
      * **Known Issues**:
 
         1. gedit_ text editor (issue with too long lines)
-        2. Poorly validated regexps (issue with lenghty backtracking)
+        2. Poorly validated regexps (issue with lengthy backtracking)
 
      .. _gedit: https://wiki.gnome.org/Apps/Gedit
      """
@@ -80,10 +81,10 @@ def double_line(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def append_whitespace(lines):
-    """**Rule T.8: Append whitespaces**
+    """**Rule T.8: Append whitespaces.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
-     * **Mutation**: "the quick brown fox jumps over the lazy dog``    ``"
+     * **Mutation**: "the quick brown fox jumps over the lazy dog[    ]"
      * **Description**: The rule appends random number of whitespaces at random line.
      * **Known Issues**: none
     """
@@ -111,7 +112,7 @@ def repeat_whitespace(lines):
     """**Rule T.11: Repeat whitespaces.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
-     * **Mutation**: "The quick brown``    `` fox jumps over the lazy dog"
+     * **Mutation**: "The quick brown[    ] fox jumps over the lazy dog"
      * **Description**: The rule repeats random number of whitespaces at random place in the random
        line. There intuition behind this rule is that some trimming regular expressions
        can induce the excessive number of backtracking.
@@ -123,10 +124,10 @@ def repeat_whitespace(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def prepend_whitespace(lines):
-    """**Rule T.9: Prepend whitespaces**
+    """**Rule T.9: Prepend whitespaces.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
-     * **Mutation**: "``    ``The quick brown fox jumps over the lazy dog"
+     * **Mutation**: "[    ]The quick brown fox jumps over the lazy dog"
      * **Description**: The rule prepends random number of whitespaces at random line.
      * **Known Issues**:
 
@@ -140,7 +141,7 @@ def prepend_whitespace(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def duplicate_line(lines):
-    """**Rule T.2: Duplicate a line **
+    """**Rule T.2: Duplicate a line.**
 
      * **Input**: "The quick brown fox."
      * **Mutation**: "The quick brown fox.", "The quick brown fox."
@@ -192,10 +193,10 @@ def sort_line_in_reverse(lines):
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def repeat_word(lines):
-    """**Rule T.5: Repeat random word of a line**
+    """**Rule T.5: Repeat random word of a line.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
-     * **Mutation**: "the quick brown ``brown`` fox jumps over the lazy dog"
+     * **Mutation**: "the quick brown [brown] fox jumps over the lazy dog"
      * **Description**: The rule picks a random word in random line and repeats it several times.
        The intuition is, that there e.g. exist certain vulnerabilities, when repeated occurrences
        of words can either lead to faster (e.g. when the word is cached) or slower time
@@ -205,17 +206,15 @@ def repeat_word(lines):
     """
     repetitions = 100
     rand = randomizer.rand_index(len(lines))
-    try:
+    with SuppressedExceptions(ValueError, IndexError):
         word = randomizer.rand_choice(lines[rand].split())
         lines[rand] = lines[rand][:-1] + \
             (" " + (word[100]))*repetitions + lines[rand][-1:]
-    except (ValueError, IndexError):
-        pass
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
 def delete_line(lines):
-    """**Rule T.13: Remove random line**
+    """**Rule T.13: Remove random line.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
      * **Mutation**: ""
@@ -236,11 +235,9 @@ def delete_word(lines):
      * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
-    try:
+    with SuppressedExceptions(ValueError):
         word = randomizer.rand_choice(lines[rand].split())
         lines[rand] = lines[rand].replace(word, "")
-    except ValueError:
-        pass
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
@@ -253,11 +250,9 @@ def delete_character(lines):
      * **Known Issues**: none
     """
     rand = randomizer.rand_index(len(lines))
-    try:
+    with SuppressedExceptions(ValueError):
         index = randomizer.rand_index(len(lines[rand]))
         helpers.remove_at_split(lines, rand, index)
-    except ValueError:
-        pass
 
 
 FUZZING_METHODS = [

@@ -1,0 +1,82 @@
+{
+  "resource_type_map": {
+    "linear::test2#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "linear::test2",
+      "subtype": "time delta"
+    },
+    "linear::test1#0": {
+      "type": "mixed",
+      "time": "0.00023s",
+      "uid": "linear::test1",
+      "subtype": "time delta"
+    }
+  },
+  "collector_info": {
+    "name": "trace",
+    "params": {
+      "files": [
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/main.cpp",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLList.h",
+        "/home/jirka/Git/complexity-repo/cpp_sources/test_workload/SLListcls.h"
+      ],
+      "internal_data_filename": "trace.log",
+      "internal_storage_size": 20000,
+      "sampling": [
+        {
+          "func": "SLList_insert",
+          "sample": 1
+        },
+        {
+          "func": "func1",
+          "sample": 1
+        }
+      ],
+      "target_dir": "/home/jirka/Git/complexity-repo/target",
+      "internal_direct_output": false,
+      "rules": [
+        "SLList_init",
+        "func1",
+        "SLList_insert",
+        "SLList_search",
+        "SLList_destroy",
+        "SLListcls",
+        "~SLListcls",
+        "Insert",
+        "Remove",
+        "Search"
+      ]
+    }
+  },
+  "postprocessors": [],
+  "resources": {
+    "linear::test2#0": {
+      "structure-unit-size": [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      ],
+      "amount": [
+        8, 10.5, 13, 15.5, 18, 20.5, 23, 25.5, 28, 30.5
+      ]
+    },
+    "linear::test1#0": {
+      "structure-unit-size": [
+        132, 129, 120, 113.2, 105, 92, 84, 83.2, 88.4, 59, 80, 81.5, 71, 69.2
+      ],
+      "amount": [
+        46, 48, 51, 52.1, 54, 52, 59, 58.7, 61.6, 64, 61.4, 54.6, 58.8, 58
+      ]
+    }
+  },
+  "models": [],
+  "origin": "12c06251193701356685e8163a7ef8ce8b7d9f2a",
+  "header": {
+    "type": "mixed",
+    "workload": "",
+    "units": {
+      "mixed(time delta)": "ms"
+    },
+    "args": "",
+    "cmd": "complexity"
+  }
+}

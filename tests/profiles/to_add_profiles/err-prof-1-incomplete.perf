@@ -1,0 +1,15 @@
+{
+  "header": {
+    "type": "time",
+    "cmd": "echo",
+    "args": "-e",
+    "units": [
+      null
+    ],
+    "workload": "hello"
+  },
+  "collector_info": {
+    "params": null,
+    "name": "time"
+  },
+  "postprocesso

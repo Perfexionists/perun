@@ -259,11 +259,11 @@ latter is meant to be used for new projects, after crawling through the whole hi
 project and collecting the profiles. Additionally ``perun check profiles`` can be used for an
 isolate comparison of two standalone profiles (either registered in index or as a standalone file).
 
-.. click:: perun.cli:check_head
+.. click:: perun.cli_groups.check_cli:check_head
    :prog: perun check head
 
-.. click:: perun.cli:check_all
+.. click:: perun.cli_groups.check_cli:check_all
    :prog: perun check all
 
-.. click:: perun.cli:check_profiles
+.. click:: perun.cli_groups.check_cli:check_profiles
    :prog: perun check profiles

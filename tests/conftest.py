@@ -8,10 +8,11 @@ import subprocess
 import tempfile
 
 import git
+
+import perun.utils.helpers as helpers
 import perun.utils.log as log
 import perun.logic.pcs as pcs
 import perun.logic.store as store
-import perun.logic.index as index
 import perun.cli as cli
 import pytest
 
@@ -19,6 +20,8 @@ import perun.logic.commands as commands
 import perun.utils.decorators as decorators
 import perun.utils.streams as streams
 import perun.vcs as vcs
+
+import tests.helpers.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 
@@ -31,137 +34,6 @@ def initialize_cli_modules():
     cli.init_unit_commands(False)
 
 
-class Helpers(object):
-    """
-    Helper class with various static functions for helping with profiles
-    """
-    @staticmethod
-    def count_contents_on_path(path):
-        """Helper function for counting the contents of the path
-
-        Arguments:
-            path(str): path to the director which we will list
-
-        Returns:
-            (int, int): (file number, dir number) on path
-        """
-        file_number = 0
-        dir_number = 0
-        for _, dirs, files in os.walk(path):
-            for __ in files:
-                file_number += 1
-            for __ in dirs:
-                dir_number += 1
-        return file_number, dir_number
-
-    @staticmethod
-    def open_index(pcs_path, minor_version):
-        """Helper function for opening handle of the index
-
-        This encapsulates obtaining the full path to the given index
-
-        Arguments:
-            pcs_path(str): path to the pcs
-            minor_version(str): sha minor version representation
-        """
-        assert store.is_sha1(minor_version)
-        object_dir_path = os.path.join(pcs_path, 'objects')
-
-        _, minor_version_index = store.split_object_name(object_dir_path, minor_version)
-        return open(minor_version_index, 'rb+')
-
-    @staticmethod
-    def exists_profile_in_index_such_that(index_handle, pred):
-        """Helper assert to check, if there exists any profile in index such that pred holds.
-
-        Arguments:
-            index_handle(file): handle for the index
-            pred(lambda): predicate over the index entry
-        """
-        for entry in index.walk_index(index_handle):
-            if pred(entry):
-                return True
-        return False
-
-    @staticmethod
-    def prepare_profile(dest_dir, profile, origin):
-        """
-        Arguments:
-            dest_dir(str): destination of the prepared profile
-            profile(str): name of the profile that is going to be stored in pending jobs
-            origin(str): origin minor version for the given profile
-        """
-        # Copy to jobs and prepare origin for the current version
-        shutil.copy2(profile, dest_dir)
-
-        # Prepare origin for the current version
-        copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
-        copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
-        copied_profile['origin'] = origin
-        streams.store_json(copied_profile.serialize(), copied_filename)
-        shutil.copystat(profile, copied_filename)
-        return copied_filename
-
-    @staticmethod
-    def assert_invalid_cli_choice(cli_result, choice, file=None):
-        """Checks, that click correctly ended as invalid choice
-
-        Arguments:
-            cli_result(click.Result): result of the commandline interface
-            choice(str): choice that we tried
-            file(str): name of the file that should not be created (optional)
-        """
-        assert cli_result.exit_code == 2
-        assert "invalid choice: {}".format(choice) in cli_result.output
-        if file:
-            assert file not in os.listdir(os.getcwd())
-
-    @staticmethod
-    def assert_invalid_param_choice(cli_result, choice, file=None):
-        """Checks that click correctly ended with invalid choice and 1 return code
-        Arguments:
-            cli_result(click.Result): result of the commandline interface
-            choice(str): choice that we tried
-            file(str): name of the file that should not be created (optional)
-        """
-        print(cli_result.output)
-        assert cli_result.exit_code == 1
-        assert "Invalid value '{}'".format(choice) in cli_result.output
-        if file:
-            assert file not in os.listdir(os.getcwd())
-
-    @staticmethod
-    def populate_repo_with_untracked_profiles(pcs_path, untracked_profiles):
-        """
-        Populates the jobs directory in the repo by untracked profiles
-
-        Arguments:
-            pcs_path(str): path to PCS
-            untracked_profiles(list): list of untracked profiles to be added to repo
-        """
-        jobs_dir = os.path.join(pcs_path, 'jobs')
-        for valid_profile in untracked_profiles:
-            shutil.copy2(valid_profile, jobs_dir)
-
-    @staticmethod
-    def index_filter(file):
-        """Index filtering function
-
-        :param str file: name of the file
-        :return: true if the file is not index
-        """
-        return file != '.index'
-
-
-@pytest.fixture(scope="session")
-def helpers():
-    """
-    Returns:
-        Helpers: object with helpers functions
-    """
-    return Helpers()
-
-
 @pytest.fixture(scope="session")
 def memory_collect_job():
     """
@@ -170,7 +42,7 @@ def memory_collect_job():
     """
     # First compile the stuff, so we know it will work
     script_dir = os.path.split(__file__)[0]
-    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_dir = os.path.join(script_dir, 'sources', 'collect_memory')
     target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
 
     # Compile the testing stuff with debugging information set
@@ -194,7 +66,7 @@ def memory_collect_no_debug_job():
     """
     # First compile the stuff, so we know it will work
     script_dir = os.path.split(__file__)[0]
-    target_dir = os.path.join(script_dir, 'collect_memory')
+    target_dir = os.path.join(script_dir, 'sources', 'collect_memory')
     target_src_path = os.path.join(target_dir, 'memory_collect_test.c')
 
     # Compile the testing stuff with debugging information set
@@ -220,7 +92,7 @@ def complexity_collect_job():
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
-    source_dir = os.path.join(script_dir, 'collect_complexity')
+    source_dir = os.path.join(script_dir, 'sources', 'collect_complexity')
     target_dir = os.path.join(source_dir, 'target')
     job_config_file = os.path.join(source_dir, 'job.yml')
     job_config = streams.safely_load_yaml_from_file(job_config_file)
@@ -247,7 +119,7 @@ def trace_collect_job():
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
-    source_dir = os.path.join(script_dir, 'collect_trace')
+    source_dir = os.path.join(script_dir, 'sources', 'collect_trace')
     target_dir = source_dir
     job_config_file = os.path.join(source_dir, 'job.yml')
     job_config = streams.safely_load_yaml_from_file(job_config_file)
@@ -271,7 +143,7 @@ def all_profiles_in(directory, sort=False):
         generator: stream of profile paths located in the given directory
     """
     # Build the directory path and list of all profiles in it
-    pool_path = os.path.join(os.path.split(__file__)[0], directory)
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', directory)
     profiles = [os.path.join(pool_path, prof_file) for prof_file in os.listdir(pool_path)]
     # Sort if required
     if sort:
@@ -352,7 +224,7 @@ def query_profiles():
     Returns:
         generator: generator of fully loaded query profiles as tuple (profile_name, dictionary)
     """
-    yield load_all_profiles_in("query_profiles")
+    yield list(load_all_profiles_in("query_profiles"))
 
 
 @pytest.fixture(scope="function")
@@ -379,7 +251,7 @@ def full_profiles():
 def pcs_with_degradations():
     """
     """
-    pool_path = os.path.join(os.path.split(__file__)[0], 'degradation_profiles')
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profiles = [
         os.path.join(pool_path, 'linear_base.perf'),
         os.path.join(pool_path, 'linear_base_degradated.perf'),
@@ -398,21 +270,21 @@ def pcs_with_degradations():
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    store.touch_file(file1)
+    helpers.touch_file(file1)
     repo.index.add([file1])
     root = repo.index.commit("root")
 
     # Create second commit
     repo.git.checkout('-b', 'develop')
     file2 = os.path.join(pcs_path, "file2")
-    store.touch_file(file2)
+    helpers.touch_file(file2)
     repo.index.add([file2])
     middle_head = repo.index.commit("second commit")
 
     # Create third commit
     repo.git.checkout('master')
     file3 = os.path.join(pcs_path, "file3")
-    store.touch_file(file3)
+    helpers.touch_file(file3)
     repo.index.add([file3])
     repo.index.commit("parallel commit")
     repo.git.merge('--no-ff', 'develop')
@@ -420,11 +292,11 @@ def pcs_with_degradations():
 
     # Populate PCS with profiles
     jobs_dir = pcs.get_job_directory()
-    root_profile = Helpers.prepare_profile(jobs_dir, profiles[0], str(root))
+    root_profile = test_utils.prepare_profile(jobs_dir, profiles[0], str(root))
     commands.add([root_profile], str(root))
-    middle_profile = Helpers.prepare_profile(jobs_dir, profiles[1], str(middle_head))
+    middle_profile = test_utils.prepare_profile(jobs_dir, profiles[1], str(middle_head))
     commands.add([middle_profile], str(middle_head))
-    head_profile = Helpers.prepare_profile(jobs_dir, profiles[2], str(current_head))
+    head_profile = test_utils.prepare_profile(jobs_dir, profiles[2], str(current_head))
     commands.add([head_profile], str(current_head))
 
     yield pcs
@@ -449,22 +321,22 @@ def pcs_full(stored_profile_pool):
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    store.touch_file(file1)
+    helpers.touch_file(file1)
     repo.index.add([file1])
     root = repo.index.commit("root")
 
     # Create second commit
     file2 = os.path.join(pcs_path, "file2")
-    store.touch_file(file2)
+    helpers.touch_file(file2)
     repo.index.add([file2])
     current_head = repo.index.commit("second commit")
 
     # Populate PCS with profiles
     jobs_dir = pcs.get_job_directory()
-    root_profile = Helpers.prepare_profile(jobs_dir, profiles[0], str(root))
+    root_profile = test_utils.prepare_profile(jobs_dir, profiles[0], str(root))
     commands.add([root_profile], str(root))
-    chead_profile1 = Helpers.prepare_profile(jobs_dir, profiles[1], str(current_head))
-    chead_profile2 = Helpers.prepare_profile(jobs_dir, profiles[2], str(current_head))
+    chead_profile1 = test_utils.prepare_profile(jobs_dir, profiles[1], str(current_head))
+    chead_profile2 = test_utils.prepare_profile(jobs_dir, profiles[2], str(current_head))
     commands.add([chead_profile1, chead_profile2], str(current_head))
 
     # Assert that we have five blobs: 2 for commits and 3 for profiles
@@ -497,19 +369,19 @@ def pcs_with_more_commits():
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    store.touch_file(file1)
+    helpers.touch_file(file1)
     repo.index.add([file1])
     repo.index.commit("root")
 
     # Create second commit
     file2 = os.path.join(pcs_path, "file2")
-    store.touch_file(file2)
+    helpers.touch_file(file2)
     repo.index.add([file2])
     repo.index.commit("second commit")
 
     # Create third commit
     file3 = os.path.join(pcs_path, "file3")
-    store.touch_file(file3)
+    helpers.touch_file(file3)
     repo.index.add([file3])
     repo.index.commit("third commit")
 
@@ -554,7 +426,7 @@ def pcs_with_git_root_commit():
 
     # Create first commit
     file1 = os.path.join(pcs_path, "file1")
-    store.touch_file(file1)
+    helpers.touch_file(file1)
     repo.index.add([file1])
     repo.index.commit("root")
 

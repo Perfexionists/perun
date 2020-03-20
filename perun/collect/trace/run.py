@@ -356,16 +356,16 @@ def trace(ctx, **kwargs):
 
     \b
       * **userspace**: This strategy traces all userspace functions / code blocks without
-      the use of sampling. Note that this strategy might be resource-intensive.
+        the use of sampling. Note that this strategy might be resource-intensive.
       * **all**: This strategy traces all userspace + library + kernel functions / code blocks
-      that are present in the traced binary without the use of sampling. Note that this strategy
-      might be very resource-intensive.
+        that are present in the traced binary without the use of sampling. Note that this strategy
+        might be very resource-intensive.
       * **u_sampled**: Sampled version of the **userspace** strategy. This method uses sampling
-      to reduce the overhead and resources consumption.
+        to reduce the overhead and resources consumption.
       * **a_sampled**: Sampled version of the **all** strategy. Its goal is to reduce the
-      overhead and resources consumption of the **all** method.
+        overhead and resources consumption of the **all** method.
       * **custom**: User-specified strategy. Requires the user to specify rules and sampling
-      manually.
+        manually.
 
     Note that manually specified parameters have higher priority than strategy specification
     and it is thus possible to override concrete rules / sampling by the user.

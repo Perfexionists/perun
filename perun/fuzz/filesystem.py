@@ -9,6 +9,7 @@ import re
 
 from perun.fuzz.structs import Mutation
 import perun.utils.log as log
+import perun.utils.helpers as helpers
 
 
 def get_corpus(workloads, pattern):
@@ -77,10 +78,8 @@ def del_temp_files(parents, fuzz_progress, output_dir):
         if mutation not in fuzz_progress.final_results and mutation not in fuzz_progress.hangs \
                 and mutation not in fuzz_progress.faults and \
                 mutation.path.startswith(output_dir) and path.isfile(mutation.path):
-            try:
+            with helpers.SuppressedExceptions(FileNotFoundError):
                 os.remove(mutation.path)
                 log.info('.')
-            except FileNotFoundError:
-                pass
         log.info('-')
     log.done()

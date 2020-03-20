@@ -1,0 +1,5 @@
+Total size of all the displayed files / directories:  435.9 KiB
+ 185.8 KiB | protected   | degradations/results/data.out
+    19 B   | protected   | trace/lock.txt
+ 198.9 KiB | unprotected | degradations/results/data2.out
+  51.1 KiB | unprotected | trace/data/records.data

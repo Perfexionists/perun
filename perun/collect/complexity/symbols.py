@@ -11,6 +11,7 @@
 
 import collections
 
+import perun.utils.helpers as helpers
 import perun.utils.exceptions as exceptions
 import perun.utils as utils
 
@@ -185,10 +186,8 @@ def _dismantle_symbols(symbol_map):
     specification_map = dict()
     for key in symbol_map.keys():
         # Process each symbol from the map
-        try:
+        with helpers.SuppressedExceptions(exceptions.UnexpectedPrototypeSyntaxError):
             specification_map[key] = _process_symbol(symbol_map[key])
-        except exceptions.UnexpectedPrototypeSyntaxError:
-            pass
     return specification_map
 
 

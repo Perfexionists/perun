@@ -355,9 +355,12 @@ to the look-up table should greatly reduce the size of profiles.
 Profile API
 -----------
 
+.. automodule:: perun.profile.helpers
+
 .. automodule:: perun.profile.factory
 
-.. autofunction:: store_profile_at
+.. autoclass:: Profile
+   :members: all_resources, all_snapshots, all_models, all_filtered_models
 
 .. _profile-conversion-api:
 
@@ -383,8 +386,6 @@ Profile Query API
 
 .. automodule:: perun.profile.query
 
-.. autofunction:: all_resources_of
-
 .. autofunction:: all_items_of
 
 .. autofunction:: all_resource_fields_of
@@ -394,7 +395,5 @@ Profile Query API
 .. autofunction:: unique_resource_values_of
 
 .. autofunction:: all_key_values_of
-
-.. autofunction:: all_models_of
 
 .. autofunction:: unique_model_values_of

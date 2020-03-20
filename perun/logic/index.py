@@ -36,6 +36,7 @@ IndexVersion = Enum(
     'SlowLorris FastSloth'
 )
 
+
 class BasicIndexEntry:
     """Class representation of one index entry
 
@@ -342,7 +343,7 @@ def touch_index(index_path):
     :param str index_path: path to the index
     """
     if not os.path.exists(index_path):
-        store.touch_file(index_path)
+        helpers.touch_file(index_path)
 
         # create the index
         with open(index_path, 'wb') as index_handle:
@@ -530,7 +531,7 @@ def register_in_minor_index(base_dir, minor_version, registered_file, registered
     """
     # Create the directory and index (if it does not exist)
     minor_dir, minor_index_file = store.split_object_name(base_dir, minor_version)
-    store.touch_dir(minor_dir)
+    helpers.touch_dir(minor_dir)
     touch_index(minor_index_file)
 
     register_in_index(minor_index_file, registered_file, registered_checksum, profile)
@@ -576,7 +577,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
     # Lookup all entries for the given function
     with open(minor_version_index, 'rb+') as index_handle:
         # Gather all of the entries from the index
-        all_entries = [entry for entry in walk_index(index_handle)]
+        all_entries = list(walk_index(index_handle))
         all_entries.sort(key=lambda unsorted_entry: unsorted_entry.offset)
         removed_entries = []
 
@@ -632,7 +633,7 @@ def get_profile_list_for_minor(base_dir, minor_version):
         with open(minor_index_file, 'rb+') as index_handle:
             index_handle.seek(4)
             index_version = store.read_int_from_handle(index_handle)
-            result = [entry for entry in walk_index(index_handle)]
+            result = list(walk_index(index_handle))
         # Update the version of the index
         if index_version < INDEX_VERSION:
             write_list_of_entries(minor_index_file, result)
@@ -677,7 +678,7 @@ def load_custom_index(index_path):
     """
     # Create and init the index file if it does not exist yet
     if not os.path.exists(index_path):
-        store.touch_file(index_path)
+        helpers.touch_file(index_path)
         save_custom_index(index_path, {})
     # Open and load the file
     try:

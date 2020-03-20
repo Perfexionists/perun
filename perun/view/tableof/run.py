@@ -203,7 +203,7 @@ def tableof(*_, **__):
             SLList_search(SLList*, int)  quadratic    0.984263
             SLList_insert(SLList*, int)  constant     1
 
-    Refer to :ref:`views-table` for more thorough description and example of
+    Refer to :ref:`views-tableof` for more thorough description and example of
     `table` interpretation possibilities.
     """
     pass

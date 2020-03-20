@@ -41,7 +41,6 @@ def trace_to_profile(data_file, func, static, **kwargs):
                 resource = _process_record(record, trace_stack, sequence_map, static,
                                            kwargs['global_sampling'])
                 if resource:
-                    resource['workload'] = kwargs.get('workload', ' '.join(kwargs['workload']))
                     yield resource
             WATCH_DOG.info('Data to profile transformation finished')
         except Exception:
@@ -184,7 +183,7 @@ def _process_func_record(record, trace_stack, sequence_map, global_sampling):
             'type': 'mixed',
             'subtype': 'time delta',
             'thread': record.thread,
-            'structure-unit-size': matching_record.sequence}
+            'call-order': matching_record.sequence}
 
 
 def _process_static_record(record, trace_stack, sequence_map, probes, global_sampling):
@@ -220,7 +219,7 @@ def _process_static_record(record, trace_stack, sequence_map, probes, global_sam
                 'uid': matching_record.name + '#' + record.name,
                 'type': 'mixed',
                 'subtype': 'time delta',
-                'structure-unit-size': matching_record.sequence}
+                'call-order': matching_record.sequence}
     return {}
 
 
