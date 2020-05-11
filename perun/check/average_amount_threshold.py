@@ -50,10 +50,13 @@ OPTIMIZATION_THRESHOLD = 0.5
 def get_averages(profile):
     """Retrieves the averages of all amounts grouped by the uid
 
-    :param dict profile: dictionary representation of profile
+    :param profiles.Profile profile: dictionary representation of profile
     :returns: dictionary with averages for all uids
     """
     data_frame = convert.resources_to_pandas_dataframe(profile)
+    # Short fix for non-measured (static) profiles
+    if 'amount' not in data_frame:
+        data_frame['amount'] = 0
     return data_frame.groupby('uid').mean().to_dict()['amount']
 
 
@@ -63,8 +66,8 @@ def average_amount_threshold(baseline_profile, target_profile, **_):
     This is based on simple heuristic, where for the same function models, we only check the order
     of the best fit models. If these differ, we detect the possible degradation.
 
-    :param dict baseline_profile: baseline against which we are checking the degradation
-    :param dict target_profile: profile corresponding to the checked minor version
+    :param profiles.Profile baseline_profile: baseline against which we are checking the degradation
+    :param profiles.Profile target_profile: profile corresponding to the checked minor version
     :param dict _: unification with other detection methods (unused in this method)
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
@@ -89,7 +92,7 @@ def average_amount_threshold(baseline_profile, target_profile, **_):
                 res=change,
                 t=resource_type,
                 loc=target_uid,
-                fb="{}{}".format(baseline_average.round(2), unit),
-                tt="{}{}".format(target_average.round(2), unit),
+                fb="{}{}".format(round(baseline_average, 2), unit),
+                tt="{}{}".format(round(target_average, 2), unit),
                 rd=difference_ratio,
             )

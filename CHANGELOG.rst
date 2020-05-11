@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.18.3-hotfix (2020-05-11)
+--------------------------
+
+`commit: 3998d715041f624b836bef46b123d2139a8528fe`
+
+  - fix two minor issues in average amount threshold check (fix for profiles without amounts and to soften the dependency on numpy.float64)
+
 0.18.3 (2020-03-20)
 -------------------
 
