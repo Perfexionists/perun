@@ -36,7 +36,6 @@ confidence at all.
 """
 
 import perun.profile.convert as convert
-import perun.profile.factory as profiles
 import perun.check.factory as check
 import perun.postprocess.regression_analysis.tools as tools
 
