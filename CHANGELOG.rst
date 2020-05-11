@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - fix two minor issues in average amount threshold check (fix for profiles without amounts and to soften the dependency on numpy.float64)
+
 0.18.3 (2020-03-20)
 -------------------
 
