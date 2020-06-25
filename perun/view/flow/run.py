@@ -3,17 +3,17 @@
 import click
 
 import demandimport
-with demandimport.enabled():
-    import bokeh.core.enums as enums
-
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
 import perun.view.flow.bokeh_factory as flow_factory
-import perun.view.flow.ncurses_factory as curses_graphs
 from perun.utils.exceptions import InvalidParameterException
 from perun.profile.factory import pass_profile
+
+with demandimport.enabled():
+    import bokeh.core.enums as enums
+
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
@@ -65,8 +65,6 @@ def process_title(ctx, _, value):
 @click.option('--accumulate/--no-accumulate', default=True,
               help="Will accumulate the values for all previous values of X axis.")
 # Other options and arguments
-@click.option('--use-terminal', '-ut', is_flag=True, default=False,
-              help="Shows flow graph in the terminal using ncurses library.")
 @click.option('--filename', '-f', default="flow.html", metavar="<html>",
               help="Sets the outputs for the graph to the file.")
 @click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
@@ -82,7 +80,7 @@ def process_title(ctx, _, value):
               " browser (firefox will be used).")
 @pass_profile
 # Fixme: Consider breaking this to two
-def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
+def flow(profile, filename, view_in_browser, **kwargs):
     """Customizable interpretation of resources using the flow format.
 
     .. _Bokeh: https://bokeh.pydata.org/en/latest/
@@ -133,15 +131,11 @@ def flow(profile, use_terminal, filename, view_in_browser, **kwargs):
     Refer to :ref:`views-flow` for more thorough description and example of
     `flow` interpretation possibilities.
     """
-    if use_terminal:
-        heap_map = convert.to_heap_map_format(profile)
-        curses_graphs.flow_graph(heap_map)
-    else:
-        try:
-            bokeh_helpers.process_profile_to_graphs(
-                flow_factory, profile, filename, view_in_browser, **kwargs
-            )
-        except AttributeError as attr_error:
-            log.error("while creating flow graph: {}".format(str(attr_error)))
-        except InvalidParameterException as ip_error:
-            log.error("while creating flow graph: {}".format(str(ip_error)))
+    try:
+        bokeh_helpers.process_profile_to_graphs(
+            flow_factory, profile, filename, view_in_browser, **kwargs
+        )
+    except AttributeError as attr_error:
+        log.error("while creating flow graph: {}".format(str(attr_error)))
+    except InvalidParameterException as ip_error:
+        log.error("while creating flow graph: {}".format(str(ip_error)))

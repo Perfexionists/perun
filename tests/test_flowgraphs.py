@@ -9,7 +9,6 @@ import perun.cli as cli
 import perun.profile.convert as convert
 import perun.logic.store as store
 import perun.view.flow.bokeh_factory as bokeh_graphs
-import perun.view.flow.ncurses_factory as curses_graphs
 
 import tests.helpers.asserts as asserts
 
@@ -98,49 +97,3 @@ def test_bokeh_flow(memory_profiles):
         plotting.output_file('flow.html')
         plotting.save(bargraph, 'flow.html')
         assert 'flow.html' in os.listdir(os.getcwd())
-
-
-@pytest.mark.usefixtures('cleandir')
-def test_curses_flow(monkeypatch, mock_curses_window, memory_profiles):
-    """Test creating showing curses graph
-
-    Expecting no errors
-    """
-    monkeypatch.setattr(curses, 'curs_set', donothing)
-    monkeypatch.setattr(curses, 'color_pair', donothing)
-    monkeypatch.setattr(curses, 'start_color', donothing)
-    monkeypatch.setattr(curses, 'use_default_colors', donothing)
-    monkeypatch.setattr(curses, 'napms', donothing)
-
-    for memory_profile in memory_profiles:
-        heap_map = convert.to_heap_map_format(memory_profile)
-        vis_obj = curses_graphs.FlowGraphVisualization(mock_curses_window, heap_map)
-        vis_obj.print_intro()
-        vis_obj.print_resize_req()
-        vis_obj.print_global_view()
-        str_window = str(mock_curses_window)
-        assert 'MEMORY' in str_window
-        y, x = mock_curses_window.getmaxyx()
-        assert ('|' + ' '*x + '|') not in str_window
-
-
-@pytest.mark.usefixtures('cleandir')
-def test_curses_logic(monkeypatch, mock_curses_window, memory_profiles):
-    """Test logic of the flow visualization
-
-    Expecting no errors, eventually the visualization should end.
-    """
-    monkeypatch.setattr(curses, 'curs_set', donothing)
-    monkeypatch.setattr(curses, 'color_pair', donothing)
-    monkeypatch.setattr(curses, 'start_color', donothing)
-    monkeypatch.setattr(curses, 'use_default_colors', donothing)
-    monkeypatch.setattr(curses, 'napms', donothing)
-
-    # Rewrite the sequence of the mock window
-    mock_curses_window.character_stream = iter([
-        ord('i'), ord('i'), curses.KEY_RIGHT, ord('q'), ord('q')
-    ])
-
-    for memory_profile in memory_profiles:
-        heap_map = convert.to_heap_map_format(memory_profile)
-        curses_graphs.flow_graph_logic(mock_curses_window, heap_map)
