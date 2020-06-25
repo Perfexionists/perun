@@ -1270,7 +1270,7 @@ def test_show_help(pcs_full):
     runner = CliRunner()
     result = runner.invoke(cli.show, ['--help'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, 'heapmap' in result.output)
+    asserts.predicate_from_cli(result, 'bars' in result.output)
     asserts.predicate_from_cli(result, 'raw' in result.output)
 
 
