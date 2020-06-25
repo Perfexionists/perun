@@ -1,12 +1,12 @@
 """Collection of helper functions for working with bokeh graphs"""
 
 import demandimport
+import perun.profile.helpers as profiles
+import perun.utils.log as log
 with demandimport.enabled():
     import bokeh.layouts as layouts
     import bokeh.palettes as palettes
     import bokeh.plotting as plotting
-
-import perun.utils.log as log
 
 
 __author__ = 'Tomas Fiedor'
@@ -180,7 +180,8 @@ def save_graphs_in_column(graphs, filename, view_in_browser=False):
         plotting.save(output, filename)
 
 
-def process_profile_to_graphs(factory_module, profile, filename, view_in_browser, **kwargs):
+def process_profile_to_graphs(factory_module, profile, filename, view_in_browser, func, of_key,
+                              **kwargs):
     """Wrapper function for constructing the graphs from profile, saving it and viewing.
 
     Wrapper function that takes the factory module, constructs the graph for the given profile,
@@ -191,11 +192,12 @@ def process_profile_to_graphs(factory_module, profile, filename, view_in_browser
     :param str filename: output filename for the bokeh graph
     :param bool view_in_browser: true if the created graph should be view in registered browser
         after it is constructed.
+    :param function func: function used for aggregation of the data
+    :param str of_key: key that will be aggregated in the graph
     :param dict kwargs: rest of the keyword arguments
     :raises AttributeError: when the factory_module has not some of the functions
     """
-    if hasattr(factory_module, 'validate_keywords'):
-        factory_module.validate_keywords(profile, **kwargs)
+    profiles.is_key_aggregatable_by(profile, func, of_key, "of_key")
 
-    graph = factory_module.create_from_params(profile, **kwargs)
+    graph = factory_module.create_from_params(profile, func, of_key, **kwargs)
     save_graphs_in_column([graph], filename, view_in_browser)

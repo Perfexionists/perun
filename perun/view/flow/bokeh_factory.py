@@ -6,28 +6,12 @@ with demandimport.enabled():
     import bokeh.models as models
     import pandas
 
-import perun.profile.helpers as profiles
-
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.log as log
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
-
-
-def validate_keywords(profile, func, of_key, **_):
-    """Function for validating the keywords before calling the graph generation.
-
-    Checks if the of key can be aggregated by the function.
-
-    :param dict profile: profile that will be used against in the validation
-    :param function func: function used for aggregation of the data
-    :param str of_key: key that will be aggregated in the graph
-    :returns bool: true if the values are OK
-    :raises InvalidParameterException: if the of_key does not support the given function
-    """
-    return profiles.is_key_aggregatable_by(profile, func, of_key, "of_key")
 
 
 def create_from_params(profile, func, of_key, through_key, by_key, stacked, accumulate,
