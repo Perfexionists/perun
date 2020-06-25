@@ -226,7 +226,7 @@ def test_fuzzing_incorrect(pcs_full):
         '--output-dir', '.',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '--input-sample"' in result.output)
+    asserts.predicate_from_cli(result, '--input-sample' in result.output)
 
     # Missing option --output-dir
     result = runner.invoke(cli.fuzz_cmd, [
