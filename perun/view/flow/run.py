@@ -7,7 +7,7 @@ import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
-import perun.view.flow.bokeh_factory as flow_factory
+import perun.view.flow.factory as flow_factory
 from perun.utils.exceptions import InvalidParameterException
 from perun.profile.factory import pass_profile
 
