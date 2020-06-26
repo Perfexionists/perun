@@ -23,7 +23,7 @@ class ColourSort:
     ByOccurence = 2
 
 
-def sort_colours(colours, sort_color_style, keys):
+def _sort_colours(colours, sort_color_style, keys):
     """Sorts the colours corresponding to the keys according to the given style
 
     Note: For different visualizations and outputs we want the colours in different format,
@@ -60,10 +60,10 @@ def get_unique_colours_for_(data_source, key, sort_color_style=ColourSort.ByOccu
 
     # This is temporary workaround for non-sorted legends
     colour_palette = palettes.viridis(unique_keys_num)
-    return sort_colours(colour_palette, sort_color_style, unique_keys)
+    return _sort_colours(colour_palette, sort_color_style, unique_keys)
 
 
-def configure_axis(axis, axis_title):
+def _configure_axis(axis, axis_title):
     """ Sets the graph's axis visual style
 
     :param any axis: Bokeh plot's axis object
@@ -82,7 +82,7 @@ def configure_axis(axis, axis_title):
     axis.minor_tick_out = 4
 
 
-def configure_grid(grid):
+def _configure_grid(grid):
     """Sets the given grid
 
     :param bokeh.Grid grid: either x or y grid
@@ -93,7 +93,7 @@ def configure_grid(grid):
     grid.grid_line_alpha = 0.4
 
 
-def configure_title(graph_title, title):
+def _configure_title(graph_title, title):
     """ Sets the graph's title visual style
 
     :param bokeh.Title graph_title: bokeh title of the graph
@@ -106,7 +106,7 @@ def configure_title(graph_title, title):
     graph_title.text = title
 
 
-def configure_graph_canvas(graph, graph_width):
+def _configure_graph_canvas(graph, graph_width):
     """Sets the canvas of the graph, its width and padding
 
     :param bokeh.Figure graph: figure for which we will be setting canvas
@@ -126,7 +126,7 @@ def configure_graph_canvas(graph, graph_width):
             renderer.glyph.line_color = 'black'
 
 
-def configure_legend(graph):
+def _configure_legend(graph):
     """
     :param bokeh.Figure graph: bokeh graph for which we will configure the legend
     """
@@ -150,13 +150,13 @@ def configure_graph(graph, profile, func, graph_title, x_axis_label, y_axis_labe
     :param int graph_width: width of the created bokeh graph
     """
     # Stylize the graph
-    configure_graph_canvas(graph, graph_width)
-    configure_axis(graph.xaxis, x_axis_label)
-    configure_axis(graph.yaxis, y_axis_label)
-    configure_title(graph.title, graph_title)
-    configure_legend(graph)
-    configure_grid(graph.ygrid)
-    configure_grid(graph.grid)
+    _configure_graph_canvas(graph, graph_width)
+    _configure_axis(graph.xaxis, x_axis_label)
+    _configure_axis(graph.yaxis, y_axis_label)
+    _configure_title(graph.title, graph_title)
+    _configure_legend(graph)
+    _configure_grid(graph.ygrid)
+    _configure_grid(graph.grid)
 
     # If of key is ammount, add unit
     if func not in ('count', 'nunique') and not y_axis_label.endswith("]"):
