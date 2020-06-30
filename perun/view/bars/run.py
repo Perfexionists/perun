@@ -134,6 +134,8 @@ def bars(profile, filename, view_in_browser, **kwargs):
             bars_factory, profile, filename, view_in_browser, **kwargs
         )
     except AttributeError as attr_error:
+        import traceback
+        traceback.print_tb(attr_error.__traceback__)
         log.error("while creating bar graph: {}".format(str(attr_error)))
     except InvalidParameterException as ip_error:
         log.error("while creating bar graph: {}".format(str(ip_error)))
