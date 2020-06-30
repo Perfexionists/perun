@@ -3,10 +3,10 @@
 import click
 
 import demandimport
-import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
+import perun.utils.helpers as helpers
 import perun.view.flow.factory as flow_factory
 from perun.utils.exceptions import InvalidParameterException
 from perun.profile.factory import pass_profile
@@ -44,7 +44,7 @@ def process_title(ctx, _, value):
 
 @click.command()
 @click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
-                type=click.Choice(list(map(str, enums.Aggregation))), is_eager=True)
+                type=click.Choice(helpers.AGGREGATIONS), is_eager=True)
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Sets key that is source of the data for the flow,"

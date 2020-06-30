@@ -4,7 +4,6 @@ import re
 import operator
 import collections
 import signal
-import namedlist
 
 from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
@@ -19,7 +18,7 @@ MAXIMAL_LINE_WIDTH = 60
 TEXT_ATTRS = 'none'
 TEXT_EMPH_COLOUR = 'green'
 TEXT_WARN_COLOUR = 'red'
-
+AGGREGATIONS = "sum", "mean", "count", "nunique", "median", "min", "max"
 
 # Minor Version specific things
 MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
@@ -50,8 +49,6 @@ RAW_ITEM_COLOUR = 'yellow'
 RAW_ATTRS = 'none'
 
 # Job specific
-Job = namedlist.namedlist("Job", "collector postprocessors executable")
-
 COLLECT_PHASE_CMD = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'

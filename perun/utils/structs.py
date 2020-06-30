@@ -238,3 +238,21 @@ class DegradationInfo:
             self.confidence_type,
             self.confidence_rate
         )
+
+
+class Job:
+    """Represents one profiling task in the Perun
+
+    :ivar Unit collector: collection unit used to collect the SUP
+    :ivar list postprocessors: list of postprocessing units applied after the collection
+    :ivar Executable executable: System Under Profiling (SUP)
+    """
+    def __init__(self, collector, postprocessors, executable):
+        """
+        :param Unit collector: collection unit used to collect the SUP
+        :param list postprocessors: list of postprocessing units applied after the collection
+        :param Executable executable: System Under Profiling (SUP)
+        """
+        self.collector = collector
+        self.postprocessors = postprocessors
+        self.executable = executable

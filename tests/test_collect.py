@@ -18,8 +18,7 @@ import perun.utils.log as log
 from subprocess import SubprocessError
 
 from perun.profile.factory import Profile
-from perun.utils.helpers import Job
-from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
+from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
 from perun.workload.integer_generator import IntegerGenerator
 
 import tests.helpers.asserts as asserts

@@ -20,9 +20,9 @@ import perun.workload as workloads
 
 from perun.utils import get_module
 from perun.utils.structs import GeneratorSpec, Unit, Executable, RunnerReport, \
-    CollectStatus, PostprocessStatus
+    CollectStatus, PostprocessStatus, Job
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
-    COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, Job, HandledSignals
+    COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, HandledSignals
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.utils.exceptions import SignalReceivedException
 

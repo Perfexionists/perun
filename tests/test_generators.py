@@ -8,8 +8,7 @@ import perun.workload as workload
 import perun.logic.runner as runner
 import perun.logic.store as store
 
-from perun.utils.helpers import Job
-from perun.utils.structs import Unit, Executable, CollectStatus
+from perun.utils.structs import Unit, Executable, CollectStatus, Job
 from perun.workload.integer_generator import IntegerGenerator
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.workload.string_generator import StringGenerator
