@@ -256,3 +256,13 @@ class Job:
         self.collector = collector
         self.postprocessors = postprocessors
         self.executable = executable
+
+    def _asdict(self):
+        """
+        :return: representation as dictionary
+        """
+        return {
+            'collector': self.collector,
+            'postprocessors': self.postprocessors,
+            'executable': self.executable
+        }
