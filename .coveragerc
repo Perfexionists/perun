@@ -1,0 +1,2 @@
+[run]
+omit = tests/*, perun/collect/trace/*, setup.py
