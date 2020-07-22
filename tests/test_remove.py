@@ -13,7 +13,7 @@ import perun.logic.commands as commands
 import perun.utils.helpers as helpers
 from perun.utils.exceptions import NotPerunRepositoryException, EntryNotFoundException
 
-import tests.helpers.utils as test_utils
+import tests.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 

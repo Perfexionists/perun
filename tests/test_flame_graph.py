@@ -8,7 +8,7 @@ import perun.cli as cli
 import perun.logic.store as store
 import perun.view.flamegraph.flamegraph as flamegraphs
 
-import tests.helpers.asserts as asserts
+import tests.testing.asserts as asserts
 
 __author__ = 'Tomas Fiedor'
 

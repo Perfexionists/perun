@@ -5,8 +5,8 @@ from click.testing import CliRunner
 
 import perun.cli as cli
 import perun.vcs as vcs
-import tests.helpers.utils as test_utils
-import tests.helpers.asserts as asserts
+import tests.testing.utils as test_utils
+import tests.testing.asserts as asserts
 
 TABLE_TEST_DIR = os.path.join(os.path.split(__file__)[0], 'references', "table_files")
 __author__ = 'Tomas Fiedor'
