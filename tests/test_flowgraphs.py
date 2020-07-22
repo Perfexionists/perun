@@ -8,7 +8,7 @@ import perun.cli as cli
 import perun.logic.store as store
 import perun.view.flow.factory as bokeh_graphs
 
-import tests.testing.asserts as asserts
+import perun.testing.asserts as asserts
 
 __author__ = 'Tomas Fiedor'
 

@@ -10,7 +10,7 @@ import os
 import perun.logic.store as store
 from perun.utils.log import aggregate_intervals
 from perun.utils.structs import PerformanceChange
-from tests.testing.mock_results import (
+from perun.testing.mock_results import (
     PARAM_EXPECTED_RESULTS,
     NONPARAM_EXPECTED_RESULTS
 )

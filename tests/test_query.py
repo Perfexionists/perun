@@ -6,7 +6,7 @@ Contains tests for query results of various valid / invalid profiles.
 import pytest
 import perun.profile.query as query
 import perun.profile.helpers as helpers
-import tests.testing.utils as test_utils
+import perun.testing.utils as test_utils
 
 
 __author__ = "Jiri Pavela"

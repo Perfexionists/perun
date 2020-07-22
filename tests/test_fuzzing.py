@@ -10,7 +10,7 @@ from click.testing import CliRunner
 
 import perun.cli as cli
 
-import tests.testing.asserts as asserts
+import perun.testing.asserts as asserts
 
 
 @pytest.mark.usefixtures('cleandir')

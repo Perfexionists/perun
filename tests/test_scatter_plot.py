@@ -8,7 +8,7 @@ from click.testing import CliRunner
 import perun.cli as cli
 import perun.view.scatter.factory as scatter
 
-import tests.testing.asserts as asserts
+import perun.testing.asserts as asserts
 
 __author__ = 'Jiri Pavela'
 

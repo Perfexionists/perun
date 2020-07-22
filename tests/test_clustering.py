@@ -10,7 +10,7 @@ import perun.utils.log as log
 import perun.postprocess.clusterizer.run as clusterizer
 import perun.logic.store as store
 
-import tests.testing.asserts as asserts
+import perun.testing.asserts as asserts
 
 __author__ = 'Tomas Fiedor'
 
