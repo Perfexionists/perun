@@ -8,7 +8,12 @@ setup(
     packages=find_packages(),
     package_data={'perun': [
         'view/flamegraph/flamegraph.pl',
-        'collect/memory/malloc.so'
+        'collect/memory/malloc.so',
+        'collect/bounds/bin/*',
+        'collect/complexity/cpp_sources/*',
+        'collect/complexity/lib/*',
+        'templates/*',
+        '../requirements.txt'
     ]},
     install_requires=[
         'click', 'termcolor', 'colorama', 'ruamel.yaml', 'GitPython', 'bokeh', 'pandas',
