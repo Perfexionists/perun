@@ -11,12 +11,10 @@ __author__ = 'Tomas Fiedor'
 def profile_filter(generator, rule, return_type='prof'):
     """Finds concrete profile by the rule in profile generator.
 
-    Arguments:
-        generator(generator): stream of profiles as tuple: (name, dict)
-        rule(str): string to search in the name
-
-    Returns:
-        Profile: first profile with name containing the rule
+    :param generator generator: stream of profiles as tuple: (name, dict)
+    :param str rule: string to search in the name
+    :param str return_type: return type of the profile filter (either prof or name)
+    :returns kProfile: first profile with name containing the rule
     """
     # Loop the generator and test the rule
     for profile in generator:

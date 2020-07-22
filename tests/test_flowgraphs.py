@@ -1,4 +1,3 @@
-import curses
 import os
 
 import bokeh.plotting as plotting
@@ -6,18 +5,12 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
-import perun.profile.convert as convert
 import perun.logic.store as store
 import perun.view.flow.factory as bokeh_graphs
 
 import tests.helpers.asserts as asserts
 
 __author__ = 'Tomas Fiedor'
-
-
-def donothing(*_):
-    """Helper function for monkeypatching stuff to do nothing"""
-    pass
 
 
 def test_flow_cli(pcs_full, valid_profile_pool):
