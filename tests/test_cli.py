@@ -31,8 +31,8 @@ import perun.logic.pcs as pcs
 
 from perun.utils.structs import CollectStatus, RunnerReport
 
-import tests.testing.asserts as asserts
-import tests.testing.utils as test_utils
+import perun.testing.asserts as asserts
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 
@@ -1234,7 +1234,7 @@ def test_log_correct(pcs_full):
     short_result = runner.invoke(cli.log, ['--short'])
     asserts.predicate_from_cli(result, short_result.exit_code == 0)
     asserts.predicate_from_cli(result,
-        len(result.output.split('\n')) > len( short_result.output.split('\n')))
+                               len(result.output.split('\n')) > len( short_result.output.split('\n')))
 
 
 def test_collect_correct(pcs_full):

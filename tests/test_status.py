@@ -20,7 +20,7 @@ import perun.utils.timestamps as timestamps
 import perun.utils.decorators as decorators
 from perun.utils.exceptions import NotPerunRepositoryException
 
-import tests.testing.utils as test_utils
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 TIMESTAMP_RE = re.compile(r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf")

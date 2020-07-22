@@ -20,7 +20,7 @@ import perun.utils.decorators as decorators
 import perun.utils.streams as streams
 import perun.vcs as vcs
 
-import tests.testing.utils as test_utils
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 

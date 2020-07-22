@@ -6,7 +6,7 @@ heap and heat map visualizations, etc.
 import pytest
 import perun.utils.exceptions as exceptions
 import perun.profile.convert as convert
-import tests.testing.utils as test_utils
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = 'Jiri Pavela'

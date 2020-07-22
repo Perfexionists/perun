@@ -9,7 +9,7 @@ always.
 The postprocessby CLI is tested in test_cli module.
 """
 from perun.postprocess.regressogram.run import postprocess
-from tests.testing.utils import profile_filter, compare_results, generate_models_by_uid
+from perun.testing.utils import profile_filter, compare_results, generate_models_by_uid
 
 
 def test_regressogram_method(postprocess_profiles):

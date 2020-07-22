@@ -11,8 +11,8 @@ import pytest
 
 import perun.utils.exceptions as exceptions
 from perun.postprocess.regression_analysis.run import postprocess
-import tests.testing.utils as test_utils
-from tests.testing.utils import compare_results, generate_models_by_uid
+import perun.testing.utils as test_utils
+from perun.testing.utils import compare_results, generate_models_by_uid
 
 __author__ = 'Jiri Pavela'
 

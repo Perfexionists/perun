@@ -10,7 +10,7 @@ import perun.cli as cli
 import perun.logic.store as store
 import perun.view.bars.factory as bargraphs
 
-import tests.testing.asserts as asserts
+import perun.testing.asserts as asserts
 
 __author__ = 'Tomas Fiedor'
 
