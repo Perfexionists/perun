@@ -1,7 +1,7 @@
 click==7.0
 termcolor==1.1.0
 colorama==0.3.7
-ruamel.yaml==0.15.6
+ruamel.yaml>=0.15.6
 pandas==0.20.2
 PyYaml==5.1.2
 bokeh==0.12.6
@@ -27,3 +27,4 @@ matplotlib==1.5.1
 binaryornot==0.4.4
 tabulate==0.8.6
 pip==8.1.1
+Cython>=0.29.20
