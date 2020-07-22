@@ -31,8 +31,8 @@ import perun.logic.pcs as pcs
 
 from perun.utils.structs import CollectStatus, RunnerReport
 
-import tests.helpers.asserts as asserts
-import tests.helpers.utils as test_utils
+import tests.testing.asserts as asserts
+import tests.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 

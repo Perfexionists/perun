@@ -21,8 +21,8 @@ from perun.profile.factory import Profile
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
 from perun.workload.integer_generator import IntegerGenerator
 
-import tests.helpers.asserts as asserts
-import tests.helpers.utils as test_utils
+import tests.testing.asserts as asserts
+import tests.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 

@@ -20,7 +20,7 @@ from perun.utils.structs import CollectStatus
 from perun.utils.exceptions import SystemTapStartupException
 from perun.collect.trace.values import TraceRecord, RecordType, Res, FileSize
 
-import tests.helpers.utils as test_utils
+import tests.testing.utils as test_utils
 
 _mocked_stap_code = 0
 _mocked_stap_file = 'tst_stap_record.txt'
