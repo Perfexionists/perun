@@ -78,7 +78,9 @@ class BpfEngine(engine.CollectEngine):
         WATCH_DOG.info('Starting up the eBPF collection process.')
         # Run the new ebpf process with sudo privileges
         with utils.nonblocking_subprocess(
-                'sudo python3 {} {}'.format(_get_ebpf_file(), self.runtime_conf), {}
+                'sudo {} {} {}'.format(
+                    utils.get_current_interpreter('3.6+'), _get_ebpf_file(), self.runtime_conf
+                ), {}
         ) as ebpf_proc:
             WATCH_DOG.info('The eBPF process is running, pid {}.'.format(ebpf_proc.pid))
             self.ebpf_process = ebpf_proc
