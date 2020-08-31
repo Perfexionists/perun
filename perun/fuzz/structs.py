@@ -120,7 +120,8 @@ class FuzzingConfiguration:
                                  kwargs.get("gcno_path") and
                                  kwargs.get("gcov_path")) is not None
         self.coverage = CoverageConfiguration(**kwargs)
-        self.new_approach = self.coverage_testing and kwargs['new_approach']
+        self.new_approach = self.coverage_testing and kwargs['new_approach'] and \
+            self.coverage.gcov_version >= GCOV_VERSION_W_JSON_FORMAT
 
     RATIO_INCR_CONST = 0.05
     RATIO_DECR_CONST = 0.01
