@@ -287,6 +287,6 @@ ECSEL JU is not responsible for any use that may be made of the information it c
 </p>
 
 <p align="center">
-  <img src="figs/logo-eu.jpg" width="50%">
+  <img src="figs/logo-eu.jpg" width="33%">
 </p>
  This project is co-funded by the European Union
