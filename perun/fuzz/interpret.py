@@ -70,11 +70,11 @@ def save_log_files(log_dir, fuzz_progress):
     """
     log.info("Saving log files ", end="")
     deg_data_file = open(
-        log_dir + "/" + fuzz_progress.start_timestamp + "_degradation_plot_data.txt", "w")
+        path.join(log_dir, fuzz_progress.start_timestamp + "_degradation_plot_data.txt"), "w")
     cov_data_file = open(
-        log_dir + "/" + fuzz_progress.start_timestamp + "_coverage_plot_data.txt", "w")
+        path.join(log_dir, fuzz_progress.start_timestamp + "_coverage_plot_data.txt"), "w")
     results_data_file = open(
-        log_dir + "/" + fuzz_progress.start_timestamp + "_results_data.txt", "w")
+        path.join(log_dir, fuzz_progress.start_timestamp + "_results_data.txt"), "w")
 
     save_time_series(deg_data_file, fuzz_progress.deg_time_series)
     save_time_series(cov_data_file, fuzz_progress.cov_time_series)
@@ -257,9 +257,9 @@ def draw_paths_heatmap(callgraph, graphs_dir, fuzzing_timestamp):
     mask = ([False]*path_count) + ([True]*empty_cells)
 
     # Transform each list to 2d array (matrix)
-    data_inc = [data_inc[i:i+cols] for i in range(0, len(data_inc), cols)]
-    data_exc = [data_exc[i:i+cols] for i in range(0, len(data_exc), cols)]
-    mask = [mask[i:i+cols] for i in range(0, len(mask), cols)]
+    data_inc = np.array(data_inc).reshape((rows,cols))
+    data_exc = np.array(data_exc).reshape((rows,cols))
+    mask = np.array(mask).reshape((rows,cols))
 
     sns.set()
     log.info("Plotting heatmaps of callgpaph paths coverage.", end="")

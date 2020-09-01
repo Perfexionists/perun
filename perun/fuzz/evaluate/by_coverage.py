@@ -261,9 +261,9 @@ def get_vectors_from_gcov_JSON(json_gcov_data, callgraph):
     inclusive_execs = dict()
     exclusive_execs = dict()
     try:
-        cwd = json_gcov_data['current_working_directory'] + "/"
+        cwd = json_gcov_data['current_working_directory']
         for file in json_gcov_data['files']:
-            file_path = cwd + file["file"]
+            file_path = path.join(cwd, file["file"])
             # counts executed lines in functions (INCLUSIVE coverage),
             # and also system library function calls (EXCLUSIVE coverage)
             for line in file['lines']:

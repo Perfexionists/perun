@@ -379,13 +379,15 @@ def teardown(fuzz_progress, output_dirs, parents, rule_set, config):
         log.info("Plotting time series of fuzzing process...")
         interpret.plot_fuzz_time_series(
             fuzz_progress.deg_time_series,
-            output_dirs["graphs"] + "/" + fuzz_progress.start_timestamp + "_degradations_ts.pdf",
+            path.join(
+                output_dirs["graphs"], fuzz_progress.start_timestamp + "_degradations_ts.pdf"),
             "Fuzzing in time", "time (s)", "degradations"
         )
         if config.coverage_testing:
             interpret.plot_fuzz_time_series(
                 fuzz_progress.cov_time_series,
-                output_dirs["graphs"] + "/" + fuzz_progress.start_timestamp + "_coverage_ts.pdf",
+                path.join(
+                    output_dirs["graphs"], fuzz_progress.start_timestamp + "_coverage_ts.pdf"),
                 "Max path during fuzing", "time (s)", "executed lines ratio"
             )
     # Plot the differences between seeds and inferred mutation
@@ -505,7 +507,7 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
     # No gcno files were found, no coverage testing
     if not fuzz_progress.base_cov:
         # avoiding possible further zero division
-        fuzz_progress.base_cov = Coverage([],[]) if config.new_approach else 1
+        fuzz_progress.base_cov = Coverage([], []) if config.new_approach else 1
         config.coverage_testing = False
         log.warn("No .gcno files were found.")
 
