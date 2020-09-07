@@ -286,6 +286,8 @@ def _add_single_probe(name, usdt_probes, result):
     """
     if name in usdt_probes and name not in result['#pairs_reversed#']:
         usdt_probes[name]['pair'] = name
+        # Single probes do not support sampling
+        usdt_probes[name]['sample'] = 1
         result.setdefault(name, usdt_probes[name])
 
 

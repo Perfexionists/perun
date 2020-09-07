@@ -5,8 +5,10 @@ from enum import Enum
 
 from perun.collect.trace.values import Strategy, DEFAULT_SAMPLE
 from perun.utils.helpers import SuppressedExceptions
+from perun.utils import partition_list
 
 
+# TODO: change the API of probe retrieval to something universal and practical
 class Probes:
     """ Stores the function and USDT probe specifications, extraction strategy, global sampling etc.
 
@@ -28,6 +30,7 @@ class Probes:
         # The dicts of function and USDT probes
         self.func = {}
         self.usdt = {}
+        # TODO: remove, store the len instead
         # Store the sampled probe names for easier future access
         self.sampled_func = []
         self.sampled_usdt = []
@@ -152,6 +155,66 @@ class Probes:
         else:
             self.sampled_usdt.append(probe_name)
 
+    def get_func_probes(self):
+        """ Return all registered function probes, sorted according to the name of the associated
+        function.
+
+        :return list: sorted list of function probes
+        """
+        return sorted(list(self.func.values()), key=lambda value: value['name'])
+
+    def get_partitioned_func_probes(self):
+        """ Return all registered function probes, sorted by name and partitioned into two lists
+        based on the sampling: [sampled] and [unsampled] probes.
+
+        :return tuple (list, list): lists of sampled and unsampled function probes
+        """
+        return partition_list(
+            sorted(list(self.func.values()), key=lambda value: value['name']),
+            lambda func: func['sample'] > 1
+        )
+
+    def get_usdt_probes(self):
+        """ Return all registered USDT probes, sorted according to the name of UDST location.
+
+        :return list: sorted list of USDT probes
+        """
+        return sorted(list(self.usdt.values()), key=lambda value: value['name'])
+
+    def get_partitioned_usdt_probes(self):
+        """ Return all registered USDT probes, sorted by name and partitioned into three lists
+        based on the sampling and probe type: [sampled (paired)], [unsampled (paired)] and
+        [single (non-paired)] probes.
+
+        :return tuple (list, list, list): lists of sampled, unsampled and single USDT probes.
+        """
+        paired_sampled, paired_nonsampled, single = [], [], []
+        # Sort the collection of USDT probes
+        for probe in sorted(list(self.usdt.values()), key=lambda value: value['name']):
+            if probe['pair'] == probe['name']:
+                single.append(probe)
+            elif probe['sample'] > 1:
+                paired_sampled.append(probe)
+            else:
+                paired_nonsampled.append(probe)
+        return paired_sampled, paired_nonsampled, single
+
+    def get_sampled_func_probes(self):
+        """ Return generator that iterates all sampled function probes in a sorted manner.
+
+        :return generator: generator object
+        """
+        probe_list = list(filter(lambda func: func['sample'] > 1, self.func.values()))
+        return self._retrieve_probes(probe_list)
+
+    def get_sampled_usdt_probes(self):
+        """ Return generator that iterates all sampled USDT probes in a sorted manner.
+
+        :return generator: generator object
+        """
+        probe_list = list(filter(lambda usdt: usdt['sample'] > 1, self.usdt.values()))
+        return self._retrieve_probes(probe_list)
+
     def get_sampled_probes(self):
         """ Provides the dictionary of all the sampled probes from all the probe sources (i.e.
         func and USDT).
@@ -160,8 +223,31 @@ class Probes:
         """
         # Generate the sequence of sampled probes from all the sources
         for probes, sampled in [(self.func, self.sampled_func), (self.usdt, self.sampled_usdt)]:
-            for probe_name in sampled:
+            for probe_name in sorted(sampled):
                 yield probes[probe_name]
+
+    def sampled_probes_len(self):
+        """ Counts the number of sampled function and USDT probes.
+
+        :return int: the number of sampled probes
+        """
+        return len(self.sampled_func) + len(self.sampled_usdt)
+
+    def total_probes_len(self):
+        """ Counts the number of total function and USDT probes.
+
+        :return int: the total number of probes
+        """
+        return len(self.func.keys()) + len(self.usdt.keys())
+
+    def _retrieve_probes(self, probe_list):
+        """ Sort a list of probes by name and transform them to a generator
+
+        :param list probe_list: a list of probe dictionaries to generate
+        :return generator: generator object
+        """
+        for probe in sorted(probe_list, key=lambda value: value['name']):
+            yield probe
 
 
 class ProbeType(str, Enum):

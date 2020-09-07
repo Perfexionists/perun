@@ -5,12 +5,12 @@ import time
 import os
 from subprocess import PIPE, STDOUT, DEVNULL
 
-import perun.collect.trace.systemtap.parse as parse
+import perun.collect.trace.systemtap.parse_compact as parse_compact
 import perun.collect.trace.collect_engine as engine
-import perun.collect.trace.systemtap.script as stap_script
+import perun.collect.trace.systemtap.script_compact as stap_script_compact
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.threads import PeriodicThread, NonBlockingTee, TimeoutThread
-from perun.collect.trace.values import FileSize, OutputHandling, check, \
+from perun.collect.trace.values import FileSize, OutputHandling, check, RecordType, \
     LOG_WAIT, HARD_TIMEOUT, CLEANUP_TIMEOUT, CLEANUP_REFRESH, HEARTBEAT_INTERVAL, \
     STAP_MODULE_REGEX, PS_FORMAT, STAP_PHASES
 
@@ -93,7 +93,7 @@ class SystemTapEngine(engine.CollectEngine):
 
         :param kwargs: the configuration parameters
         """
-        stap_script.assemble_system_tap_script(self.script, **kwargs)
+        stap_script_compact.assemble_system_tap_script(self.script, **kwargs)
 
     def collect(self, config, **_):
         """Collects performance data using the SystemTap wrapper, assembled script and the
@@ -127,7 +127,7 @@ class SystemTapEngine(engine.CollectEngine):
 
         :return iterable: a generator object that produces the resources
         """
-        return parse.trace_to_profile(self.data, **kwargs)
+        return parse_compact.trace_to_profile(self.data, **kwargs)
 
     def cleanup(self, config, **_):
         """ Cleans up the SystemTap resources that are still being used.
@@ -309,7 +309,7 @@ class SystemTapEngine(engine.CollectEngine):
                     return
         metrics.end_timer('command_time')
         # Wait for the SystemTap to finish writing to the data file
-        _wait_for_systemtap_data(self.data, self.binary)
+        _wait_for_systemtap_data(self.data)
 
     def _cleanup_processes(self):
         """ Attempts to terminate all collection-related processes that are still running -
@@ -495,13 +495,12 @@ def _wait_for_systemtap_startup(logfile, stap_process):
             raise SystemTapStartupException(logfile)
 
 
-def _wait_for_systemtap_data(datafile, binary):
+def _wait_for_systemtap_data(datafile):
     """ Waits until the collection process has finished writing the profiling output to the
     data file. This can be checked by observing the last line of the data file where the
-    ending marker 'end <binary>' should be present.
+    ending sentinel should be present.
 
     :param str datafile: the name (path) of the data file
-    :param str binary: the binary file that is profiled
     """
     # Start the TimeoutThread so that the waiting is not indefinite
     WATCH_DOG.info(
@@ -513,7 +512,8 @@ def _wait_for_systemtap_data(datafile, binary):
             # Periodically scan the last line of the data file
             # The file can be potentially very long, use the optimized method to get the last line
             last_line = _get_last_line_of(datafile, FileSize.Long)[1]
-            if last_line.startswith('end {}'.format(binary)):
+            last_record = parse_compact.parse_record(last_line)
+            if last_record['type'] == RecordType.SentinelEnd.value:
                 WATCH_DOG.info('The data file is fully written.')
                 return
             time.sleep(LOG_WAIT)

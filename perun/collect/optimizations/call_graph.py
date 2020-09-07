@@ -4,12 +4,13 @@ easy manipulation with its structure.
 The Call Graph Structure stores the extracted call graph as well as the control flow graph.
 """
 
-
 import perun.vcs as vcs
+from perun.collect.optimizations.call_graph_levels import CGLevelMixin, LevelEstimator
 from perun.collect.optimizations.structs import Complexity
 
 
-class CallGraphResource:
+# TODO: think about converting the proprietary graph structure into the networkx graph
+class CallGraphResource(CGLevelMixin):
     """ The call graph resource class with all the additional properties.
 
     :ivar dict cg_map: a dictionary with all the call graph nodes,
@@ -31,6 +32,9 @@ class CallGraphResource:
         """
         self.cg_map = {}
         self.reachable = {}
+        self.backedges = {}
+        self.bottom = set()
+        self.top = set()
         self.levels = []
         self.leaves = []
         self.depth = 0
@@ -65,7 +69,8 @@ class CallGraphResource:
         :return CallGraphResource: the properly initialized CGR object
         """
         self._build_cg_map(angr_cg['call_graph'], functions)
-        self._build_levels()
+        # The DFS backedges and level estimator is currently fixed
+        self._build_levels(LevelEstimator.DFS)
         self._compute_reachability()
         self._build_cfg(angr_cg['control_flow'], functions)
         return self
@@ -79,215 +84,14 @@ class CallGraphResource:
         """
         call_graph, cfg = dict_cg['call_graph'], dict_cg['control_flow']
         self.cg_map = call_graph['cg_map']
-        self.levels = call_graph['levels']
-        self.leaves = call_graph['leaves']
         self.recursive = set(call_graph.get('recursive', []))
-        self.depth = call_graph['depth']
         self.cfg = cfg
-        self.minor = dict_cg['minor_version']
-        # Compute the reachability since it can get too big to store
+        # The DFS backedges and level estimator is currently fixed
+        self._build_levels(LevelEstimator.DFS)
+        # # Compute the reachability since it can get too big to store
         self._compute_reachability()
+        self.minor = dict_cg['minor_version']
         return self
-
-    def _build_cg_map(self, angr_cg, functions):
-        """ Creates the cg_map property using the angr_cg dictionary.
-
-        :param dict angr_cg: the call graph dictionary extracted using angr
-        :param set functions: a set of function names obtained from the collection strategies
-        """
-        # Add the nodes of the call graph
-        excluded = set()
-        nodes = 0
-        for func_name in angr_cg.keys():
-            # Ignore the functions that are not present in extracted functions for now
-            if not _is_in_funcs(func_name, functions):
-                excluded.add(func_name)
-            # Create a cg_map record
-            else:
-                nodes += 1
-                self[func_name] = self._create_cg_node(func_name)
-        # Add those excluded functions that have at least one callee that is not excluded
-        # Such functions may be needed to not break the call graph structure
-        for func_name in excluded:
-            included_callees = [name for name in angr_cg[func_name] if name not in excluded]
-            if included_callees:
-                self[func_name] = self._create_cg_node(func_name, filtered=True)
-
-        # Add the edges of the call graph
-        edges = 0
-        for func_name, callees in angr_cg.items():
-            # Ignore excluded functions
-            if func_name in self.cg_map:
-                func = self[func_name]
-                # Add edges to all callees, except for self loops and excluded nodes
-                for callee in callees:
-                    edges += 1
-                    if callee == func_name:
-                        self.recursive.add(func_name)
-                    if callee != func_name and callee in self.cg_map:
-                        self._add_connection(func, self[callee])
-
-    def _build_levels(self):
-        """ Computes the levels property of CGR using a longest path estimator.
-        """
-        # Estimate the levels of the nodes
-        self._estimate_level()
-        # Build the level lists
-        self.depth = max(self.cg_map.values(), key=lambda item: item['level'])['level']
-        self.levels = [[] for _ in range(self.depth + 1)]
-        # Assign the functions to the level lists
-        for func_name, func_config in self.cg_map.items():
-            # Register the call graph function as a leaf if it has no callees
-            self._set_leaf(func_config)
-            # Keep a reference to the function in the appropriate level
-            self.levels[func_config['level']].append(func_name)
-
-    def _estimate_level(self):
-        """ The longest path length estimator. Since LP is a NP-complete problem, we leverage a
-        heuristic to estimate the length - basically, we try to resolve all callers and based on
-        the highest length (level) of the callers, we assign the resulting level estimate. When we
-        cannot resolve all callers, it indicates a cycle which we break by estimating a level based
-        only on the resolved callers and callees.
-        """
-        finished = set()
-        visited_pairs = {}
-        # nodes: {<function name>: {
-        #     'level': <current maximum level estimate>,
-        #     'callers': <remaining callers that were not yet inspected>}
-        # }
-        # levels: {<level>: {'fun1', 'fun2', 'fun3', ...}}
-        tested = {'nodes': {}, 'levels': {}}
-
-        self['main']['level'] = 0
-        # Inspect list keeps track of caller -> callee pairs to inspect in a BFS fashion
-        inspect_list = [('main', callee, 0) for callee in self['main']['callees']]
-        while inspect_list:
-            # Get the next candidate to expand
-            parent, callee, level = inspect_list.pop(0)
-            parent_visited = visited_pairs.setdefault(parent, [])
-            # Avoid duplicate checks (caused e.g. by loops)
-            if callee not in parent_visited and callee not in finished:
-                # Add new level candidate based on the caller level
-                parent_visited.append(callee)
-                callee_node = self[callee]
-                callee_node['level'].append(level)
-                # Update the tested records
-                _update_tested(tested, callee_node, parent)
-
-                # If all the callers have been already inspected, set the level to its maximum
-                if len(callee_node['level']) == len(callee_node['callers']):
-                    # callee_node['level'] = max(callee_node['level'])
-                    self._set_level(callee_node)
-                    finished.add(callee)
-                    # Expand the callees to be inspected as well, if any
-                    if callee_node['callees']:
-                        inspect_list.extend(
-                            (callee, callee_callee, callee_node['level'])
-                            for callee_callee in callee_node['callees']
-                        )
-            # There can still be some functions that were not assigned a level since not all of the
-            # callers were inspected - this means that there is a cycle in the call graph and
-            # we break it by finding an unfinished function with the lowest level estimate (i.e.
-            # not all of the callers were inspected yet and thus the level is not accurate)
-            # and setting the function as finished (thus setting the level estimate as the final
-            # level value), which generates new records for the inspect list - if the function has
-            # any callees.
-            while not inspect_list:
-                if not self._expand_candidate(tested, finished, inspect_list):
-                    break
-
-    def _expand_candidate(self, tested, finished, inspect_list):
-        """ Find unresolved function that is the best candidate for breaking the loop in CG. We
-        select functions that have the currently lowest level estimate, since they might cause a
-        domino effect by subsequently breaking other cycles.
-
-        :param dict tested: an internal structure that keeps track of the fully unresolved functions
-        :param set finished: a set of already fully resolved functions
-        :param list inspect_list: the set of functions that are queued for further expansion
-
-        :return bool: True if we managed to find and process a candidate, False otherwise
-        """
-        # No more candidates, every function should have a valid level estimate
-        if not tested['levels']:
-            return False
-        # Get the next candidate
-        candidate_level = min(tested['levels'].keys())
-        candidate = sorted(list(tested['levels'][candidate_level]))[0]
-        # Delete it from the tested dictionary
-        _delete_from_levels(tested['levels'], candidate_level, candidate)
-        del tested['nodes'][candidate]
-        # Set the node as finished and expand the candidate into the inspect list
-        node = self[candidate]
-        self._set_level(node)
-        # node['level'] = candidate_level
-        finished.add(candidate)
-        inspect_list.extend([(candidate, callee, node['level']) for callee in node['callees']])
-        return True
-
-    def _set_level(self, node):
-        """ Assigns a level value to the supplied node, i.e., function.
-
-        We set the level according to the maximum caller and callee level (to avoid e.g., two
-        functions that call one another on the same level).
-
-        :param dict node: the object representing a CG function
-        """
-        callers_max = max(node['level'])
-        # Inspect the callees, however, they might or might not be already resolved
-        callee_max = []
-        for callee in node['callees']:
-            callee_level = self[callee]['level']
-            if isinstance(callee_level, int):
-                callee_max.append(callee_level)
-            else:
-                if callee_level:
-                    callee_max.append(max(callee_level))
-        # Set the level as the maximum of callers and callees + 1
-        callee_max = max(callee_max) if callee_max else callers_max
-        node['level'] = max(callers_max, callee_max) + 1
-
-    def _compute_reachability(self):
-        """ Compute the reachability property for all cg_map functions. We speed the computation
-        thanks to the usage of levels, since we can traverse the CG in reverse order (bottom -> top)
-        and build on the previously computed results
-        """
-        self.reachable = {func_name: set() for func_name in self.cg_map.keys()}
-        # Start from the bottom levels
-        for level in reversed(self.levels):
-            for func in level:
-                self._reachable_callees(self[func])
-
-    def _reachable_callees(self, vertex):
-        """ Compute or obtain the reachability set of the 'vertex' function.
-
-        :param dict vertex: the CG function dictionary with all the properties
-        """
-        reachable = set()
-        candidates = [callee for callee in vertex['callees']]
-        while candidates:
-            func = candidates.pop()
-            # The function has already been inspected
-            if func in reachable:
-                continue
-            # The reachability has already been computed for the function, use it
-            reachable.add(func)
-            if self.reachable[func]:
-                reachable |= self.reachable[func]
-            # Expand the function
-            else:
-                callees = [callee for callee in self[func]['callees'] if callee not in reachable]
-                candidates.extend(callees)
-        self.reachable[vertex['name']] = reachable
-
-    def _build_cfg(self, cfgs, functions):
-        """ Transforms the extracted CFG into the CGR format.
-
-        :param dict cfgs: the CFG dictionaries with blocks and edges
-        :param set functions: a set of function obtained from a collection strategy
-        """
-        for func, cfg in cfgs.items():
-            if func in functions:
-                self.cfg[func] = cfg
 
     def get_functions(self, diff_only=False):
         """ Obtain functions from the cg_map in format suitable for further processing outside the
@@ -303,11 +107,13 @@ class CallGraphResource:
             :param dict func: the function in dictionary format
             :return bool: whether we should include the given function in output or not
             """
-            return func['diff'] or func['name'] == 'main' if diff_only else not func['filtered']
+            return func['diff'] if diff_only else not func['filtered']
 
-        return {
+        base = {'main': self.cg_map['main']['sample']}
+        base.update({
             func['name']: func['sample'] for func in self.cg_map.values() if filter_func(func)
-        }
+        })
+        return base
 
     def set_diff(self, funcs):
         """ Set the diff flag to a given functions
@@ -370,6 +176,57 @@ class CallGraphResource:
         res = self[func_1]['level'] < self[func_2]['level'] and func_2 in self.reachable[func_1]
         return res
 
+    def compute_bottom(self):
+        """ Compute the Bottom set of the call graph. If back edges are available, leverage them
+        to compute the set easily. Otherwise, leverage the subsumption operation.
+
+        :return set: the resulting Bottom set of the call graph
+        """
+        unfiltered_funcs = [func for func in self.cg_map.keys() if not self[func]['filtered']]
+        if self.backedges:
+            self.bottom = set()
+            for func in unfiltered_funcs:
+                # Find callees and back edges except those that are filtered
+                unfiltered_callees = [
+                    callee for callee in self[func]['callees'] if not self[callee]['filtered']
+                ]
+                unfiltered_backedges = [
+                    be for be in self.backedges[func] if not self[be]['filtered']
+                ]
+                # The node has no unfiltered callees or only back edges -> it is a bottom node
+                if len(unfiltered_backedges) == len(unfiltered_callees):
+                    self.bottom.add(func)
+        else:
+            self.bottom = set(
+                func for func in unfiltered_funcs
+                if not any(self.subsumption(func, cmp_func) for cmp_func in unfiltered_funcs)
+            )
+        return self.bottom
+
+    def compute_top(self):
+        """ Compute the Top set of the call graph.
+
+        First find the max cut that filters main function and functions that are the only
+        callee of main and its successors. Then filter the cut functions and leverage
+        subsumption to find the Top set.
+
+        :return set: the resulting Top set of the call graph
+        """
+        # Find the maximum cut and the corresponding excluded functions
+        excluded, _ = self.coverage_max_cut()
+        tested_funcs = [
+            func for func in self.cg_map.keys()
+            if func not in excluded and not self[func]['filtered']
+        ]
+        # Find the maximum coverage functions
+        self.top = set(
+            func for func in tested_funcs if
+            not any(self.subsumption(cmp_func, func)
+                    for cmp_func in tested_funcs))
+        if not self.top:
+            self.top = {'main'}
+        return self.top
+
     def coverage_max_cut(self):
         """ Helper function for the Top Level Coverage Metric. Find call graph cut required to
         identify the TLC probes.
@@ -380,21 +237,102 @@ class CallGraphResource:
         visited = {'main'}
         callees = self['main']['callees']
         while callees:
-            # Ignore backedges in the possible initial call chain
-            filtered_callees = [callee for callee in callees if callee not in visited]
-            if len(filtered_callees) > 1:
+            # Ignore backedges and filtered functions in the possible initial call chain
+            unfiltered_callees = [
+                callee for callee in callees
+                if callee not in visited and not self[callee]['filtered']
+            ]
+            if len(unfiltered_callees) > 1:
                 # We found the first call graph branch
-                cut_level = max(self[func]['level'] for func in visited)
-                return visited, cut_level
-            elif len(filtered_callees) == 0:
+                break
+            elif len(unfiltered_callees) == 0:
                 # We ran out of functions, the call graph is thus possibly one linear call chain
                 return {'main'}, 0
             else:
                 # We continue through the linear call chain
-                visited.add(filtered_callees[0])
-                callees = self[filtered_callees[0]]['callees']
+                visited.add(unfiltered_callees[0])
+                callees = self[unfiltered_callees[0]]['callees']
         cut_level = max(self[func]['level'] for func in visited)
         return visited, cut_level
+
+    def _build_cg_map(self, angr_cg, functions):
+        """ Creates the cg_map property using the angr_cg dictionary.
+
+        :param dict angr_cg: the call graph dictionary extracted using angr
+        :param set functions: a set of function names obtained from the collection strategies
+        """
+        # Add the nodes of the call graph
+        excluded = set()
+        nodes = 0
+        for func_name in angr_cg.keys():
+            # Ignore the functions that are not present in extracted functions for now
+            if not _is_in_funcs(func_name, functions):
+                excluded.add(func_name)
+            # Create a cg_map record
+            else:
+                nodes += 1
+                self[func_name] = self._create_cg_node(func_name)
+        # Add those excluded functions that have at least one callee that is not excluded
+        # Such functions may be needed to not break the call graph structure
+        for func_name in excluded:
+            included_callees = [name for name in angr_cg[func_name] if name not in excluded]
+            if included_callees:
+                self[func_name] = self._create_cg_node(func_name, filtered=True)
+
+        # Add the edges of the call graph
+        for func_name, callees in angr_cg.items():
+            # Ignore excluded functions
+            if func_name in self.cg_map:
+                func = self[func_name]
+                # Add edges to all callees, except for self loops and excluded nodes
+                for callee in callees:
+                    if callee == func_name:
+                        self.recursive.add(func_name)
+                    if callee != func_name and callee in self.cg_map:
+                        self._add_connection(func, self[callee])
+
+    def _compute_reachability(self):
+        """ Compute the reachability property for all cg_map functions. We speed the computation
+        thanks to the usage of levels, since we can traverse the CG in reverse order (bottom -> top)
+        and build on the previously computed results
+        """
+        self.reachable = {func_name: set() for func_name in self.cg_map.keys()}
+        # Start from the bottom levels
+        for level in reversed(self.levels):
+            for func in level:
+                self._reachable_callees(self[func])
+
+    def _reachable_callees(self, vertex):
+        """ Compute or obtain the reachability set of the 'vertex' function.
+
+        :param dict vertex: the CG function dictionary with all the properties
+        """
+        reachable = set()
+        candidates = [callee for callee in vertex['callees']]
+        while candidates:
+            func = candidates.pop()
+            # The function has already been inspected
+            if func in reachable:
+                continue
+            # The reachability has already been computed for the function, use it
+            reachable.add(func)
+            if self.reachable[func]:
+                reachable |= self.reachable[func]
+            # Expand the function
+            else:
+                callees = [callee for callee in self[func]['callees'] if callee not in reachable]
+                candidates.extend(callees)
+        self.reachable[vertex['name']] = reachable
+
+    def _build_cfg(self, cfgs, functions):
+        """ Transforms the extracted CFG into the CGR format.
+
+        :param dict cfgs: the CFG dictionaries with blocks and edges
+        :param set functions: a set of function obtained from a collection strategy
+        """
+        for func, cfg in cfgs.items():
+            if func in functions:
+                self.cfg[func] = cfg
 
     def _remove_function(self, name):
         """ Attempt to remove a function from call graph.
@@ -472,50 +410,3 @@ def _is_in_funcs(func_name, functions):
     if not functions:
         return True
     return func_name in functions
-
-
-def _update_tested(tested, node, caller):
-    """ Update the internal structure that keeps track of candidates and their levels in a
-    fast-access structure.
-
-    :param dict tested: the helper structure used during computing the CG levels property
-    :param dict node: the updated function, supplied as dictionary
-    :param str caller: the caller context, i.e., name of the caller function
-    """
-    # Get the node and levels structures
-    levels = tested['levels']
-    tested_node = tested['nodes'].setdefault(
-        node['name'], {'level': -1, 'callers': list(node['callers'])}
-    )
-    # Remove the caller from the node record
-    if caller in tested_node['callers']:
-        tested_node['callers'].remove(caller)
-        # Remove the tested record if no more callers are remaining
-        if not tested_node['callers']:
-            _delete_from_levels(levels, tested_node['level'], node['name'])
-            del tested['nodes'][node['name']]
-            return
-
-    # Reassign the node to a new minimum level
-    old_level = tested_node['level']
-    new_level = max(node['level'])
-    if new_level > old_level:
-        tested_node['level'] = new_level
-        # Remove the old level association
-        _delete_from_levels(levels, old_level, node['name'])
-        # Add the node to the new corresponding level
-        levels.setdefault(new_level, set()).add(node['name'])
-
-
-def _delete_from_levels(levels, level, name):
-    """ Delete the specified function from the helper levels structure for candidates.
-
-    :param list levels: a list structure that bundles and keeps track of candidate levels
-    :param int level: the level containing the function to remove
-    :param str name: name of the function to remove
-    """
-    if level != -1:
-        levels[level].discard(name)
-        # Remove the entire level category if no more records are there
-        if not levels[level]:
-            del levels[level]

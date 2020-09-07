@@ -94,6 +94,8 @@ class Parameters(Enum):
     CGTrimKeepLeaf = 'cg-trim-keep-leaf'
     CGPruneChainLength = 'cg-prune-chain-length'
     CGPruneKeepTop = 'cg-prune-keep-top'
+    CGProjLevels = 'cg-proj-levels'
+    CGProjKeepLeaf = 'cg-proj-keep-leaf'
     DynSampleStep = 'dyn-sample-step'
     DynSampleThreshold = 'dyn-sample-threshold'
     ProbingThreshold = 'probing-threshold'
@@ -115,6 +117,7 @@ class Parameters(Enum):
 class DiffCfgMode(Enum):
     """ Enumeration of the currently supported CFG comparison mode.
     """
+    Coloring = 'color'
     Soft = 'soft'
     Semistrict = 'semistrict'
     Strict = 'strict'
@@ -135,6 +138,8 @@ class CGShapingMode(Enum):
     Prune = 'prune'
     Soft = 'soft'
     Strict = 'strict'
+    Bottom_up = 'bottom-up'
+    Top_down = 'top-down'
 
     @staticmethod
     def supported():
@@ -306,6 +311,14 @@ class ParametersManager:
                 'value': self._default_keep_top,
                 'validate': self._validate_uint
             },
+            Parameters.CGProjLevels: {
+                'value': self._default_chain_length,
+                'validate': self._validate_uint
+            },
+            Parameters.CGProjKeepLeaf: {
+                'value': False,
+                'validate': self._validate_bool
+            },
             Parameters.DynSampleStep: {
                 'value': self._default_sampling_step,
                 'validate': self._validate_ufloat
@@ -428,6 +441,7 @@ class ParametersManager:
         if func_count <= self._functions_keep_leaves:
             self[Parameters.DiffKeepLeaf] = True
             self[Parameters.CGTrimKeepLeaf] = True
+            self[Parameters.CGProjKeepLeaf] = True
         # Keep-top: 10% of levels, minimum is default
         keep_top = max(math.ceil(level_count * self._keep_top_ratio), self._default_keep_top)
         self[Parameters.CGPruneKeepTop] = keep_top
@@ -468,11 +482,13 @@ class ParametersManager:
         trim_levels = 0
         if self[Parameters.CGShapingMode] == CGShapingMode.Strict:
             trim_levels = math.ceil(level_count * self._levels_strict_ratio)
-        elif self[Parameters.CGShapingMode] == CGShapingMode.Soft:
+        elif self[Parameters.CGShapingMode] in (CGShapingMode.Soft, CGShapingMode.Top_down,
+                                                CGShapingMode.Bottom_up):
             trim_levels = round(level_count * self._levels_soft_ratio)
 
         # Set the trim levels, the chain length and the minimum number of functions
         self[Parameters.CGTrimLevels] = max(trim_levels, self._default_min_levels)
+        self[Parameters.CGProjLevels] = max(trim_levels, self._default_min_levels)
         self[Parameters.CGPruneChainLength] = max(
             math.floor(level_count * self._chain_length_ratio), self._default_chain_length
         )

@@ -227,9 +227,6 @@ def _process_func_record(record, trace_stack, sequence_map, global_sampling):
         faults[:] = [f for f in faults if f < len(stack) - 1]
     # The matching record is on top of the stack, create resource
     matching_record = stack.pop()
-    # for item in stack:
-    #     if matching_record.name == item.name:
-    #         print('recursion: {}'.format(matching_record.name))
     return {'amount': int(record.timestamp) - int(matching_record.timestamp),
             'uid': matching_record.name,
             'type': 'mixed',

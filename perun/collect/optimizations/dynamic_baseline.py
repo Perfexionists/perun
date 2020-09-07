@@ -32,8 +32,11 @@ def filter_functions(call_graph, stats_map, checks):
             if check_f(call_graph=call_graph, stats=stats_map, func=func_name,
                        threshold=check_threshold):
                 filtered_funcs.append(func_name)
+                break
 
     # Finally remove the filtered functions
+    for func in filtered_funcs:
+        print('filtered: {}'.format(func))
     call_graph.remove_or_filter(filtered_funcs)
 
 
@@ -81,6 +84,9 @@ def wrapper_filter(call_graph, func, stats, **_):
     if len(callers) < 1:
         return
     for parent in callers:
+        # The parent might not have any records
+        if parent not in stats:
+            return False
         # Check if all callers satisfy the wrapper constraints
         p_callees, parent_median = call_graph[parent]['callees'], stats[parent]['median']
         if (stats[parent]['count'] != calls or len(p_callees) != 1 or func != p_callees[0] or

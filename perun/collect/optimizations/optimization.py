@@ -8,6 +8,7 @@ from perun.collect.optimizations.structs import Optimizations, Pipeline, Paramet
 import perun.collect.optimizations.resources.manager as resources
 from perun.collect.optimizations.call_graph import CallGraphResource
 import perun.collect.optimizations.cg_shaping as shaping
+import perun.collect.optimizations.cg_projection as proj
 import perun.collect.optimizations.dynamic_baseline as dbase
 import perun.collect.optimizations.static_baseline as sbase
 import perun.collect.optimizations.diff_tracing as diff
@@ -16,6 +17,10 @@ import perun.collect.optimizations.gather as gather
 import perun.utils.metrics as metrics
 
 
+SPECIAL_CALL_COUNT = 101
+
+
+# TODO: classify (metrics) functions as private / public
 class CollectOptimization:
     """ A class that stores the optimization context and implements the core of the
     optimization architecture.
@@ -202,11 +207,22 @@ class CollectOptimization:
                     self.params[Parameters.CGTrimMinFunctions],
                     self.params[Parameters.CGTrimKeepLeaf]
                 )
-            else:
+            elif mode == CGShapingMode.Prune:
                 shaping.call_graph_pruning(
                     self.call_graph,
                     self.params[Parameters.CGPruneChainLength],
                     self.params[Parameters.CGPruneKeepTop]
+                )
+            elif mode == CGShapingMode.Bottom_up:
+                proj.cg_bottom_up(
+                    self.call_graph,
+                    self.params[Parameters.CGProjLevels]
+                )
+            elif mode == CGShapingMode.Top_down:
+                proj.cg_top_down(
+                    self.call_graph,
+                    self.params[Parameters.CGProjLevels],
+                    self.params[Parameters.CGTrimKeepLeaf]
                 )
 
         # Perform the static baseline
@@ -251,9 +267,10 @@ class CollectOptimization:
             metrics.start_timer('post-optimize')
             # Create the dynamic stats from the profile, if necessary
             dyn_stats = gather.gather_stats(profile, config)
-            # TODO: metric only
-            self.coverage_metric(dyn_stats)
-            self.collected_points_metric(dyn_stats)
+            if metrics.is_enabled():
+                self._call_graph_level_assumption(dyn_stats)
+                self._coverage_metric(dyn_stats)
+                self._collected_points_metric(dyn_stats)
             if optimizations:
                 # Store the gathered Dynamic Stats
                 self.dynamic_stats.update(dyn_stats)
@@ -263,59 +280,45 @@ class CollectOptimization:
                 )
             metrics.end_timer('post-optimize')
 
-    def coverage_metric(self, dyn_stats):
+    def _coverage_metric(self, dyn_stats):
         """ Helper function for computing the coverage metrics.
 
         :param dict dyn_stats: the Dynamic Stats resource
         """
         if self.call_graph is None:
             return
-        # Find the minimum coverage functions
         main_time = dyn_stats['main']['total']
-        min_coverage_funcs = set(
-            func for func in dyn_stats.keys() if
-            dyn_stats[func]['total'] <= main_time and
-            not any(self.call_graph.subsumption(func, cmp_func)
-                    for cmp_func in dyn_stats.keys()))
-        min_coverage_funcs_alt = min_coverage_funcs - self.call_graph.recursive
+        # A) Compute the top-level and hotspot coverages using the CG structure
+        excluded = set(self.call_graph.cg_map.keys()) - set(dyn_stats.keys())
+        for func, f_stats in dyn_stats.items():
+            # Exclude functions that are recursive or exceed the total running time of main
+            if func in self.call_graph.recursive or dyn_stats[func]['total'] > main_time:
+                excluded.add(func)
+        for func in excluded:
+            self.call_graph[func]['filtered'] = True
+        min_coverage_funcs = self.call_graph.compute_bottom()
+        toplevel_funcs = self.call_graph.compute_top()
+        # B) Obtain the bottom functions and hotspot coverage as extracted directly from the trace
+        coverages_metrics = metrics.read_metric('coverages')
 
-        # Find the maximum cut and the corresponding excluded functions
-        excluded, _ = self.call_graph.coverage_max_cut()
-        # print('excluded: {}'.format(excluded))
-        tested_funcs = [func for func in dyn_stats.keys() if func not in excluded]
-        # Find the maximum coverage functions
-        max_coverage_funcs = set(
-            func for func in tested_funcs if
-            not any(self.call_graph.subsumption(cmp_func, func)
-                    for cmp_func in tested_funcs))
-        if not max_coverage_funcs:
-            max_coverage_funcs = ['main']
-
-        avg_min_level = sum(
-            self.call_graph[func]['level'] for func in min_coverage_funcs) / len(min_coverage_funcs)
-        avg_max_level = sum(
-            self.call_graph[func]['level'] for func in max_coverage_funcs) / len(max_coverage_funcs)
         # Compute the coverage
         min_coverage = sum(dyn_stats[f]['total'] for f in min_coverage_funcs)
-        min_coverage_alt = sum(dyn_stats[f]['total'] for f in min_coverage_funcs_alt)
+        toplevel_coverage = sum(dyn_stats[f]['total'] for f in toplevel_funcs)
 
-        # for f in min_coverage_funcs:
-        #     print('{}: {}, {}'.format(f, dyn_stats[f]['total'], dyn_stats[f]['count']))
-        max_coverage = sum(dyn_stats[f]['total'] for f in max_coverage_funcs)
+        # Store the coverages as metrics
+        coverages_metrics.update({
+            'main': main_time,
+            'min_coverage_count': len(min_coverage_funcs),
+            'min_coverage_abs': min_coverage,
+            'min_coverage_relative': min_coverage / main_time,
+            'toplevel_coverage_count': len(toplevel_funcs),
+            'toplevel_coverage_abs': toplevel_coverage,
+            'toplevel_coverage_relative': toplevel_coverage / main_time,
+            'hotspot_coverage_relative': 1 - coverages_metrics['hotspot_coverage_abs'] / main_time
+        })
+        metrics.add_metric('coverages', coverages_metrics)
 
-        metrics.add_metric('min_coverage_count', len(min_coverage_funcs))
-        metrics.add_metric('min_coverage_alt_count', len(min_coverage_funcs_alt))
-        metrics.add_metric('max_coverage_count', len(max_coverage_funcs))
-        metrics.add_metric('min_coverage_avg_lvl', avg_min_level)
-        metrics.add_metric('max_coverage_avg_lvl', avg_max_level)
-        metrics.add_metric('main', dyn_stats['main']['total'])
-        metrics.add_metric('min_coverage_abs', min_coverage)
-        metrics.add_metric('max_coverage_abs', max_coverage)
-        metrics.add_metric('min_coverage_relative', min_coverage / dyn_stats['main']['total'])
-        metrics.add_metric('min_coverage_alt_relative', min_coverage_alt / dyn_stats['main']['total'])
-        metrics.add_metric('max_coverage_relative', max_coverage / dyn_stats['main']['total'])
-
-    def collected_points_metric(self, dyn_stats):
+    def _collected_points_metric(self, dyn_stats):
         """ Helper function for calculating the actually reached instrumentation points.
 
         :param dict dyn_stats: the Dynamic Stats resource
@@ -324,6 +327,83 @@ class CollectOptimization:
             return
         collected_func = set(self.call_graph.cg_map.keys()) & set(dyn_stats.keys())
         metrics.add_metric('collected_func_cg_compare', len(collected_func))
+
+    def _call_graph_level_assumption(self, dyn_stats):
+        """ Check how well the call graph / measured data fulfills the assumption about the
+        call count.
+
+        :param dict dyn_stats: the statistics about the performed run
+        """
+        # Detailed statistics about the assumption violations (less than X% difference, etc.)
+        violations_stats = {
+            '<5%': {'check': lambda count_diff: count_diff < 5, 'count': 0},
+            '<10%': {'check': lambda count_diff: count_diff < 10, 'count': 0},
+            '<50%': {'check': lambda count_diff: count_diff < 50, 'count': 0},
+            '>=50%': {'check': lambda count_diff: count_diff >= 50, 'count': 0},
+            '1': {'check': lambda count_diff: count_diff == SPECIAL_CALL_COUNT, 'count': 0},
+        }
+        total_violations, total_confirmations = 0, 0
+
+        # Analyze the functions according to the call graph levels
+        for depth, level in enumerate(self.call_graph.levels):
+            # For each function, we check how many callees have larger call count than the
+            # function and if not, we measure by how much the call count differs
+            for func in level:
+                callees = [
+                    c for c in self.call_graph[func]['callees']
+                    if c not in self.call_graph.backedges[func]
+                ]
+                v, c = self._check_assumption(dyn_stats, violations_stats, func, callees)
+                total_violations += v
+                total_confirmations += c
+        # Transform the violations statistics into percents
+        for key, value in violations_stats.items():
+            violations_stats[key] = (value['count'] / total_violations) * 100
+
+        # Save the results into metrics
+        total = total_violations + total_confirmations
+        assumption = {
+            'total_violations': total_violations,
+            'total_confirmations': total_confirmations,
+            'violations_ratio': (total_violations / total) * 100,
+            'confirmations_ratio': (total_confirmations / total) * 100,
+            'violations_stats': violations_stats
+        }
+        metrics.add_metric('cg_assumption_check', assumption)
+
+    def _check_assumption(self, dyn_stats, violations_stats, parent, callees):
+        """ Check that the assumption holds for specific function and its callees.
+
+        :param dict dyn_stats: the statistics about the performed run
+        :param dict violations_stats: the statistics about assumption violations
+        :param str parent: name of the tested function
+        :param list callees: the function callees
+        :return tuple (int, int): the number of assumption violations and confirmations
+        """
+        func_violations, func_confirmations = 0, 0
+        func_count = dyn_stats.get(parent, {'count': 0})['count']
+        callee_counts = [(c, dyn_stats.get(c, {'count': 0})['count']) for c in callees]
+        for callee, count in callee_counts:
+            if 0 < count < func_count:
+                func_violations += 1
+                self._assumption_violated(violations_stats, func_count, count)
+            elif 0 < count >= func_count > 0:
+                func_confirmations += 1
+        return func_violations, func_confirmations
+
+    def _assumption_violated(self, violations_stats, parent_count, callee_count):
+        """ Update the violation statistics when assumption violation happens.
+
+        :param dict violations_stats: the statistics about assumption violations
+        :param int parent_count: the number of parent function calls
+        :param int callee_count: the number of callee function calls
+        """
+        call_count_diff = (1 - (callee_count / parent_count)) * 100
+        if callee_count == 1:
+            call_count_diff = SPECIAL_CALL_COUNT
+        for violations in violations_stats.values():
+            if violations['check'](call_count_diff):
+                violations['count'] += 1
 
 
 # Create the Optimization object so that all the affected modules can use it

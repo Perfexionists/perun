@@ -106,6 +106,8 @@ class RecordType(IntEnum):
     USDTSingle = 2
     USDTBegin = 3
     USDTEnd = 4
+    SentinelBegin = 7
+    SentinelEnd = 8
     Corrupt = 9
 
 
@@ -153,7 +155,9 @@ GLOBAL_DEPENDENCIES = ['ps', 'grep', 'awk', 'nm']
 STAP_PHASES = 5  # The number of SystemTap startup phases
 LOCK_SUFFIX_LEN = 7  # Suffix length of the lock files
 MICRO_TO_SECONDS = 1000000.0  # The conversion constant for collected time records
+NANO_TO_SECONDS = 1000000000.0  # The conversion constant for collected time records
 DEFAULT_SAMPLE = 20  # The default global sampling for 'sample' strategies if not set by user
+RESOURCE_BATCH = 100000  # The maximum number of resources to keep in memory before updating profile
 SUFFIX_DELIMITERS = ('_', '-')  # The set of supported delimiters between probe and its suffix
 PS_FORMAT = 'pid,ppid,pgid,cmd'  # The format specification for an output from the 'ps' utility
 

@@ -14,12 +14,14 @@ from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.collect_engine import CollectEngine
 from perun.collect.trace.configuration import Configuration
 from perun.collect.trace.values import OutputHandling, check, \
-    GLOBAL_DEPENDENCIES, MICRO_TO_SECONDS
+    GLOBAL_DEPENDENCIES, RESOURCE_BATCH
 
 import perun.logic.runner as runner
 import perun.utils.log as stdout
 import perun.utils.metrics as metrics
+import perun.utils as utils
 from perun.utils.structs import CollectStatus
+from perun.profile.factory import Profile
 
 
 def before(executable, **kwargs):
@@ -89,10 +91,12 @@ def collect(**kwargs):
     metrics.add_metric('func_count', len(config.probes.func.keys()))
     config.engine.assemble_collect_program(**kwargs)
 
+    # raise RuntimeError('Stop')
     # Run the collection program and profiled command
     metrics.start_timer('collect_time')
     config.engine.collect(**kwargs)
     metrics.end_timer('collect_time')
+    # raise RuntimeError('Stop')
 
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
@@ -107,22 +111,28 @@ def after(**kwargs):
                     dict of kwargs (possibly with some new values))
     """
     WATCH_DOG.header('Post-processing phase... ')
+    # Initialize the profile, resource list and set of actually recorded probes
+    kwargs['profile'] = Profile()
+    resources, recorded_probes = [], set()
+    data_size = os.stat(kwargs['config'].engine.data).st_size
+    metrics.add_metric('data_size', data_size)
+    # Inform the user
+    WATCH_DOG.info('Transforming the raw performance data into a perun profile format. '
+                   'Note that this may take a while for large raw data files.')
+    WATCH_DOG.info('Raw data file size: {}'.format(utils.format_file_size(data_size)))
 
-    # TODO: change the output according to the new format so that it doesn't use as much memory?
-    # Parse the records and create the profile
-    resources = []
-    total_time = 0
-    metrics.add_metric('data_size', os.stat(kwargs['config'].engine.data).st_size)
+    # Iterate the parsed resources
     for record in kwargs['config'].engine.transform(**kwargs):
-        total_time += record['amount']
         resources.append(record)
+        recorded_probes.add(record['uid'])
+        # Periodically update the profile object to prevent large memory overhead
+        if len(resources) >= RESOURCE_BATCH:
+            kwargs['profile'].update_resources({'resources': resources}, 'global')
+            resources = []
+    kwargs['profile'].update_resources({'resources': resources}, 'global')
+    metrics.add_metric('collected_func', len(recorded_probes & set(kwargs['probes'].func.keys())))
 
-    kwargs['profile'] = {
-        'global': {
-            'timestamp': total_time / MICRO_TO_SECONDS,
-            'resources': resources
-        }
-    }
+    WATCH_DOG.info('Data to profile transformation finished')
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
 

@@ -22,9 +22,9 @@ def gather_stats(profile, config):
     funcs = config.get_functions()
     func_values = {func_name: [] for func_name in funcs.keys()}
 
-    for record in profile['global']['resources']:
+    for _, resource in profile.all_resources():
         try:
-            func_values[record['uid']].append(record['amount'])
+            func_values[resource['uid']].append(resource['amount'])
         except KeyError:
             pass
 

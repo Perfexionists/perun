@@ -37,10 +37,7 @@ def store(stats_name, call_graph, cache, **_):
     serialized = {
         'call_graph': {
             'cg_map': call_graph.cg_map,
-            'levels': call_graph.levels,
-            'leaves': call_graph.leaves,
-            'recursive': list(call_graph.recursive),
-            'depth': call_graph.depth
+            'recursive': list(call_graph.recursive)
         },
         'control_flow': call_graph.cfg,
         'minor_version': call_graph.minor

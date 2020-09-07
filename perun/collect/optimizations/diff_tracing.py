@@ -8,17 +8,77 @@ resources, as well as exploiting the integration of VCS within the Perun that gr
 to the project history and changes associated with specific project versions.
 """
 
+import re
+import itertools
 
 import perun.vcs as vcs
 from perun.collect.optimizations.structs import DiffCfgMode
 
 
 # The set of ASM JUMP instruction that are omitted during the operands check
-JUMP_INSTRUCTIONS = [
+JUMP_INSTRUCTIONS = {
     'call', 'jmp', 'je', 'jne', 'jz', 'jnz', 'jg', 'jge', 'jnle', 'jnl', 'jl', 'jle', 'jnge',
     'jng', 'ja', 'jae', 'jnbe', 'jnb', 'jb', 'jbe', 'jnae', 'jna', 'jxcz', 'jc', 'jnc', 'jo',
     'jno', 'jp', 'jpe', 'jnp', 'jpo', 'js', 'jns'
-]
+}
+
+# The set of registers used in the x86-64 architecture
+REGISTERS = set()
+
+# Delimiters used in the disassembly operands specification
+OPERANDS_SPLIT = re.compile(r'([\s,:+*\-\[\]]+)')
+
+
+def _build_registers_set():
+    """ In order to correctly color and map registers, we need the set of all registers used
+    in the assembly - currently, we restrict ourselves only to the x86-64 architecture.
+
+    Since the set of registers is rather large, we construct the set (instead of simple
+    enumeration) using some base names and prefixes/suffixes/counters.
+    """
+    global REGISTERS
+
+    reg_classes = {
+        'full': ['ax', 'cx', 'dx', 'bx'],
+        'partial': ['sp', 'bp', 'si', 'di'],
+        'segment': ['ss', 'cs', 'ds', 'es', 'fs', 'gs'],
+        'ip': 'ip',
+        '64b': 'r',
+        'sse': 'xmm',
+        'avx': 'ymm',
+        'prefix': ['r', 'e', ''],
+        'postfix': ['l', 'h'],
+        '64b-cnt': (8, 15),
+        '64b-post': ['', 'd', 'w', 'b'],
+        'sse-cnt': (0, 7)
+    }
+
+    # Create Rrr, Err, rr, rL, rH variants
+    for reg in reg_classes['full']:
+        REGISTERS |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
+        REGISTERS |= {'{}{}'.format(reg[:1], post) for post in reg_classes['postfix']}
+
+    # Create Rrr, Err, rr, rrL variants
+    for reg in reg_classes['partial']:
+        REGISTERS |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
+        REGISTERS.add('{}{}'.format(reg, reg_classes['postfix'][0]))
+
+    # Add segment registers as-is
+    REGISTERS |= set(reg_classes['segment'])
+    # Create RIP, EIP, IP registers
+    REGISTERS |= {'{}{}'.format(pre, reg_classes['ip']) for pre in reg_classes['prefix']}
+    # Create 64b register variants R8-R15
+    start64, end64 = reg_classes['64b-cnt']
+    for idx in range(start64, end64 + 1):
+        REGISTERS |= {
+            '{}{}{}'.format(reg_classes['64b'], str(idx), post) for post in reg_classes['64b-post']
+        }
+    # Create sse and avx register variants XMM0-XMM7 / YMM0 - YMM7
+    start_sse, end_sse = reg_classes['sse-cnt']
+    for idx in range(start_sse, end_sse + 1):
+        REGISTERS |= {
+            '{}{}'.format(reg, str(idx)) for reg in [reg_classes['sse'], reg_classes['avx']]
+        }
 
 
 def diff_tracing(call_graph, call_graph_old, keep_leaf, inspect_all, cfg_mode):
@@ -33,12 +93,15 @@ def diff_tracing(call_graph, call_graph_old, keep_leaf, inspect_all, cfg_mode):
     if call_graph is None or call_graph_old is None:
         print('missing call graph')
         return
+
     cg_funcs = call_graph.cg_map.keys()
     # Compare the call graphs and find new, modified or renamed functions
     new, modified, renamed = _compare_cg(call_graph, call_graph_old, inspect_all)
     # Inspect the git diff output to find modified functions that are not detectable using simple
     # call graph comparison
-    diff_funcs = _parse_git_diff(cg_funcs, call_graph_old.minor, call_graph.minor)
+    # TODO: the git diff parsing needs much more work, examine all of the functions instead
+    # diff_funcs = _parse_git_diff(cg_funcs, call_graph_old.minor, call_graph.minor)
+    diff_funcs = cg_funcs
     # Exclude leaf functions since their profiling often inflicts noticeable overhead
     if not keep_leaf:
         new = set(_filter_leaves(new, call_graph))
@@ -94,7 +157,8 @@ def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
     changes = []
     for func in funcs:
         func_blocks, cfg_edges = cfg[func]['blocks'], cfg[func]['edges']
-        func_blocks_old, cfg_edges_old = cfg_old[func]['blocks'], cfg_old[func]['edges']
+        old_func = renames.get(func, func)
+        func_blocks_old, cfg_edges_old = cfg_old[old_func]['blocks'], cfg_old[old_func]['edges']
         # Quick check that the number of blocks and edges is equal
         if len(func_blocks) != len(func_blocks_old) or len(cfg_edges) != len(cfg_edges_old):
             changes.append(func)
@@ -104,7 +168,7 @@ def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
             changes.append(func)
             continue
         # Compare the CFG blocks according to the mode
-        if not _compare_cfg_blocks(func_blocks, func_blocks_old, renames, mode):
+        if not _compare_cfg_blocks(func_blocks, func_blocks_old, renames, _DIFFMODE_MAP[mode]):
             changes.append(func)
             continue
     return set(changes)
@@ -124,43 +188,138 @@ def _compare_cfg_edges(edges, edges_old):
     return True
 
 
-def _compare_cfg_blocks(blocks, blocks_old, renames, mode):
-    """ Compare the blocks of new and old CFG
+def _compare_cfg_blocks(blocks, blocks_old, renames, eq_criterion):
+    """ Compare the blocks of new and old CFG based on the selected equivalence criterion.
 
     :param list blocks: the list of blocks from the current CFG
     :param list blocks_old: the list of blocks from the previous CFG
     :param dict renames: the function rename mapping
-    :param DiffCfgMode mode: equivalence criterion for comparing CFGs
+    :param function eq_criterion: equivalence criterion function for comparing CFGs
 
-    :return bool: True if the blocks match
+    :return bool: True if the blocks match, False otherwise
     """
     for block, block_old in zip(blocks, blocks_old):
-        # Soft mode only compares the number of instructions
-        if mode == DiffCfgMode.Soft:
-            if len(block) != len(block_old):
+        # The block is a function call, compare the names of the functions
+        if isinstance(block, str) and isinstance(block_old, str):
+            # Don't forget to apply the rename if there is one!
+            if renames.get(block, block) != block_old:
                 return False
-        else:
-            # The block is a function call, compare the names of the functions
-            if isinstance(block, str) and isinstance(block_old, str):
-                # Don't forget to apply the rename if there is one!
-                if renames.get(block, block) != block_old:
-                    return False
-            # The block type is different
-            elif isinstance(block, str) or isinstance(block_old, str):
-                return False
-            # The block is a list of ASM instructions and operands
+            return True
+        # The block type is different
+        elif isinstance(block, str) or isinstance(block_old, str):
+            return False
+        # Use the checking method
+        return eq_criterion(block, block_old)
+
+
+def _cfg_soft(block, block_old):
+    """ Soft mode only compares the number of instructions.
+
+    :param list block: list of (instruction, operands) tuples representing the basic block
+    :param list block_old: list of (instruction, operands) tuples representing the old basic block
+
+    :return bool: True if the block match, False otherwise
+    """
+    if len(block) != len(block_old):
+        return False
+    return True
+
+
+def _cfg_semistrict(block, block_old):
+    """ Semi-strict mode checks only that the instructions are the same.
+
+    :param list block: list of (instruction, operands) tuples representing the basic block
+    :param list block_old: list of (instruction, operands) tuples representing the old basic block
+
+    :return bool: True if the block match, False otherwise
+    """
+    # Make sure that the number of instruction matches
+    if not _cfg_soft(block, block_old):
+        return False
+    # Make sure that the instructions (without operands) match
+    for (instr, _), (instr_old, _) in zip(block, block_old):
+        if instr != instr_old:
+            return False
+    return True
+
+
+def _cfg_strict(block, block_old):
+    """ Strict mode also checks the operands unless they are calls or jumps
+    (both conditional and unconditional) since the address can be different
+    but refer to the same CFG block - this jump / call destinations is however
+    already covered by the CFG edges.
+
+    :param list block: list of (instruction, operands) tuples representing the basic block
+    :param list block_old: list of (instruction, operands) tuples representing the old basic block
+
+    :return bool: True if the block match, False otherwise
+    """
+    # Make sure that the number of instruction matches
+    if not _cfg_soft(block, block_old):
+        return False
+    # Also check that the op-codes and operands match
+    for (instr, op), (instr_old, op_old) in zip(block, block_old):
+        if instr != instr_old or (instr not in JUMP_INSTRUCTIONS and op != op_old):
+            return False
+    return True
+
+
+def _cfg_coloring(block, block_old):
+    """ The Coloring mode performs a register coloring and subsequently compares the instructions
+    by searching for possible bijection. This ensures that simple reordering of instructions or
+    change of used registers is not regarded as a semantic change.
+
+    :param list block: list of (instruction, operands) tuples representing the basic block
+    :param list block_old: list of (instruction, operands) tuples representing the old basic block
+
+    :return bool: True if the block match, False otherwise
+    """
+    def _color_registers(operand_parts):
+        """ Identify registers within a parsed operand and color them.
+        Colored registers are represented simply by the '<r>' expression.
+
+        :param list operand_parts: list of tokens from parsed operand
+
+        :return generator: generates updated operand tokens where registers are substituted
+        """
+        for expr in operand_parts:
+            if expr in REGISTERS:
+                # Fetch the register's color, or assign it a new one
+                instr_colors.append(color_map.setdefault(expr, str(next(color_counter))))
+                yield '<r>'
             else:
-                for (instr, op), (instr_old, op_old) in zip(block, block_old):
-                    # Semi-strict mode checks only that the instructions are the same
-                    if instr != instr_old:
-                        return False
-                    # Strict mode also checks the operands unless they are calls or jumps
-                    # (both conditional and unconditional) since the address can be different
-                    # but refer to the same CFG block - this jump / call destinations is however
-                    # already covered by the CFG edges
-                    if mode == DiffCfgMode.Strict and instr not in JUMP_INSTRUCTIONS:
-                        if op != op_old:
-                            return False
+                yield expr
+
+    # Make sure that the number of instruction matches
+    if not _cfg_soft(block, block_old):
+        return False
+
+    # Perform the coloring on both the new and the old cfg block
+    instr_stack, instr_old_stack = [], []
+    for instr_set, stack in [(block, instr_stack), (block_old, instr_old_stack)]:
+        color_counter = itertools.count()
+        color_map = {}
+        # Parse the instructions and operands, substitute and color registers
+        for (instr, op) in [instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS]:
+            instr_colors = []
+            op_parts = re.split(OPERANDS_SPLIT, op)
+            instr_full = '{} '.format(instr) + ''.join(_color_registers(op_parts))
+            stack.append((instr_full, instr_colors))
+        # Sort the instruction stack to invalidate instruction reordering
+        stack.sort(key=lambda inst: inst[0])
+
+    color_map = {}
+    # Traverse the instructions stack and compare the elements
+    for (instr, colors), (instr_old, colors_old) in zip(instr_stack, instr_old_stack):
+        # Non-matching instructions means a change is present
+        if instr != instr_old:
+            return False
+        # Try to map the colors:
+        # - when the color of new and old register is different, map them: "new_clr" -> "old_clr"
+        # - all subsequent instances of the same register has to match the mapped color
+        for c_new, c_old in zip(colors, colors_old):
+            if color_map.setdefault(c_new, c_old) != color_map[c_new]:
+                return False
     return True
 
 
@@ -293,3 +452,15 @@ def _parse_git_diff(funcs, version_1, version_2):
                 modified_funcs.append(func_name_candidate)
                 break
     return set(modified_funcs)
+
+
+# Initialize the set of registers
+_build_registers_set()
+
+# The DiffTracing mode -> function dispatcher
+_DIFFMODE_MAP = {
+    DiffCfgMode.Soft: _cfg_soft,
+    DiffCfgMode.Semistrict: _cfg_semistrict,
+    DiffCfgMode.Strict: _cfg_strict,
+    DiffCfgMode.Coloring: _cfg_coloring
+}

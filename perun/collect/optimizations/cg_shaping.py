@@ -75,12 +75,10 @@ def call_graph_pruning(call_graph, chain_length, keep_top):
     """
     if chain_length == 0:
         return
-    bottom = set(
-        func for func in call_graph.cg_map.keys() if
-        not any(call_graph.subsumption(func, cmp_func) for cmp_func in call_graph.cg_map.keys()))
+    call_graph.compute_bottom()
 
     all_candidates = set()
-    for leaf in bottom:
+    for leaf in call_graph.bottom:
         # Get the leaf and the level range in which to prune
         leaf = call_graph[leaf]
         level_max = round(leaf['level'] + chain_length / 2)
@@ -110,5 +108,3 @@ def call_graph_pruning(call_graph, chain_length, keep_top):
             if not inspect_list:
                 break
     call_graph.remove_or_filter(list(all_candidates), set_filtered=True)
-
-

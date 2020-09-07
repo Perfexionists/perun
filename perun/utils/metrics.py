@@ -69,6 +69,7 @@ def end_timer(name):
             del Metrics.timers[name]
 
 
+# TODO: change to getitem / setitem?
 def add_metric(name, value):
     """ Add new metric and its value.
 
@@ -77,6 +78,17 @@ def add_metric(name, value):
     """
     if Metrics.enabled:
         Metrics.records[name] = value
+
+
+def read_metric(name, default=None):
+    """ Read the current value of a metric specified by its ID
+
+    :param str name: the ID of the metric to fetch
+    :param object default: the default value in case no metric is recorded under the given ID
+    :return object: the metric value or default
+    """
+    if Metrics.enabled:
+        return Metrics.records.get(name, default)
 
 
 def save():
