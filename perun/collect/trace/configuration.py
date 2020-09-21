@@ -51,6 +51,7 @@ class Configuration:
         self.output_handling = cli_config.get('output_handling', OutputHandling.Default.value)
         self.engine = cli_config.get('engine', CollectEngine.default())
         self.stap_cache_off = cli_config.get('stap_cache_off', False)
+        self.generate_dynamic_cg = cli_config.get('generate_dynamic_cg', False)
         self.run_optimizations = {}
 
         # Enable some additional flags if diagnostics is enabled
@@ -71,6 +72,7 @@ class Configuration:
         # Set the executable and binary
         self.binary = cli_config.get('binary', None)
         self.executable = executable
+        self.libs = list(cli_config.get('libs', ''))  # TODO: perform checks
         # No runnable command was given, terminate the collection
         if self.binary is None and not self.executable.cmd:
             raise InvalidBinaryException('')

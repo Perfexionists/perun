@@ -91,7 +91,6 @@ def collect(**kwargs):
     metrics.add_metric('func_count', len(config.probes.func.keys()))
     config.engine.assemble_collect_program(**kwargs)
 
-    # raise RuntimeError('Stop')
     # Run the collection program and profiled command
     metrics.start_timer('collect_time')
     config.engine.collect(**kwargs)
@@ -131,8 +130,13 @@ def after(**kwargs):
             resources = []
     kwargs['profile'].update_resources({'resources': resources}, 'global')
     metrics.add_metric('collected_func', len(recorded_probes & set(kwargs['probes'].func.keys())))
+    # TODO: Nasty temporary hack
+    if kwargs['config'].generate_dynamic_cg:
+        WATCH_DOG.info('Dynamic Call Graph reconstructed, terminating.')
+        stdout.done('\n\n')
+        return CollectStatus.ERROR, "Avoiding profile storage.", dict(kwargs)
 
-    WATCH_DOG.info('Data to profile transformation finished')
+    WATCH_DOG.info('Data to profile transformation finished.')
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
 
@@ -190,6 +194,8 @@ def teardown(**kwargs):
 @click.option('--binary', '-b', type=click.Path(exists=True),
               help='The profiled executable. If not set, then the command is considered '
                    'to be the profiled executable and is used as a binary parameter.')
+@click.option('--libs', '-l', nargs=1, required=False, multiple=True, type=click.Path(exists=True),
+              help='Additional libraries that should also be profiled.')
 @click.option('--timeout', '-t', type=float, default=0,
               help='Set time limit (in seconds) for the profiled command, i.e. the command will be '
                    'terminated after reaching the time limit. Useful for, e.g., endless commands.')
@@ -219,6 +225,9 @@ def teardown(**kwargs):
               )
 @click.option('--stap-cache-off', '-sc', is_flag=True, default=False,
               help='Disables the SystemTap caching of compiled scripts.')
+@click.option('--generate-dynamic-cg', is_flag=True, default=False,
+              help='Instead of extracting a Call Graph using static analysis, run the collector'
+                   'once unoptimized and reconstruct dynamic call graph')
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of

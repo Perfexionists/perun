@@ -75,6 +75,66 @@ class CallGraphResource(CGLevelMixin):
         self._build_cfg(angr_cg['control_flow'], functions)
         return self
 
+    def from_dyn(self, dyn_cg, angr_cg, functions):
+        """ Computes the dynamic call graph resource as a combination of (1) static and (2) dynamic
+        call graph structures obtained from (1) Angr static analysis and (2) profiling run.
+
+        :param dict dyn_cg: the 'func': [callees] dictionary from the profiling run
+        :param dict angr_cg: the angr CG and CFG dictionaries
+        :param set functions: a set of function names obtained from the collection strategies
+
+        :return CallGraphResource: the properly initialized CGR object
+        """
+        angr_cg['call_graph'] = self._remove_main_unreachable(
+            self._merge_cgs(dyn_cg, angr_cg['call_graph'])
+        )
+        self._build_cg_map(angr_cg['call_graph'], functions)
+        # The DFS backedges and level estimator is currently fixed
+        self._build_levels(LevelEstimator.DFS)
+        self._compute_reachability()
+        self._build_cfg(angr_cg['control_flow'], functions)
+        return self
+
+    def _merge_cgs(self, dyn_cg, angr_cg):
+        """ Merges the statically and dynamically obtained call graphs into one by extending
+        the static CG with new caller-callee edges according to the dynamic observation.
+
+        :param dict dyn_cg: the 'func': [callees] dictionary from the profiling run
+        :param dict angr_cg: the call graph dictionary extracted using angr
+
+        :return dict: one merged call graph dictionary
+        """
+        for func, callees in dyn_cg.items():
+            angr_callees = set(angr_cg.setdefault(func, []))
+            angr_callees |= set(callees)
+            angr_cg[func] = sorted(list(angr_callees))
+        return angr_cg
+
+    def _remove_main_unreachable(self, merged_cg):
+        """ Removes functions from the call graph that are not reachable from the 'main' function.
+
+        :param dict merged_cg: the call graph dictionary merged from dynamic and angr call graphs
+
+        :return dict: pruned call graph dictionary
+        """
+        iters = [{'main'}]
+        visited = {'main'}
+
+        while iters[-1]:
+            current_iter = iters[-1]
+            new_iter = set()
+            for func in current_iter:
+                func_callees = [c for c in merged_cg.get(func, []) if c not in visited]
+                new_iter |= set(func_callees)
+                visited |= set(func_callees)
+            iters.append(new_iter)
+
+        new_angr_cg = {}
+        for func, callees in merged_cg.items():
+            if func in visited:
+                new_angr_cg[func] = list(set(callees) & visited)
+        return new_angr_cg
+
     def from_dict(self, dict_cg):
         """ Initializes the resource properties according to the CGR loaded from 'stats'.
 

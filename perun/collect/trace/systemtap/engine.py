@@ -80,13 +80,16 @@ class SystemTapEngine(engine.CollectEngine):
         check(self.__dependencies)
 
     def available_usdt(self, **_):
-        """Extract USDT probe locations from the supplied binary file.
+        """Extract USDT probe locations from the supplied binary files and libraries.
 
-        :return list: the names of the available USDT locations
+        :return dict: the names of the available USDT locations per binary file
         """
         # Extract the USDT probe locations from the binary
         # note: stap -l returns code '1' if there are no USDT probes
-        return list(_parse_usdt_name(_extract_usdt_probes(self.binary)))
+        return {
+            target: list(_parse_usdt_name(_extract_usdt_probes(target)))
+            for target in self.targets
+        }
 
     def assemble_collect_program(self, **kwargs):
         """ Assemble the SystemTap collection script according to the specified probes.
@@ -108,7 +111,8 @@ class SystemTapEngine(engine.CollectEngine):
         # Open the log file for collection
         with open(self.log, 'w') as logfile:
             # Assemble the SystemTap command and log it
-            stap_cmd = 'sudo stap -g --suppress-time-limits -s5 -v {} -o {}'.format(self.script, self.data)
+            stap_cmd = ('sudo stap -g --suppress-time-limits -s5 -v {} -o {}'
+                        .format(self.script, self.data))
             compile_cmd = stap_cmd
             if config.stap_cache_off:
                 compile_cmd += ' --poison-cache'

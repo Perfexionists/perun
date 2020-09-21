@@ -57,6 +57,7 @@ class CollectOptimization:
         self._optimizations_off = []
         self.params = ParametersManager()
 
+        self.dynamic_extraction = False
         self.resource_cache = True
         self.reset_cache = False
         self.call_graph = None

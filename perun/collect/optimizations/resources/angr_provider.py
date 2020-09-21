@@ -11,33 +11,46 @@ import angr
 from angr.knowledge_plugins.functions.function import Function
 
 
-def extract_from(project, result):
+def extract_from(config_file):
     """ Extracts the call graph and control flow graph from the specified project (i.e., binary)
     in the DiGraph structure.
 
-    :param str project: path to the binary executable file that is to be analyzed
-    :param str result: path to the output file where we store the graphs in json format
+    :param str config_file: path to the binary executable file that is to be analyzed
     """
-    # Load the binary into internal representation, ignore libraries and locate main
-    proj = angr.Project(project, load_options={'auto_load_libs': False})
-    main = proj.loader.main_object.get_symbol("main")
-    binary = os.path.basename(project)
-    # Run the CFG analysis to obtain the graphs, focus only on functions reachable from main
-    cfg = proj.analyses.CFGFast(
-        normalize=True, function_starts=[main.rebased_addr], start_at_entry=False, symbols=False,
-        function_prologues=False, force_complete_scan=False
-    )
+    with open(config_file, 'r') as json_handle:
+        config = json.load(json_handle)
+    project = config['project']
+    result = config['result']
+    libs = config.get('libs', ())
+    restricted_search = config.get('restricted_search', True)
+
+    # Load the binary (and selected libs) into internal representation
+    proj = angr.Project(project, load_options={'auto_load_libs': False, 'force_load_libs': libs})
+
+    cfg_params = {'normalize': True}
+    if restricted_search:
+        main = proj.loader.main_object.get_symbol("main")
+        cfg_params.update({
+            'function_starts': [main.rebased_addr],
+            'start_at_entry': False,
+            'symbols': False,
+            'function_prologues': False,
+            'force_complete_scan': False
+        })
+    # Run the CFG analysis to obtain the graphs
+    cfg = proj.analyses.CFGFast(**cfg_params)
 
     # The resulting output data separate the CG and CFG
+    binaries = [os.path.basename(target) for target in [project] + libs]
     cfg_data = {
-        'call_graph': extract_cg(cfg, binary),
-        'control_flow': extract_func_cfg(proj, binary)
+        'call_graph': extract_cg(cfg, binaries),
+        'control_flow': extract_func_cfg(proj, binaries)
     }
     with open(result, 'w') as cg_handle:
         json.dump(cfg_data, cg_handle, indent=2)
 
 
-def extract_cg(cfg, binary):
+def extract_cg(cfg, binaries):
     """ Extracts the call graph nodes and edges from the angr knowledge base, and constructs
     dictionary that represents the call graph in a better way for further processing.
 
@@ -45,7 +58,7 @@ def extract_cg(cfg, binary):
     identified callees.
 
     :param cfg: the CFG analysis output structure
-    :param str binary: the name of the binary executable file
+    :param list binaries: the names of the binary executable files
 
     :return dict: the resulting call graph dictionary
     """
@@ -53,7 +66,7 @@ def extract_cg(cfg, binary):
     addr_to_func = {}
     for cg_func in cfg.kb.callgraph.nodes():
         kb_func = cfg.kb.functions.get(cg_func, None)
-        if kb_func is not None and kb_func.binary_name == binary:
+        if kb_func is not None and kb_func.binary_name in binaries:
             # Identify functions optimized by the compiler and obtain the base function
             optimized_func = kb_func.name.split('.')
             if len(optimized_func) > 1:
@@ -71,7 +84,7 @@ def extract_cg(cfg, binary):
     return func_map
 
 
-def extract_func_cfg(project, binary):
+def extract_func_cfg(project, binaries):
     """ Extracts the control flow graph nodes and edges from the angr knowledge base, and
     constructs CFG dictionary that is used for further processing.
 
@@ -82,7 +95,7 @@ def extract_func_cfg(project, binary):
     }
 
     :param project: the loaded angr Project
-    :param str binary: the name of the binary executable file
+    :param list binaries: the names of the binary executable files
 
     :return dict: the resulting call graph dictionary
     """
@@ -90,7 +103,7 @@ def extract_func_cfg(project, binary):
     cfgs = {}
     addr_to_pos = {}
     for func in project.kb.functions.values():
-        if func.binary_name != binary:
+        if func.binary_name not in binaries:
             continue
         cfg = cfgs.setdefault(func.name, {})
         blocks = []
@@ -128,5 +141,5 @@ def _build_block_repr(project, block):
 
 # Run the main extraction function
 if __name__ == '__main__':
-    extract_from(sys.argv[1], sys.argv[2])
+    extract_from(sys.argv[1])
     exit(0)

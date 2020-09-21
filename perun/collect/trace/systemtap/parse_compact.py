@@ -6,9 +6,11 @@
 import collections
 
 import perun.utils.metrics as metrics
+import perun.collect.optimizations.resources.manager as resources
 
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import RecordType
+from perun.collect.optimizations.call_graph import CallGraphResource
 
 
 class TransformContext:
@@ -46,6 +48,8 @@ class TransformContext:
         self.bottom = None
         self.init_structs()
         self.get_id = self._verbose_ids if verbose_trace else self._compact_ids
+        # TODO: temporary, solve dynamic call graph properly
+        self.dyn_cg = None
 
     def init_structs(self):
         """ Re-initializes some of the structures to their default values. Used mainly when
@@ -77,6 +81,8 @@ class TransformContext:
         # Identify bottom records and track them summarized by the function name
         self.bottom_flag = False
         self.bottom = {probe['name']: 0 for probe in self.probes.func.values()}
+        # Initialize the dynamic call graph structure
+        self.dyn_cg = {probe['name']: set() for probe in self.probes.func.values()}
 
     def _compact_ids(self, *id_list):
         """ ID retrieval for compact trace, i.e., only probe IDs are reported
@@ -110,10 +116,7 @@ def trace_to_profile(data_file, config, probes, **_):
     """
     # Initialize just in case the trace doesn't have begin sentinel
     ctx = TransformContext(probes, config.binary, config.verbose_trace, config.executable.workload)
-    handlers = _record_handlers()
-    # data_file = '/home/jirka/experiments-backup/ccsds/.perun/tmp/trace/files/data_match.txt'
-    # data_file = '/home/jirka/experiments-backup/cpython/.perun/tmp/trace/files/data_match.txt'
-    # data_file = '/home/jirka/experiments-backup/cpython/.perun/tmp/trace/files/match_sampled.txt'
+    handlers = _record_handlers(config.generate_dynamic_cg)
     with open(data_file, 'r') as trace:
         cnt, line = 0, ''
         try:
@@ -145,6 +148,8 @@ def trace_to_profile(data_file, config, probes, **_):
                 'hotspot_coverage_abs': sum(val for val in ctx.bottom.values()),
                 'hotspot_coverage_count': len([name for name, val in ctx.bottom.items() if val > 0])
             })
+            # TODO: temporary
+            _build_dynamic_cg(config, ctx)
         except Exception:
             WATCH_DOG.info('Error while parsing the raw trace record')
             # Log the status in case of unhandled exception
@@ -152,15 +157,47 @@ def trace_to_profile(data_file, config, probes, **_):
             raise
 
 
-def _record_handlers():
+def _build_dynamic_cg(config, ctx):
+    """ Builds the dynamic CG and stores it into the stats directory.
+    The dynamic CG still uses the statically obtained Call Graph to combine with the dynamic one
+    in order to retrieve more general Call Graph structure.
+
+    :param Configuration config: the configuration object
+    :param TransformContext ctx: the parsing context which contains caller-callee relationships
+    """
+    if config.generate_dynamic_cg:
+        cg_stats_name = config.get_stats_name('call_graph')
+        # Extract the static Call Graph using Angr
+        _cg = resources.extract(
+            resources.Resources.CallGraphAngr, stats_name=cg_stats_name,
+            binary=config.get_target(), cache=False, libs=config.libs,
+            restricted_search=False
+        )
+        # Build the combined Call Graph using the static and dynamic call graphs
+        call_graph = CallGraphResource().from_dyn(
+            ctx.dyn_cg, _cg, config.get_functions().keys()
+        )
+
+        # Store the new call graph version
+        resources.store(
+            resources.Resources.PerunCallGraph, stats_name=cg_stats_name,
+            call_graph=call_graph, cache=False
+        )
+
+
+def _record_handlers(cg_reconstruction):
     """ Mapping of a raw data record type to its corresponding function handler.
+
+    :param bool cg_reconstruction: use different handler for function probes that also reconstructs
+                                   the dynamic call graph
 
     :return dict: the mapping dictionary
     """
+    func_begin = _record_func_begin if not cg_reconstruction else _record_func_begin_reconstruction
     return {
         RecordType.SentinelBegin.value: _record_sentinel_begin,
         RecordType.SentinelEnd.value: _record_sentinel_end,
-        RecordType.FuncBegin.value: _record_func_begin,
+        RecordType.FuncBegin.value: func_begin,
         RecordType.FuncEnd.value: _record_func_end,
         RecordType.USDTBegin.value: _record_usdt_begin,
         RecordType.USDTEnd.value: _record_usdt_end,
@@ -218,6 +255,30 @@ def _record_func_begin(record, ctx):
     # Increase the sequence counter
     _inc_sequence_number(record, ctx)
     ctx.bottom_flag = True
+    # Add the record to the trace stack
+    ctx.trace_stack['func'][record['tid']].append(record)
+    return {}
+
+
+def _record_func_begin_reconstruction(record, ctx):
+    """ Handler for the entry function probes that also reconstructs the dynamic call graph.
+
+    :param dict record: the parsed raw data record
+    :param TransformContext ctx: the parsing context object
+
+    :return dict: empty dictionary
+    """
+    # Increase the sequence counter
+    _inc_sequence_number(record, ctx)
+    ctx.bottom_flag = True
+    # Update the dynamic call graph structure
+    try:
+        caller_record = ctx.trace_stack['func'][record['tid']][-1]
+        caller_uid = ctx.get_id(caller_record['id'])[0]
+        callee_uid = ctx.get_id(record['id'])[0]
+        ctx.dyn_cg[caller_uid].add(callee_uid)
+    except IndexError:
+        pass
     # Add the record to the trace stack
     ctx.trace_stack['func'][record['tid']].append(record)
     return {}

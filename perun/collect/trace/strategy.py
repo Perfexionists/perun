@@ -67,7 +67,7 @@ def _extract_strategy_specifics(engine, probes):
     # Extract the functions and usdt probes if needed
     func, usdt = {}, {}
     if probes.strategy != Strategy.Custom:
-        func = _extract_functions(engine.binary, probes.strategy, probes.global_sampling)
+        func = _extract_functions(engine.targets, probes.strategy, probes.global_sampling)
         if probes.with_usdt:
             usdt = _extract_usdt(engine, probes.global_sampling)
 
@@ -291,10 +291,10 @@ def _add_single_probe(name, usdt_probes, result):
         result.setdefault(name, usdt_probes[name])
 
 
-def _extract_functions(binary, strategy, global_sampling):
+def _extract_functions(targets, strategy, global_sampling):
     """Extracts function symbols from the supplied binary.
 
-    :param str binary: path to the binary file
+    :param list targets: paths to executables / libraries that should have their symbols extracted
     :param str strategy: name of the applied extraction strategy
     :param int global_sampling: the sampling value applied to all extracted function locations
 
@@ -302,18 +302,22 @@ def _extract_functions(binary, strategy, global_sampling):
     """
     # Load userspace / all function symbols from the binary
     user = strategy in (Strategy.Userspace, Strategy.Userspace_sampled)
-    funcs = _load_function_names(binary, user)
-
-    # There are no functions
-    if not funcs:
-        return {}
-
-    # Transform to the desired format
     filt = _filter_user_symbol if user else lambda _: True
-    return {
-        func: Probes.create_probe_record(func, ProbeType.Func, pair=func, sample=global_sampling)
-        for func in funcs.splitlines() if filt(func)
-    }
+    probes = {}
+
+    for target in targets:
+        func_count = 0
+        funcs = _load_function_names(target, user)
+        # Transform to the desired format
+        for func in funcs.splitlines():
+            if filt(func) and func not in probes:
+                func_count += 1
+                probes[func] = Probes.create_probe_record(
+                    func, ProbeType.Func, lib=target, pair=func, sample=global_sampling
+                )
+        if not func_count:
+            WATCH_DOG.info("No function symbols found in '{}'".format(target))
+    return probes
 
 
 def _extract_usdt(engine, global_sampling):
@@ -325,12 +329,12 @@ def _extract_usdt(engine, global_sampling):
     :return dict: extracted USDT locations stored as probes = dictionaries
     """
     # Extract the usdt probe locations from the binary
-    usdt_names = engine.available_usdt()
+    usdt_probes = engine.available_usdt()
 
     # Transform
     return {
-        usdt: Probes.create_probe_record(usdt, ProbeType.USDT, sample=global_sampling)
-        for usdt in usdt_names
+        usdt: Probes.create_probe_record(usdt, ProbeType.USDT, lib=target, sample=global_sampling)
+        for target, target_usdt in usdt_probes.items() for usdt in target_usdt
     }
 
 

@@ -47,17 +47,17 @@ class BpfEngine(engine.CollectEngine):
         pass
 
     def available_usdt(self, **_):
-        """ Extracts the names of the available USDT probes within the binary file.
+        """ Extracts the names of the available USDT probes within the binary files and libraries.
 
         Inspired by: https://github.com/iovisor/bcc/blob/master/tools/tplist.py
 
-        :return list: a list of the found USDT probe names
+        :return dict: a list of the found USDT probe names per binary file
         """
-        extractor = USDT(path=self.binary)
-        usdt_probes = set()
-        for probe in extractor.enumerate_probes():
-            usdt_probes.add(probe.name.decode('utf-8'))
-        return list(usdt_probes)
+        return {
+            target: list(
+                {probe.name.decode('utf-8') for probe in USDT(path=target).enumerate_probes()}
+            ) for target in self.targets
+        }
 
     def assemble_collect_program(self, **kwargs):
         """ Assemble the eBPF collection program.

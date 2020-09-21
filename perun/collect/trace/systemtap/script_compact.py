@@ -115,7 +115,6 @@ EXIT_PRECISE_SAMPLE_TEMPLATE = """
 
 # TODO: solve func name / USDT name collision in the arrays
 # TODO: solve precise / approx sampling switching
-# TODO: solve array size definition and unused warnings
 def assemble_system_tap_script(script_file, config, probes, **_):
     """Assembles SystemTap script according to the configuration and probes specification.
 
@@ -201,13 +200,13 @@ def _add_program_probes(handle, probes, binary, verbose_trace):
     # Pre-build events and handlers based on the probe sets
     prebuilt = {
         'e': {
-            'sampled_func': _build_func_events(sampled_func, binary),
-            'sampled_usdt': _build_usdt_events(sampled_usdt, binary),
-            'sampled_usdt_exit': _build_usdt_events(sampled_usdt, binary, 'pair'),
-            'nonsampled_func': _build_func_events(nonsampled_func, binary),
-            'nonsampled_usdt': _build_usdt_events(nonsampled_usdt, binary),
-            'nonsampled_usdt_exit': _build_usdt_events(nonsampled_usdt, binary, 'pair'),
-            'single_usdt': _build_usdt_events(single_usdt, binary)
+            'sampled_func': _build_func_events(sampled_func),
+            'sampled_usdt': _build_usdt_events(sampled_usdt),
+            'sampled_usdt_exit': _build_usdt_events(sampled_usdt, 'pair'),
+            'nonsampled_func': _build_func_events(nonsampled_func),
+            'nonsampled_usdt': _build_usdt_events(nonsampled_usdt),
+            'nonsampled_usdt_exit': _build_usdt_events(nonsampled_usdt, 'pair'),
+            'single_usdt': _build_usdt_events(single_usdt)
         },
         'h': {
             'func_begin': _build_probe_handler(RecordType.FuncBegin, binary, verbose_trace),
@@ -337,31 +336,29 @@ def _build_probe_handler(probe_type, binary, verbose_trace):
     return HANDLER_TEMPLATE.format(type=int(probe_type), id_type=_id_type, id_get=_id_get)
 
 
-def _build_func_events(probe_iter, binary):
+def _build_func_events(probe_iter):
     """ Build function probe events code, which is basically a list of events that share some
     common handler.
 
     :param iter probe_iter: iterator of probe configurations
-    :param str binary: path to the profiled binary
 
     :return str: the built probe events code
     """
     return ',\n      '.join(
-        FUNC_EVENT_TEMPLATE.format(binary=binary, name=prb['name']) for prb in probe_iter
+        FUNC_EVENT_TEMPLATE.format(binary=prb['lib'], name=prb['name']) for prb in probe_iter
     )
 
 
-def _build_usdt_events(probe_iter, binary, probe_id='name'):
+def _build_usdt_events(probe_iter, probe_id='name'):
     """ Build USDT probe events code, which is basically a list of events that share some
     common handler.
 
     :param iter probe_iter: iterator of probe configurations
-    :param str binary: path to the profiled binary
 
     :return str: the built probe events code
     """
     return ',\n      '.join(
-        USDT_EVENT_TEMPLATE.format(binary=binary, name=prb[probe_id]) for prb in probe_iter
+        USDT_EVENT_TEMPLATE.format(binary=prb['lib'], name=prb[probe_id]) for prb in probe_iter
     )
 
 

@@ -20,6 +20,8 @@ class CollectEngine(ABC):
     parameters for easier access.
 
     :ivar str binary: the path to the binary file to be probed
+    :ivar list libs: list of additional dynamic libraries to profile
+    :ivar list targets: list of binary and libraries to profile
     :ivar Executable executable: the Executable object containing the profiled command, args, etc.
     :ivar str timestamp: the time of the collection start
     :ivar int pid: the PID of the Tracer process
@@ -36,6 +38,8 @@ class CollectEngine(ABC):
         """
         super().__init__()
         self.binary = config.binary
+        self.libs = config.libs
+        self.targets = [self.binary] + self.libs
         self.executable = config.executable
         self.timestamp = config.timestamp
         self.pid = config.pid
@@ -50,12 +54,12 @@ class CollectEngine(ABC):
 
     @abstractmethod
     def available_usdt(self, **kwargs):
-        """ List the available USDT probes within a given binary file using an engine-specific
-        approach.
+        """ List the available USDT probes within the given binary files and libraries using
+        an engine-specific approach.
 
         :param kwargs: the required parameters
 
-        :return list: a list of the USDT probe names
+        :return dict: a list of the USDT probe names per binary file
         """
         pass
 
