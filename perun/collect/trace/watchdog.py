@@ -215,28 +215,32 @@ class Watchdog:
         self.log_variable('locked_modules', locked_modules)
         self.log_variable('lockless_modules', lockless_modules)
 
-    def log_trace_stack(self, line, line_cnt, trace_stack):
+    def log_trace_stack(self, line, line_cnt, ctx, tid):
         """ Logs the current line and the stack trace state of the data-profile transformation.
 
         :param str line: the current data file line
         :param int line_cnt: the line number
-        :param dict trace_stack: the trace stack dictionary
+        :param TransformContext ctx: the trace transformation context
+        :param int tid: the thread id that caused failure or -1 if not accessible
         """
         if self.__enabled:
             # Log the line that failed
             self.__logger.debug(' Line no. %d: %s', line_cnt, line)
-            self.__logger.debug(' Func stack:')
             # Log the function probe stack
-            if 'func' in trace_stack:
-                for thread, stack in trace_stack['func'].items():
-                    self.__logger.debug('  Thread %s:', str(thread))
-                    self.__logger.debug('%s', '   ' + '\n   '.join(map(str, stack[0])))
-            # Log the usdt probe stack
-            self.__logger.debug(' USDT stack:')
-            if 'usdt' in trace_stack:
-                for thread, probes in trace_stack['usdt'].items():
-                    self.__logger.debug('  Thread %s:', str(thread))
-                    for name, stack in probes.items():
+            tid_list = [tid] if tid > 0 else list(ctx.per_thread.keys())
+
+            # Log either the offending thread or all of them
+            for tid in tid_list:
+                self.__logger.debug(' Thread %s:', str(tid))
+                # Log the full function stack
+                self.__logger.debug('  Func stack:')
+                self.__logger.debug(
+                    '%s', '   ' + '\n   '.join(map(ctx.id_map.get, ctx.per_thread[tid].func_stack))
+                )
+                # Log all the USDT stacks
+                self.__logger.debug('  USDT stack:')
+                for usdt in ctx.per_thread[tid].usdt_stack:
+                    for name, stack in usdt.items():
                         self.__logger.debug('   Probe %s:', name)
                         self.__logger.debug('%s', '    ' + '\n    '.join(map(str, stack)))
 

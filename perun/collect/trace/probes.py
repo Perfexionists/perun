@@ -54,15 +54,15 @@ class Probes:
         func_probes = list(cli_config.get('func', ''))
         usdt_probes = list(cli_config.get('usdt', ''))
         for probe in func_probes:
-            parsed = self._parse_probe(probe, ProbeType.Func)
+            parsed = self._parse_probe(probe, ProbeType.Func, cli_config['binary'])
             self.user_func[parsed['name']] = parsed
         # Process the USDT probes only if enabled
         if self.with_usdt:
             for probe in usdt_probes:
-                parsed = self._parse_probe(probe, ProbeType.USDT)
+                parsed = self._parse_probe(probe, ProbeType.USDT, cli_config['binary'])
                 self.usdt[parsed['name']] = parsed
 
-    def _parse_probe(self, probe_specification, probe_type):
+    def _parse_probe(self, probe_specification, probe_type, binary):
         """ Parses the given probe specification in format <lib>#<probe>#<sampling> into the
         separate components and builds the probe dictionary.
 
@@ -72,7 +72,7 @@ class Probes:
         :return dict: the created probe dictionary
         """
         parts = probe_specification.split('#')
-        name, lib, sample = None, None, self.global_sampling
+        name, lib, sample = None, binary, self.global_sampling
         # Only the probe name was given
         if len(parts) == 1:
             name = parts[0]

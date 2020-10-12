@@ -2,7 +2,7 @@
 (systemtap engine) into a perun profile.
 """
 
-
+import os
 import collections
 
 import perun.utils.metrics as metrics
@@ -13,6 +13,22 @@ from perun.collect.trace.values import RecordType
 from perun.collect.optimizations.call_graph import CallGraphResource
 
 
+class ThreadContext:
+    """ Class that keeps track of function call stack, USDT hit stack, function call sequence
+    map and bottom indicator per each active thread.
+
+    :ivar list func_stack: keeps track of the function call stack
+    :ivar dict usdt_stack: stores stack of USDT probe hits for each probe
+    :ivar dict seq_map: tracks sequence number for each probe that identifies the order of records
+    :ivar bool bottom_flag: flag used to identify records that have no more callees
+    """
+    def __init__(self):
+        self.func_stack = []
+        self.usdt_stack = collections.defaultdict(list)
+        self.seq_map = collections.defaultdict(int)
+        self.bottom_flag = False
+
+
 class TransformContext:
     """ Class that keeps track of the context information during the raw data transformation.
 
@@ -21,13 +37,10 @@ class TransformContext:
     :ivar str workload: the workload specification of the current run
     :ivar Probes probes: the probes specification
     :ivar set timestamp_set: the set of encountered timestamps, used to detect duplicities in data
-    :ivar dict trace_stack: keeps track of the functions and USDT records stacks
-    :ivar dict id_map: mapping between probe ID and probe names, used when verbose_trace is off
-    :ivar dict seq_map: tracks sequence number for each probe that identifies the order of records
-    :ivar bool bottom_flag: flag used to identify records that have no more callees
-    :ivar dict bottom: summary of total elapsed time per bottom records
-    :ivar function get_id: obtains the probe identification based on verbose / compact mode
-
+    :ivar ThreadContext per_thread: per-thread context for function / usdt stacks, sequence maps etc
+    :ivar dict bottom: summary of total elapsed time per bottom records per thread
+    :ivar dict id_map: mapping between probe ID (name) and probe names
+    :ivar dict step_map: probe -> sampling value mapping
     """
     def __init__(self, probes, binary, verbose_trace, workload):
         """
@@ -40,68 +53,27 @@ class TransformContext:
         self.binary = binary
         self.workload = workload
         self.probes = probes
-        self.timestamp_set = None
-        self.trace_stack = None
-        self.id_map = None
-        self.seq_map = None  # TODO: temporary, update view/postprocessing to use timestamps instead
-        self.bottom_flag = False
-        self.bottom = None
-        self.init_structs()
-        self.get_id = self._verbose_ids if verbose_trace else self._compact_ids
-        # TODO: temporary, solve dynamic call graph properly
-        self.dyn_cg = None
-
-    def init_structs(self):
-        """ Re-initializes some of the structures to their default values. Used mainly when
-        multiple runs are performed in the same data collection session.
-        """
         self.timestamp_set = set()
-        # func: thread -> stack
-        # usdt: thread -> name -> stack
-        self.trace_stack = {
-            'func': collections.defaultdict(list),
-            'usdt': collections.defaultdict(lambda: collections.defaultdict(list))
-        }
-        # Verbose trace does not need id -> name mapping
-        self.id_map = None
-        if not self.verbose_trace:
-            # id -> probe name
-            self.id_map = {
-                probe['id']: probe['name']
-                for probe in list(self.probes.func.values()) + list(self.probes.usdt.values())
-            }
-            # Add the sentinel record which contains the binary
-            self.id_map[-1] = self.binary
-        # Add sequence mapping to obtain call order
+        self.per_thread = collections.defaultdict(ThreadContext)
+        # Thread -> function -> total elapsed time
+        # Not included in 'per_thread' since we want to keep the values even after threads terminate
+        self.bottom = collections.defaultdict(lambda: collections.defaultdict(int))
+
+        # ID Map is used to map probe ID -> function name in non-verbose mode
+        # and function name -> function name in verbose mode (basically a no-op)
         dict_key = 'name' if self.verbose_trace else 'id'
-        self.seq_map = {
-            str(probe[dict_key]): {'seq': 0, 'inc': probe['sample']}
+        self.id_map = {
+            str(probe[dict_key]): probe['name']
             for probe in list(self.probes.func.values()) + list(self.probes.usdt.values())
         }
-        # Identify bottom records and track them summarized by the function name
-        self.bottom_flag = False
-        self.bottom = {probe['name']: 0 for probe in self.probes.func.values()}
-        # Initialize the dynamic call graph structure
+        # Step Map keeps track of the sampling value per each function
+        # Used to compute the sequence property
+        self.step_map = {
+            str(probe[dict_key]): probe['sample']
+            for probe in list(self.probes.func.values()) + list(self.probes.usdt.values())
+        }
+        # TODO: temporary, solve dynamic call graph properly
         self.dyn_cg = {probe['name']: set() for probe in self.probes.func.values()}
-
-    def _compact_ids(self, *id_list):
-        """ ID retrieval for compact trace, i.e., only probe IDs are reported
-
-        :param iter id_list: the list of probe IDs to resolve
-
-        :return list: the list of translated probe IDs
-        """
-        return [self.id_map[int(id_elem)] for id_elem in id_list]
-
-    def _verbose_ids(self, *id_list):
-        """ ID retrieval for verbose trace, i.e., the function name is reported
-        - thus this is basically a no-op
-
-        :param iter id_list: the list of probe names to resolve
-
-        :return list: the list of probe names
-            """
-        return id_list
 
 
 def trace_to_profile(data_file, config, probes, **_):
@@ -119,6 +91,7 @@ def trace_to_profile(data_file, config, probes, **_):
     handlers = _record_handlers(config.generate_dynamic_cg)
     with open(data_file, 'r') as trace:
         cnt, line = 0, ''
+        record = None
         try:
             # Process the raw data trace line by line
             for cnt, line in enumerate(trace):
@@ -144,16 +117,18 @@ def trace_to_profile(data_file, config, probes, **_):
                     continue
             WATCH_DOG.info('Processed {} records'.format(cnt))
             # Add the computed hotspot coverage to the tracked metric
-            metrics.add_metric('coverages', {
-                'hotspot_coverage_abs': sum(val for val in ctx.bottom.values()),
-                'hotspot_coverage_count': len([name for name, val in ctx.bottom.items() if val > 0])
-            })
+            metrics.add_metric('coverages', {tid: {
+                'hotspot_coverage_abs': sum(val for val in bottom.values()),
+                'hotspot_coverage_count': len([name for name in bottom.keys()])
+            } for tid, bottom in ctx.bottom.items()})
             # TODO: temporary
             _build_dynamic_cg(config, ctx)
         except Exception:
-            WATCH_DOG.info('Error while parsing the raw trace record')
+            WATCH_DOG.info('Error while parsing the raw trace output')
             # Log the status in case of unhandled exception
-            WATCH_DOG.log_trace_stack(line, cnt, ctx.trace_stack)
+            WATCH_DOG.log_trace_stack(
+                line, cnt, ctx, record['tid'] if record is not None else -1
+            )
             raise
 
 
@@ -214,14 +189,11 @@ def _record_corrupt(_, __):
     return {}
 
 
-def _record_sentinel_begin(_, ctx):
-    """ Handler for begin sentinel probe that re-initializes the necessary context structures.
-
-    :param TransformContext ctx: the parsing context object
+def _record_sentinel_begin(_, __):
+    """ Handler for begin sentinel probe that is a no-op.
 
     :return dict: empty dictionary
     """
-    ctx.init_structs()
     return {}
 
 
@@ -233,15 +205,19 @@ def _record_sentinel_end(record, ctx):
 
     :return dict: empty dictionary
     """
-    # Make sure that the 'main' record is terminated if abrupt termination happens
-    for thread_stack in ctx.trace_stack['func'].values():
-        for func in thread_stack:
+    # The .begin and .end probes are sometimes triggered by other spawned processes, filter them
+    resource = {}
+    if record['id'] == os.path.basename(ctx.binary):
+        # TODO: change this to actually track END - BEGIN duration and use it as a backup main
+        # Make sure that the 'main' record is terminated if abrupt termination happens
+        for func in ctx.per_thread[record['tid']].func_stack:
             # There is still an unprocessed main record
-            if func['name'] == 'main':
-                metrics.add_metric('abrupt_termination', True)
-                return _build_resource(func, record, ctx.get_id(func['id'])[0], ctx)
-    metrics.add_metric('abrupt_termination', False)
-    return {}
+            if ctx.id_map[func['id']] == 'main':
+                resource = _build_resource(func, record, ctx.id_map[func['id']], ctx)
+                break
+        metrics.add_metric('abrupt_termination_' + str(record['tid']), bool(resource))
+    del ctx.per_thread[record['tid']]
+    return resource
 
 
 def _record_func_begin(record, ctx):
@@ -254,9 +230,9 @@ def _record_func_begin(record, ctx):
     """
     # Increase the sequence counter
     _inc_sequence_number(record, ctx)
-    ctx.bottom_flag = True
+    ctx.per_thread[record['tid']].bottom_flag = True
     # Add the record to the trace stack
-    ctx.trace_stack['func'][record['tid']].append(record)
+    ctx.per_thread[record['tid']].func_stack.append(record)
     return {}
 
 
@@ -268,19 +244,20 @@ def _record_func_begin_reconstruction(record, ctx):
 
     :return dict: empty dictionary
     """
+    record_tid = record['tid']
     # Increase the sequence counter
     _inc_sequence_number(record, ctx)
-    ctx.bottom_flag = True
+    ctx.per_thread[record_tid].bottom_flag = True
     # Update the dynamic call graph structure
     try:
-        caller_record = ctx.trace_stack['func'][record['tid']][-1]
-        caller_uid = ctx.get_id(caller_record['id'])[0]
-        callee_uid = ctx.get_id(record['id'])[0]
+        caller_record = ctx.per_thread[record_tid].func_stack[-1]
+        caller_uid = ctx.id_map[caller_record['id']]
+        callee_uid = ctx.id_map[record['id']]
         ctx.dyn_cg[caller_uid].add(callee_uid)
     except IndexError:
         pass
     # Add the record to the trace stack
-    ctx.trace_stack['func'][record['tid']].append(record)
+    ctx.per_thread[record_tid].func_stack.append(record)
     return {}
 
 
@@ -292,7 +269,8 @@ def _record_func_end(record, ctx):
 
     :return dict: profile resource dictionary or empty dictionary if matching failed
     """
-    stack = ctx.trace_stack['func'][record['tid']]
+    record_tid = record['tid']
+    stack = ctx.per_thread[record_tid].func_stack
     matching_record = {}
     # In most cases, the record matches the top record in the stack
     if stack and record['id'] == stack[-1]['id'] and record['timestamp'] > stack[-1]['timestamp']:
@@ -306,11 +284,11 @@ def _record_func_end(record, ctx):
                 break
     if matching_record:
         # Compute the bottom time
-        uid = ctx.get_id(record['id'])[0]
-        if ctx.bottom_flag:
-            ctx.bottom[uid] += (record['timestamp'] - matching_record['timestamp'])
+        uid = ctx.id_map[record['id']]
+        if ctx.per_thread[record_tid].bottom_flag:
+            ctx.bottom[record_tid][uid] += (record['timestamp'] - matching_record['timestamp'])
         matching_record = _build_resource(matching_record, record, uid, ctx)
-    ctx.bottom_flag = False
+        ctx.per_thread[record_tid].bottom_flag = False
     return matching_record
 
 
@@ -323,7 +301,7 @@ def _record_usdt_single(record, ctx):
     :return dict: profile resource dictionary or empty dictionary if no resource could be created
     """
     _inc_sequence_number(record, ctx)
-    stack = ctx.trace_stack['usdt'][record['tid']][record['id']]
+    stack = ctx.per_thread[record['tid']].usdt_stack[record['id']]
     # If this is the first record of this USDT probe, add it to the stack
     if not stack:
         stack.append(record)
@@ -333,7 +311,8 @@ def _record_usdt_single(record, ctx):
     matching_record = stack.pop()
     stack.append(record)
     return _build_resource(
-        matching_record, record, '#'.join(ctx.get_id(matching_record['id'], record['id'])), ctx
+        matching_record, record,
+        ctx.id_map[matching_record['id']] + '#' + ctx.id_map[record['id']], ctx
     )
 
 
@@ -347,7 +326,7 @@ def _record_usdt_begin(record, ctx):
     """
     # Increment the sequence counter and add the record to the stack
     _inc_sequence_number(record, ctx)
-    ctx.trace_stack['usdt'][record['tid']][record['id']].append(record)
+    ctx.per_thread[record['tid']].usdt_stack[record['id']].append(record)
     return {}
 
 
@@ -360,11 +339,12 @@ def _record_usdt_end(record, ctx):
     :return dict: profile resource dictionary
     """
     # Obtain the corresponding probe pair and matching record
-    pair = ctx.probes.usdt_reversed[record['name']]
-    matching_record = ctx.trace_stack['usdt'][record['tid']][pair].pop()
+    pair = ctx.probes.usdt_reversed[record['id']]
+    matching_record = ctx.per_thread[record['tid']].usdt_stack[pair].pop()
     # Create the resource
     return _build_resource(
-        matching_record, record, '#'.join(ctx.get_id(matching_record['id'], record['id'])), ctx
+        matching_record, record,
+        ctx.id_map[matching_record['id']] + '#' + ctx.id_map[record['id']], ctx
     )
 
 
@@ -374,9 +354,9 @@ def _inc_sequence_number(record, ctx):
     :param dict record: the parsed raw data record
     :param TransformContext ctx: the parsing context object
     """
-    seq_record = ctx.seq_map[record['id']]
-    record['seq'] = seq_record['seq']
-    seq_record['seq'] += seq_record['inc']
+    seq_map = ctx.per_thread[record['tid']].seq_map
+    record['seq'] = seq_map[record['id']]
+    seq_map[record['id']] += ctx.step_map[record['id']]
 
 
 def _build_resource(record_entry, record_exit, uid, ctx):

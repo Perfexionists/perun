@@ -149,11 +149,15 @@ def _add_script_init(handle, binary, probes, verbose_trace):
     """
     script_init = """
 {array_declaration}
+global is_stopwatch = 0
 
 probe process("{binary}").begin {{
 {id_init}
 {sampling_init}
-    start_stopwatch("timestamp");
+    if (!is_stopwatch) {{
+        is_stopwatch = 1
+        start_stopwatch("timestamp")
+    }}
     {sentinel}
 }}
 """.format(
@@ -176,8 +180,6 @@ def _add_end_probe(handle, binary, verbose_trace):
     end_probe = """
 probe process("{binary}").end {{
     {sentinel}
-    stop_stopwatch("timestamp")
-    delete_stopwatch("timestamp")
 }}
 """.format(
         binary=binary,
@@ -327,7 +329,7 @@ def _build_probe_handler(probe_type, binary, verbose_trace):
     # Set how the probe will be identified in the output and how we obtain the identification
     # Based on the type of probe and trace verbosity
     if probe_type in (RecordType.SentinelBegin, RecordType.SentinelEnd):
-        _id_type, _id_get = _id_type_value(('-1', '"{}"'.format(binary)), verbose_trace)
+        _id_type, _id_get = '%s', 'execname()'
     else:
         _id_type, _id_get = _id_type_value(
             ('{}[pname]'.format(ARRAY_PROBE_ID), 'pname'), verbose_trace
