@@ -5,15 +5,21 @@ rules such as function or USDT locations and sampling.
 
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import RecordType
+from perun.collect.optimizations.structs import Optimizations, Parameters
 
 
-# names of the global arrays used throughout the script
+# Names of the global arrays used throughout the script
 ARRAY_PROBE_ID = 'probe_id'
 ARRAY_SAMPLE_THRESHOLD = 'sampling_threshold'
 ARRAY_SAMPLE_COUNTER = 'sampling_counter'
 ARRAY_SAMPLE_FLAG = 'sampling_flag'
 ARRAY_RECURSION_DEPTH = 'recursion_depth'
 ARRAY_RECURSION_SAMPLE_HIT = 'recursion_sample_hit'
+
+# Names of other used global variables
+STOPWATCH_ON = 'stopwatch_on'
+STOPWATCH_NAME = 'timestamp'
+TIMED_SWITCH = 'timed_switch'
 
 # Template of the global arrays declaration
 ARRAYS_TEMPLATE = """
@@ -25,8 +31,8 @@ ARRAYS_TEMPLATE = """
 # Template of the sampling global arrays declaration
 ARRAYS_SAMPLING_TEMPLATE = """
 global {sampling_thr}{{size}}
-global {sampling_cnt}{{size}}
-global {sampling_flag}{{size}}
+global {sampling_cnt}
+global {sampling_flag}
 """.format(
     sampling_thr=ARRAY_SAMPLE_THRESHOLD,
     sampling_cnt=ARRAY_SAMPLE_COUNTER,
@@ -35,37 +41,46 @@ global {sampling_flag}{{size}}
 
 # Template of the recursion sampling global arrays declaration
 ARRAYS_RECURSION_TEMPLATE = """
-global {recursion_depth}{{size}}
-global {recursion_hit}{{size}}
+global {recursion_depth}
+global {recursion_hit}
 """.format(
     recursion_depth=ARRAY_RECURSION_DEPTH,
     recursion_hit=ARRAY_RECURSION_SAMPLE_HIT,
 )
 
 # Template of a function event
-FUNC_EVENT_TEMPLATE = 'process("{binary}").function("{name}"){{suffix}}'
+FUNC_EVENT_TEMPLATE = 'process("{binary}").function("{name}"){{suffix}}{timed_switch}'
 # Template of an USDT event
 USDT_EVENT_TEMPLATE = 'process("{binary}").mark("{loc}")?'
+# Template of a process begin / end handler
+PROCESS_HANDLER_TEMPLATE = (
+    'printf("{type} %d %d %d %d %s\\n", '
+    'tid(), pid(), ppid(), read_stopwatch_ns("{timestamp}"), execname())'
+)
+THREAD_HANDLER_TEMPLATE = \
+    'printf("{type} %d %d %d %s\\n", tid(), pid(), read_stopwatch_ns("{timestamp}"), execname())'
 # Template of a record creation within a probe handler
 HANDLER_TEMPLATE = \
-    'printf("{type} %d %d {id_type}\\n", tid(), read_stopwatch_ns("timestamp"), {id_get})'
+    'printf("{type} %d %d {id_type}\\n", tid, read_stopwatch_ns("{timestamp}"), {id_get})'
 # Template of a probe event declaration and handler definition
 PROBE_TEMPLATE = """
 probe {probe_events}
 {{
     pname = ppfunc()
+    tid = tid()
     {probe_handler}
 }}
 """
 
 # Template of a sampled entry probe handler that is imprecise for sampled recursive functions
 ENTRY_APPROX_SAMPLE_TEMPLATE = """
-    {sampling_cnt}[pname] ++
-    if ({sampling_cnt}[pname] == {sampling_thr}[pname]) {{{{
-        {sampling_flag}[pname] ++
-        {sampling_cnt}[pname] = 0
+    counter = {sampling_cnt}[tid, pname]
+    if (counter == 0 || counter == {sampling_thr}[pname]) {{{{
+        counter = 0
+        {sampling_flag}[tid, pname] ++
         {{probe_handler}}
     }}}}
+    printf("counter: %d, arr: %d\\n", counter, {sampling_cnt}[tid, pname])
 """.format(
     sampling_cnt=ARRAY_SAMPLE_COUNTER,
     sampling_thr=ARRAY_SAMPLE_THRESHOLD,
@@ -74,9 +89,9 @@ ENTRY_APPROX_SAMPLE_TEMPLATE = """
 
 # Template of a sampled exit probe handler that is imprecise for sampled recursive functions
 EXIT_APPROX_SAMPLE_TEMPLATE = """
-    if ({sampling_flag}[pname] > 0) {{{{
+    if ({sampling_flag}[tid, pname] > 0) {{{{
         {{probe_handler}}
-        {sampling_flag}[pname] --
+        {sampling_flag}[tid, pname] --
     }}}}
 """.format(
     sampling_flag=ARRAY_SAMPLE_FLAG
@@ -85,11 +100,11 @@ EXIT_APPROX_SAMPLE_TEMPLATE = """
 # Template of a sampled entry probe handler that can precisely measure even sampled recursive
 # functions - however, it is sensitive to call nesting errors (e.g., omitted retprobe calls etc.)
 ENTRY_PRECISE_SAMPLE_TEMPLATE = """
-    {sampling_cnt}[pname] ++
-    {recursion_depth}[pname] ++
-    if ({sampling_cnt}[pname] == {sampling_thr}[pname]) {{{{
-        {recursion_hit}[pname, {recursion_depth}[pname]] = 1
-        {sampling_cnt}[pname] = 0
+    {sampling_cnt}[tid, pname] ++
+    {recursion_depth}[tid, pname] ++
+    if ({sampling_cnt}[tid, pname] == {sampling_thr}[pname]) {{{{
+        {recursion_hit}[tid, pname, {recursion_depth}[tid, pname]] = 1
+        {sampling_cnt}[tid, pname] = 0
         {{probe_handler}}
     }}}}
 """.format(
@@ -102,11 +117,11 @@ ENTRY_PRECISE_SAMPLE_TEMPLATE = """
 # Template of a sampled exit probe handler that can precisely measure even sampled recursive
 # functions - however, it is sensitive to call nesting errors (e.g., omitted retprobe calls etc.
 EXIT_PRECISE_SAMPLE_TEMPLATE = """
-    if ([pname, {recursion_depth}[pname]] in {recursion_hit}) {{{{
+    if ([tid, pname, {recursion_depth}[tid, pname]] in {recursion_hit}) {{{{
         {{probe_handler}}
-        delete {recursion_hit}[pname, {recursion_depth}[pname]]
+        delete {recursion_hit}[tid, pname, {recursion_depth}[tid, pname]]
     }}}}
-    {recursion_depth}[pname] -- 
+    {recursion_depth}[tid, pname] -- 
 """.format(
     recursion_depth=ARRAY_RECURSION_DEPTH,
     recursion_hit=ARRAY_RECURSION_SAMPLE_HIT
@@ -129,72 +144,133 @@ def assemble_system_tap_script(script_file, config, probes, **_):
 
     # Open the script file in write mode
     with open(script_file, 'w') as script_handle:
-        # Declare and init arrays, create the begin probe
-        _add_script_init(script_handle, config.binary, probes, config.verbose_trace)
+        # Obtain configuration for the timed sampling optimization
+        timed_sampling = Optimizations.TimedSampling.value in config.run_optimizations
+        sampling_freq = config.run_optimization_parameters[Parameters.TimedSampleFreq.value]
+        # Declare and init arrays, create the begin / end probes
+        _add_script_init(script_handle, config.binary, probes, config.verbose_trace, timed_sampling)
+        # Add the thread begin / end probes
+        _add_thread_probes(script_handle, config.binary, bool(probes.sampled_probes_len()))
+        # Add the timed sampling timer probe if needed
+        if timed_sampling:
+            _add_timer_probe(script_handle, sampling_freq)
         # Create the timing probes for functions and USDT probes
-        _add_program_probes(script_handle, probes, config.binary, config.verbose_trace)
-        _add_end_probe(script_handle, config.binary, config.verbose_trace)
+        _add_program_probes(script_handle, probes, config.verbose_trace, timed_sampling)
 
     # Success
     WATCH_DOG.info("SystemTap script successfully assembled")
     WATCH_DOG.log_probes(len(probes.func), len(probes.usdt), script_file)
 
 
-def _add_script_init(handle, binary, probes, verbose_trace):
-    """ Add the process begin probe, sampling array declaration and initialization.
+def _add_script_init(handle, binary, probes, verbose_trace, timed_sampling):
+    """Declare and initialize ID, sampling and recursion arrays (certain arrays may be omitted
+    when e.g., sampling is turned off), necessary global variables, as well as add the process
+    begin and end probe.
 
     :param TextIO handle: the script file handle
     :param str binary: the name of the binary file
     :param Probes probes: the probes specification
+    :param bool verbose_trace: specifies whether the resulting trace is verbose or not
+    :param bool timed_sampling: specifies whether Timed Sampling is on or off
     """
     script_init = """
 {array_declaration}
-global is_stopwatch = 0
+{timed_sampling}
+global {stopwatch} = 0
 
 probe process("{binary}").begin {{
 {id_init}
 {sampling_init}
-    if (!is_stopwatch) {{
-        is_stopwatch = 1
-        start_stopwatch("timestamp")
+    if (!{stopwatch}) {{
+        {stopwatch} = 1
+        start_stopwatch("{timestamp}")
     }}
-    {sentinel}
+    {begin_handler}
 }}
+
+probe process("{binary}").end
+{{
+    {end_handler}
+}}
+
 """.format(
         array_declaration=_build_array_declaration(probes, verbose_trace),
+        stopwatch=STOPWATCH_ON,
         id_init=_build_id_init(probes, verbose_trace),
         sampling_init=_build_sampling_init(probes),
         binary=binary,
-        sentinel=_build_probe_handler(RecordType.SentinelBegin, binary, verbose_trace)
+        timestamp=STOPWATCH_NAME,
+        begin_handler=PROCESS_HANDLER_TEMPLATE.format(
+            type=int(RecordType.ProcessBegin), timestamp=STOPWATCH_NAME
+        ),
+        end_handler=PROCESS_HANDLER_TEMPLATE.format(
+            type=int(RecordType.ProcessEnd), timestamp=STOPWATCH_NAME
+        ),
+        timed_sampling=(
+            "global {} = 1".format(TIMED_SWITCH) if timed_sampling else "# Timed Sampling omitted"
+        )
     )
     handle.write(script_init)
 
 
-def _add_end_probe(handle, binary, verbose_trace):
-    """Adds marker to the collection output indicating the end of collection. This is needed to
-    determine that the output file is fully written and can be further analyzed and processed.
+def _add_thread_probes(handle, binary, sampling_on):
+    """ Add thread begin and end probes.
 
     :param TextIO handle: the script file handle
     :param str binary: the name of the binary file
+    :param bool sampling_on: specifies whether per-function sampling is on
     """
     end_probe = """
-probe process("{binary}").end {{
-    {sentinel}
+probe process("{binary}").thread.begin {{
+    {begin_handler}
+}}
+    
+probe process("{binary}").thread.end {{
+    {end_handler}
+    {sampling_cleanup}
 }}
 """.format(
         binary=binary,
-        sentinel=_build_probe_handler(RecordType.SentinelEnd, binary, verbose_trace)
+        begin_handler=THREAD_HANDLER_TEMPLATE.format(
+            type=int(RecordType.ThreadBegin), timestamp=STOPWATCH_NAME
+        ),
+        end_handler=THREAD_HANDLER_TEMPLATE.format(
+            type=int(RecordType.ThreadEnd), timestamp=STOPWATCH_NAME
+        ),
+        sampling_cleanup=(
+            'delete {sampling_cnt}[tid(), *]'.format(sampling_cnt=ARRAY_SAMPLE_COUNTER)
+            if sampling_on else '# Sampling cleanup omitted'
+        )
     )
     handle.write(end_probe)
 
 
-def _add_program_probes(handle, probes, binary, verbose_trace):
-    """ Add the probe definitions to the script.
+def _add_timer_probe(handle, sampling_frequency):
+    """ Add a probe for timed event that enables / disables function probes.
+
+    :param TextIO handle: the script file handle
+    :param int sampling_frequency: frequency (Hz) value of the timer probe firing
+    """
+    # Create the sampling timer
+    timer_probe = """
+probe timer.hz({freq}) if ({stopwatch}) {{
+    {switch} = !{switch}
+}}
+""".format(
+        freq=sampling_frequency,
+        stopwatch=STOPWATCH_ON,
+        switch=TIMED_SWITCH
+    )
+    handle.write(timer_probe)
+
+
+def _add_program_probes(handle, probes, verbose_trace, timed_sampling):
+    """ Add function and USDT probe definitions to the script.
 
     :param TextIO handle: the script file handle
     :param Probes probes: the Probes configuration
-    :param str binary: the path to the profiled binary
     :param bool verbose_trace: the verbosity level of the data output
+    :param bool timed_sampling: specifies whether timed sampling is on or off
     """
     # Obtain the distinct set of function and usdt probes
     sampled_func, nonsampled_func = probes.get_partitioned_func_probes()
@@ -202,20 +278,20 @@ def _add_program_probes(handle, probes, binary, verbose_trace):
     # Pre-build events and handlers based on the probe sets
     prebuilt = {
         'e': {
-            'sampled_func': _build_func_events(sampled_func),
+            'sampled_func': _build_func_events(sampled_func, timed_sampling),
             'sampled_usdt': _build_usdt_events(sampled_usdt),
             'sampled_usdt_exit': _build_usdt_events(sampled_usdt, 'pair'),
-            'nonsampled_func': _build_func_events(nonsampled_func),
+            'nonsampled_func': _build_func_events(nonsampled_func, timed_sampling),
             'nonsampled_usdt': _build_usdt_events(nonsampled_usdt),
             'nonsampled_usdt_exit': _build_usdt_events(nonsampled_usdt, 'pair'),
             'single_usdt': _build_usdt_events(single_usdt)
         },
         'h': {
-            'func_begin': _build_probe_handler(RecordType.FuncBegin, binary, verbose_trace),
-            'func_exit': _build_probe_handler(RecordType.FuncEnd, binary, verbose_trace),
-            'usdt_begin': _build_probe_handler(RecordType.USDTBegin, binary, verbose_trace),
-            'usdt_exit': _build_probe_handler(RecordType.USDTEnd, binary, verbose_trace),
-            'usdt_single': _build_probe_handler(RecordType.USDTSingle, binary, verbose_trace)
+            'func_begin':  _build_probe_body(RecordType.FuncBegin, verbose_trace),
+            'func_exit': _build_probe_body(RecordType.FuncEnd, verbose_trace),
+            'usdt_begin': _build_probe_body(RecordType.USDTBegin, verbose_trace),
+            'usdt_exit': _build_probe_body(RecordType.USDTEnd, verbose_trace),
+            'usdt_single': _build_probe_body(RecordType.USDTSingle, verbose_trace)
         }
     }
     # Create pairs of events-handlers to add to the script
@@ -223,11 +299,16 @@ def _add_program_probes(handle, probes, binary, verbose_trace):
     # Sampled: function entry, function exit, USDT entry, USDT exit
     # Single: USDT single
     specification = [
-        (prebuilt['e']['nonsampled_func'].format(suffix='.call?'), prebuilt['h']['func_begin']),
-        (prebuilt['e']['nonsampled_func'].format(suffix='.return?'), prebuilt['h']['func_exit']),
-        (prebuilt['e']['nonsampled_usdt'], prebuilt['h']['usdt_begin']),
-        (prebuilt['e']['nonsampled_usdt_exit'], prebuilt['h']['usdt_exit']),
-        (prebuilt['e']['single_usdt'], prebuilt['h']['usdt_single']),
+        (prebuilt['e']['nonsampled_func'].format(suffix='.call?'),
+         prebuilt['h']['func_begin']),
+        (prebuilt['e']['nonsampled_func'].format(suffix='.return?'),
+         prebuilt['h']['func_exit']),
+        (prebuilt['e']['nonsampled_usdt'],
+         prebuilt['h']['usdt_begin']),
+        (prebuilt['e']['nonsampled_usdt_exit'],
+         prebuilt['h']['usdt_exit']),
+        (prebuilt['e']['single_usdt'],
+         prebuilt['h']['usdt_single']),
         (prebuilt['e']['sampled_func'].format(suffix='.call?'),
          ENTRY_APPROX_SAMPLE_TEMPLATE.format(probe_handler=prebuilt['h']['func_begin'])),
         (prebuilt['e']['sampled_func'].format(suffix='.return?'),
@@ -303,51 +384,48 @@ def _build_sampling_init(probes):
     # The threshold array contains the sampling values for each function
     # When the threshold is reached, the probe generates a data record
     threshold_string = '    # Probe name -> Probe sampling threshold\n'
-    # The counter array keeps track of the function calls before the threshold is reached
-    counter_string = '    # Probe name -> Probe trigger counter\n'
     # Generate the initialization code for both the function and USDT sampled probes
     for probe_set in [probes.get_sampled_func_probes(), probes.get_sampled_usdt_probes()]:
         for probe in probe_set:
             threshold_string += '    {}["{}"] = {}\n'.format(
                 ARRAY_SAMPLE_THRESHOLD, probe['name'], probe['sample']
             )
-            counter_string += '    {}["{}"] = {}\n'.format(
-                ARRAY_SAMPLE_COUNTER, probe['name'], probe['sample'] - 1
-            )
-    return threshold_string + counter_string
+    return threshold_string
 
 
-def _build_probe_handler(probe_type, binary, verbose_trace):
+def _build_probe_body(probe_type, verbose_trace):
     """ Build the probe innermost body.
 
     :param RecordType probe_type: the probe type
-    :param str binary: the path to the profiled binary
     :param bool verbose_trace: the verbosity level of the data output
 
     :return str: the probe handler code
     """
     # Set how the probe will be identified in the output and how we obtain the identification
-    # Based on the type of probe and trace verbosity
-    if probe_type in (RecordType.SentinelBegin, RecordType.SentinelEnd):
-        _id_type, _id_get = '%s', 'execname()'
-    else:
-        _id_type, _id_get = _id_type_value(
-            ('{}[pname]'.format(ARRAY_PROBE_ID), 'pname'), verbose_trace
-        )
+    # based on the trace verbosity
+    id_t, id_get = ('%s', 'pname') if verbose_trace else ('%d', '{}[pname]'.format(ARRAY_PROBE_ID))
     # Format the template for the required probe type
-    return HANDLER_TEMPLATE.format(type=int(probe_type), id_type=_id_type, id_get=_id_get)
+    return HANDLER_TEMPLATE.format(
+        type=int(probe_type), id_type=id_t, id_get=id_get, timestamp=STOPWATCH_NAME
+    )
 
 
-def _build_func_events(probe_iter):
+def _build_func_events(probe_iter, timed_sampling):
     """ Build function probe events code, which is basically a list of events that share some
     common handler.
 
     :param iter probe_iter: iterator of probe configurations
+    :param bool timed_sampling: specifies whether Timed Sampling is on or off
 
     :return str: the built probe events code
     """
+    def timed_switch(func_name):
+        return ' if ({})'.format(TIMED_SWITCH) if timed_sampling and func_name != 'main' else ''
+
     return ',\n      '.join(
-        FUNC_EVENT_TEMPLATE.format(binary=prb['lib'], name=prb['name']) for prb in probe_iter
+        FUNC_EVENT_TEMPLATE.format(binary=prb['lib'], name=prb['name'],
+                                   timed_switch=timed_switch(prb['name']))
+        for prb in probe_iter
     )
 
 

@@ -5,21 +5,22 @@ Inspired by:
 """
 
 from perun.collect.trace.watchdog import WATCH_DOG
-from perun.collect.optimizations.optimization import Optimization, Optimizations
+from perun.collect.optimizations.structs import Optimizations
 
 
-def assemble_ebpf_program(src_file, probes, **_):
+def assemble_ebpf_program(src_file, probes, config, **_):
     """Assembles the eBPF program.
 
     :param str src_file: path to the program file, that should be generated
     :param Probes probes: the probes object
+    :param Configuration config: the collection configuration
     """
     WATCH_DOG.info("Attempting to assembly the eBPF program '{}'".format(src_file))
 
     # Add unique probe and sampling ID to the probes
     max_id = probes.add_probe_ids()
 
-    timed_sampling_on = Optimizations.TimedSampling in Optimization.get_run_optimizations()
+    timed_sampling_on = Optimizations.TimedSampling.value in config.run_optimizations
 
     # Open the eBPF program file
     with open(src_file, 'w') as prog_handle:

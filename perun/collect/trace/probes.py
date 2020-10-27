@@ -22,9 +22,12 @@ class Probes:
     :ivar int global_sampling: a sampling value applied to all the probes, if specific sampling is
                                not provided by the user
     """
-    def __init__(self, **cli_config):
-        """ Constructs the Probes object using the CLI parameters.
+    # TODO: use the libraries to cross-check
+    def __init__(self, main_binary, libraries, **cli_config):
+        """ Constructs the Probes object using the profiled binary and CLI parameters.
 
+        :param str main_binary: the main profiled binary
+        :param list libraries: a list of profiled libraries
         :param cli_config: the CLI configuration
         """
         # The dicts of function and USDT probes
@@ -51,15 +54,16 @@ class Probes:
             self.global_sampling = DEFAULT_SAMPLE
 
         # Parse the supplied specification
+        # TODO: check that the probe and lib are valid
         func_probes = list(cli_config.get('func', ''))
         usdt_probes = list(cli_config.get('usdt', ''))
         for probe in func_probes:
-            parsed = self._parse_probe(probe, ProbeType.Func, cli_config['binary'])
+            parsed = self._parse_probe(probe, ProbeType.Func, main_binary)
             self.user_func[parsed['name']] = parsed
         # Process the USDT probes only if enabled
         if self.with_usdt:
             for probe in usdt_probes:
-                parsed = self._parse_probe(probe, ProbeType.USDT, cli_config['binary'])
+                parsed = self._parse_probe(probe, ProbeType.USDT, main_binary)
                 self.usdt[parsed['name']] = parsed
 
     def _parse_probe(self, probe_specification, probe_type, binary):

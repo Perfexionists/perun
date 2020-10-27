@@ -106,8 +106,10 @@ class RecordType(IntEnum):
     USDTSingle = 2
     USDTBegin = 3
     USDTEnd = 4
-    SentinelBegin = 7
-    SentinelEnd = 8
+    ThreadBegin = 5
+    ThreadEnd = 6
+    ProcessBegin = 7
+    ProcessEnd = 8
     Corrupt = 9
 
 
@@ -170,3 +172,12 @@ CLEANUP_REFRESH = 0.2  # The refresh interval for cleaning up the resources
 
 # The regex to match the SystemTap module name out of the log and extract the non-PID dependent part
 STAP_MODULE_REGEX = re.compile(r"(stap_[A-Fa-f0-9]+)_\d+\.ko")
+
+# Categorize record types into probe, thread and process sets since all those records have
+# different number of values
+PROBE_RECORDS = {
+    int(RecordType.FuncBegin), int(RecordType.FuncEnd),
+    int(RecordType.USDTSingle), int(RecordType.USDTBegin), int(RecordType.USDTEnd)
+}
+THREAD_RECORDS = {int(RecordType.ThreadBegin), int(RecordType.ThreadEnd)}
+PROCESS_RECORDS = {int(RecordType.ProcessBegin), int(RecordType.ProcessEnd)}

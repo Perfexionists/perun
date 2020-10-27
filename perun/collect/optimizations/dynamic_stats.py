@@ -1,0 +1,244 @@
+""" Dynamic Statistics refer to a set of statistics that are obtained from an actual
+    Tracer run. These statistics can be used in subsequent runs to optimize the profiling.
+
+    Currently, the statistics are divided into four distinct categories:
+    1) Global Stats aggregate statistics across all of the bottom* processes.
+    2) Per-thread Stats contain statistics on a per-thread basis, i.e., the statistics
+       are computed for each thread separately.
+    3) Process Hierarchy contains traced processes and their parents (ppid), children
+       and spawned threads.
+    4) Threads that are spawned by traced processes during the profiling.
+
+    *bottom processes are those that spawn no other process
+"""
+
+import collections
+import numpy as np
+
+# The quartiles
+_Q1, _Q2, _Q3 = 25, 50, 75
+
+# Remember the thread PID and duration
+_Thread = collections.namedtuple('Thread', ['pid', 'duration'])
+
+
+class DynamicStats:
+    """ The Dynamic Statistics class that computes and stores the statistics
+
+    :ivar dict global_stats: the global statistics for each function: uid -> stats
+    :ivar dict per_thread: per-thread statistics for each function: tid -> uid -> stats
+    :ivar dict process_hierarchy: traced process details: pid -> details
+    :ivar dict threads: spawned threads details: tid -> _Thread (pid, duration)
+    """
+    def __init__(self):
+        self.global_stats = {}
+        self.per_thread = {}
+        # For each process, we want to know the parent, children, threads and bottom/level
+        self.process_hierarchy = collections.defaultdict(
+            lambda: {
+                'ppid': list(), 'spawn': list(), 'threads': list(), 'bottom': False, 'level': 0
+            }
+        )
+        # tid -> (pid, duration)
+        self.threads = {}
+
+    @classmethod
+    def from_profile(cls, profile, probed_functions):
+        """ Create Dynamic Stats from profile object.
+
+        :param Profile profile: performance profile with collected resources
+        :param dict probed_functions: profiled functions and their profiling configuration
+
+        :return DynamicStats: the dynamic statistics object
+        """
+        stats = cls()
+        func_values, process_records = stats._process_resources_of(profile)
+        stats._compute_process_hierarchy(process_records)
+        stats._compute_global(func_values, probed_functions)
+        stats._compute_per_thread(func_values, probed_functions)
+        return stats
+
+    @classmethod
+    def from_dict(cls, stats_dict):
+        """ Create Dynamic Stats from dictionary -
+        preferably obtained from dynamic stats json cache file.
+
+        :param dict stats_dict: dictionary containing global, per-thread, process and thread stats
+
+        :return DynamicStats: the dynamic statistics object
+        """
+        stats = cls()
+        stats.global_stats = stats_dict['global_stats']
+        stats.per_thread = stats_dict['per_thread']
+        stats.process_hierarchy = stats_dict['process_hierarchy']
+        stats.threads = stats_dict['thread']
+        return stats
+
+    def to_dict(self):
+        """ Serialize the DynamicStats object to a simple dictionary that can be stored in a file.
+
+        :return dict: serialized DynamicStats object
+        """
+        # First convert the defaultdict to plain dict
+        if not isinstance(self.process_hierarchy, dict):
+            self.process_hierarchy = dict(self.process_hierarchy)
+        # Create JSON serializable dictionary
+        stats = {
+            'global_stats': self.global_stats,
+            'per_thread': self.per_thread,
+            'process_hierarchy': self.process_hierarchy,
+            'thread': self.threads
+        }
+        return stats
+
+    def _process_resources_of(self, profile):
+        """ Iterate profile resources and classify them to function, process and thread resources.
+
+        :param Profile profile: performance profile with collected resources
+
+        :return tuple: function resources (tid -> uid -> [amounts]), processes (pid -> [processes])
+        """
+        # tid -> uid -> [amounts]
+        funcs = collections.defaultdict(lambda: collections.defaultdict(list))
+        # pid -> [processes]
+        # We expect that certain processes can be exec'd, so one PID can have multiple processes
+        processes = collections.defaultdict(list)
+        for _, resource in profile.all_resources():
+            try:
+                if resource['uid'] == '!ProcessResource!':
+                    # Process resources automatically create internal process and thread records
+                    processes[resource['pid']].append(resource)
+                    self.threads[resource['tid']] = _Thread(resource['pid'], resource['amount'])
+                elif resource['uid'] == '!ThreadResource!':
+                    self.threads[resource['tid']] = _Thread(resource['pid'], resource['amount'])
+                else:
+                    # Function resources are aggregated by TID and UID
+                    funcs[resource['tid']][resource['uid']].append(resource['amount'])
+            except KeyError:
+                pass
+        return funcs, processes
+
+    def _compute_process_hierarchy(self, processes):
+        """ Build the process hierarchy structure based on the process resources.
+
+        :param dict processes: processes dictionary with PID as keys
+        """
+        # Create the parent-child connection in the hierarchy
+        for pid, procs in processes.items():
+            for proc in procs:
+                ppid = proc['ppid']
+                self.process_hierarchy[ppid]['spawn'].append(pid)
+                self.process_hierarchy[pid]['ppid'].append(ppid)
+                self.process_hierarchy[pid]['duration'] = proc['amount']
+        # Register spawned threads for each process
+        for tid, thread in self.threads.items():
+            self.process_hierarchy[thread.pid]['threads'].append(tid)
+
+        # We denote processes that spawn no other processes as bottom
+        for proc in self.process_hierarchy.values():
+            # Ensure that the lists have only unique values
+            proc['ppid'] = list(set(proc['ppid']))
+            proc['spawn'] = list(set(proc['spawn']))
+            proc['threads'] = list(set(proc['threads']))
+            if not proc['spawn']:
+                proc['bottom'] = True
+
+        # Estimate the process level (i.e., its hierarchy depth)
+        self._compute_process_level()
+        # Transform defaultdict to dict
+        self.process_hierarchy = dict(self.process_hierarchy)
+
+    def _compute_process_level(self):
+        """ Process level characterizes the nestedness level of a process based on the number of
+        traced parent processes, e.g.:
+
+        p1 (spawns p2): 0
+         p2 (spawns p3, p4): 1
+          p3: 2
+          p4: 2
+        """
+        # Approximate the level and find the bottom processes
+        top = {pid for pid, proc in self.process_hierarchy.items() if not proc['ppid']}
+        visited = set(top)
+        level = 0
+        while top:
+            # Get all processes that top spawned, except those already processed
+            spawned = set()
+            for pid in top:
+                spawned |= set(self.process_hierarchy[pid]['spawn'])
+            spawned -= visited
+            # Set the level of the spawned processes
+            level += 1
+            for pid in spawned:
+                self.process_hierarchy[pid]['level'] = level
+            # Add the spawned processes to the visited set
+            visited |= spawned
+            # The spawned processes are now the top ones
+            top = spawned
+
+    def _compute_global(self, func_values, probed_funcs):
+        """ Compute global statistics across all bottom processes. Currently, we limit ourselves
+        to bottom processes only since we do not have access to exclusive time of functions
+        that would be needed otherwise.
+
+        :param dict func_values: function amount values on a per-thread basis
+        :param dict probed_funcs: profiled functions and their profiling configuration
+        """
+        # TODO: Currently only bottom-level records are used in global dynamic stats
+        # TODO: Seems like the only proper solution would be to use exclusive times instead
+        # Eliminate processes that are not bottom, or both are and aren't (e.g., because of exec)
+        processes = set(pid for pid, proc in self.process_hierarchy.items() if proc['bottom'])
+
+        # Merge values from the selected processes
+        # TODO: how to handle multiple parallel threads in terms of global stats? Currently additive
+        merged = collections.defaultdict(list)
+        for tid, tid_funcs in func_values.items():
+            # Filter function records that should not be part of the global stats
+            if tid in self.threads and self.threads[tid].pid in processes:
+                # Otherwise merge them
+                for func_name, values in tid_funcs.items():
+                    merged[func_name].extend(values)
+        self.global_stats = {
+            uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
+            for uid, amounts in merged.items()
+        }
+
+    def _compute_per_thread(self, func_values, probed_funcs):
+        """ Compute per-thread statistics across all threads
+
+        :param dict func_values: function amount values on a per-thread basis
+        :param dict probed_funcs: profiled functions and their profiling configuration
+        """
+        self.per_thread = {
+            tid: {
+                uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
+                for uid, amounts in uids.items()
+            } for tid, uids in func_values.items() if tid in self.threads
+        }
+
+
+def _compute_func_stats(values, func_sample):
+    """ Compute the dynamic statistics for the given values and sample.
+
+    :param list values: the measured function call durations
+    :param int func_sample: the sampling configuration of the given function
+
+    :return dict: the computed statistics
+    """
+    # Sort the 'amount' values in order to compute various statistics
+    values.sort()
+    percentiles = np.percentile(np.array(values), [_Q1, _Q2, _Q3])
+    func_stats = {
+        'count': len(values) + ((len(values) - 1) * (func_sample - 1)),
+        'sampled_count': len(values),
+        'sample': func_sample,
+        'total': sum(values),
+        'min': values[0],
+        'max': values[-1],
+        'avg': sum(values) / len(values),
+        'Q1': percentiles[0],
+        'median': percentiles[1],
+        'Q3': percentiles[2],
+    }
+    func_stats['IQR'] = func_stats['Q3'] - func_stats['Q1']
+    return func_stats

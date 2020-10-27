@@ -10,8 +10,6 @@ import perun.collect.trace.collect_engine as engine
 import perun.collect.trace.ebpf.program as program
 import perun.logic.temp as temp
 import perun.utils.metrics as metrics
-from perun.collect.optimizations.optimization import Optimization
-from perun.collect.optimizations.structs import Parameters
 from perun.collect.trace.watchdog import WATCH_DOG
 
 
@@ -155,8 +153,6 @@ class BpfEngine(engine.CollectEngine):
         :param Probes probes: the probes specification
         """
         with open(self.runtime_conf, 'w') as config_handle:
-            # Get the runtime optimizations that should be applied
-            run_optimizations = Optimization.get_run_optimizations()
             # Store the parameters that are needed by the separate eBPF process
             tracer_config = {
                 'func': probes.func,
@@ -165,15 +161,8 @@ class BpfEngine(engine.CollectEngine):
                 'binary': config.binary,
                 'command': config.executable.to_escaped_string(),
                 'timeout': config.timeout,
-                'optimizations': [opt.value for opt in run_optimizations],
-                'optimization_params': {
-                    Parameters.TimedSampleFreq.value:
-                        Optimization.params[Parameters.TimedSampleFreq],
-                    Parameters.ProbingReattach.value:
-                        Optimization.params[Parameters.ProbingReattach],
-                    Parameters.ProbingThreshold.value:
-                        Optimization.params[Parameters.ProbingThreshold]
-                }
+                'optimizations': config.run_optimizations,
+                'optimization_params': config.run_optimization_parameters
             }
             json.dump(tracer_config, config_handle, indent=2)
 

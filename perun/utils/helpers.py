@@ -263,7 +263,7 @@ class HandledSignals:
         # Reset the signal handlers
         for sig, sig_handler in zip(self.signals, self.old_handlers):
             signal.signal(sig, sig_handler)
-        # Re-raise the exceptions not related to signal handling
+        # Re-raise exceptions not related to signal handling done by the CM (e.g., SignalReceivedE.)
         return isinstance(exc_val, self.handler_exc)
 
 

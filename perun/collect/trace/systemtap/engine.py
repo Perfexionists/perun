@@ -517,7 +517,7 @@ def _wait_for_systemtap_data(datafile):
             # The file can be potentially very long, use the optimized method to get the last line
             last_line = _get_last_line_of(datafile, FileSize.Long)[1]
             last_record = parse_compact.parse_record(last_line)
-            if last_record['type'] == RecordType.SentinelEnd.value:
+            if last_record['type'] == RecordType.ProcessEnd.value:
                 WATCH_DOG.info('The data file is fully written.')
                 return
             time.sleep(LOG_WAIT)

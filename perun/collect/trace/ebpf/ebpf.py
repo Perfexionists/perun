@@ -9,8 +9,7 @@ import contextlib
 from bcc import BPF, PerfType, PerfSWConfig, PerfHWConfig
 
 from perun.utils import nonblocking_subprocess
-from perun.collect.optimizations.optimization import Optimizations
-from perun.collect.optimizations.structs import Parameters
+from perun.collect.optimizations.structs import Optimizations, Parameters
 from perun.collect.trace.threads import TimeoutThread, PeriodicThread
 import perun.logic.temp as temp
 

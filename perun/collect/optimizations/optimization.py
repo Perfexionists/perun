@@ -13,7 +13,7 @@ import perun.collect.optimizations.dynamic_baseline as dbase
 import perun.collect.optimizations.static_baseline as sbase
 import perun.collect.optimizations.diff_tracing as diff
 import perun.collect.optimizations.dynamic_sampling as sampling
-import perun.collect.optimizations.gather as gather
+from perun.collect.optimizations.dynamic_stats import DynamicStats
 import perun.utils.metrics as metrics
 
 
@@ -32,9 +32,9 @@ class CollectOptimization:
     :ivar bool resource_cache: specifies whether the optimization should use cache or not
     :ivar bool reset_cache: specifies whether new resources should be extracted and computed for
                             the current project version
-    :ivar CallGraphResource call_graph: the CG and CFG structures of the current project version
+    :ivar CallGraphResource call_graph: and CFG structures of the current project version
     :ivar CallGraphResource call_graph_old: CG and CFG structures of the previously profiled version
-    :ivar dict dynamic_stats: the Dynamic Stats resource, if available
+    :ivar DynamicStats dynamic_stats: the Dynamic Stats resource, if available
     """
     # The classification of methods to their respective optimization phases
     __pre = {
@@ -57,12 +57,11 @@ class CollectOptimization:
         self._optimizations_off = []
         self.params = ParametersManager()
 
-        self.dynamic_extraction = False
         self.resource_cache = True
         self.reset_cache = False
         self.call_graph = None
         self.call_graph_old = None
-        self.dynamic_stats = {}
+        self.dynamic_stats = DynamicStats()
 
     def set_pipeline(self, pipeline_name):
         """ Set the used Pipeline.
@@ -170,7 +169,7 @@ class CollectOptimization:
                 self.call_graph_old = CallGraphResource().from_dict(call_graph_old)
         # Get dynamic stats from previous profiling, if there was any
         self.dynamic_stats = resources.extract(
-            resources.Resources.PerunStats, stats_name=config.get_stats_name('dynbase'),
+            resources.Resources.PerunStats, stats_name=config.get_stats_name('dynamic_stats'),
             reset_cache=self.reset_cache
         )
         metrics.end_timer('optimization_resources')
@@ -241,10 +240,10 @@ class CollectOptimization:
             (dbase.wrapper_filter, 0),
         ]
         if Optimizations.BaselineDynamic in optimizations:
-            dbase.filter_functions(self.call_graph, self.dynamic_stats, checks)
+            dbase.filter_functions(self.call_graph, self.dynamic_stats.global_stats, checks)
         if Optimizations.DynamicSampling in optimizations:
             sampling.set_sampling(
-                self.call_graph, self.dynamic_stats,
+                self.call_graph, self.dynamic_stats.global_stats,
                 self.params[Parameters.DynSampleStep],
                 self.params[Parameters.DynSampleThreshold]
             )
@@ -255,6 +254,27 @@ class CollectOptimization:
         remaining_func = self.call_graph.get_functions(diff_only=diff_solo)
         config.prune_functions(remaining_func)
         metrics.end_timer('pre-optimize')
+
+    def run_optimize_pipeline(self, config, **_):
+        """ The "run" pipeline cannot properly run the run-phase optimizations since the
+        implementation details are up to each specific engine. Instead, we set the
+        requested optimizations and their parameters in the Configuration object.
+
+        :param Configuration config: the collection configuration object
+        """
+        # Create a dictionary of parameters and values, they need to be serializable
+        run_optimization_parameters = {
+            Parameters.TimedSampleFreq.value:
+                self.params[Parameters.TimedSampleFreq],
+            Parameters.ProbingReattach.value:
+                self.params[Parameters.ProbingReattach],
+            Parameters.ProbingThreshold.value:
+                self.params[Parameters.ProbingThreshold]
+        }
+        # Set the optimization methods and their parameters
+        config.set_run_optimization(
+            [opt.value for opt in self.get_run_optimizations()], run_optimization_parameters
+        )
 
     def post_optimize_pipeline(self, profile, config, **_):
         """ Run the post-optimize methods in the defined order.
@@ -267,73 +287,89 @@ class CollectOptimization:
         if optimizations or metrics.is_enabled():
             metrics.start_timer('post-optimize')
             # Create the dynamic stats from the profile, if necessary
-            dyn_stats = gather.gather_stats(profile, config)
+            self.dynamic_stats = DynamicStats.from_profile(profile, config.get_functions())
             if metrics.is_enabled():
-                self._call_graph_level_assumption(dyn_stats)
-                self._coverage_metric(dyn_stats)
-                self._collected_points_metric(dyn_stats)
+                self._call_graph_level_assumption()
+                self._coverage_metric()
+                self._collected_points_metric()
             if optimizations:
                 # Store the gathered Dynamic Stats
-                self.dynamic_stats.update(dyn_stats)
                 resources.store(
-                    resources.Resources.PerunStats, stats_name=config.get_stats_name('dynbase'),
-                    stats_map=self.dynamic_stats
+                    resources.Resources.PerunStats,
+                    stats_name=config.get_stats_name('dynamic_stats'),
+                    dynamic_stats=self.dynamic_stats
                 )
             metrics.end_timer('post-optimize')
 
-    def _coverage_metric(self, dyn_stats):
-        """ Helper function for computing the coverage metrics.
-
-        :param dict dyn_stats: the Dynamic Stats resource
+    def _coverage_metric(self):
+        """ Helper function for computing the coverage metrics. Coverage metrics are
+        computed for each thread separately - however, for single-threaded applications,
+        the threads effectively represent processes.
         """
         if self.call_graph is None:
             return
-        main_time = dyn_stats['main']['total']
-        # A) Compute the top-level and hotspot coverages using the CG structure
-        excluded = set(self.call_graph.cg_map.keys()) - set(dyn_stats.keys())
-        for func, f_stats in dyn_stats.items():
-            # Exclude functions that are recursive or exceed the total running time of main
-            if func in self.call_graph.recursive or dyn_stats[func]['total'] > main_time:
-                excluded.add(func)
-        for func in excluded:
-            self.call_graph[func]['filtered'] = True
-        min_coverage_funcs = self.call_graph.compute_bottom()
-        toplevel_funcs = self.call_graph.compute_top()
-        # B) Obtain the bottom functions and hotspot coverage as extracted directly from the trace
+
+        threads = self.dynamic_stats.threads
+        metrics.add_metric("process_hierarchy", self.dynamic_stats.process_hierarchy)
+
+        # A) Obtain the absolute hotspot coverage as extracted directly from the trace
         coverages_metrics = metrics.read_metric('coverages')
 
-        # Compute the coverage
-        min_coverage = sum(dyn_stats[f]['total'] for f in min_coverage_funcs)
-        toplevel_coverage = sum(dyn_stats[f]['total'] for f in toplevel_funcs)
+        for tid, coverages in coverages_metrics.items():
+            if tid not in threads:
+                continue
 
-        # Store the coverages as metrics
-        coverages_metrics.update({
-            'main': main_time,
-            'min_coverage_count': len(min_coverage_funcs),
-            'min_coverage_abs': min_coverage,
-            'min_coverage_relative': min_coverage / main_time,
-            'toplevel_coverage_count': len(toplevel_funcs),
-            'toplevel_coverage_abs': toplevel_coverage,
-            'toplevel_coverage_relative': toplevel_coverage / main_time,
-            'hotspot_coverage_relative': 1 - coverages_metrics['hotspot_coverage_abs'] / main_time
-        })
-        metrics.add_metric('coverages', coverages_metrics)
+            tid_stats = self.dynamic_stats.per_thread[tid]
+            # The total running time of a thread is a) duration of main, or b) the whole thread
+            if 'main' in tid_stats:
+                main_time = tid_stats['main']['total']
+            else:
+                main_time = threads[tid].duration
+            # B) Compute the top-level and min coverages using the CG structure
+            # Identify functions that have not been measured by the process / thread
+            excluded = set(self.call_graph.cg_map.keys()) - set(tid_stats.keys())
+            for func, f_stats in tid_stats.items():
+                # Exclude functions that are recursive or exceed the total running time of main
+                if func in self.call_graph.recursive or f_stats['total'] > main_time:
+                    excluded.add(func)
+            # Set them as filtered but remember them, we need to set them back later
+            filtered = set()
+            for func in excluded:
+                if not self.call_graph[func]['filtered']:
+                    filtered.add(func)
+                self.call_graph[func]['filtered'] = True
+            min_coverage_funcs = self.call_graph.compute_bottom()
+            toplevel_funcs = self.call_graph.compute_top()
+            # Compute the coverage
+            min_coverage = sum(tid_stats[f]['total'] for f in min_coverage_funcs)
+            toplevel_coverage = sum(tid_stats[f]['total'] for f in toplevel_funcs)
+            # Update the coverage
+            coverages.update({
+                'main': main_time,
+                'min_coverage_count': len(min_coverage_funcs),
+                'min_coverage_abs': min_coverage,
+                'min_coverage_relative': 1 - min_coverage / main_time,
+                'toplevel_coverage_count': len(toplevel_funcs),
+                'toplevel_coverage_abs': toplevel_coverage,
+                'toplevel_coverage_relative': toplevel_coverage / main_time,
+                'hotspot_coverage_relative': 1 - coverages['hotspot_coverage_abs'] / main_time
+            })
+            # Set the functions as unfiltered again
+            for func in filtered:
+                self.call_graph[func]['filtered'] = False
 
-    def _collected_points_metric(self, dyn_stats):
+    def _collected_points_metric(self):
         """ Helper function for calculating the actually reached instrumentation points.
-
-        :param dict dyn_stats: the Dynamic Stats resource
         """
         if self.call_graph is None:
             return
-        collected_func = set(self.call_graph.cg_map.keys()) & set(dyn_stats.keys())
+        collected_func = (set(self.call_graph.cg_map.keys()) &
+                          set(self.dynamic_stats.global_stats.keys()))
         metrics.add_metric('collected_func_cg_compare', len(collected_func))
 
-    def _call_graph_level_assumption(self, dyn_stats):
-        """ Check how well the call graph / measured data fulfills the assumption about the
+    def _call_graph_level_assumption(self):
+        """ Check how well the call graph / measured data fulfill the assumption about the
         call count.
-
-        :param dict dyn_stats: the statistics about the performed run
         """
         # Detailed statistics about the assumption violations (less than X% difference, etc.)
         violations_stats = {
@@ -354,12 +390,15 @@ class CollectOptimization:
                     c for c in self.call_graph[func]['callees']
                     if c not in self.call_graph.backedges[func]
                 ]
-                v, c = self._check_assumption(dyn_stats, violations_stats, func, callees)
+                v, c = self._check_assumption(violations_stats, func, callees)
                 total_violations += v
                 total_confirmations += c
         # Transform the violations statistics into percents
         for key, value in violations_stats.items():
-            violations_stats[key] = (value['count'] / total_violations) * 100
+            try:
+                violations_stats[key] = (value['count'] / total_violations) * 100
+            except ZeroDivisionError:
+                violations_stats[key] = 0
 
         # Save the results into metrics
         total = total_violations + total_confirmations
@@ -372,15 +411,15 @@ class CollectOptimization:
         }
         metrics.add_metric('cg_assumption_check', assumption)
 
-    def _check_assumption(self, dyn_stats, violations_stats, parent, callees):
+    def _check_assumption(self, violations_stats, parent, callees):
         """ Check that the assumption holds for specific function and its callees.
 
-        :param dict dyn_stats: the statistics about the performed run
         :param dict violations_stats: the statistics about assumption violations
         :param str parent: name of the tested function
         :param list callees: the function callees
         :return tuple (int, int): the number of assumption violations and confirmations
         """
+        dyn_stats = self.dynamic_stats.global_stats
         func_violations, func_confirmations = 0, 0
         func_count = dyn_stats.get(parent, {'count': 0})['count']
         callee_counts = [(c, dyn_stats.get(c, {'count': 0})['count']) for c in callees]
@@ -392,7 +431,8 @@ class CollectOptimization:
                 func_confirmations += 1
         return func_violations, func_confirmations
 
-    def _assumption_violated(self, violations_stats, parent_count, callee_count):
+    @staticmethod
+    def _assumption_violated(violations_stats, parent_count, callee_count):
         """ Update the violation statistics when assumption violation happens.
 
         :param dict violations_stats: the statistics about assumption violations
@@ -408,6 +448,7 @@ class CollectOptimization:
 
 
 # Create the Optimization object so that all the affected modules can use it
+# TODO: do we really need to have this as a global? Think about making it local in runner
 Optimization = CollectOptimization()
 
 
@@ -428,5 +469,6 @@ def optimize(runner_type, runner_phase, **collect_params):
 
     if runner_phase == 'before':
         Optimization.pre_optimize_pipeline(**collect_params)
+        Optimization.run_optimize_pipeline(**collect_params)
     elif runner_phase == 'after':
         Optimization.post_optimize_pipeline(**collect_params)

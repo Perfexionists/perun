@@ -11,7 +11,7 @@ from perun.collect.trace.probes import Probes
 from perun.collect.trace.values import OutputHandling
 
 from perun.utils.exceptions import InvalidBinaryException
-from perun.utils import is_executable_elf
+from perun.utils import find_executable
 import perun.logic.temp as temp
 
 
@@ -27,9 +27,14 @@ class Configuration:
     :ivar bool diagnostics: enables detailed surveillance mode of the collector
     :ivar OutputHandling output_handling: store or discard the profiling command stdout and stderr
     :ivar CollectEngine engine: the collection engine to be used, e.g. SystemTap or eBPF
+    :ivar bool stap_cache_off: specifies if systemtap cache should be enabled or disabled
+    :ivar bool generate_dynamic_cg: specifies whether dynamic CG should be reconstructed from trace
+    :ivar list run_optimizations: list of run-phase optimizations that are enabled
+    :ivar dict run_optimization_parameters: optimization parameter name -> value mapping
     :ivar float or None timeout: the timeout for the profiled command or None if indefinite
     :ivar str binary: the path to the binary file to be probed
     :ivar Executable executable: the Executable object containing the profiled command, args, etc.
+    :ivar list libs: additional libraries that are profiled with the given binary
     :ivar str timestamp: the time of the collection start
     :ivar int pid: the PID of the Tracer process
     :ivar str files_dir: the directory path of the temporary files
@@ -52,7 +57,9 @@ class Configuration:
         self.engine = cli_config.get('engine', CollectEngine.default())
         self.stap_cache_off = cli_config.get('stap_cache_off', False)
         self.generate_dynamic_cg = cli_config.get('generate_dynamic_cg', False)
-        self.run_optimizations = {}
+        # The run optimization values should be provided by the Optimization module, if enabled
+        self.run_optimizations = []
+        self.run_optimization_parameters = {}
 
         # Enable some additional flags if diagnostics is enabled
         if self.diagnostics:
@@ -70,25 +77,11 @@ class Configuration:
             self.timeout = None
 
         # Set the executable and binary
-        self.binary = cli_config.get('binary', None)
+        self.binary = find_executable(cli_config.get('binary', None))
         self.executable = executable
-        self.libs = list(cli_config.get('libs', ''))  # TODO: perform checks
-        # No runnable command was given, terminate the collection
-        if self.binary is None and not self.executable.cmd:
-            raise InvalidBinaryException('')
-        # Otherwise copy the cmd or binary parameter
-        elif not executable.cmd:
-            executable.cmd = self.binary
-        elif self.binary is None:
-            self.binary = executable.cmd
-
-        # Check that the binary / executable file exists and is valid
-        self.binary = os.path.realpath(self.binary)
-        executable.cmd = os.path.realpath(executable.cmd)
-        if not os.path.exists(self.binary) or not is_executable_elf(self.binary):
-            raise InvalidBinaryException(self.binary)
-        elif not os.path.exists(executable.cmd):
-            raise InvalidBinaryException(executable.cmd)
+        self.executable.cmd = find_executable(self.executable.cmd)
+        self.libs = list(cli_config.get('libs', ''))
+        self._resolve_executables()
 
         # Update the configuration with some additional values
         self.timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
@@ -97,12 +90,12 @@ class Configuration:
         self.locks_dir = temp.temp_path(os.path.join('trace', 'locks'))
         # Build a name of stats file corresponding to the supplied workload and configuration
         self.__stats_name = "opt::{}-[{}]-[{}]".format(
-            os.path.basename(self.binary), executable.args.replace('/', '_'),
-            executable.workload.replace('/', '_')
+            os.path.basename(self.binary), self.executable.args.replace('/', '_'),
+            self.executable.workload.replace('/', '_')
         )
 
         # Build the probes configuration
-        self.probes = Probes(**cli_config)
+        self.probes = Probes(self.binary, self.libs, **cli_config)
 
     def engine_factory(self):
         """ Instantiates the engine object based on the string representation.
@@ -134,6 +127,16 @@ class Configuration:
             elif func_name not in self.probes.user_func and remaining[func_name] > 1:
                 self.probes.func[func_name]['sample'] = remaining[func_name]
 
+    def set_run_optimization(self, optimizations, parameters):
+        """ Allows the Optimization module to set run optimizations and their parameters
+        directly in the Configuration object.
+
+        :param list optimizations: list of optimization names
+        :param dict parameters: optimization parameter name -> parameter value
+        """
+        self.run_optimizations = optimizations
+        self.run_optimization_parameters = parameters
+
     def get_target(self):
         """ Obtain the target executable file.
 
@@ -151,3 +154,24 @@ class Configuration:
             return self.__stats_name + "::{}".format(specifier)
         else:
             return self.__stats_name
+
+    def _resolve_executables(self):
+        """ Check that all of the supplied executables (command, binary, libraries)
+        are accessible and executable, and obtain their real paths (absolute and no symlinks)
+        """
+        # No runnable command was given, terminate the collection
+        if self.binary is None and not self.executable.cmd:
+            raise InvalidBinaryException('')
+        # Otherwise copy the cmd or binary parameter
+        elif not self.executable.cmd:
+            self.executable.cmd = self.binary
+        elif self.binary is None:
+            self.binary = self.executable.cmd
+
+        # Check that all of the supplied libraries exist and are executable
+        resolved_libs = []
+        for lib in self.libs:
+            lib = find_executable(lib)
+            if lib is not None:
+                resolved_libs.append(lib)
+        self.libs = resolved_libs

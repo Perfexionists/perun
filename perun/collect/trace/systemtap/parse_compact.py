@@ -9,7 +9,7 @@ import perun.utils.metrics as metrics
 import perun.collect.optimizations.resources.manager as resources
 
 from perun.collect.trace.watchdog import WATCH_DOG
-from perun.collect.trace.values import RecordType
+from perun.collect.trace.values import RecordType, PROBE_RECORDS, PROCESS_RECORDS
 from perun.collect.optimizations.call_graph import CallGraphResource
 
 
@@ -17,12 +17,15 @@ class ThreadContext:
     """ Class that keeps track of function call stack, USDT hit stack, function call sequence
     map and bottom indicator per each active thread.
 
+    :ivar dict start: the thread starting record
     :ivar list func_stack: keeps track of the function call stack
     :ivar dict usdt_stack: stores stack of USDT probe hits for each probe
     :ivar dict seq_map: tracks sequence number for each probe that identifies the order of records
     :ivar bool bottom_flag: flag used to identify records that have no more callees
     """
+    # TODO: extend with exclusive time computation
     def __init__(self):
+        self.start = {}
         self.func_stack = []
         self.usdt_stack = collections.defaultdict(list)
         self.seq_map = collections.defaultdict(int)
@@ -33,24 +36,24 @@ class TransformContext:
     """ Class that keeps track of the context information during the raw data transformation.
 
     :ivar bool verbose_trace: switches between verbose / compact trace output
-    :ivar str binary: path of the profiled binary file
+    :ivar set binaries: all profiled binaries (including libraries)
     :ivar str workload: the workload specification of the current run
     :ivar Probes probes: the probes specification
     :ivar set timestamp_set: the set of encountered timestamps, used to detect duplicities in data
     :ivar ThreadContext per_thread: per-thread context for function / usdt stacks, sequence maps etc
-    :ivar dict bottom: summary of total elapsed time per bottom records per thread
+    :ivar dict bottom: summary of total elapsed time per bottom functions per thread
     :ivar dict id_map: mapping between probe ID (name) and probe names
     :ivar dict step_map: probe -> sampling value mapping
     """
-    def __init__(self, probes, binary, verbose_trace, workload):
+    def __init__(self, probes, binaries, verbose_trace, workload):
         """
         :param Probes probes: the probes specification
-        :param str binary: path of the profiled binary file
+        :param set binaries: all profiled binaries (including libraries)
         :param bool verbose_trace: switches between verbose / compact trace output
         :param str workload: the workload specification of the current run
         """
         self.verbose_trace = verbose_trace
-        self.binary = binary
+        self.binaries = binaries
         self.workload = workload
         self.probes = probes
         self.timestamp_set = set()
@@ -86,8 +89,9 @@ def trace_to_profile(data_file, config, probes, **_):
 
     :return iterable: generator object that produces dictionaries representing the resources
     """
-    # Initialize just in case the trace doesn't have begin sentinel
-    ctx = TransformContext(probes, config.binary, config.verbose_trace, config.executable.workload)
+    # Initialize the context
+    binaries = set(map(os.path.basename, config.libs + [config.binary]))
+    ctx = TransformContext(probes, binaries, config.verbose_trace, config.executable.workload)
     handlers = _record_handlers(config.generate_dynamic_cg)
     with open(data_file, 'r') as trace:
         cnt, line = 0, ''
@@ -170,8 +174,10 @@ def _record_handlers(cg_reconstruction):
     """
     func_begin = _record_func_begin if not cg_reconstruction else _record_func_begin_reconstruction
     return {
-        RecordType.SentinelBegin.value: _record_sentinel_begin,
-        RecordType.SentinelEnd.value: _record_sentinel_end,
+        RecordType.ProcessBegin.value: _record_process_begin,
+        RecordType.ProcessEnd.value: _record_process_end,
+        RecordType.ThreadBegin: _record_thread_begin,
+        RecordType.ThreadEnd: _record_thread_end,
         RecordType.FuncBegin.value: func_begin,
         RecordType.FuncEnd.value: _record_func_end,
         RecordType.USDTBegin.value: _record_usdt_begin,
@@ -189,33 +195,67 @@ def _record_corrupt(_, __):
     return {}
 
 
-def _record_sentinel_begin(_, __):
-    """ Handler for begin sentinel probe that is a no-op.
-
-    :return dict: empty dictionary
-    """
-    return {}
-
-
-def _record_sentinel_end(record, ctx):
-    """ Handler for the terminating sentinel that checks if 'main' probe was properly terminated.
+def _record_process_begin(record, ctx):
+    """ Handler for process begin probe. We delegate the action to the thread handler.
 
     :param dict record: the parsed raw data record
     :param TransformContext ctx: the parsing context object
 
     :return dict: empty dictionary
     """
+    return _record_thread_begin(record, ctx)
+
+
+def _record_process_end(record, ctx):
+    """ Handler for the process termination probe that generates special process context record.
+
+    :param dict record: the parsed raw data record
+    :param TransformContext ctx: the parsing context object
+
+    :return dict: process resource
+    """
     # The .begin and .end probes are sometimes triggered by other spawned processes, filter them
-    resource = {}
-    if record['id'] == os.path.basename(ctx.binary):
-        # TODO: change this to actually track END - BEGIN duration and use it as a backup main
-        # Make sure that the 'main' record is terminated if abrupt termination happens
-        for func in ctx.per_thread[record['tid']].func_stack:
-            # There is still an unprocessed main record
-            if ctx.id_map[func['id']] == 'main':
-                resource = _build_resource(func, record, ctx.id_map[func['id']], ctx)
-                break
-        metrics.add_metric('abrupt_termination_' + str(record['tid']), bool(resource))
+    if record['id'] not in ctx.binaries:
+        # Remove the per-thread record for the given tid
+        del ctx.per_thread[record['tid']]
+        return {}
+
+    # The process ending probe can also be fired when a thread is forcefully terminated by the
+    # process and not properly joined / exited
+    # We can distinguish those two cases by comparing the PID and TID
+    resource = _record_thread_end(record, ctx)
+    if record['tid'] == record['pid']:
+        resource['uid'] = '!ProcessResource!'
+        resource['ppid'] = record['ppid']
+    return resource
+
+
+def _record_thread_begin(record, ctx):
+    """ Handler for thread begin probe that creates a new thread context.
+
+    :param dict record: the parsed raw data record
+    :param TransformContext ctx: the parsing context object
+
+    :return dict: empty dictionary
+    """
+    record['seq'] = 0
+    ctx.per_thread[record['tid']].start = record
+    return {}
+
+
+def _record_thread_end(record, ctx):
+    """ Handler for thread end probe that produces thread resource and cleans up thread context.
+
+    :param dict record: the parsed raw data record
+    :param TransformContext ctx: the parsing context object
+
+    :return dict: thread resource
+    """
+    # Build thread resource with additional PID attribute
+    thread_start = ctx.per_thread[record['tid']].start
+    resource = _build_resource(thread_start, record, '!ThreadResource!', ctx)
+    resource['pid'] = record['pid']
+    # Remove the thread context
     del ctx.per_thread[record['tid']]
     return resource
 
@@ -230,9 +270,10 @@ def _record_func_begin(record, ctx):
     """
     # Increase the sequence counter
     _inc_sequence_number(record, ctx)
-    ctx.per_thread[record['tid']].bottom_flag = True
+    tid_ctx = ctx.per_thread[record['tid']]
+    tid_ctx.bottom_flag = True
     # Add the record to the trace stack
-    ctx.per_thread[record['tid']].func_stack.append(record)
+    tid_ctx.func_stack.append(record)
     return {}
 
 
@@ -244,20 +285,20 @@ def _record_func_begin_reconstruction(record, ctx):
 
     :return dict: empty dictionary
     """
-    record_tid = record['tid']
     # Increase the sequence counter
     _inc_sequence_number(record, ctx)
-    ctx.per_thread[record_tid].bottom_flag = True
+    tid_ctx = ctx.per_thread[record['tid']]
+    tid_ctx.bottom_flag = True
     # Update the dynamic call graph structure
     try:
-        caller_record = ctx.per_thread[record_tid].func_stack[-1]
+        caller_record = tid_ctx.func_stack[-1]
         caller_uid = ctx.id_map[caller_record['id']]
         callee_uid = ctx.id_map[record['id']]
         ctx.dyn_cg[caller_uid].add(callee_uid)
     except IndexError:
         pass
     # Add the record to the trace stack
-    ctx.per_thread[record_tid].func_stack.append(record)
+    tid_ctx.func_stack.append(record)
     return {}
 
 
@@ -374,7 +415,7 @@ def _build_resource(record_entry, record_exit, uid, ctx):
         'timestamp': record_entry['timestamp'],
         'call-order': record_entry['seq'],
         'uid': uid,
-        'thread': record_entry['tid'],
+        'tid': record_entry['tid'],
         'type': 'mixed',
         'subtype': 'time delta',
         'workload': ctx.workload
@@ -389,14 +430,35 @@ def parse_record(line):
     :return dict: the parsed record components
     """
     try:
-        # Split the line into 'type' 'tid' 'timestamp' 'probe id'
+        # The line should contain the following values:
+        # 'type' 'tid' ['pid'] ['ppid'] 'timestamp' 'probe id'
+        # where thread records have 'pid' and process records have 'pid', 'ppid'
         components = line.split()
-        return {
-            'type': int(components[0]),
-            'tid': int(components[1]),
-            'timestamp': int(components[2]),
-            'id': components[3]
-        }
+        record_type = int(components[0])
+        # We need to parse the probe records as fast as possible
+        if record_type in PROBE_RECORDS:
+            return {
+                'type': int(components[0]),
+                'tid': int(components[1]),
+                'timestamp': int(components[2]),
+                'id': components[3]
+            }
+        else:
+            # Thread and process records also contain 'pid'
+            record = {
+                'type': int(components[0]),
+                'tid': int(components[1]),
+                'pid': int(components[2]),
+            }
+            # Process records also contain 'ppid'
+            pos = 3
+            if record_type in PROCESS_RECORDS:
+                record['ppid'] = int(components[pos])
+                pos += 1
+            record['timestamp'] = int(components[pos])
+            record['id'] = components[pos + 1]
+            return record
+
     # In case there is any issue with parsing, return corrupted trace record
     # We truly want to catch any error since parsing should be bullet-proof and should not crash
     except Exception:
