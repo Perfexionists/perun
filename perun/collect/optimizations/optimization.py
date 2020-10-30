@@ -405,10 +405,14 @@ class CollectOptimization:
         assumption = {
             'total_violations': total_violations,
             'total_confirmations': total_confirmations,
-            'violations_ratio': (total_violations / total) * 100,
-            'confirmations_ratio': (total_confirmations / total) * 100,
             'violations_stats': violations_stats
         }
+        try:
+            assumption['violations_ratio'] = (total_violations / total) * 100
+            assumption['confirmations_ratio'] = (total_confirmations / total) * 100
+        except ZeroDivisionError:
+            assumption['violations_ratio'] = 0
+            assumption['confirmations_ratio'] = 0
         metrics.add_metric('cg_assumption_check', assumption)
 
     def _check_assumption(self, violations_stats, parent, callees):
