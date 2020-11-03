@@ -1,8 +1,9 @@
+pytest>=3.6.3
+pytest-cov>=2.5.1
 click==7.0
 termcolor==1.1.0
 colorama==0.3.7
 ruamel.yaml>=0.15.6
-pandas==0.20.2
 PyYaml==5.1.2
 bokeh==0.12.6
 demandimport==0.3.4
@@ -10,22 +11,24 @@ Sphinx==1.6.4
 sphinx-click==1.0.3
 Jinja2>=2.10.1
 python-magic==0.4.15
-scipy>=0.19.1
 Faker>=0.8.16
-namedlist>=1.7
 GitPython>=2.1.11
-pytest==3.6.3
-pytest-cov==2.5.1
 codecov==2.0.15
-numpy==1.15.1
-scikit-learn==0.19.0
-bkcharts==0.2
-statsmodels==0.10.0
-importlib-metadata==0.8
 path.py==7.7.1
 matplotlib==1.5.1
 binaryornot==0.4.4
 tabulate==0.8.6
-pip==8.1.1
+bkcharts==0.2
+importlib-metadata>=0.8
+statsmodels>=0.10.0
+scikit-learn>=0.19.0
 Cython>=0.29.20
-PyQt-Fit==1.3.4
+pandas>=0.20.2
+
+# We fix scipy and numpy version, because they mess everything up >.<
+scipy>=1.4.1
+numpy>=1.15.1
+
+# The official PyQt-Fit is broken when installed by pip with python 3.6+
+# this is due to distribute library dependency, hence, we use the custom wheel.
+./libs/PyQt_Fit-1.4.0-py3-none-any.whl

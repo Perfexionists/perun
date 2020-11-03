@@ -59,7 +59,7 @@ import perun.utils.log as perun_log
 import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
-    MissingConfigSectionException, ExternalEditorErrorException
+    MissingConfigSectionException, ExternalEditorErrorException, SignalReceivedException
 from perun.utils.structs import Executable
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
@@ -757,4 +757,4 @@ def safely_run_cli():
 
 
 if __name__ == "__main__":
-    cli()
+    safely_run_cli()
