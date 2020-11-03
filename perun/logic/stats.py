@@ -259,7 +259,8 @@ def get_latest(stats_filename, stats_ids=None, exclude_self=False):
     :param str stats_filename: the name of the stats file
     :param list stats_ids: fetch only the specified parts of the stats file
     :param bool exclude_self: ignore the stats file in the current git version
-    :return:
+
+    :return dict: selected content (IDs) of the stats file, if found
     """
     versions = list_stat_versions()
     if exclude_self and versions[0][0] == vcs.get_minor_head():

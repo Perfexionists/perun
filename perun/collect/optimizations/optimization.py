@@ -1,7 +1,7 @@
 """ The new Perun architecture extension that handles the optimization routine.
 """
 
-
+from perun.profile.helpers import sanitize_filepart
 from perun.utils.helpers import SuppressedExceptions
 from perun.collect.optimizations.structs import Optimizations, Pipeline, Parameters, \
     ParametersManager, CGShapingMode
@@ -57,6 +57,8 @@ class CollectOptimization:
         self._optimizations_off = []
         self.params = ParametersManager()
 
+        self.cg_stats_name = None
+        self.dynamic_stats_name = None
         self.resource_cache = True
         self.reset_cache = False
         self.call_graph = None
@@ -142,12 +144,14 @@ class CollectOptimization:
         """
         metrics.start_timer('optimization_resources')
         all_funcs = config.get_functions()
-        cg_stats_name = config.get_stats_name('call_graph')
+        self.cg_stats_name, self.dynamic_stats_name = build_stats_names(config)
+        # cg_stats_name = config.get_stats_name('call_graph')
         if self.get_pre_optimizations():
             # Extract call graph of the profiled binary
             _cg = resources.extract(
-                resources.Resources.CallGraphAngr, stats_name=cg_stats_name,
-                binary=config.get_target(), cache=self.resource_cache and not self.reset_cache
+                resources.Resources.CallGraphAngr, stats_name=self.cg_stats_name,
+                binary=config.get_target(), libs=config.libs,
+                cache=self.resource_cache and not self.reset_cache,
             )
             # Based on the cache we might have obtained the cached call graph or extracted a new one
             if 'minor_version' in _cg:
@@ -157,19 +161,19 @@ class CollectOptimization:
 
             # Save the extracted call graph before it is modified by the optimization methods
             resources.store(
-                resources.Resources.PerunCallGraph, stats_name=cg_stats_name,
+                resources.Resources.PerunCallGraph, stats_name=self.cg_stats_name,
                 call_graph=self.call_graph, cache=self.resource_cache and not self.reset_cache
             )
 
             # Get call graph of the same binary but from the previous project version (if it exists)
             call_graph_old = resources.extract(
-                resources.Resources.PerunCallGraph, stats_name=cg_stats_name
+                resources.Resources.PerunCallGraph, stats_name=self.cg_stats_name
             )
             if call_graph_old:
                 self.call_graph_old = CallGraphResource().from_dict(call_graph_old)
         # Get dynamic stats from previous profiling, if there was any
         self.dynamic_stats = resources.extract(
-            resources.Resources.PerunStats, stats_name=config.get_stats_name('dynamic_stats'),
+            resources.Resources.PerunStats, stats_name=self.dynamic_stats_name,
             reset_cache=self.reset_cache
         )
         metrics.end_timer('optimization_resources')
@@ -296,7 +300,7 @@ class CollectOptimization:
                 # Store the gathered Dynamic Stats
                 resources.store(
                     resources.Resources.PerunStats,
-                    stats_name=config.get_stats_name('dynamic_stats'),
+                    stats_name=self.dynamic_stats_name,
                     dynamic_stats=self.dynamic_stats
                 )
             metrics.end_timer('post-optimize')
@@ -476,3 +480,23 @@ def optimize(runner_type, runner_phase, **collect_params):
         Optimization.run_optimize_pipeline(**collect_params)
     elif runner_phase == 'after':
         Optimization.post_optimize_pipeline(**collect_params)
+
+
+def build_stats_names(config):
+    """ Build names of call graph and dynamic stats files.
+
+    The CG stats name is built using the main binary and possible libraries with no emphasis on
+    arguments or workloads - the CG structure stays the same regardless of runtime arguments.
+
+    Dynamic Stats name is built using both binaries and arguments, since stats can differ based
+    on the supplied parameters.
+
+    :param Configuration config: the Configuration object
+
+    :return tuple (str, str): CG stats name, Dynamic Stats name
+    """
+    binaries = sanitize_filepart('--'.join([config.binary] + sorted(config.libs)))
+    binaries_param = sanitize_filepart(
+        '--'.join([arg for arg in [config.executable.args, config.executable.workload] if arg])
+    )
+    return 'cg--{}'.format(binaries), 'ds--' + '--'.join([binaries, binaries_param])

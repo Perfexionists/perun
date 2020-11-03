@@ -11,6 +11,7 @@ import perun.collect.optimizations.resources.manager as resources
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import RecordType, PROBE_RECORDS, PROCESS_RECORDS
 from perun.collect.optimizations.call_graph import CallGraphResource
+from perun.collect.optimizations.optimization import build_stats_names
 
 
 class ThreadContext:
@@ -145,7 +146,7 @@ def _build_dynamic_cg(config, ctx):
     :param TransformContext ctx: the parsing context which contains caller-callee relationships
     """
     if config.generate_dynamic_cg:
-        cg_stats_name = config.get_stats_name('call_graph')
+        cg_stats_name, _ = build_stats_names(config)
         # Extract the static Call Graph using Angr
         _cg = resources.extract(
             resources.Resources.CallGraphAngr, stats_name=cg_stats_name,

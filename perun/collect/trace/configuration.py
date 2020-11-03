@@ -88,11 +88,6 @@ class Configuration:
         self.pid = os.getpid()
         self.files_dir = temp.temp_path(os.path.join('trace', 'files'))
         self.locks_dir = temp.temp_path(os.path.join('trace', 'locks'))
-        # Build a name of stats file corresponding to the supplied workload and configuration
-        self.__stats_name = "opt::{}-[{}]-[{}]".format(
-            os.path.basename(self.binary), self.executable.args.replace('/', '_'),
-            self.executable.workload.replace('/', '_')
-        )
 
         # Build the probes configuration
         self.probes = Probes(self.binary, self.libs, **cli_config)
@@ -143,17 +138,6 @@ class Configuration:
         :return str: a path to the binary executable file
         """
         return self.binary
-
-    def get_stats_name(self, specifier=None):
-        """ Create a 'stats' file name based on the specifier.
-
-        :param str or None specifier: an additional specifier for the stats file construction.
-        :return str: a full path name of the stats file (which is not created, tho)
-        """
-        if specifier is not None:
-            return self.__stats_name + "::{}".format(specifier)
-        else:
-            return self.__stats_name
 
     def _resolve_executables(self):
         """ Check that all of the supplied executables (command, binary, libraries)
