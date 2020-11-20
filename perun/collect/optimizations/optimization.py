@@ -1,6 +1,8 @@
 """ The new Perun architecture extension that handles the optimization routine.
 """
 
+import collections
+
 from perun.profile.helpers import sanitize_filepart
 from perun.utils.helpers import SuppressedExceptions
 from perun.collect.optimizations.structs import Optimizations, Pipeline, Parameters, \
@@ -226,7 +228,7 @@ class CollectOptimization:
                 proj.cg_top_down(
                     self.call_graph,
                     self.params[Parameters.CGProjLevels],
-                    self.params[Parameters.CGTrimKeepLeaf]
+                    self.params[Parameters.CGProjKeepLeaf]
                 )
 
         # Perform the static baseline
@@ -296,6 +298,8 @@ class CollectOptimization:
                 self._call_graph_level_assumption()
                 self._coverage_metric()
                 self._collected_points_metric()
+                self._level_time_metric()
+                self._level_i_metric()
             if optimizations:
                 # Store the gathered Dynamic Stats
                 resources.store(
@@ -304,6 +308,47 @@ class CollectOptimization:
                     dynamic_stats=self.dynamic_stats
                 )
             metrics.end_timer('post-optimize')
+
+    def _level_i_metric(self):
+        """ Helper function for computing Level_i metrics, such as callee / caller exclusive times.
+        """
+        lvl_coverage = {}
+        for tid, funcs in self.dynamic_stats.per_thread.items():
+            lvl_coverage[tid] = {}
+            for lvl, lvl_funcs in enumerate(self.call_graph.levels):
+                # Ignore levels that were filtered
+                if all(self.call_graph[func]['filtered'] for func in lvl_funcs):
+                    continue
+                immediate_callers = {
+                    c for func in lvl_funcs for c in self.call_graph[func]['callers']
+                }
+                immediate_callees = {
+                    c for func in lvl_funcs for c in self.call_graph[func]['callees']
+                }
+                lvl_coverage[tid][lvl] = {
+                    'caller_exc': sum(funcs.get(c, {'total_exclusive': 0})['total_exclusive']
+                                      for c in immediate_callers),
+                    'callee_exc': sum(funcs.get(c, {'total_exclusive': 0})['total_exclusive']
+                                      for c in immediate_callees)
+                }
+        metrics.add_metric('level_coverage', lvl_coverage)
+
+    def _level_time_metric(self):
+        """ Helper function for computing level time metrics, such as Call Graph level exclusive
+        time and its breakdown into specific functions within the level.
+        """
+        level_time = collections.defaultdict(lambda: collections.defaultdict(int))
+        exclusive_level_time = collections.defaultdict(lambda: collections.defaultdict(int))
+        level_funcs = collections.defaultdict(lambda: collections.defaultdict(list))
+
+        for tid, funcs in self.dynamic_stats.per_thread.items():
+            for func_name, func_stats in funcs.items():
+                func_cg_level = self.call_graph[func_name]['level']
+                level_time[tid][func_cg_level] += func_stats['total']
+                exclusive_level_time[tid][func_cg_level] += func_stats['total_exclusive']
+                level_funcs[tid][func_cg_level].append((func_name, func_stats['total_exclusive']))
+        metrics.add_metric('cg_level_times_exclusive', exclusive_level_time)
+        metrics.add_metric('cg_level_funcs', level_funcs)
 
     def _coverage_metric(self):
         """ Helper function for computing the coverage metrics. Coverage metrics are

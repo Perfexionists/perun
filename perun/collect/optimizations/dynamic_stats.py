@@ -113,7 +113,9 @@ class DynamicStats:
                     self.threads[resource['tid']] = _Thread(resource['pid'], resource['amount'])
                 else:
                     # Function resources are aggregated by TID and UID
-                    funcs[resource['tid']][resource['uid']].append(resource['amount'])
+                    funcs[resource['tid']][resource['uid']].append(
+                        (resource['amount'], resource['exclusive'])
+                    )
             except KeyError:
                 pass
         return funcs, processes
@@ -226,16 +228,18 @@ def _compute_func_stats(values, func_sample):
     :return dict: the computed statistics
     """
     # Sort the 'amount' values in order to compute various statistics
-    values.sort()
-    percentiles = np.percentile(np.array(values), [_Q1, _Q2, _Q3])
+    inclusive, exclusive = map(list, zip(*values))
+    inclusive.sort()
+    percentiles = np.percentile(np.array(inclusive), [_Q1, _Q2, _Q3])
     func_stats = {
-        'count': len(values) + ((len(values) - 1) * (func_sample - 1)),
-        'sampled_count': len(values),
+        'count': len(inclusive) + ((len(inclusive) - 1) * (func_sample - 1)),
+        'sampled_count': len(inclusive),
         'sample': func_sample,
-        'total': sum(values),
-        'min': values[0],
-        'max': values[-1],
-        'avg': sum(values) / len(values),
+        'total_exclusive': sum(exclusive),
+        'total': sum(inclusive),
+        'min': inclusive[0],
+        'max': inclusive[-1],
+        'avg': sum(inclusive) / len(inclusive),
         'Q1': percentiles[0],
         'median': percentiles[1],
         'Q3': percentiles[2],

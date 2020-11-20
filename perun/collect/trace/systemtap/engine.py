@@ -3,7 +3,7 @@
 
 import time
 import os
-from subprocess import PIPE, STDOUT, DEVNULL
+from subprocess import PIPE, STDOUT, DEVNULL, TimeoutExpired
 
 import perun.collect.trace.systemtap.parse_compact as parse_compact
 import perun.collect.trace.collect_engine as engine
@@ -302,15 +302,14 @@ class SystemTapEngine(engine.CollectEngine):
                     # Start the 'tee' thread if the output is being captured
                     NonBlockingTee(profiled.stdout, self.capture)
                 # Wait indefinitely (until the process ends) or for a 'timeout' seconds
-                if config.timeout is None:
-                    profiled.wait()
-                else:
-                    time.sleep(config.timeout)
+                try:
+                    profiled.wait(timeout=config.timeout)
+                except TimeoutExpired:
                     WATCH_DOG.info(
                         'The profiled command has reached a timeout after {}s.'
                         .format(config.timeout)
                     )
-                    return
+
         metrics.end_timer('command_time')
         # Wait for the SystemTap to finish writing to the data file
         _wait_for_systemtap_data(self.data)

@@ -146,13 +146,13 @@ def assemble_system_tap_script(script_file, config, probes, **_):
     with open(script_file, 'w') as script_handle:
         # Obtain configuration for the timed sampling optimization
         timed_sampling = Optimizations.TimedSampling.value in config.run_optimizations
-        sampling_freq = config.run_optimization_parameters[Parameters.TimedSampleFreq.value]
         # Declare and init arrays, create the begin / end probes
         _add_script_init(script_handle, config.binary, probes, config.verbose_trace, timed_sampling)
         # Add the thread begin / end probes
         _add_thread_probes(script_handle, config.binary, bool(probes.sampled_probes_len()))
         # Add the timed sampling timer probe if needed
         if timed_sampling:
+            sampling_freq = config.run_optimization_parameters[Parameters.TimedSampleFreq.value]
             _add_timer_probe(script_handle, sampling_freq)
         # Create the timing probes for functions and USDT probes
         _add_program_probes(script_handle, probes, config.verbose_trace, timed_sampling)

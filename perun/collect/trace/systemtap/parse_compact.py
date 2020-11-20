@@ -24,13 +24,13 @@ class ThreadContext:
     :ivar dict seq_map: tracks sequence number for each probe that identifies the order of records
     :ivar bool bottom_flag: flag used to identify records that have no more callees
     """
-    # TODO: extend with exclusive time computation
     def __init__(self):
         self.start = {}
         self.func_stack = []
         self.usdt_stack = collections.defaultdict(list)
         self.seq_map = collections.defaultdict(int)
         self.bottom_flag = False
+        self.depth = -1
 
 
 class TransformContext:
@@ -62,6 +62,9 @@ class TransformContext:
         # Thread -> function -> total elapsed time
         # Not included in 'per_thread' since we want to keep the values even after threads terminate
         self.bottom = collections.defaultdict(lambda: collections.defaultdict(int))
+
+        # Thread -> level -> total exclusive time
+        self.level_times_exclusive = collections.defaultdict(lambda: collections.defaultdict(int))
 
         # ID Map is used to map probe ID -> function name in non-verbose mode
         # and function name -> function name in verbose mode (basically a no-op)
@@ -126,6 +129,7 @@ def trace_to_profile(data_file, config, probes, **_):
                 'hotspot_coverage_abs': sum(val for val in bottom.values()),
                 'hotspot_coverage_count': len([name for name in bottom.keys()])
             } for tid, bottom in ctx.bottom.items()})
+            metrics.add_metric('trace_level_times_exclusive', dict(ctx.level_times_exclusive))
             # TODO: temporary
             _build_dynamic_cg(config, ctx)
         except Exception:
@@ -271,8 +275,19 @@ def _record_func_begin(record, ctx):
     """
     # Increase the sequence counter
     _inc_sequence_number(record, ctx)
+    record['callee_tmp'] = 0
+    record['callee_time'] = 0
     tid_ctx = ctx.per_thread[record['tid']]
+    try:
+        parent_func = tid_ctx.func_stack[-1]
+        if parent_func['callee_tmp']:
+            # Handle cases where we somehow lost return probe, overapproximate the exclusive time
+            parent_func['callee_time'] += record['timestamp'] - parent_func['callee_tmp']
+        parent_func['callee_tmp'] = record['timestamp']
+    except IndexError:
+        pass
     tid_ctx.bottom_flag = True
+    tid_ctx.depth += 1
     # Add the record to the trace stack
     tid_ctx.func_stack.append(record)
     return {}
@@ -288,8 +303,19 @@ def _record_func_begin_reconstruction(record, ctx):
     """
     # Increase the sequence counter
     _inc_sequence_number(record, ctx)
+    record['callee_tmp'] = 0
+    record['callee_time'] = 0
     tid_ctx = ctx.per_thread[record['tid']]
+    try:
+        parent_func = tid_ctx.func_stack[-1]
+        if parent_func['callee_tmp']:
+            # Handle cases where we somehow lost return probe, overapproximate the exclusive time
+            parent_func['callee_time'] += record['timestamp'] - parent_func['callee_tmp']
+        parent_func['callee_tmp'] = record['timestamp']
+    except IndexError:
+        pass
     tid_ctx.bottom_flag = True
+    tid_ctx.depth += 1
     # Update the dynamic call graph structure
     try:
         caller_record = tid_ctx.func_stack[-1]
@@ -311,27 +337,42 @@ def _record_func_end(record, ctx):
 
     :return dict: profile resource dictionary or empty dictionary if matching failed
     """
+    resource = {}
     record_tid = record['tid']
-    stack = ctx.per_thread[record_tid].func_stack
+    thread_ctx = ctx.per_thread[record_tid]
+    stack = thread_ctx.func_stack
     matching_record = {}
     # In most cases, the record matches the top record in the stack
+    depth_diff = 1
     if stack and record['id'] == stack[-1]['id'] and record['timestamp'] > stack[-1]['timestamp']:
         matching_record = stack.pop()
     # However, if not, then traverse the whole stack and attempt to find matching record
     else:
         for idx, stack_item in enumerate(reversed(stack)):
             if record['id'] == stack_item['id'] and record['timestamp'] > stack_item['timestamp']:
+                depth_diff = idx
                 stack[:] = stack[:len(stack) - idx]
                 matching_record = stack.pop()
                 break
     if matching_record:
         # Compute the bottom time
         uid = ctx.id_map[record['id']]
-        if ctx.per_thread[record_tid].bottom_flag:
-            ctx.bottom[record_tid][uid] += (record['timestamp'] - matching_record['timestamp'])
-        matching_record = _build_resource(matching_record, record, uid, ctx)
-        ctx.per_thread[record_tid].bottom_flag = False
-    return matching_record
+        resource = _build_resource(matching_record, record, uid, ctx)
+        try:
+            prev_entry = stack[-1]['callee_tmp']
+            if prev_entry:
+                stack[-1]['callee_time'] += record['timestamp'] - prev_entry
+                stack[-1]['callee_tmp'] = 0
+        except IndexError:
+            pass
+        resource['exclusive'] = resource['amount'] - matching_record['callee_time']
+        ctx.level_times_exclusive[record_tid][thread_ctx.depth] += resource['exclusive']
+        if thread_ctx.bottom_flag:
+            ctx.bottom[record_tid][uid] += resource['amount']
+        thread_ctx.bottom_flag = False
+        thread_ctx.depth -= depth_diff
+
+    return resource
 
 
 def _record_usdt_single(record, ctx):
@@ -411,6 +452,7 @@ def _build_resource(record_entry, record_exit, uid, ctx):
 
     :return dict: the resulting profile resource
     """
+    # Can also contain exclusive
     return {
         'amount': record_exit['timestamp'] - record_entry['timestamp'],
         'timestamp': record_entry['timestamp'],
@@ -442,7 +484,8 @@ def parse_record(line):
                 'type': int(components[0]),
                 'tid': int(components[1]),
                 'timestamp': int(components[2]),
-                'id': components[3]
+                'id': components[3],
+                'seq': 0
             }
         else:
             # Thread and process records also contain 'pid'
