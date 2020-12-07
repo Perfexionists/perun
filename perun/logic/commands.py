@@ -41,11 +41,6 @@ UNTRACKED_REGEX = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 # Regex for parsing the formating tag [<tag>:<size>f<fill_char>]
 FMT_REGEX = re.compile(r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%")
-# Scanner for parsing formating strings, i.e. breaking it to parts
-FMT_SCANNER = re.Scanner([
-    (r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%", lambda scanner, token: ("fmt_string", token)),
-    (r"[^%]+", lambda scanner, token: ("rest", token)),
-])
 
 
 def config_get(store_type, key):
@@ -462,7 +457,9 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
         max_lengths['all'], max_lengths['time'], max_lengths['mixed'], max_lengths['memory']
     ]) + 3 + len(" profiles")
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
-    fmt_tokens, _ = FMT_SCANNER.scan(minor_version_info_fmt)
+    fmt_tokens = perun_log.scan_formatting_string(
+        minor_version_info_fmt, {}, default_fmt_callback=lambda token: "%" + token + "%"
+    )
 
     # Print header (2 is padding for id)
     print_profile_list_header(fmt_tokens, max_lengths, 'white')
@@ -693,7 +690,9 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
 
     # Load formating string for profile
     profile_info_fmt = perun_config.lookup_key_recursively('format.status')
-    fmt_tokens, _ = FMT_SCANNER.scan(profile_info_fmt)
+    fmt_tokens = perun_log.scan_formatting_string(
+        profile_info_fmt, {}, default_fmt_callback=lambda token: "%" + token + "%"
+    )
 
     # Compute header length
     header_len = profile_list_width + 3
