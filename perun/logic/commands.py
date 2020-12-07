@@ -40,7 +40,7 @@ colorama.init()
 UNTRACKED_REGEX = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 # Regex for parsing the formating tag [<tag>:<size>f<fill_char>]
-FMT_REGEX = re.compile("%([a-zA-Z]+)(:[0-9]+)?(f.)?%")
+FMT_REGEX = re.compile(r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%")
 # Scanner for parsing formating strings, i.e. breaking it to parts
 FMT_SCANNER = re.Scanner([
     (r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%", lambda scanner, token: ("fmt_string", token)),
@@ -461,45 +461,36 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
     stat_length = sum([
         max_lengths['all'], max_lengths['time'], max_lengths['mixed'], max_lengths['memory']
     ]) + 3 + len(" profiles")
-    minor_version_output_colour = 'white'
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
     fmt_tokens, _ = FMT_SCANNER.scan(minor_version_info_fmt)
-    slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
 
     # Print header (2 is padding for id)
-    for (token_type, token) in fmt_tokens:
-        if token_type == 'fmt_string':
-            attr_type, limit, _ = FMT_REGEX.match(token).groups()
-            if attr_type == 'stats':
-                end_msg = perun_log.in_color(' profiles', HEADER_SLASH_COLOUR, HEADER_ATTRS)
-                print(perun_log.in_color("{0}{4}{1}{4}{2}{4}{3}{5}".format(
-                    perun_log.in_color(
-                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, HEADER_ATTRS
-                    ),
-                    perun_log.in_color(
-                        'm'.rjust(max_lengths['memory']),
-                        PROFILE_TYPE_COLOURS['memory'], HEADER_ATTRS
-                    ),
-                    perun_log.in_color(
-                        'x'.rjust(max_lengths['mixed']),
-                        PROFILE_TYPE_COLOURS['mixed'], HEADER_ATTRS),
-                    perun_log.in_color(
-                        't'.rjust(max_lengths['time']),
-                        PROFILE_TYPE_COLOURS['time'], HEADER_ATTRS),
-                    slash,
-                    end_msg
-                ), HEADER_SLASH_COLOUR, HEADER_ATTRS), end='')
-            else:
-                limit = adjust_limit(limit, attr_type, max_lengths)
-                token_string = attr_type.center(limit, ' ')
-                cprint(token_string, minor_version_output_colour, HEADER_ATTRS)
-        else:
-            # Print the rest (non token stuff)
-            cprint(token, minor_version_output_colour, HEADER_ATTRS)
-    print("")
+    print_profile_list_header(fmt_tokens, max_lengths, 'white')
+
     # Print profiles
-    for minor_version in minor_version_list:
-        for (token_type, token) in fmt_tokens:
+    print_profile_list(
+        fmt_tokens, max_lengths, minor_version_info_fmt, minor_version_list, 'white', stat_length
+    )
+
+
+def print_profile_list(tokens, max_lengths, fmt_string, minor_versions, output_colour, stat_length):
+    """For each minor versions, prints the stats w.r.t to the formatting tokens specified in
+    @p tokens.
+
+    Iterates through all of the minor versions, and then outputs one row according to the formatting
+    tokens and their values in the specified versions. Each column is adjusted according to its
+    maximal widths.
+
+    :param list tokens: list of formatting tokens
+    :param dict max_lengths: dictionary mapping the maximal lengths of each value corresponding to
+        column of the formatting token
+    :param str fmt_string: formating string
+    :param list minor_versions: list of profiles of MinorVersionInfo objects
+    :param string output_colour: colour of the output
+    :param int stat_length: the whole length of the formatting header
+    """
+    for minor_version in minor_versions:
+        for (token_type, token) in tokens:
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
                 limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
@@ -543,12 +534,52 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
                     print(change_string, end='')
                 else:
                     print_formating_token(
-                        minor_version_info_fmt, minor_version, attr_type, limit,
-                        default_color=minor_version_output_colour, value_fill=fill or ' '
+                        fmt_string, minor_version, attr_type, limit,
+                        default_color=output_colour, value_fill=fill or ' '
                     )
             else:
-                cprint(token, minor_version_output_colour)
+                cprint(token, output_colour)
         print("")
+
+
+def print_profile_list_header(fmt_tokens, max_lengths, output_colour):
+    """Prints the header of the output of the minor version information
+
+    :param list fmt_tokens: list of formatting tokens
+    :param dict max_lengths: dictionary of maximal values of columns corresponding to the tokens
+    :param str output_colour: output colour of the header
+    """
+    slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
+    for (token_type, token) in fmt_tokens:
+        if token_type == 'fmt_string':
+            attr_type, limit, _ = FMT_REGEX.match(token).groups()
+            if attr_type == 'stats':
+                end_msg = perun_log.in_color(' profiles', HEADER_SLASH_COLOUR, HEADER_ATTRS)
+                print(perun_log.in_color("{0}{4}{1}{4}{2}{4}{3}{5}".format(
+                    perun_log.in_color(
+                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, HEADER_ATTRS
+                    ),
+                    perun_log.in_color(
+                        'm'.rjust(max_lengths['memory']),
+                        PROFILE_TYPE_COLOURS['memory'], HEADER_ATTRS
+                    ),
+                    perun_log.in_color(
+                        'x'.rjust(max_lengths['mixed']),
+                        PROFILE_TYPE_COLOURS['mixed'], HEADER_ATTRS),
+                    perun_log.in_color(
+                        't'.rjust(max_lengths['time']),
+                        PROFILE_TYPE_COLOURS['time'], HEADER_ATTRS),
+                    slash,
+                    end_msg
+                ), HEADER_SLASH_COLOUR, HEADER_ATTRS), end='')
+            else:
+                limit = adjust_limit(limit, attr_type, max_lengths)
+                token_string = attr_type.center(limit, ' ')
+                cprint(token_string, output_colour, HEADER_ATTRS)
+        else:
+            # Print the rest (non token stuff)
+            cprint(token, output_colour, HEADER_ATTRS)
+    print("")
 
 
 def print_minor_version_info(head_minor_version, indent=0):

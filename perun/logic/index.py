@@ -660,7 +660,8 @@ def get_profile_number_for_minor(base_dir, minor_version):
 
             # Check the types of the entry
             for entry in walk_index(index_handle):
-                profile_numbers_per_type[entry.type] += 1
+                if entry.type in helpers.SUPPORTED_PROFILE_TYPES:
+                    profile_numbers_per_type[entry.type] += 1
             return profile_numbers_per_type
     else:
         return {'all': 0}

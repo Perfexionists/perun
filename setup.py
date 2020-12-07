@@ -22,6 +22,6 @@ setup(
 
     entry_points='''
         [console_scripts]
-        perun=perun.cli:safely_run_cli
+        perun=perun.cli:run_cli
     ''',
 )
