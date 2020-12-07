@@ -17,6 +17,7 @@ import perun.utils as utils
 import perun.check as check
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.profile.query as query
+import perun.utils.helpers
 
 from perun.utils.structs import PerformanceChange, DegradationInfo
 
@@ -125,18 +126,18 @@ def get_function_values(model):
     plotter = model_handler['transformations']['plot_model']
 
     array_x_pts = plotter['model_x'](
-        model.x_start, model.x_end, SAMPLES, transform_by=utils.identity
+        model.x_start, model.x_end, SAMPLES, transform_by=perun.utils.helpers.identity
     )
 
     if model.type == 'quadratic':
         array_y_pts = plotter['model_y'](
             array_x_pts, model.b0, model.b1, model.b2, plotter['formula'],
-            transform_by=utils.identity
+            transform_by=perun.utils.helpers.identity
         )
     else:
         array_y_pts = plotter['model_y'](
             array_x_pts, model.b0, model.b1, plotter['formula'], model_handler['f_x'],
-            transform_by=utils.identity
+            transform_by=perun.utils.helpers.identity
         )
 
     return array_y_pts, array_x_pts

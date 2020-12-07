@@ -15,7 +15,7 @@ import numpy as np
 
 import termcolor
 
-from perun.utils.helpers import first_index_of_attr, str_to_plural
+from perun.utils.helpers import first_index_of_attr, str_to_plural, identity
 from perun.utils.decorators import static_variables
 from perun.utils.helpers import COLLECT_PHASE_ATTRS, CHANGE_COLOURS, CHANGE_STRINGS, \
     DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
@@ -600,6 +600,42 @@ def print_elapsed_time(func):
         ))
         return results
     return inner_wrapper
+
+
+def scan_formatting_string(fmt, callbacks, callback=identity, default_fmt_callback=None, sep="%"):
+    """Scans the string, parses delimited formatting tokens and transforms them w.r.t callbacks
+
+    :param string fmt: formatting string
+    :param dict callbacks: list of callbacks to each formatting token, in case there is no default,
+        then error is raised.
+    :param func callback: callback function for non formatting string tokens
+    :param func default_fmt_callback: default callback called for tokens not found in the callbacks
+    :param char sep: delimiter for the tokens
+    :return: list of transformed tokens
+    """
+    i = 0
+    tokens = []
+    current_token = ""
+    for c in fmt:
+        if c == sep:
+            # found start or end of the token
+            i += 1
+            if i % 2 == 0:
+                # token is formatting string
+                tokens.append(("fmt_string", default_fmt_callback(current_token)))
+            else:
+                # token is raw string
+                tokens.append(("raw_string", callback(current_token)))
+            current_token = ""
+        else:
+            current_token += c
+
+    # Add what is rest
+    if current_token:
+        tokens.append(("raw_string", callback(current_token)))
+
+    # TODO: Add check if there is i % 2 == 1 at the end
+    return tokens
 
 
 class History:
