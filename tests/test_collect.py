@@ -427,4 +427,4 @@ def test_teardown(pcs_full, monkeypatch, capsys):
     status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
     assert status == CollectStatus.ERROR
     out, err = capsys.readouterr()
-    assert "fatal: while collecting by time: Received signal: 2" in err
+    assert "fatal: while collecting by time: received signal" in err

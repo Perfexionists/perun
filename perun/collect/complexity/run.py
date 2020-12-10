@@ -7,6 +7,7 @@ collection and postprocessing of collection data.
 
 import collections
 import os
+import shutil
 from subprocess import CalledProcessError
 
 import click
@@ -56,8 +57,9 @@ def before(executable, **kwargs):
     """
     try:
 
-        # Validate the inputs first
+        # Validate the inputs and dependencies first
         _validate_input(**kwargs)
+        _check_dependencies()
 
         # Extract several keywords to local variables
         target_dir, files, rules = kwargs['target_dir'], kwargs['files'], kwargs['rules']
@@ -89,7 +91,7 @@ def before(executable, **kwargs):
     except (OSError, ValueError, CalledProcessError,
             UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as exception:
         log.failed()
-        return 1, repr(exception), kwargs
+        return 1, str(exception), kwargs
 
 
 def collect(executable, **kwargs):
@@ -190,6 +192,26 @@ def _process_file_record(record, call_stack, resources, address_map):
         return 0
     # Call stack function frames not matching
     return 1
+
+
+def _check_dependencies():
+    """Validates that dependencies (cmake and make) are met"""
+    log.cprint('Checking dependencies...', 'white')
+    print("")
+    log.cprint("make:", 'white')
+    print("\t", end="")
+    if not shutil.which('make'):
+        log.no()
+        log.error("Could not find 'make'. Please, install the makefile package.")
+    log.yes()
+    log.cprint("cmake:", 'white')
+    print("\t", end="")
+    if not shutil.which('cmake'):
+        log.no()
+        log.error("Could not find 'cmake'. "
+                  "Please, install the build-essentials and cmake packages.")
+    log.done()
+    pass
 
 
 def _validate_input(**kwargs):
