@@ -274,6 +274,24 @@ def failed(ending='\n'):
     print(']', end=ending)
 
 
+def yes(ending='\n'):
+    """
+    :param str ending: end of the string, by default new line
+    """
+    print('[', end='')
+    cprint('\u2714', 'green', attrs='bold')
+    print(']', end=ending)
+
+
+def no(ending='\n'):
+    """
+    :param str ending: end of the string, by default new line
+    """
+    print('[', end='')
+    cprint('\u2717', 'red', attrs='bold')
+    print(']', end=ending)
+
+
 def in_color(output, color='white', attribute_style="none"):
     """Transforms the output to colored version.
 

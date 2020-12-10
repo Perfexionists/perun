@@ -195,7 +195,9 @@ def runner_teardown_handler(status_report, **kwargs):
         log.warn('Received signal: {}, safe termination in process'.format(exc.signum))
         status_report.status = status_report.error_status
         status_report.exception = exc
-        status_report.message = str(exc)
+        status_report.message = "received signal during teardown() phase: {} ({})" .format(
+            exc.signum, str(exc)
+        )
     run_phase_function(status_report, 'teardown')
 
 
