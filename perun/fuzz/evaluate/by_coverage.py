@@ -14,7 +14,6 @@ import perun.utils.log as log
 
 __author__ = 'Matus Liscinsky'
 
-GCOV_VERSION_W_INTERMEDIATE_FORMAT = 4.9
 PROGRAM_ERROR_SIGNALS = {
     "8": "SIGFPE",
     "4": "SIGILL",
@@ -43,7 +42,7 @@ def prepare_workspace(source_path):
     :param str source_path: path to dir with source files, where coverage info files are stored
     """
     for file in os.listdir(source_path):
-        if file.endswith(".gcda") or file.endswith(".gcov"):
+        if file.endswith(".gcda") or file.endswith(".gcov") or file.endswith('.gcov.json.gz'):
             os.remove(path.join(source_path, file))
 
 
@@ -198,10 +197,10 @@ def parse_line(line, coverage_config):
     """
     try:
         # intermediate text format
-        if coverage_config.gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT and "lcount" in line:
+        if coverage_config.has_intermediate_format() and "lcount" in line:
             return int(line.split(",")[1])
         # standard gcov file format
-        elif coverage_config.gcov_version < GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+        elif coverage_config.has_common_format():
             return int(line.split(":")[0])
         else:
             return 0
@@ -224,7 +223,7 @@ def get_coverage_info(cwd, coverage_config):
     """
     os.chdir(coverage_config.gcno_path)
 
-    if coverage_config.gcov_version >= GCOV_VERSION_W_INTERMEDIATE_FORMAT:
+    if coverage_config.has_intermediate_format():
         command = ["gcov", "-i", "-o", "."]
     else:
         command = ["gcov", "-o", "."]
