@@ -145,7 +145,7 @@ def test_fuzzing_correct(pcs_full):
         '--exec-limit', '1',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, 'SIGABRT' in result.output)
+    asserts.predicate_from_cli(result, 'exit status 134' in result.output)
 
     # 08. Testing for hang during init testing
     process = subprocess.Popen(
