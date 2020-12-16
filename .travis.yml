@@ -34,4 +34,4 @@ addons:
 os:
   - linux
 
-dist: trusty
+dist: bionic
