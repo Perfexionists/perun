@@ -2351,5 +2351,5 @@ def test_safe_cli(monkeypatch, capsys):
 
     cli.DEV_MODE = True
     with pytest.raises(Exception):
-        cli.run_cli_safely()
+        cli.run_cli()
     cli.DEV_MODE = False
