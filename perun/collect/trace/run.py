@@ -13,15 +13,13 @@ from perun.collect.trace.strategy import Strategy, extract_configuration
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.collect_engine import CollectEngine
 from perun.collect.trace.configuration import Configuration
-from perun.collect.trace.values import OutputHandling, check, \
-    GLOBAL_DEPENDENCIES, RESOURCE_BATCH
+from perun.collect.trace.values import OutputHandling, check, GLOBAL_DEPENDENCIES
 
 import perun.logic.runner as runner
 import perun.utils.log as stdout
 import perun.utils.metrics as metrics
 import perun.utils as utils
 from perun.utils.structs import CollectStatus
-from perun.profile.factory import Profile
 
 
 def before(executable, **kwargs):
@@ -95,7 +93,6 @@ def collect(**kwargs):
     metrics.start_timer('collect_time')
     config.engine.collect(**kwargs)
     metrics.end_timer('collect_time')
-    # raise RuntimeError('Stop')
 
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
@@ -110,33 +107,22 @@ def after(**kwargs):
                     dict of kwargs (possibly with some new values))
     """
     WATCH_DOG.header('Post-processing phase... ')
-    # Initialize the profile, resource list and set of actually recorded probes
-    kwargs['profile'] = Profile()
-    resources, recorded_probes = [], set()
+
+    # Inform the user
+    WATCH_DOG.info('Processing raw performance data. '
+                   'Note that this may take a while for large raw data files.')
     data_size = os.stat(kwargs['config'].engine.data).st_size
     metrics.add_metric('data_size', data_size)
-    # Inform the user
-    WATCH_DOG.info('Transforming the raw performance data into a perun profile format. '
-                   'Note that this may take a while for large raw data files.')
     WATCH_DOG.info('Raw data file size: {}'.format(utils.format_file_size(data_size)))
 
-    # Iterate the parsed resources
-    for record in kwargs['config'].engine.transform(**kwargs):
-        resources.append(record)
-        recorded_probes.add(record['uid'])
-        # Periodically update the profile object to prevent large memory overhead
-        if len(resources) >= RESOURCE_BATCH:
-            kwargs['profile'].update_resources({'resources': resources}, 'global')
-            resources = []
-    kwargs['profile'].update_resources({'resources': resources}, 'global')
-    metrics.add_metric('collected_func', len(recorded_probes & set(kwargs['probes'].func.keys())))
+    kwargs['profile'] = kwargs['config'].engine.transform(**kwargs)
     # TODO: Nasty temporary hack
     if kwargs['config'].generate_dynamic_cg:
         WATCH_DOG.info('Dynamic Call Graph reconstructed, terminating.')
         stdout.done('\n\n')
         return CollectStatus.ERROR, "Avoiding profile storage.", dict(kwargs)
 
-    WATCH_DOG.info('Data to profile transformation finished.')
+    WATCH_DOG.info('Data processing finished.')
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
 
@@ -225,6 +211,8 @@ def teardown(**kwargs):
               )
 @click.option('--stap-cache-off', '-sc', is_flag=True, default=False,
               help='Disables the SystemTap caching of compiled scripts.')
+@click.option('--no-profile', '-np', is_flag=True, default=False,
+              help='Tracer will not transform and save processed data into a perun profile.')
 @click.option('--generate-dynamic-cg', is_flag=True, default=False,
               help='Instead of extracting a Call Graph using static analysis, run the collector'
                    'once unoptimized and reconstruct dynamic call graph')

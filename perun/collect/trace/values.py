@@ -159,7 +159,6 @@ LOCK_SUFFIX_LEN = 7  # Suffix length of the lock files
 MICRO_TO_SECONDS = 1000000.0  # The conversion constant for collected time records
 NANO_TO_SECONDS = 1000000000.0  # The conversion constant for collected time records
 DEFAULT_SAMPLE = 20  # The default global sampling for 'sample' strategies if not set by user
-RESOURCE_BATCH = 100000  # The maximum number of resources to keep in memory before updating profile
 SUFFIX_DELIMITERS = ('_', '-')  # The set of supported delimiters between probe and its suffix
 PS_FORMAT = 'pid,ppid,pgid,cmd'  # The format specification for an output from the 'ps' utility
 
@@ -169,6 +168,11 @@ LOG_WAIT = 1  # Sleep value used during periodic SystemTap log checking
 HEARTBEAT_INTERVAL = 30  # Periodically inform user about progress each INTERVAL seconds (roughly)
 CLEANUP_TIMEOUT = 2  # The timeout for the cleanup operations
 CLEANUP_REFRESH = 0.2  # The refresh interval for cleaning up the resources
+
+# Multiprocessing Queue constants
+RESOURCE_CHUNK = 10000  # Number of resources transported as one element through a queue
+RESOURCE_QUEUE_CAPACITY = 10  # Maximum capacity of the resources queue
+QUEUE_TIMEOUT = 0.2  # The timeout for blocking operations of a queue
 
 # The regex to match the SystemTap module name out of the log and extract the non-PID dependent part
 STAP_MODULE_REGEX = re.compile(r"(stap_[A-Fa-f0-9]+)_\d+\.ko")
@@ -181,3 +185,6 @@ PROBE_RECORDS = {
 }
 THREAD_RECORDS = {int(RecordType.ThreadBegin), int(RecordType.ThreadEnd)}
 PROCESS_RECORDS = {int(RecordType.ProcessBegin), int(RecordType.ProcessEnd)}
+SEQUENCED_RECORDS = {
+    int(RecordType.FuncBegin), int(RecordType.USDTSingle), int(RecordType.USDTBegin)
+}

@@ -29,6 +29,7 @@ class Configuration:
     :ivar CollectEngine engine: the collection engine to be used, e.g. SystemTap or eBPF
     :ivar bool stap_cache_off: specifies if systemtap cache should be enabled or disabled
     :ivar bool generate_dynamic_cg: specifies whether dynamic CG should be reconstructed from trace
+    :ivar bool no_profile: disables profile generation
     :ivar list run_optimizations: list of run-phase optimizations that are enabled
     :ivar dict run_optimization_parameters: optimization parameter name -> value mapping
     :ivar float or None timeout: the timeout for the profiled command or None if indefinite
@@ -57,6 +58,7 @@ class Configuration:
         self.engine = cli_config.get('engine', CollectEngine.default())
         self.stap_cache_off = cli_config.get('stap_cache_off', False)
         self.generate_dynamic_cg = cli_config.get('generate_dynamic_cg', False)
+        self.no_profile = cli_config.get('no_profile', False)
         # The run optimization values should be provided by the Optimization module, if enabled
         self.run_optimizations = []
         self.run_optimization_parameters = {}

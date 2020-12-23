@@ -4,14 +4,33 @@
 
 import os
 import collections
+from multiprocessing import Process
 
+import perun.collect.trace.processes as proc
 import perun.utils.metrics as metrics
 import perun.collect.optimizations.resources.manager as resources
+from perun.profile.factory import Profile
 
 from perun.collect.trace.watchdog import WATCH_DOG
-from perun.collect.trace.values import RecordType, PROBE_RECORDS, PROCESS_RECORDS
+import perun.collect.trace.values as vals
 from perun.collect.optimizations.call_graph import CallGraphResource
 from perun.collect.optimizations.optimization import build_stats_names
+from perun.utils import chunkify
+from perun.utils.exceptions import SignalReceivedException
+
+# import cProfile
+# import pstats
+# import io
+
+# pr = cProfile.Profile()
+# pr.enable()
+# # Profiled code
+# pr.disable()
+# s = io.StringIO()
+# sortby = 'tottime'
+# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+# ps.print_stats()
+# print(s.getvalue())
 
 
 class ThreadContext:
@@ -23,6 +42,7 @@ class ThreadContext:
     :ivar dict usdt_stack: stores stack of USDT probe hits for each probe
     :ivar dict seq_map: tracks sequence number for each probe that identifies the order of records
     :ivar bool bottom_flag: flag used to identify records that have no more callees
+    :ivar int depth: the current trace (call stack) depth
     """
     def __init__(self):
         self.start = {}
@@ -40,11 +60,10 @@ class TransformContext:
     :ivar set binaries: all profiled binaries (including libraries)
     :ivar str workload: the workload specification of the current run
     :ivar Probes probes: the probes specification
-    :ivar set timestamp_set: the set of encountered timestamps, used to detect duplicities in data
+    :ivar set probes_hit: a set of actually hit probes
     :ivar ThreadContext per_thread: per-thread context for function / usdt stacks, sequence maps etc
     :ivar dict bottom: summary of total elapsed time per bottom functions per thread
-    :ivar dict id_map: mapping between probe ID (name) and probe names
-    :ivar dict step_map: probe -> sampling value mapping
+    :ivar dict level_times_exclusive: summary of exclusive times per trace depth
     """
     def __init__(self, probes, binaries, verbose_trace, workload):
         """
@@ -57,7 +76,7 @@ class TransformContext:
         self.binaries = binaries
         self.workload = workload
         self.probes = probes
-        self.timestamp_set = set()
+        self.probes_hit = set()
         self.per_thread = collections.defaultdict(ThreadContext)
         # Thread -> function -> total elapsed time
         # Not included in 'per_thread' since we want to keep the values even after threads terminate
@@ -68,23 +87,89 @@ class TransformContext:
 
         # ID Map is used to map probe ID -> function name in non-verbose mode
         # and function name -> function name in verbose mode (basically a no-op)
-        dict_key = 'name' if self.verbose_trace else 'id'
-        self.id_map = {
-            str(probe[dict_key]): probe['name']
-            for probe in list(self.probes.func.values()) + list(self.probes.usdt.values())
-        }
-        # Step Map keeps track of the sampling value per each function
-        # Used to compute the sequence property
-        self.step_map = {
-            str(probe[dict_key]): probe['sample']
-            for probe in list(self.probes.func.values()) + list(self.probes.usdt.values())
-        }
         # TODO: temporary, solve dynamic call graph properly
         self.dyn_cg = {probe['name']: set() for probe in self.probes.func.values()}
 
 
 def trace_to_profile(data_file, config, probes, **_):
-    """Transforms the collection output into the performance resources. The
+    """ Process raw data and (optionally) convert them into a Perun profile. The conversion is
+    delegated to a separate process to speedup the processing task.
+
+    :param str data_file: name of the file containing raw data
+    :param Configuration config: an object containing configuration parameters
+    :param Probes probes: an object containing info about probed locations
+    :return Profile: the resulting profile
+    """
+    # data_file = '/home/jirka/experiments-backup/ccsds/.perun/tmp/trace/files/collect_data_2020-12-01-09-54-27_6438.txt'
+
+    # Profile should not be generated, simply process the raw data and return empty profile
+    if config.no_profile:
+        for _ in process_records(data_file, config, probes):
+            pass
+        return Profile()
+
+    # Otherwise create resource queue (passing resources) and profile queue (passing profile)
+    resource_queue = proc.SafeQueue(vals.RESOURCE_QUEUE_CAPACITY)
+    profile_queue = proc.SafeQueue(1)
+    # Also create a new process for transforming the resources into a profile
+    profile_process = Process(target=profile_builder, args=(resource_queue, profile_queue))
+
+    try:
+        # Start the process
+        profile_process.start()
+        # Process and send a chunk of resources
+        for res in chunkify(process_records(data_file, config, probes), vals.RESOURCE_CHUNK):
+            resource_queue.write(list(res))
+        resource_queue.end_of_input()
+        # After all resources have been sent, wait for the resulting profile
+        profile = profile_queue.read()
+
+        return profile
+    except SignalReceivedException:
+        # Re-raise the signal exception
+        raise
+    finally:
+        # Cleanup the queues
+        resource_queue.close_writer()
+        profile_queue.close_reader()
+        # Wait for the transformation process to finish
+        profile_process.join(timeout=vals.CLEANUP_TIMEOUT)
+        if profile_process.exitcode is None:
+            WATCH_DOG.info('Failed to terminate the profile transformation process PID {}.'
+                           .format(profile_process.pid))
+
+
+def profile_builder(resource_queue, profile_queue):
+    """ Transforms resources into a Perun profile. Should be run as a standalone process that
+    obtains resources from a queue and returns the resulting profile through a queue.
+
+    :param SafeQueue resource_queue: a multiprocessing queue for obtaining resources
+    :param SafeQueue profile_queue: a multiprocessing queue for passing profile
+    """
+    try:
+        # Create a new profile structure
+        profile = Profile()
+
+        # Build the profile
+        profile_resources = resource_queue.read()
+        while profile_resources is not None:
+            profile.update_resources({'resources': profile_resources}, 'global')
+            profile_resources = resource_queue.read()
+
+        # Pass the resulting profile back to the main process
+        profile_queue.write(profile)
+        profile_queue.end_of_input()
+    except SignalReceivedException:
+        # Interrupt signals should cause the process to properly terminate
+        pass
+    finally:
+        # Regardless of type of termination, queue resources should be cleaned
+        resource_queue.close_reader()
+        profile_queue.close_writer()
+
+
+def process_records(data_file, config, probes):
+    """Transforms the collection output into performance resources. The
     collected time data are paired and provided as resources dictionaries.
 
     :param str data_file: name of the collection output file
@@ -96,49 +181,39 @@ def trace_to_profile(data_file, config, probes, **_):
     # Initialize the context
     binaries = set(map(os.path.basename, config.libs + [config.binary]))
     ctx = TransformContext(probes, binaries, config.verbose_trace, config.executable.workload)
-    handlers = _record_handlers(config.generate_dynamic_cg)
-    with open(data_file, 'r') as trace:
-        cnt, line = 0, ''
-        record = None
-        try:
-            # Process the raw data trace line by line
-            for cnt, line in enumerate(trace):
-                # Some records might be correctly parsed even though they are corrupted,
-                # E.g., correct record structure with malformed probe id - thus try/except is needed
-                # --- Performance Critical --- do not use the SuppressedExceptions context manager
-                try:
-                    # Parse the trace output line
-                    record = parse_record(line)
-                    # Initial checks that this is not a duplicate record
-                    if record['timestamp'] in ctx.timestamp_set:
-                        if record['type'] != RecordType.Corrupt:
-                            WATCH_DOG.debug('Duplicate timestamp detected: {} {}'
-                                            .format(record['timestamp'], record['id']))
-                        continue
-                    ctx.timestamp_set.add(record['timestamp'])
-                    # Invoke the correct handler based on the record type and return the
-                    # resulting resource, if any
-                    resource = handlers[record['type']](record, ctx)
-                    if resource:
-                        yield resource
-                except (KeyError, IndexError):
-                    continue
-            WATCH_DOG.info('Processed {} records'.format(cnt))
-            # Add the computed hotspot coverage to the tracked metric
-            metrics.add_metric('coverages', {tid: {
-                'hotspot_coverage_abs': sum(val for val in bottom.values()),
-                'hotspot_coverage_count': len([name for name in bottom.keys()])
-            } for tid, bottom in ctx.bottom.items()})
-            metrics.add_metric('trace_level_times_exclusive', dict(ctx.level_times_exclusive))
-            # TODO: temporary
-            _build_dynamic_cg(config, ctx)
-        except Exception:
-            WATCH_DOG.info('Error while parsing the raw trace output')
-            # Log the status in case of unhandled exception
-            WATCH_DOG.log_trace_stack(
-                line, cnt, ctx, record['tid'] if record is not None else -1
-            )
-            raise
+    # Get the handlers
+    handlers = _record_handlers()
+
+    metrics.start_timer('data-processing')
+    record = None
+    try:
+        for record in parse_records(data_file, probes, config.verbose_trace):
+            try:
+                # Invoke the correct handler based on the record type and return the
+                # resulting resource, if any
+                resource = handlers[record['type']](record, ctx)
+                if resource:
+                    yield resource
+            except (KeyError, IndexError):
+                continue
+
+        # Register computed metrics
+        metrics.end_timer('data-processing')
+        metrics.add_metric('coverages', {tid: {
+            'hotspot_coverage_abs': sum(val for val in bottom.values()),
+            'hotspot_coverage_count': len([name for name in bottom.keys()])
+        } for tid, bottom in ctx.bottom.items()})
+        metrics.add_metric('trace_level_times_exclusive', dict(ctx.level_times_exclusive))
+        all_probes = set(probes.func.keys()) | set(probes.usdt.keys())
+        metrics.add_metric('collected_probes', len(ctx.probes_hit & all_probes))
+
+        # TODO: temporary
+        _build_dynamic_cg(config, ctx)
+    except Exception:
+        WATCH_DOG.info('Error while processing the raw trace output')
+        WATCH_DOG.debug('Record: {}'.format(record))
+        WATCH_DOG.debug('Context: {}'.format(ctx))
+        raise
 
 
 def _build_dynamic_cg(config, ctx):
@@ -169,26 +244,22 @@ def _build_dynamic_cg(config, ctx):
         )
 
 
-def _record_handlers(cg_reconstruction):
+def _record_handlers():
     """ Mapping of a raw data record type to its corresponding function handler.
-
-    :param bool cg_reconstruction: use different handler for function probes that also reconstructs
-                                   the dynamic call graph
 
     :return dict: the mapping dictionary
     """
-    func_begin = _record_func_begin if not cg_reconstruction else _record_func_begin_reconstruction
     return {
-        RecordType.ProcessBegin.value: _record_process_begin,
-        RecordType.ProcessEnd.value: _record_process_end,
-        RecordType.ThreadBegin: _record_thread_begin,
-        RecordType.ThreadEnd: _record_thread_end,
-        RecordType.FuncBegin.value: func_begin,
-        RecordType.FuncEnd.value: _record_func_end,
-        RecordType.USDTBegin.value: _record_usdt_begin,
-        RecordType.USDTEnd.value: _record_usdt_end,
-        RecordType.USDTSingle.value: _record_usdt_single,
-        RecordType.Corrupt.value: _record_corrupt
+        vals.RecordType.ProcessBegin.value: _record_process_begin,
+        vals.RecordType.ProcessEnd.value: _record_process_end,
+        vals.RecordType.ThreadBegin: _record_thread_begin,
+        vals.RecordType.ThreadEnd: _record_thread_end,
+        vals.RecordType.FuncBegin.value: _record_func_begin,
+        vals.RecordType.FuncEnd.value: _record_func_end,
+        vals.RecordType.USDTBegin.value: _record_usdt_begin,
+        vals.RecordType.USDTEnd.value: _record_usdt_end,
+        vals.RecordType.USDTSingle.value: _record_usdt_single,
+        vals.RecordType.Corrupt.value: _record_corrupt
     }
 
 
@@ -243,7 +314,6 @@ def _record_thread_begin(record, ctx):
 
     :return dict: empty dictionary
     """
-    record['seq'] = 0
     ctx.per_thread[record['tid']].start = record
     return {}
 
@@ -258,7 +328,7 @@ def _record_thread_end(record, ctx):
     """
     # Build thread resource with additional PID attribute
     thread_start = ctx.per_thread[record['tid']].start
-    resource = _build_resource(thread_start, record, '!ThreadResource!', ctx)
+    resource = _build_resource(thread_start, record, '!ThreadResource!', ctx.workload)
     resource['pid'] = record['pid']
     # Remove the thread context
     del ctx.per_thread[record['tid']]
@@ -273,58 +343,26 @@ def _record_func_begin(record, ctx):
 
     :return dict: empty dictionary
     """
-    # Increase the sequence counter
-    _inc_sequence_number(record, ctx)
     record['callee_tmp'] = 0
     record['callee_time'] = 0
+    ctx.probes_hit.add(record['id'])
     tid_ctx = ctx.per_thread[record['tid']]
     try:
+        # Register new timestamp for exclusive time computation
         parent_func = tid_ctx.func_stack[-1]
         if parent_func['callee_tmp']:
             # Handle cases where we somehow lost return probe, overapproximate the exclusive time
             parent_func['callee_time'] += record['timestamp'] - parent_func['callee_tmp']
         parent_func['callee_tmp'] = record['timestamp']
-    except IndexError:
-        pass
-    tid_ctx.bottom_flag = True
-    tid_ctx.depth += 1
-    # Add the record to the trace stack
-    tid_ctx.func_stack.append(record)
-    return {}
 
-
-def _record_func_begin_reconstruction(record, ctx):
-    """ Handler for the entry function probes that also reconstructs the dynamic call graph.
-
-    :param dict record: the parsed raw data record
-    :param TransformContext ctx: the parsing context object
-
-    :return dict: empty dictionary
-    """
-    # Increase the sequence counter
-    _inc_sequence_number(record, ctx)
-    record['callee_tmp'] = 0
-    record['callee_time'] = 0
-    tid_ctx = ctx.per_thread[record['tid']]
-    try:
-        parent_func = tid_ctx.func_stack[-1]
-        if parent_func['callee_tmp']:
-            # Handle cases where we somehow lost return probe, overapproximate the exclusive time
-            parent_func['callee_time'] += record['timestamp'] - parent_func['callee_tmp']
-        parent_func['callee_tmp'] = record['timestamp']
-    except IndexError:
-        pass
-    tid_ctx.bottom_flag = True
-    tid_ctx.depth += 1
-    # Update the dynamic call graph structure
-    try:
+        # Update the dynamic call graph structure
         caller_record = tid_ctx.func_stack[-1]
-        caller_uid = ctx.id_map[caller_record['id']]
-        callee_uid = ctx.id_map[record['id']]
-        ctx.dyn_cg[caller_uid].add(callee_uid)
+        ctx.dyn_cg[caller_record['id']].add(record['id'])
     except IndexError:
         pass
     # Add the record to the trace stack
+    tid_ctx.bottom_flag = True
+    tid_ctx.depth += 1
     tid_ctx.func_stack.append(record)
     return {}
 
@@ -355,9 +393,8 @@ def _record_func_end(record, ctx):
                 matching_record = stack.pop()
                 break
     if matching_record:
-        # Compute the bottom time
-        uid = ctx.id_map[record['id']]
-        resource = _build_resource(matching_record, record, uid, ctx)
+        # Compute the exclusive time
+        resource = _build_resource(matching_record, record, record['id'], ctx.workload)
         try:
             prev_entry = stack[-1]['callee_tmp']
             if prev_entry:
@@ -367,8 +404,9 @@ def _record_func_end(record, ctx):
             pass
         resource['exclusive'] = resource['amount'] - matching_record['callee_time']
         ctx.level_times_exclusive[record_tid][thread_ctx.depth] += resource['exclusive']
+        # Compute the bottom time
         if thread_ctx.bottom_flag:
-            ctx.bottom[record_tid][uid] += resource['amount']
+            ctx.bottom[record_tid][record['id']] += resource['amount']
         thread_ctx.bottom_flag = False
         thread_ctx.depth -= depth_diff
 
@@ -383,7 +421,7 @@ def _record_usdt_single(record, ctx):
 
     :return dict: profile resource dictionary or empty dictionary if no resource could be created
     """
-    _inc_sequence_number(record, ctx)
+    ctx.probes_hit.add(record['id'])
     stack = ctx.per_thread[record['tid']].usdt_stack[record['id']]
     # If this is the first record of this USDT probe, add it to the stack
     if not stack:
@@ -394,8 +432,8 @@ def _record_usdt_single(record, ctx):
     matching_record = stack.pop()
     stack.append(record)
     return _build_resource(
-        matching_record, record,
-        ctx.id_map[matching_record['id']] + '#' + ctx.id_map[record['id']], ctx
+        matching_record, record, matching_record['id'] + '#' + record['id'],
+        ctx.workload
     )
 
 
@@ -407,8 +445,8 @@ def _record_usdt_begin(record, ctx):
 
     :return dict: empty dictionary
     """
-    # Increment the sequence counter and add the record to the stack
-    _inc_sequence_number(record, ctx)
+    # Add the record to the stack
+    ctx.probes_hit.add(record['id'])
     ctx.per_thread[record['tid']].usdt_stack[record['id']].append(record)
     return {}
 
@@ -426,29 +464,18 @@ def _record_usdt_end(record, ctx):
     matching_record = ctx.per_thread[record['tid']].usdt_stack[pair].pop()
     # Create the resource
     return _build_resource(
-        matching_record, record,
-        ctx.id_map[matching_record['id']] + '#' + ctx.id_map[record['id']], ctx
+        matching_record, record, matching_record['id'] + '#' + record['id'],
+        ctx.workload
     )
 
 
-def _inc_sequence_number(record, ctx):
-    """ Attaches a sequence number to the record and increments the counter for the given probe ID.
-
-    :param dict record: the parsed raw data record
-    :param TransformContext ctx: the parsing context object
-    """
-    seq_map = ctx.per_thread[record['tid']].seq_map
-    record['seq'] = seq_map[record['id']]
-    seq_map[record['id']] += ctx.step_map[record['id']]
-
-
-def _build_resource(record_entry, record_exit, uid, ctx):
+def _build_resource(record_entry, record_exit, uid, workload):
     """ Creates the profile resource from the entry and exit records.
 
     :param dict record_entry: the entry raw data record
     :param dict record_exit: the exit raw data record
     :param str uid: the resource UID
-    :param TransformContext ctx: the parsing context object
+    :param str workload: the collection workload
 
     :return dict: the resulting profile resource
     """
@@ -461,55 +488,66 @@ def _build_resource(record_entry, record_exit, uid, ctx):
         'tid': record_entry['tid'],
         'type': 'mixed',
         'subtype': 'time delta',
-        'workload': ctx.workload
+        'workload': workload
     }
 
 
-def parse_record(line):
-    """ Parse the raw data line into a dictionary of components.
+def parse_records(file_name, probes, verbose_trace):
+    """ Parse the raw data line by line, each line represented as a dictionary of components.
 
-    :param str line: a line from the raw data file
+    :param str file_name: name of the file containing raw collection data
+    :param Probes probes: class containing probed locations
+    :param bool verbose_trace: flag indicating whether the raw data are verbose or not
 
-    :return dict: the parsed record components
+    :return iterable: a generator object that returns parsed raw data lines
     """
-    try:
-        # The line should contain the following values:
-        # 'type' 'tid' ['pid'] ['ppid'] 'timestamp' 'probe id'
-        # where thread records have 'pid' and process records have 'pid', 'ppid'
-        components = line.split()
-        record_type = int(components[0])
-        # We need to parse the probe records as fast as possible
-        if record_type in PROBE_RECORDS:
-            return {
-                'type': int(components[0]),
-                'tid': int(components[1]),
-                'timestamp': int(components[2]),
-                'id': components[3],
-                'seq': 0
-            }
-        else:
-            # Thread and process records also contain 'pid'
-            record = {
-                'type': int(components[0]),
-                'tid': int(components[1]),
-                'pid': int(components[2]),
-            }
-            # Process records also contain 'ppid'
-            pos = 3
-            if record_type in PROCESS_RECORDS:
-                record['ppid'] = int(components[pos])
-                pos += 1
-            record['timestamp'] = int(components[pos])
-            record['id'] = components[pos + 1]
-            return record
+    # ID (numeric id or name) -> (NAME, SAMPLE)
+    dict_key = 'name' if verbose_trace else 'id'
+    probe_map = {
+        str(probe[dict_key]): (probe['name'], probe['sample'])
+        for probe in list(probes.func.values()) + list(probes.usdt.values())
+    }
+    # TID -> UID -> SEQUENCE
+    seq_map = collections.defaultdict(lambda: collections.defaultdict(int))
 
-    # In case there is any issue with parsing, return corrupted trace record
-    # We truly want to catch any error since parsing should be bullet-proof and should not crash
-    except Exception:
-        WATCH_DOG.info("Corrupted data record: '{}'".format(line.rstrip('\n')))
-        return {
-            'type': RecordType.Corrupt.value,
-            'tid': -1,
-            'timestamp': -1,
-            'id': -1
-        }
+    with open(file_name, 'r') as trace:
+        cnt = 0
+        for cnt, line in enumerate(trace):
+            try:
+                # The line should contain the following values:
+                # 'type' 'tid' ['pid'] ['ppid'] 'timestamp' 'probe id'
+                # where thread records have 'pid' and process records have 'pid', 'ppid'
+                components = line.split()
+                record_type = int(components[0])
+                record_tid = int(components[1])
+                record_id, probe_step = probe_map.get(components[-1], (components[-1], 0))
+                record = {
+                    'type': record_type,
+                    'tid': record_tid,
+                    'timestamp': int(components[-2]),
+                    'id': record_id,
+                    'seq': 0,
+                }
+                if record_type in vals.SEQUENCED_RECORDS:
+                    # Sequenced records need to update their sequence number
+                    record['seq'] = seq_map[record_tid][record_id]
+                    seq_map[record_tid][record_id] += probe_step
+                elif record_type in vals.THREAD_RECORDS:
+                    # TYPE TID PID TIMESTAMP ID
+                    record['pid'] = int(components[2])
+                elif record_type in vals.PROCESS_RECORDS:
+                    # TYPE TID PID PPID TIMESTAMP ID
+                    record['pid'] = int(components[2])
+                    record['ppid'] = int(components[3])
+                yield record
+            # In case there is any issue with parsing, return corrupted trace record
+            # We want to catch any error since parsing should be bullet-proof and should not crash
+            except Exception:
+                WATCH_DOG.info("Corrupted data record: '{}'".format(line.rstrip('\n')))
+                yield {
+                    'type': vals.RecordType.Corrupt.value,
+                    'tid': -1,
+                    'timestamp': -1,
+                    'id': -1
+                }
+        WATCH_DOG.info('Parsed {} records'.format(cnt))

@@ -12,6 +12,7 @@ import os
 import sys
 import re
 import operator
+import itertools
 from contextlib import contextmanager
 import magic
 
@@ -468,6 +469,24 @@ def format_file_size(size):
             return "{:6.1f} {}B".format(size, unit)
         size /= 1024.0
     return "{:.1f} PiB".format(size)
+
+
+def chunkify(iterable, chunk_size):
+    """ Slice generator into multiple generators and each generator yields up to chunk_size items.
+
+    Example: chunkify(it, 100); it generates a total of 450 elements:
+        _it0: 100,
+        _it1: 100,
+        _it2: 100,
+        _it3: 100,
+        _it4: 50
+
+    :param iterable iterable: a generator object
+    :param int chunk_size: the maximum size of each chunk
+    :return generator: a generator object
+    """
+    for first in iterable:
+        yield itertools.chain([first], itertools.islice(iterable, chunk_size - 1))
 
 
 def create_empty_pass(return_code):
