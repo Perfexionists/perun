@@ -61,7 +61,7 @@ from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModule
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException
 from perun.utils.structs import Executable
-from perun.collect.optimizations.optimization import Pipeline, Optimizations
+from perun.collect.optimizations.structs import Pipeline, Optimizations, CallGraphTypes
 from perun.collect.optimizations.structs import Parameters
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
@@ -609,6 +609,8 @@ def postprocessby(ctx, profile, **_):
 @click.option('--optimization-reset-cache', is_flag=True, default=False,
               callback=cli_helpers.reset_optimization_cache,
               help='Remove the cached optimization resources and data.')
+@click.option('--use-cg-type', '-cg', type=(click.Choice(CallGraphTypes.supported())),
+              default=CallGraphTypes.default(), callback=cli_helpers.set_call_graph_type)
 @click.pass_context
 def collect(ctx, **kwargs):
     """Generates performance profile using selected collector.

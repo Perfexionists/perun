@@ -11,14 +11,15 @@ from perun.utils.helpers import SuppressedExceptions
 from perun.utils.exceptions import StatsFileNotFoundException
 
 
-def extract(stats_name, **_):
+def extract(stats_name, exclude_self, **_):
     """ Load the call graph of latest previous version that has the file stored in 'stats'.
 
     :param str stats_name: name of the call graph file
+    :param bool exclude_self: specifies whether to also search in the current version directory
 
     :return dict: the internal Perun call graph format
     """
-    return stats.get_latest(stats_name, ['perun_cg'], exclude_self=True).get('perun_cg', {})
+    return stats.get_latest(stats_name, ['perun_cg'], exclude_self=exclude_self).get('perun_cg', {})
 
 
 def store(stats_name, call_graph, cache, **_):
@@ -43,4 +44,4 @@ def store(stats_name, call_graph, cache, **_):
         'minor_version': call_graph.minor
     }
     stats.add_stats(stats_name, ['perun_cg'], [serialized])
-    temp.store_temp('optimization/call_graph.json', serialized, json_format=True)
+    temp.store_temp('optimization/{}.json'.format(stats_name), serialized, json_format=True)

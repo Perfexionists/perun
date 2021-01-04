@@ -6,7 +6,7 @@ import collections
 from perun.profile.helpers import sanitize_filepart
 from perun.utils.helpers import SuppressedExceptions
 from perun.collect.optimizations.structs import Optimizations, Pipeline, Parameters, \
-    ParametersManager, CGShapingMode
+    CallGraphTypes, ParametersManager, CGShapingMode
 import perun.collect.optimizations.resources.manager as resources
 from perun.collect.optimizations.call_graph import CallGraphResource
 import perun.collect.optimizations.cg_shaping as shaping
@@ -63,6 +63,7 @@ class CollectOptimization:
         self.dynamic_stats_name = None
         self.resource_cache = True
         self.reset_cache = False
+        self.call_graph_type = CallGraphTypes.Static
         self.call_graph = None
         self.call_graph_old = None
         self.dynamic_stats = DynamicStats()
@@ -150,6 +151,10 @@ class CollectOptimization:
         # cg_stats_name = config.get_stats_name('call_graph')
         if self.get_pre_optimizations():
             # Extract call graph of the profiled binary
+            if self.call_graph_type == CallGraphTypes.Dynamic:
+                self.cg_stats_name = 'd' + self.cg_stats_name
+            elif self.call_graph_type == CallGraphTypes.Mixed:
+                self.cg_stats_name = 'm' + self.cg_stats_name
             _cg = resources.extract(
                 resources.Resources.CallGraphAngr, stats_name=self.cg_stats_name,
                 binary=config.get_target(), libs=config.libs,
@@ -169,7 +174,7 @@ class CollectOptimization:
 
             # Get call graph of the same binary but from the previous project version (if it exists)
             call_graph_old = resources.extract(
-                resources.Resources.PerunCallGraph, stats_name=self.cg_stats_name
+                resources.Resources.PerunCallGraph, stats_name=self.cg_stats_name, exclude_self=True
             )
             if call_graph_old:
                 self.call_graph_old = CallGraphResource().from_dict(call_graph_old)

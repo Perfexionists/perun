@@ -66,7 +66,7 @@ class CallGraphResource(CGLevelMixin):
         :param dict angr_cg: the call graph dictionary extracted using angr
         :param set functions: a set of function names obtained from the collection strategies
 
-        :return CallGraphResource: the properly initialized CGR object
+        :return CallGraphResource: a properly initialized CGR object
         """
         self._build_cg_map(angr_cg['call_graph'], functions)
         # The DFS backedges and level estimator is currently fixed
@@ -75,45 +75,33 @@ class CallGraphResource(CGLevelMixin):
         self._build_cfg(angr_cg['control_flow'], functions)
         return self
 
-    def from_dyn(self, dyn_cg, angr_cg, functions):
-        """ Computes the dynamic call graph resource as a combination of (1) static and (2) dynamic
-        call graph structures obtained from (1) Angr static analysis and (2) profiling run.
+    def add_dyn(self, dyn_cg, old_cg, cfg):
+        """ Merges the dynamic call graph resource which is reconstructed from the profiling
+        trace and an old call graph resource (dynamic, static, ...).
+        We also use the statically obtained call graph for constructing a control flow graph.
 
-        :param dict dyn_cg: the 'func': [callees] dictionary from the profiling run
-        :param dict angr_cg: the angr CG and CFG dictionaries
-        :param set functions: a set of function names obtained from the collection strategies
+        :param dict dyn_cg: the 'func': callees dictionary from the profiling run
+        :param dict old_cg: call graph structure to update
+        :param dict cfg: the angr CFG dictionary
 
-        :return CallGraphResource: the properly initialized CGR object
+        :return CallGraphResource: a properly initialized CGR object
         """
-        angr_cg['call_graph'] = self._remove_main_unreachable(
-            self._merge_cgs(dyn_cg, angr_cg['call_graph'])
-        )
-        self._build_cg_map(angr_cg['call_graph'], functions)
-        # The DFS backedges and level estimator is currently fixed
-        self._build_levels(LevelEstimator.DFS)
-        self._compute_reachability()
-        self._build_cfg(angr_cg['control_flow'], functions)
-        return self
+        cg = {func: conf['callees'] for func, conf in old_cg.items()}
+        for name, callees in dyn_cg.items():
+            cg.setdefault(name, []).extend(callees)
+            cg[name] = sorted(list(set(cg[name])))
 
-    def _merge_cgs(self, dyn_cg, angr_cg):
-        """ Merges the statically and dynamically obtained call graphs into one by extending
-        the static CG with new caller-callee edges according to the dynamic observation.
+        new_cg = {
+            'call_graph': self._remove_unreachable(cg),
+            'control_flow': cfg
+        }
+        functions = set(new_cg['call_graph'].keys())
+        return self.from_angr(new_cg, functions)
 
-        :param dict dyn_cg: the 'func': [callees] dictionary from the profiling run
-        :param dict angr_cg: the call graph dictionary extracted using angr
-
-        :return dict: one merged call graph dictionary
-        """
-        for func, callees in dyn_cg.items():
-            angr_callees = set(angr_cg.setdefault(func, []))
-            angr_callees |= set(callees)
-            angr_cg[func] = sorted(list(angr_callees))
-        return angr_cg
-
-    def _remove_main_unreachable(self, merged_cg):
+    def _remove_unreachable(self, cg):
         """ Removes functions from the call graph that are not reachable from the 'main' function.
 
-        :param dict merged_cg: the call graph dictionary merged from dynamic and angr call graphs
+        :param dict cg: a call graph dictionary
 
         :return dict: pruned call graph dictionary
         """
@@ -124,13 +112,13 @@ class CallGraphResource(CGLevelMixin):
             current_iter = iters[-1]
             new_iter = set()
             for func in current_iter:
-                func_callees = [c for c in merged_cg.get(func, []) if c not in visited]
+                func_callees = [c for c in cg.get(func, []) if c not in visited]
                 new_iter |= set(func_callees)
                 visited |= set(func_callees)
             iters.append(new_iter)
 
         new_angr_cg = {}
-        for func, callees in merged_cg.items():
+        for func, callees in cg.items():
             if func in visited:
                 new_angr_cg[func] = list(set(callees) & visited)
         return new_angr_cg

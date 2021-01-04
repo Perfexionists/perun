@@ -30,7 +30,7 @@ import perun.utils.timestamps as timestamps
 import perun.utils.log as log
 import perun.vcs as vcs
 import perun.utils.metrics as metrics
-from perun.collect.optimizations.optimization import Optimization
+from perun.collect.optimizations.optimization import Optimization, CallGraphTypes
 
 from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
     StatsFileNotFoundException, NotPerunRepositoryException
@@ -767,6 +767,16 @@ def reset_optimization_cache(_, __, value):
     :param str value: value of the parameter
     """
     Optimization.reset_cache = value
+
+
+def set_call_graph_type(_, __, value):
+    """ Set the selected Call Graph type to be used for optimizations.
+
+    :param click.core.Context _: click context
+    :param click.core.Argument __: the click parameter
+    :param str value: value of the parameter
+    """
+    Optimization.call_graph_type = CallGraphTypes(value)
 
 
 def configure_metrics(_, __, value):

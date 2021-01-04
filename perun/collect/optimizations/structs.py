@@ -78,6 +78,30 @@ class Pipeline(Enum):
             return []
 
 
+class CallGraphTypes(Enum):
+    """ Enumeration of the implemented call graph types and their CLI names.
+    """
+    Static = 'static'
+    Dynamic = 'dynamic'
+    Mixed = 'mixed'
+
+    @staticmethod
+    def supported():
+        """ List the currently supported call graph types.
+
+        :return list: CLI names of the supported cg types
+        """
+        return [cg.value for cg in CallGraphTypes]
+
+    @staticmethod
+    def default():
+        """ Name of the default cg type.
+
+        :return str: the CLI name of the default cg type
+        """
+        return CallGraphTypes.Static.value
+
+
 class Parameters(Enum):
     """ Enumeration of the currently supported CLI options for optimization methods and pipelines.
     """

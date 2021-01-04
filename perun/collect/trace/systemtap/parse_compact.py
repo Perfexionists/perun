@@ -9,6 +9,7 @@ from multiprocessing import Process
 import perun.collect.trace.processes as proc
 import perun.utils.metrics as metrics
 import perun.collect.optimizations.resources.manager as resources
+import perun.logic.stats as stats
 from perun.profile.factory import Profile
 
 from perun.collect.trace.watchdog import WATCH_DOG
@@ -16,7 +17,8 @@ import perun.collect.trace.values as vals
 from perun.collect.optimizations.call_graph import CallGraphResource
 from perun.collect.optimizations.optimization import build_stats_names
 from perun.utils import chunkify
-from perun.utils.exceptions import SignalReceivedException
+from perun.utils.exceptions import SignalReceivedException, StatsFileNotFoundException
+from perun.utils.helpers import SuppressedExceptions
 
 # import cProfile
 # import pstats
@@ -208,7 +210,8 @@ def process_records(data_file, config, probes):
         metrics.add_metric('collected_probes', len(ctx.probes_hit & all_probes))
 
         # TODO: temporary
-        _build_dynamic_cg(config, ctx)
+        _build_alternative_cg(config, ctx)
+
     except Exception:
         WATCH_DOG.info('Error while processing the raw trace output')
         WATCH_DOG.debug('Record: {}'.format(record))
@@ -216,32 +219,47 @@ def process_records(data_file, config, probes):
         raise
 
 
-def _build_dynamic_cg(config, ctx):
-    """ Builds the dynamic CG and stores it into the stats directory.
-    The dynamic CG still uses the statically obtained Call Graph to combine with the dynamic one
+def _build_alternative_cg(config, ctx):
+    """ Builds the dynamic and mixed CGR and stores them into the stats directory.
+    The mixed CG still uses the statically obtained Call Graph to combine with the dynamic one
     in order to retrieve more general Call Graph structure.
 
     :param Configuration config: the configuration object
     :param TransformContext ctx: the parsing context which contains caller-callee relationships
     """
-    if config.generate_dynamic_cg:
-        cg_stats_name, _ = build_stats_names(config)
-        # Extract the static Call Graph using Angr
-        _cg = resources.extract(
-            resources.Resources.CallGraphAngr, stats_name=cg_stats_name,
-            binary=config.get_target(), cache=False, libs=config.libs,
-            restricted_search=False
-        )
-        # Build the combined Call Graph using the static and dynamic call graphs
-        call_graph = CallGraphResource().from_dyn(
-            ctx.dyn_cg, _cg, config.get_functions().keys()
-        )
+    cg_stats_name, _ = build_stats_names(config)
 
-        # Store the new call graph version
-        resources.store(
-            resources.Resources.PerunCallGraph, stats_name=cg_stats_name,
-            call_graph=call_graph, cache=False
-        )
+    # Extract the saved static Call Graph
+    with SuppressedExceptions(StatsFileNotFoundException):
+        static_cg = stats.get_stats_of(cg_stats_name, ['perun_cg'])['perun_cg']
+
+    # Extract dynamic and mixed Call Graphs if available
+    prefix = [('dynamic', 'd'), ('mixed', 'm')]
+    cgs = {}
+    for cg_type, cg_prefix in prefix:
+        cgs[cg_type] = {}
+        with SuppressedExceptions(StatsFileNotFoundException):
+            cgr = stats.get_stats_of(cg_prefix + cg_stats_name, ['perun_cg'])['perun_cg']
+            cgs[cg_type] = cgr['call_graph']['cg_map']
+    if not cgs['mixed']:
+        # If no mixed call graph is found, use static for initial merge
+        cgs['mixed'] = static_cg['call_graph']['cg_map']
+    cfg = static_cg['control_flow']
+
+    # Build the mixed Call Graph Resource using the static and dynamic call graphs
+    mixed_call_graph = CallGraphResource().add_dyn(ctx.dyn_cg, cgs['mixed'], cfg)
+    # Build the dynamic Call Graph Resource using only the dynamic call graph
+    dynamic_call_graph = CallGraphResource().add_dyn(ctx.dyn_cg, cgs['dynamic'], cfg)
+
+    # Store the new call graph versions
+    resources.store(
+        resources.Resources.PerunCallGraph, stats_name='m' + cg_stats_name,
+        call_graph=mixed_call_graph, cache=False
+    )
+    resources.store(
+        resources.Resources.PerunCallGraph, stats_name='d' + cg_stats_name,
+        call_graph=dynamic_call_graph, cache=False
+    )
 
 
 def _record_handlers():

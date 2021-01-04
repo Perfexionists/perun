@@ -116,11 +116,6 @@ def after(**kwargs):
     WATCH_DOG.info('Raw data file size: {}'.format(utils.format_file_size(data_size)))
 
     kwargs['profile'] = kwargs['config'].engine.transform(**kwargs)
-    # TODO: Nasty temporary hack
-    if kwargs['config'].generate_dynamic_cg:
-        WATCH_DOG.info('Dynamic Call Graph reconstructed, terminating.')
-        stdout.done('\n\n')
-        return CollectStatus.ERROR, "Avoiding profile storage.", dict(kwargs)
 
     WATCH_DOG.info('Data processing finished.')
     stdout.done('\n\n')
@@ -213,9 +208,6 @@ def teardown(**kwargs):
               help='Disables the SystemTap caching of compiled scripts.')
 @click.option('--no-profile', '-np', is_flag=True, default=False,
               help='Tracer will not transform and save processed data into a perun profile.')
-@click.option('--generate-dynamic-cg', is_flag=True, default=False,
-              help='Instead of extracting a Call Graph using static analysis, run the collector'
-                   'once unoptimized and reconstruct dynamic call graph')
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of
