@@ -265,6 +265,7 @@ class CollectOptimization:
         remaining_func = self.call_graph.get_functions(diff_only=diff_solo)
         config.prune_functions(remaining_func)
         metrics.end_timer('pre-optimize')
+        metrics.add_metric('funcs', list(remaining_func.keys()))
 
     def run_optimize_pipeline(self, config, **_):
         """ The "run" pipeline cannot properly run the run-phase optimizations since the
