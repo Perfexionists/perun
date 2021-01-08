@@ -40,6 +40,7 @@ class Configuration:
     :ivar int pid: the PID of the Tracer process
     :ivar str files_dir: the directory path of the temporary files
     :ivar str locks_dir: the directory path of the lock files
+    :ivar dict stats_data: compactly stores data necessary for building dynamic stats
     """
     def __init__(self, executable, **cli_config):
         """ Constructs the Configuration object from the supplied CLI configuration
@@ -93,6 +94,7 @@ class Configuration:
 
         # Build the probes configuration
         self.probes = Probes(self.binary, self.libs, **cli_config)
+        self.stats_data = {}
 
     def engine_factory(self):
         """ Instantiates the engine object based on the string representation.

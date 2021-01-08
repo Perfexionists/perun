@@ -4,6 +4,7 @@
 
 import os
 import collections
+import array
 from multiprocessing import Process
 
 import perun.collect.trace.processes as proc
@@ -91,6 +92,14 @@ class TransformContext:
         # and function name -> function name in verbose mode (basically a no-op)
         # TODO: temporary, solve dynamic call graph properly
         self.dyn_cg = {probe['name']: set() for probe in self.probes.func.values()}
+
+        # Compact dictionaries used for computing dynamic stats
+        # tid -> uid -> [amounts]
+        self.funcs = collections.defaultdict(lambda: collections.defaultdict(
+            lambda: {'e': array.array('Q'), 'i': array.array('Q')}))
+        # pid -> [processes]
+        self.processes = collections.defaultdict(list)
+        self.threads = {}
 
 
 def trace_to_profile(data_file, config, probes, **_):
@@ -208,6 +217,11 @@ def process_records(data_file, config, probes):
         metrics.add_metric('trace_level_times_exclusive', dict(ctx.level_times_exclusive))
         all_probes = set(probes.func.keys()) | set(probes.usdt.keys())
         metrics.add_metric('collected_probes', len(ctx.probes_hit & all_probes))
+        config.stats_data = {
+            'p': ctx.processes,
+            't': ctx.threads,
+            'f': ctx.funcs
+        }
 
         # TODO: temporary
         _build_alternative_cg(config, ctx)
@@ -321,6 +335,7 @@ def _record_process_end(record, ctx):
     if record['tid'] == record['pid']:
         resource['uid'] = '!ProcessResource!'
         resource['ppid'] = record['ppid']
+        ctx.processes[resource['pid']].append((resource['ppid'], resource['amount']))
     return resource
 
 
@@ -350,6 +365,7 @@ def _record_thread_end(record, ctx):
     resource['pid'] = record['pid']
     # Remove the thread context
     del ctx.per_thread[record['tid']]
+    ctx.threads[resource['tid']] = (resource['pid'], resource['amount'])
     return resource
 
 
@@ -427,6 +443,9 @@ def _record_func_end(record, ctx):
             ctx.bottom[record_tid][record['id']] += resource['amount']
         thread_ctx.bottom_flag = False
         thread_ctx.depth -= depth_diff
+        func = ctx.funcs[resource['tid']][resource['uid']]
+        func['e'].append(abs(resource['exclusive']))
+        func['i'].append(abs(resource['amount']))
 
     return resource
 

@@ -288,10 +288,9 @@ class CollectOptimization:
             [opt.value for opt in self.get_run_optimizations()], run_optimization_parameters
         )
 
-    def post_optimize_pipeline(self, profile, config, **_):
+    def post_optimize_pipeline(self, config, **_):
         """ Run the post-optimize methods in the defined order.
 
-        :param Profile profile: the Perun profile generated during the profiling
         :param Configuration config: the collection configuration object
         """
         # Get the set of post-optimize methods
@@ -299,20 +298,21 @@ class CollectOptimization:
         if optimizations or metrics.is_enabled():
             metrics.start_timer('post-optimize')
             # Create the dynamic stats from the profile, if necessary
-            self.dynamic_stats = DynamicStats.from_profile(profile, config.get_functions())
+            self.dynamic_stats = DynamicStats.from_profile(
+                config.stats_data, config.get_functions()
+            )
             if metrics.is_enabled():
                 self._call_graph_level_assumption()
                 self._coverage_metric()
                 self._collected_points_metric()
                 self._level_time_metric()
                 self._level_i_metric()
-            if optimizations:
-                # Store the gathered Dynamic Stats
-                resources.store(
-                    resources.Resources.PerunStats,
-                    stats_name=self.dynamic_stats_name,
-                    dynamic_stats=self.dynamic_stats
-                )
+            # Store the gathered Dynamic Stats
+            resources.store(
+                resources.Resources.PerunStats,
+                stats_name=self.dynamic_stats_name,
+                dynamic_stats=self.dynamic_stats
+            )
             metrics.end_timer('post-optimize')
 
     def _level_i_metric(self):
@@ -347,14 +347,20 @@ class CollectOptimization:
         exclusive_level_time = collections.defaultdict(lambda: collections.defaultdict(int))
         level_funcs = collections.defaultdict(lambda: collections.defaultdict(list))
 
+        max_calls = (None, 0, 0)
         for tid, funcs in self.dynamic_stats.per_thread.items():
             for func_name, func_stats in funcs.items():
                 func_cg_level = self.call_graph[func_name]['level']
                 level_time[tid][func_cg_level] += func_stats['total']
                 exclusive_level_time[tid][func_cg_level] += func_stats['total_exclusive']
-                level_funcs[tid][func_cg_level].append((func_name, func_stats['total_exclusive']))
+                level_funcs[tid][func_cg_level].append(
+                    (func_name, func_stats['total_exclusive'], func_stats['sampled_count'])
+                )
+                if func_stats['sampled_count'] > max_calls[1]:
+                    max_calls = (func_name, func_stats['sampled_count'], func_cg_level)
         metrics.add_metric('cg_level_times_exclusive', exclusive_level_time)
         metrics.add_metric('cg_level_funcs', level_funcs)
+        metrics.add_metric('max_calls', max_calls)
 
     def _coverage_metric(self):
         """ Helper function for computing the coverage metrics. Coverage metrics are
@@ -546,8 +552,8 @@ def build_stats_names(config):
 
     :return tuple (str, str): CG stats name, Dynamic Stats name
     """
-    binaries = sanitize_filepart('--'.join([config.binary] + sorted(config.libs)))
+    binaries = sanitize_filepart('--'.join([config.binary] + sorted(config.libs))).replace('.', '_')
     binaries_param = sanitize_filepart(
         '--'.join([arg for arg in [config.executable.args, config.executable.workload] if arg])
-    )
+    ).replace('.', '_')
     return 'cg--{}'.format(binaries), 'ds--' + '--'.join([binaries, binaries_param])

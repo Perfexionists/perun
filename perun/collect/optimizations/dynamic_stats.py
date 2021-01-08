@@ -12,6 +12,7 @@
     *bottom processes are those that spawn no other process
 """
 
+import array
 import collections
 import numpy as np
 
@@ -43,16 +44,19 @@ class DynamicStats:
         self.threads = {}
 
     @classmethod
-    def from_profile(cls, profile, probed_functions):
+    def from_profile(cls, stats_data, probed_functions):
         """ Create Dynamic Stats from profile object.
 
-        :param Profile profile: performance profile with collected resources
+        :param dict stats_data: compact summary of collected data
         :param dict probed_functions: profiled functions and their profiling configuration
 
         :return DynamicStats: the dynamic statistics object
         """
         stats = cls()
-        func_values, process_records = stats._process_resources_of(profile)
+        func_values, process_records = stats_data['f'], stats_data['p']
+        stats.threads = stats_data['t']
+
+        # func_values, process_records = stats._process_resources_of(profile)
         stats._compute_process_hierarchy(process_records)
         stats._compute_global(func_values, probed_functions)
         stats._compute_per_thread(func_values, probed_functions)
@@ -127,14 +131,14 @@ class DynamicStats:
         """
         # Create the parent-child connection in the hierarchy
         for pid, procs in processes.items():
-            for proc in procs:
-                ppid = proc['ppid']
+            for ppid, amount in procs:
+                ppid = ppid
                 self.process_hierarchy[ppid]['spawn'].append(pid)
                 self.process_hierarchy[pid]['ppid'].append(ppid)
-                self.process_hierarchy[pid]['duration'] = proc['amount']
+                self.process_hierarchy[pid]['duration'] = amount
         # Register spawned threads for each process
         for tid, thread in self.threads.items():
-            self.process_hierarchy[thread.pid]['threads'].append(tid)
+            self.process_hierarchy[thread[0]]['threads'].append(tid)
 
         # We denote processes that spawn no other processes as bottom
         for proc in self.process_hierarchy.values():
@@ -193,13 +197,14 @@ class DynamicStats:
 
         # Merge values from the selected processes
         # TODO: how to handle multiple parallel threads in terms of global stats? Currently additive
-        merged = collections.defaultdict(list)
+        merged = collections.defaultdict(lambda: {'e': array.array('Q'), 'i': array.array('Q')})
         for tid, tid_funcs in func_values.items():
             # Filter function records that should not be part of the global stats
-            if tid in self.threads and self.threads[tid].pid in processes:
+            if tid in self.threads and self.threads[tid][0] in processes:
                 # Otherwise merge them
                 for func_name, values in tid_funcs.items():
-                    merged[func_name].extend(values)
+                    merged[func_name]['i'].extend(values['i'])
+                    merged[func_name]['e'].extend(values['e'])
         self.global_stats = {
             uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
             for uid, amounts in merged.items()
@@ -222,15 +227,16 @@ class DynamicStats:
 def _compute_func_stats(values, func_sample):
     """ Compute the dynamic statistics for the given values and sample.
 
-    :param list values: the measured function call durations
+    :param dict values: the measured function call durations
     :param int func_sample: the sampling configuration of the given function
 
     :return dict: the computed statistics
     """
     # Sort the 'amount' values in order to compute various statistics
-    inclusive, exclusive = map(list, zip(*values))
-    inclusive.sort()
-    percentiles = np.percentile(np.array(inclusive), [_Q1, _Q2, _Q3])
+    # inclusive, exclusive = map(list, zip(*values))
+    inclusive = values['i']
+    exclusive = values['e']
+    percentiles = np.percentile(np.sort(np.array(inclusive)), [_Q1, _Q2, _Q3])
     func_stats = {
         'count': len(inclusive) + ((len(inclusive) - 1) * (func_sample - 1)),
         'sampled_count': len(inclusive),
