@@ -39,7 +39,7 @@ def cg_top_down(call_graph, chain_length, keep_leaf):
             trim_funcs |= set(trim)
             keep_funcs |= set(keep)
 
-    call_graph.remove_or_filter(trim_funcs, set_filtered=True)
+    call_graph.remove_or_filter(trim_funcs - {'main'}, set_filtered=True)
 
 
 def cg_bottom_up(call_graph, chain_length):

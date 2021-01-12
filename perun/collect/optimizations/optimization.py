@@ -41,7 +41,7 @@ class CollectOptimization:
     # The classification of methods to their respective optimization phases
     __pre = {
         Optimizations.DiffTracing, Optimizations.CallGraphShaping, Optimizations.BaselineStatic,
-        Optimizations.BaselineDynamic, Optimizations.DynamicSampling
+        Optimizations.BaselineDynamic, Optimizations.DynamicSampling, Optimizations.TimedSampling
     }
     __run = {
         Optimizations.DynamicProbing, Optimizations.TimedSampling

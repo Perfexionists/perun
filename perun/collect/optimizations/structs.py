@@ -192,6 +192,7 @@ class ThresholdMode(Enum):
 class Complexity(OrderedEnum):
     """ Enumeration of the complexity degrees that we distinguish in the Bounds collector output.
     """
+    Zero = 'zero'
     Constant = 'constant'
     Linear = 'linear'
     Quadratic = 'quadratic'

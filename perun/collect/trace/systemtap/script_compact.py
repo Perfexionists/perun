@@ -245,15 +245,16 @@ probe process("{binary}").thread.end {{
     handle.write(end_probe)
 
 
+# TODO: frequency to ns timer
 def _add_timer_probe(handle, sampling_frequency):
     """ Add a probe for timed event that enables / disables function probes.
 
     :param TextIO handle: the script file handle
-    :param int sampling_frequency: frequency (Hz) value of the timer probe firing
+    :param int sampling_frequency: timer (ns) value of the timer probe firing
     """
     # Create the sampling timer
     timer_probe = """
-probe timer.hz({freq}) if ({stopwatch}) {{
+probe timer.ns({freq}) if ({stopwatch}) {{
     {switch} = !{switch}
 }}
 """.format(
