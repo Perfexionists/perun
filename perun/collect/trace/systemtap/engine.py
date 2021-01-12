@@ -16,6 +16,7 @@ from perun.collect.trace.values import FileSize, OutputHandling, check, RecordTy
 
 import perun.utils as utils
 import perun.utils.metrics as metrics
+from perun.utils.helpers import SuppressedExceptions
 from perun.logic.locks import LockType, ResourceLock, get_active_locks_for
 from perun.utils.exceptions import SystemTapStartupException, SystemTapScriptCompilationException
 
@@ -512,12 +513,13 @@ def _wait_for_systemtap_data(datafile):
     )
     with TimeoutThread(HARD_TIMEOUT) as timeout:
         while not timeout.reached():
-            # Periodically scan the last line of the data file
-            # The file can be potentially very long, use the optimized method to get the last line
-            last_line = _get_last_line_of(datafile, FileSize.Long)[1]
-            if int(last_line.split()[0]) == RecordType.ProcessEnd.value:
-                WATCH_DOG.info('The data file is fully written.')
-                return
+            with SuppressedExceptions(IndexError):
+                # Periodically scan the last line of the data file
+                # The file can be potentially long, use the optimized method to get the last line
+                last_line = _get_last_line_of(datafile, FileSize.Long)[1]
+                if int(last_line.split()[0]) == RecordType.ProcessEnd.value:
+                    WATCH_DOG.info('The data file is fully written.')
+                    return
             time.sleep(LOG_WAIT)
         # Timeout reached
         WATCH_DOG.info(
