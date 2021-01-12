@@ -354,13 +354,16 @@ class CollectOptimization:
                 level_time[tid][func_cg_level] += func_stats['total']
                 exclusive_level_time[tid][func_cg_level] += func_stats['total_exclusive']
                 level_funcs[tid][func_cg_level].append(
-                    (func_name, func_stats['total_exclusive'], func_stats['sampled_count'])
+                    (func_name, func_stats['total_exclusive'], func_stats['sampled_count'],
+                     func_stats['sample'])
                 )
                 if func_stats['sampled_count'] > max_calls[1]:
                     max_calls = (func_name, func_stats['sampled_count'], func_cg_level)
+        max_bu_length = proj._cg_bottom_sets(self.call_graph)[1]
         metrics.add_metric('cg_level_times_exclusive', exclusive_level_time)
         metrics.add_metric('cg_level_funcs', level_funcs)
         metrics.add_metric('max_calls', max_calls)
+        metrics.add_metric('max_bu_length', max_bu_length)
 
     def _coverage_metric(self):
         """ Helper function for computing the coverage metrics. Coverage metrics are

@@ -56,7 +56,25 @@ def cg_bottom_up(call_graph, chain_length):
         return
     # Compute the set of the bottom functions
     call_graph.compute_bottom()
+    visited = _cg_bottom_sets(call_graph, chain_length)[0]
+    # Remove functions that were not added into the set
+    call_graph.remove_or_filter(set(call_graph.cg_map.keys()) - visited, set_filtered=True)
 
+
+def _cg_bottom_sets(call_graph, chain_length=None):
+    """ Helper function that computes the iterative sets for each bottom function.
+
+    :param CallGraphResource call_graph: the CGR optimization resource
+    :param int chain_length: the path length to traverse
+
+    :return tuple (set, int): set of all visited functions and maximum number of steps taken
+    """
+    if chain_length is None:
+        chain_length = call_graph.depth
+
+    call_graph.compute_bottom()
+
+    max_length = 0
     visited = set()
     # We implement the method by inspecting every bottom-level function and the according callers
     # (also transitively)
@@ -80,8 +98,13 @@ def cg_bottom_up(call_graph, chain_length):
                     if caller not in bot_set
                     and level_min <= call_graph[caller]['level'] <= level_max
                 }
+            # Check if we got new callers in this step
+            if not step_callers:
+                # If not, compute the maximum number of steps needed for closure
+                max_length = max(max_length, step)
+                break
             inspect = step_callers
             bot_set |= step_callers
             visited |= step_callers
-    # Remove functions that were not added into the set
-    call_graph.remove_or_filter(set(call_graph.cg_map.keys()) - visited, set_filtered=True)
+
+    return visited, max_length

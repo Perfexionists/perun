@@ -588,3 +588,4 @@ def parse_records(file_name, probes, verbose_trace):
                     'id': -1
                 }
         WATCH_DOG.info('Parsed {} records'.format(cnt))
+        metrics.add_metric('records_count', cnt)

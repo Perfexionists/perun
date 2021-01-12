@@ -15,6 +15,7 @@
 import array
 import collections
 import numpy as np
+import perun.utils.metrics as metrics
 
 # The quartiles
 _Q1, _Q2, _Q3 = 25, 50, 75
@@ -209,6 +210,8 @@ class DynamicStats:
             uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
             for uid, amounts in merged.items()
         }
+        min_time = min(self.global_stats.items(), key=lambda f_stats: f_stats[1]['min'])
+        metrics.add_metric('min_time', {min_time[0]: min_time[1]['min']})
 
     def _compute_per_thread(self, func_values, probed_funcs):
         """ Compute per-thread statistics across all threads
@@ -234,17 +237,19 @@ def _compute_func_stats(values, func_sample):
     """
     # Sort the 'amount' values in order to compute various statistics
     # inclusive, exclusive = map(list, zip(*values))
-    inclusive = values['i']
+    inclusive = np.array(values['i'])
+    inclusive.sort()
     exclusive = values['e']
-    percentiles = np.percentile(np.sort(np.array(inclusive)), [_Q1, _Q2, _Q3])
+
+    percentiles = np.percentile(inclusive, [_Q1, _Q2, _Q3])
     func_stats = {
         'count': len(inclusive) + ((len(inclusive) - 1) * (func_sample - 1)),
         'sampled_count': len(inclusive),
         'sample': func_sample,
         'total_exclusive': sum(exclusive),
         'total': sum(inclusive),
-        'min': inclusive[0],
-        'max': inclusive[-1],
+        'min': int(inclusive[0]),
+        'max': int(inclusive[-1]),
         'avg': sum(inclusive) / len(inclusive),
         'Q1': percentiles[0],
         'median': percentiles[1],
