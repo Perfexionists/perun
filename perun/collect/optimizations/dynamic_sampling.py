@@ -29,6 +29,10 @@ def set_sampling(call_graph, stats, step, threshold):
     # 20% of the threshold is an expected deviation (+- 10%)
     threshold_eps = threshold * _THRESHOLD_EPS_RATIO
 
+    if threshold == 0:
+        call_graph.remove_or_filter(set(call_graph.cg_map.keys()) - {'main'})
+        return
+
     for depth, level in enumerate(call_graph.levels):
         for func in level:
             cg_func = call_graph[func]

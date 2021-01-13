@@ -80,7 +80,6 @@ ENTRY_APPROX_SAMPLE_TEMPLATE = """
         {sampling_flag}[tid, pname] ++
         {{probe_handler}}
     }}}}
-    printf("counter: %d, arr: %d\\n", counter, {sampling_cnt}[tid, pname])
 """.format(
     sampling_cnt=ARRAY_SAMPLE_COUNTER,
     sampling_thr=ARRAY_SAMPLE_THRESHOLD,

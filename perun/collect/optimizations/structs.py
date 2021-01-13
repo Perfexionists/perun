@@ -206,7 +206,7 @@ class Complexity(OrderedEnum):
 
         :return list: CLI names of the supported complexities
         """
-        return [complexity.value for complexity in Complexity if complexity != Complexity.Generic]
+        return [complexity.value for complexity in Complexity]
 
     @staticmethod
     def max(values):

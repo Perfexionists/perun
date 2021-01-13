@@ -35,8 +35,6 @@ def filter_functions(call_graph, stats_map, checks):
                 break
 
     # Finally remove the filtered functions
-    for func in filtered_funcs:
-        print('filtered: {}'.format(func))
     call_graph.remove_or_filter(filtered_funcs)
 
 
