@@ -91,7 +91,6 @@ def diff_tracing(call_graph, call_graph_old, keep_leaf, inspect_all, cfg_mode):
     :param DiffCfgMode cfg_mode: equivalence criterion for comparing CFGs
     """
     if call_graph is None or call_graph_old is None:
-        print('missing call graph')
         return
 
     cg_funcs = call_graph.cg_map.keys()

@@ -105,7 +105,7 @@ def extract_func_cfg(project, binaries):
     for func in project.kb.functions.values():
         if func.binary_name not in binaries:
             continue
-        cfg = cfgs.setdefault(func.name, {})
+        cfg = cfgs.setdefault(func.name.split('.')[0], {})
         blocks = []
         for idx, block in enumerate(func.transition_graph.nodes):
             blocks.append(block)
@@ -132,7 +132,7 @@ def _build_block_repr(project, block):
     """
     # Function call blocks are represented by the function name
     if isinstance(block, Function):
-        return block.name
+        return block.name.split('.')[0]
     # Obtain the ASM instructions and parameters for each block
     else:
         instr = angr.Block(block.addr, project=project, size=block.size).capstone.insns
