@@ -2,6 +2,7 @@
 """
 
 import collections
+import perun.vcs as vcs
 
 from perun.profile.helpers import sanitize_filepart
 from perun.utils.helpers import SuppressedExceptions
@@ -182,13 +183,14 @@ class CollectOptimization:
                 raise NotImplementedError('CG extracted OK')
 
             # Get call graph of the same binary but from the previous project version (if it exists)
-            call_graph_old = resources.extract(
-                resources.Resources.PerunCallGraph,
-                stats_name=self.cg_stats_name, exclude_self=True,
-                vcs_version=old_cg_version
-            )
-            if call_graph_old:
-                self.call_graph_old = CallGraphResource().from_dict(call_graph_old)
+            if old_cg_version != self.call_graph.minor:
+                call_graph_old = resources.extract(
+                    resources.Resources.PerunCallGraph,
+                    stats_name=self.cg_stats_name, exclude_self=True,
+                    vcs_version=old_cg_version
+                )
+                if call_graph_old:
+                    self.call_graph_old = CallGraphResource().from_dict(call_graph_old)
         # Get dynamic stats from previous profiling, if there was any
         self.dynamic_stats = resources.extract(
             resources.Resources.PerunStats, stats_name=self.dynamic_stats_name,
