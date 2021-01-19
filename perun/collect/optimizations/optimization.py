@@ -442,6 +442,11 @@ class CollectOptimization:
             return
         collected_func = (set(self.call_graph.cg_map.keys()) &
                           set(self.dynamic_stats.global_stats.keys()))
+        diff_funcs = {
+            func_name for func_name, func_config in self.call_graph.cg_map.items()
+            if func_config['diff']
+        }
+        metrics.add_metric('diff_funcs', list(diff_funcs))
         metrics.add_metric('collected_func_cg_compare', len(collected_func))
 
     def _call_graph_level_assumption(self):
