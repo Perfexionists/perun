@@ -208,6 +208,9 @@ def teardown(**kwargs):
               help='Disables the SystemTap caching of compiled scripts.')
 @click.option('--no-profile', '-np', is_flag=True, default=False,
               help='Tracer will not transform and save processed data into a perun profile.')
+# TODO: temporary
+@click.option('--only-extract-cg', '-cg', is_flag=True, default=False,
+              help='Tracer will only extract the CG of the current project version and terminate.')
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of

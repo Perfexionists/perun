@@ -131,7 +131,7 @@ class CollectOptimization:
                 self.pipeline.remove(optimization)
 
         # If no optimizations are selected, skip
-        if not self.pipeline:
+        if not self.pipeline and not config.cg_extraction:
             return
 
         # Otherwise prepare the necessary resources
@@ -149,7 +149,7 @@ class CollectOptimization:
         all_funcs = config.get_functions()
         self.cg_stats_name, self.dynamic_stats_name = build_stats_names(config)
         # cg_stats_name = config.get_stats_name('call_graph')
-        if self.get_pre_optimizations():
+        if self.get_pre_optimizations() or config.cg_extraction:
             # Extract call graph of the profiled binary
             if self.call_graph_type == CallGraphTypes.Dynamic:
                 self.cg_stats_name = 'd' + self.cg_stats_name
@@ -171,6 +171,9 @@ class CollectOptimization:
                 resources.Resources.PerunCallGraph, stats_name=self.cg_stats_name,
                 call_graph=self.call_graph, cache=self.resource_cache and not self.reset_cache
             )
+            # TODO: temporary
+            if config.cg_extraction:
+                raise NotImplementedError('CG extracted OK')
 
             # Get call graph of the same binary but from the previous project version (if it exists)
             call_graph_old = resources.extract(
