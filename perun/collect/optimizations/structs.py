@@ -105,6 +105,7 @@ class CallGraphTypes(Enum):
 class Parameters(Enum):
     """ Enumeration of the currently supported CLI options for optimization methods and pipelines.
     """
+    DiffVersion = 'diff-version'
     DiffKeepLeaf = 'diff-keep-leaf'
     DiffInspectAll = 'diff-inspect-all'
     DiffCfgMode = 'diff-cfg-mode'
@@ -281,6 +282,11 @@ class ParametersManager:
 
         self.cli_params = []
         self.param_map = {
+            # TODO: add proper check
+            Parameters.DiffVersion: {
+                'value': None,
+                'validate': lambda x: x
+            },
             Parameters.DiffKeepLeaf: {
                 'value': False,
                 'validate': self._validate_bool

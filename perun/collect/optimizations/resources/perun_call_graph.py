@@ -11,15 +11,22 @@ from perun.utils.helpers import SuppressedExceptions
 from perun.utils.exceptions import StatsFileNotFoundException
 
 
-def extract(stats_name, exclude_self, **_):
+def extract(stats_name, exclude_self, vcs_version, **_):
     """ Load the call graph of latest previous version that has the file stored in 'stats'.
 
     :param str stats_name: name of the call graph file
     :param bool exclude_self: specifies whether to also search in the current version directory
+    :param str vcs_version: specifies minor_version to search in
 
     :return dict: the internal Perun call graph format
     """
-    return stats.get_latest(stats_name, ['perun_cg'], exclude_self=exclude_self).get('perun_cg', {})
+    if vcs_version is None:
+        # Search for the closest stats if no version is specified
+        return stats.get_latest(
+            stats_name, ['perun_cg'], exclude_self=exclude_self
+        ).get('perun_cg', {})
+    else:
+        return stats.get_stats_of(stats_name, minor_version=vcs_version).get('perun_cg', {})
 
 
 def store(stats_name, call_graph, cache, **_):

@@ -145,6 +145,12 @@ class CollectOptimization:
 
         :param Configuration config: the collection configuration object
         """
+        # TODO: temporary hack
+        old_cg_version = None
+        for param_name, param_value in self.params.cli_params:
+            if param_name == Parameters.DiffVersion:
+                old_cg_version = param_value
+
         metrics.start_timer('optimization_resources')
         all_funcs = config.get_functions()
         self.cg_stats_name, self.dynamic_stats_name = build_stats_names(config)
@@ -177,7 +183,9 @@ class CollectOptimization:
 
             # Get call graph of the same binary but from the previous project version (if it exists)
             call_graph_old = resources.extract(
-                resources.Resources.PerunCallGraph, stats_name=self.cg_stats_name, exclude_self=True
+                resources.Resources.PerunCallGraph,
+                stats_name=self.cg_stats_name, exclude_self=True,
+                vcs_version=old_cg_version
             )
             if call_graph_old:
                 self.call_graph_old = CallGraphResource().from_dict(call_graph_old)
