@@ -401,7 +401,7 @@ class CollectOptimization:
             if 'main' in tid_stats:
                 main_time = tid_stats['main']['total']
             else:
-                main_time = threads[tid].duration
+                main_time = threads[tid][1]
             # B) Compute the top-level and min coverages using the CG structure
             # Identify functions that have not been measured by the process / thread
             excluded = set(self.call_graph.cg_map.keys()) - set(tid_stats.keys())
