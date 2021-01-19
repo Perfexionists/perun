@@ -21,6 +21,9 @@ STOPWATCH_ON = 'stopwatch_on'
 STOPWATCH_NAME = 'timestamp'
 TIMED_SWITCH = 'timed_switch'
 
+# Default MAP size
+MAX_MAP_ENTRIES = 2048
+
 # Template of the global arrays declaration
 ARRAYS_TEMPLATE = """
 {id_array}
@@ -30,9 +33,9 @@ ARRAYS_TEMPLATE = """
 
 # Template of the sampling global arrays declaration
 ARRAYS_SAMPLING_TEMPLATE = """
-global {sampling_thr}{{size}}
-global {sampling_cnt}
-global {sampling_flag}
+global {sampling_thr}[{{size}}]
+global {sampling_cnt}[{{max_size}}]
+global {sampling_flag}[{{max_size}}]
 """.format(
     sampling_thr=ARRAY_SAMPLE_THRESHOLD,
     sampling_cnt=ARRAY_SAMPLE_COUNTER,
@@ -147,7 +150,7 @@ def assemble_system_tap_script(script_file, config, probes, **_):
         # Obtain configuration for the timed sampling optimization
         timed_sampling = Optimizations.TimedSampling.value in config.run_optimizations
         # Declare and init arrays, create the begin / end probes
-        _add_script_init(script_handle, config.binary, probes, config.verbose_trace, timed_sampling)
+        _add_script_init(script_handle, config, probes, timed_sampling)
         # Add the thread begin / end probes
         _add_thread_probes(script_handle, config.binary, bool(probes.sampled_probes_len()))
         # Add the timed sampling timer probe if needed
@@ -162,15 +165,14 @@ def assemble_system_tap_script(script_file, config, probes, **_):
     WATCH_DOG.log_probes(len(probes.func), len(probes.usdt), script_file)
 
 
-def _add_script_init(handle, binary, probes, verbose_trace, timed_sampling):
+def _add_script_init(handle, config, probes, timed_sampling):
     """Declare and initialize ID, sampling and recursion arrays (certain arrays may be omitted
     when e.g., sampling is turned off), necessary global variables, as well as add the process
     begin and end probe.
 
     :param TextIO handle: the script file handle
-    :param str binary: the name of the binary file
+    :param Configuration config: the configuration parameters
     :param Probes probes: the probes specification
-    :param bool verbose_trace: specifies whether the resulting trace is verbose or not
     :param bool timed_sampling: specifies whether Timed Sampling is on or off
     """
     script_init = """
@@ -194,11 +196,13 @@ probe process("{binary}").end
 }}
 
 """.format(
-        array_declaration=_build_array_declaration(probes, verbose_trace),
+        array_declaration=_build_array_declaration(
+            probes, config.verbose_trace, config.maximum_threads
+        ),
         stopwatch=STOPWATCH_ON,
-        id_init=_build_id_init(probes, verbose_trace),
+        id_init=_build_id_init(probes, config.verbose_trace),
         sampling_init=_build_sampling_init(probes),
-        binary=binary,
+        binary=config.binary,
         timestamp=STOPWATCH_NAME,
         begin_handler=PROCESS_HANDLER_TEMPLATE.format(
             type=int(RecordType.ProcessBegin), timestamp=STOPWATCH_NAME
@@ -238,7 +242,8 @@ probe process("{binary}").thread.end {{
             type=int(RecordType.ThreadEnd), timestamp=STOPWATCH_NAME
         ),
         sampling_cleanup=(
-            'delete {sampling_cnt}[tid(), *]'.format(sampling_cnt=ARRAY_SAMPLE_COUNTER)
+            ('delete {sampling_cnt}[tid(), *]\n    delete {sampling_flag}[tid(), *]'
+             .format(sampling_cnt=ARRAY_SAMPLE_COUNTER, sampling_flag=ARRAY_SAMPLE_FLAG))
             if sampling_on else '# Sampling cleanup omitted'
         )
     )
@@ -327,13 +332,14 @@ def _add_program_probes(handle, probes, verbose_trace, timed_sampling):
             handle.write(probe)
 
 
-def _build_array_declaration(probes, verbose_trace):
+def _build_array_declaration(probes, verbose_trace, max_threads):
     """ Build only the array declarations necessary for the given script, i.e.,
     create / omit probe ID mapping array based on the verbosity
     create / omit sampling arrays based on the presence / absence of sampled probes, etc.
 
     :param Probes probes: the Probes object
     :param bool verbose_trace: the verbosity level of the output
+    :param int max_threads: maximum number of expected simultaneous threads
 
     :return str: the built array declaration string
     """
@@ -346,8 +352,10 @@ def _build_array_declaration(probes, verbose_trace):
         id_array = 'global {}[{}]'.format(ARRAY_PROBE_ID, probes.total_probes_len())
     # Sampled probes control the presence of sampling arrays
     if probes.sampled_probes_len() > 0:
-        array_size = '[{}]'.format(probes.sampled_probes_len())
-        sampling_arrays = ARRAYS_SAMPLING_TEMPLATE.format(size=array_size)
+        array_size = probes.sampled_probes_len()
+        max_array_size = array_size * max_threads
+        max_array_size = max_array_size if max_array_size > MAX_MAP_ENTRIES else MAX_MAP_ENTRIES
+        sampling_arrays = ARRAYS_SAMPLING_TEMPLATE.format(size=array_size, max_size=max_array_size)
     # TODO: Recursion sampling switch on / off
     return ARRAYS_TEMPLATE.format(
         id_array=id_array,

@@ -61,6 +61,8 @@ class Configuration:
         self.generate_dynamic_cg = cli_config.get('generate_dynamic_cg', False)
         self.no_profile = cli_config.get('no_profile', False)
         self.cg_extraction = cli_config.get('only_extract_cg', False)
+        # TODO: temporary
+        self.maximum_threads = cli_config.get('max_simultaneous_threads', 5)
         # The run optimization values should be provided by the Optimization module, if enabled
         self.run_optimizations = []
         self.run_optimization_parameters = {}
