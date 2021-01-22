@@ -2,7 +2,6 @@
 """
 
 import collections
-import perun.vcs as vcs
 
 from perun.profile.helpers import sanitize_filepart
 from perun.utils.helpers import SuppressedExceptions
@@ -59,6 +58,7 @@ class CollectOptimization:
         self._optimizations_on = []
         self._optimizations_off = []
         self.params = ParametersManager()
+        self.current_workload = None
 
         self.cg_stats_name = None
         self.dynamic_stats_name = None
@@ -117,8 +117,21 @@ class CollectOptimization:
 
         :param Configuration config: the collection configuration object
         """
-        if self.pipeline:
+        if self.pipeline and config.executable.workload == self.current_workload:
             return
+
+        if self.current_workload is None:
+            self.current_workload = config.executable.workload
+        # Workloads can change when e.g., workload generators are used
+        if config.executable.workload != self.current_workload:
+            self.current_workload = config.executable.workload
+            # We need to update the dynamic stats file
+            self.cg_stats_name, self.dynamic_stats_name = build_stats_names(
+                config, self.call_graph_type
+            )
+            self._load_dynamic_stats()
+            return
+
         self.pipeline = self.selected_pipeline.map_to_optimizations()
 
         on = set(self._optimizations_on)
@@ -154,14 +167,12 @@ class CollectOptimization:
 
         metrics.start_timer('optimization_resources')
         all_funcs = config.get_functions()
-        self.cg_stats_name, self.dynamic_stats_name = build_stats_names(config)
+        self.cg_stats_name, self.dynamic_stats_name = build_stats_names(
+            config, self.call_graph_type
+        )
         # cg_stats_name = config.get_stats_name('call_graph')
         if self.get_pre_optimizations() or config.cg_extraction:
             # Extract call graph of the profiled binary
-            if self.call_graph_type == CallGraphTypes.Dynamic:
-                self.cg_stats_name = 'd' + self.cg_stats_name
-            elif self.call_graph_type == CallGraphTypes.Mixed:
-                self.cg_stats_name = 'm' + self.cg_stats_name
             _cg = resources.extract(
                 resources.Resources.CallGraphAngr, stats_name=self.cg_stats_name,
                 binary=config.get_target(), libs=config.libs,
@@ -192,11 +203,16 @@ class CollectOptimization:
                 if call_graph_old:
                     self.call_graph_old = CallGraphResource().from_dict(call_graph_old)
         # Get dynamic stats from previous profiling, if there was any
+        self._load_dynamic_stats()
+        metrics.end_timer('optimization_resources')
+
+    def _load_dynamic_stats(self):
+        """ Load Dynamic Stats Resource from previous profiling, if there was any.
+        """
         self.dynamic_stats = resources.extract(
             resources.Resources.PerunStats, stats_name=self.dynamic_stats_name,
             reset_cache=self.reset_cache
         )
-        metrics.end_timer('optimization_resources')
 
     def pre_optimize_pipeline(self, config, **_):
         """ Run the pre-optimize methods in the defined order.
@@ -560,7 +576,7 @@ def optimize(runner_type, runner_phase, **collect_params):
         Optimization.post_optimize_pipeline(**collect_params)
 
 
-def build_stats_names(config):
+def build_stats_names(config, cg_type=CallGraphTypes.Static):
     """ Build names of call graph and dynamic stats files.
 
     The CG stats name is built using the main binary and possible libraries with no emphasis on
@@ -570,6 +586,7 @@ def build_stats_names(config):
     on the supplied parameters.
 
     :param Configuration config: the Configuration object
+    :param CallGraphTypes cg_type: Call Graph type
 
     :return tuple (str, str): CG stats name, Dynamic Stats name
     """
@@ -577,4 +594,9 @@ def build_stats_names(config):
     binaries_param = sanitize_filepart(
         '--'.join([arg for arg in [config.executable.args, config.executable.workload] if arg])
     ).replace('.', '_')
-    return 'cg--{}'.format(binaries), 'ds--' + '--'.join([binaries, binaries_param])
+    cg_prefix = 'cg'
+    if cg_type == CallGraphTypes.Dynamic:
+        cg_prefix= 'dcg'
+    elif cg_type == CallGraphTypes.Mixed:
+        cg_prefix = 'mcg'
+    return '{}--{}'.format(cg_prefix, binaries), 'ds--' + '--'.join([binaries, binaries_param])

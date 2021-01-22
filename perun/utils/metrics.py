@@ -21,6 +21,7 @@ class MetricsManager:
         """ Initializes the manager. Unless configure is called, the metrics are not recorded.
         """
         self.enabled = False
+        self.id_base = None
         self.metrics_id = None
         self.metrics_filename = None
         self.timers = {}
@@ -33,9 +34,36 @@ class MetricsManager:
         :param str metrics_id: the name under which the metrics are stored
         """
         self.enabled = True
+        self.id_base = metrics_id
         self.metrics_id = metrics_id
         self.metrics_filename = temp.temp_path(metrics_filename)
-        self.records = {'id': metrics_id}
+        self.records = {
+            metrics_id: {
+                'id': metrics_id
+            }
+        }
+
+    def switch_id(self, new_id):
+        """ Assigns new active ID.
+
+        :param str new_id: the name under which the metrics are stored
+        """
+        self.timers = {}
+        self.id_base = new_id
+        self.metrics_id = new_id
+        self.records[new_id] = {
+            'id': new_id
+        }
+
+    def add_sub_id(self, sub_id):
+        """ Creates a new ID in the metrics file in format <base_id>.<sub_id>
+
+        :param str sub_id: a suffix to the current base ID.
+        """
+        new_id = "{}.{}".format(self.id_base, sub_id)
+        self.records[new_id] = self.records.pop(self.id_base, {})
+        self.records[new_id]['id'] = new_id
+        self.metrics_id = new_id
 
 
 Metrics = MetricsManager()
@@ -65,7 +93,7 @@ def end_timer(name):
     """
     if Metrics.enabled:
         if name in Metrics.timers:
-            Metrics.records[name] = time.time() - Metrics.timers[name]
+            Metrics.records[Metrics.metrics_id][name] = time.time() - Metrics.timers[name]
             del Metrics.timers[name]
 
 
@@ -77,7 +105,7 @@ def add_metric(name, value):
     :param object value: the value of the metric
     """
     if Metrics.enabled:
-        Metrics.records[name] = value
+        Metrics.records[Metrics.metrics_id][name] = value
 
 
 def read_metric(name, default=None):
@@ -88,7 +116,7 @@ def read_metric(name, default=None):
     :return object: the metric value or default
     """
     if Metrics.enabled:
-        return Metrics.records.get(name, default)
+        return Metrics.records[Metrics.metrics_id].get(name, default)
 
 
 def save():
@@ -99,7 +127,7 @@ def save():
         # Update the metrics file
         if temp.exists_temp_file(Metrics.metrics_filename):
             stored_metrics = temp.read_temp(Metrics.metrics_filename)
-        stored_metrics.setdefault(Metrics.metrics_id, {}).update(Metrics.records)
+        stored_metrics.update(Metrics.records)
         temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
 
 

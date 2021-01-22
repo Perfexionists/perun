@@ -32,6 +32,10 @@ def before(executable, **kwargs):
                     dict of kwargs (possibly with some new values))
     """
     WATCH_DOG.header('Pre-processing phase...')
+    # Check if we run in a workload generator batch and update metrics accordingly
+    if executable.workload != executable.origin_workload:
+        metrics.Metrics.add_sub_id(executable.workload)
+
     metrics.start_timer('total_time')
     kwargs['total_time'] = time.time()
     # Validate and normalize collection parameters

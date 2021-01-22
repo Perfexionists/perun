@@ -581,7 +581,8 @@ def parse_records(file_name, probes, verbose_trace):
                 minor_components = major_components[0].split()
                 record_type = int(minor_components[0])
                 record_tid = int(minor_components[1])
-                record_id, probe_step = probe_map.get(major_components[1], (major_components[1], 0))
+                probe_id = major_components[1].rstrip('\n')
+                record_id, probe_step = probe_map.get(probe_id, (probe_id, 0))
                 record = {
                     'type': record_type,
                     'tid': record_tid,
