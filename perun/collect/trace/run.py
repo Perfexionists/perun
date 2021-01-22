@@ -209,6 +209,8 @@ def teardown(**kwargs):
 @click.option('--no-profile', '-np', is_flag=True, default=False,
               help='Tracer will not transform and save processed data into a perun profile.')
 # TODO: temporary
+@click.option('--extract-mixed-cg', '-mcg', is_flag=True, default=False,
+              help='DEBUG: Extract mixed CG.')
 @click.option('--only-extract-cg', '-cg', is_flag=True, default=False,
               help='Tracer will only extract the CG of the current project version and terminate.')
 @click.option('--max-simultaneous-threads', '-mt', type=int, default=5,

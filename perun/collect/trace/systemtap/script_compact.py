@@ -57,14 +57,14 @@ FUNC_EVENT_TEMPLATE = 'process("{binary}").function("{name}"){{suffix}}{timed_sw
 USDT_EVENT_TEMPLATE = 'process("{binary}").mark("{loc}")?'
 # Template of a process begin / end handler
 PROCESS_HANDLER_TEMPLATE = (
-    'printf("{type} %d %d %d %d %s\\n", '
+    'printf("{type} %d %d %d %d;%s\\n", '
     'tid(), pid(), ppid(), read_stopwatch_ns("{timestamp}"), execname())'
 )
 THREAD_HANDLER_TEMPLATE = \
-    'printf("{type} %d %d %d %s\\n", tid(), pid(), read_stopwatch_ns("{timestamp}"), execname())'
+    'printf("{type} %d %d %d;%s\\n", tid(), pid(), read_stopwatch_ns("{timestamp}"), execname())'
 # Template of a record creation within a probe handler
 HANDLER_TEMPLATE = \
-    'printf("{type} %d %d {id_type}\\n", tid, read_stopwatch_ns("{timestamp}"), {id_get})'
+    'printf("{type} %d %d;{id_type}\\n", tid, read_stopwatch_ns("{timestamp}"), {id_get})'
 # Template of a probe event declaration and handler definition
 PROBE_TEMPLATE = """
 probe {probe_events}

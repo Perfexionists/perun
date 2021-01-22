@@ -224,13 +224,34 @@ def process_records(data_file, config, probes):
         }
 
         # TODO: temporary
-        _build_alternative_cg(config, ctx)
+        if config.extract_mcg:
+            _build_mixed_cg_tmp(config, ctx)
+        else:
+            _build_alternative_cg(config, ctx)
 
     except Exception:
         WATCH_DOG.info('Error while processing the raw trace output')
         WATCH_DOG.debug('Record: {}'.format(record))
         WATCH_DOG.debug('Context: {}'.format(ctx))
         raise
+
+
+def _build_mixed_cg_tmp(config, ctx):
+    cg_stats_name, _ = build_stats_names(config)
+    static_cg = resources.extract(
+        resources.Resources.CallGraphAngr, stats_name=cg_stats_name,
+        binary=config.get_target(), libs=config.libs,
+        cache=False, restricted_search=False
+    )
+    cg_map = {
+        func_name: {'callees': callees} for func_name, callees in static_cg['call_graph'].items()
+    }
+
+    mixed_call_graph = CallGraphResource().add_dyn(ctx.dyn_cg, cg_map, static_cg['control_flow'])
+    resources.store(
+        resources.Resources.PerunCallGraph, stats_name= cg_stats_name,
+        call_graph=mixed_call_graph, cache=False
+    )
 
 
 def _build_alternative_cg(config, ctx):
@@ -244,8 +265,10 @@ def _build_alternative_cg(config, ctx):
     cg_stats_name, _ = build_stats_names(config)
 
     # Extract the saved static Call Graph
-    with SuppressedExceptions(StatsFileNotFoundException):
+    try:
         static_cg = stats.get_stats_of(cg_stats_name, ['perun_cg'])['perun_cg']
+    except StatsFileNotFoundException:
+        return
 
     # Extract dynamic and mixed Call Graphs if available
     prefix = [('dynamic', 'd'), ('mixed', 'm')]
@@ -552,16 +575,17 @@ def parse_records(file_name, probes, verbose_trace):
         for cnt, line in enumerate(trace):
             try:
                 # The line should contain the following values:
-                # 'type' 'tid' ['pid'] ['ppid'] 'timestamp' 'probe id'
+                # 'type' 'tid' ['pid'] ['ppid'] 'timestamp';'probe id'
                 # where thread records have 'pid' and process records have 'pid', 'ppid'
-                components = line.split()
-                record_type = int(components[0])
-                record_tid = int(components[1])
-                record_id, probe_step = probe_map.get(components[-1], (components[-1], 0))
+                major_components = line.split(';')
+                minor_components = major_components[0].split()
+                record_type = int(minor_components[0])
+                record_tid = int(minor_components[1])
+                record_id, probe_step = probe_map.get(major_components[1], (major_components[1], 0))
                 record = {
                     'type': record_type,
                     'tid': record_tid,
-                    'timestamp': int(components[-2]),
+                    'timestamp': int(minor_components[-1]),
                     'id': record_id,
                     'seq': 0,
                 }
@@ -571,11 +595,11 @@ def parse_records(file_name, probes, verbose_trace):
                     seq_map[record_tid][record_id] += probe_step
                 elif record_type in vals.THREAD_RECORDS:
                     # TYPE TID PID TIMESTAMP ID
-                    record['pid'] = int(components[2])
+                    record['pid'] = int(minor_components[2])
                 elif record_type in vals.PROCESS_RECORDS:
                     # TYPE TID PID PPID TIMESTAMP ID
-                    record['pid'] = int(components[2])
-                    record['ppid'] = int(components[3])
+                    record['pid'] = int(minor_components[2])
+                    record['ppid'] = int(minor_components[3])
                 yield record
             # In case there is any issue with parsing, return corrupted trace record
             # We want to catch any error since parsing should be bullet-proof and should not crash

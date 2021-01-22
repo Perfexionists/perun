@@ -210,8 +210,8 @@ class DynamicStats:
             uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
             for uid, amounts in merged.items()
         }
-        min_time = min(self.global_stats.items(), key=lambda f_stats: f_stats[1]['min'])
-        metrics.add_metric('min_time', {min_time[0]: min_time[1]['min']})
+        # min_time = min(self.global_stats.items(), key=lambda f_stats: f_stats[1]['min'])
+        # metrics.add_metric('min_time', {min_time[0]: min_time[1]['min']})
 
     def _compute_per_thread(self, func_values, probed_funcs):
         """ Compute per-thread statistics across all threads

@@ -63,6 +63,7 @@ class Configuration:
         self.cg_extraction = cli_config.get('only_extract_cg', False)
         # TODO: temporary
         self.maximum_threads = cli_config.get('max_simultaneous_threads', 5)
+        self.extract_mcg = cli_config.get('extract_mixed_cg', False)
         # The run optimization values should be provided by the Optimization module, if enabled
         self.run_optimizations = []
         self.run_optimization_parameters = {}
