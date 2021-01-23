@@ -340,7 +340,8 @@ class CollectOptimization:
             resources.store(
                 resources.Resources.PerunStats,
                 stats_name=self.dynamic_stats_name,
-                dynamic_stats=self.dynamic_stats
+                dynamic_stats=self.dynamic_stats,
+                no_update=config.no_ds_update
             )
             metrics.end_timer('post-optimize')
 

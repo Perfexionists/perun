@@ -219,6 +219,8 @@ def teardown(**kwargs):
               help='Tracer will only extract the CG of the current project version and terminate.')
 @click.option('--max-simultaneous-threads', '-mt', type=int, default=5,
               help='DEBUG: Maximum number of expected simultaneous threads when sampling is on.')
+@click.option('--no-ds-update', '-nds', is_flag=True, default=False,
+              help='DEBUG: Disables Dynamic Stats updates')
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of

@@ -5,6 +5,8 @@
 import perun.logic.stats as stats
 import perun.logic.temp as temp
 import perun.collect.optimizations.dynamic_stats as dyn_stats
+from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import StatsFileNotFoundException
 
 
 def extract(stats_name, reset_cache, **_):
@@ -24,12 +26,18 @@ def extract(stats_name, reset_cache, **_):
     return dynamic_stats
 
 
-def store(stats_name, dynamic_stats, **_):
+def store(stats_name, dynamic_stats, no_update, **_):
     """ Store the supplied DynamicStats resource object
 
     :param str stats_name: name of the stats file
     :param DynamicStats dynamic_stats: the DynamicStats content
+    :param bool no_update: disables dynamic stats updates
     """
+    if no_update:
+        # Do not save the file again if it already exists
+        with SuppressedExceptions(StatsFileNotFoundException):
+            stats.get_stats_file_path(stats_name, check_existence=True)
+            return
     dict_stats = dynamic_stats.to_dict()
     stats.add_stats(stats_name, ['dynamic-stats'], [dict_stats])
     # Temporary storage for debugging
