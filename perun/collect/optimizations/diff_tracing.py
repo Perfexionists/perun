@@ -155,8 +155,11 @@ def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
     """
     changes = []
     for func in funcs:
-        func_blocks, cfg_edges = cfg[func]['blocks'], cfg[func]['edges']
         old_func = renames.get(func, func)
+        # Some functions may not have CFG counterpart
+        if func not in cfg or old_func not in cfg_old:
+            continue
+        func_blocks, cfg_edges = cfg[func]['blocks'], cfg[func]['edges']
         func_blocks_old, cfg_edges_old = cfg_old[old_func]['blocks'], cfg_old[old_func]['edges']
         # Quick check that the number of blocks and edges is equal
         if len(func_blocks) != len(func_blocks_old) or len(cfg_edges) != len(cfg_edges_old):
