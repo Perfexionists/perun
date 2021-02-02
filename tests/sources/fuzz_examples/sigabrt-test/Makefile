@@ -4,7 +4,7 @@ PROG=sigabrt
 all: $(PROG)
 
 sigabrt: main.c
-	$(CC) $< --coverage -o $@
+	$(CC) $< -g --coverage -o $@
 
 clean:
 	rm -rf $(PROG) *.gc*
