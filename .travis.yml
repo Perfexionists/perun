@@ -10,8 +10,7 @@ install:
     - make install
 
 before_script:
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
-    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90
+    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9
 
 script:
     # Just try that it was installed correctly
