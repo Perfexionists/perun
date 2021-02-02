@@ -109,7 +109,7 @@ def baseline_testing(executable, workloads, config, **_):
     # get gcov version
     gcov_output = execute_bin(["gcov", "--version"])
     config.coverage.gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
-    log.info('Detected gcov version', end='')
+    log.info('Detected gcov version ', end='')
     log.cprint("{}".format(config.coverage.gcov_version), 'white')
     log.info("")
 
