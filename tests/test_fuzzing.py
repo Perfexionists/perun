@@ -9,8 +9,42 @@ import pytest
 from click.testing import CliRunner
 
 import perun.cli as cli
+import perun.fuzz.evaluate.by_coverage as coverage_fuzz
+from perun.fuzz.structs import CoverageConfiguration
 
 import perun.testing.asserts as asserts
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_fuzzing_coverage(capsys):
+    """Runs basic tests for fuzzing CLI """
+    examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
+    gcno_files_path = os.path.join(examples, "hang-test")
+    hang_test = os.path.join(gcno_files_path, "hang")
+    hang_source = os.path.join(gcno_files_path, "main.c")
+    num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
+    coverage_config = CoverageConfiguration(**{
+        'gcno_path': gcno_files_path,
+        'source_path': gcno_files_path
+    })
+    gcov_output = coverage_fuzz.execute_bin(["gcov", "--version"])
+    coverage_config.gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
+    coverage_config.source_files.append(hang_source)
+
+    process = subprocess.Popen(
+        ["make", "-C", os.path.join(examples, "hang-test")])
+    process.communicate()
+    process.wait()
+
+    coverage_fuzz.prepare_workspace(gcno_files_path)
+
+    command = " ".join([os.path.abspath(hang_test), num_workload]).split(' ')
+    out, _ = capsys.readouterr()
+
+    exit_report = coverage_fuzz.execute_bin(command, 60)
+    assert exit_report["exit_code"] == 0
+    cov = coverage_fuzz.get_coverage_info(os.getcwd(), coverage_config)
+    assert cov != 0
 
 
 @pytest.mark.usefixtures('cleandir')
@@ -107,6 +141,13 @@ def test_fuzzing_correct(pcs_full):
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
+
+@pytest.mark.usefixtures('cleandir')
+def test_fuzzing_sigabort(pcs_full):
+    """Runs basic tests for fuzzing CLI """
+    runner = CliRunner()
+    examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
+
     # 06. Testing for SIGABRT during init testing
     num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
     process = subprocess.Popen(
@@ -146,6 +187,14 @@ def test_fuzzing_correct(pcs_full):
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'exit status 134' in result.output)
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_fuzzing_hangs(pcs_full):
+    """Runs basic tests for fuzzing CLI """
+    runner = CliRunner()
+    examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
+    num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
 
     # 08. Testing for hang during init testing
     process = subprocess.Popen(
@@ -189,6 +238,15 @@ def test_fuzzing_correct(pcs_full):
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Timeout' in result.output)
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_fuzzing_degradation(pcs_full):
+    """Runs basic tests for fuzzing CLI """
+    runner = CliRunner()
+    examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
+    hang_test = os.path.join(examples,  "hang-test", "hang")
+    num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
 
     # 10. Testing for performance degradations during fuzz testing
     result = runner.invoke(cli.fuzz_cmd, [
