@@ -11,22 +11,12 @@ import subprocess
 import statistics
 
 import perun.utils.log as log
+import perun.utils as utils
 
 from perun.utils.decorators import always_singleton
+from perun.utils.helpers import SuppressedExceptions
 
 __author__ = 'Matus Liscinsky'
-
-PROGRAM_ERROR_SIGNALS = {
-    "8": "SIGFPE",
-    "4": "SIGILL",
-    "11": "SIGSEGV",
-    "10": "SIGBUS",
-    "7": "SIGBUS",
-    "6": "SIGABRT",
-    "12": "SIGSYS",
-    "31": "SIGSYS",
-    "5": "SIGTRAP"
-}
 
 
 @always_singleton
@@ -35,8 +25,8 @@ def get_gcov_version():
 
     :return: version of the gcov
     """
-    gcov_output = execute_bin(["gcov", "--version"])
-    return int((gcov_output["output"].split("\n")[0]).split()[-1][0])
+    gcov_output, _ = utils.run_safely_external_command("gcov --version")
+    return int((gcov_output.decode('utf-8').split("\n")[0]).split()[-1][0])
 
 
 def prepare_workspace(source_path):
@@ -56,33 +46,6 @@ def prepare_workspace(source_path):
     for file in os.listdir(source_path):
         if file.endswith(".gcda") or file.endswith(".gcov") or file.endswith('.gcov.json.gz'):
             os.remove(path.join(source_path, file))
-
-
-def execute_bin(command, timeout=None, stdin=None):
-    """Executes command with certain timeout.
-
-    :param list command: command to be executed
-    :param int timeout: if the process does not end before the specified timeout,
-                        the process is terminated
-    :param handle stdin: the command input as a file handle
-    :return dict: exit code and output string
-    """
-    command = list(filter(None, command))
-    try:
-        process = subprocess.Popen(
-            command, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-
-        output, _ = process.communicate(timeout=timeout)
-        exit_code = process.wait()
-
-    except subprocess.TimeoutExpired:
-        process.terminate()
-        raise
-
-    if exit_code != 0 and str(-exit_code) in PROGRAM_ERROR_SIGNALS:
-        return {"exit_code": (-exit_code), "output": PROGRAM_ERROR_SIGNALS[str(-exit_code)]}
-    return {"exit_code": 0, "output": output.decode('utf-8')}
 
 
 def get_src_files(source_path):
@@ -140,11 +103,12 @@ def get_initial_coverage(executable, seeds, timeout, fuzzing_config):
     for seed in seeds:
         prepare_workspace(fuzzing_config.coverage.gcno_path)
 
-        command = " ".join([path.abspath(executable.cmd), executable.args, seed.path]).split(' ')
+        command = " ".join([path.abspath(executable.cmd), executable.args, seed.path])
 
-        exit_report = execute_bin(command, timeout)
-        if exit_report["exit_code"] != 0:
-            log.error("Initial testing with file " + seed.path + " caused " + exit_report["output"])
+        try:
+            utils.run_safely_external_command(command, timeout=timeout)
+        except subprocess.CalledProcessError as serr:
+            log.error("Initial testing with file " + seed.path + " caused " + str(serr))
         seed.cov = get_coverage_info(os.getcwd(), fuzzing_config.coverage)
 
         coverages.append(seed.cov)
@@ -159,7 +123,7 @@ def target_testing(executable, workload, *_, config=None, parent=None, fuzzing_p
     obtain coverage information.
 
     :param Executable executable: called command with arguments
-    :param list workload: list of workloads
+    :param Mutation workload: testing workload
     :param Mutation parent: parent we are mutating
     :param FuzzingConfiguration config: config of the fuzzing
     :param FuzzingProgress fuzzing_progress: progress of the fuzzing process
@@ -171,15 +135,16 @@ def target_testing(executable, workload, *_, config=None, parent=None, fuzzing_p
     prepare_workspace(gcno_path)
     command = executable
 
-    command = " ".join([command.cmd, command.args, workload.path]).split(' ')
+    command = " ".join([command.cmd, command.args, workload.path])
 
-    exit_report = execute_bin(command, config.hang_timeout)
-    if exit_report["exit_code"] != 0:
+    try:
+        utils.run_safely_external_command(command, timeout=config.hang_timeout)
+    except subprocess.CalledProcessError as err:
         log.error(
-            "Testing with file " + workload.path + " caused " + exit_report["output"],
+            "Testing with file " + workload.path + " caused an error: " + str(err),
             recoverable=True
         )
-        raise subprocess.CalledProcessError(exit_report, command)
+        raise err
 
     workload.cov = get_coverage_info(os.getcwd(), config.coverage)
     return evaluate_coverage(
@@ -240,7 +205,9 @@ def get_coverage_info(cwd, coverage_config):
     else:
         command = ["gcov", "-o", "."]
     command.extend(coverage_config.source_files)
-    execute_bin(command)
+
+    with SuppressedExceptions(subprocess.CalledProcessError):
+        utils.run_safely_external_command(" ".join(command))
 
     # searching for gcov files, if they are not already known
     if not coverage_config.gcov_files:
