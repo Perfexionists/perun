@@ -12,6 +12,8 @@ import statistics
 
 import perun.utils.log as log
 
+from perun.utils.decorators import always_singleton
+
 __author__ = 'Matus Liscinsky'
 
 PROGRAM_ERROR_SIGNALS = {
@@ -25,6 +27,16 @@ PROGRAM_ERROR_SIGNALS = {
     "31": "SIGSYS",
     "5": "SIGTRAP"
 }
+
+
+@always_singleton
+def get_gcov_version():
+    """Checks the version of the gcov
+
+    :return: version of the gcov
+    """
+    gcov_output = execute_bin(["gcov", "--version"])
+    return int((gcov_output["output"].split("\n")[0]).split()[-1][0])
 
 
 def prepare_workspace(source_path):
@@ -105,10 +117,7 @@ def baseline_testing(executable, workloads, config, **_):
     """
     # get source files (.c, .cc, .cpp, .h)
     config.coverage.source_files = get_src_files(config.coverage.source_path)
-
-    # get gcov version
-    gcov_output = execute_bin(["gcov", "--version"])
-    config.coverage.gcov_version = int((gcov_output["output"].split("\n")[0]).split()[-1][0])
+    config.coverage.gcov_version = get_gcov_version()
     log.info('Detected gcov version ', end='')
     log.cprint("{}".format(config.coverage.gcov_version), 'white')
     log.info("")
