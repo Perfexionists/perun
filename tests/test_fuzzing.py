@@ -8,6 +8,7 @@ import pytest
 
 from click.testing import CliRunner
 
+import perun.utils as utils
 import perun.cli as cli
 import perun.fuzz.evaluate.by_coverage as coverage_fuzz
 from perun.fuzz.structs import CoverageConfiguration
@@ -37,11 +38,10 @@ def test_fuzzing_coverage(capsys):
 
     coverage_fuzz.prepare_workspace(gcno_files_path)
 
-    command = " ".join([os.path.abspath(hang_test), num_workload]).split(' ')
+    command = " ".join([os.path.abspath(hang_test), num_workload])
     out, _ = capsys.readouterr()
 
-    exit_report = coverage_fuzz.execute_bin(command, 60)
-    assert exit_report["exit_code"] == 0
+    utils.run_safely_external_command(command)
     cov = coverage_fuzz.get_coverage_info(os.getcwd(), coverage_config)
     assert cov != 0
 
