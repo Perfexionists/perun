@@ -8,6 +8,8 @@ __author__ = 'Tomas Fiedor'
 
 TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
 RuleSet = namedtuple("RuleSet", "rules hits")
+GCOV_VERSION_W_INTERMEDIATE_FORMAT = 4.9
+GCOV_VERSION_W_JSON_FORMAT = 9.0
 
 
 class Mutation:
@@ -54,6 +56,19 @@ class CoverageConfiguration:
         self.gcov_version = None
         self.gcov_files = []
         self.source_files = []
+
+    def has_intermediate_format(self):
+        """
+        :return: true if the version of the gcov supports intermediate format
+        """
+        return GCOV_VERSION_W_INTERMEDIATE_FORMAT <= self.gcov_version < GCOV_VERSION_W_JSON_FORMAT
+
+    def has_common_format(self):
+        """
+        :return: true if the version of the gcov supports old format
+        """
+        return self.gcov_version >= GCOV_VERSION_W_JSON_FORMAT \
+               or self.gcov_version < GCOV_VERSION_W_INTERMEDIATE_FORMAT
 
 
 class FuzzingConfiguration:

@@ -4,7 +4,6 @@ import re
 import operator
 import collections
 import signal
-import namedlist
 
 from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
@@ -19,7 +18,7 @@ MAXIMAL_LINE_WIDTH = 60
 TEXT_ATTRS = 'none'
 TEXT_EMPH_COLOUR = 'green'
 TEXT_WARN_COLOUR = 'red'
-
+AGGREGATIONS = "sum", "mean", "count", "nunique", "median", "min", "max"
 
 # Minor Version specific things
 MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
@@ -50,8 +49,6 @@ RAW_ITEM_COLOUR = 'yellow'
 RAW_ATTRS = 'none'
 
 # Job specific
-Job = namedlist.namedlist("Job", "collector postprocessors executable")
-
 COLLECT_PHASE_CMD = 'blue'
 COLLECT_PHASE_WORKLOAD = 'cyan'
 COLLECT_PHASE_COLLECT = 'magenta'
@@ -404,3 +401,16 @@ def try_convert(value, list_of_types):
         with SuppressedExceptions(Exception):
             return checked_type(value)
     return value
+
+
+def identity(*args):
+    """Identity function, that takes the arguments and return them as they are
+
+    Note that this is used as default transformator for to be used in arguments for transforming
+    the data.
+
+    :param list args: list of input arguments
+    :return: non-changed list of arguments
+    """
+    # Unpack the tuple if it is single
+    return args if len(args) > 1 else args[0]

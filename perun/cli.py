@@ -732,7 +732,20 @@ cli.add_command(run_cli.run)
 cli.add_command(utils_cli.utils_group)
 
 
-def safely_run_cli():
+def launch_cli_in_dev_mode():
+    """Runs the cli in developer mode.
+
+    In this mode, all of the exceptions are propagated, and additionally faulthandler and
+    tracemalloc is enabled to ease the debugging.
+    """
+    import tracemalloc
+    import faulthandler
+    tracemalloc.start()
+    faulthandler.enable()
+    cli()
+
+
+def launch_cli_safely():
     """Safely runs the cli.
 
     In case any exceptions are raised, they are catched and dump is created with additional
@@ -744,8 +757,6 @@ def safely_run_cli():
         sys.stdout, sys.stderr = stdout_log, stderr_log
         cli()
     except Exception as catched_exception:
-        if DEV_MODE:
-            raise catched_exception
         error_module = catched_exception.__module__ + '.' \
             if hasattr(catched_exception, '__module__') else ''
         error_name = error_module + catched_exception.__class__.__name__
@@ -756,5 +767,13 @@ def safely_run_cli():
             cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 
+def launch_cli():
+    """Runs the CLI either in developer mode or in safe mode"""
+    if DEV_MODE:
+        launch_cli_in_dev_mode()
+    else:
+        launch_cli_safely()
+
+
 if __name__ == "__main__":
-    cli()
+    launch_cli()

@@ -8,7 +8,7 @@ from click.testing import CliRunner
 import perun.cli as cli
 import perun.view.scatter.factory as scatter
 
-import tests.helpers.asserts as asserts
+import perun.testing.asserts as asserts
 
 __author__ = 'Jiri Pavela'
 
@@ -119,7 +119,8 @@ def test_scatter_plot_cli_errors(pcs_full, postprocess_profiles):
     result = runner.invoke(cli.show, [profile[0], 'scatterr', '--of=amount',
                                       '--per=structure-unit-size'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, 'No such command "scatterr"' in result.output)
+    asserts.predicate_from_cli(result, 'No such command' in result.output)
+    asserts.predicate_from_cli(result, 'scatterr' in result.output)
 
     # Try invalid --of value
     result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amou',

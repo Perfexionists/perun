@@ -8,16 +8,20 @@ setup(
     packages=find_packages(),
     package_data={'perun': [
         'view/flamegraph/flamegraph.pl',
-        'collect/memory/malloc.so'
+        'collect/memory/malloc.so',
+        'collect/bounds/bin/*',
+        'collect/complexity/cpp_sources/*',
+        'collect/complexity/lib/*',
+        'templates/*',
+        '../requirements.txt'
     ]},
     install_requires=[
         'click', 'termcolor', 'colorama', 'ruamel.yaml', 'GitPython', 'bokeh', 'pandas',
-        'demandimport', 'Sphinx', 'sphinx-click', 'Jinja2', 'python-magic', 'scipy', 'faker',
-        'namedlist', 'distribute==0.7.3', 'PyQt-Fit==1.3.4'
+        'demandimport', 'Sphinx', 'sphinx-click', 'Jinja2', 'python-magic', 'faker',
     ],
 
     entry_points='''
         [console_scripts]
-        perun=perun.cli:safely_run_cli
+        perun=perun.cli:launch_cli
     ''',
 )

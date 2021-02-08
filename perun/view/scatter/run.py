@@ -41,23 +41,6 @@ def process_title(ctx, _, value):
               show_default=True, type=str,
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Keys that will be displayed on X axis of the scatter plot.")
-# Not supported in the beta version
-# @click.option('--for-uid', '-Fu', 'for_uid', multiple=True, metavar="<for_resource_uid>",
-#               help=("Plot only specific resources identified by the uid keys. "
-#                     "If not specified, all uid keys will be plotted."))
-# @click.option('--except-uid', '-Xu', 'except_uid', multiple=True, metavar="<except_resource_uid>",
-#               help=("Plot all resources except those identified by the uid keys. "
-#                     "If used together with '--for_uid', then '--for_uid' is applied first in "
-#                     "construction of the resulting filter."))
-# @click.option('--with-models', '-w', 'with_models', is_flag=True, default=False, is_eager=True,
-#               help="Also plot regression models if profile contains them.")
-# @click.option('--for-model', '-Fm', 'for_model', multiple=True, type=(str, str, str),
-#               help=("Plot only specific models identified by the <method model uid> list. "
-#                     "Value '*' serves as a wildcard. "))
-# @click.option('--except-model', '-Xm', 'except_model', multiple=True, type=(str, str, str),
-#               help=("Plot all models except those specified by the <method model uid> list. "
-#                     "Value '*' serves as a wildcard. Similarly to uid filter, the '--for-model' "
-#                     "has precedence in filter construction."))
 # Bokeh graph specific
 @click.option('--filename', '-f', default="scatter", metavar="<html>",
               help="Outputs the graph to the file specified by filename.")

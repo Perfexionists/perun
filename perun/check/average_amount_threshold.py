@@ -83,7 +83,7 @@ def average_amount_threshold(baseline_profile, target_profile, **_):
             difference_ratio = tools.safe_division(target_average, baseline_average)
             if difference_ratio >= DEGRADATION_THRESHOLD:
                 change = check.PerformanceChange.Degradation
-            elif difference_ratio <= OPTIMIZATION_THRESHOLD:
+            elif 0.0 < difference_ratio <= OPTIMIZATION_THRESHOLD:
                 change = check.PerformanceChange.Optimization
             else:
                 change = check.PerformanceChange.NoChange
