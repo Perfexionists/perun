@@ -6,6 +6,13 @@ HEAD
 
 **To be included in next release**
 
+0.18.3-hotfix2 (2020-08-31)
+--------------------------
+
+`commit: 07a6c7a54392ae245964956ed69a56f050f89fca`
+
+**Update Perun to Python 3.8+**
+
   - add timeout to running external programs
   - optimize getting of gcov version
   - fix issues in fuzzing tests
