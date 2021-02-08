@@ -2,17 +2,15 @@
 
 import click
 
-import demandimport
-with demandimport.enabled():
-    import bokeh.core.enums as enums
-
 import perun.view.bars.factory as bars_factory
 import perun.utils.log as log
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.utils.helpers as helpers
 
 from perun.profile.factory import pass_profile
 from perun.utils.exceptions import InvalidParameterException
+
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
@@ -43,7 +41,7 @@ def process_title(ctx, _, value):
 
 @click.command()
 @click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
-                type=click.Choice(list(map(str, enums.Aggregation))))
+                type=click.Choice(helpers.AGGREGATIONS))
 @click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Sets key that is source of the data for the bars,"
@@ -134,6 +132,8 @@ def bars(profile, filename, view_in_browser, **kwargs):
             bars_factory, profile, filename, view_in_browser, **kwargs
         )
     except AttributeError as attr_error:
+        import traceback
+        traceback.print_tb(attr_error.__traceback__)
         log.error("while creating bar graph: {}".format(str(attr_error)))
     except InvalidParameterException as ip_error:
         log.error("while creating bar graph: {}".format(str(ip_error)))

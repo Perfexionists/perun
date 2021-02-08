@@ -1,9 +1,11 @@
 """ Module contains a set of functions for fuzzing results interpretation."""
 
+import demandimport
 import os.path as path
 import difflib
 import scipy.stats.mstats as stats
-import matplotlib.pyplot as plt
+with demandimport.enabled():
+    import matplotlib.pyplot as plt
 
 import perun.utils.streams as streams
 import perun.utils.log as log
@@ -11,8 +13,7 @@ import perun.fuzz.filesystem as filesystem
 
 __author__ = 'Matus Liscinsky'
 
-# Force matplotlib to not use any Xwindows backend.
-plt.switch_backend('agg')
+MATPLOT_LIB_INITIALIZED = False
 
 DATA_LINE_WIDTH = 4
 DATA_LINE_ALPHA = 0.9
@@ -103,6 +104,15 @@ def get_time_value(value, time_data, data):
     return 0
 
 
+def lazy_initialize_matplotlib():
+    """Helper function for lazy initialization of matplotlib"""
+    global MATPLOT_LIB_INITIALIZED
+    if not MATPLOT_LIB_INITIALIZED:
+        # Force matplotlib to not use any Xwindows backend.
+        plt.switch_backend('agg')
+        MATPLOT_LIB_INITIALIZED = True
+
+
 def plot_fuzz_time_series(time_series, filename, title, xlabel, ylabel):
     """Plots the measured values to time series graph.
 
@@ -112,6 +122,7 @@ def plot_fuzz_time_series(time_series, filename, title, xlabel, ylabel):
     :param str xlabel: name of x-axis
     :param str ylabel: name of y-axis
     """
+    lazy_initialize_matplotlib()
     _, axis = plt.subplots(figsize=(PLOT_SIZE_X, PLOT_SIZE_Y))
 
     axis.set_title(title)

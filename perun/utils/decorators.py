@@ -5,13 +5,14 @@ the functions. Or various checker function, that checks given parameters of the 
 """
 
 import inspect
+import functools
 
 from perun.utils.exceptions import InvalidParameterException
 
 __author__ = 'Tomas Fiedor'
 
 
-def singleton(func):
+def _singleton_core(func, always_singleton):
     """
     Wraps the function @p func so it will always return the same result,
     as given by the first call. I.e. the singleton. No params are expected.
@@ -20,7 +21,8 @@ def singleton(func):
     :returns func: decorated function that will be run only once
     """
     func.instance = None
-    registered_singletons.append(func)
+    if not always_singleton:
+        registered_singletons.append(func)
 
     def wrapper():
         """Wrapper function of the @p func"""
@@ -29,6 +31,10 @@ def singleton(func):
         return func.instance
 
     return wrapper
+
+
+singleton = functools.partial(_singleton_core, always_singleton=False)
+always_singleton = functools.partial(_singleton_core, always_singleton=True)
 registered_singletons = []
 
 

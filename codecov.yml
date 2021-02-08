@@ -1,4 +1,4 @@
-ignore: 
+ignore:
   - "perun/collect/trace"
   - "tests/test_tracer"
 

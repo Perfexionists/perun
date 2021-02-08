@@ -18,12 +18,11 @@ import perun.utils.log as log
 from subprocess import SubprocessError
 
 from perun.profile.factory import Profile
-from perun.utils.helpers import Job
-from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport
+from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
 from perun.workload.integer_generator import IntegerGenerator
 
-import tests.helpers.asserts as asserts
-import tests.helpers.utils as test_utils
+import perun.testing.asserts as asserts
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 
@@ -185,14 +184,14 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     command = ['-c{}'.format(job_params['target_dir']), 'complexity',
                '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
     result = runner.invoke(cli.collect, command)
-    asserts.predicate_from_cli(result, 'CalledProcessError(1, \'cmake\')' in result.output)
+    asserts.predicate_from_cli(result, 'Command \'cmake\' returned non-zero exit status 1' in result.output)
     monkeypatch.setattr(utils, 'run_external_command', old_run)
 
     # Simulate that the flag is supported, which leads to failure in build process for older g++
     old_flag = makefiles._is_flag_support
     monkeypatch.setattr(makefiles, '_is_flag_support', _mocked_flag_support)
     result = runner.invoke(cli.collect, command)
-    asserts.predicate_from_cli(result, 'stored profile' in result.output or 'CalledProcessError(2, \'make\')' in result.output)
+    asserts.predicate_from_cli(result, 'stored profile' in result.output or 'Command \'make\' returned non-zero exit status 2' in result.output)
     monkeypatch.setattr(makefiles, '_is_flag_support', old_flag)
 
     # Simulate that some required library is missing
@@ -428,4 +427,4 @@ def test_teardown(pcs_full, monkeypatch, capsys):
     status = run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
     assert status == CollectStatus.ERROR
     out, err = capsys.readouterr()
-    assert "fatal: while collecting by time: Received signal: 2" in err
+    assert "fatal: while collecting by time: received signal" in err

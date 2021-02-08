@@ -9,6 +9,23 @@ HEAD
 0.18.3-hotfix2 (2020-08-31)
 --------------------------
 
+`commit: 07a6c7a54392ae245964956ed69a56f050f89fca`
+
+**Update Perun to Python 3.8+**
+
+  - add timeout to running external programs
+  - optimize getting of gcov version
+  - fix issues in fuzzing tests
+  - remove dependencies of clang
+  - update Perun to higher versions of gcc (4.9+) and Python (3.8+)
+  - fix minor issues and incompatibilities
+  - add lazy initialization of mathplotlib
+  - remove usage of re.Scanner which seems to segfault on newer versions
+  - remove heat map and ncurses (will be reimplemented in near future)
+
+0.18.3-hotfix2 (2020-08-31)
+--------------------------
+
 `commit: ac5e719b483f62b56e5273afc165335c46a68f76`
 
   - update the acknowledgements in README

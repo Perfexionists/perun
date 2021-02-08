@@ -168,13 +168,15 @@ def nonblocking_subprocess(command, subprocess_kwargs, termination=None, termina
                     termination(**termination_kwargs)
 
 
-def run_safely_external_command(cmd, check_results=True, **kwargs):
+def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeout=None, **kwargs):
     """Safely runs the piped command, without executing of the shell
 
     Courtesy of: https://blog.avinetworks.com/tech/python-best-practices
 
     :param str cmd: string with command that we are executing
     :param bool check_results: check correct command exit code and raise exception in case of fail
+    :param bool quiet: if set to False, then it will print the output of the command
+    :param int timeout: timeout of the command
     :param dict kwargs: additional args to subprocess call
     :return: returned standard output and error
     :raises subprocess.CalledProcessError: when any of the piped commands fails
@@ -193,23 +195,33 @@ def run_safely_external_command(cmd, check_results=True, **kwargs):
         stderr = subprocess.STDOUT if i < (cmd_no - 1) else subprocess.PIPE
 
         # run the piped command and close the previous one
-        piped_command = subprocess.Popen(executed_command, shell=False,
-                                         stdin=stdin, stdout=subprocess.PIPE, stderr=stderr,
-                                         **kwargs)
+        piped_command = subprocess.Popen(
+            executed_command,
+            shell=False, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr, **kwargs
+        )
         if i != 0:
             objects[i-1].stdout.close()
         objects.append(piped_command)
 
-    # communicate with the last piped object
-    cmdout, cmderr = objects[-1].communicate()
+    try:
+        # communicate with the last piped object
+        cmdout, cmderr = objects[-1].communicate(timeout=timeout)
 
-    for i in range(len(objects) - 1):
-        objects[i].wait()
+        for i in range(len(objects) - 1):
+            objects[i].wait(timeout=timeout)
+
+    except subprocess.TimeoutExpired:
+        for p in objects:
+            p.terminate()
+        raise
 
     # collect the return codes
     if check_results:
         for i in range(cmd_no):
             if objects[i].returncode:
+                if not quiet and (cmdout or cmderr):
+                    log.cprintln("captured stdout: {}".format(cmdout.decode('utf-8')), 'red')
+                    log.cprintln("captured stderr: {}".format(cmderr.decode('utf-8')), 'red')
                 raise subprocess.CalledProcessError(
                     objects[i].returncode, unpiped_commands[i]
                 )
@@ -369,19 +381,6 @@ def partition_list(input_list, condition):
         else:
             bad.append(item)
     return good, bad
-
-
-def identity(*args):
-    """Identity function, that takes the arguments and return them as they are
-
-    Note that this is used as default transformator for to be used in arguments for transforming
-    the data.
-
-    :param list args: list of input arguments
-    :return: non-changed list of arguments
-    """
-    # Unpack the tuple if it is single
-    return args if len(args) > 1 else args[0]
 
 
 def abs_in_relative_range(value, range_val, range_rate):

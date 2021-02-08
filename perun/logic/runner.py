@@ -20,9 +20,9 @@ import perun.workload as workloads
 
 from perun.utils import get_module
 from perun.utils.structs import GeneratorSpec, Unit, Executable, RunnerReport, \
-    CollectStatus, PostprocessStatus
+    CollectStatus, PostprocessStatus, Job
 from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS, \
-    COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, Job, HandledSignals
+    COLLECT_PHASE_CMD, COLLECT_PHASE_WORKLOAD, HandledSignals
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.utils.exceptions import SignalReceivedException
 
@@ -195,7 +195,9 @@ def runner_teardown_handler(status_report, **kwargs):
         log.warn('Received signal: {}, safe termination in process'.format(exc.signum))
         status_report.status = status_report.error_status
         status_report.exception = exc
-        status_report.message = str(exc)
+        status_report.message = "received signal during teardown() phase: {} ({})" .format(
+            exc.signum, str(exc)
+        )
     run_phase_function(status_report, 'teardown')
 
 
