@@ -2344,12 +2344,12 @@ def test_safe_cli(monkeypatch, capsys):
     def raise_exception():
         raise Exception("Something happened")
     monkeypatch.setattr('perun.cli.cli', raise_exception)
-    cli.run_cli_safely()
+    cli.launch_cli_safely()
     out, err = capsys.readouterr()
     assert "Unexpected error: Exception: Something happened" in err
     assert "Saved dump" in out
 
     cli.DEV_MODE = True
     with pytest.raises(Exception):
-        cli.run_cli()
+        cli.launch_cli()
     cli.DEV_MODE = False
