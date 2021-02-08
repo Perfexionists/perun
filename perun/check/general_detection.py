@@ -13,7 +13,6 @@ from enum import Enum
 
 import numpy as np
 
-import perun.utils as utils
 import perun.check as check
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.profile.query as query

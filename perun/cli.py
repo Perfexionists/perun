@@ -59,7 +59,7 @@ import perun.utils.log as perun_log
 import perun.view
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
-    MissingConfigSectionException, ExternalEditorErrorException, SignalReceivedException
+    MissingConfigSectionException, ExternalEditorErrorException
 from perun.utils.structs import Executable
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
@@ -732,7 +732,7 @@ cli.add_command(run_cli.run)
 cli.add_command(utils_cli.utils_group)
 
 
-def run_cli_in_dev_mode():
+def launch_cli_in_dev_mode():
     """Runs the cli in developer mode.
 
     In this mode, all of the exceptions are propagated, and additionally faulthandler and
@@ -745,7 +745,7 @@ def run_cli_in_dev_mode():
     cli()
 
 
-def run_cli_safely():
+def launch_cli_safely():
     """Safely runs the cli.
 
     In case any exceptions are raised, they are catched and dump is created with additional
@@ -767,13 +767,13 @@ def run_cli_safely():
             cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 
-def run_cli():
+def launch_cli():
     """Runs the CLI either in developer mode or in safe mode"""
     if DEV_MODE:
-        run_cli_in_dev_mode()
+        launch_cli_in_dev_mode()
     else:
-        run_cli_safely()
+        launch_cli_safely()
 
 
 if __name__ == "__main__":
-    run_cli()
+    launch_cli()

@@ -2,7 +2,6 @@
 
 import click
 
-import demandimport
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
@@ -10,9 +9,6 @@ import perun.utils.helpers as helpers
 import perun.view.flow.factory as flow_factory
 from perun.utils.exceptions import InvalidParameterException
 from perun.profile.factory import pass_profile
-
-with demandimport.enabled():
-    import bokeh.core.enums as enums
 
 
 __author__ = 'Radim Podola'

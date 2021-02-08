@@ -211,7 +211,6 @@ def _check_dependencies():
         log.error("Could not find 'cmake'. "
                   "Please, install the build-essentials and cmake packages.")
     log.done()
-    pass
 
 
 def _validate_input(**kwargs):
