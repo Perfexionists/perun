@@ -371,10 +371,6 @@ Profile Conversions API
 
 .. autofunction:: resources_to_pandas_dataframe
 
-.. autofunction:: to_heap_map_format
-
-.. autofunction:: to_heat_map_format
-
 .. autofunction:: to_flame_graph_format
 
 .. autofunction:: plot_data_from_coefficients_of

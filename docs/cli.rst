@@ -166,9 +166,6 @@ Show units
 .. click:: perun.view.flow.run:flow
    :prog: perun show flow
 
-.. click:: perun.view.heapmap.run:heapmap
-   :prog: perun show heapmap
-
 .. click:: perun.view.scatter.run:scatter
    :prog: perun show scatter
 

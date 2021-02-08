@@ -180,10 +180,6 @@ def memory(ctx, **kwargs):
             }
         },
 
-    `Memory` profiles can be efficiently interpreted using :ref:`views-heapmap`
-    technique (together with its `heat` mode), which shows memory allocations
-    (by functions) in memory address map.
-
     Refer to :ref:`collectors-memory` for more thorough description and
     examples of `memory` collector.
     """

@@ -7,7 +7,7 @@ HEAD
 **To be included in next release**
 
 0.18.3-hotfix2 (2020-08-31)
---------------------------
+---------------------------
 
 `commit: 07a6c7a54392ae245964956ed69a56f050f89fca`
 
@@ -24,7 +24,7 @@ HEAD
   - remove heat map and ncurses (will be reimplemented in near future)
 
 0.18.3-hotfix2 (2020-08-31)
---------------------------
+---------------------------
 
 `commit: ac5e719b483f62b56e5273afc165335c46a68f76`
 
