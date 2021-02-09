@@ -16,6 +16,11 @@ docs:
 docs-latex:
 	$(MAKE) -C docs latex
 
+docs-eval:
+	$(MAKE) -C docs-eval latex
+	$(MAKE) -C docs-eval dirhtml
+	$(MAKE) -C docs-eval html
+
 docs-all:
 	$(MAKE) -C docs html
 	$(MAKE) -C docs dirhtml
@@ -40,4 +45,4 @@ gh-pages:
 	git add -A
 	git commit -m "Generated gh-pages for version `git describe --tags `git rev-list --tags --max-count=1``"
 
-.PHONY: init test docs install dev run-gui gh-pages docs-latex docs-release docs-all
+.PHONY: init test docs install dev run-gui gh-pages docs-latex docs-release docs-all docs-eval
