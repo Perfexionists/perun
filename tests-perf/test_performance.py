@@ -31,7 +31,7 @@ def run_benchmark(benchmark_dir):
     store_dir = os.path.join(r, "store-" + d)
     store.touch_dir(store_dir)
     for bench in os.listdir(benchmark_dir):
-        log.info(" > ", log.in_color(bench, 'yellow'))
+        log.info(" > {}".format(log.in_color(bench, 'yellow')))
         results.append(performance_test(benchmark_dir, bench, store_dir))
         log.done()
     log.info("")
