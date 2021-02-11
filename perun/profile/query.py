@@ -45,18 +45,19 @@ def flattened_values(root_key, root_value):
         if isinstance(root_key, str):
             nested_values.sort(key=helpers.uid_getter)
             yield root_key, ":".join(map(str, map(operator.itemgetter(1), nested_values)))
-    # Lists that represent variable length dictionary
-    elif helpers.is_variable_len_dict(root_value):
-        dictionary = {
-            v['name']: v['value'] for v in root_value
-        }
-        yield from flattened_values(root_key, dictionary)
-    # Lists are merged as comma separated keys
     elif isinstance(root_value, list):
-        yield root_key, ','.join(
-            ":".join(str(nested_value[1]) for nested_value in flattened_values(i, lv))
-            for (i, lv) in enumerate(root_value)
-        )
+        # Lists that represent variable length dictionary
+        if helpers.is_variable_len_dict(root_value):
+            dictionary = {
+                v['name']: v['value'] for v in root_value
+            }
+            yield from flattened_values(root_key, dictionary)
+        # Lists are merged as comma separated keys
+        else:
+            yield root_key, ','.join(
+                ":".join(str(nested_value[1]) for nested_value in flattened_values(i, lv))
+                for (i, lv) in enumerate(root_value)
+            )
     # Rest of the values are left as they are
     else:
         yield root_key, root_value

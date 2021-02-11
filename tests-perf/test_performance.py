@@ -25,7 +25,7 @@ def run_benchmark(benchmark_dir):
 
     :param str benchmark_dir: directory, where benchmarks are stored
     """
-    log.info("Running benchmark_dir: ", log.in_color(benchmark_dir, 'red'))
+    log.info("Running benchmark_dir: {}".format(log.in_color(benchmark_dir, 'red')))
     results = []
     r, d = os.path.split(benchmark_dir)
     store_dir = os.path.join(r, "store-" + d)
@@ -61,25 +61,25 @@ def performance_test(bench_dir, file, store_dir):
     profile = store.load_profile_from_file(os.path.join(bench_dir, file), True)
     elapsed = time.time() - before
     results.append(elapsed)
-    print("Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
+    log.info("Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
 
     before = time.time()
     _ = list(profile.all_resources())
     elapsed = time.time() - before
     results.append(elapsed)
-    print("Iterating all resources: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
+    log.info("Iterating all resources: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
 
     before = time.time()
     _ = convert.resources_to_pandas_dataframe(profile)
     elapsed = time.time() - before
     results.append(elapsed)
-    print("Converting to dataframe: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
+    log.info("Converting to dataframe: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
 
     before = time.time()
     streams.store_json(profile.serialize(), os.path.join(store_dir, file))
     elapsed = time.time() - before
     results.append(elapsed)
-    print("Storing profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
+    log.info("Storing profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
     return results
 
 
@@ -90,4 +90,4 @@ if __name__ == "__main__":
     else:
         run_benchmark(os.path.join("tests-perf", "monster-profiles"))
     benchmark_time = time.time() - start_time
-    print("Benchmark finished in {}".format(log.in_color("{:0.2f}s".format(benchmark_time), 'white')))
+    log.info("Benchmark finished in {}".format(log.in_color("{:0.2f}s".format(benchmark_time), 'white')))
