@@ -87,7 +87,7 @@ def process_resource_key_param(ctx, param, value):
     if param.human_readable_name in ('per_key', 'through_key') and value == 'snapshots':
         return value
     # Validate the keys, if it is one of the set
-    valid_keys = set(query.all_resource_fields_of(ctx.parent.params['profile']))
+    valid_keys = set(ctx.parent.params['profile'].all_resource_fields())
     if value not in valid_keys:
         error_msg_ending = ", snaphots" if param.human_readable_name == 'per_key' else ""
         raise click.BadParameter("invalid choice: {}. (choose from {})".format(

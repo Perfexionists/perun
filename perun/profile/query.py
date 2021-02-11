@@ -105,31 +105,6 @@ def all_items_of(resource):
             yield flattened_key, flattened_value
 
 
-def all_resource_fields_of(profile):
-    """Generator for iterating through all of the fields (both flattened and
-    original) that are occurring in the resources.
-
-    E.g. considering the example profiles from :pkey:`resources`, the function
-    yields the following for `memory`, `time` and `trace` profiles
-    respectively (considering we convert the stream to list)::
-
-        memory_resource_fields = [
-            'type', 'address', 'amount', 'uid:function', 'uid:source',
-            'uid:line', 'uid', 'trace', 'subtype'
-        ]
-        time_resource_fields = [
-            'type', 'amount', 'uid'
-        ]
-        complexity_resource_fields = [
-            'type', 'amount', 'structure-unit-size', 'subtype', 'uid'
-        ]
-
-    :param Profile profile: performance profile w.r.t :ref:`profile-spec`
-    :returns: iterable stream of resource field keys represented as `str`
-    """
-    yield from _all_fields_of(profile.all_resources)
-
-
 def all_model_fields_of(profile):
     """Generator for iterating through all of the fields (both flattened and
     original) that are occurring in the models.

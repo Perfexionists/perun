@@ -12,6 +12,7 @@ import itertools
 import click
 
 import perun.profile.convert as convert
+import perun.profile.query as query
 import perun.logic.config as config
 
 from perun.check.general_detection import get_filtered_best_models_of
@@ -100,7 +101,7 @@ class Profile(collections.MutableMapping):
         """Translate the list of resources to efficient format
         Given a list of resources, this is all flattened into a new format: a dictionary that
         maps unique resource identifiers (set of persistent properties) to list of collectable
-        properties (such as ammounts, addresses, etc.)
+        properties (such as amounts, addresses, etc.)
 
         :param resource_list:
         :param additional_params:
@@ -233,6 +234,38 @@ class Profile(collections.MutableMapping):
             else:
                 # In case we have only persistent properties
                 yield persistent_properties.get('snapshot', 0), persistent_properties
+
+    def all_resource_fields(self):
+        """Generator for iterating through all of the fields (both flattened and
+        original) that are occurring in the resources.
+
+        E.g. considering the example profiles from :pkey:`resources`, the function
+        yields the following for `memory`, `time` and `trace` profiles
+        respectively (considering we convert the stream to list)::
+
+            memory_resource_fields = [
+                'type', 'address', 'amount', 'uid:function', 'uid:source',
+                'uid:line', 'uid', 'trace', 'subtype'
+            ]
+            time_resource_fields = [
+                'type', 'amount', 'uid'
+            ]
+            complexity_resource_fields = [
+                'type', 'amount', 'structure-unit-size', 'subtype', 'uid'
+            ]
+
+        :returns: iterable stream of resource field keys represented as `str`
+        """
+        keys = set()
+        for resource_type, resources in self._storage['resources'].items():
+            # uid: {...}
+            persistent_properties = query.all_items_of(
+                self._storage['resource_type_map'][resource_type]
+            )
+            if resources:
+                keys.update(resources.keys())
+            keys.update({k for (k, v) in persistent_properties})
+        return keys
 
     def all_filtered_models(self, models_strategy):
         """

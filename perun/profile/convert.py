@@ -59,7 +59,7 @@ def resources_to_pandas_dataframe(profile):
         flattened as a pandas dataframe
     """
     # Note that we need to to this inefficiently, because some keys can be missing in resources
-    resource_keys = list(query.all_resource_fields_of(profile))
+    resource_keys = list(profile.all_resource_fields())
     values = {key: [] for key in resource_keys}
     values['snapshots'] = []
 
