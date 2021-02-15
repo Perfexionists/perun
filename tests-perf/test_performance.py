@@ -88,6 +88,6 @@ if __name__ == "__main__":
     if RUN_SINGLE:
         run_benchmark(os.path.join("tests-perf", "single-monster"))
     else:
-        run_benchmark(os.path.join("tests-perf", "monster-profiles"))
+        run_benchmark(os.path.join("tests-perf", "store-monster-profiles"))
     benchmark_time = time.time() - start_time
     log.info("Benchmark finished in {}".format(log.in_color("{:0.2f}s".format(benchmark_time), 'white')))
