@@ -59,12 +59,11 @@ def performance_test(bench_dir, file, store_dir, executed_tests):
     """
     results = [file]
 
-    if 'load' in executed_tests:
-        before = time.time()
-        profile = store.load_profile_from_file(os.path.join(bench_dir, file), True)
-        elapsed = time.time() - before
-        results.append(elapsed)
-        log.info("Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
+    before = time.time()
+    profile = store.load_profile_from_file(os.path.join(bench_dir, file), True)
+    elapsed = time.time() - before
+    results.append(elapsed)
+    log.info("Loading profile: {}".format(log.in_color("{:0.2f}s".format(elapsed), 'white')))
 
     if 'query' in executed_tests:
         before = time.time()
