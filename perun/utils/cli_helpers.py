@@ -297,6 +297,21 @@ def lookup_added_profile_callback(_, __, value):
     return massaged_values
 
 
+def remove_tags_by_range(range_match, remove_func, tag):
+    """Removes tags either from index or pending according to the range i-j
+
+    :param match range_match: match of the range
+    :param func remove_func: function that removes tag from index or pending
+    :param str tag: tag that is removed (either p or i)
+    """
+    from_range, to_range = int(range_match.group(1)), int(range_match.group(2))
+    for i in range(from_range, to_range + 1):
+        try:
+            remove_func(i)
+        except click.BadParameter:
+            log.warn("skipping nonexisting tag {}{}".format(i, tag))
+
+
 def lookup_removed_profile_callback(ctx, _, value):
     """Callback function for looking up the profile which will be removed
 
@@ -345,23 +360,11 @@ def lookup_removed_profile_callback(ctx, _, value):
             if index_match:
                 add_to_removed_from_index(int(index_match.group(1)))
             elif index_range_match:
-                from_range, to_range \
-                    = int(index_range_match.group(1)), int(index_range_match.group(2))
-                for i in range(from_range, to_range+1):
-                    try:
-                        add_to_removed_from_index(i)
-                    except click.BadParameter:
-                        log.warn("skipping nonexisting tag {}@i".format(i))
+                remove_tags_by_range(index_range_match, add_to_removed_from_index, 'i')
             elif pending_match:
                 add_to_removed_from_pending(int(pending_match.group(1)))
             elif pending_range_match:
-                from_range, to_range \
-                    = int(pending_range_match.group(1)), int(pending_range_match.group(2))
-                for i in range(from_range, to_range+1):
-                    try:
-                        add_to_removed_from_pending(i)
-                    except click.BadParameter:
-                        log.warn("skipping nonexisting tag {}@p".format(i))
+                remove_tags_by_range(pending_range_match, add_to_removed_from_pending, 'p')
             # We check if this is actually something from pending, then we will remove it
             elif os.path.exists(single_value) and \
                 os.path.samefile(os.path.split(single_value)[0], pcs.get_job_directory()):
