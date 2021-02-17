@@ -16,6 +16,7 @@ import perun.utils.helpers as helpers
 import perun.profile.query as query
 import perun.postprocess.regression_analysis.transform as transform
 import operator
+import array
 
 import demandimport
 with demandimport.enabled():
@@ -61,7 +62,7 @@ def resources_to_pandas_dataframe(profile):
     # Since some keys may be missing in the resources, we consider all of the possible fields
     resource_keys = list(profile.all_resource_fields())
     values = {key: [] for key in resource_keys}
-    values['snapshots'] = []
+    values['snapshots'] = array.array('I')
 
     # All resources at this point should be flat
     for (snapshot, resource) in profile.all_resources(True):
