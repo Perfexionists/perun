@@ -459,10 +459,8 @@ def print_shortlog_minor_version_info_list(minor_version_list, max_lengths):
     :param list minor_version_list: list of profiles of MinorVersionInfo objects
     :param dict max_lengths: dictionary with maximal sizes for the output of profiles
     """
+
     # Load formating string for profile
-    stat_length = sum([
-        max_lengths['all'], max_lengths['time'], max_lengths['mixed'], max_lengths['memory']
-    ]) + 3 + len(" profiles")
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
     fmt_tokens = perun_log.scan_formatting_string(
         minor_version_info_fmt, {}, default_fmt_callback=lambda token: "%" + token + "%"
@@ -470,17 +468,15 @@ def print_shortlog_minor_version_info_list(minor_version_list, max_lengths):
 
     # Print header (2 is padding for id), e.g.:
     # checksum ( a|m|x|t profiles)                  desc                        changes
-    print_shortlog_profile_list_header(fmt_tokens, max_lengths, 'white')
+    print_shortlog_profile_list_header(fmt_tokens, max_lengths)
 
     # Print profiles, e.g.:
     # aac4d21a (24|0|0|0 profiles) Bump version and changelog to 0.17.2
     # 91373c43 ( 2|0|0|2 profiles) Bump version and changelog to 0.16.8
-    print_shortlog_profile_list(
-        fmt_tokens, max_lengths, minor_version_info_fmt, minor_version_list, 'white', stat_length
-    )
+    print_shortlog_profile_list(fmt_tokens, max_lengths, minor_version_info_fmt, minor_version_list)
 
 
-def print_shortlog_profile_list(tokens, lengths, fmt_string, minor_versions, colour, stat_len):
+def print_shortlog_profile_list(tokens, max_lengths, fmt_string, minor_versions):
     """For each minor versions, prints the stats w.r.t to the formatting tokens specified in
     @p tokens.
 
@@ -495,24 +491,26 @@ def print_shortlog_profile_list(tokens, lengths, fmt_string, minor_versions, col
     <token->  <-----token----->  <--------------token--------------->
 
     :param list tokens: list of formatting tokens
-    :param dict lengths: dictionary mapping the maximal lengths of each value corresponding to
+    :param dict max_lengths: dictionary mapping the maximal lengths of each value corresponding to
         column of the formatting token
     :param str fmt_string: formatting string
     :param list minor_versions: list of profiles of MinorVersionInfo objects
-    :param string colour: colour of the output
-    :param int stat_len: the whole length of the formatting header
     """
+    stat_length = sum([
+        max_lengths['all'], max_lengths['time'], max_lengths['mixed'], max_lengths['memory']
+    ]) + 3 + len(" profiles")
+
     for minor_version in minor_versions:
         for (token_type, token) in tokens:
             if token_type == 'fmt_string':
-                print_shortlog_token(fmt_string, lengths, minor_version, colour, stat_len, token)
+                print_shortlog_token(fmt_string, max_lengths, minor_version, stat_length, token)
             # Non-token parts of the formatting string are printed as they are
             else:
-                cprint(token, colour)
+                cprint(token, 'white')
         perun_log.info("")
 
 
-def print_shortlog_token(fmt_string, max_lengths, minor_version, colour, stat_length, token):
+def print_shortlog_token(fmt_string, max_lengths, minor_version, stat_len, token):
     """Prints token of the formatting string.
 
     Example of tokens are highlighted below:
@@ -525,23 +523,21 @@ def print_shortlog_token(fmt_string, max_lengths, minor_version, colour, stat_le
         column of the formatting token
     :param str fmt_string: formating string
     :param MinorVersionInfo minor_version: MinorVersionInfo objects
-    :param string colour: colour of the output
-    :param int stat_length: the whole length of the formatting header
+    :param int stat_len: the whole length of the formatting header
     :param string token: one given token of formatting string
     """
     attr_type, limit, fill = FMT_REGEX.match(token).groups()
     limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
     if attr_type == 'stats':
         # (24|0|0|0 profiles)
-        print_stats_token(max_lengths, minor_version, stat_length)
+        print_stats_token(max_lengths, minor_version, stat_len)
     elif attr_type == 'changes':
         # +++---
         print_changes_token(max_lengths, minor_version)
     else:
         # "91373c43",  "Bump version and changelog to 0.16.8"
-        print_other_formating_string(
-            fmt_string, minor_version, attr_type, limit,
-            default_color=colour, value_fill=fill or ' '
+        print_other_formatting_string(
+            fmt_string, minor_version, attr_type, limit, value_fill=fill or ' '
         )
 
 
@@ -604,7 +600,7 @@ def print_stats_token(max_lengths, minor_version, stat_length):
         )
 
 
-def print_shortlog_profile_list_header(fmt_tokens, max_lengths, output_colour):
+def print_shortlog_profile_list_header(fmt_tokens, max_lengths):
     """Prints the header of the output of the minor version information
 
     The example of shortlog header is:
@@ -613,7 +609,6 @@ def print_shortlog_profile_list_header(fmt_tokens, max_lengths, output_colour):
 
     :param list fmt_tokens: list of formatting tokens
     :param dict max_lengths: dictionary of maximal values of columns corresponding to the tokens
-    :param str output_colour: output colour of the header
     """
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
@@ -623,10 +618,10 @@ def print_shortlog_profile_list_header(fmt_tokens, max_lengths, output_colour):
             else:
                 limit = adjust_limit(limit, attr_type, max_lengths)
                 token_string = attr_type.center(limit, ' ')
-                cprint(token_string, output_colour, HEADER_ATTRS)
+                cprint(token_string, 'white', HEADER_ATTRS)
         else:
             # Print the rest (non token stuff)
-            cprint(token, output_colour, HEADER_ATTRS)
+            cprint(token, 'white', HEADER_ATTRS)
     perun_log.info("")
 
 
@@ -682,8 +677,8 @@ def print_minor_version_info(head_minor_version, indent=0):
     perun_log.info(indented_desc)
 
 
-def print_other_formating_string(fmt_string, info_object, info_attr, size_limit,
-                                 default_color='white', value_fill=' '):
+def print_other_formatting_string(fmt_string, info_object, info_attr, size_limit,
+                                  colour='white', value_fill=' '):
     """Prints the token from the fmt_string, according to the values stored in info_object
 
     info_attr is one of the tokens from fmt_string, which is extracted from the info_object,
@@ -694,10 +689,10 @@ def print_other_formating_string(fmt_string, info_object, info_attr, size_limit,
     :param object info_object: object with stored information (ProfileInfo or MinorVersion)
     :param int size_limit: will limit the output of the value of the info_object to this size
     :param str info_attr: attribute we are looking up in the info_object
-    :param str default_color: default colour of the formatting token that will be printed out
+    :param str colour: default colour of the formatting token that will be printed out
     :param char value_fill: will fill the string with this
     """
-    # Check if encountered incorrect token in the formating string
+    # Check if encountered incorrect token in the formatting string
     if not hasattr(info_object, info_attr):
         perun_log.error("invalid formatting string '{}': "
                         "object does not contain '{}' attribute".format(
@@ -711,7 +706,7 @@ def print_other_formating_string(fmt_string, info_object, info_attr, size_limit,
     if info_attr == 'type':
         cprint("[{}]".format(info_value), PROFILE_TYPE_COLOURS[raw_value])
     else:
-        cprint(info_value, default_color)
+        cprint(info_value, colour)
 
 
 def calculate_maximal_lengths_for_stats(obj_list, stat_function, stat_header=""):
@@ -829,9 +824,9 @@ def print_status_profiles(fmt_tokens, list_config, max_lengths, fmt_string, prof
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
                 limit = adjust_limit(limit, attr_type, max_lengths)
-                print_other_formating_string(
+                print_other_formatting_string(
                     fmt_string, profile_info, attr_type, limit,
-                    default_color=list_config.colour, value_fill=fill or ' '
+                    colour=list_config.colour, value_fill=fill or ' '
                 )
             else:
                 cprint(token, list_config.colour)
@@ -874,7 +869,7 @@ def adjust_header_length(fmt_tokens, max_lengths, list_config):
     """Ajdust the length of the header stored in configuration
 
     :param list fmt_tokens: list of tokens
-    :param dict max_lengths: maximal lenghts of individual tokens
+    :param dict max_lengths: maximal lengths of individual tokens
     :param ProfileListConfig list_config: configuration of the printed list
     """
     # the magic constant three is for 3 border columns
