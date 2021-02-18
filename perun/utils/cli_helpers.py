@@ -187,15 +187,14 @@ def minor_version_list_callback(ctx, _, value):
     :returns list: list of MinorVersion objects
     """
     minors = []
-    if value:
-        for minor_version in value:
-            massaged_version = vcs.massage_parameter(minor_version)
-            # If we should crawl all of the parents, we collect them
-            if ctx.params.get('crawl_parents', False):
-                minors.extend(vcs.walk_minor_versions(massaged_version))
-            # Otherwise we retrieve the minor version info for the param
-            else:
-                minors.append(vcs.get_minor_version_info(massaged_version))
+    for minor_version in value or []:
+        massaged_version = vcs.massage_parameter(minor_version)
+        # If we should crawl all of the parents, we collect them
+        if ctx.params.get('crawl_parents', False):
+            minors.extend(vcs.walk_minor_versions(massaged_version))
+        # Otherwise we retrieve the minor version info for the param
+        else:
+            minors.append(vcs.get_minor_version_info(massaged_version))
     return minors
 
 
@@ -268,6 +267,21 @@ def lookup_nth_pending_filename(position):
         ))
 
 
+def apply_func_for_range(range_match, function_for_tag, tag):
+    """Applies the function for tags either from index or pending according to the range i-j
+
+    :param match range_match: match of the range
+    :param func function_for_tag: function that removes tag from index or pending
+    :param str tag: tag that is removed (either p or i)
+    """
+    from_range, to_range = int(range_match.group(1)), int(range_match.group(2))
+    for i in range(from_range, to_range + 1):
+        try:
+            function_for_tag(i)
+        except click.BadParameter:
+            log.warn("skipping nonexisting tag {}{}".format(i, tag))
+
+
 def lookup_added_profile_callback(_, __, value):
     """Callback function for looking up the profile which will be added/registered
 
@@ -286,30 +300,12 @@ def lookup_added_profile_callback(_, __, value):
         if pending_match:
             massaged_values.add(lookup_nth_pending_filename(int(pending_match.group(1))))
         elif range_match:
-            from_range, to_range = int(range_match.group(1)), int(range_match.group(2))
-            for i in range(from_range, to_range+1):
-                try:
-                    massaged_values.add(lookup_nth_pending_filename(i))
-                except click.BadParameter:
-                    log.warn("skipping nonexisting tag {}@p".format(i))
+            apply_func_for_range(
+                range_match, lambda j: massaged_values.add(lookup_nth_pending_filename(j)), "p"
+            )
         else:
             massaged_values.add(lookup_profile_in_filesystem(single_value))
     return massaged_values
-
-
-def remove_tags_by_range(range_match, remove_func, tag):
-    """Removes tags either from index or pending according to the range i-j
-
-    :param match range_match: match of the range
-    :param func remove_func: function that removes tag from index or pending
-    :param str tag: tag that is removed (either p or i)
-    """
-    from_range, to_range = int(range_match.group(1)), int(range_match.group(2))
-    for i in range(from_range, to_range + 1):
-        try:
-            remove_func(i)
-        except click.BadParameter:
-            log.warn("skipping nonexisting tag {}{}".format(i, tag))
 
 
 def lookup_removed_profile_callback(ctx, _, value):
@@ -360,11 +356,11 @@ def lookup_removed_profile_callback(ctx, _, value):
             if index_match:
                 add_to_removed_from_index(int(index_match.group(1)))
             elif index_range_match:
-                remove_tags_by_range(index_range_match, add_to_removed_from_index, 'i')
+                apply_func_for_range(index_range_match, add_to_removed_from_index, 'i')
             elif pending_match:
                 add_to_removed_from_pending(int(pending_match.group(1)))
             elif pending_range_match:
-                remove_tags_by_range(pending_range_match, add_to_removed_from_pending, 'p')
+                apply_func_for_range(pending_range_match, add_to_removed_from_pending, 'p')
             # We check if this is actually something from pending, then we will remove it
             elif os.path.exists(single_value) and \
                 os.path.samefile(os.path.split(single_value)[0], pcs.get_job_directory()):

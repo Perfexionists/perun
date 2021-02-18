@@ -34,6 +34,7 @@ from perun.utils.helpers import \
     PROFILE_TYPE_COLOURS, SUPPORTED_PROFILE_TYPES, HEADER_ATTRS, HEADER_COMMIT_COLOUR, \
     HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, PROFILE_DELIMITER, MinorVersion
 from perun.utils.log import cprint, cprintln
+from perun.utils.structs import ProfileListConfig
 
 # Init colorama for multiplatform colours
 colorama.init()
@@ -55,7 +56,7 @@ def config_get(store_type, key):
         value = perun_config.lookup_key_recursively(key)
     else:
         value = config_store.get(key)
-    print("{}: {}".format(key, value))
+    perun_log.info("{}: {}".format(key, value))
 
 
 def config_set(store_type, key, value):
@@ -68,7 +69,7 @@ def config_set(store_type, key, value):
     config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
 
     config_store.set(key, value)
-    print("Value '{1}' set for key '{0}'".format(key, value))
+    perun_log.info("Value '{1}' set for key '{0}'".format(key, value))
 
 
 def config_edit(store_type):
@@ -470,7 +471,7 @@ def print_short_minor_version_info_list(minor_version_list, max_lengths):
     )
 
 
-def print_profile_list(tokens, max_lengths, fmt_string, minor_versions, output_colour, stat_length):
+def print_profile_list(tokens, max_lengths, fmt_string, minor_versions, colour, stat_length):
     """For each minor versions, prints the stats w.r.t to the formatting tokens specified in
     @p tokens.
 
@@ -483,60 +484,96 @@ def print_profile_list(tokens, max_lengths, fmt_string, minor_versions, output_c
         column of the formatting token
     :param str fmt_string: formating string
     :param list minor_versions: list of profiles of MinorVersionInfo objects
-    :param string output_colour: colour of the output
+    :param string colour: colour of the output
     :param int stat_length: the whole length of the formatting header
     """
     for minor_version in minor_versions:
         for (token_type, token) in tokens:
             if token_type == 'fmt_string':
-                attr_type, limit, fill = FMT_REGEX.match(token).groups()
-                limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
-                if attr_type == 'stats':
-                    tracked_profiles = index.get_profile_number_for_minor(
-                        pcs.get_object_directory(), minor_version.checksum
-                    )
-                    if tracked_profiles['all']:
-                        print(perun_log.in_color("{:{}}".format(
-                            tracked_profiles['all'], max_lengths['all']
-                        ), TEXT_EMPH_COLOUR, TEXT_ATTRS), end='')
-
-                        # Print the coloured numbers
-                        for profile_type in SUPPORTED_PROFILE_TYPES:
-                            print("{}{}".format(
-                                perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
-                                perun_log.in_color("{:{}}".format(
-                                    tracked_profiles[profile_type], max_lengths[profile_type]
-                                ), PROFILE_TYPE_COLOURS[profile_type])
-                            ), end='')
-
-                        print(
-                            perun_log.in_color(
-                                " profiles", HEADER_INFO_COLOUR, TEXT_ATTRS
-                            ), end=''
-                        )
-                    else:
-                        print(
-                            perun_log.in_color(
-                                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, TEXT_ATTRS
-                            ), end=''
-                        )
-                elif attr_type == 'changes':
-                    degradations = store.load_degradation_list_for(
-                        pcs.get_object_directory(), minor_version.checksum
-                    )
-                    change_string = perun_log.change_counts_to_string(
-                        perun_log.count_degradations_per_group(degradations),
-                        width=max_lengths['changes']
-                    )
-                    print(change_string, end='')
-                else:
-                    print_formating_token(
-                        fmt_string, minor_version, attr_type, limit,
-                        default_color=output_colour, value_fill=fill or ' '
-                    )
+                print_token(fmt_string, max_lengths, minor_version, colour, stat_length, token)
             else:
-                cprint(token, output_colour)
-        print("")
+                cprint(token, colour)
+        perun_log.info("")
+
+
+def print_token(fmt_string, max_lengths, minor_version, colour, stat_length, token):
+    """Prints token of the formatting string
+
+    :param dict max_lengths: dictionary mapping the maximal lengths of each value corresponding to
+        column of the formatting token
+    :param str fmt_string: formating string
+    :param MinorVersionInfo minor_version: MinorVersionInfo objects
+    :param string colour: colour of the output
+    :param int stat_length: the whole length of the formatting header
+    :param string token: one given token of formatting string
+    """
+    attr_type, limit, fill = FMT_REGEX.match(token).groups()
+    limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
+    if attr_type == 'stats':
+        print_stats_token(max_lengths, minor_version, stat_length)
+    elif attr_type == 'changes':
+        print_changes_token(max_lengths, minor_version)
+    else:
+        print_other_formating_string(
+            fmt_string, minor_version, attr_type, limit,
+            default_color=colour, value_fill=fill or ' '
+        )
+
+
+def print_changes_token(max_lengths, minor_version):
+    """Prints information about changes in the minor version,
+    i.e. the optimizations and degradations
+
+    :param dict max_lengths: dictionary mapping the maximal lengths of each value corresponding to
+        column of the formatting token
+    :param MinorVersionInfo minor_version: MinorVersionInfo objects
+    """
+    degradations = store.load_degradation_list_for(
+        pcs.get_object_directory(), minor_version.checksum
+    )
+    change_string = perun_log.change_counts_to_string(
+        perun_log.count_degradations_per_group(degradations),
+        width=max_lengths['changes']
+    )
+    perun_log.info(change_string, end='')
+
+
+def print_stats_token(max_lengths, minor_version, stat_length):
+    """Prints the statistic of profiles for the given minor versions.
+
+    :param dict max_lengths: dictionary mapping the maximal lengths of each value corresponding to
+        column of the formatting token
+    :param MinorVersionInfo minor_version: MinorVersionInfo objects
+    :param int stat_length: the whole length of the formatting header
+    """
+    tracked_profiles = index.get_profile_number_for_minor(
+        pcs.get_object_directory(), minor_version.checksum
+    )
+    if tracked_profiles['all']:
+        perun_log.info(perun_log.in_color("{:{}}".format(
+            tracked_profiles['all'], max_lengths['all']
+        ), TEXT_EMPH_COLOUR, TEXT_ATTRS), end='')
+
+        # Print the coloured numbers
+        for profile_type in SUPPORTED_PROFILE_TYPES:
+            perun_log.info("{}{}".format(
+                perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
+                perun_log.in_color("{:{}}".format(
+                    tracked_profiles[profile_type], max_lengths[profile_type]
+                ), PROFILE_TYPE_COLOURS[profile_type])
+            ), end='')
+
+        perun_log.info(
+            perun_log.in_color(
+                " profiles", HEADER_INFO_COLOUR, TEXT_ATTRS
+            ), end=''
+        )
+    else:
+        perun_log.info(
+            perun_log.in_color(
+                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, TEXT_ATTRS
+            ), end=''
+        )
 
 
 def print_profile_list_header(fmt_tokens, max_lengths, output_colour):
@@ -546,29 +583,11 @@ def print_profile_list_header(fmt_tokens, max_lengths, output_colour):
     :param dict max_lengths: dictionary of maximal values of columns corresponding to the tokens
     :param str output_colour: output colour of the header
     """
-    slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             if attr_type == 'stats':
-                end_msg = perun_log.in_color(' profiles', HEADER_SLASH_COLOUR, HEADER_ATTRS)
-                print(perun_log.in_color("{0}{4}{1}{4}{2}{4}{3}{5}".format(
-                    perun_log.in_color(
-                        'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, HEADER_ATTRS
-                    ),
-                    perun_log.in_color(
-                        'm'.rjust(max_lengths['memory']),
-                        PROFILE_TYPE_COLOURS['memory'], HEADER_ATTRS
-                    ),
-                    perun_log.in_color(
-                        'x'.rjust(max_lengths['mixed']),
-                        PROFILE_TYPE_COLOURS['mixed'], HEADER_ATTRS),
-                    perun_log.in_color(
-                        't'.rjust(max_lengths['time']),
-                        PROFILE_TYPE_COLOURS['time'], HEADER_ATTRS),
-                    slash,
-                    end_msg
-                ), HEADER_SLASH_COLOUR, HEADER_ATTRS), end='')
+                print_stats_header(max_lengths)
             else:
                 limit = adjust_limit(limit, attr_type, max_lengths)
                 token_string = attr_type.center(limit, ' ')
@@ -576,7 +595,33 @@ def print_profile_list_header(fmt_tokens, max_lengths, output_colour):
         else:
             # Print the rest (non token stuff)
             cprint(token, output_colour, HEADER_ATTRS)
-    print("")
+    perun_log.info("")
+
+
+def print_stats_header(max_lengths):
+    """Prints header for the stats
+
+    :param dict max_lengths: dictionary that computes the maximal lengths of each column
+    """
+    slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
+    end_msg = perun_log.in_color(' profiles', HEADER_SLASH_COLOUR, HEADER_ATTRS)
+    perun_log.info(perun_log.in_color("{0}{4}{1}{4}{2}{4}{3}{5}".format(
+        perun_log.in_color(
+            'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, HEADER_ATTRS
+        ),
+        perun_log.in_color(
+            'm'.rjust(max_lengths['memory']),
+            PROFILE_TYPE_COLOURS['memory'], HEADER_ATTRS
+        ),
+        perun_log.in_color(
+            'x'.rjust(max_lengths['mixed']),
+            PROFILE_TYPE_COLOURS['mixed'], HEADER_ATTRS),
+        perun_log.in_color(
+            't'.rjust(max_lengths['time']),
+            PROFILE_TYPE_COLOURS['time'], HEADER_ATTRS),
+        slash,
+        end_msg
+    ), HEADER_SLASH_COLOUR, HEADER_ATTRS), end='')
 
 
 def print_minor_version_info(head_minor_version, indent=0):
@@ -584,18 +629,18 @@ def print_minor_version_info(head_minor_version, indent=0):
     :param MinorVersion head_minor_version: identification of the commit (preferably sha1)
     :param int indent: indent of the description part
     """
-    print("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
+    perun_log.info("Author: {0.author} <{0.email}> {0.date}".format(head_minor_version))
     for parent in head_minor_version.parents:
         print("Parent: {}".format(parent))
-    print("")
+    perun_log.info("")
     indented_desc = '\n'.join(map(
         lambda line: ' '*(indent*4) + line, head_minor_version.desc.split('\n')
     ))
-    print(indented_desc)
+    perun_log.info(indented_desc)
 
 
-def print_formating_token(fmt_string, info_object, info_attr, size_limit,
-                          default_color='white', value_fill=' '):
+def print_other_formating_string(fmt_string, info_object, info_attr, size_limit,
+                                 default_color='white', value_fill=' '):
     """Prints the token from the fmt_string, according to the values stored in info_object
 
     info_attr is one of the tokens from fmt_string, which is extracted from the info_object,
@@ -672,20 +717,15 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
     :param str list_type: type of the profile list (either untracked or tracked)
     """
     # Sort the profiles w.r.t time of creation
+    list_config = ProfileListConfig(list_type, short, profile_list)
     profile.sort_profiles(profile_list)
 
     # Print with padding
-    profile_output_colour = 'white' if list_type == 'tracked' else 'red'
-    index_id_char = 'i' if list_type == 'tracked' else 'p'
-    ending = ':\n\n' if not short else "\n"
-
     profile_numbers = calculate_profile_numbers_per_type(profile_list)
-    print_profile_numbers(profile_numbers, list_type, ending)
+    print_profile_numbers(profile_numbers, list_type, list_config.ending)
 
     # Skip empty profile list
-    profile_list_len = len(profile_list)
-    profile_list_width = len(str(profile_list_len))
-    if not profile_list_len or short:
+    if not list_config.list_len or short:
         return
 
     # Load formating string for profile
@@ -693,50 +733,61 @@ def print_profile_info_list(profile_list, max_lengths, short, list_type='tracked
     fmt_tokens = perun_log.scan_formatting_string(
         profile_info_fmt, {}, default_fmt_callback=lambda token: "%" + token + "%"
     )
+    adjust_header_length(fmt_tokens, max_lengths, list_config)
 
-    # Compute header length
-    header_len = profile_list_width + 3
-    for (token_type, token) in fmt_tokens:
-        if token_type == 'fmt_string':
-            attr_type, limit, _ = FMT_REGEX.match(token).groups()
-            limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
-            header_len += limit
-        else:
-            header_len += len(token)
-
-    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
     # Print header (2 is padding for id)
-    print(" ", end='')
-    cprint("id".center(profile_list_width + 2, ' '), profile_output_colour)
-    print(" ", end='')
+    cprintln("\u2550"*list_config.header_width + "\u25A3", list_config.colour)
+    perun_log.info(" ", end='')
+    cprint("id".center(list_config.id_width + 2, ' '), list_config.colour)
+    perun_log.info(" ", end='')
     for (token_type, token) in fmt_tokens:
         if token_type == 'fmt_string':
             attr_type, limit, _ = FMT_REGEX.match(token).groups()
             limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
             token_string = attr_type.center(limit, ' ')
-            cprint(token_string, profile_output_colour)
+            cprint(token_string, list_config.colour)
         else:
             # Print the rest (non token stuff)
-            cprint(token, profile_output_colour)
-    print("")
-    cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
+            cprint(token, list_config.colour)
+    perun_log.info("")
+    cprintln("\u2550"*list_config.header_width + "\u25A3", list_config.colour)
+
     # Print profiles
     for profile_no, profile_info in enumerate(profile_list):
-        print(" ", end='')
-        cprint("{}@{}".format(profile_no, index_id_char).rjust(profile_list_width + 2, ' '),
-               profile_output_colour)
-        print(" ", end='')
+        perun_log.info(" ", end='')
+        cprint("{}@{}".format(profile_no, list_config.id_char).rjust(list_config.id_width+ 2, ' '),
+               list_config.colour)
+        perun_log.info(" ", end='')
         for (token_type, token) in fmt_tokens:
             if token_type == 'fmt_string':
                 attr_type, limit, fill = FMT_REGEX.match(token).groups()
                 limit = adjust_limit(limit, attr_type, max_lengths)
-                print_formating_token(profile_info_fmt, profile_info, attr_type, limit,
-                                      default_color=profile_output_colour, value_fill=fill or ' ')
+                print_other_formating_string(
+                    profile_info_fmt, profile_info, attr_type, limit,
+                    default_color=list_config.colour, value_fill=fill or ' '
+                )
             else:
-                cprint(token, profile_output_colour)
-        print("")
-        if profile_no % 5 == 0 or profile_no == profile_list_len - 1:
-            cprintln("\u2550"*header_len + "\u25A3", profile_output_colour)
+                cprint(token, list_config.colour)
+        perun_log.info("")
+        if profile_no % 5 == 0 or profile_no == list_config.list_len - 1:
+            cprintln("\u2550"*list_config.header_width + "\u25A3", list_config.colour)
+
+
+def adjust_header_length(fmt_tokens, max_lengths, list_config):
+    """Ajdust the length of the header stored in configuration
+
+    :param list fmt_tokens: list of tokens
+    :param dict max_lengths: maximal lenghts of individual tokens
+    :param ProfileListConfig list_config: configuration of the printed list
+    """
+    # the magic constant three is for 3 border columns
+    for (token_type, token) in fmt_tokens:
+        if token_type == 'fmt_string':
+            attr_type, limit, _ = FMT_REGEX.match(token).groups()
+            limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
+            list_config.header_width += limit
+        else:
+            list_config.header_width += len(token)
 
 
 def get_untracked_profiles():
@@ -820,18 +871,18 @@ def status(short=False, **_):
     minor_head = vcs.get_minor_head()
 
     # Print the status of major head.
-    print("On major version {} ".format(
+    perun_log.info("On major version {} ".format(
         perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
     ), end='')
 
     # Print the index of the current head
-    print("(minor version: {})".format(
+    perun_log.info("(minor version: {})".format(
         perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
     ))
 
     # Print in long format, the additional information about head commit, by default print
     if not short:
-        print("")
+        perun_log.info("")
         minor_version = vcs.get_minor_version_info(minor_head)
         print_minor_version_info(minor_version)
 
@@ -843,7 +894,7 @@ def status(short=False, **_):
     )
     print_profile_info_list(minor_version_profiles, maxs, short)
     if not short:
-        print("")
+        perun_log.info("")
     print_profile_info_list(untracked_profiles, maxs, short, 'untracked')
 
     # Print degradation info
@@ -851,10 +902,10 @@ def status(short=False, **_):
         pcs.get_object_directory(), minor_head
     )
     if not short:
-        print("")
+        perun_log.info("")
     perun_log.print_short_summary_of_degradations(degradation_list)
     if not short:
-        print("")
+        perun_log.info("")
         perun_log.print_list_of_degradations(degradation_list)
 
 
@@ -909,7 +960,7 @@ def print_temp_files(root, **kwargs):
                      if level == kwargs['filter_protection']]
     # If there are no files then abort the output
     if not tmp_files:
-        print('== No results for the given parameters in the .perun/tmp/ directory ==')
+        perun_log.info('== No results for the given parameters in the .perun/tmp/ directory ==')
         return
 
     # First sort by the name
@@ -940,15 +991,15 @@ def print_formatted_temp_files(records, show_size, show_protection):
     for file_name, protection, size in records:
         # Print the size of each file
         if show_size:
-            print('{}'.format(perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
+            perun_log.info('{}'.format(perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
                   end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
-                print('{}'.format(temp.UNPROTECTED),
+                perun_log.info('{}'.format(temp.UNPROTECTED),
                       end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
             else:
-                print('{}  '.format(perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)),
+                perun_log.info('{}  '.format(perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)),
                       end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
 
         # Print the file path, emphasize the directory to make it a bit more readable
@@ -956,8 +1007,8 @@ def print_formatted_temp_files(records, show_size, show_protection):
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            print('{}'.format(perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)), end='')
-        print('{}'.format(os.path.basename(file_name)))
+            perun_log.info('{}'.format(perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)), end='')
+        perun_log.info('{}'.format(os.path.basename(file_name)))
 
 
 def delete_temps(path, ignore_protected, force, **kwargs):
@@ -1005,7 +1056,7 @@ def list_stat_objects(mode, **kwargs):
 
     # Abort the whole output if we have no versions
     if not versions:
-        print('== No results for the given parameters in the .perun/stats/ directory ==')
+        perun_log.info('== No results for the given parameters in the .perun/stats/ directory ==')
         return
 
     if mode == 'versions':
@@ -1066,7 +1117,7 @@ def _print_total_size(total_size, enabled):
     """
     if enabled:
         total_size = utils.format_file_size(total_size)
-        print('Total size of all the displayed files / directories: {}'.format(
+        perun_log.info('Total size of all the displayed files / directories: {}'.format(
             perun_log.in_color(total_size, TEXT_EMPH_COLOUR))
         )
 
@@ -1094,7 +1145,7 @@ def _print_stat_objects(stats_objects, properties):
                 if record:
                     record += perun_log.in_color(' | ', TEXT_WARN_COLOUR)
                 record += perun_log.in_color(str(prop), TEXT_EMPH_COLOUR) if colored else str(prop)
-        print(record)
+        perun_log.info(record)
 
 
 def delete_stats_file(name, in_minor, keep_directory):
