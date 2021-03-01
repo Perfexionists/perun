@@ -196,7 +196,7 @@ def error(msg, recoverable=False, raised_exception=None):
 
     # If we cannot recover from this error, we end
     if not recoverable:
-        exit(1)
+        sys.exit(1)
 
 
 def warn(msg, end="\n"):
@@ -634,8 +634,8 @@ def scan_formatting_string(fmt, callbacks, callback=identity, default_fmt_callba
     i = 0
     tokens = []
     current_token = ""
-    for c in fmt:
-        if c == sep:
+    for character in fmt:
+        if character == sep:
             # found start or end of the token
             i += 1
             if i % 2 == 0:
@@ -646,7 +646,7 @@ def scan_formatting_string(fmt, callbacks, callback=identity, default_fmt_callba
                 tokens.append(("raw_string", callback(current_token)))
             current_token = ""
         else:
-            current_token += c
+            current_token += character
 
     # Add what is rest
     if current_token:

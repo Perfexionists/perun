@@ -542,7 +542,7 @@ def print_shortlog_token(fmt_string, max_lengths, minor_version, stat_len, token
 
 
 def print_changes_token(max_lengths, minor_version):
-    """Prints information about changes in the minor version, i.e. the optimizations and degradations
+    """Prints information about changes in the minor version, i.e. optimizations and degradations.
 
     The example of changes token is: "+++---"
 
@@ -694,9 +694,11 @@ def print_other_formatting_string(fmt_string, info_object, info_attr, size_limit
     """
     # Check if encountered incorrect token in the formatting string
     if not hasattr(info_object, info_attr):
-        perun_log.error("invalid formatting string '{}': "
-                        "object does not contain '{}' attribute".format(
-                            fmt_string, info_attr))
+        perun_log.error(
+            "invalid formatting string '{}': object does not contain '{}' attribute".format(
+                fmt_string, info_attr
+            )
+        )
 
     # Obtain the value for the printing
     raw_value = getattr(info_object, info_attr)
@@ -1083,8 +1085,9 @@ def print_formatted_temp_files(records, show_size, show_protection):
     for file_name, protection, size in records:
         # Print the size of each file
         if show_size:
-            perun_log.info('{}'.format(perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)),
-                  end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
+            perun_log.info('{}'.format(
+                perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)
+            ), end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
