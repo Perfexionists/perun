@@ -48,6 +48,7 @@ class RunnerReport:
         'collector': CollectStatus.ERROR,
         'postprocessor': PostprocessStatus.ERROR
     }
+
     def __init__(self, runner, runner_type, kwargs):
         """
         :param module runner: module of the runner
@@ -75,12 +76,16 @@ class RunnerReport:
         :return:
         """
         self.stat_code = stat_code
-        self.message += message
         self.kwargs.update(params or {})
 
         is_enum = hasattr(self.stat_code, 'value')
         if not (self.stat_code == 0 or (is_enum and self.stat_code.value == 0)):
             self.status = self.error_status
+
+        # Update the message; delete the assumed OK if error occurred
+        if not self.is_ok() and self.message == "OK":
+            self.message = ""
+        self.message += message
 
     def is_ok(self):
         """Checks if the status of the collection or postprocessing is so far ok
@@ -238,6 +243,34 @@ class DegradationInfo:
             self.confidence_type,
             self.confidence_rate
         )
+
+
+class Job:
+    """Represents one profiling task in the Perun
+
+    :ivar Unit collector: collection unit used to collect the SUP
+    :ivar list postprocessors: list of postprocessing units applied after the collection
+    :ivar Executable executable: System Under Profiling (SUP)
+    """
+    def __init__(self, collector, postprocessors, executable):
+        """
+        :param Unit collector: collection unit used to collect the SUP
+        :param list postprocessors: list of postprocessing units applied after the collection
+        :param Executable executable: System Under Profiling (SUP)
+        """
+        self.collector = collector
+        self.postprocessors = postprocessors
+        self.executable = executable
+
+    def _asdict(self):
+        """
+        :return: representation as dictionary
+        """
+        return {
+            'collector': self.collector,
+            'postprocessors': self.postprocessors,
+            'executable': self.executable
+        }
 
 
 class OrderedEnum(Enum):

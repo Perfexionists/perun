@@ -33,8 +33,7 @@ from perun.utils import get_module
 from perun.profile.factory import Profile
 from perun.utils.exceptions import InvalidParameterException, MissingConfigSectionException, \
                                    TagOutOfRangeException
-from perun.utils.helpers import Job
-from perun.utils.structs import Unit, Executable
+from perun.utils.structs import Unit, Executable, Job
 
 __author__ = 'Tomas Fiedor'
 

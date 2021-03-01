@@ -12,9 +12,9 @@ import re
 import platform
 import traceback
 import json
-import pip
 import click
 import jinja2
+import pkg_resources
 
 import perun
 import perun.profile.helpers as profiles
@@ -680,7 +680,7 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
                     'version': sys.version.replace('\n', ''),
                     'packages': [
                         inst.key + " (" + inst.version + ")"
-                        for inst in pip.get_installed_distributions() if inst.key in reqs
+                        for inst in pkg_resources.working_set if inst.key in reqs
                     ]
                 }
             },

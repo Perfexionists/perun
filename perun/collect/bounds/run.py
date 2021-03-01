@@ -31,14 +31,17 @@ def before(sources, **kwargs):
         $ clang-3.5 -g -emit-llvm -c ${sources}
     """
     pwd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin')
+    include_path = os.path.join(pwd, 'include')
     clang_bin = \
         _CLANG_COMPILER if shutil.which(_CLANG_COMPILER) else os.path.join(pwd, _CLANG_COMPILER)
-    cmd = " ".join([clang_bin] + _CLANG_COMPILATION_PARAMS + list(sources))
+    cmd = " ".join([clang_bin] + ['-I', include_path] + _CLANG_COMPILATION_PARAMS + list(sources))
     log.info("Compiling source codes: {}".format(
         ",".join(sources)
     ))
+    my_env = os.environ.copy()
+    my_env['LD_LIBRARY_PATH'] = pwd
     try:
-        utils.run_safely_external_command(cmd, check_results=True)
+        utils.run_safely_external_command(cmd, check_results=True, env=my_env, quiet=False)
     except SubprocessError as sub_err:
         log.failed()
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)

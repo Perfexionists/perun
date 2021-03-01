@@ -8,7 +8,7 @@ import perun.profile.helpers as factory
 
 from perun.profile.factory import Profile
 
-import tests.helpers.utils as test_utils
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 

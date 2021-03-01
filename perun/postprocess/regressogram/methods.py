@@ -1,6 +1,7 @@
 """
 Module with regressogram computational method and auxiliary methods at executing of this method.
 """
+import inspect
 import numpy as np
 import numpy.lib.histograms as numpy_bucket_selectors
 import scipy.stats
@@ -82,8 +83,17 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
     :return dict: the output dictionary with result of analysis
     """
     # Check whether the buckets is given by number or by name of method to its compute
-    buckets_num = buckets if isinstance(buckets, int) \
-        else _BUCKET_SELECTORS[buckets](np.array(x_pts))
+    if isinstance(buckets, int):
+        buckets_num = buckets
+    else:
+        if len(inspect.signature(_BUCKET_SELECTORS[buckets]).parameters):
+            # This is workaround for backward compatibility between numpy 1.15.1 and 1.16.X+
+            # In that version, new bucket selector method is introduced that requires additional,
+            # parameter, however, our supported methods do not use this parameter at all.
+            buckets_num = _BUCKET_SELECTORS[buckets](np.array(x_pts), None)
+        else:
+            buckets_num = _BUCKET_SELECTORS[buckets](np.array(x_pts))
+
     # Compute a binned statistic for the given data
     bucket_stats, bucket_edges, bucket_numbers = scipy.stats.binned_statistic(
         x_pts, y_pts, statistic_function, max(1, buckets_num)

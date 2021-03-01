@@ -250,8 +250,8 @@ Acknowledgements
 ----------------
 
 We thank for the support received from [Red Hat](https://www.redhat.com/en/global/czech-republic)
-(especially branch of Brno), Brno University of Technology ([BUT FIT](https://www.fit.vutbr.cz/))
-and H2020 ECSEL project [Aquas](https://aquas-project.eu/).
+(especially branch of Brno), and Brno University of Technology 
+([BUT FIT](https://www.fit.vutbr.cz/)).
 
 Further we would like to thank the following individuals (in the
 alphabetic order) for their (sometimes even just a little)
@@ -273,3 +273,20 @@ contributions:
       feedback;
   -   **Jan Zeleny** (Red Hat)---for awesome support, and feedback.
 
+Development of this tool has been supported by AQUAS project (Aggregated Quality Assurance for
+Systems, https://aquas-project.eu/). This project has received funding from the Electronic Component
+Systems for European Leadership Joint Undertaking under grant agreement No 737475. This Joint
+Undertaking receives support from the European Union’s Horizon 2020 research and innovation
+programme and Spain, France, United Kingdom, Austria, Italy, Czech Republic, Germany.
+
+This tool as well as the information provided on this web page reflects only the author's view and
+ECSEL JU is not responsible for any use that may be made of the information it contains.
+
+<p align="center">
+  <img src="figs/logo-excel.gif">
+</p>
+
+<p align="center">
+  <img src="figs/logo-eu.jpg" width="33%">
+</p>
+ This project is co-funded by the European Union

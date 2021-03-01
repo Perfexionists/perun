@@ -18,7 +18,7 @@ import perun.utils.timestamps as timestamps
 from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException, \
     IncorrectProfileFormatException, EntryNotFoundException, VersionControlSystemException
 
-import tests.helpers.utils as test_utils
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 

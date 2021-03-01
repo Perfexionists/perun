@@ -6,7 +6,7 @@ heap and heat map visualizations, etc.
 import pytest
 import perun.utils.exceptions as exceptions
 import perun.profile.convert as convert
-import tests.helpers.utils as test_utils
+import perun.testing.utils as test_utils
 
 __author__ = 'Tomas Fiedor'
 __coauthored__ = 'Jiri Pavela'
@@ -42,27 +42,6 @@ def test_flame_graph(memory_profiles):
             print(line)
 
         assert line_no == len(flame_graph)
-
-
-def test_heap_map(memory_profiles):
-    """Test creation of heap map out of the profile of memory type
-
-    Expecting no errors and returned dictionary with internal format of the heap map
-    """
-    for memory_profile in memory_profiles:
-        heap_map = convert.to_heap_map_format(memory_profile)
-        assert len(heap_map['snapshots']) == len(list(memory_profile.all_snapshots()))
-
-
-def test_heat_map(memory_profiles):
-    """Test generation of the heat map information from the profile
-
-    Expecting no errors and returned dictionary with the internal representation
-    """
-    for memory_profile in memory_profiles:
-        heat_map = convert.to_heat_map_format(memory_profile)
-        number_of_cells = (heat_map['stats']['max_address'] - heat_map['stats']['min_address'])
-        assert len(heat_map['map']) == number_of_cells
 
 
 def test_coefficients_to_points_correct(postprocess_profiles):
