@@ -385,7 +385,7 @@ class CollectOptimization:
                 exclusive_level_time[tid][func_cg_level] += func_stats['total_exclusive']
                 level_funcs[tid][func_cg_level].append(
                     (func_name, func_stats['total_exclusive'], func_stats['sampled_count'],
-                     func_stats['sample'])
+                     func_stats['sample'], int(func_stats['total']))
                 )
                 if func_stats['sampled_count'] > max_calls[1]:
                     max_calls = (func_name, func_stats['sampled_count'], func_cg_level)
