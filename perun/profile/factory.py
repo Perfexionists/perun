@@ -83,16 +83,15 @@ class Profile(collections.MutableMapping):
             self._storage['resources'].clear()
         if resource_type == 'global' and isinstance(resource_list, dict) and resource_list:
             # Resources are in type of {'time': _, 'resources': []}
-            self._translate_resources(resource_list['resources'], {
-                'time': resource_list.get('time', '0.0')
-            })
+            self._translate_resources(
+                resource_list['resources'], {'time': resource_list.get('time', '0.0')}
+            )
         elif resource_type == 'snapshots':
             # Resources are in type of [{'time': _, 'resources': []}
             for i, snapshot in enumerate(resource_list):
-                self._translate_resources(snapshot['resources'], {
-                                              'snapshot': i,
-                                              'time': snapshot.get('time', '0.0')}
-                                          )
+                self._translate_resources(
+                    snapshot['resources'], {'snapshot': i, 'time': snapshot.get('time', '0.0')}
+                )
         elif isinstance(resource_list, (dict, Profile)):
             self._storage['resources'].update(resource_list)
         else:
