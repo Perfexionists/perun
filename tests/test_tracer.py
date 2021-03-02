@@ -9,7 +9,6 @@ import perun.cli as cli
 from perun.logic.pcs import get_tmp_directory, get_log_directory
 import perun.logic.temp as temp
 import perun.collect.trace.run as trace_run
-import perun.collect.trace.systemtap.parse as parse
 import perun.collect.trace.systemtap.engine as stap
 import perun.logic.locks as locks
 import perun.utils.decorators as decorators
@@ -48,6 +47,10 @@ def _mocked_collect(**kwargs):
 
 def _mocked_after(**kwargs):
     return CollectStatus.OK, "", dict(kwargs)
+
+
+def _mocked_check_dependencies(_):
+    return
 
 
 def _mocked_stap_extraction(_):
@@ -186,12 +189,14 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     # Patch the collect and after so that the missing stap doesn't break the test
     monkeypatch.setattr(trace_run, 'collect', _mocked_collect)
     monkeypatch.setattr(trace_run, 'after', _mocked_after)
+    # Patch dependency check for SystemTap engine
+    monkeypatch.setattr(stap.SystemTapEngine, 'check_dependencies', _mocked_check_dependencies)
     result = runner.invoke(
-        cli.collect, ['-c{}'.format(target), 'trace', '-f', 'main', '-f', 'main#2',
-                      '-u', 'BEFORE_CYCLE', '-u', 'BEFORE_CYCLE_end#3',
-                      '-d', 'none', '-d', 'none_again#2'] +
-                     ['-g', 2, '--with-usdt', '-b', target, '-t', 2, '-z', '-k', '-vt',
-                      '-q', '-w', '-o', 'suppress', '-i']
+        cli.cli, ['-vv', 'collect', '-c{}'.format(target), 'trace', '-f', 'main', '-f', 'main#2',
+                  '-u', 'BEFORE_CYCLE', '-u', 'BEFORE_CYCLE_end#3',
+                  '-d', 'none', '-d', 'none_again#2'] +
+                 ['-g', 2, '--no-usdt', '-b', target, '-t', 2, '-z', '-k', '-vt',
+                  '-q', '-w', '-o', 'suppress', '-i']
     )
     assert result.exit_code == 0
 
