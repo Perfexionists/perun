@@ -5,7 +5,7 @@ rules such as function or USDT locations and sampling.
 
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import RecordType
-from perun.collect.optimizations.structs import Optimizations, Parameters
+from perun.collect.trace.optimizations.structs import Optimizations, Parameters
 
 
 # Names of the global arrays used throughout the script
@@ -447,7 +447,7 @@ def _build_usdt_events(probe_iter, probe_id='name'):
     :return str: the built probe events code
     """
     return ',\n      '.join(
-        USDT_EVENT_TEMPLATE.format(binary=prb['lib'], name=prb[probe_id]) for prb in probe_iter
+        USDT_EVENT_TEMPLATE.format(binary=prb['lib'], loc=prb[probe_id]) for prb in probe_iter
     )
 
 

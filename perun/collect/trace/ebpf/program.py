@@ -5,7 +5,7 @@ Inspired by:
 """
 
 from perun.collect.trace.watchdog import WATCH_DOG
-from perun.collect.optimizations.structs import Optimizations
+from perun.collect.trace.optimizations.structs import Optimizations
 
 
 def assemble_ebpf_program(src_file, probes, config, **_):

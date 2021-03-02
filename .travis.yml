@@ -11,6 +11,14 @@ install:
 
 before_script:
     - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9
+    # Add IO Visor repository that hosts BCC (eBPF frontend)
+    # Installation instructions taken from 'https://github.com/iovisor/bcc/blob/master/INSTALL.md'
+    - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD
+    - echo "deb https://repo.iovisor.org/apt/$(lsb_release -cs) $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/iovisor.list
+    - sudo apt update
+    - sudo apt install bcc-tools libbcc-examples linux-headers-$(uname -r)
+    # However, we also need the python3 binding instead of the default python2
+    - sudo apt install python3-bcc
 
 script:
     # Just try that it was installed correctly

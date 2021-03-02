@@ -1,36 +1,24 @@
-begin /home/jirka/perun/experiments/quicksort
-0      0 quicksort(14060):main
-3      8 quicksort(14060):BEFORE_CYCLE
-2     15 quicksort(14060): INSIDE_CYCLE
-0     32 quicksort(14060): _Z12QuickSortBadPii
-0     48 quicksort(14060):  _Z12BadPartitionPiii
-0     63 quicksort(14060):   _Z4SwapRiS_
-1     73 quicksort(14060):   
-1     79 quicksort(14060):  
-0     90 quicksort(14060):  _Z12BadPartitionPiii
-0    105 quicksort(14060):   _Z4SwapRiS_
-1    115 quicksort(14060):   
-0    125 quicksort(14060):   _Z4SwapRiS_
-1    134 quicksort(14060):   
-0    146 quicksort(14060):   _Z4SwapRiS_
-1    154 quicksort(14060):   
-0    165 quicksort(14060):   _Z4SwapRiS_
-1    174 quicksort(14060):   
-1    179 quicksort(14060):  
-0    190 quicksort(14060):  _Z12BadPartitionPiii
-0    204 quicksort(14060):   _Z4SwapRiS_
-1    213 quicksort(14060):   
-1    218 quicksort(14060):  
-0    229 quicksort(14060):  _Z12BadPartitionPiii
-0    244 quicksort(14060):   _Z4SwapRiS_
-1    252 quicksort(14060):   
-0    264 quicksort(14060):   _Z4SwapRiS_
-1    272 quicksort(14060):   
-1    277 quicksort(14060):  
-1    287 quicksort(14060): 
-2    293 quicksort(14060): INSIDE_CYCLE
-0    305 quicksort(14060): _Z12QuickSortBadPii
-0    320 quicksort(14060):  _Z12BadPartitionPiii
-0    334 quicksort(14060):   _Z4SwapRiS_
-1    342 quicksort(14060):   
-1    347 quicksort(14060):
+7 15465 15465 14735 1519;tst
+0 15465 18158241;frame_dummy
+0 15465 18173409;register_tm_clones
+1 15465 18178728;register_tm_clones
+1 15465 18181002;frame_dummy
+0 15465 18187373;_GLOBAL__sub_I__Z9QuickSortPii
+0 15465 18192404;_Z41__static_initialization_and_destruction_0ii
+1 15465 18285894;_Z41__static_initialization_and_destruction_0ii
+1 15465 18289364;_GLOBAL__sub_I__Z9QuickSortPii
+0 15465 18295819;main
+3 15465 18298204;
+2 15465 18301889;
+0 15465 18309149;_Z12QuickSortBadPii
+0 15465 18317371;_Z12BadPartitionPiii
+0 15465 18325096;_Z4SwapRiS_
+1 15465 18329639;_Z4SwapRiS_
+1 15465 18332606;_Z12BadPartitionPiii
+0 15465 18338534;_Z12BadPartitionPiii
+0 15465 18345931;_Z4SwapRiS_
+1 15465 18350231;_Z4SwapRiS_
+0 15465 18356134;_Z4SwapRiS_
+1 15465 18360406;_Z4SwapRiS_
+0 15465 18365955;_Z4SwapRiS_
+1 15465 18370229;_Z4SwapRiS_

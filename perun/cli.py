@@ -61,8 +61,8 @@ from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModule
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException
 from perun.utils.structs import Executable
-from perun.collect.optimizations.structs import Pipeline, Optimizations, CallGraphTypes
-from perun.collect.optimizations.structs import Parameters
+from perun.collect.trace.optimizations.structs import Pipeline, Optimizations, CallGraphTypes
+from perun.collect.trace.optimizations.structs import Parameters
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli

@@ -1,1453 +1,1466 @@
-begin /home/jirka/perun/experiments/quicksort
-0      0 quicksort(14060):main
-3      8 quicksort(14060):BEFORE_CYCLE
-2     15 quicksort(14060): INSIDE_CYCLE
-0     32 quicksort(14060): _Z12QuickSortBadPii
-0     48 quicksort(14060):  _Z12BadPartitionPiii
-0     63 quicksort(14060):   _Z4SwapRiS_
-1     73 quicksort(14060):   
-1     79 quicksort(14060):  
-0     90 quicksort(14060):  _Z12BadPartitionPiii
-0    105 quicksort(14060):   _Z4SwapRiS_
-1    115 quicksort(14060):   
-0    125 quicksort(14060):   _Z4SwapRiS_
-1    134 quicksort(14060):   
-0    146 quicksort(14060):   _Z4SwapRiS_
-1    154 quicksort(14060):   
-0    165 quicksort(14060):   _Z4SwapRiS_
-1    174 quicksort(14060):   
-1    179 quicksort(14060):  
-0    190 quicksort(14060):  _Z12BadPartitionPiii
-0    204 quicksort(14060):   _Z4SwapRiS_
-1    213 quicksort(14060):   
-1    218 quicksort(14060):  
-0    229 quicksort(14060):  _Z12BadPartitionPiii
-0    244 quicksort(14060):   _Z4SwapRiS_
-1    252 quicksort(14060):   
-0    264 quicksort(14060):   _Z4SwapRiS_
-1    272 quicksort(14060):   
-1    277 quicksort(14060):  
-1    287 quicksort(14060): 
-2    293 quicksort(14060): INSIDE_CYCLE
-0    305 quicksort(14060): _Z12QuickSortBadPii
-0    320 quicksort(14060):  _Z12BadPartitionPiii
-0    334 quicksort(14060):   _Z4SwapRiS_
-1    342 quicksort(14060):   
-1    347 quicksort(14060):  
-0    358 quicksort(14060):  _Z12BadPartitionPiii
-0    396 quicksort(14060):   _Z4SwapRiS_
-1    405 quicksort(14060):   
-0    415 quicksort(14060):   _Z4SwapRiS_
-1    423 quicksort(14060):   
-0    435 quicksort(14060):   _Z4SwapRiS_
-1    444 quicksort(14060):   
-0    454 quicksort(14060):   _Z4SwapRiS_
-1    462 quicksort(14060):   
-0    473 quicksort(14060):   _Z4SwapRiS_
-1    481 quicksort(14060):   
-0    492 quicksort(14060):   _Z4SwapRiS_
-1    501 quicksort(14060):   
-0    511 quicksort(14060):   _Z4SwapRiS_
-1    520 quicksort(14060):   
-0    531 quicksort(14060):   _Z4SwapRiS_
-1    539 quicksort(14060):   
-0    550 quicksort(14060):   _Z4SwapRiS_
-1    559 quicksort(14060):   
-1    564 quicksort(14060):  
-0    574 quicksort(14060):  _Z12BadPartitionPiii
-0    588 quicksort(14060):   _Z4SwapRiS_
-1    596 quicksort(14060):   
-1    600 quicksort(14060):  
-0    610 quicksort(14060):  _Z12BadPartitionPiii
-0    625 quicksort(14060):   _Z4SwapRiS_
-1    634 quicksort(14060):   
-0    645 quicksort(14060):   _Z4SwapRiS_
-1    653 quicksort(14060):   
-0    663 quicksort(14060):   _Z4SwapRiS_
-1    671 quicksort(14060):   
-0    683 quicksort(14060):   _Z4SwapRiS_
-1    692 quicksort(14060):   
-0    703 quicksort(14060):   _Z4SwapRiS_
-1    712 quicksort(14060):   
-0    722 quicksort(14060):   _Z4SwapRiS_
-1    731 quicksort(14060):   
-0    741 quicksort(14060):   _Z4SwapRiS_
-1    749 quicksort(14060):   
-1    753 quicksort(14060):  
-0    764 quicksort(14060):  _Z12BadPartitionPiii
-0    778 quicksort(14060):   _Z4SwapRiS_
-1    787 quicksort(14060):   
-1    791 quicksort(14060):  
-0    802 quicksort(14060):  _Z12BadPartitionPiii
-0    816 quicksort(14060):   _Z4SwapRiS_
-1    825 quicksort(14060):   
-0    834 quicksort(14060):   _Z4SwapRiS_
-1    840 quicksort(14060):   
-0    848 quicksort(14060):   _Z4SwapRiS_
-1    855 quicksort(14060):   
-0    863 quicksort(14060):   _Z4SwapRiS_
-1    869 quicksort(14060):   
-0    878 quicksort(14060):   _Z4SwapRiS_
-1    886 quicksort(14060):   
-1    891 quicksort(14060):  
-0    901 quicksort(14060):  _Z12BadPartitionPiii
-0    915 quicksort(14060):   _Z4SwapRiS_
-1    922 quicksort(14060):   
-1    928 quicksort(14060):  
-0    938 quicksort(14060):  _Z12BadPartitionPiii
-0    952 quicksort(14060):   _Z4SwapRiS_
-1    961 quicksort(14060):   
-0    972 quicksort(14060):   _Z4SwapRiS_
-1    980 quicksort(14060):   
-0    991 quicksort(14060):   _Z4SwapRiS_
-1   1000 quicksort(14060):   
-1   1006 quicksort(14060):  
-0   1017 quicksort(14060):  _Z12BadPartitionPiii
-0   1032 quicksort(14060):   _Z4SwapRiS_
-1   1041 quicksort(14060):   
-1   1046 quicksort(14060):  
-1   1053 quicksort(14060): 
-2   1060 quicksort(14060): INSIDE_CYCLE
-0   1073 quicksort(14060): _Z12QuickSortBadPii
-0   1089 quicksort(14060):  _Z12BadPartitionPiii
-0   1105 quicksort(14060):   _Z4SwapRiS_
-1   1114 quicksort(14060):   
-1   1120 quicksort(14060):  
-0   1131 quicksort(14060):  _Z12BadPartitionPiii
-0   1147 quicksort(14060):   _Z4SwapRiS_
-1   1155 quicksort(14060):   
-0   1165 quicksort(14060):   _Z4SwapRiS_
-1   1174 quicksort(14060):   
-0   1185 quicksort(14060):   _Z4SwapRiS_
-1   1193 quicksort(14060):   
-0   1203 quicksort(14060):   _Z4SwapRiS_
-1   1211 quicksort(14060):   
-0   1221 quicksort(14060):   _Z4SwapRiS_
-1   1229 quicksort(14060):   
-0   1240 quicksort(14060):   _Z4SwapRiS_
-1   1248 quicksort(14060):   
-0   1259 quicksort(14060):   _Z4SwapRiS_
-1   1266 quicksort(14060):   
-0   1277 quicksort(14060):   _Z4SwapRiS_
-1   1284 quicksort(14060):   
-0   1295 quicksort(14060):   _Z4SwapRiS_
-1   1302 quicksort(14060):   
-0   1313 quicksort(14060):   _Z4SwapRiS_
-1   1321 quicksort(14060):   
-0   1332 quicksort(14060):   _Z4SwapRiS_
-1   1340 quicksort(14060):   
-0   1350 quicksort(14060):   _Z4SwapRiS_
-1   1358 quicksort(14060):   
-0   1368 quicksort(14060):   _Z4SwapRiS_
-1   1376 quicksort(14060):   
-0   1386 quicksort(14060):   _Z4SwapRiS_
-1   1394 quicksort(14060):   
-1   1398 quicksort(14060):  
-0   1409 quicksort(14060):  _Z12BadPartitionPiii
-0   1423 quicksort(14060):   _Z4SwapRiS_
-1   1432 quicksort(14060):   
-1   1437 quicksort(14060):  
-0   1448 quicksort(14060):  _Z12BadPartitionPiii
-0   1461 quicksort(14060):   _Z4SwapRiS_
-1   1470 quicksort(14060):   
-0   1480 quicksort(14060):   _Z4SwapRiS_
-1   1487 quicksort(14060):   
-0   1497 quicksort(14060):   _Z4SwapRiS_
-1   1506 quicksort(14060):   
-0   1516 quicksort(14060):   _Z4SwapRiS_
-1   1525 quicksort(14060):   
-0   1536 quicksort(14060):   _Z4SwapRiS_
-1   1544 quicksort(14060):   
-0   1555 quicksort(14060):   _Z4SwapRiS_
-1   1563 quicksort(14060):   
-0   1574 quicksort(14060):   _Z4SwapRiS_
-1   1582 quicksort(14060):   
-0   1593 quicksort(14060):   _Z4SwapRiS_
-1   1601 quicksort(14060):   
-0   1612 quicksort(14060):   _Z4SwapRiS_
-1   1621 quicksort(14060):   
-0   1632 quicksort(14060):   _Z4SwapRiS_
-1   1640 quicksort(14060):   
-0   1650 quicksort(14060):   _Z4SwapRiS_
-1   1658 quicksort(14060):   
-0   1668 quicksort(14060):   _Z4SwapRiS_
-1   1676 quicksort(14060):   
-1   1681 quicksort(14060):  
-0   1692 quicksort(14060):  _Z12BadPartitionPiii
-0   1706 quicksort(14060):   _Z4SwapRiS_
-1   1714 quicksort(14060):   
-1   1719 quicksort(14060):  
-0   1730 quicksort(14060):  _Z12BadPartitionPiii
-0   1745 quicksort(14060):   _Z4SwapRiS_
-1   1752 quicksort(14060):   
-0   1763 quicksort(14060):   _Z4SwapRiS_
-1   1772 quicksort(14060):   
-0   1783 quicksort(14060):   _Z4SwapRiS_
-1   1791 quicksort(14060):   
-0   1801 quicksort(14060):   _Z4SwapRiS_
-1   1809 quicksort(14060):   
-0   1820 quicksort(14060):   _Z4SwapRiS_
-1   1843 quicksort(14060):   
-0   1854 quicksort(14060):   _Z4SwapRiS_
-1   1863 quicksort(14060):   
-0   1876 quicksort(14060):   _Z4SwapRiS_
-1   1884 quicksort(14060):   
-0   1895 quicksort(14060):   _Z4SwapRiS_
-1   1908 quicksort(14060):   
-0   1917 quicksort(14060):   _Z4SwapRiS_
-1   1923 quicksort(14060):   
-0   1932 quicksort(14060):   _Z4SwapRiS_
-1   1939 quicksort(14060):   
-1   1943 quicksort(14060):  
-0   1952 quicksort(14060):  _Z12BadPartitionPiii
-0   1963 quicksort(14060):   _Z4SwapRiS_
-1   1970 quicksort(14060):   
-1   1974 quicksort(14060):  
-0   1983 quicksort(14060):  _Z12BadPartitionPiii
-0   1994 quicksort(14060):   _Z4SwapRiS_
-1   2000 quicksort(14060):   
-0   2009 quicksort(14060):   _Z4SwapRiS_
-1   2016 quicksort(14060):   
-0   2025 quicksort(14060):   _Z4SwapRiS_
-1   2031 quicksort(14060):   
-0   2040 quicksort(14060):   _Z4SwapRiS_
-1   2047 quicksort(14060):   
-0   2055 quicksort(14060):   _Z4SwapRiS_
-1   2062 quicksort(14060):   
-0   2070 quicksort(14060):   _Z4SwapRiS_
-1   2077 quicksort(14060):   
-0   2085 quicksort(14060):   _Z4SwapRiS_
-1   2092 quicksort(14060):   
-0   2100 quicksort(14060):   _Z4SwapRiS_
-1   2107 quicksort(14060):   
-1   2110 quicksort(14060):  
-0   2119 quicksort(14060):  _Z12BadPartitionPiii
-0   2130 quicksort(14060):   _Z4SwapRiS_
-1   2137 quicksort(14060):   
-1   2141 quicksort(14060):  
-0   2149 quicksort(14060):  _Z12BadPartitionPiii
-0   2161 quicksort(14060):   _Z4SwapRiS_
-1   2167 quicksort(14060):   
-0   2176 quicksort(14060):   _Z4SwapRiS_
-1   2183 quicksort(14060):   
-0   2192 quicksort(14060):   _Z4SwapRiS_
-1   2201 quicksort(14060):   
-0   2217 quicksort(14060):   _Z4SwapRiS_
-1   2225 quicksort(14060):   
-0   2236 quicksort(14060):   _Z4SwapRiS_
-1   2245 quicksort(14060):   
-0   2253 quicksort(14060):   _Z4SwapRiS_
-1   2260 quicksort(14060):   
-1   2264 quicksort(14060):  
-0   2276 quicksort(14060):  _Z12BadPartitionPiii
-0   2294 quicksort(14060):   _Z4SwapRiS_
-1   2301 quicksort(14060):   
-1   2304 quicksort(14060):  
-0   2313 quicksort(14060):  _Z12BadPartitionPiii
-0   2325 quicksort(14060):   _Z4SwapRiS_
-1   2331 quicksort(14060):   
-0   2340 quicksort(14060):   _Z4SwapRiS_
-1   2346 quicksort(14060):   
-0   2355 quicksort(14060):   _Z4SwapRiS_
-1   2362 quicksort(14060):   
-0   2370 quicksort(14060):   _Z4SwapRiS_
-1   2377 quicksort(14060):   
-1   2381 quicksort(14060):  
-0   2390 quicksort(14060):  _Z12BadPartitionPiii
-0   2405 quicksort(14060):   _Z4SwapRiS_
-1   2415 quicksort(14060):   
-1   2419 quicksort(14060):  
-0   2430 quicksort(14060):  _Z12BadPartitionPiii
-0   2445 quicksort(14060):   _Z4SwapRiS_
-1   2455 quicksort(14060):   
-0   2465 quicksort(14060):   _Z4SwapRiS_
-1   2473 quicksort(14060):   
-1   2478 quicksort(14060):  
-1   2484 quicksort(14060): 
-2   2491 quicksort(14060): INSIDE_CYCLE
-0   2521 quicksort(14060): _Z12QuickSortBadPii
-0   2537 quicksort(14060):  _Z12BadPartitionPiii
-0   2552 quicksort(14060):   _Z4SwapRiS_
-1   2569 quicksort(14060):   
-1   2571 quicksort(14060):  
-0   2576 quicksort(14060):  _Z12BadPartitionPiii
-0   2583 quicksort(14060):   _Z4SwapRiS_
-1   2586 quicksort(14060):   
-0   2591 quicksort(14060):   _Z4SwapRiS_
-1   2595 quicksort(14060):   
-0   2600 quicksort(14060):   _Z4SwapRiS_
-1   2604 quicksort(14060):   
-0   2609 quicksort(14060):   _Z4SwapRiS_
-1   2613 quicksort(14060):   
-0   2618 quicksort(14060):   _Z4SwapRiS_
-1   2622 quicksort(14060):   
-0   2626 quicksort(14060):   _Z4SwapRiS_
-1   2630 quicksort(14060):   
-0   2635 quicksort(14060):   _Z4SwapRiS_
-1   2640 quicksort(14060):   
-0   2645 quicksort(14060):   _Z4SwapRiS_
-1   2649 quicksort(14060):   
-0   2654 quicksort(14060):   _Z4SwapRiS_
-1   2658 quicksort(14060):   
-0   2663 quicksort(14060):   _Z4SwapRiS_
-1   2667 quicksort(14060):   
-0   2673 quicksort(14060):   _Z4SwapRiS_
-1   2677 quicksort(14060):   
-0   2681 quicksort(14060):   _Z4SwapRiS_
-1   2684 quicksort(14060):   
-0   2688 quicksort(14060):   _Z4SwapRiS_
-1   2691 quicksort(14060):   
-0   2695 quicksort(14060):   _Z4SwapRiS_
-1   2698 quicksort(14060):   
-0   2702 quicksort(14060):   _Z4SwapRiS_
-1   2705 quicksort(14060):   
-0   2709 quicksort(14060):   _Z4SwapRiS_
-1   2712 quicksort(14060):   
-0   2716 quicksort(14060):   _Z4SwapRiS_
-1   2719 quicksort(14060):   
-0   2723 quicksort(14060):   _Z4SwapRiS_
-1   2726 quicksort(14060):   
-0   2730 quicksort(14060):   _Z4SwapRiS_
-1   2733 quicksort(14060):   
-1   2735 quicksort(14060):  
-0   2739 quicksort(14060):  _Z12BadPartitionPiii
-0   2744 quicksort(14060):   _Z4SwapRiS_
-1   2747 quicksort(14060):   
-1   2749 quicksort(14060):  
-0   2753 quicksort(14060):  _Z12BadPartitionPiii
-0   2758 quicksort(14060):   _Z4SwapRiS_
-1   2761 quicksort(14060):   
-0   2765 quicksort(14060):   _Z4SwapRiS_
-1   2768 quicksort(14060):   
-0   2772 quicksort(14060):   _Z4SwapRiS_
-1   2775 quicksort(14060):   
-0   2779 quicksort(14060):   _Z4SwapRiS_
-1   2782 quicksort(14060):   
-0   2786 quicksort(14060):   _Z4SwapRiS_
-1   2789 quicksort(14060):   
-0   2793 quicksort(14060):   _Z4SwapRiS_
-1   2796 quicksort(14060):   
-0   2800 quicksort(14060):   _Z4SwapRiS_
-1   2803 quicksort(14060):   
-0   2807 quicksort(14060):   _Z4SwapRiS_
-1   2810 quicksort(14060):   
-0   2814 quicksort(14060):   _Z4SwapRiS_
-1   2817 quicksort(14060):   
-0   2821 quicksort(14060):   _Z4SwapRiS_
-1   2824 quicksort(14060):   
-0   2828 quicksort(14060):   _Z4SwapRiS_
-1   2831 quicksort(14060):   
-0   2835 quicksort(14060):   _Z4SwapRiS_
-1   2838 quicksort(14060):   
-0   2842 quicksort(14060):   _Z4SwapRiS_
-1   2845 quicksort(14060):   
-0   2849 quicksort(14060):   _Z4SwapRiS_
-1   2852 quicksort(14060):   
-0   2856 quicksort(14060):   _Z4SwapRiS_
-1   2859 quicksort(14060):   
-0   2863 quicksort(14060):   _Z4SwapRiS_
-1   2866 quicksort(14060):   
-0   2870 quicksort(14060):   _Z4SwapRiS_
-1   2873 quicksort(14060):   
-1   2875 quicksort(14060):  
-0   2879 quicksort(14060):  _Z12BadPartitionPiii
-0   2884 quicksort(14060):   _Z4SwapRiS_
-1   2887 quicksort(14060):   
-1   2889 quicksort(14060):  
-0   2893 quicksort(14060):  _Z12BadPartitionPiii
-0   2898 quicksort(14060):   _Z4SwapRiS_
-1   2901 quicksort(14060):   
-0   2905 quicksort(14060):   _Z4SwapRiS_
-1   2908 quicksort(14060):   
-0   2912 quicksort(14060):   _Z4SwapRiS_
-1   2915 quicksort(14060):   
-0   2919 quicksort(14060):   _Z4SwapRiS_
-1   2922 quicksort(14060):   
-0   2926 quicksort(14060):   _Z4SwapRiS_
-1   2929 quicksort(14060):   
-0   2933 quicksort(14060):   _Z4SwapRiS_
-1   2936 quicksort(14060):   
-0   2940 quicksort(14060):   _Z4SwapRiS_
-1   2943 quicksort(14060):   
-0   2947 quicksort(14060):   _Z4SwapRiS_
-1   2950 quicksort(14060):   
-0   2954 quicksort(14060):   _Z4SwapRiS_
-1   2957 quicksort(14060):   
-0   2961 quicksort(14060):   _Z4SwapRiS_
-1   2964 quicksort(14060):   
-0   2968 quicksort(14060):   _Z4SwapRiS_
-1   2971 quicksort(14060):   
-0   2975 quicksort(14060):   _Z4SwapRiS_
-1   2978 quicksort(14060):   
-0   2982 quicksort(14060):   _Z4SwapRiS_
-1   2985 quicksort(14060):   
-0   2989 quicksort(14060):   _Z4SwapRiS_
-1   2992 quicksort(14060):   
-0   2996 quicksort(14060):   _Z4SwapRiS_
-1   2999 quicksort(14060):   
-1   3001 quicksort(14060):  
-0   3005 quicksort(14060):  _Z12BadPartitionPiii
-0   3010 quicksort(14060):   _Z4SwapRiS_
-1   3013 quicksort(14060):   
-1   3015 quicksort(14060):  
-0   3019 quicksort(14060):  _Z12BadPartitionPiii
-0   3024 quicksort(14060):   _Z4SwapRiS_
-1   3027 quicksort(14060):   
-0   3031 quicksort(14060):   _Z4SwapRiS_
-1   3034 quicksort(14060):   
-0   3038 quicksort(14060):   _Z4SwapRiS_
-1   3041 quicksort(14060):   
-0   3045 quicksort(14060):   _Z4SwapRiS_
-1   3048 quicksort(14060):   
-0   3052 quicksort(14060):   _Z4SwapRiS_
-1   3055 quicksort(14060):   
-0   3059 quicksort(14060):   _Z4SwapRiS_
-1   3062 quicksort(14060):   
-0   3066 quicksort(14060):   _Z4SwapRiS_
-1   3069 quicksort(14060):   
-0   3073 quicksort(14060):   _Z4SwapRiS_
-1   3076 quicksort(14060):   
-0   3080 quicksort(14060):   _Z4SwapRiS_
-1   3083 quicksort(14060):   
-0   3087 quicksort(14060):   _Z4SwapRiS_
-1   3090 quicksort(14060):   
-0   3094 quicksort(14060):   _Z4SwapRiS_
-1   3097 quicksort(14060):   
-0   3101 quicksort(14060):   _Z4SwapRiS_
-1   3104 quicksort(14060):   
-0   3108 quicksort(14060):   _Z4SwapRiS_
-1   3111 quicksort(14060):   
-1   3113 quicksort(14060):  
-0   3117 quicksort(14060):  _Z12BadPartitionPiii
-0   3122 quicksort(14060):   _Z4SwapRiS_
-1   3125 quicksort(14060):   
-1   3127 quicksort(14060):  
-0   3131 quicksort(14060):  _Z12BadPartitionPiii
-0   3136 quicksort(14060):   _Z4SwapRiS_
-1   3139 quicksort(14060):   
-0   3143 quicksort(14060):   _Z4SwapRiS_
-1   3146 quicksort(14060):   
-0   3150 quicksort(14060):   _Z4SwapRiS_
-1   3153 quicksort(14060):   
-0   3157 quicksort(14060):   _Z4SwapRiS_
-1   3160 quicksort(14060):   
-0   3164 quicksort(14060):   _Z4SwapRiS_
-1   3167 quicksort(14060):   
-0   3171 quicksort(14060):   _Z4SwapRiS_
-1   3174 quicksort(14060):   
-0   3178 quicksort(14060):   _Z4SwapRiS_
-1   3181 quicksort(14060):   
-0   3185 quicksort(14060):   _Z4SwapRiS_
-1   3188 quicksort(14060):   
-0   3192 quicksort(14060):   _Z4SwapRiS_
-1   3195 quicksort(14060):   
-0   3199 quicksort(14060):   _Z4SwapRiS_
-1   3202 quicksort(14060):   
-0   3206 quicksort(14060):   _Z4SwapRiS_
-1   3209 quicksort(14060):   
-1   3210 quicksort(14060):  
-0   3214 quicksort(14060):  _Z12BadPartitionPiii
-0   3220 quicksort(14060):   _Z4SwapRiS_
-1   3223 quicksort(14060):   
-1   3225 quicksort(14060):  
-0   3229 quicksort(14060):  _Z12BadPartitionPiii
-0   3234 quicksort(14060):   _Z4SwapRiS_
-1   3237 quicksort(14060):   
-0   3241 quicksort(14060):   _Z4SwapRiS_
-1   3244 quicksort(14060):   
-0   3248 quicksort(14060):   _Z4SwapRiS_
-1   3251 quicksort(14060):   
-0   3255 quicksort(14060):   _Z4SwapRiS_
-1   3258 quicksort(14060):   
-0   3262 quicksort(14060):   _Z4SwapRiS_
-1   3265 quicksort(14060):   
-0   3269 quicksort(14060):   _Z4SwapRiS_
-1   3272 quicksort(14060):   
-0   3276 quicksort(14060):   _Z4SwapRiS_
-1   3279 quicksort(14060):   
-0   3283 quicksort(14060):   _Z4SwapRiS_
-1   3286 quicksort(14060):   
-0   3290 quicksort(14060):   _Z4SwapRiS_
-1   3293 quicksort(14060):   
-1   3295 quicksort(14060):  
-0   3299 quicksort(14060):  _Z12BadPartitionPiii
-0   3304 quicksort(14060):   _Z4SwapRiS_
-1   3307 quicksort(14060):   
-1   3309 quicksort(14060):  
-0   3313 quicksort(14060):  _Z12BadPartitionPiii
-0   3318 quicksort(14060):   _Z4SwapRiS_
-1   3321 quicksort(14060):   
-0   3325 quicksort(14060):   _Z4SwapRiS_
-1   3328 quicksort(14060):   
-0   3332 quicksort(14060):   _Z4SwapRiS_
-1   3335 quicksort(14060):   
-0   3339 quicksort(14060):   _Z4SwapRiS_
-1   3342 quicksort(14060):   
-0   3346 quicksort(14060):   _Z4SwapRiS_
-1   3349 quicksort(14060):   
-0   3353 quicksort(14060):   _Z4SwapRiS_
-1   3356 quicksort(14060):   
-0   3360 quicksort(14060):   _Z4SwapRiS_
-1   3363 quicksort(14060):   
-1   3365 quicksort(14060):  
-0   3369 quicksort(14060):  _Z12BadPartitionPiii
-0   3374 quicksort(14060):   _Z4SwapRiS_
-1   3377 quicksort(14060):   
-1   3379 quicksort(14060):  
-0   3383 quicksort(14060):  _Z12BadPartitionPiii
-0   3388 quicksort(14060):   _Z4SwapRiS_
-1   3392 quicksort(14060):   
-0   3396 quicksort(14060):   _Z4SwapRiS_
-1   3399 quicksort(14060):   
-0   3403 quicksort(14060):   _Z4SwapRiS_
-1   3406 quicksort(14060):   
-0   3410 quicksort(14060):   _Z4SwapRiS_
-1   3413 quicksort(14060):   
-0   3417 quicksort(14060):   _Z4SwapRiS_
-1   3420 quicksort(14060):   
-1   3421 quicksort(14060):  
-0   3427 quicksort(14060):  _Z12BadPartitionPiii
-0   3432 quicksort(14060):   _Z4SwapRiS_
-1   3435 quicksort(14060):   
-1   3437 quicksort(14060):  
-0   3441 quicksort(14060):  _Z12BadPartitionPiii
-0   3446 quicksort(14060):   _Z4SwapRiS_
-1   3449 quicksort(14060):   
-0   3453 quicksort(14060):   _Z4SwapRiS_
-1   3456 quicksort(14060):   
-0   3460 quicksort(14060):   _Z4SwapRiS_
-1   3464 quicksort(14060):   
-1   3466 quicksort(14060):  
-0   3470 quicksort(14060):  _Z12BadPartitionPiii
-0   3475 quicksort(14060):   _Z4SwapRiS_
-1   3478 quicksort(14060):   
-1   3480 quicksort(14060):  
-1   3482 quicksort(14060): 
-2   3484 quicksort(14060): INSIDE_CYCLE
-0   3489 quicksort(14060): _Z12QuickSortBadPii
-0   3494 quicksort(14060):  _Z12BadPartitionPiii
-0   3500 quicksort(14060):   _Z4SwapRiS_
-1   3503 quicksort(14060):   
-1   3504 quicksort(14060):  
-0   3508 quicksort(14060):  _Z12BadPartitionPiii
-0   3514 quicksort(14060):   _Z4SwapRiS_
-1   3517 quicksort(14060):   
-0   3521 quicksort(14060):   _Z4SwapRiS_
-1   3524 quicksort(14060):   
-0   3528 quicksort(14060):   _Z4SwapRiS_
-1   3531 quicksort(14060):   
-0   3535 quicksort(14060):   _Z4SwapRiS_
-1   3538 quicksort(14060):   
-0   3542 quicksort(14060):   _Z4SwapRiS_
-1   3545 quicksort(14060):   
-0   3549 quicksort(14060):   _Z4SwapRiS_
-1   3552 quicksort(14060):   
-0   3556 quicksort(14060):   _Z4SwapRiS_
-1   3559 quicksort(14060):   
-0   3563 quicksort(14060):   _Z4SwapRiS_
-1   3566 quicksort(14060):   
-0   3570 quicksort(14060):   _Z4SwapRiS_
-1   3573 quicksort(14060):   
-0   3577 quicksort(14060):   _Z4SwapRiS_
-1   3580 quicksort(14060):   
-0   3584 quicksort(14060):   _Z4SwapRiS_
-1   3587 quicksort(14060):   
-0   3591 quicksort(14060):   _Z4SwapRiS_
-1   3594 quicksort(14060):   
-0   3598 quicksort(14060):   _Z4SwapRiS_
-1   3601 quicksort(14060):   
-0   3605 quicksort(14060):   _Z4SwapRiS_
-1   3608 quicksort(14060):   
-0   3612 quicksort(14060):   _Z4SwapRiS_
-1   3615 quicksort(14060):   
-0   3619 quicksort(14060):   _Z4SwapRiS_
-1   3622 quicksort(14060):   
-0   3626 quicksort(14060):   _Z4SwapRiS_
-1   3629 quicksort(14060):   
-0   3633 quicksort(14060):   _Z4SwapRiS_
-1   3636 quicksort(14060):   
-0   3640 quicksort(14060):   _Z4SwapRiS_
-1   3643 quicksort(14060):   
-0   3647 quicksort(14060):   _Z4SwapRiS_
-1   3650 quicksort(14060):   
-0   3654 quicksort(14060):   _Z4SwapRiS_
-1   3657 quicksort(14060):   
-0   3660 quicksort(14060):   _Z4SwapRiS_
-1   3664 quicksort(14060):   
-0   3667 quicksort(14060):   _Z4SwapRiS_
-1   3670 quicksort(14060):   
-0   3674 quicksort(14060):   _Z4SwapRiS_
-1   3677 quicksort(14060):   
-1   3679 quicksort(14060):  
-0   3683 quicksort(14060):  _Z12BadPartitionPiii
-0   3689 quicksort(14060):   _Z4SwapRiS_
-1   3692 quicksort(14060):   
-1   3693 quicksort(14060):  
-0   3697 quicksort(14060):  _Z12BadPartitionPiii
-0   3703 quicksort(14060):   _Z4SwapRiS_
-1   3706 quicksort(14060):   
-0   3710 quicksort(14060):   _Z4SwapRiS_
-1   3713 quicksort(14060):   
-0   3717 quicksort(14060):   _Z4SwapRiS_
-1   3720 quicksort(14060):   
-0   3724 quicksort(14060):   _Z4SwapRiS_
-1   3727 quicksort(14060):   
-0   3731 quicksort(14060):   _Z4SwapRiS_
-1   3734 quicksort(14060):   
-0   3738 quicksort(14060):   _Z4SwapRiS_
-1   3741 quicksort(14060):   
-0   3745 quicksort(14060):   _Z4SwapRiS_
-1   3748 quicksort(14060):   
-0   3752 quicksort(14060):   _Z4SwapRiS_
-1   3755 quicksort(14060):   
-0   3759 quicksort(14060):   _Z4SwapRiS_
-1   3762 quicksort(14060):   
-0   3766 quicksort(14060):   _Z4SwapRiS_
-1   3769 quicksort(14060):   
-0   3773 quicksort(14060):   _Z4SwapRiS_
-1   3776 quicksort(14060):   
-0   3780 quicksort(14060):   _Z4SwapRiS_
-1   3783 quicksort(14060):   
-0   3787 quicksort(14060):   _Z4SwapRiS_
-1   3790 quicksort(14060):   
-0   3794 quicksort(14060):   _Z4SwapRiS_
-1   3797 quicksort(14060):   
-0   3801 quicksort(14060):   _Z4SwapRiS_
-1   3804 quicksort(14060):   
-0   3808 quicksort(14060):   _Z4SwapRiS_
-1   3811 quicksort(14060):   
-0   3815 quicksort(14060):   _Z4SwapRiS_
-1   3818 quicksort(14060):   
-0   3822 quicksort(14060):   _Z4SwapRiS_
-1   3825 quicksort(14060):   
-0   3829 quicksort(14060):   _Z4SwapRiS_
-1   3832 quicksort(14060):   
-0   3836 quicksort(14060):   _Z4SwapRiS_
-1   3839 quicksort(14060):   
-0   3843 quicksort(14060):   _Z4SwapRiS_
-1   3846 quicksort(14060):   
-0   3850 quicksort(14060):   _Z4SwapRiS_
-1   3853 quicksort(14060):   
-1   3854 quicksort(14060):  
-0   3859 quicksort(14060):  _Z12BadPartitionPiii
-0   3866 quicksort(14060):   _Z4SwapRiS_
-1   3870 quicksort(14060):   
-1   3872 quicksort(14060):  
-0   3877 quicksort(14060):  _Z12BadPartitionPiii
-0   3883 quicksort(14060):   _Z4SwapRiS_
-1   3887 quicksort(14060):   
-0   3892 quicksort(14060):   _Z4SwapRiS_
-1   3896 quicksort(14060):   
-0   3901 quicksort(14060):   _Z4SwapRiS_
-1   3904 quicksort(14060):   
-0   3909 quicksort(14060):   _Z4SwapRiS_
-1   3913 quicksort(14060):   
-0   3918 quicksort(14060):   _Z4SwapRiS_
-1   3922 quicksort(14060):   
-0   3927 quicksort(14060):   _Z4SwapRiS_
-1   3930 quicksort(14060):   
-0   3936 quicksort(14060):   _Z4SwapRiS_
-1   3940 quicksort(14060):   
-0   3945 quicksort(14060):   _Z4SwapRiS_
-1   3949 quicksort(14060):   
-0   3954 quicksort(14060):   _Z4SwapRiS_
-1   3958 quicksort(14060):   
-0   3963 quicksort(14060):   _Z4SwapRiS_
-0   4646 quicksort(14060):   _Z4SwapRiS_
-1   4648 quicksort(14060):   
-1   4649 quicksort(14060):  
-0   4652 quicksort(14060):  _Z12BadPartitionPiii
-0   4655 quicksort(14060):   _Z4SwapRiS_
-1   4657 quicksort(14060):   
-1   4658 quicksort(14060):  
-0   4661 quicksort(14060):  _Z12BadPartitionPiii
-0   4664 quicksort(14060):   _Z4SwapRiS_
-1   4666 quicksort(14060):   
-0   4669 quicksort(14060):   _Z4SwapRiS_
-1   4671 quicksort(14060):   
-0   4673 quicksort(14060):   _Z4SwapRiS_
-1   4675 quicksort(14060):   
-0   4677 quicksort(14060):   _Z4SwapRiS_
-1   4679 quicksort(14060):   
-1   4680 quicksort(14060):  
-0   4683 quicksort(14060):  _Z12BadPartitionPiii
-0   4686 quicksort(14060):   _Z4SwapRiS_
-1   4688 quicksort(14060):   
-1   4689 quicksort(14060):  
-0   4692 quicksort(14060):  _Z12BadPartitionPiii
-0   4695 quicksort(14060):   _Z4SwapRiS_
-1   4697 quicksort(14060):   
-0   4700 quicksort(14060):   _Z4SwapRiS_
-1   4702 quicksort(14060):   
-1   4703 quicksort(14060):  
-1   4704 quicksort(14060): 
-2   4706 quicksort(14060): INSIDE_CYCLE
-0   4709 quicksort(14060): _Z12QuickSortBadPii
-0   4712 quicksort(14060):  _Z12BadPartitionPiii
-0   4715 quicksort(14060):   _Z4SwapRiS_
-1   4717 quicksort(14060):   
-1   4718 quicksort(14060):  
-0   4721 quicksort(14060):  _Z12BadPartitionPiii
-0   4724 quicksort(14060):   _Z4SwapRiS_
-1   4726 quicksort(14060):   
-0   4729 quicksort(14060):   _Z4SwapRiS_
-1   4731 quicksort(14060):   
-0   4733 quicksort(14060):   _Z4SwapRiS_
-1   4735 quicksort(14060):   
-0   4738 quicksort(14060):   _Z4SwapRiS_
-1   4740 quicksort(14060):   
-0   4742 quicksort(14060):   _Z4SwapRiS_
-1   4744 quicksort(14060):   
-0   4747 quicksort(14060):   _Z4SwapRiS_
-1   4749 quicksort(14060):   
-0   4751 quicksort(14060):   _Z4SwapRiS_
-1   4753 quicksort(14060):   
-0   4755 quicksort(14060):   _Z4SwapRiS_
-1   4757 quicksort(14060):   
-0   4760 quicksort(14060):   _Z4SwapRiS_
-1   4762 quicksort(14060):   
-0   4764 quicksort(14060):   _Z4SwapRiS_
-1   4766 quicksort(14060):   
-0   4769 quicksort(14060):   _Z4SwapRiS_
-1   4771 quicksort(14060):   
-0   4773 quicksort(14060):   _Z4SwapRiS_
-1   4775 quicksort(14060):   
-0   4778 quicksort(14060):   _Z4SwapRiS_
-1   4780 quicksort(14060):   
-0   4783 quicksort(14060):   _Z4SwapRiS_
-1   4784 quicksort(14060):   
-0   4787 quicksort(14060):   _Z4SwapRiS_
-1   4789 quicksort(14060):   
-0   4791 quicksort(14060):   _Z4SwapRiS_
-1   4793 quicksort(14060):   
-0   4796 quicksort(14060):   _Z4SwapRiS_
-1   4798 quicksort(14060):   
-0   4800 quicksort(14060):   _Z4SwapRiS_
-1   4802 quicksort(14060):   
-0   4805 quicksort(14060):   _Z4SwapRiS_
-1   4807 quicksort(14060):   
-0   4809 quicksort(14060):   _Z4SwapRiS_
-1   4811 quicksort(14060):   
-0   4814 quicksort(14060):   _Z4SwapRiS_
-1   4816 quicksort(14060):   
-0   4818 quicksort(14060):   _Z4SwapRiS_
-1   4820 quicksort(14060):   
-0   4823 quicksort(14060):   _Z4SwapRiS_
-1   4825 quicksort(14060):   
-0   4827 quicksort(14060):   _Z4SwapRiS_
-1   4829 quicksort(14060):   
-0   4832 quicksort(14060):   _Z4SwapRiS_
-1   4834 quicksort(14060):   
-0   4836 quicksort(14060):   _Z4SwapRiS_
-1   4838 quicksort(14060):   
-0   4840 quicksort(14060):   _Z4SwapRiS_
-1   4842 quicksort(14060):   
-0   4845 quicksort(14060):   _Z4SwapRiS_
-1   4847 quicksort(14060):   
-0   4849 quicksort(14060):   _Z4SwapRiS_
-1   4851 quicksort(14060):   
-1   4852 quicksort(14060):  
-0   4855 quicksort(14060):  _Z12BadPartitionPiii
-0   4858 quicksort(14060):   _Z4SwapRiS_
-1   4860 quicksort(14060):   
-1   4861 quicksort(14060):  
-0   4864 quicksort(14060):  _Z12BadPartitionPiii
-0   4867 quicksort(14060):   _Z4SwapRiS_
-1   4870 quicksort(14060):   
-0   4872 quicksort(14060):   _Z4SwapRiS_
-1   4874 quicksort(14060):   
-0   4877 quicksort(14060):   _Z4SwapRiS_
-1   4879 quicksort(14060):   
-0   4881 quicksort(14060):   _Z4SwapRiS_
-1   4883 quicksort(14060):   
-0   4886 quicksort(14060):   _Z4SwapRiS_
-1   4888 quicksort(14060):   
-0   4890 quicksort(14060):   _Z4SwapRiS_
-1   4892 quicksort(14060):   
-0   4895 quicksort(14060):   _Z4SwapRiS_
-1   4896 quicksort(14060):   
-0   4899 quicksort(14060):   _Z4SwapRiS_
-1   4901 quicksort(14060):   
-0   4904 quicksort(14060):   _Z4SwapRiS_
-1   4905 quicksort(14060):   
-0   4908 quicksort(14060):   _Z4SwapRiS_
-1   4910 quicksort(14060):   
-0   4913 quicksort(14060):   _Z4SwapRiS_
-1   4914 quicksort(14060):   
-0   4917 quicksort(14060):   _Z4SwapRiS_
-1   4919 quicksort(14060):   
-0   4921 quicksort(14060):   _Z4SwapRiS_
-1   4923 quicksort(14060):   
-0   4926 quicksort(14060):   _Z4SwapRiS_
-1   4928 quicksort(14060):   
-0   4930 quicksort(14060):   _Z4SwapRiS_
-1   4932 quicksort(14060):   
-0   4935 quicksort(14060):   _Z4SwapRiS_
-1   4937 quicksort(14060):   
-0   4939 quicksort(14060):   _Z4SwapRiS_
-1   4941 quicksort(14060):   
-0   4944 quicksort(14060):   _Z4SwapRiS_
-1   4946 quicksort(14060):   
-0   4949 quicksort(14060):   _Z4SwapRiS_
-1   4951 quicksort(14060):   
-0   4954 quicksort(14060):   _Z4SwapRiS_
-1   4956 quicksort(14060):   
-0   4958 quicksort(14060):   _Z4SwapRiS_
-1   4960 quicksort(14060):   
-0   4962 quicksort(14060):   _Z4SwapRiS_
-1   4964 quicksort(14060):   
-0   4967 quicksort(14060):   _Z4SwapRiS_
-1   4969 quicksort(14060):   
-0   4971 quicksort(14060):   _Z4SwapRiS_
-1   4973 quicksort(14060):   
-0   4976 quicksort(14060):   _Z4SwapRiS_
-1   4978 quicksort(14060):   
-0   4981 quicksort(14060):   _Z4SwapRiS_
-1   4983 quicksort(14060):   
-0   4986 quicksort(14060):   _Z4SwapRiS_
-1   4990 quicksort(14060):   
-1   4991 quicksort(14060):  
-0   4995 quicksort(14060):  _Z12BadPartitionPiii
-0   4999 quicksort(14060):   _Z4SwapRiS_
-1   5001 quicksort(14060):   
-1   5002 quicksort(14060):  
-0   5004 quicksort(14060):  _Z12BadPartitionPiii
-0   5008 quicksort(14060):   _Z4SwapRiS_
-1   5010 quicksort(14060):   
-0   5012 quicksort(14060):   _Z4SwapRiS_
-1   5014 quicksort(14060):   
-0   5017 quicksort(14060):   _Z4SwapRiS_
-1   5019 quicksort(14060):   
-0   5021 quicksort(14060):   _Z4SwapRiS_
-1   5023 quicksort(14060):   
-0   5026 quicksort(14060):   _Z4SwapRiS_
-1   5027 quicksort(14060):   
-0   5030 quicksort(14060):   _Z4SwapRiS_
-1   5032 quicksort(14060):   
-0   5034 quicksort(14060):   _Z4SwapRiS_
-1   5036 quicksort(14060):   
-0   5039 quicksort(14060):   _Z4SwapRiS_
-1   5041 quicksort(14060):   
-0   5043 quicksort(14060):   _Z4SwapRiS_
-1   5045 quicksort(14060):   
-0   5048 quicksort(14060):   _Z4SwapRiS_
-1   5050 quicksort(14060):   
-0   5052 quicksort(14060):   _Z4SwapRiS_
-1   5054 quicksort(14060):   
-0   5057 quicksort(14060):   _Z4SwapRiS_
-1   5059 quicksort(14060):   
-0   5061 quicksort(14060):   _Z4SwapRiS_
-1   5063 quicksort(14060):   
-0   5066 quicksort(14060):   _Z4SwapRiS_
-1   5067 quicksort(14060):   
-0   5070 quicksort(14060):   _Z4SwapRiS_
-1   5072 quicksort(14060):   
-0   5074 quicksort(14060):   _Z4SwapRiS_
-1   5076 quicksort(14060):   
-0   5079 quicksort(14060):   _Z4SwapRiS_
-1   5081 quicksort(14060):   
-0   5083 quicksort(14060):   _Z4SwapRiS_
-1   5085 quicksort(14060):   
-0   5088 quicksort(14060):   _Z4SwapRiS_
-1   5090 quicksort(14060):   
-0   5092 quicksort(14060):   _Z4SwapRiS_
-1   5094 quicksort(14060):   
-0   5097 quicksort(14060):   _Z4SwapRiS_
-1   5099 quicksort(14060):   
-0   5101 quicksort(14060):   _Z4SwapRiS_
-1   5103 quicksort(14060):   
-0   5106 quicksort(14060):   _Z4SwapRiS_
-1   5108 quicksort(14060):   
-0   5110 quicksort(14060):   _Z4SwapRiS_
-1   5112 quicksort(14060):   
-0   5114 quicksort(14060):   _Z4SwapRiS_
-1   5116 quicksort(14060):   
-1   5117 quicksort(14060):  
-0   5120 quicksort(14060):  _Z12BadPartitionPiii
-0   5123 quicksort(14060):   _Z4SwapRiS_
-1   5125 quicksort(14060):   
-1   5127 quicksort(14060):  
-0   5129 quicksort(14060):  _Z12BadPartitionPiii
-0   5133 quicksort(14060):   _Z4SwapRiS_
-1   5135 quicksort(14060):   
-0   5137 quicksort(14060):   _Z4SwapRiS_
-1   5139 quicksort(14060):   
-0   5141 quicksort(14060):   _Z4SwapRiS_
-1   5143 quicksort(14060):   
-0   5146 quicksort(14060):   _Z4SwapRiS_
-1   5148 quicksort(14060):   
-0   5150 quicksort(14060):   _Z4SwapRiS_
-1   5152 quicksort(14060):   
-0   5155 quicksort(14060):   _Z4SwapRiS_
-1   5157 quicksort(14060):   
-0   5159 quicksort(14060):   _Z4SwapRiS_
-1   5161 quicksort(14060):   
-0   5164 quicksort(14060):   _Z4SwapRiS_
-1   5166 quicksort(14060):   
-0   5168 quicksort(14060):   _Z4SwapRiS_
-1   5170 quicksort(14060):   
-0   5173 quicksort(14060):   _Z4SwapRiS_
-1   5174 quicksort(14060):   
-0   5177 quicksort(14060):   _Z4SwapRiS_
-1   5179 quicksort(14060):   
-0   5181 quicksort(14060):   _Z4SwapRiS_
-1   5183 quicksort(14060):   
-0   5186 quicksort(14060):   _Z4SwapRiS_
-1   5188 quicksort(14060):   
-0   5190 quicksort(14060):   _Z4SwapRiS_
-1   5192 quicksort(14060):   
-0   5195 quicksort(14060):   _Z4SwapRiS_
-1   5197 quicksort(14060):   
-0   5199 quicksort(14060):   _Z4SwapRiS_
-1   5201 quicksort(14060):   
-0   5204 quicksort(14060):   _Z4SwapRiS_
-1   5206 quicksort(14060):   
-0   5208 quicksort(14060):   _Z4SwapRiS_
-1   5210 quicksort(14060):   
-0   5213 quicksort(14060):   _Z4SwapRiS_
-1   5214 quicksort(14060):   
-0   5217 quicksort(14060):   _Z4SwapRiS_
-1   5219 quicksort(14060):   
-0   5221 quicksort(14060):   _Z4SwapRiS_
-1   5223 quicksort(14060):   
-0   5226 quicksort(14060):   _Z4SwapRiS_
-1   5228 quicksort(14060):   
-0   5230 quicksort(14060):   _Z4SwapRiS_
-1   5232 quicksort(14060):   
-1   5233 quicksort(14060):  
-0   5236 quicksort(14060):  _Z12BadPartitionPiii
-0   5240 quicksort(14060):   _Z4SwapRiS_
-1   5241 quicksort(14060):   
-1   5243 quicksort(14060):  
-0   5245 quicksort(14060):  _Z12BadPartitionPiii
-0   5249 quicksort(14060):   _Z4SwapRiS_
-1   5251 quicksort(14060):   
-0   5254 quicksort(14060):   _Z4SwapRiS_
-1   5256 quicksort(14060):   
-0   5258 quicksort(14060):   _Z4SwapRiS_
-1   5260 quicksort(14060):   
-0   5262 quicksort(14060):   _Z4SwapRiS_
-1   5264 quicksort(14060):   
-0   5267 quicksort(14060):   _Z4SwapRiS_
-1   5269 quicksort(14060):   
-0   5271 quicksort(14060):   _Z4SwapRiS_
-1   5273 quicksort(14060):   
-0   5276 quicksort(14060):   _Z4SwapRiS_
-1   5278 quicksort(14060):   
-0   5280 quicksort(14060):   _Z4SwapRiS_
-1   5282 quicksort(14060):   
-0   5285 quicksort(14060):   _Z4SwapRiS_
-1   5287 quicksort(14060):   
-0   5289 quicksort(14060):   _Z4SwapRiS_
-1   5291 quicksort(14060):   
-0   5294 quicksort(14060):   _Z4SwapRiS_
-1   5296 quicksort(14060):   
-0   5298 quicksort(14060):   _Z4SwapRiS_
-1   5300 quicksort(14060):   
-0   5303 quicksort(14060):   _Z4SwapRiS_
-1   5305 quicksort(14060):   
-0   5307 quicksort(14060):   _Z4SwapRiS_
-1   5309 quicksort(14060):   
-0   5312 quicksort(14060):   _Z4SwapRiS_
-1   5314 quicksort(14060):   
-0   5316 quicksort(14060):   _Z4SwapRiS_
-1   5318 quicksort(14060):   
-0   5321 quicksort(14060):   _Z4SwapRiS_
-1   5323 quicksort(14060):   
-0   5325 quicksort(14060):   _Z4SwapRiS_
-1   5327 quicksort(14060):   
-0   5330 quicksort(14060):   _Z4SwapRiS_
-1   5332 quicksort(14060):   
-0   5334 quicksort(14060):   _Z4SwapRiS_
-1   5337 quicksort(14060):   
-0   5339 quicksort(14060):   _Z4SwapRiS_
-1   5341 quicksort(14060):   
-1   5342 quicksort(14060):  
-0   5345 quicksort(14060):  _Z12BadPartitionPiii
-0   5348 quicksort(14060):   _Z4SwapRiS_
-1   5350 quicksort(14060):   
-1   5351 quicksort(14060):  
-0   5354 quicksort(14060):  _Z12BadPartitionPiii
-0   5357 quicksort(14060):   _Z4SwapRiS_
-1   5359 quicksort(14060):   
-0   5361 quicksort(14060):   _Z4SwapRiS_
-1   5363 quicksort(14060):   
-0   5366 quicksort(14060):   _Z4SwapRiS_
-1   5368 quicksort(14060):   
-0   5370 quicksort(14060):   _Z4SwapRiS_
-1   5372 quicksort(14060):   
-0   5375 quicksort(14060):   _Z4SwapRiS_
-1   5377 quicksort(14060):   
-0   5379 quicksort(14060):   _Z4SwapRiS_
-1   5381 quicksort(14060):   
-0   5384 quicksort(14060):   _Z4SwapRiS_
-1   5385 quicksort(14060):   
-0   5388 quicksort(14060):   _Z4SwapRiS_
-1   5390 quicksort(14060):   
-0   5392 quicksort(14060):   _Z4SwapRiS_
-1   5394 quicksort(14060):   
-0   5397 quicksort(14060):   _Z4SwapRiS_
-1   5399 quicksort(14060):   
-0   5401 quicksort(14060):   _Z4SwapRiS_
-1   5403 quicksort(14060):   
-0   5406 quicksort(14060):   _Z4SwapRiS_
-1   5408 quicksort(14060):   
-0   5410 quicksort(14060):   _Z4SwapRiS_
-1   5412 quicksort(14060):   
-0   5415 quicksort(14060):   _Z4SwapRiS_
-1   5417 quicksort(14060):   
-0   5419 quicksort(14060):   _Z4SwapRiS_
-1   5421 quicksort(14060):   
-0   5423 quicksort(14060):   _Z4SwapRiS_
-1   5425 quicksort(14060):   
-0   5428 quicksort(14060):   _Z4SwapRiS_
-1   5430 quicksort(14060):   
-0   5432 quicksort(14060):   _Z4SwapRiS_
-1   5434 quicksort(14060):   
-0   5437 quicksort(14060):   _Z4SwapRiS_
-1   5439 quicksort(14060):   
-1   5440 quicksort(14060):  
-0   5442 quicksort(14060):  _Z12BadPartitionPiii
-0   5446 quicksort(14060):   _Z4SwapRiS_
-1   5448 quicksort(14060):   
-1   5449 quicksort(14060):  
-0   5451 quicksort(14060):  _Z12BadPartitionPiii
-0   5455 quicksort(14060):   _Z4SwapRiS_
-1   5457 quicksort(14060):   
-0   5459 quicksort(14060):   _Z4SwapRiS_
-1   5461 quicksort(14060):   
-0   5464 quicksort(14060):   _Z4SwapRiS_
-1   5466 quicksort(14060):   
-0   5468 quicksort(14060):   _Z4SwapRiS_
-1   5470 quicksort(14060):   
-0   5473 quicksort(14060):   _Z4SwapRiS_
-1   5474 quicksort(14060):   
-0   5477 quicksort(14060):   _Z4SwapRiS_
-1   5479 quicksort(14060):   
-0   5482 quicksort(14060):   _Z4SwapRiS_
-1   5483 quicksort(14060):   
-0   5486 quicksort(14060):   _Z4SwapRiS_
-1   5488 quicksort(14060):   
-0   5490 quicksort(14060):   _Z4SwapRiS_
-1   5492 quicksort(14060):   
-0   5495 quicksort(14060):   _Z4SwapRiS_
-1   5497 quicksort(14060):   
-0   5499 quicksort(14060):   _Z4SwapRiS_
-1   5501 quicksort(14060):   
-0   5504 quicksort(14060):   _Z4SwapRiS_
-1   5506 quicksort(14060):   
-0   5508 quicksort(14060):   _Z4SwapRiS_
-1   5510 quicksort(14060):   
-0   5513 quicksort(14060):   _Z4SwapRiS_
-1   5515 quicksort(14060):   
-0   5517 quicksort(14060):   _Z4SwapRiS_
-1   5519 quicksort(14060):   
-0   5522 quicksort(14060):   _Z4SwapRiS_
-1   5524 quicksort(14060):   
-0   5526 quicksort(14060):   _Z4SwapRiS_
-1   5528 quicksort(14060):   
-1   5529 quicksort(14060):  
-0   5532 quicksort(14060):  _Z12BadPartitionPiii
-0   5535 quicksort(14060):   _Z4SwapRiS_
-1   5537 quicksort(14060):   
-1   5538 quicksort(14060):  
-0   5541 quicksort(14060):  _Z12BadPartitionPiii
-0   5544 quicksort(14060):   _Z4SwapRiS_
-1   5546 quicksort(14060):   
-0   5549 quicksort(14060):   _Z4SwapRiS_
-1   5550 quicksort(14060):   
-0   5553 quicksort(14060):   _Z4SwapRiS_
-1   5555 quicksort(14060):   
-0   5557 quicksort(14060):   _Z4SwapRiS_
-1   5559 quicksort(14060):   
-0   5562 quicksort(14060):   _Z4SwapRiS_
-1   5564 quicksort(14060):   
-0   5566 quicksort(14060):   _Z4SwapRiS_
-1   5568 quicksort(14060):   
-0   5571 quicksort(14060):   _Z4SwapRiS_
-1   5573 quicksort(14060):   
-0   5575 quicksort(14060):   _Z4SwapRiS_
-1   5577 quicksort(14060):   
-0   5580 quicksort(14060):   _Z4SwapRiS_
-1   5582 quicksort(14060):   
-0   5584 quicksort(14060):   _Z4SwapRiS_
-1   5586 quicksort(14060):   
-0   5589 quicksort(14060):   _Z4SwapRiS_
-1   5590 quicksort(14060):   
-0   5593 quicksort(14060):   _Z4SwapRiS_
-1   5595 quicksort(14060):   
-0   5597 quicksort(14060):   _Z4SwapRiS_
-1   5599 quicksort(14060):   
-0   5602 quicksort(14060):   _Z4SwapRiS_
-1   5604 quicksort(14060):   
-0   5606 quicksort(14060):   _Z4SwapRiS_
-1   5608 quicksort(14060):   
-1   5609 quicksort(14060):  
-0   5612 quicksort(14060):  _Z12BadPartitionPiii
-0   5615 quicksort(14060):   _Z4SwapRiS_
-1   5617 quicksort(14060):   
-1   5618 quicksort(14060):  
-0   5621 quicksort(14060):  _Z12BadPartitionPiii
-0   5624 quicksort(14060):   _Z4SwapRiS_
-1   5626 quicksort(14060):   
-0   5629 quicksort(14060):   _Z4SwapRiS_
-1   5631 quicksort(14060):   
-0   5633 quicksort(14060):   _Z4SwapRiS_
-1   5635 quicksort(14060):   
-0   5638 quicksort(14060):   _Z4SwapRiS_
-1   5639 quicksort(14060):   
-0   5642 quicksort(14060):   _Z4SwapRiS_
-1   5644 quicksort(14060):   
-0   5646 quicksort(14060):   _Z4SwapRiS_
-1   5648 quicksort(14060):   
-0   5651 quicksort(14060):   _Z4SwapRiS_
-1   5653 quicksort(14060):   
-0   5655 quicksort(14060):   _Z4SwapRiS_
-1   5657 quicksort(14060):   
-0   5660 quicksort(14060):   _Z4SwapRiS_
-1   5662 quicksort(14060):   
-0   5664 quicksort(14060):   _Z4SwapRiS_
-1   5666 quicksort(14060):   
-0   5669 quicksort(14060):   _Z4SwapRiS_
-1   5671 quicksort(14060):   
-0   5673 quicksort(14060):   _Z4SwapRiS_
-1   5675 quicksort(14060):   
-0   5678 quicksort(14060):   _Z4SwapRiS_
-1   5679 quicksort(14060):   
-1   5681 quicksort(14060):  
-0   5683 quicksort(14060):  _Z12BadPartitionPiii
-0   5686 quicksort(14060):   _Z4SwapRiS_
-1   5688 quicksort(14060):   
-1   5689 quicksort(14060):  
-0   5692 quicksort(14060):  _Z12BadPartitionPiii
-0   5695 quicksort(14060):   _Z4SwapRiS_
-1   5697 quicksort(14060):   
-0   5700 quicksort(14060):   _Z4SwapRiS_
-1   5702 quicksort(14060):   
-0   5704 quicksort(14060):   _Z4SwapRiS_
-1   5706 quicksort(14060):   
-0   5709 quicksort(14060):   _Z4SwapRiS_
-1   5711 quicksort(14060):   
-0   5713 quicksort(14060):   _Z4SwapRiS_
-1   5715 quicksort(14060):   
-0   5718 quicksort(14060):   _Z4SwapRiS_
-1   5719 quicksort(14060):   
-0   5722 quicksort(14060):   _Z4SwapRiS_
-1   5724 quicksort(14060):   
-0   5726 quicksort(14060):   _Z4SwapRiS_
-1   5728 quicksort(14060):   
-0   5731 quicksort(14060):   _Z4SwapRiS_
-1   5733 quicksort(14060):   
-0   5736 quicksort(14060):   _Z4SwapRiS_
-1   5738 quicksort(14060):   
-0   5740 quicksort(14060):   _Z4SwapRiS_
-1   5742 quicksort(14060):   
-1   5743 quicksort(14060):  
-0   5746 quicksort(14060):  _Z12BadPartitionPiii
-0   5749 quicksort(14060):   _Z4SwapRiS_
-1   5751 quicksort(14060):   
-1   5752 quicksort(14060):  
-0   5755 quicksort(14060):  _Z12BadPartitionPiii
-0   5758 quicksort(14060):   _Z4SwapRiS_
-1   5760 quicksort(14060):   
-0   5763 quicksort(14060):   _Z4SwapRiS_
-1   5765 quicksort(14060):   
-0   5768 quicksort(14060):   _Z4SwapRiS_
-1   5770 quicksort(14060):   
-0   5772 quicksort(14060):   _Z4SwapRiS_
-1   5774 quicksort(14060):   
-0   5777 quicksort(14060):   _Z4SwapRiS_
-1   5779 quicksort(14060):   
-0   5781 quicksort(14060):   _Z4SwapRiS_
-1   5783 quicksort(14060):   
-0   5786 quicksort(14060):   _Z4SwapRiS_
-1   5788 quicksort(14060):   
-0   5790 quicksort(14060):   _Z4SwapRiS_
-1   5792 quicksort(14060):   
-0   5795 quicksort(14060):   _Z4SwapRiS_
-1   5797 quicksort(14060):   
-1   5798 quicksort(14060):  
-0   5800 quicksort(14060):  _Z12BadPartitionPiii
-0   5804 quicksort(14060):   _Z4SwapRiS_
-1   5806 quicksort(14060):   
-1   5807 quicksort(14060):  
-0   5809 quicksort(14060):  _Z12BadPartitionPiii
-0   5813 quicksort(14060):   _Z4SwapRiS_
-1   5815 quicksort(14060):   
-0   5817 quicksort(14060):   _Z4SwapRiS_
-1   5819 quicksort(14060):   
-0   5822 quicksort(14060):   _Z4SwapRiS_
-1   5823 quicksort(14060):   
-0   5826 quicksort(14060):   _Z4SwapRiS_
-1   5828 quicksort(14060):   
-0   5830 quicksort(14060):   _Z4SwapRiS_
-1   5832 quicksort(14060):   
-0   5835 quicksort(14060):   _Z4SwapRiS_
-1   5837 quicksort(14060):   
-0   5839 quicksort(14060):   _Z4SwapRiS_
-1   5841 quicksort(14060):   
-1   5842 quicksort(14060):  
-0   5845 quicksort(14060):  _Z12BadPartitionPiii
-0   5848 quicksort(14060):   _Z4SwapRiS_
-1   5850 quicksort(14060):   
-1   5851 quicksort(14060):  
-0   5854 quicksort(14060):  _Z12BadPartitionPiii
-0   5857 quicksort(14060):   _Z4SwapRiS_
-1   5859 quicksort(14060):   
-0   5862 quicksort(14060):   _Z4SwapRiS_
-1   5863 quicksort(14060):   
-0   5866 quicksort(14060):   _Z4SwapRiS_
-1   5868 quicksort(14060):   
-0   5870 quicksort(14060):   _Z4SwapRiS_
-1   5872 quicksort(14060):   
-0   5875 quicksort(14060):   _Z4SwapRiS_
-0   3972 quicksort(14060):   _Z4SwapRiS_
-1   3976 quicksort(14060):   
-0   3981 quicksort(14060):   _Z4SwapRiS_
-1   3985 quicksort(14060):   
-0   3990 quicksort(14060):   _Z4SwapRiS_
-1   3994 quicksort(14060):   
-0   3999 quicksort(14060):   _Z4SwapRiS_
-1   4003 quicksort(14060):   
-0   4008 quicksort(14060):   _Z4SwapRiS_
-1   4012 quicksort(14060):   
-0   4017 quicksort(14060):   _Z4SwapRiS_
-1   4021 quicksort(14060):   
-0   4026 quicksort(14060):   _Z4SwapRiS_
-1   4028 quicksort(14060):   
-0   4032 quicksort(14060):   _Z4SwapRiS_
-1   4035 quicksort(14060):   
-0   4039 quicksort(14060):   _Z4SwapRiS_
-1   4042 quicksort(14060):   
-0   4046 quicksort(14060):   _Z4SwapRiS_
-1   4049 quicksort(14060):   
-1   4051 quicksort(14060):  
-0   4055 quicksort(14060):  _Z12BadPartitionPiii
-0   4061 quicksort(14060):   _Z4SwapRiS_
-1   4064 quicksort(14060):   
-1   4065 quicksort(14060):  
-0   4069 quicksort(14060):  _Z12BadPartitionPiii
-0   4075 quicksort(14060):   _Z4SwapRiS_
-1   4078 quicksort(14060):   
-0   4082 quicksort(14060):   _Z4SwapRiS_
-1   4085 quicksort(14060):   
-0   4089 quicksort(14060):   _Z4SwapRiS_
-1   4092 quicksort(14060):   
-0   4096 quicksort(14060):   _Z4SwapRiS_
-1   4099 quicksort(14060):   
-0   4103 quicksort(14060):   _Z4SwapRiS_
-1   4106 quicksort(14060):   
-0   4110 quicksort(14060):   _Z4SwapRiS_
-1   4113 quicksort(14060):   
-0   4117 quicksort(14060):   _Z4SwapRiS_
-1   4120 quicksort(14060):   
-0   4124 quicksort(14060):   _Z4SwapRiS_
-1   4127 quicksort(14060):   
-0   4131 quicksort(14060):   _Z4SwapRiS_
-1   4134 quicksort(14060):   
-0   4138 quicksort(14060):   _Z4SwapRiS_
-1   4141 quicksort(14060):   
-0   4144 quicksort(14060):   _Z4SwapRiS_
-1   4148 quicksort(14060):   
-0   4151 quicksort(14060):   _Z4SwapRiS_
-1   4154 quicksort(14060):   
-0   4158 quicksort(14060):   _Z4SwapRiS_
-1   4161 quicksort(14060):   
-0   4165 quicksort(14060):   _Z4SwapRiS_
-1   4168 quicksort(14060):   
-0   4172 quicksort(14060):   _Z4SwapRiS_
-1   4175 quicksort(14060):   
-0   4179 quicksort(14060):   _Z4SwapRiS_
-1   4182 quicksort(14060):   
-0   4186 quicksort(14060):   _Z4SwapRiS_
-1   4189 quicksort(14060):   
-0   4193 quicksort(14060):   _Z4SwapRiS_
-1   4196 quicksort(14060):   
-1   4198 quicksort(14060):  
-0   4202 quicksort(14060):  _Z12BadPartitionPiii
-0   4207 quicksort(14060):   _Z4SwapRiS_
-1   4210 quicksort(14060):   
-1   4212 quicksort(14060):  
-0   4216 quicksort(14060):  _Z12BadPartitionPiii
-0   4221 quicksort(14060):   _Z4SwapRiS_
-1   4224 quicksort(14060):   
-0   4228 quicksort(14060):   _Z4SwapRiS_
-1   4231 quicksort(14060):   
-0   4235 quicksort(14060):   _Z4SwapRiS_
-1   4238 quicksort(14060):   
-0   4242 quicksort(14060):   _Z4SwapRiS_
-1   4245 quicksort(14060):   
-0   4249 quicksort(14060):   _Z4SwapRiS_
-1   4252 quicksort(14060):   
-0   4267 quicksort(14060):   _Z4SwapRiS_
-1   4269 quicksort(14060):   
-0   4272 quicksort(14060):   _Z4SwapRiS_
-1   4274 quicksort(14060):   
-0   4276 quicksort(14060):   _Z4SwapRiS_
-1   4278 quicksort(14060):   
-0   4281 quicksort(14060):   _Z4SwapRiS_
-1   4282 quicksort(14060):   
-0   4285 quicksort(14060):   _Z4SwapRiS_
-1   4287 quicksort(14060):   
-0   4289 quicksort(14060):   _Z4SwapRiS_
-1   4291 quicksort(14060):   
-0   4294 quicksort(14060):   _Z4SwapRiS_
-1   4296 quicksort(14060):   
-0   4298 quicksort(14060):   _Z4SwapRiS_
-1   4300 quicksort(14060):   
-0   4303 quicksort(14060):   _Z4SwapRiS_
-1   4305 quicksort(14060):   
-0   4307 quicksort(14060):   _Z4SwapRiS_
-1   4309 quicksort(14060):   
-0   4312 quicksort(14060):   _Z4SwapRiS_
-1   4314 quicksort(14060):   
-1   4315 quicksort(14060):  
-0   4317 quicksort(14060):  _Z12BadPartitionPiii
-0   4321 quicksort(14060):   _Z4SwapRiS_
-1   4322 quicksort(14060):   
-1   4324 quicksort(14060):  
-0   4326 quicksort(14060):  _Z12BadPartitionPiii
-0   4329 quicksort(14060):   _Z4SwapRiS_
-1   4331 quicksort(14060):   
-0   4334 quicksort(14060):   _Z4SwapRiS_
-1   4336 quicksort(14060):   
-0   4338 quicksort(14060):   _Z4SwapRiS_
-1   4340 quicksort(14060):   
-0   4343 quicksort(14060):   _Z4SwapRiS_
-1   4345 quicksort(14060):   
-0   4347 quicksort(14060):   _Z4SwapRiS_
-1   4349 quicksort(14060):   
-0   4352 quicksort(14060):   _Z4SwapRiS_
-1   4354 quicksort(14060):   
-0   4356 quicksort(14060):   _Z4SwapRiS_
-1   4358 quicksort(14060):   
-0   4361 quicksort(14060):   _Z4SwapRiS_
-1   4362 quicksort(14060):   
-0   4398 quicksort(14060):   _Z4SwapRiS_
-1   4400 quicksort(14060):   
-0   4403 quicksort(14060):   _Z4SwapRiS_
-1   4405 quicksort(14060):   
-0   4408 quicksort(14060):   _Z4SwapRiS_
-1   4410 quicksort(14060):   
-0   4423 quicksort(14060):   _Z4SwapRiS_
-1   4425 quicksort(14060):   
-0   4428 quicksort(14060):   _Z4SwapRiS_
-1   4429 quicksort(14060):   
-0   4432 quicksort(14060):   _Z4SwapRiS_
-1   4434 quicksort(14060):   
-1   4435 quicksort(14060):  
-0   4438 quicksort(14060):  _Z12BadPartitionPiii
-0   4441 quicksort(14060):   _Z4SwapRiS_
-1   4443 quicksort(14060):   
-1   4444 quicksort(14060):  
-0   4447 quicksort(14060):  _Z12BadPartitionPiii
-0   4450 quicksort(14060):   _Z4SwapRiS_
-1   4452 quicksort(14060):   
-0   4454 quicksort(14060):   _Z4SwapRiS_
-1   4456 quicksort(14060):   
-0   4459 quicksort(14060):   _Z4SwapRiS_
-1   4461 quicksort(14060):   
-0   4463 quicksort(14060):   _Z4SwapRiS_
-1   4465 quicksort(14060):   
-0   4468 quicksort(14060):   _Z4SwapRiS_
-1   4470 quicksort(14060):   
-0   4472 quicksort(14060):   _Z4SwapRiS_
-1   4474 quicksort(14060):   
-0   4477 quicksort(14060):   _Z4SwapRiS_
-1   4479 quicksort(14060):   
-0   4481 quicksort(14060):   _Z4SwapRiS_
-1   4483 quicksort(14060):   
-0   4486 quicksort(14060):   _Z4SwapRiS_
-1   4488 quicksort(14060):   
-0   4490 quicksort(14060):   _Z4SwapRiS_
-1   4492 quicksort(14060):   
-0   4495 quicksort(14060):   _Z4SwapRiS_
-1   4497 quicksort(14060):   
-0   4499 quicksort(14060):   _Z4SwapRiS_
-1   4501 quicksort(14060):   
-1   4502 quicksort(14060):  
-0   4505 quicksort(14060):  _Z12BadPartitionPiii
-0   4508 quicksort(14060):   _Z4SwapRiS_
-1   4510 quicksort(14060):   
-1   4511 quicksort(14060):  
-0   4514 quicksort(14060):  _Z12BadPartitionPiii
-0   4517 quicksort(14060):   _Z4SwapRiS_
-1   4519 quicksort(14060):   
-0   4522 quicksort(14060):   _Z4SwapRiS_
-1   4523 quicksort(14060):   
-0   4526 quicksort(14060):   _Z4SwapRiS_
-1   4528 quicksort(14060):   
-0   4530 quicksort(14060):   _Z4SwapRiS_
-1   4532 quicksort(14060):   
-0   4535 quicksort(14060):   _Z4SwapRiS_
-1   4537 quicksort(14060):   
-0   4539 quicksort(14060):   _Z4SwapRiS_
-1   4541 quicksort(14060):   
-0   4544 quicksort(14060):   _Z4SwapRiS_
-1   4546 quicksort(14060):   
-0   4548 quicksort(14060):   _Z4SwapRiS_
-1   4550 quicksort(14060):   
-0   4553 quicksort(14060):   _Z4SwapRiS_
-1   4555 quicksort(14060):   
-0   4557 quicksort(14060):   _Z4SwapRiS_
-1   4559 quicksort(14060):   
-1   4560 quicksort(14060):  
-0   4563 quicksort(14060):  _Z12BadPartitionPiii
-0   4566 quicksort(14060):   _Z4SwapRiS_
-1   4568 quicksort(14060):   
-1   4569 quicksort(14060):  
-0   4572 quicksort(14060):  _Z12BadPartitionPiii
-0   4575 quicksort(14060):   _Z4SwapRiS_
-1   4577 quicksort(14060):   
-0   4580 quicksort(14060):   _Z4SwapRiS_
-1   4581 quicksort(14060):   
-0   4584 quicksort(14060):   _Z4SwapRiS_
-1   4586 quicksort(14060):   
-0   4588 quicksort(14060):   _Z4SwapRiS_
-1   4590 quicksort(14060):   
-0   4593 quicksort(14060):   _Z4SwapRiS_
-1   4595 quicksort(14060):   
-0   4597 quicksort(14060):   _Z4SwapRiS_
-1   4599 quicksort(14060):   
-0   4602 quicksort(14060):   _Z4SwapRiS_
-1   4604 quicksort(14060):   
-0   4606 quicksort(14060):   _Z4SwapRiS_
-1   4608 quicksort(14060):   
-1   4609 quicksort(14060):  
-0   4612 quicksort(14060):  _Z12BadPartitionPiii
-0   4615 quicksort(14060):   _Z4SwapRiS_
-1   4617 quicksort(14060):   
-1   4618 quicksort(14060):  
-0   4621 quicksort(14060):  _Z12BadPartitionPiii
-0   4624 quicksort(14060):   _Z4SwapRiS_
-1   4626 quicksort(14060):   
-0   4628 quicksort(14060):   _Z4SwapRiS_
-1   4630 quicksort(14060):   
-0   4633 quicksort(14060):   _Z4SwapRiS_
-1   4635 quicksort(14060):   
-0   4637 quicksort(14060):   _Z4SwapRiS_
-1   4639 quicksort(14060):   
-0   4642 quicksort(14060):   _Z4SwapRiS_
-1   4644 quicksort(14060):   
-1   5877 quicksort(14060):   
-1   5878 quicksort(14060):  
-0   5880 quicksort(14060):  _Z12BadPartitionPiii
-0   5884 quicksort(14060):   _Z4SwapRiS_
-1   5886 quicksort(14060):   
-1   5887 quicksort(14060):  
-0   5889 quicksort(14060):  _Z12BadPartitionPiii
-0   5893 quicksort(14060):   _Z4SwapRiS_
-1   5895 quicksort(14060):   
-0   5897 quicksort(14060):   _Z4SwapRiS_
-1   5899 quicksort(14060):   
-0   5902 quicksort(14060):   _Z4SwapRiS_
-1   5904 quicksort(14060):   
-1   5905 quicksort(14060):  
-0   5907 quicksort(14060):  _Z12BadPartitionPiii
-0   5910 quicksort(14060):   _Z4SwapRiS_
-1   5912 quicksort(14060):   
-1   5913 quicksort(14060):  
-1   5915 quicksort(14060): 
-4   5916 quicksort(14060):BEFORE_CYCLE_end
-1   5965 quicksort(14060):
-end /home/jirka/perun/experiments/quicksort
+7 15465 15465 14735 1519;tst
+0 15465 18158241;frame_dummy
+0 15465 18173409;register_tm_clones
+1 15465 18178728;register_tm_clones
+1 15465 18181002;frame_dummy
+0 15465 18187373;_GLOBAL__sub_I__Z9QuickSortPii
+0 15465 18192404;_Z41__static_initialization_and_destruction_0ii
+1 15465 18285894;_Z41__static_initialization_and_destruction_0ii
+1 15465 18289364;_GLOBAL__sub_I__Z9QuickSortPii
+0 15465 18295819;main
+3 15465 18298204;
+2 15465 18301889;
+0 15465 18309149;_Z12QuickSortBadPii
+0 15465 18317371;_Z12BadPartitionPiii
+0 15465 18325096;_Z4SwapRiS_
+1 15465 18329639;_Z4SwapRiS_
+1 15465 18332606;_Z12BadPartitionPiii
+0 15465 18338534;_Z12BadPartitionPiii
+0 15465 18345931;_Z4SwapRiS_
+1 15465 18350231;_Z4SwapRiS_
+0 15465 18356134;_Z4SwapRiS_
+1 15465 18360406;_Z4SwapRiS_
+0 15465 18365955;_Z4SwapRiS_
+1 15465 18370229;_Z4SwapRiS_
+0 15465 18375818;_Z4SwapRiS_
+1 15465 18380091;_Z4SwapRiS_
+1 15465 18382866;_Z12BadPartitionPiii
+0 15465 18388646;_Z12BadPartitionPiii
+0 15465 18395914;_Z4SwapRiS_
+1 15465 18400214;_Z4SwapRiS_
+1 15465 18402886;_Z12BadPartitionPiii
+0 15465 18408622;_Z12BadPartitionPiii
+0 15465 18415870;_Z4SwapRiS_
+1 15465 18420174;_Z4SwapRiS_
+0 15465 18425745;_Z4SwapRiS_
+1 15465 18430041;_Z4SwapRiS_
+1 15465 18432707;_Z12BadPartitionPiii
+1 15465 18436959;_Z12QuickSortBadPii
+2 15465 18440287;
+0 15465 18446212;_Z12QuickSortBadPii
+0 15465 18453976;_Z12BadPartitionPiii
+0 15465 18461374;_Z4SwapRiS_
+1 15465 18465667;_Z4SwapRiS_
+1 15465 18468353;_Z12BadPartitionPiii
+0 15465 18474060;_Z12BadPartitionPiii
+0 15465 18481331;_Z4SwapRiS_
+1 15465 18485625;_Z4SwapRiS_
+0 15465 18491204;_Z4SwapRiS_
+1 15465 18495466;_Z4SwapRiS_
+0 15465 18501033;_Z4SwapRiS_
+1 15465 18505297;_Z4SwapRiS_
+0 15465 18510843;_Z4SwapRiS_
+1 15465 18515128;_Z4SwapRiS_
+0 15465 18520674;_Z4SwapRiS_
+1 15465 18524950;_Z4SwapRiS_
+0 15465 18530499;_Z4SwapRiS_
+1 15465 18534759;_Z4SwapRiS_
+0 15465 18540321;_Z4SwapRiS_
+1 15465 18544589;_Z4SwapRiS_
+0 15465 18550146;_Z4SwapRiS_
+1 15465 18554412;_Z4SwapRiS_
+0 15465 18559975;_Z4SwapRiS_
+1 15465 18564261;_Z4SwapRiS_
+1 15465 18566915;_Z12BadPartitionPiii
+0 15465 18572642;_Z12BadPartitionPiii
+0 15465 18579927;_Z4SwapRiS_
+1 15465 18584207;_Z4SwapRiS_
+1 15465 18586895;_Z12BadPartitionPiii
+0 15465 18592614;_Z12BadPartitionPiii
+0 15465 18599875;_Z4SwapRiS_
+1 15465 18604155;_Z4SwapRiS_
+0 15465 18609702;_Z4SwapRiS_
+1 15465 18613983;_Z4SwapRiS_
+0 15465 18619551;_Z4SwapRiS_
+1 15465 18623821;_Z4SwapRiS_
+0 15465 18629369;_Z4SwapRiS_
+1 15465 18633653;_Z4SwapRiS_
+0 15465 18639196;_Z4SwapRiS_
+1 15465 18643474;_Z4SwapRiS_
+0 15465 18649019;_Z4SwapRiS_
+1 15465 18653277;_Z4SwapRiS_
+0 15465 18658847;_Z4SwapRiS_
+1 15465 18663107;_Z4SwapRiS_
+1 15465 18665796;_Z12BadPartitionPiii
+0 15465 18671494;_Z12BadPartitionPiii
+0 15465 18678791;_Z4SwapRiS_
+1 15465 18683093;_Z4SwapRiS_
+1 15465 18685745;_Z12BadPartitionPiii
+0 15465 18691430;_Z12BadPartitionPiii
+0 15465 18698695;_Z4SwapRiS_
+1 15465 18702992;_Z4SwapRiS_
+0 15465 18708534;_Z4SwapRiS_
+1 15465 18712798;_Z4SwapRiS_
+0 15465 18718357;_Z4SwapRiS_
+1 15465 18722627;_Z4SwapRiS_
+0 15465 18728193;_Z4SwapRiS_
+1 15465 18732461;_Z4SwapRiS_
+0 15465 18738026;_Z4SwapRiS_
+1 15465 18742310;_Z4SwapRiS_
+1 15465 18744966;_Z12BadPartitionPiii
+0 15465 18750653;_Z12BadPartitionPiii
+0 15465 18757952;_Z4SwapRiS_
+1 15465 18762236;_Z4SwapRiS_
+1 15465 18764888;_Z12BadPartitionPiii
+0 15465 18770601;_Z12BadPartitionPiii
+0 15465 18777844;_Z4SwapRiS_
+1 15465 18782138;_Z4SwapRiS_
+0 15465 18787681;_Z4SwapRiS_
+0 15465 19541931;_Z4SwapRiS_
+1 15465 19546216;_Z4SwapRiS_
+1 15465 19548877;_Z12BadPartitionPiii
+0 15465 19554572;_Z12BadPartitionPiii
+0 15465 19561880;_Z4SwapRiS_
+1 15465 19566182;_Z4SwapRiS_
+1 15465 19568835;_Z12BadPartitionPiii
+0 15465 19574556;_Z12BadPartitionPiii
+0 15465 19581816;_Z4SwapRiS_
+1 15465 19586095;_Z4SwapRiS_
+0 15465 19591659;_Z4SwapRiS_
+1 15465 19595951;_Z4SwapRiS_
+1 15465 19598610;_Z12BadPartitionPiii
+1 15465 19601466;_Z12QuickSortBadPii
+2 15465 19604531;
+0 15465 19612281;_Z12QuickSortBadPii
+0 15465 19619739;_Z12BadPartitionPiii
+0 15465 19627133;_Z4SwapRiS_
+1 15465 19631451;_Z4SwapRiS_
+1 15465 19634115;_Z12BadPartitionPiii
+0 15465 19639780;_Z12BadPartitionPiii
+0 15465 19647052;_Z4SwapRiS_
+1 15465 19651353;_Z4SwapRiS_
+0 15465 19656908;_Z4SwapRiS_
+1 15465 19661190;_Z4SwapRiS_
+0 15465 19666724;_Z4SwapRiS_
+1 15465 19671001;_Z4SwapRiS_
+0 15465 19676550;_Z4SwapRiS_
+1 15465 19680837;_Z4SwapRiS_
+0 15465 19686380;_Z4SwapRiS_
+1 15465 19690652;_Z4SwapRiS_
+0 15465 19696213;_Z4SwapRiS_
+1 15465 19700475;_Z4SwapRiS_
+0 15465 19706035;_Z4SwapRiS_
+1 15465 19710303;_Z4SwapRiS_
+0 15465 19715852;_Z4SwapRiS_
+1 15465 19720146;_Z4SwapRiS_
+0 15465 19725693;_Z4SwapRiS_
+1 15465 19729955;_Z4SwapRiS_
+0 15465 19735518;_Z4SwapRiS_
+1 15465 19739786;_Z4SwapRiS_
+0 15465 19745349;_Z4SwapRiS_
+1 15465 19749618;_Z4SwapRiS_
+0 15465 19755167;_Z4SwapRiS_
+1 15465 19759461;_Z4SwapRiS_
+0 15465 19765008;_Z4SwapRiS_
+1 15465 19769269;_Z4SwapRiS_
+0 15465 19774832;_Z4SwapRiS_
+1 15465 19779097;_Z4SwapRiS_
+0 15465 19784657;_Z4SwapRiS_
+1 15465 19788927;_Z4SwapRiS_
+0 15465 19794479;_Z4SwapRiS_
+1 15465 19798774;_Z4SwapRiS_
+0 15465 19804320;_Z4SwapRiS_
+1 15465 19808588;_Z4SwapRiS_
+0 15465 19814155;_Z4SwapRiS_
+1 15465 19818419;_Z4SwapRiS_
+0 15465 19823986;_Z4SwapRiS_
+1 15465 19828246;_Z4SwapRiS_
+1 15465 19830940;_Z12BadPartitionPiii
+0 15465 19836651;_Z12BadPartitionPiii
+0 15465 19843984;_Z4SwapRiS_
+1 15465 19848266;_Z4SwapRiS_
+1 15465 19850958;_Z12BadPartitionPiii
+0 15465 19856641;_Z12BadPartitionPiii
+0 15465 19863920;_Z4SwapRiS_
+1 15465 19868214;_Z4SwapRiS_
+0 15465 19873765;_Z4SwapRiS_
+1 15465 19878045;_Z4SwapRiS_
+0 15465 19883583;_Z4SwapRiS_
+1 15465 19887860;_Z4SwapRiS_
+0 15465 19893404;_Z4SwapRiS_
+1 15465 19897682;_Z4SwapRiS_
+0 15465 19903235;_Z4SwapRiS_
+1 15465 19907495;_Z4SwapRiS_
+0 15465 19913058;_Z4SwapRiS_
+1 15465 19917323;_Z4SwapRiS_
+0 15465 19922890;_Z4SwapRiS_
+1 15465 19927158;_Z4SwapRiS_
+0 15465 19932707;_Z4SwapRiS_
+1 15465 19936999;_Z4SwapRiS_
+0 15465 19942548;_Z4SwapRiS_
+1 15465 19946818;_Z4SwapRiS_
+0 15465 19952382;_Z4SwapRiS_
+1 15465 19956650;_Z4SwapRiS_
+0 15465 19962211;_Z4SwapRiS_
+1 15465 19966481;_Z4SwapRiS_
+0 15465 19972028;_Z4SwapRiS_
+1 15465 19976319;_Z4SwapRiS_
+0 15465 19981870;_Z4SwapRiS_
+1 15465 19986130;_Z4SwapRiS_
+0 15465 19991693;_Z4SwapRiS_
+1 15465 19995959;_Z4SwapRiS_
+0 15465 20001526;_Z4SwapRiS_
+1 15465 20005796;_Z4SwapRiS_
+0 15465 20011347;_Z4SwapRiS_
+1 15465 20015636;_Z4SwapRiS_
+0 15465 20021201;_Z4SwapRiS_
+1 15465 20025465;_Z4SwapRiS_
+1 15465 20028149;_Z12BadPartitionPiii
+0 15465 20033848;_Z12BadPartitionPiii
+0 15465 20041172;_Z4SwapRiS_
+1 15465 20045465;_Z4SwapRiS_
+1 15465 20048118;_Z12BadPartitionPiii
+0 15465 20053803;_Z12BadPartitionPiii
+0 15465 20061080;_Z4SwapRiS_
+1 15465 20065368;_Z4SwapRiS_
+0 15465 20070916;_Z4SwapRiS_
+1 15465 20075182;_Z4SwapRiS_
+0 15465 20080739;_Z4SwapRiS_
+1 15465 20085010;_Z4SwapRiS_
+0 15465 20090559;_Z4SwapRiS_
+1 15465 20094849;_Z4SwapRiS_
+0 15465 20100396;_Z4SwapRiS_
+1 15465 20104658;_Z4SwapRiS_
+0 15465 20110221;_Z4SwapRiS_
+1 15465 20114487;_Z4SwapRiS_
+0 15465 20120046;_Z4SwapRiS_
+1 15465 20124321;_Z4SwapRiS_
+0 15465 20129870;_Z4SwapRiS_
+1 15465 20134162;_Z4SwapRiS_
+0 15465 20139709;_Z4SwapRiS_
+1 15465 20143973;_Z4SwapRiS_
+0 15465 20149534;_Z4SwapRiS_
+1 15465 20153802;_Z4SwapRiS_
+0 15465 20159365;_Z4SwapRiS_
+1 15465 20163630;_Z4SwapRiS_
+0 15465 20169177;_Z4SwapRiS_
+1 15465 20173471;_Z4SwapRiS_
+0 15465 20179020;_Z4SwapRiS_
+1 15465 20183284;_Z4SwapRiS_
+0 15465 20188836;_Z4SwapRiS_
+1 15465 20193104;_Z4SwapRiS_
+0 15465 20198673;_Z4SwapRiS_
+1 15465 20202931;_Z4SwapRiS_
+1 15465 20205627;_Z12BadPartitionPiii
+0 15465 20211325;_Z12BadPartitionPiii
+0 15465 20218642;_Z4SwapRiS_
+1 15465 20222927;_Z4SwapRiS_
+1 15465 20225680;_Z12BadPartitionPiii
+0 15465 20231401;_Z12BadPartitionPiii
+0 15465 20242549;_Z4SwapRiS_
+1 15465 20250529;_Z4SwapRiS_
+0 15465 20258626;_Z4SwapRiS_
+1 15465 20264796;_Z4SwapRiS_
+0 15465 20271872;_Z4SwapRiS_
+1 15465 20277349;_Z4SwapRiS_
+0 15465 20284063;_Z4SwapRiS_
+1 15465 20289342;_Z4SwapRiS_
+0 15465 20296214;_Z4SwapRiS_
+1 15465 20302154;_Z4SwapRiS_
+0 15465 20309191;_Z4SwapRiS_
+1 15465 20314316;_Z4SwapRiS_
+0 15465 20322188;_Z4SwapRiS_
+1 15465 20327866;_Z4SwapRiS_
+0 15465 20335365;_Z4SwapRiS_
+1 15465 20339721;_Z4SwapRiS_
+0 15465 20345291;_Z4SwapRiS_
+1 15465 20349579;_Z4SwapRiS_
+0 15465 20355132;_Z4SwapRiS_
+1 15465 20359437;_Z4SwapRiS_
+0 15465 20364985;_Z4SwapRiS_
+1 15465 20369269;_Z4SwapRiS_
+0 15465 20374826;_Z4SwapRiS_
+1 15465 20379122;_Z4SwapRiS_
+0 15465 20384697;_Z4SwapRiS_
+1 15465 20388982;_Z4SwapRiS_
+1 15465 20391701;_Z12BadPartitionPiii
+0 15465 20397496;_Z12BadPartitionPiii
+0 15465 20404811;_Z4SwapRiS_
+1 15465 20409091;_Z4SwapRiS_
+1 15465 20411771;_Z12BadPartitionPiii
+0 15465 20417478;_Z12BadPartitionPiii
+0 15465 20424771;_Z4SwapRiS_
+1 15465 20429039;_Z4SwapRiS_
+0 15465 20434602;_Z4SwapRiS_
+1 15465 20438876;_Z4SwapRiS_
+0 15465 20444437;_Z4SwapRiS_
+1 15465 20448705;_Z4SwapRiS_
+0 15465 20454271;_Z4SwapRiS_
+1 15465 20458546;_Z4SwapRiS_
+0 15465 20464090;_Z4SwapRiS_
+1 15465 20468386;_Z4SwapRiS_
+0 15465 20473933;_Z4SwapRiS_
+1 15465 20478218;_Z4SwapRiS_
+0 15465 20483767;_Z4SwapRiS_
+1 15465 20488037;_Z4SwapRiS_
+0 15465 20493598;_Z4SwapRiS_
+1 15465 20497870;_Z4SwapRiS_
+0 15465 20503421;_Z4SwapRiS_
+1 15465 20507693;_Z4SwapRiS_
+0 15465 20513234;_Z4SwapRiS_
+1 15465 20517522;_Z4SwapRiS_
+0 15465 20523082;_Z4SwapRiS_
+1 15465 20527350;_Z4SwapRiS_
+1 15465 20530041;_Z12BadPartitionPiii
+0 15465 20535737;_Z12BadPartitionPiii
+0 15465 20543038;_Z4SwapRiS_
+1 15465 20547336;_Z4SwapRiS_
+1 15465 20550000;_Z12BadPartitionPiii
+0 15465 20555687;_Z12BadPartitionPiii
+0 15465 20562969;_Z4SwapRiS_
+1 15465 20567252;_Z4SwapRiS_
+0 15465 20572801;_Z4SwapRiS_
+1 15465 20577073;_Z4SwapRiS_
+0 15465 20582636;_Z4SwapRiS_
+1 15465 20586904;_Z4SwapRiS_
+0 15465 20592460;_Z4SwapRiS_
+1 15465 20596730;_Z4SwapRiS_
+0 15465 20602297;_Z4SwapRiS_
+1 15465 20606565;_Z4SwapRiS_
+0 15465 20612110;_Z4SwapRiS_
+1 15465 20616402;_Z4SwapRiS_
+0 15465 20621948;_Z4SwapRiS_
+1 15465 20626236;_Z4SwapRiS_
+0 15465 20631783;_Z4SwapRiS_
+1 15465 20636061;_Z4SwapRiS_
+0 15465 20641624;_Z4SwapRiS_
+1 15465 20645888;_Z4SwapRiS_
+1 15465 20648578;_Z12BadPartitionPiii
+0 15465 20654273;_Z12BadPartitionPiii
+0 15465 20661564;_Z4SwapRiS_
+1 15465 20665866;_Z4SwapRiS_
+1 15465 20668520;_Z12BadPartitionPiii
+0 15465 20674234;_Z12BadPartitionPiii
+0 15465 20681506;_Z4SwapRiS_
+1 15465 20685806;_Z4SwapRiS_
+0 15465 20691349;_Z4SwapRiS_
+1 15465 20695617;_Z4SwapRiS_
+0 15465 20701170;_Z4SwapRiS_
+1 15465 20716022;_Z4SwapRiS_
+0 15465 20721665;_Z4SwapRiS_
+1 15465 20725953;_Z4SwapRiS_
+0 15465 20731496;_Z4SwapRiS_
+1 15465 20735781;_Z4SwapRiS_
+0 15465 20741322;_Z4SwapRiS_
+1 15465 20745600;_Z4SwapRiS_
+0 15465 20751163;_Z4SwapRiS_
+1 15465 20755435;_Z4SwapRiS_
+1 15465 20758109;_Z12BadPartitionPiii
+0 15465 20763828;_Z12BadPartitionPiii
+0 15465 20771099;_Z4SwapRiS_
+1 15465 20775363;_Z4SwapRiS_
+1 15465 20778019;_Z12BadPartitionPiii
+0 15465 20783748;_Z12BadPartitionPiii
+0 15465 20791009;_Z4SwapRiS_
+1 15465 20795307;_Z4SwapRiS_
+0 15465 20800872;_Z4SwapRiS_
+1 15465 20805150;_Z4SwapRiS_
+0 15465 20810721;_Z4SwapRiS_
+1 15465 20814984;_Z4SwapRiS_
+0 15465 20820543;_Z4SwapRiS_
+1 15465 20824809;_Z4SwapRiS_
+0 15465 20830380;_Z4SwapRiS_
+1 15465 20834661;_Z4SwapRiS_
+1 15465 20837316;_Z12BadPartitionPiii
+0 15465 20843007;_Z12BadPartitionPiii
+0 15465 20850296;_Z4SwapRiS_
+1 15465 20854590;_Z4SwapRiS_
+1 15465 20857244;_Z12BadPartitionPiii
+0 15465 20862959;_Z12BadPartitionPiii
+0 15465 20870240;_Z4SwapRiS_
+1 15465 20874532;_Z4SwapRiS_
+0 15465 20880091;_Z4SwapRiS_
+1 15465 20884351;_Z4SwapRiS_
+0 15465 20889924;_Z4SwapRiS_
+1 15465 20894189;_Z4SwapRiS_
+1 15465 20896851;_Z12BadPartitionPiii
+0 15465 20902545;_Z12BadPartitionPiii
+0 15465 20909799;_Z4SwapRiS_
+1 15465 20914087;_Z4SwapRiS_
+1 15465 20916764;_Z12BadPartitionPiii
+1 15465 20919917;_Z12QuickSortBadPii
+2 15465 20923216;
+0 15465 20929485;_Z12QuickSortBadPii
+0 15465 20936954;_Z12BadPartitionPiii
+0 15465 20944329;_Z4SwapRiS_
+1 15465 20948647;_Z4SwapRiS_
+1 15465 20951317;_Z12BadPartitionPiii
+0 15465 20956994;_Z12BadPartitionPiii
+0 15465 20964249;_Z4SwapRiS_
+1 15465 20968543;_Z4SwapRiS_
+0 15465 20974106;_Z4SwapRiS_
+1 15465 20978380;_Z4SwapRiS_
+0 15465 20983941;_Z4SwapRiS_
+1 15465 20988219;_Z4SwapRiS_
+0 15465 20993767;_Z4SwapRiS_
+1 15465 20998035;_Z4SwapRiS_
+0 15465 21003588;_Z4SwapRiS_
+1 15465 21007860;_Z4SwapRiS_
+0 15465 21013422;_Z4SwapRiS_
+1 15465 21017697;_Z4SwapRiS_
+0 15465 21023257;_Z4SwapRiS_
+1 15465 21027531;_Z4SwapRiS_
+0 15465 21033088;_Z4SwapRiS_
+1 15465 21037362;_Z4SwapRiS_
+0 15465 21042917;_Z4SwapRiS_
+1 15465 21047185;_Z4SwapRiS_
+0 15465 21052738;_Z4SwapRiS_
+1 15465 21057003;_Z4SwapRiS_
+0 15465 21062554;_Z4SwapRiS_
+1 15465 18791949;_Z4SwapRiS_
+0 15465 18797524;_Z4SwapRiS_
+1 15465 18801787;_Z4SwapRiS_
+1 15465 18804488;_Z12BadPartitionPiii
+0 15465 18810171;_Z12BadPartitionPiii
+0 15465 18817431;_Z4SwapRiS_
+1 15465 18821731;_Z4SwapRiS_
+1 15465 18824386;_Z12BadPartitionPiii
+1 15465 18827306;_Z12QuickSortBadPii
+2 15465 18830468;
+0 15465 18836257;_Z12QuickSortBadPii
+0 15465 18843702;_Z12BadPartitionPiii
+0 15465 18851043;_Z4SwapRiS_
+1 15465 18855343;_Z4SwapRiS_
+1 15465 18858021;_Z12BadPartitionPiii
+0 15465 18863715;_Z12BadPartitionPiii
+0 15465 18870971;_Z4SwapRiS_
+1 15465 18875267;_Z4SwapRiS_
+0 15465 18880820;_Z4SwapRiS_
+1 15465 18885089;_Z4SwapRiS_
+0 15465 18890647;_Z4SwapRiS_
+1 15465 18894960;_Z4SwapRiS_
+0 15465 18900515;_Z4SwapRiS_
+1 15465 18904793;_Z4SwapRiS_
+0 15465 18910352;_Z4SwapRiS_
+1 15465 18914620;_Z4SwapRiS_
+0 15465 18920177;_Z4SwapRiS_
+1 15465 18924465;_Z4SwapRiS_
+0 15465 18930009;_Z4SwapRiS_
+1 15465 18934286;_Z4SwapRiS_
+0 15465 18939836;_Z4SwapRiS_
+1 15465 18944112;_Z4SwapRiS_
+0 15465 18949663;_Z4SwapRiS_
+1 15465 18953918;_Z4SwapRiS_
+0 15465 18959484;_Z4SwapRiS_
+1 15465 18963744;_Z4SwapRiS_
+0 15465 18969296;_Z4SwapRiS_
+1 15465 18973580;_Z4SwapRiS_
+0 15465 18979127;_Z4SwapRiS_
+1 15465 18983405;_Z4SwapRiS_
+0 15465 18988954;_Z4SwapRiS_
+1 15465 18993217;_Z4SwapRiS_
+0 15465 18998785;_Z4SwapRiS_
+1 15465 19003054;_Z4SwapRiS_
+1 15465 19005712;_Z12BadPartitionPiii
+0 15465 19011434;_Z12BadPartitionPiii
+0 15465 19018736;_Z4SwapRiS_
+1 15465 19023026;_Z4SwapRiS_
+1 15465 19025700;_Z12BadPartitionPiii
+0 15465 19031417;_Z12BadPartitionPiii
+0 15465 19038694;_Z4SwapRiS_
+1 15465 19042978;_Z4SwapRiS_
+0 15465 19048535;_Z4SwapRiS_
+1 15465 19052801;_Z4SwapRiS_
+0 15465 19058350;_Z4SwapRiS_
+1 15465 19062642;_Z4SwapRiS_
+0 15465 19068182;_Z4SwapRiS_
+1 15465 19072460;_Z4SwapRiS_
+0 15465 19078003;_Z4SwapRiS_
+1 15465 19082261;_Z4SwapRiS_
+0 15465 19087816;_Z4SwapRiS_
+1 15465 19092076;_Z4SwapRiS_
+0 15465 19097625;_Z4SwapRiS_
+1 15465 19101908;_Z4SwapRiS_
+0 15465 19107456;_Z4SwapRiS_
+1 15465 19111735;_Z4SwapRiS_
+0 15465 19117282;_Z4SwapRiS_
+1 15465 19121542;_Z4SwapRiS_
+0 15465 19127101;_Z4SwapRiS_
+1 15465 19131361;_Z4SwapRiS_
+0 15465 19136905;_Z4SwapRiS_
+1 15465 19141193;_Z4SwapRiS_
+0 15465 19146754;_Z4SwapRiS_
+1 15465 19151032;_Z4SwapRiS_
+1 15465 19153688;_Z12BadPartitionPiii
+0 15465 19159373;_Z12BadPartitionPiii
+0 15465 19166664;_Z4SwapRiS_
+1 15465 19170942;_Z4SwapRiS_
+1 15465 19173592;_Z12BadPartitionPiii
+0 15465 19179265;_Z12BadPartitionPiii
+0 15465 19186544;_Z4SwapRiS_
+1 15465 19190842;_Z4SwapRiS_
+0 15465 19196383;_Z4SwapRiS_
+1 15465 19200658;_Z4SwapRiS_
+0 15465 19206209;_Z4SwapRiS_
+1 15465 19210497;_Z4SwapRiS_
+0 15465 19216040;_Z4SwapRiS_
+1 15465 19220318;_Z4SwapRiS_
+0 15465 19225854;_Z4SwapRiS_
+1 15465 19230141;_Z4SwapRiS_
+0 15465 19235683;_Z4SwapRiS_
+1 15465 19239967;_Z4SwapRiS_
+0 15465 19245508;_Z4SwapRiS_
+1 15465 19249788;_Z4SwapRiS_
+0 15465 19255331;_Z4SwapRiS_
+1 15465 19259591;_Z4SwapRiS_
+0 15465 19265150;_Z4SwapRiS_
+1 15465 19269410;_Z4SwapRiS_
+0 15465 19274966;_Z4SwapRiS_
+1 15465 19279242;_Z4SwapRiS_
+1 15465 19281900;_Z12BadPartitionPiii
+0 15465 19287589;_Z12BadPartitionPiii
+0 15465 19294880;_Z4SwapRiS_
+1 15465 19299160;_Z4SwapRiS_
+1 15465 19301838;_Z12BadPartitionPiii
+0 15465 19307545;_Z12BadPartitionPiii
+0 15465 19314814;_Z4SwapRiS_
+1 15465 19319100;_Z4SwapRiS_
+0 15465 19324643;_Z4SwapRiS_
+1 15465 19328917;_Z4SwapRiS_
+0 15465 19334470;_Z4SwapRiS_
+1 15465 19338753;_Z4SwapRiS_
+0 15465 19344300;_Z4SwapRiS_
+1 15465 19348564;_Z4SwapRiS_
+0 15465 19354129;_Z4SwapRiS_
+1 15465 19358392;_Z4SwapRiS_
+0 15465 19363940;_Z4SwapRiS_
+1 15465 19368215;_Z4SwapRiS_
+0 15465 19373762;_Z4SwapRiS_
+1 15465 19378038;_Z4SwapRiS_
+0 15465 19383597;_Z4SwapRiS_
+1 15465 19387859;_Z4SwapRiS_
+1 15465 19390537;_Z12BadPartitionPiii
+0 15465 19396240;_Z12BadPartitionPiii
+0 15465 19403527;_Z4SwapRiS_
+1 15465 19407823;_Z4SwapRiS_
+1 15465 19410479;_Z12BadPartitionPiii
+0 15465 19416164;_Z12BadPartitionPiii
+0 15465 19423437;_Z4SwapRiS_
+1 15465 19427731;_Z4SwapRiS_
+0 15465 19433278;_Z4SwapRiS_
+1 15465 19437543;_Z4SwapRiS_
+0 15465 19443096;_Z4SwapRiS_
+1 15465 19447362;_Z4SwapRiS_
+0 15465 19452901;_Z4SwapRiS_
+1 15465 19457185;_Z4SwapRiS_
+0 15465 19462731;_Z4SwapRiS_
+1 15465 19467011;_Z4SwapRiS_
+0 15465 19472571;_Z4SwapRiS_
+1 15465 19476842;_Z4SwapRiS_
+1 15465 19479527;_Z12BadPartitionPiii
+0 15465 19485222;_Z12BadPartitionPiii
+0 15465 19492505;_Z4SwapRiS_
+1 15465 19496792;_Z4SwapRiS_
+1 15465 19499448;_Z12BadPartitionPiii
+0 15465 19505168;_Z12BadPartitionPiii
+0 15465 19512441;_Z4SwapRiS_
+1 15465 19516736;_Z4SwapRiS_
+0 15465 19522283;_Z4SwapRiS_
+1 15465 19526555;_Z4SwapRiS_
+0 15465 19532114;_Z4SwapRiS_
+1 15465 19536373;_Z4SwapRiS_
+1 15465 21066832;_Z4SwapRiS_
+0 15465 21072375;_Z4SwapRiS_
+1 15465 21076650;_Z4SwapRiS_
+0 15465 21082201;_Z4SwapRiS_
+1 15465 21086496;_Z4SwapRiS_
+0 15465 21092044;_Z4SwapRiS_
+1 15465 21096306;_Z4SwapRiS_
+0 15465 21101853;_Z4SwapRiS_
+1 15465 21106121;_Z4SwapRiS_
+0 15465 21111671;_Z4SwapRiS_
+1 15465 21115934;_Z4SwapRiS_
+0 15465 21121486;_Z4SwapRiS_
+1 15465 21125752;_Z4SwapRiS_
+0 15465 21131317;_Z4SwapRiS_
+1 15465 21135586;_Z4SwapRiS_
+0 15465 21141142;_Z4SwapRiS_
+1 15465 21145415;_Z4SwapRiS_
+0 15465 21150970;_Z4SwapRiS_
+1 15465 21155244;_Z4SwapRiS_
+0 15465 21160797;_Z4SwapRiS_
+1 15465 21165064;_Z4SwapRiS_
+0 15465 21170630;_Z4SwapRiS_
+1 15465 21174910;_Z4SwapRiS_
+0 15465 21180454;_Z4SwapRiS_
+1 15465 21184734;_Z4SwapRiS_
+0 15465 21190305;_Z4SwapRiS_
+1 15465 21194587;_Z4SwapRiS_
+1 15465 21197261;_Z12BadPartitionPiii
+0 15465 21202956;_Z12BadPartitionPiii
+0 15465 21210293;_Z4SwapRiS_
+1 15465 21214581;_Z4SwapRiS_
+1 15465 21217273;_Z12BadPartitionPiii
+0 15465 21222968;_Z12BadPartitionPiii
+0 15465 21230245;_Z4SwapRiS_
+1 15465 21234531;_Z4SwapRiS_
+0 15465 21240088;_Z4SwapRiS_
+1 15465 21244380;_Z4SwapRiS_
+0 15465 21249943;_Z4SwapRiS_
+1 15465 21254235;_Z4SwapRiS_
+0 15465 21259776;_Z4SwapRiS_
+1 15465 21264046;_Z4SwapRiS_
+0 15465 21269612;_Z4SwapRiS_
+1 15465 21273878;_Z4SwapRiS_
+0 15465 21279445;_Z4SwapRiS_
+1 15465 21283713;_Z4SwapRiS_
+0 15465 21289259;_Z4SwapRiS_
+1 15465 21293554;_Z4SwapRiS_
+0 15465 21299102;_Z4SwapRiS_
+1 15465 21303384;_Z4SwapRiS_
+0 15465 21308929;_Z4SwapRiS_
+1 15465 21313191;_Z4SwapRiS_
+0 15465 21318749;_Z4SwapRiS_
+1 15465 21323019;_Z4SwapRiS_
+0 15465 21328582;_Z4SwapRiS_
+1 15465 21332855;_Z4SwapRiS_
+0 15465 21338399;_Z4SwapRiS_
+1 15465 21342693;_Z4SwapRiS_
+0 15465 21348234;_Z4SwapRiS_
+1 15465 21352495;_Z4SwapRiS_
+0 15465 21358056;_Z4SwapRiS_
+1 15465 21362323;_Z4SwapRiS_
+0 15465 21367881;_Z4SwapRiS_
+1 15465 21372149;_Z4SwapRiS_
+0 15465 21377698;_Z4SwapRiS_
+1 15465 21381990;_Z4SwapRiS_
+0 15465 21387531;_Z4SwapRiS_
+1 15465 21391823;_Z4SwapRiS_
+0 15465 21397365;_Z4SwapRiS_
+1 15465 21401627;_Z4SwapRiS_
+0 15465 21407190;_Z4SwapRiS_
+1 15465 21411460;_Z4SwapRiS_
+0 15465 21417023;_Z4SwapRiS_
+1 15465 21421294;_Z4SwapRiS_
+0 15465 21426839;_Z4SwapRiS_
+1 15465 21431133;_Z4SwapRiS_
+0 15465 21436688;_Z4SwapRiS_
+1 15465 21440964;_Z4SwapRiS_
+1 15465 21443650;_Z12BadPartitionPiii
+0 15465 21449351;_Z12BadPartitionPiii
+0 15465 21456684;_Z4SwapRiS_
+1 15465 21460966;_Z4SwapRiS_
+1 15465 21463634;_Z12BadPartitionPiii
+0 15465 21469317;_Z12BadPartitionPiii
+0 15465 21476596;_Z4SwapRiS_
+1 15465 21480876;_Z4SwapRiS_
+0 15465 21486431;_Z4SwapRiS_
+1 15465 21490701;_Z4SwapRiS_
+0 15465 21496246;_Z4SwapRiS_
+1 15465 21500524;_Z4SwapRiS_
+0 15465 21506068;_Z4SwapRiS_
+1 15465 21510350;_Z4SwapRiS_
+0 15465 21515895;_Z4SwapRiS_
+1 15465 21520163;_Z4SwapRiS_
+0 15465 21525717;_Z4SwapRiS_
+1 15465 21529975;_Z4SwapRiS_
+0 15465 21535514;_Z4SwapRiS_
+1 15465 21539786;_Z4SwapRiS_
+0 15465 21545329;_Z4SwapRiS_
+1 15465 21549605;_Z4SwapRiS_
+0 15465 21555153;_Z4SwapRiS_
+1 15465 21559423;_Z4SwapRiS_
+0 15465 21564996;_Z4SwapRiS_
+1 15465 21569262;_Z4SwapRiS_
+0 15465 21574823;_Z4SwapRiS_
+1 15465 21579089;_Z4SwapRiS_
+0 15465 21584636;_Z4SwapRiS_
+1 15465 21588921;_Z4SwapRiS_
+0 15465 21594469;_Z4SwapRiS_
+1 15465 21598730;_Z4SwapRiS_
+0 15465 21604293;_Z4SwapRiS_
+1 15465 21608587;_Z4SwapRiS_
+0 15465 21614148;_Z4SwapRiS_
+1 15465 21618424;_Z4SwapRiS_
+0 15465 21623971;_Z4SwapRiS_
+1 15465 21628259;_Z4SwapRiS_
+0 15465 21633805;_Z4SwapRiS_
+1 15465 21638097;_Z4SwapRiS_
+0 15465 21643640;_Z4SwapRiS_
+1 15465 21647908;_Z4SwapRiS_
+0 15465 21653462;_Z4SwapRiS_
+1 15465 21657725;_Z4SwapRiS_
+0 15465 21663340;_Z4SwapRiS_
+1 15465 21667629;_Z4SwapRiS_
+1 15465 21670294;_Z12BadPartitionPiii
+0 15465 21675991;_Z12BadPartitionPiii
+0 15465 21683329;_Z4SwapRiS_
+1 15465 21687621;_Z4SwapRiS_
+1 15465 21690284;_Z12BadPartitionPiii
+0 15465 21696005;_Z12BadPartitionPiii
+0 15465 21703275;_Z4SwapRiS_
+1 15465 21707564;_Z4SwapRiS_
+0 15465 21713104;_Z4SwapRiS_
+1 15465 21717372;_Z4SwapRiS_
+0 15465 21722943;_Z4SwapRiS_
+1 15465 21727203;_Z4SwapRiS_
+0 15465 21732762;_Z4SwapRiS_
+1 15465 21737023;_Z4SwapRiS_
+0 15465 21742584;_Z4SwapRiS_
+1 15465 21746844;_Z4SwapRiS_
+0 15465 21752383;_Z4SwapRiS_
+1 15465 21756659;_Z4SwapRiS_
+0 15465 21762206;_Z4SwapRiS_
+1 15465 21766488;_Z4SwapRiS_
+0 15465 21772036;_Z4SwapRiS_
+1 15465 21776309;_Z4SwapRiS_
+0 15465 21781871;_Z4SwapRiS_
+1 15465 21786137;_Z4SwapRiS_
+0 15465 21791690;_Z4SwapRiS_
+1 15465 21795956;_Z4SwapRiS_
+0 15465 21801509;_Z4SwapRiS_
+1 15465 21805794;_Z4SwapRiS_
+0 15465 21811343;_Z4SwapRiS_
+1 15465 21815609;_Z4SwapRiS_
+0 15465 21821172;_Z4SwapRiS_
+1 15465 21825438;_Z4SwapRiS_
+0 15465 21830990;_Z4SwapRiS_
+1 15465 21835252;_Z4SwapRiS_
+0 15465 21840803;_Z4SwapRiS_
+1 15465 21845097;_Z4SwapRiS_
+0 15465 21850682;_Z4SwapRiS_
+1 15465 21854962;_Z4SwapRiS_
+0 15465 21860509;_Z4SwapRiS_
+1 15465 21864777;_Z4SwapRiS_
+0 15465 21870353;_Z4SwapRiS_
+1 15465 21874616;_Z4SwapRiS_
+1 15465 21877304;_Z12BadPartitionPiii
+0 15465 21883002;_Z12BadPartitionPiii
+0 15465 21890332;_Z4SwapRiS_
+1 15465 21894619;_Z4SwapRiS_
+1 15465 21897280;_Z12BadPartitionPiii
+0 15465 21902961;_Z12BadPartitionPiii
+0 15465 21910235;_Z4SwapRiS_
+1 15465 21914523;_Z4SwapRiS_
+0 15465 21920071;_Z4SwapRiS_
+1 15465 21924336;_Z4SwapRiS_
+0 15465 21929903;_Z4SwapRiS_
+1 15465 21934163;_Z4SwapRiS_
+0 15465 21939723;_Z4SwapRiS_
+1 15465 21943986;_Z4SwapRiS_
+0 15465 21949549;_Z4SwapRiS_
+1 15465 21953814;_Z4SwapRiS_
+0 15465 21959363;_Z4SwapRiS_
+1 15465 21963645;_Z4SwapRiS_
+0 15465 21969186;_Z4SwapRiS_
+1 15465 21973459;_Z4SwapRiS_
+0 15465 21979009;_Z4SwapRiS_
+1 15465 21983268;_Z4SwapRiS_
+0 15465 21988833;_Z4SwapRiS_
+1 15465 21993103;_Z4SwapRiS_
+0 15465 21998659;_Z4SwapRiS_
+1 15465 22002922;_Z4SwapRiS_
+0 15465 22008470;_Z4SwapRiS_
+1 15465 22012755;_Z4SwapRiS_
+0 15465 22018297;_Z4SwapRiS_
+1 15465 22022573;_Z4SwapRiS_
+0 15465 22028114;_Z4SwapRiS_
+1 15465 22032374;_Z4SwapRiS_
+0 15465 22037926;_Z4SwapRiS_
+1 15465 22042184;_Z4SwapRiS_
+0 15465 22047723;_Z4SwapRiS_
+1 15465 22051997;_Z4SwapRiS_
+0 15465 22057560;_Z4SwapRiS_
+1 15465 22061845;_Z4SwapRiS_
+1 15465 22064506;_Z12BadPartitionPiii
+0 15465 22070201;_Z12BadPartitionPiii
+0 15465 22077502;_Z4SwapRiS_
+1 15465 22081778;_Z4SwapRiS_
+1 15465 22084430;_Z12BadPartitionPiii
+0 15465 22090137;_Z12BadPartitionPiii
+0 15465 22097386;_Z4SwapRiS_
+1 15465 22101664;_Z4SwapRiS_
+0 15465 22107208;_Z4SwapRiS_
+1 15465 22111498;_Z4SwapRiS_
+0 15465 22117049;_Z4SwapRiS_
+1 15465 22121319;_Z4SwapRiS_
+0 15465 22126872;_Z4SwapRiS_
+1 15465 22131134;_Z4SwapRiS_
+0 15465 22136676;_Z4SwapRiS_
+1 15465 22140964;_Z4SwapRiS_
+0 15465 22146509;_Z4SwapRiS_
+1 15465 22150787;_Z4SwapRiS_
+0 15465 22156332;_Z4SwapRiS_
+1 15465 22160593;_Z4SwapRiS_
+0 15465 22166166;_Z4SwapRiS_
+1 15465 22170432;_Z4SwapRiS_
+0 15465 22175993;_Z4SwapRiS_
+1 15465 22180259;_Z4SwapRiS_
+0 15465 22185806;_Z4SwapRiS_
+1 15465 22190092;_Z4SwapRiS_
+0 15465 22195639;_Z4SwapRiS_
+1 15465 22199900;_Z4SwapRiS_
+0 15465 22205463;_Z4SwapRiS_
+1 15465 22209733;_Z4SwapRiS_
+0 15465 22215288;_Z4SwapRiS_
+1 15465 22219552;_Z4SwapRiS_
+0 15465 22225107;_Z4SwapRiS_
+1 15465 22229389;_Z4SwapRiS_
+1 15465 22232045;_Z12BadPartitionPiii
+0 15465 22237736;_Z12BadPartitionPiii
+0 15465 22245053;_Z4SwapRiS_
+1 15465 22249351;_Z4SwapRiS_
+1 15465 22252011;_Z12BadPartitionPiii
+0 15465 22257700;_Z12BadPartitionPiii
+0 15465 22264977;_Z4SwapRiS_
+1 15465 22269274;_Z4SwapRiS_
+0 15465 22274817;_Z4SwapRiS_
+1 15465 22279110;_Z4SwapRiS_
+0 15465 22284674;_Z4SwapRiS_
+1 15465 22288942;_Z4SwapRiS_
+0 15465 22294501;_Z4SwapRiS_
+1 15465 22298769;_Z4SwapRiS_
+0 15465 22304308;_Z4SwapRiS_
+1 15465 22308601;_Z4SwapRiS_
+0 15465 22314144;_Z4SwapRiS_
+1 15465 22318424;_Z4SwapRiS_
+0 15465 22323973;_Z4SwapRiS_
+1 15465 22328247;_Z4SwapRiS_
+0 15465 22333798;_Z4SwapRiS_
+1 15465 22338061;_Z4SwapRiS_
+0 15465 22343624;_Z4SwapRiS_
+1 15465 22347890;_Z4SwapRiS_
+0 15465 22353457;_Z4SwapRiS_
+1 15465 22357723;_Z4SwapRiS_
+0 15465 22363276;_Z4SwapRiS_
+1 15465 22367564;_Z4SwapRiS_
+0 15465 22373122;_Z4SwapRiS_
+1 15465 22377400;_Z4SwapRiS_
+1 15465 22380088;_Z12BadPartitionPiii
+0 15465 22385793;_Z12BadPartitionPiii
+0 15465 22393093;_Z4SwapRiS_
+1 15465 22397385;_Z4SwapRiS_
+1 15465 22400039;_Z12BadPartitionPiii
+0 15465 22405758;_Z12BadPartitionPiii
+0 15465 22413024;_Z4SwapRiS_
+1 15465 22417303;_Z4SwapRiS_
+0 15465 22422852;_Z4SwapRiS_
+1 15465 22427137;_Z4SwapRiS_
+0 15465 22432682;_Z4SwapRiS_
+1 15465 22436964;_Z4SwapRiS_
+0 15465 22442507;_Z4SwapRiS_
+1 15465 22446787;_Z4SwapRiS_
+0 15465 22452327;_Z4SwapRiS_
+1 15465 22456603;_Z4SwapRiS_
+0 15465 22462152;_Z4SwapRiS_
+1 15465 22466410;_Z4SwapRiS_
+0 15465 22471981;_Z4SwapRiS_
+1 15465 22476250;_Z4SwapRiS_
+0 15465 22481801;_Z4SwapRiS_
+1 15465 22486065;_Z4SwapRiS_
+0 15465 22491606;_Z4SwapRiS_
+1 15465 22495894;_Z4SwapRiS_
+0 15465 22501451;_Z4SwapRiS_
+1 15465 22505713;_Z4SwapRiS_
+1 15465 22508395;_Z12BadPartitionPiii
+0 15465 22514092;_Z12BadPartitionPiii
+0 15465 22527010;_Z4SwapRiS_
+1 15465 22533629;_Z4SwapRiS_
+1 15465 22537522;_Z12BadPartitionPiii
+0 15465 22545366;_Z12BadPartitionPiii
+0 15465 22554790;_Z4SwapRiS_
+1 15465 22560501;_Z4SwapRiS_
+0 15465 22567666;_Z4SwapRiS_
+1 15465 22573397;_Z4SwapRiS_
+0 15465 22581047;_Z4SwapRiS_
+1 15465 22586602;_Z4SwapRiS_
+0 15465 22594363;_Z4SwapRiS_
+1 15465 22598441;_Z4SwapRiS_
+0 15465 22603980;_Z4SwapRiS_
+1 15465 22608257;_Z4SwapRiS_
+0 15465 22613804;_Z4SwapRiS_
+1 15465 22618076;_Z4SwapRiS_
+0 15465 22623619;_Z4SwapRiS_
+1 15465 22627899;_Z4SwapRiS_
+0 15465 22633495;_Z4SwapRiS_
+1 15465 22637768;_Z4SwapRiS_
+1 15465 22640460;_Z12BadPartitionPiii
+0 15465 22646185;_Z12BadPartitionPiii
+0 15465 22653494;_Z4SwapRiS_
+1 15465 22657778;_Z4SwapRiS_
+1 15465 22660430;_Z12BadPartitionPiii
+0 15465 22666145;_Z12BadPartitionPiii
+0 15465 22673424;_Z4SwapRiS_
+1 15465 22677716;_Z4SwapRiS_
+0 15465 22683263;_Z4SwapRiS_
+1 15465 22687533;_Z4SwapRiS_
+0 15465 22693091;_Z4SwapRiS_
+1 15465 22697359;_Z4SwapRiS_
+0 15465 22702912;_Z4SwapRiS_
+1 15465 22707180;_Z4SwapRiS_
+0 15465 22712733;_Z4SwapRiS_
+1 15465 22717018;_Z4SwapRiS_
+0 15465 22722574;_Z4SwapRiS_
+1 15465 22726849;_Z4SwapRiS_
+1 15465 22729503;_Z12BadPartitionPiii
+0 15465 22735190;_Z12BadPartitionPiii
+0 15465 22742455;_Z4SwapRiS_
+1 15465 22746740;_Z4SwapRiS_
+1 15465 22749393;_Z12BadPartitionPiii
+0 15465 22755113;_Z12BadPartitionPiii
+0 15465 22762359;_Z4SwapRiS_
+1 15465 22766657;_Z4SwapRiS_
+0 15465 22772198;_Z4SwapRiS_
+1 15465 22776484;_Z4SwapRiS_
+0 15465 22782025;_Z4SwapRiS_
+1 15465 22786308;_Z4SwapRiS_
+0 15465 22791864;_Z4SwapRiS_
+1 15465 22796129;_Z4SwapRiS_
+1 15465 22798815;_Z12BadPartitionPiii
+0 15465 22804513;_Z12BadPartitionPiii
+0 15465 22811793;_Z4SwapRiS_
+1 15465 22816077;_Z4SwapRiS_
+1 15465 22818728;_Z12BadPartitionPiii
+0 15465 22824436;_Z12BadPartitionPiii
+0 15465 22831711;_Z4SwapRiS_
+1 15465 22836018;_Z4SwapRiS_
+0 15465 22841570;_Z4SwapRiS_
+1 15465 22845846;_Z4SwapRiS_
+1 15465 22848506;_Z12BadPartitionPiii
+1 15465 22851642;_Z12QuickSortBadPii
+2 15465 22854957;
+0 15465 22861124;_Z12QuickSortBadPii
+0 15465 22868563;_Z12BadPartitionPiii
+0 15465 22875932;_Z4SwapRiS_
+1 15465 22880250;_Z4SwapRiS_
+1 15465 22882910;_Z12BadPartitionPiii
+0 15465 22888609;_Z12BadPartitionPiii
+0 15465 22895856;_Z4SwapRiS_
+1 15465 22900139;_Z4SwapRiS_
+0 15465 22905688;_Z4SwapRiS_
+1 15465 22909968;_Z4SwapRiS_
+0 15465 22915515;_Z4SwapRiS_
+1 15465 22919811;_Z4SwapRiS_
+0 15465 22925352;_Z4SwapRiS_
+1 15465 22929632;_Z4SwapRiS_
+0 15465 22935178;_Z4SwapRiS_
+1 15465 22939458;_Z4SwapRiS_
+0 15465 22945001;_Z4SwapRiS_
+1 15465 22949295;_Z4SwapRiS_
+0 15465 22954846;_Z4SwapRiS_
+1 15465 22959186;_Z4SwapRiS_
+0 15465 22964743;_Z4SwapRiS_
+1 15465 22969018;_Z4SwapRiS_
+0 15465 22974568;_Z4SwapRiS_
+1 15465 22978847;_Z4SwapRiS_
+0 15465 22984398;_Z4SwapRiS_
+1 15465 22988674;_Z4SwapRiS_
+0 15465 22994225;_Z4SwapRiS_
+1 15465 22998496;_Z4SwapRiS_
+0 15465 23004044;_Z4SwapRiS_
+1 15465 23008304;_Z4SwapRiS_
+0 15465 23013866;_Z4SwapRiS_
+1 15465 23018126;_Z4SwapRiS_
+0 15465 23023671;_Z4SwapRiS_
+1 15465 23027951;_Z4SwapRiS_
+0 15465 23033489;_Z4SwapRiS_
+1 15465 23037773;_Z4SwapRiS_
+0 15465 23043316;_Z4SwapRiS_
+1 15465 23047582;_Z4SwapRiS_
+0 15465 23053135;_Z4SwapRiS_
+1 15465 23057403;_Z4SwapRiS_
+0 15465 23062942;_Z4SwapRiS_
+1 15465 23067225;_Z4SwapRiS_
+0 15465 23072766;_Z4SwapRiS_
+1 15465 23077046;_Z4SwapRiS_
+0 15465 23082593;_Z4SwapRiS_
+1 15465 23086855;_Z4SwapRiS_
+0 15465 23092413;_Z4SwapRiS_
+1 15465 23096673;_Z4SwapRiS_
+0 15465 23102212;_Z4SwapRiS_
+1 15465 23106490;_Z4SwapRiS_
+0 15465 23112033;_Z4SwapRiS_
+1 15465 23116310;_Z4SwapRiS_
+0 15465 23121858;_Z4SwapRiS_
+1 15465 23126116;_Z4SwapRiS_
+0 15465 23131676;_Z4SwapRiS_
+1 15465 23135936;_Z4SwapRiS_
+0 15465 23141473;_Z4SwapRiS_
+1 15465 23145755;_Z4SwapRiS_
+0 15465 23151297;_Z4SwapRiS_
+1 15465 23155574;_Z4SwapRiS_
+0 15465 23161116;_Z4SwapRiS_
+1 15465 23165380;_Z4SwapRiS_
+0 15465 23170945;_Z4SwapRiS_
+1 15465 23175206;_Z4SwapRiS_
+1 15465 23177871;_Z12BadPartitionPiii
+0 15465 23183564;_Z12BadPartitionPiii
+0 15465 23190919;_Z4SwapRiS_
+1 15465 23195203;_Z4SwapRiS_
+1 15465 23197855;_Z12BadPartitionPiii
+0 15465 23203568;_Z12BadPartitionPiii
+0 15465 23210843;_Z4SwapRiS_
+1 15465 23215133;_Z4SwapRiS_
+0 15465 23220678;_Z4SwapRiS_
+1 15465 23224958;_Z4SwapRiS_
+0 15465 23230499;_Z4SwapRiS_
+1 15465 23234772;_Z4SwapRiS_
+0 15465 23240319;_Z4SwapRiS_
+1 15465 23244597;_Z4SwapRiS_
+0 15465 23250144;_Z4SwapRiS_
+1 15465 23254397;_Z4SwapRiS_
+0 15465 23259958;_Z4SwapRiS_
+1 15465 23264218;_Z4SwapRiS_
+0 15465 23269773;_Z4SwapRiS_
+1 15465 23274037;_Z4SwapRiS_
+0 15465 23279584;_Z4SwapRiS_
+1 15465 23283862;_Z4SwapRiS_
+0 15465 23289408;_Z4SwapRiS_
+1 15465 23293674;_Z4SwapRiS_
+0 15465 23299233;_Z4SwapRiS_
+1 15465 23303499;_Z4SwapRiS_
+0 15465 23309054;_Z4SwapRiS_
+1 15465 23313320;_Z4SwapRiS_
+0 15465 23318863;_Z4SwapRiS_
+1 15465 23323144;_Z4SwapRiS_
+0 15465 23328689;_Z4SwapRiS_
+1 15465 23332953;_Z4SwapRiS_
+0 15465 23338512;_Z4SwapRiS_
+1 15465 23342772;_Z4SwapRiS_
+0 15465 23348329;_Z4SwapRiS_
+1 15465 23352594;_Z4SwapRiS_
+0 15465 23358135;_Z4SwapRiS_
+1 15465 23362415;_Z4SwapRiS_
+0 15465 23367960;_Z4SwapRiS_
+1 15465 23372224;_Z4SwapRiS_
+0 15465 23377782;_Z4SwapRiS_
+1 15465 23382042;_Z4SwapRiS_
+0 15465 23387595;_Z4SwapRiS_
+1 15465 23391859;_Z4SwapRiS_
+0 15465 23397402;_Z4SwapRiS_
+1 15465 23401686;_Z4SwapRiS_
+0 15465 23407230;_Z4SwapRiS_
+1 15465 23411492;_Z4SwapRiS_
+0 15465 23417049;_Z4SwapRiS_
+1 15465 23421307;_Z4SwapRiS_
+0 15465 23426864;_Z4SwapRiS_
+1 15465 23431136;_Z4SwapRiS_
+0 15465 23436678;_Z4SwapRiS_
+1 15465 23440956;_Z4SwapRiS_
+0 15465 23446503;_Z4SwapRiS_
+1 15465 23450767;_Z4SwapRiS_
+0 15465 23456328;_Z4SwapRiS_
+1 15465 23460585;_Z4SwapRiS_
+0 15465 23466158;_Z4SwapRiS_
+1 15465 23470416;_Z4SwapRiS_
+1 15465 23473104;_Z12BadPartitionPiii
+0 15465 23478796;_Z12BadPartitionPiii
+0 15465 23486161;_Z4SwapRiS_
+1 15465 23490444;_Z4SwapRiS_
+1 15465 23493135;_Z12BadPartitionPiii
+0 15465 23498820;_Z12BadPartitionPiii
+0 15465 23506091;_Z4SwapRiS_
+1 15465 23510379;_Z4SwapRiS_
+0 15465 23515936;_Z4SwapRiS_
+1 15465 23520201;_Z4SwapRiS_
+0 15465 23525762;_Z4SwapRiS_
+1 15465 23530024;_Z4SwapRiS_
+0 15465 23535581;_Z4SwapRiS_
+1 15465 23539845;_Z4SwapRiS_
+0 15465 23545398;_Z4SwapRiS_
+1 15465 23549661;_Z4SwapRiS_
+0 15465 23555202;_Z4SwapRiS_
+1 15465 23559476;_Z4SwapRiS_
+0 15465 23565019;_Z4SwapRiS_
+1 15465 23569296;_Z4SwapRiS_
+0 15465 23574842;_Z4SwapRiS_
+1 15465 23579107;_Z4SwapRiS_
+0 15465 23584670;_Z4SwapRiS_
+1 15465 23588936;_Z4SwapRiS_
+0 15465 23594495;_Z4SwapRiS_
+1 15465 23598759;_Z4SwapRiS_
+0 15465 23604302;_Z4SwapRiS_
+1 15465 23608582;_Z4SwapRiS_
+0 15465 23614126;_Z4SwapRiS_
+1 15465 23618384;_Z4SwapRiS_
+0 15465 23623945;_Z4SwapRiS_
+1 15465 23628205;_Z4SwapRiS_
+0 15465 23633762;_Z4SwapRiS_
+1 15465 23638028;_Z4SwapRiS_
+0 15465 23643596;_Z4SwapRiS_
+1 15465 23647884;_Z4SwapRiS_
+0 15465 23653439;_Z4SwapRiS_
+1 15465 23657703;_Z4SwapRiS_
+0 15465 23663263;_Z4SwapRiS_
+1 15465 23667538;_Z4SwapRiS_
+0 15465 23673094;_Z4SwapRiS_
+1 15465 23677369;_Z4SwapRiS_
+0 15465 23682919;_Z4SwapRiS_
+1 15465 23687209;_Z4SwapRiS_
+0 15465 23692756;_Z4SwapRiS_
+1 15465 23697028;_Z4SwapRiS_
+0 15465 23702591;_Z4SwapRiS_
+1 15465 23706864;_Z4SwapRiS_
+0 15465 23712423;_Z4SwapRiS_
+1 15465 23716681;_Z4SwapRiS_
+0 15465 23722234;_Z4SwapRiS_
+1 15465 23726520;_Z4SwapRiS_
+0 15465 23732075;_Z4SwapRiS_
+1 15465 23736342;_Z4SwapRiS_
+0 15465 23741923;_Z4SwapRiS_
+1 15465 23746193;_Z4SwapRiS_
+1 15465 23748864;_Z12BadPartitionPiii
+0 15465 23754557;_Z12BadPartitionPiii
+0 15465 23761906;_Z4SwapRiS_
+1 15465 23766197;_Z4SwapRiS_
+1 15465 23768854;_Z12BadPartitionPiii
+0 15465 23774573;_Z12BadPartitionPiii
+0 15465 23781844;_Z4SwapRiS_
+1 15465 23786130;_Z4SwapRiS_
+0 15465 23791674;_Z4SwapRiS_
+1 15465 23795964;_Z4SwapRiS_
+0 15465 23801527;_Z4SwapRiS_
+1 15465 23805819;_Z4SwapRiS_
+0 15465 23811362;_Z4SwapRiS_
+1 15465 23815643;_Z4SwapRiS_
+0 15465 23821188;_Z4SwapRiS_
+1 15465 23825474;_Z4SwapRiS_
+0 15465 23831021;_Z4SwapRiS_
+1 15465 23835301;_Z4SwapRiS_
+0 15465 23840850;_Z4SwapRiS_
+1 15465 23845116;_Z4SwapRiS_
+0 15465 23850666;_Z4SwapRiS_
+1 15465 23854939;_Z4SwapRiS_
+0 15465 23860489;_Z4SwapRiS_
+1 15465 23864783;_Z4SwapRiS_
+0 15465 23870326;_Z4SwapRiS_
+1 15465 23874604;_Z4SwapRiS_
+0 15465 23880151;_Z4SwapRiS_
+1 15465 23884404;_Z4SwapRiS_
+0 15465 23889965;_Z4SwapRiS_
+1 15465 23894223;_Z4SwapRiS_
+0 15465 23899782;_Z4SwapRiS_
+1 15465 23904070;_Z4SwapRiS_
+0 15465 23909619;_Z4SwapRiS_
+1 15465 23913899;_Z4SwapRiS_
+0 15465 23919443;_Z4SwapRiS_
+1 15465 23923701;_Z4SwapRiS_
+0 15465 23934097;_Z4SwapRiS_
+1 15465 23941827;_Z4SwapRiS_
+0 15465 23949902;_Z4SwapRiS_
+1 15465 23955865;_Z4SwapRiS_
+0 15465 23963136;_Z4SwapRiS_
+1 15465 23968362;_Z4SwapRiS_
+0 15465 23975483;_Z4SwapRiS_
+1 15465 23981220;_Z4SwapRiS_
+0 15465 23989179;_Z4SwapRiS_
+1 15465 23994633;_Z4SwapRiS_
+0 15465 24002682;_Z4SwapRiS_
+1 15465 24008044;_Z4SwapRiS_
+0 15465 24015550;_Z4SwapRiS_
+1 15465 24020936;_Z4SwapRiS_
+0 15465 24027371;_Z4SwapRiS_
+1 15465 24031438;_Z4SwapRiS_
+1 15465 24034128;_Z12BadPartitionPiii
+0 15465 24039938;_Z12BadPartitionPiii
+0 15465 24047293;_Z4SwapRiS_
+1 15465 24051560;_Z4SwapRiS_
+1 15465 24054249;_Z12BadPartitionPiii
+0 15465 24059944;_Z12BadPartitionPiii
+0 15465 24067229;_Z4SwapRiS_
+1 15465 24071489;_Z4SwapRiS_
+0 15465 24077049;_Z4SwapRiS_
+1 15465 24081321;_Z4SwapRiS_
+0 15465 24086876;_Z4SwapRiS_
+1 15465 24091138;_Z4SwapRiS_
+0 15465 24098020;_Z4SwapRiS_
+1 15465 24103733;_Z4SwapRiS_
+0 15465 24110800;_Z4SwapRiS_
+1 15465 24117432;_Z4SwapRiS_
+0 15465 24124621;_Z4SwapRiS_
+1 15465 24130051;_Z4SwapRiS_
+0 15465 24137232;_Z4SwapRiS_
+1 15465 24142640;_Z4SwapRiS_
+0 15465 24149613;_Z4SwapRiS_
+1 15465 24154985;_Z4SwapRiS_
+0 15465 24162790;_Z4SwapRiS_
+1 15465 24169635;_Z4SwapRiS_
+0 15465 24177628;_Z4SwapRiS_
+1 15465 24184201;_Z4SwapRiS_
+0 15465 24192410;_Z4SwapRiS_
+1 15465 24198963;_Z4SwapRiS_
+0 15465 24207154;_Z4SwapRiS_
+1 15465 24213230;_Z4SwapRiS_
+0 15465 24221823;_Z4SwapRiS_
+1 15465 24228298;_Z4SwapRiS_
+0 15465 24235563;_Z4SwapRiS_
+1 15465 24240894;_Z4SwapRiS_
+0 15465 24246465;_Z4SwapRiS_
+1 15465 24250740;_Z4SwapRiS_
+0 15465 24256301;_Z4SwapRiS_
+1 15465 24260581;_Z4SwapRiS_
+0 15465 24266134;_Z4SwapRiS_
+1 15465 24270414;_Z4SwapRiS_
+0 15465 24275971;_Z4SwapRiS_
+1 15465 24280253;_Z4SwapRiS_
+0 15465 24285804;_Z4SwapRiS_
+1 15465 24290085;_Z4SwapRiS_
+0 15465 24295652;_Z4SwapRiS_
+1 15465 24299928;_Z4SwapRiS_
+0 15465 24305519;_Z4SwapRiS_
+1 15465 24309811;_Z4SwapRiS_
+1 15465 24312519;_Z12BadPartitionPiii
+0 15465 24318254;_Z12BadPartitionPiii
+0 15465 24325596;_Z4SwapRiS_
+1 15465 24329859;_Z4SwapRiS_
+1 15465 24332547;_Z12BadPartitionPiii
+0 15465 24338272;_Z12BadPartitionPiii
+0 15465 24345557;_Z4SwapRiS_
+1 15465 24349835;_Z4SwapRiS_
+0 15465 24355380;_Z4SwapRiS_
+1 15465 24359670;_Z4SwapRiS_
+0 15465 24365213;_Z4SwapRiS_
+1 15465 24369497;_Z4SwapRiS_
+0 15465 24375050;_Z4SwapRiS_
+1 15465 24379321;_Z4SwapRiS_
+0 15465 24384886;_Z4SwapRiS_
+1 15465 24389150;_Z4SwapRiS_
+0 15465 24394761;_Z4SwapRiS_
+1 15465 24399033;_Z4SwapRiS_
+0 15465 24404582;_Z4SwapRiS_
+1 15465 24408863;_Z4SwapRiS_
+0 15465 24414411;_Z4SwapRiS_
+1 15465 24418672;_Z4SwapRiS_
+0 15465 24424243;_Z4SwapRiS_
+1 15465 24428511;_Z4SwapRiS_
+0 15465 24434062;_Z4SwapRiS_
+1 15465 24438333;_Z4SwapRiS_
+0 15465 24443879;_Z4SwapRiS_
+1 15465 24448172;_Z4SwapRiS_
+0 15465 24453715;_Z4SwapRiS_
+1 15465 24457985;_Z4SwapRiS_
+0 15465 24463552;_Z4SwapRiS_
+1 15465 24467824;_Z4SwapRiS_
+0 15465 24473374;_Z4SwapRiS_
+1 15465 24477642;_Z4SwapRiS_
+0 15465 24483189;_Z4SwapRiS_
+1 15465 24487483;_Z4SwapRiS_
+0 15465 24493236;_Z4SwapRiS_
+1 15465 24497504;_Z4SwapRiS_
+0 15465 24503081;_Z4SwapRiS_
+1 15465 24507349;_Z4SwapRiS_
+0 15465 24512904;_Z4SwapRiS_
+1 15465 24517178;_Z4SwapRiS_
+0 15465 24522735;_Z4SwapRiS_
+1 15465 24527016;_Z4SwapRiS_
+1 15465 24529677;_Z12BadPartitionPiii
+0 15465 24535372;_Z12BadPartitionPiii
+0 15465 24542687;_Z4SwapRiS_
+1 15465 24546962;_Z4SwapRiS_
+1 15465 24549610;_Z12BadPartitionPiii
+0 15465 24555316;_Z12BadPartitionPiii
+0 15465 24562556;_Z4SwapRiS_
+1 15465 24566850;_Z4SwapRiS_
+0 15465 24572395;_Z4SwapRiS_
+1 15465 24576671;_Z4SwapRiS_
+0 15465 24582232;_Z4SwapRiS_
+1 15465 24586504;_Z4SwapRiS_
+0 15465 24592063;_Z4SwapRiS_
+1 15465 24596326;_Z4SwapRiS_
+0 15465 24601889;_Z4SwapRiS_
+1 15465 24606153;_Z4SwapRiS_
+0 15465 24611708;_Z4SwapRiS_
+1 15465 24615978;_Z4SwapRiS_
+0 15465 24621521;_Z4SwapRiS_
+1 15465 24625811;_Z4SwapRiS_
+0 15465 24631352;_Z4SwapRiS_
+1 15465 24635632;_Z4SwapRiS_
+0 15465 24641176;_Z4SwapRiS_
+1 15465 24645440;_Z4SwapRiS_
+0 15465 24650999;_Z4SwapRiS_
+1 15465 24655264;_Z4SwapRiS_
+0 15465 24660807;_Z4SwapRiS_
+1 15465 24665100;_Z4SwapRiS_
+0 15465 24670644;_Z4SwapRiS_
+1 15465 24674924;_Z4SwapRiS_
+0 15465 24680472;_Z4SwapRiS_
+1 15465 24684740;_Z4SwapRiS_
+0 15465 24690310;_Z4SwapRiS_
+1 15465 24694579;_Z4SwapRiS_
+0 15465 24700130;_Z4SwapRiS_
+1 15465 24736207;_Z4SwapRiS_
+0 15465 24740870;_Z4SwapRiS_
+1 15465 24744308;_Z4SwapRiS_
+0 15465 24748761;_Z4SwapRiS_
+1 15465 24752184;_Z4SwapRiS_
+1 15465 24754328;_Z12BadPartitionPiii
+0 15465 24758900;_Z12BadPartitionPiii
+0 15465 24764747;_Z4SwapRiS_
+1 15465 24768176;_Z4SwapRiS_
+1 15465 24770331;_Z12BadPartitionPiii
+0 15465 24774909;_Z12BadPartitionPiii
+0 15465 24780730;_Z4SwapRiS_
+1 15465 24784167;_Z4SwapRiS_
+0 15465 24788610;_Z4SwapRiS_
+1 15465 24792045;_Z4SwapRiS_
+0 15465 24796471;_Z4SwapRiS_
+1 15465 24799891;_Z4SwapRiS_
+0 15465 24804328;_Z4SwapRiS_
+1 15465 24807753;_Z4SwapRiS_
+0 15465 24812190;_Z4SwapRiS_
+1 15465 24815607;_Z4SwapRiS_
+0 15465 24820048;_Z4SwapRiS_
+1 15465 24823467;_Z4SwapRiS_
+0 15465 24827907;_Z4SwapRiS_
+1 15465 24831346;_Z4SwapRiS_
+0 15465 24835789;_Z4SwapRiS_
+1 15465 24839210;_Z4SwapRiS_
+0 15465 24843657;_Z4SwapRiS_
+1 15465 24847072;_Z4SwapRiS_
+0 15465 24851511;_Z4SwapRiS_
+1 15465 24854939;_Z4SwapRiS_
+0 15465 24859382;_Z4SwapRiS_
+1 15465 24862812;_Z4SwapRiS_
+0 15465 24867246;_Z4SwapRiS_
+1 15465 24870669;_Z4SwapRiS_
+0 15465 24875112;_Z4SwapRiS_
+1 15465 24878527;_Z4SwapRiS_
+0 15465 24882957;_Z4SwapRiS_
+1 15465 24886388;_Z4SwapRiS_
+0 15465 24890836;_Z4SwapRiS_
+1 15465 24894260;_Z4SwapRiS_
+1 15465 24896388;_Z12BadPartitionPiii
+0 15465 24900939;_Z12BadPartitionPiii
+0 15465 24906769;_Z4SwapRiS_
+1 15465 24910203;_Z4SwapRiS_
+1 15465 24912325;_Z12BadPartitionPiii
+0 15465 24916899;_Z12BadPartitionPiii
+0 15465 24922699;_Z4SwapRiS_
+1 15465 24926145;_Z4SwapRiS_
+0 15465 24930584;_Z4SwapRiS_
+1 15465 24934005;_Z4SwapRiS_
+0 15465 24938448;_Z4SwapRiS_
+1 15465 24941862;_Z4SwapRiS_
+0 15465 24946312;_Z4SwapRiS_
+1 15465 24949729;_Z4SwapRiS_
+0 15465 24954170;_Z4SwapRiS_
+1 15465 24957581;_Z4SwapRiS_
+0 15465 24962030;_Z4SwapRiS_
+1 15465 24965445;_Z4SwapRiS_
+0 15465 24969885;_Z4SwapRiS_
+1 15465 24973316;_Z4SwapRiS_
+0 15465 24977761;_Z4SwapRiS_
+1 15465 24981187;_Z4SwapRiS_
+0 15465 24985623;_Z4SwapRiS_
+1 15465 24989033;_Z4SwapRiS_
+0 15465 24993482;_Z4SwapRiS_
+1 15465 24996897;_Z4SwapRiS_
+0 15465 25001337;_Z4SwapRiS_
+1 15465 25004754;_Z4SwapRiS_
+0 15465 25009190;_Z4SwapRiS_
+1 15465 25012619;_Z4SwapRiS_
+0 15465 25017066;_Z4SwapRiS_
+1 15465 25020495;_Z4SwapRiS_
+1 15465 25022639;_Z12BadPartitionPiii
+0 15465 25027245;_Z12BadPartitionPiii
+0 15465 25033093;_Z4SwapRiS_
+1 15465 25036542;_Z4SwapRiS_
+1 15465 25038666;_Z12BadPartitionPiii
+0 15465 25043225;_Z12BadPartitionPiii
+0 15465 25049045;_Z4SwapRiS_
+1 15465 25052477;_Z4SwapRiS_
+0 15465 25056920;_Z4SwapRiS_
+1 15465 25060344;_Z4SwapRiS_
+0 15465 25064784;_Z4SwapRiS_
+1 15465 25068205;_Z4SwapRiS_
+0 15465 25072648;_Z4SwapRiS_
+1 15465 25076066;_Z4SwapRiS_
+0 15465 25080514;_Z4SwapRiS_
+1 15465 25083926;_Z4SwapRiS_
+0 15465 25088358;_Z4SwapRiS_
+1 15465 25091796;_Z4SwapRiS_
+0 15465 25104857;_Z4SwapRiS_
+1 15465 25107990;_Z4SwapRiS_
+0 15465 25112257;_Z4SwapRiS_
+1 15465 25115558;_Z4SwapRiS_
+0 15465 25119825;_Z4SwapRiS_
+1 15465 25123122;_Z4SwapRiS_
+0 15465 25127395;_Z4SwapRiS_
+1 15465 25130693;_Z4SwapRiS_
+0 15465 25134977;_Z4SwapRiS_
+1 15465 25138260;_Z4SwapRiS_
+1 15465 25140327;_Z12BadPartitionPiii
+0 15465 25144709;_Z12BadPartitionPiii
+0 15465 25150330;_Z4SwapRiS_
+1 15465 25153637;_Z4SwapRiS_
+1 15465 25155675;_Z12BadPartitionPiii
+0 15465 25160052;_Z12BadPartitionPiii
+0 15465 25165657;_Z4SwapRiS_
+1 15465 25168968;_Z4SwapRiS_
+0 15465 25173247;_Z4SwapRiS_
+1 15465 25176530;_Z4SwapRiS_
+0 15465 25180812;_Z4SwapRiS_
+1 15465 25184095;_Z4SwapRiS_
+0 15465 25188371;_Z4SwapRiS_
+1 15465 25191657;_Z4SwapRiS_
+0 15465 25195925;_Z4SwapRiS_
+1 15465 25199229;_Z4SwapRiS_
+0 15465 25203490;_Z4SwapRiS_
+1 15465 25206789;_Z4SwapRiS_
+0 15465 25211054;_Z4SwapRiS_
+1 15465 25214338;_Z4SwapRiS_
+0 15465 25218613;_Z4SwapRiS_
+1 15465 25221899;_Z4SwapRiS_
+0 15465 25226172;_Z4SwapRiS_
+1 15465 25229474;_Z4SwapRiS_
+1 15465 25231519;_Z12BadPartitionPiii
+0 15465 25235904;_Z12BadPartitionPiii
+0 15465 25241522;_Z4SwapRiS_
+1 15465 25244831;_Z4SwapRiS_
+1 15465 25246869;_Z12BadPartitionPiii
+0 15465 25251243;_Z12BadPartitionPiii
+0 15465 25256846;_Z4SwapRiS_
+1 15465 25260155;_Z4SwapRiS_
+0 15465 25264419;_Z4SwapRiS_
+1 15465 25267710;_Z4SwapRiS_
+0 15465 25271987;_Z4SwapRiS_
+1 15465 25275275;_Z4SwapRiS_
+0 15465 25279553;_Z4SwapRiS_
+1 15465 25282836;_Z4SwapRiS_
+0 15465 25287100;_Z4SwapRiS_
+1 15465 25290399;_Z4SwapRiS_
+0 15465 25294666;_Z4SwapRiS_
+1 15465 25297962;_Z4SwapRiS_
+0 15465 25302238;_Z4SwapRiS_
+1 15465 25305528;_Z4SwapRiS_
+1 15465 25307594;_Z12BadPartitionPiii
+0 15465 25311978;_Z12BadPartitionPiii
+0 15465 25317583;_Z4SwapRiS_
+1 15465 25320887;_Z4SwapRiS_
+1 15465 25322942;_Z12BadPartitionPiii
+0 15465 25327336;_Z12BadPartitionPiii
+0 15465 25332931;_Z4SwapRiS_
+1 15465 25336228;_Z4SwapRiS_
+0 15465 25340493;_Z4SwapRiS_
+1 15465 25343790;_Z4SwapRiS_
+0 15465 25348060;_Z4SwapRiS_
+1 15465 25351363;_Z4SwapRiS_
+0 15465 25355624;_Z4SwapRiS_
+1 15465 25358911;_Z4SwapRiS_
+0 15465 25363199;_Z4SwapRiS_
+1 15465 25366484;_Z4SwapRiS_
+1 15465 25368558;_Z12BadPartitionPiii
+0 15465 25372939;_Z12BadPartitionPiii
+0 15465 25378544;_Z4SwapRiS_
+1 15465 25381853;_Z4SwapRiS_
+1 15465 25383909;_Z12BadPartitionPiii
+0 15465 25388310;_Z12BadPartitionPiii
+0 15465 25393912;_Z4SwapRiS_
+1 15465 25397224;_Z4SwapRiS_
+0 15465 25401493;_Z4SwapRiS_
+1 15465 25404779;_Z4SwapRiS_
+0 15465 25409059;_Z4SwapRiS_
+1 15465 25412350;_Z4SwapRiS_
+1 15465 25414397;_Z12BadPartitionPiii
+0 15465 25418777;_Z12BadPartitionPiii
+0 15465 25424364;_Z4SwapRiS_
+1 15465 25427670;_Z4SwapRiS_
+1 15465 25429724;_Z12BadPartitionPiii
+1 15465 25432155;_Z12QuickSortBadPii
+4 15465 25434903;
+1 15465 25464919;main
+0 15465 25472563;deregister_tm_clones
+1 15465 25476138;deregister_tm_clones
+0 15465 25478505;_fini
+1 15465 25482086;_fini
+8 15465 15465 14735 25568722;tst

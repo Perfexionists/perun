@@ -7,9 +7,9 @@ interface is unified.
 
 from enum import Enum
 
-from perun.collect.optimizations.resources import angr_wrapper
-import perun.collect.optimizations.resources.perun_call_graph as perun_cg
-import perun.collect.optimizations.resources.perun_dynamic_stats as perun_stats
+from perun.collect.trace.optimizations.resources import angr_wrapper
+import perun.collect.trace.optimizations.resources.perun_call_graph as perun_cg
+import perun.collect.trace.optimizations.resources.perun_dynamic_stats as perun_stats
 
 
 class Resources(Enum):

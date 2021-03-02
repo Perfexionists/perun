@@ -12,7 +12,7 @@ import re
 import itertools
 
 import perun.vcs as vcs
-from perun.collect.optimizations.structs import DiffCfgMode
+from perun.collect.trace.optimizations.structs import DiffCfgMode
 
 
 # The set of ASM JUMP instruction that are omitted during the operands check

@@ -1,164 +1,133 @@
-global sample_array[11]
+
+
+global probe_id[17]
+
+global sampling_threshold[17]
+global sampling_counter[2048]
+global sampling_flag[2048]
+
+# Recursion arrays omitted
+
+# Timed Sampling omitted
+global stopwatch_on = 0
 
 probe process("cmp").begin {
-    sample_array[0] = 9
-    sample_array[1] = 9
-    sample_array[2] = 9
-    sample_array[3] = 9
-    sample_array[4] = 9
-    sample_array[5] = 9
-    sample_array[6] = 9
-    sample_array[7] = 9
-    sample_array[8] = 9
-    sample_array[9] = 9
-    sample_array[10] = 9
+    # Probe name -> Probe ID
+    probe_id["_GLOBAL__sub_I__Z9QuickSortPii"] = 0
+    probe_id["_Z10BubbleSortPii"] = 1
+    probe_id["_Z10InsertSortPii"] = 2
+    probe_id["_Z12BadPartitionPiii"] = 3
+    probe_id["_Z12QuickSortBadPii"] = 4
+    probe_id["_Z41__static_initialization_and_destruction_0ii"] = 5
+    probe_id["_Z4SwapRiS_"] = 6
+    probe_id["_Z4swapPiii"] = 7
+    probe_id["_Z8HeapSortPii"] = 8
+    probe_id["_Z9PartitionPiii"] = 9
+    probe_id["_Z9QuickSortPii"] = 10
+    probe_id["_Z9repairTopPiii"] = 11
+    probe_id["_fini"] = 12
+    probe_id["deregister_tm_clones"] = 13
+    probe_id["frame_dummy"] = 14
+    probe_id["main"] = 15
+    probe_id["register_tm_clones"] = 16
 
-    printf("cmp")
-}
+    # Probe name -> Probe sampling threshold
+    sampling_threshold["_GLOBAL__sub_I__Z9QuickSortPii"] = 10
+    sampling_threshold["_Z10BubbleSortPii"] = 10
+    sampling_threshold["_Z10InsertSortPii"] = 10
+    sampling_threshold["_Z12BadPartitionPiii"] = 10
+    sampling_threshold["_Z12QuickSortBadPii"] = 10
+    sampling_threshold["_Z41__static_initialization_and_destruction_0ii"] = 10
+    sampling_threshold["_Z4SwapRiS_"] = 10
+    sampling_threshold["_Z4swapPiii"] = 10
+    sampling_threshold["_Z8HeapSortPii"] = 10
+    sampling_threshold["_Z9PartitionPiii"] = 10
+    sampling_threshold["_Z9QuickSortPii"] = 10
+    sampling_threshold["_Z9repairTopPiii"] = 10
+    sampling_threshold["_fini"] = 10
+    sampling_threshold["deregister_tm_clones"] = 10
+    sampling_threshold["frame_dummy"] = 10
+    sampling_threshold["main"] = 10
+    sampling_threshold["register_tm_clones"] = 10
 
-probe process("cmp").function("_Z10BubbleSortPii").call? {
-    sample_array[0] ++
-    if (sample_array[0] == 10) {
-        printf("0 %s_Z10BubbleSortPii\n", thread_indent(1))
-        sample_array[0] = 0
+    if (!stopwatch_on) {
+        stopwatch_on = 1
+        start_stopwatch("timestamp")
     }
-}
-probe process("cmp").function("_Z10BubbleSortPii").return? {
-    if (sample_array[0] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
-}
-
-probe process("cmp").function("_Z10InsertSortPii").call? {
-    sample_array[1] ++
-    if (sample_array[1] == 10) {
-        printf("0 %s_Z10InsertSortPii\n", thread_indent(1))
-        sample_array[1] = 0
-    }
-}
-probe process("cmp").function("_Z10InsertSortPii").return? {
-    if (sample_array[1] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
-}
-
-probe process("cmp").function("_Z12BadPartitionPiii").call? {
-    sample_array[2] ++
-    if (sample_array[2] == 10) {
-        printf("0 %s_Z12BadPartitionPiii\n", thread_indent(1))
-        sample_array[2] = 0
-    }
-}
-probe process("cmp").function("_Z12BadPartitionPiii").return? {
-    if (sample_array[2] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
+    printf("7 %d %d %d %d;%s\n", tid(), pid(), ppid(), read_stopwatch_ns("timestamp"), execname())
 }
 
-probe process("cmp").function("_Z12QuickSortBadPii").call? {
-    sample_array[3] ++
-    if (sample_array[3] == 10) {
-        printf("0 %s_Z12QuickSortBadPii\n", thread_indent(1))
-        sample_array[3] = 0
-    }
-}
-probe process("cmp").function("_Z12QuickSortBadPii").return? {
-    if (sample_array[3] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
+probe process("cmp").end
+{
+    printf("8 %d %d %d %d;%s\n", tid(), pid(), ppid(), read_stopwatch_ns("timestamp"), execname())
 }
 
-probe process("cmp").function("_Z4SwapRiS_").call? {
-    sample_array[4] ++
-    if (sample_array[4] == 10) {
-        printf("0 %s_Z4SwapRiS_\n", thread_indent(1))
-        sample_array[4] = 0
-    }
+
+probe process("cmp").thread.begin {
+    printf("5 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
 }
-probe process("cmp").function("_Z4SwapRiS_").return? {
-    if (sample_array[4] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
+    
+probe process("cmp").thread.end {
+    printf("6 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
+    delete sampling_counter[tid(), *]
+    delete sampling_flag[tid(), *]
 }
 
-probe process("cmp").function("_Z4swapPiii").call? {
-    sample_array[5] ++
-    if (sample_array[5] == 10) {
-        printf("0 %s_Z4swapPiii\n", thread_indent(1))
-        sample_array[5] = 0
+probe process("cmp").function("_GLOBAL__sub_I__Z9QuickSortPii").call?,
+      process("cmp").function("_Z10BubbleSortPii").call?,
+      process("cmp").function("_Z10InsertSortPii").call?,
+      process("cmp").function("_Z12BadPartitionPiii").call?,
+      process("cmp").function("_Z12QuickSortBadPii").call?,
+      process("cmp").function("_Z41__static_initialization_and_destruction_0ii").call?,
+      process("cmp").function("_Z4SwapRiS_").call?,
+      process("cmp").function("_Z4swapPiii").call?,
+      process("cmp").function("_Z8HeapSortPii").call?,
+      process("cmp").function("_Z9PartitionPiii").call?,
+      process("cmp").function("_Z9QuickSortPii").call?,
+      process("cmp").function("_Z9repairTopPiii").call?,
+      process("cmp").function("_fini").call?,
+      process("cmp").function("deregister_tm_clones").call?,
+      process("cmp").function("frame_dummy").call?,
+      process("cmp").function("main").call?,
+      process("cmp").function("register_tm_clones").call?
+{
+    pname = ppfunc()
+    tid = tid()
+    
+    counter = sampling_counter[tid, pname]
+    if (counter == 0 || counter == sampling_threshold[pname]) {
+        counter = 0
+        sampling_flag[tid, pname] ++
+        printf("0 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
     }
-}
-probe process("cmp").function("_Z4swapPiii").return? {
-    if (sample_array[5] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
+    sampling_counter[tid, pname] ++
+
 }
 
-probe process("cmp").function("_Z8HeapSortPii").call? {
-    sample_array[6] ++
-    if (sample_array[6] == 10) {
-        printf("0 %s_Z8HeapSortPii\n", thread_indent(1))
-        sample_array[6] = 0
+probe process("cmp").function("_GLOBAL__sub_I__Z9QuickSortPii").return?,
+      process("cmp").function("_Z10BubbleSortPii").return?,
+      process("cmp").function("_Z10InsertSortPii").return?,
+      process("cmp").function("_Z12BadPartitionPiii").return?,
+      process("cmp").function("_Z12QuickSortBadPii").return?,
+      process("cmp").function("_Z41__static_initialization_and_destruction_0ii").return?,
+      process("cmp").function("_Z4SwapRiS_").return?,
+      process("cmp").function("_Z4swapPiii").return?,
+      process("cmp").function("_Z8HeapSortPii").return?,
+      process("cmp").function("_Z9PartitionPiii").return?,
+      process("cmp").function("_Z9QuickSortPii").return?,
+      process("cmp").function("_Z9repairTopPiii").return?,
+      process("cmp").function("_fini").return?,
+      process("cmp").function("deregister_tm_clones").return?,
+      process("cmp").function("frame_dummy").return?,
+      process("cmp").function("main").return?,
+      process("cmp").function("register_tm_clones").return?
+{
+    pname = ppfunc()
+    tid = tid()
+    
+    if (sampling_flag[tid, pname] > 0) {
+        printf("1 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
+        sampling_flag[tid, pname] --
     }
-}
-probe process("cmp").function("_Z8HeapSortPii").return? {
-    if (sample_array[6] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
-}
 
-probe process("cmp").function("_Z9PartitionPiii").call? {
-    sample_array[7] ++
-    if (sample_array[7] == 10) {
-        printf("0 %s_Z9PartitionPiii\n", thread_indent(1))
-        sample_array[7] = 0
-    }
-}
-probe process("cmp").function("_Z9PartitionPiii").return? {
-    if (sample_array[7] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
-}
-
-probe process("cmp").function("_Z9QuickSortPii").call? {
-    sample_array[8] ++
-    if (sample_array[8] == 10) {
-        printf("0 %s_Z9QuickSortPii\n", thread_indent(1))
-        sample_array[8] = 0
-    }
-}
-probe process("cmp").function("_Z9QuickSortPii").return? {
-    if (sample_array[8] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
-}
-
-probe process("cmp").function("_Z9repairTopPiii").call? {
-    sample_array[9] ++
-    if (sample_array[9] == 10) {
-        printf("0 %s_Z9repairTopPiii\n", thread_indent(1))
-        sample_array[9] = 0
-    }
-}
-probe process("cmp").function("_Z9repairTopPiii").return? {
-    if (sample_array[9] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
-}
-
-probe process("cmp").function("main").call? {
-    sample_array[10] ++
-    if (sample_array[10] == 10) {
-        printf("0 %smain\n", thread_indent(1))
-        sample_array[10] = 0
-    }
-}
-probe process("cmp").function("main").return? {
-    if (sample_array[10] == 0) {
-        printf("1 %s\n", thread_indent(-1))
-    }
-}
-
-probe process("cmp").end {
-    printf("cmp")
 }

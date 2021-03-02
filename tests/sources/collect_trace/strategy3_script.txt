@@ -1,149 +1,124 @@
-# sampling array omitted
+
+
+global probe_id[20]
+# Sampling arrays omitted
+# Recursion arrays omitted
+
+# Timed Sampling omitted
+global stopwatch_on = 0
 
 probe process("cmp").begin {
-    # sampling array initialization omitted
+    # Probe name -> Probe ID
+    probe_id["_.stapsdt.base"] = 0
+    probe_id["_Z10BubbleSortPii"] = 1
+    probe_id["_Z10InsertSortPii"] = 2
+    probe_id["_Z12BadPartitionPiii"] = 3
+    probe_id["_Z12QuickSortBadPii"] = 4
+    probe_id["_Z4SwapRiS_"] = 5
+    probe_id["_Z4swapPiii"] = 6
+    probe_id["_Z8HeapSortPii"] = 7
+    probe_id["_Z9PartitionPiii"] = 8
+    probe_id["_Z9QuickSortPii"] = 9
+    probe_id["_Z9repairTopPiii"] = 10
+    probe_id["__libc_csu_fini"] = 11
+    probe_id["__libc_csu_init"] = 12
+    probe_id["_fini"] = 13
+    probe_id["_init"] = 14
+    probe_id["_start"] = 15
+    probe_id["data_start"] = 16
+    probe_id["main"] = 17
+    probe_id["BEFORE_CYCLE"] = 18
+    probe_id["INSIDE_CYCLE"] = 19
 
-    printf("cmp")
-}
+    # Probe name -> Probe sampling threshold
 
-probe process("cmp").function("_.stapsdt.base").call? {
-    printf("0 %s_.stapsdt.base\n", thread_indent(1))
-}
-probe process("cmp").function("_.stapsdt.base").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z10BubbleSortPii").call? {
-    printf("0 %s_Z10BubbleSortPii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z10BubbleSortPii").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z10InsertSortPii").call? {
-    printf("0 %s_Z10InsertSortPii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z10InsertSortPii").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z12BadPartitionPiii").call? {
-    printf("0 %s_Z12BadPartitionPiii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z12BadPartitionPiii").return? {
-    printf("1 %s\n", thread_indent(-1))
+    if (!stopwatch_on) {
+        stopwatch_on = 1
+        start_stopwatch("timestamp")
+    }
+    printf("7 %d %d %d %d;%s\n", tid(), pid(), ppid(), read_stopwatch_ns("timestamp"), execname())
 }
 
-probe process("cmp").function("_Z12QuickSortBadPii").call? {
-    printf("0 %s_Z12QuickSortBadPii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z12QuickSortBadPii").return? {
-    printf("1 %s\n", thread_indent(-1))
+probe process("cmp").end
+{
+    printf("8 %d %d %d %d;%s\n", tid(), pid(), ppid(), read_stopwatch_ns("timestamp"), execname())
 }
 
-probe process("cmp").function("_Z4SwapRiS_").call? {
-    printf("0 %s_Z4SwapRiS_\n", thread_indent(1))
+
+probe process("cmp").thread.begin {
+    printf("5 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
 }
-probe process("cmp").function("_Z4SwapRiS_").return? {
-    printf("1 %s\n", thread_indent(-1))
+    
+probe process("cmp").thread.end {
+    printf("6 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
+    # Sampling cleanup omitted
 }
 
-probe process("cmp").function("_Z4swapPiii").call? {
-    printf("0 %s_Z4swapPiii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z4swapPiii").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z8HeapSortPii").call? {
-    printf("0 %s_Z8HeapSortPii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z8HeapSortPii").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z9PartitionPiii").call? {
-    printf("0 %s_Z9PartitionPiii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z9PartitionPiii").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_Z9QuickSortPii").call? {
-    printf("0 %s_Z9QuickSortPii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z9QuickSortPii").return? {
-    printf("1 %s\n", thread_indent(-1))
+probe process("cmp").function("_.stapsdt.base").call?,
+      process("cmp").function("_Z10BubbleSortPii").call?,
+      process("cmp").function("_Z10InsertSortPii").call?,
+      process("cmp").function("_Z12BadPartitionPiii").call?,
+      process("cmp").function("_Z12QuickSortBadPii").call?,
+      process("cmp").function("_Z4SwapRiS_").call?,
+      process("cmp").function("_Z4swapPiii").call?,
+      process("cmp").function("_Z8HeapSortPii").call?,
+      process("cmp").function("_Z9PartitionPiii").call?,
+      process("cmp").function("_Z9QuickSortPii").call?,
+      process("cmp").function("_Z9repairTopPiii").call?,
+      process("cmp").function("__libc_csu_fini").call?,
+      process("cmp").function("__libc_csu_init").call?,
+      process("cmp").function("_fini").call?,
+      process("cmp").function("_init").call?,
+      process("cmp").function("_start").call?,
+      process("cmp").function("data_start").call?,
+      process("cmp").function("main").call?
+{
+    pname = ppfunc()
+    tid = tid()
+    printf("0 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
 }
 
-probe process("cmp").function("_Z9repairTopPiii").call? {
-    printf("0 %s_Z9repairTopPiii\n", thread_indent(1))
-}
-probe process("cmp").function("_Z9repairTopPiii").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("__libc_csu_fini").call? {
-    printf("0 %s__libc_csu_fini\n", thread_indent(1))
-}
-probe process("cmp").function("__libc_csu_fini").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("__libc_csu_init").call? {
-    printf("0 %s__libc_csu_init\n", thread_indent(1))
-}
-probe process("cmp").function("__libc_csu_init").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_fini").call? {
-    printf("0 %s_fini\n", thread_indent(1))
-}
-probe process("cmp").function("_fini").return? {
-    printf("1 %s\n", thread_indent(-1))
+probe process("cmp").function("_.stapsdt.base").return?,
+      process("cmp").function("_Z10BubbleSortPii").return?,
+      process("cmp").function("_Z10InsertSortPii").return?,
+      process("cmp").function("_Z12BadPartitionPiii").return?,
+      process("cmp").function("_Z12QuickSortBadPii").return?,
+      process("cmp").function("_Z4SwapRiS_").return?,
+      process("cmp").function("_Z4swapPiii").return?,
+      process("cmp").function("_Z8HeapSortPii").return?,
+      process("cmp").function("_Z9PartitionPiii").return?,
+      process("cmp").function("_Z9QuickSortPii").return?,
+      process("cmp").function("_Z9repairTopPiii").return?,
+      process("cmp").function("__libc_csu_fini").return?,
+      process("cmp").function("__libc_csu_init").return?,
+      process("cmp").function("_fini").return?,
+      process("cmp").function("_init").return?,
+      process("cmp").function("_start").return?,
+      process("cmp").function("data_start").return?,
+      process("cmp").function("main").return?
+{
+    pname = ppfunc()
+    tid = tid()
+    printf("1 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
 }
 
-probe process("cmp").function("_init").call? {
-    printf("0 %s_init\n", thread_indent(1))
-}
-probe process("cmp").function("_init").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("_start").call? {
-    printf("0 %s_start\n", thread_indent(1))
-}
-probe process("cmp").function("_start").return? {
-    printf("1 %s\n", thread_indent(-1))
+probe process("cmp").mark("BEFORE_CYCLE")?
+{
+    pname = ppfunc()
+    tid = tid()
+    printf("3 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
 }
 
-probe process("cmp").function("data_start").call? {
-    printf("0 %sdata_start\n", thread_indent(1))
-}
-probe process("cmp").function("data_start").return? {
-    printf("1 %s\n", thread_indent(-1))
-}
-
-probe process("cmp").function("main").call? {
-    printf("0 %smain\n", thread_indent(1))
-}
-probe process("cmp").function("main").return? {
-    printf("1 %s\n", thread_indent(-1))
+probe process("cmp").mark("BEFORE_CYCLE_end")?
+{
+    pname = ppfunc()
+    tid = tid()
+    printf("4 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
 }
 
-probe process("cmp").mark("BEFORE_CYCLE")? {
-    printf("3 %s BEFORE_CYCLE\n", thread_indent(0))
-}
-
-probe process("cmp").mark("BEFORE_CYCLE_end")? {
-    printf("4 %s BEFORE_CYCLE_end\n", thread_indent(0))
-}
-
-probe process("cmp").mark("INSIDE_CYCLE")? {
-    printf("2 %s INSIDE_CYCLE\n", thread_indent(0))
-}
-
-probe process("cmp").end {
-    printf("cmp")
+probe process("cmp").mark("INSIDE_CYCLE")?
+{
+    pname = ppfunc()
+    tid = tid()
+    printf("2 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
 }

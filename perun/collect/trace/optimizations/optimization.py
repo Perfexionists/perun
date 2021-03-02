@@ -5,17 +5,17 @@ import collections
 
 from perun.profile.helpers import sanitize_filepart
 from perun.utils.helpers import SuppressedExceptions
-from perun.collect.optimizations.structs import Optimizations, Pipeline, Parameters, \
+from perun.collect.trace.optimizations.structs import Optimizations, Pipeline, Parameters, \
     CallGraphTypes, ParametersManager, CGShapingMode
-import perun.collect.optimizations.resources.manager as resources
-from perun.collect.optimizations.call_graph import CallGraphResource
-import perun.collect.optimizations.cg_shaping as shaping
-import perun.collect.optimizations.cg_projection as proj
-import perun.collect.optimizations.dynamic_baseline as dbase
-import perun.collect.optimizations.static_baseline as sbase
-import perun.collect.optimizations.diff_tracing as diff
-import perun.collect.optimizations.dynamic_sampling as sampling
-from perun.collect.optimizations.dynamic_stats import DynamicStats
+import perun.collect.trace.optimizations.resources.manager as resources
+from perun.collect.trace.optimizations.call_graph import CallGraphResource
+import perun.collect.trace.optimizations.cg_shaping as shaping
+import perun.collect.trace.optimizations.cg_projection as proj
+import perun.collect.trace.optimizations.dynamic_baseline as dbase
+import perun.collect.trace.optimizations.static_baseline as sbase
+import perun.collect.trace.optimizations.diff_tracing as diff
+import perun.collect.trace.optimizations.dynamic_sampling as sampling
+from perun.collect.trace.optimizations.dynamic_stats import DynamicStats
 import perun.utils.metrics as metrics
 
 

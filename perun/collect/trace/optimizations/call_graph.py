@@ -5,8 +5,8 @@ The Call Graph Structure stores the extracted call graph as well as the control 
 """
 
 import perun.vcs as vcs
-from perun.collect.optimizations.call_graph_levels import CGLevelMixin, LevelEstimator
-from perun.collect.optimizations.structs import Complexity
+from perun.collect.trace.optimizations.call_graph_levels import CGLevelMixin, LevelEstimator
+from perun.collect.trace.optimizations.structs import Complexity
 
 
 # TODO: think about converting the proprietary graph structure into the networkx graph

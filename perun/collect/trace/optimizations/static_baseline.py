@@ -9,7 +9,7 @@ well-established Loopus tool
 import perun.logic.runner as runner
 import perun.utils.log as log
 from perun.utils import get_module
-from perun.collect.optimizations.structs import Complexity
+from perun.collect.trace.optimizations.structs import Complexity
 
 
 def complexity_filter(call_graph, sources, complexity, keep_top):

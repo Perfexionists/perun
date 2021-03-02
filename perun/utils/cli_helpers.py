@@ -30,7 +30,7 @@ import perun.utils.timestamps as timestamps
 import perun.utils.log as log
 import perun.vcs as vcs
 import perun.utils.metrics as metrics
-from perun.collect.optimizations.optimization import Optimization, CallGraphTypes
+from perun.collect.trace.optimizations.optimization import Optimization, CallGraphTypes
 
 from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
     StatsFileNotFoundException, NotPerunRepositoryException

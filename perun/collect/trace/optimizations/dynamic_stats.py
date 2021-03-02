@@ -15,7 +15,6 @@
 import array
 import collections
 import numpy as np
-import perun.utils.metrics as metrics
 
 # The quartiles
 _Q1, _Q2, _Q3 = 25, 50, 75

@@ -9,14 +9,14 @@ from multiprocessing import Process
 
 import perun.collect.trace.processes as proc
 import perun.utils.metrics as metrics
-import perun.collect.optimizations.resources.manager as resources
+import perun.collect.trace.optimizations.resources.manager as resources
 import perun.logic.stats as stats
 from perun.profile.factory import Profile
 
 from perun.collect.trace.watchdog import WATCH_DOG
 import perun.collect.trace.values as vals
-from perun.collect.optimizations.call_graph import CallGraphResource
-from perun.collect.optimizations.optimization import build_stats_names
+from perun.collect.trace.optimizations.call_graph import CallGraphResource
+from perun.collect.trace.optimizations.optimization import build_stats_names
 from perun.utils import chunkify
 from perun.utils.exceptions import SignalReceivedException, StatsFileNotFoundException
 from perun.utils.helpers import SuppressedExceptions
