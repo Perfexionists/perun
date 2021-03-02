@@ -3,10 +3,13 @@ language: python
 python:
     - "3.8"
 
+virtualenv:
+  system_site_packages: true
+
 cache: pip
 
 install:
-    - pip install -r requirements.txt
+    - pip install -I -r requirements.txt
     - make install
 
 before_script:
