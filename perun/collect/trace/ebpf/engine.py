@@ -3,7 +3,6 @@
 
 import os
 import json
-from bcc import USDT
 
 import perun.utils as utils
 import perun.collect.trace.collect_engine as engine
@@ -11,6 +10,14 @@ import perun.collect.trace.ebpf.program as program
 import perun.logic.temp as temp
 import perun.utils.metrics as metrics
 from perun.collect.trace.watchdog import WATCH_DOG
+
+try:
+    import bcc
+except ImportError:
+    utils.error(
+        "Missing BCC frontend library for eBPF. Please refer to the Perun install instructions "
+        "to resolve this issue or use a different collection engine"
+    )
 
 
 class BpfEngine(engine.CollectEngine):
@@ -53,7 +60,7 @@ class BpfEngine(engine.CollectEngine):
         """
         return {
             target: list(
-                {probe.name.decode('utf-8') for probe in USDT(path=target).enumerate_probes()}
+                {probe.name.decode('utf-8') for probe in bcc.USDT(path=target).enumerate_probes()}
             ) for target in self.targets
         }
 

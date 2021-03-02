@@ -146,7 +146,8 @@ def teardown(**kwargs):
         kwargs['config'] = config
 
     # Cleanup all the engine related resources
-    if config is not None:
+    # Check that the engine was actually constructed
+    if config is not None and not isinstance(config.engine, str):
         config.engine.cleanup(**kwargs)
 
     metrics.end_timer('total_time')

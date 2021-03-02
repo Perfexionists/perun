@@ -3,16 +3,20 @@
 
 import os
 import time
+import demandimport
 
 from perun.collect.trace.collect_engine import CollectEngine
 from perun.collect.trace.systemtap.engine import SystemTapEngine
-from perun.collect.trace.ebpf.engine import BpfEngine
 from perun.collect.trace.probes import Probes
 from perun.collect.trace.values import OutputHandling
 
 from perun.utils.exceptions import InvalidBinaryException
 from perun.utils import find_executable
 import perun.logic.temp as temp
+
+# Import on demand since eBPF support is optional
+with demandimport.enabled():
+    import perun.collect.trace.ebpf.engine as bpf
 
 
 class Configuration:
@@ -111,7 +115,7 @@ class Configuration:
         if self.engine == 'stap':
             self.engine = SystemTapEngine(self)
         else:
-            self.engine = BpfEngine(self)
+            self.engine = bpf.BpfEngine(self)
 
     def get_functions(self):
         """Access the configuration of the function probes
