@@ -182,7 +182,7 @@ def _build_block_repr(project, block):
     # Function call blocks are represented by the function name
     if isinstance(block, angr.knowledge_plugins.Function):
         return block.name.split('.')[0]
+
     # Obtain the ASM instructions and parameters for each block
-    else:
-        instr = angr.Block(block.addr, project=project, size=block.size).capstone.insns
-        return [(i.insn.mnemonic, i.insn.op_str) for i in instr]
+    instr = angr.Block(block.addr, project=project, size=block.size).capstone.insns
+    return [(i.insn.mnemonic, i.insn.op_str) for i in instr]

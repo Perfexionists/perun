@@ -66,7 +66,7 @@ def _extract_strategy_specifics(engine, probes):
     """
     # Extract the functions and usdt probes if needed
     func, usdt = {}, {}
-    if probes.strategy != Strategy.Custom:
+    if probes.strategy != Strategy.CUSTOM:
         func = _extract_functions(engine.targets, probes.strategy, probes.global_sampling)
         if probes.with_usdt:
             usdt = _extract_usdt(engine, probes.global_sampling)
@@ -301,7 +301,7 @@ def _extract_functions(targets, strategy, global_sampling):
     :return dict: extracted function symbols stored as probes = dictionaries
     """
     # Load userspace / all function symbols from the binary
-    user = strategy in (Strategy.Userspace, Strategy.Userspace_sampled)
+    user = strategy in (Strategy.USERSPACE, Strategy.USERSPACE_SAMPLED)
     filt = _filter_user_symbol if user else lambda _: True
     probes = {}
 
@@ -313,7 +313,7 @@ def _extract_functions(targets, strategy, global_sampling):
             if filt(func) and func not in probes:
                 func_count += 1
                 probes[func] = Probes.create_probe_record(
-                    func, ProbeType.Func, lib=target, pair=func, sample=global_sampling
+                    func, ProbeType.FUNC, lib=target, pair=func, sample=global_sampling
                 )
         if not func_count:
             WATCH_DOG.info("No function symbols found in '{}'".format(target))

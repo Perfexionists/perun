@@ -86,42 +86,17 @@ class CallGraphResource(CGLevelMixin):
 
         :return CallGraphResource: a properly initialized CGR object
         """
-        cg = {func: conf['callees'] for func, conf in old_cg.items()}
+        call_graph = {func: conf['callees'] for func, conf in old_cg.items()}
         for name, callees in dyn_cg.items():
-            cg.setdefault(name, []).extend(callees)
-            cg[name] = sorted(list(set(cg[name])))
+            call_graph.setdefault(name, []).extend(callees)
+            call_graph[name] = sorted(list(set(call_graph[name])))
 
-        new_cg = {
-            'call_graph': self._remove_unreachable(cg),
+        new_call_graph = {
+            'call_graph': _remove_unreachable(call_graph),
             'control_flow': cfg
         }
-        functions = set(new_cg['call_graph'].keys())
-        return self.from_angr(new_cg, functions)
-
-    def _remove_unreachable(self, cg):
-        """ Removes functions from the call graph that are not reachable from the 'main' function.
-
-        :param dict cg: a call graph dictionary
-
-        :return dict: pruned call graph dictionary
-        """
-        iters = [{'main'}]
-        visited = {'main'}
-
-        while iters[-1]:
-            current_iter = iters[-1]
-            new_iter = set()
-            for func in current_iter:
-                func_callees = [c for c in cg.get(func, []) if c not in visited]
-                new_iter |= set(func_callees)
-                visited |= set(func_callees)
-            iters.append(new_iter)
-
-        new_angr_cg = {}
-        for func, callees in cg.items():
-            if func in visited:
-                new_angr_cg[func] = list(set(callees) & visited)
-        return new_angr_cg
+        functions = set(new_call_graph['call_graph'].keys())
+        return self.from_angr(new_call_graph, functions)
 
     def from_dict(self, dict_cg):
         """ Initializes the resource properties according to the CGR loaded from 'stats'.
@@ -293,13 +268,13 @@ class CallGraphResource(CGLevelMixin):
             if len(unfiltered_callees) > 1:
                 # We found the first call graph branch
                 break
-            elif len(unfiltered_callees) == 0:
+            if len(unfiltered_callees) == 0:
                 # We ran out of functions, the call graph is thus possibly one linear call chain
                 return {'main'}, 0
-            else:
-                # We continue through the linear call chain
-                visited.add(unfiltered_callees[0])
-                callees = self[unfiltered_callees[0]]['callees']
+
+            # We continue through the linear call chain
+            visited.add(unfiltered_callees[0])
+            callees = self[unfiltered_callees[0]]['callees']
         cut_level = max(self[func]['level'] for func in visited)
         return visited, cut_level
 
@@ -356,7 +331,7 @@ class CallGraphResource(CGLevelMixin):
         :param dict vertex: the CG function dictionary with all the properties
         """
         reachable = set()
-        candidates = [callee for callee in vertex['callees']]
+        candidates = list(vertex['callees'])
         while candidates:
             func = candidates.pop()
             # The function has already been inspected
@@ -431,7 +406,7 @@ class CallGraphResource(CGLevelMixin):
             'leaf': False,
             'diff': False,
             'sample': 0,
-            'complexity': Complexity.Generic.value
+            'complexity': Complexity.GENERIC.value
         }
 
     @staticmethod
@@ -445,6 +420,32 @@ class CallGraphResource(CGLevelMixin):
             parent['callees'].append(callee['name'])
         if parent['name'] not in callee['callers']:
             callee['callers'].append(parent['name'])
+
+
+def _remove_unreachable(call_graph):
+    """ Removes functions from the call graph that are not reachable from the 'main' function.
+
+    :param dict call_graph: a call graph dictionary
+
+    :return dict: pruned call graph dictionary
+    """
+    iters = [{'main'}]
+    visited = {'main'}
+
+    while iters[-1]:
+        current_iter = iters[-1]
+        new_iter = set()
+        for func in current_iter:
+            func_callees = [c for c in call_graph.get(func, []) if c not in visited]
+            new_iter |= set(func_callees)
+            visited |= set(func_callees)
+        iters.append(new_iter)
+
+    new_angr_cg = {}
+    for func, callees in call_graph.items():
+        if func in visited:
+            new_angr_cg[func] = list(set(callees) & visited)
+    return new_angr_cg
 
 
 def _is_in_funcs(func_name, functions):

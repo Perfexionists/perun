@@ -25,8 +25,8 @@ def extract(stats_name, exclude_self, vcs_version, **_):
         return stats.get_latest(
             stats_name, ['perun_cg'], exclude_self=exclude_self
         ).get('perun_cg', {})
-    else:
-        return stats.get_stats_of(stats_name, minor_version=vcs_version).get('perun_cg', {})
+
+    return stats.get_stats_of(stats_name, minor_version=vcs_version).get('perun_cg', {})
 
 
 def store(stats_name, call_graph, cache, **_):

@@ -21,7 +21,7 @@ def filter_functions(call_graph, stats_map, checks):
     """
     filtered_funcs = []
     changes = call_graph.get_diff()
-    for func_name, func_stats in stats_map.items():
+    for func_name in stats_map.keys():
         # Do not filter functions that have been changed since the last baseline
         # Their change in (performance) behaviour is not easily predictable
         if func_name in changes or func_name not in call_graph.cg_map:
@@ -80,7 +80,7 @@ def wrapper_filter(call_graph, func, stats, **_):
     calls, median = stats[func]['count'], stats[func]['median']
     callers = call_graph[func]['callers']
     if len(callers) < 1:
-        return
+        return False
     for parent in callers:
         # The parent might not have any records
         if parent not in stats:

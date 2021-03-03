@@ -20,7 +20,7 @@ def assemble_ebpf_program(src_file, probes, config, **_):
     # Add unique probe and sampling ID to the probes
     max_id = probes.add_probe_ids()
 
-    timed_sampling_on = Optimizations.TimedSampling.value in config.run_optimizations
+    timed_sampling_on = Optimizations.TIMED_SAMPLING.value in config.run_optimizations
 
     # Open the eBPF program file
     with open(src_file, 'w') as prog_handle:

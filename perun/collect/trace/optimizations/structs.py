@@ -14,13 +14,13 @@ import perun.utils.metrics as metrics
 class Optimizations(Enum):
     """ Enumeration of the implemented methods and their CLI name.
     """
-    BaselineStatic = 'baseline-static'
-    BaselineDynamic = 'baseline-dynamic'
-    CallGraphShaping = 'cg-shaping'
-    DynamicSampling = 'dynamic-sampling'
-    DiffTracing = 'diff-tracing'
-    DynamicProbing = 'dynamic-probing'
-    TimedSampling = 'timed-sampling'
+    BASELINE_STATIC = 'baseline-static'
+    BASELINE_DYNAMIC = 'baseline-dynamic'
+    CALL_GRAPH_SHAPING = 'cg-shaping'
+    DYNAMIC_SAMPLING = 'dynamic-sampling'
+    DIFF_TRACING = 'diff-tracing'
+    DYNAMIC_PROBING = 'dynamic-probing'
+    TIMED_SAMPLING = 'timed-sampling'
 
     @staticmethod
     def supported():
@@ -35,10 +35,10 @@ class Pipeline(Enum):
     """ Enumeration of the implemented pipelines and their CLI name.
     Custom represents a defualt pipeline that has no pre-configured methods or parameters
     """
-    Custom = 'custom'
-    Basic = 'basic'
-    Advanced = 'advanced'
-    Full = 'full'
+    CUSTOM = 'custom'
+    BASIC = 'basic'
+    ADVANCED = 'advanced'
+    FULL = 'full'
 
     @staticmethod
     def supported():
@@ -54,36 +54,35 @@ class Pipeline(Enum):
 
         :return str: the CLI name of the default pipeline
         """
-        return Pipeline.Custom.value
+        return Pipeline.CUSTOM.value
 
     def map_to_optimizations(self):
         """ Map the selected optimization pipeline to the set of employed optimization methods.
 
         :return list: list of the Optimizations enumeration objects
         """
-        if self == Pipeline.Basic:
-            return [Optimizations.CallGraphShaping, Optimizations.BaselineDynamic]
-        elif self == Pipeline.Advanced:
+        if self == Pipeline.BASIC:
+            return [Optimizations.CALL_GRAPH_SHAPING, Optimizations.BASELINE_DYNAMIC]
+        if self == Pipeline.ADVANCED:
             return [
-                Optimizations.DiffTracing, Optimizations.CallGraphShaping,
-                Optimizations.BaselineDynamic, Optimizations.DynamicSampling
+                Optimizations.DIFF_TRACING, Optimizations.CALL_GRAPH_SHAPING,
+                Optimizations.BASELINE_DYNAMIC, Optimizations.DYNAMIC_SAMPLING
             ]
-        elif self == Pipeline.Full:
+        if self == Pipeline.FULL:
             return [
-                Optimizations.DiffTracing, Optimizations.CallGraphShaping,
-                Optimizations.BaselineStatic, Optimizations.BaselineDynamic,
-                Optimizations.DynamicSampling, Optimizations.DynamicProbing,
+                Optimizations.DIFF_TRACING, Optimizations.CALL_GRAPH_SHAPING,
+                Optimizations.BASELINE_STATIC, Optimizations.BASELINE_DYNAMIC,
+                Optimizations.DYNAMIC_SAMPLING, Optimizations.DYNAMIC_PROBING,
             ]
-        else:
-            return []
+        return []
 
 
 class CallGraphTypes(Enum):
     """ Enumeration of the implemented call graph types and their CLI names.
     """
-    Static = 'static'
-    Dynamic = 'dynamic'
-    Mixed = 'mixed'
+    STATIC = 'static'
+    DYNAMIC = 'dynamic'
+    MIXED = 'mixed'
 
     @staticmethod
     def supported():
@@ -99,36 +98,36 @@ class CallGraphTypes(Enum):
 
         :return str: the CLI name of the default cg type
         """
-        return CallGraphTypes.Static.value
+        return CallGraphTypes.STATIC.value
 
 
 class Parameters(Enum):
     """ Enumeration of the currently supported CLI options for optimization methods and pipelines.
     """
-    DiffVersion = 'diff-version'
-    DiffKeepLeaf = 'diff-keep-leaf'
-    DiffInspectAll = 'diff-inspect-all'
-    DiffCfgMode = 'diff-cfg-mode'
-    SourceFiles = 'source-files'
-    SourceDirs = 'source-dirs'
-    StaticComplexity = 'static-complexity'
-    StaticKeepTop = 'static-keep-top'
-    CGShapingMode = 'cg-mode'
-    CGTrimLevels = 'cg-trim-levels'
-    CGTrimMinFunctions = 'cg-trim-min-functions'
-    CGTrimKeepLeaf = 'cg-trim-keep-leaf'
-    CGPruneChainLength = 'cg-prune-chain-length'
-    CGPruneKeepTop = 'cg-prune-keep-top'
-    CGProjLevels = 'cg-proj-levels'
-    CGProjKeepLeaf = 'cg-proj-keep-leaf'
-    DynSampleStep = 'dyn-sample-step'
-    DynSampleThreshold = 'dyn-sample-threshold'
-    ProbingThreshold = 'probing-threshold'
-    ProbingReattach = 'probing-reattach'
-    TimedSampleFreq = 'timed-sample-freq'
-    DynBaseSoftThreshold = 'dyn-base-soft-threshold'
-    DynBaseHardThreshold = 'dyn-base-hard-threshold'
-    ThresholdMode = 'threshold-mode'
+    DIFF_VERSION = 'diff-version'
+    DIFF_KEEP_LEAF = 'diff-keep-leaf'
+    DIFF_INSPECT_ALL = 'diff-inspect-all'
+    DIFF_CG_MODE = 'diff-cfg-mode'
+    SOURCE_FILES = 'source-files'
+    SOURCE_DIRS = 'source-dirs'
+    STATIC_COMPLEXITY = 'static-complexity'
+    STATIC_KEEP_TOP = 'static-keep-top'
+    CG_SHAPING_MODE = 'cg-mode'
+    CG_TRIM_LEVELS = 'cg-trim-levels'
+    CG_TRIM_MIN_FUNCTIONS = 'cg-trim-min-functions'
+    CG_TRIM_KEEP_LEAF = 'cg-trim-keep-leaf'
+    CG_PRUNE_CHAIN_LENGTH = 'cg-prune-chain-length'
+    CG_PRUNE_KEEP_TOP = 'cg-prune-keep-top'
+    CG_PROJ_LEVELS = 'cg-proj-levels'
+    CG_PROJ_KEEP_LEAF = 'cg-proj-keep-leaf'
+    DYNSAMPLE_STEP = 'dyn-sample-step'
+    DYNSAMPLE_THRESHOLD = 'dyn-sample-threshold'
+    PROBING_THRESHOLD = 'probing-threshold'
+    PROBING_REATTACH = 'probing-reattach'
+    TIMEDSAMPLE_FREQ = 'timed-sample-freq'
+    DYNBASE_SOFT_THRESHOLD = 'dyn-base-soft-threshold'
+    DYNBASE_HARD_THRESHOLD = 'dyn-base-hard-threshold'
+    THRESHOLD_MODE = 'threshold-mode'
 
     @staticmethod
     def supported():
@@ -142,10 +141,10 @@ class Parameters(Enum):
 class DiffCfgMode(Enum):
     """ Enumeration of the currently supported CFG comparison mode.
     """
-    Coloring = 'color'
-    Soft = 'soft'
-    Semistrict = 'semistrict'
-    Strict = 'strict'
+    COLORING = 'color'
+    SOFT = 'soft'
+    SEMISTRICT = 'semistrict'
+    STRICT = 'strict'
 
     @staticmethod
     def supported():
@@ -159,12 +158,12 @@ class DiffCfgMode(Enum):
 class CGShapingMode(Enum):
     """ Enumeration of the currently supported Call Graph Shaping modes.
     """
-    Match = 'match'
-    Prune = 'prune'
-    Soft = 'soft'
-    Strict = 'strict'
-    Bottom_up = 'bottom-up'
-    Top_down = 'top-down'
+    MATCH = 'match'
+    PRUNE = 'prune'
+    SOFT = 'soft'
+    STRICT = 'strict'
+    BOTTOM_UP = 'bottom-up'
+    TOP_DOWN = 'top-down'
 
     @staticmethod
     def supported():
@@ -178,8 +177,8 @@ class CGShapingMode(Enum):
 class ThresholdMode(Enum):
     """ Enumeration of the currently supported threshold modes.
     """
-    Soft = 'soft'
-    Strict = 'strict'
+    SOFT = 'soft'
+    STRICT = 'strict'
 
     @staticmethod
     def supported():
@@ -193,13 +192,17 @@ class ThresholdMode(Enum):
 class Complexity(OrderedEnum):
     """ Enumeration of the complexity degrees that we distinguish in the Bounds collector output.
     """
-    Zero = 'zero'
-    Constant = 'constant'
-    Linear = 'linear'
-    Quadratic = 'quadratic'
-    Cubic = 'cubic'
-    Quartic = 'quartic'
-    Generic = 'generic'
+    # Polynomial-to-complexity map
+    _ignore_ = ['map']
+
+    # Complexities
+    ZERO = 'zero'
+    CONSTANT = 'constant'
+    LINEAR = 'linear'
+    QUADRATIC = 'quadratic'
+    CUBIC = 'cubic'
+    QUARTIC = 'quartic'
+    GENERIC = 'generic'
 
     @staticmethod
     def supported():
@@ -227,18 +230,16 @@ class Complexity(OrderedEnum):
 
         :return Complexity: the corresponding Complexity object
         """
-        if polynomial == 'O(1)':
-            return cls.Constant
-        elif polynomial == 'O(n^1)':
-            return cls.Linear
-        elif polynomial == 'O(n^2)':
-            return cls.Quadratic
-        elif polynomial == 'O(n^3)':
-            return cls.Cubic
-        elif polynomial == 'O(n^4)':
-            return cls.Quartic
-        else:
-            return cls.Generic
+        return Complexity.map.get(polynomial, cls.GENERIC)
+
+
+Complexity.map = {
+    'O(1)': Complexity.CONSTANT,
+    'O(n^1)': Complexity.LINEAR,
+    'O(n^2)': Complexity.QUADRATIC,
+    'O(n^3)': Complexity.CUBIC,
+    'O(n^4)': Complexity.QUARTIC
+}
 
 
 class ParametersManager:
@@ -283,103 +284,103 @@ class ParametersManager:
         self.cli_params = []
         self.param_map = {
             # TODO: add proper check
-            Parameters.DiffVersion: {
+            Parameters.DIFF_VERSION: {
                 'value': None,
                 'validate': lambda x: x
             },
-            Parameters.DiffKeepLeaf: {
+            Parameters.DIFF_KEEP_LEAF: {
                 'value': False,
                 'validate': self._validate_bool
             },
-            Parameters.DiffInspectAll: {
+            Parameters.DIFF_INSPECT_ALL: {
                 'value': True,
                 'validate': self._validate_bool
             },
-            Parameters.DiffCfgMode: {
-                'value': DiffCfgMode.Semistrict,
+            Parameters.DIFF_CG_MODE: {
+                'value': DiffCfgMode.SEMISTRICT,
                 'validate': lambda mode: DiffCfgMode(mode)
                 if mode in DiffCfgMode.supported() else None
             },
-            Parameters.SourceFiles: {
+            Parameters.SOURCE_FILES: {
                 'value': [],
                 'validate': self._validate_path
             },
-            Parameters.SourceDirs: {
+            Parameters.SOURCE_DIRS: {
                 'value': [],
                 'validate': self._validate_path
             },
-            Parameters.StaticComplexity: {
-                'value': Complexity.Constant,
+            Parameters.STATIC_COMPLEXITY: {
+                'value': Complexity.CONSTANT,
                 'validate': lambda complexity: Complexity(complexity)
                 if complexity in Complexity.supported() else None
             },
-            Parameters.StaticKeepTop: {
+            Parameters.STATIC_KEEP_TOP: {
                 'value': self._default_keep_top,
                 'validate': self._validate_uint
             },
-            Parameters.CGShapingMode: {
-                'value': CGShapingMode.Match,
+            Parameters.CG_SHAPING_MODE: {
+                'value': CGShapingMode.MATCH,
                 'validate': lambda mode: CGShapingMode(mode)
                 if mode in CGShapingMode.supported() else None
             },
-            Parameters.CGTrimLevels: {
+            Parameters.CG_TRIM_LEVELS: {
                 'value': self._default_min_levels,
                 'validate': self._validate_uint
             },
-            Parameters.CGTrimMinFunctions: {
+            Parameters.CG_TRIM_MIN_FUNCTIONS: {
                 'value': self._default_min_functions,
                 'validate': self._validate_uint
             },
-            Parameters.CGTrimKeepLeaf: {
+            Parameters.CG_TRIM_KEEP_LEAF: {
                 'value': False,
                 'validate': self._validate_bool
             },
-            Parameters.CGPruneChainLength: {
+            Parameters.CG_PRUNE_CHAIN_LENGTH: {
                 'value': self._default_chain_length,
                 'validate': self._validate_uint
             },
-            Parameters.CGPruneKeepTop: {
+            Parameters.CG_PRUNE_KEEP_TOP: {
                 'value': self._default_keep_top,
                 'validate': self._validate_uint
             },
-            Parameters.CGProjLevels: {
+            Parameters.CG_PROJ_LEVELS: {
                 'value': self._default_chain_length,
                 'validate': self._validate_uint
             },
-            Parameters.CGProjKeepLeaf: {
+            Parameters.CG_PROJ_KEEP_LEAF: {
                 'value': False,
                 'validate': self._validate_bool
             },
-            Parameters.DynSampleStep: {
+            Parameters.DYNSAMPLE_STEP: {
                 'value': self._default_sampling_step,
                 'validate': self._validate_ufloat
             },
-            Parameters.DynSampleThreshold: {
+            Parameters.DYNSAMPLE_THRESHOLD: {
                 'value': self._threshold_soft_base,
                 'validate': self._validate_uint
             },
-            Parameters.ProbingThreshold: {
+            Parameters.PROBING_THRESHOLD: {
                 'value': self._probing_threshold,
                 'validate': self._validate_uint
             },
-            Parameters.ProbingReattach: {
+            Parameters.PROBING_REATTACH: {
                 'value': False,
                 'validate': self._validate_bool
             },
-            Parameters.TimedSampleFreq: {
+            Parameters.TIMEDSAMPLE_FREQ: {
                 'value': 1,
                 'validate': self._validate_uint
             },
-            Parameters.DynBaseSoftThreshold: {
+            Parameters.DYNBASE_SOFT_THRESHOLD: {
                 'value': self._threshold_soft_base,
                 'validate': self._validate_uint
             },
-            Parameters.DynBaseHardThreshold: {
+            Parameters.DYNBASE_HARD_THRESHOLD: {
                 'value': self._threshold_soft_base * self._hard_threshold_coefficient,
                 'validate': self._validate_uint
             },
-            Parameters.ThresholdMode: {
-                'value': ThresholdMode.Soft,
+            Parameters.THRESHOLD_MODE: {
+                'value': ThresholdMode.SOFT,
                 'validate': lambda mode: ThresholdMode(mode)
                 if mode in ThresholdMode.supported() else None
             }
@@ -433,7 +434,7 @@ class ParametersManager:
             # Update the default keep top according to the first call graph branching
             self._default_keep_top = call_graph.coverage_max_cut()[1] + 1
         # Extract the user-supplied modes and parameters
-        modes = [Parameters.DiffCfgMode, Parameters.CGShapingMode, Parameters.ThresholdMode]
+        modes = [Parameters.DIFF_CG_MODE, Parameters.CG_SHAPING_MODE, Parameters.THRESHOLD_MODE]
         cli_modes, cli_params = utils.partition_list(
             self.cli_params, lambda param: param[0] in modes
         )
@@ -470,13 +471,13 @@ class ParametersManager:
             return
         # Keep the leaf functions if the total number of profiled functions is low
         if func_count <= self._functions_keep_leaves:
-            self[Parameters.DiffKeepLeaf] = True
-            self[Parameters.CGTrimKeepLeaf] = True
-            self[Parameters.CGProjKeepLeaf] = True
+            self[Parameters.DIFF_KEEP_LEAF] = True
+            self[Parameters.CG_TRIM_KEEP_LEAF] = True
+            self[Parameters.CG_PROJ_KEEP_LEAF] = True
         # Keep-top: 10% of levels, minimum is default
         keep_top = max(math.ceil(level_count * self._keep_top_ratio), self._default_keep_top)
-        self[Parameters.CGPruneKeepTop] = keep_top
-        self[Parameters.StaticKeepTop] = keep_top
+        self[Parameters.CG_PRUNE_KEEP_TOP] = keep_top
+        self[Parameters.STATIC_KEEP_TOP] = keep_top
 
     def _infer_modes(self, selected_pipeline, user_modes):
         """ Predicts the mode parameters based on the used pipeline.
@@ -485,18 +486,18 @@ class ParametersManager:
         :param list user_modes: list of pairs with user-specified modes
         """
         # The selected pipeline determines the used modes
-        if selected_pipeline == Pipeline.Basic:
-            self[Parameters.DiffCfgMode] = DiffCfgMode.Soft
-            self[Parameters.CGShapingMode] = CGShapingMode.Strict
-            self[Parameters.ThresholdMode] = ThresholdMode.Strict
-        elif selected_pipeline == Pipeline.Advanced:
-            self[Parameters.DiffCfgMode] = DiffCfgMode.Semistrict
-            self[Parameters.CGShapingMode] = CGShapingMode.Soft
-            self[Parameters.ThresholdMode] = ThresholdMode.Soft
-        elif selected_pipeline == Pipeline.Full:
-            self[Parameters.DiffCfgMode] = DiffCfgMode.Strict
-            self[Parameters.CGShapingMode] = CGShapingMode.Prune
-            self[Parameters.ThresholdMode] = ThresholdMode.Soft
+        if selected_pipeline == Pipeline.BASIC:
+            self[Parameters.DIFF_CG_MODE] = DiffCfgMode.SOFT
+            self[Parameters.CG_SHAPING_MODE] = CGShapingMode.STRICT
+            self[Parameters.THRESHOLD_MODE] = ThresholdMode.STRICT
+        elif selected_pipeline == Pipeline.ADVANCED:
+            self[Parameters.DIFF_CG_MODE] = DiffCfgMode.SEMISTRICT
+            self[Parameters.CG_SHAPING_MODE] = CGShapingMode.SOFT
+            self[Parameters.THRESHOLD_MODE] = ThresholdMode.SOFT
+        elif selected_pipeline == Pipeline.FULL:
+            self[Parameters.DIFF_CG_MODE] = DiffCfgMode.STRICT
+            self[Parameters.CG_SHAPING_MODE] = CGShapingMode.PRUNE
+            self[Parameters.THRESHOLD_MODE] = ThresholdMode.SOFT
         # Apply the user-supplied modes
         for mode_type, mode_value in user_modes:
             self[mode_type] = mode_value
@@ -511,19 +512,19 @@ class ParametersManager:
             return
         # Determine the number of trimmed levels based on the CG shaping mode
         trim_levels = 0
-        if self[Parameters.CGShapingMode] == CGShapingMode.Strict:
+        if self[Parameters.CG_SHAPING_MODE] == CGShapingMode.STRICT:
             trim_levels = math.ceil(level_count * self._levels_strict_ratio)
-        elif self[Parameters.CGShapingMode] in (CGShapingMode.Soft, CGShapingMode.Top_down,
-                                                CGShapingMode.Bottom_up):
+        elif self[Parameters.CG_SHAPING_MODE] in (CGShapingMode.SOFT, CGShapingMode.TOP_DOWN,
+                                                  CGShapingMode.BOTTOM_UP):
             trim_levels = round(level_count * self._levels_soft_ratio)
 
         # Set the trim levels, the chain length and the minimum number of functions
-        self[Parameters.CGTrimLevels] = max(trim_levels, self._default_min_levels)
-        self[Parameters.CGProjLevels] = max(trim_levels, self._default_min_levels)
-        self[Parameters.CGPruneChainLength] = max(
+        self[Parameters.CG_TRIM_LEVELS] = max(trim_levels, self._default_min_levels)
+        self[Parameters.CG_PROJ_LEVELS] = max(trim_levels, self._default_min_levels)
+        self[Parameters.CG_PRUNE_CHAIN_LENGTH] = max(
             math.floor(level_count * self._chain_length_ratio), self._default_chain_length
         )
-        self[Parameters.CGTrimMinFunctions] = max(
+        self[Parameters.CG_TRIM_MIN_FUNCTIONS] = max(
             math.ceil(func_count * self._min_functions_ratio), self._default_min_functions
         )
 
@@ -532,12 +533,12 @@ class ParametersManager:
         """
         # Determine the thresholds based on the mode
         base = self._threshold_soft_base
-        if self[Parameters.ThresholdMode] == ThresholdMode.Strict:
+        if self[Parameters.THRESHOLD_MODE] == ThresholdMode.STRICT:
             base = self._threshold_strict_base
         # Set the threshold
-        self[Parameters.DynSampleThreshold] = base
-        self[Parameters.DynBaseSoftThreshold] = base
-        self[Parameters.DynBaseHardThreshold] = base * self._hard_threshold_coefficient
+        self[Parameters.DYNSAMPLE_THRESHOLD] = base
+        self[Parameters.DYNBASE_SOFT_THRESHOLD] = base
+        self[Parameters.DYNBASE_HARD_THRESHOLD] = base * self._hard_threshold_coefficient
 
     def _infer_dynamic_probing(self, cli_params):
         """ Predict parameters and threshold values for Dynamic Probing .
@@ -545,17 +546,17 @@ class ParametersManager:
         :param list cli_params: a collection of user-supplied parameters
         """
         # Update the probing threshold if reattach is enabled and probing threshold is not set
-        probing_threshold_set = Parameters.ProbingThreshold in [param for param, _ in cli_params]
-        if self[Parameters.ProbingReattach] and not probing_threshold_set:
+        probing_threshold_set = Parameters.PROBING_THRESHOLD in [param for param, _ in cli_params]
+        if self[Parameters.PROBING_REATTACH] and not probing_threshold_set:
             probing_threshold = self._probing_threshold * self._probing_reattach_coefficient
-            self[Parameters.ProbingThreshold] = probing_threshold
+            self[Parameters.PROBING_THRESHOLD] = probing_threshold
 
     def _extract_sources(self, binary):
         """ Search for source files of the project in the binary directory, if none are given.
 
         :param str binary: path to the binary executable
         """
-        files, dirs = self[Parameters.SourceFiles], self[Parameters.SourceDirs]
+        files, dirs = self[Parameters.SOURCE_FILES], self[Parameters.SOURCE_DIRS]
         # No need to extract if only source files are supplied
         if files and not dirs:
             return
@@ -573,7 +574,7 @@ class ParametersManager:
             elif os.path.splitext(src)[1] in {'.c'}:
                 sources.append(src)
         # Save the sources
-        self[Parameters.SourceFiles] = list(set(sources))
+        self[Parameters.SOURCE_FILES] = list(set(sources))
 
     @staticmethod
     def _validate_bool(value):

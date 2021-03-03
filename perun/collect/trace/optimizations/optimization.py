@@ -40,14 +40,14 @@ class CollectOptimization:
     """
     # The classification of methods to their respective optimization phases
     __pre = {
-        Optimizations.DiffTracing, Optimizations.CallGraphShaping, Optimizations.BaselineStatic,
-        Optimizations.BaselineDynamic, Optimizations.DynamicSampling, Optimizations.TimedSampling
+        Optimizations.DIFF_TRACING, Optimizations.CALL_GRAPH_SHAPING, Optimizations.BASELINE_STATIC,
+        Optimizations.BASELINE_DYNAMIC, Optimizations.DYNAMIC_SAMPLING, Optimizations.TIMED_SAMPLING
     }
     __run = {
-        Optimizations.DynamicProbing, Optimizations.TimedSampling
+        Optimizations.DYNAMIC_PROBING, Optimizations.TIMED_SAMPLING
     }
     __post = {
-        Optimizations.BaselineDynamic, Optimizations.DynamicSampling
+        Optimizations.BASELINE_DYNAMIC, Optimizations.DYNAMIC_SAMPLING
     }
 
     def __init__(self):
@@ -64,7 +64,7 @@ class CollectOptimization:
         self.dynamic_stats_name = None
         self.resource_cache = True
         self.reset_cache = False
-        self.call_graph_type = CallGraphTypes.Static
+        self.call_graph_type = CallGraphTypes.STATIC
         self.call_graph = None
         self.call_graph_old = None
         self.dynamic_stats = DynamicStats()
@@ -134,13 +134,13 @@ class CollectOptimization:
 
         self.pipeline = self.selected_pipeline.map_to_optimizations()
 
-        on = set(self._optimizations_on)
-        off = set(self._optimizations_off)
+        opt_on = set(self._optimizations_on)
+        opt_off = set(self._optimizations_off)
 
-        for optimization in on - off:
+        for optimization in opt_on - opt_off:
             self.pipeline.append(optimization)
 
-        for optimization in off - on:
+        for optimization in opt_off - opt_on:
             with SuppressedExceptions(ValueError):
                 self.pipeline.remove(optimization)
 
@@ -162,7 +162,7 @@ class CollectOptimization:
         # TODO: temporary hack
         old_cg_version = None
         for param_name, param_value in self.params.cli_params:
-            if param_name == Parameters.DiffVersion:
+            if param_name == Parameters.DIFF_VERSION:
                 old_cg_version = param_value
 
         metrics.start_timer('optimization_resources')
@@ -174,7 +174,7 @@ class CollectOptimization:
         if self.get_pre_optimizations() or config.cg_extraction:
             # Extract call graph of the profiled binary
             _cg = resources.extract(
-                resources.Resources.CallGraphAngr, stats_name=self.cg_stats_name,
+                resources.Resources.CALL_GRAPH_ANGR, stats_name=self.cg_stats_name,
                 binary=config.get_target(), libs=config.libs,
                 cache=self.resource_cache and not self.reset_cache,
             )
@@ -186,7 +186,7 @@ class CollectOptimization:
 
             # Save the extracted call graph before it is modified by the optimization methods
             resources.store(
-                resources.Resources.PerunCallGraph, stats_name=self.cg_stats_name,
+                resources.Resources.PERUN_CALL_GRAPH, stats_name=self.cg_stats_name,
                 call_graph=self.call_graph, cache=self.resource_cache and not self.reset_cache
             )
             # TODO: temporary
@@ -196,7 +196,7 @@ class CollectOptimization:
             # Get call graph of the same binary but from the previous project version (if it exists)
             if old_cg_version != self.call_graph.minor:
                 call_graph_old = resources.extract(
-                    resources.Resources.PerunCallGraph,
+                    resources.Resources.PERUN_CALL_GRAPH,
                     stats_name=self.cg_stats_name, exclude_self=True,
                     vcs_version=old_cg_version
                 )
@@ -210,7 +210,7 @@ class CollectOptimization:
         """ Load Dynamic Stats Resource from previous profiling, if there was any.
         """
         self.dynamic_stats = resources.extract(
-            resources.Resources.PerunStats, stats_name=self.dynamic_stats_name,
+            resources.Resources.PERUN_STATS, stats_name=self.dynamic_stats_name,
             reset_cache=self.reset_cache
         )
 
@@ -226,70 +226,70 @@ class CollectOptimization:
 
         metrics.start_timer('pre-optimize')
         # perform the diff tracing
-        if Optimizations.DiffTracing in optimizations:
+        if Optimizations.DIFF_TRACING in optimizations:
             diff.diff_tracing(
                 self.call_graph, self.call_graph_old,
-                self.params[Parameters.DiffKeepLeaf],
-                self.params[Parameters.DiffInspectAll],
-                self.params[Parameters.DiffCfgMode]
+                self.params[Parameters.DIFF_KEEP_LEAF],
+                self.params[Parameters.DIFF_INSPECT_ALL],
+                self.params[Parameters.DIFF_CG_MODE]
             )
 
         # Perform the call graph shaping
-        if Optimizations.CallGraphShaping in optimizations:
-            mode = self.params[Parameters.CGShapingMode]
-            if mode == CGShapingMode.Match:
+        if Optimizations.CALL_GRAPH_SHAPING in optimizations:
+            mode = self.params[Parameters.CG_SHAPING_MODE]
+            if mode == CGShapingMode.MATCH:
                 # The match mode simply uses the call graph functions
                 pass
-            elif mode in [CGShapingMode.Strict, CGShapingMode.Soft]:
+            elif mode in [CGShapingMode.STRICT, CGShapingMode.SOFT]:
                 shaping.call_graph_trimming(
                     self.call_graph,
-                    self.params[Parameters.CGTrimLevels],
-                    self.params[Parameters.CGTrimMinFunctions],
-                    self.params[Parameters.CGTrimKeepLeaf]
+                    self.params[Parameters.CG_TRIM_LEVELS],
+                    self.params[Parameters.CG_TRIM_MIN_FUNCTIONS],
+                    self.params[Parameters.CG_TRIM_KEEP_LEAF]
                 )
-            elif mode == CGShapingMode.Prune:
+            elif mode == CGShapingMode.PRUNE:
                 shaping.call_graph_pruning(
                     self.call_graph,
-                    self.params[Parameters.CGPruneChainLength],
-                    self.params[Parameters.CGPruneKeepTop]
+                    self.params[Parameters.CG_PRUNE_CHAIN_LENGTH],
+                    self.params[Parameters.CG_PRUNE_KEEP_TOP]
                 )
-            elif mode == CGShapingMode.Bottom_up:
+            elif mode == CGShapingMode.BOTTOM_UP:
                 proj.cg_bottom_up(
                     self.call_graph,
-                    self.params[Parameters.CGProjLevels]
+                    self.params[Parameters.CG_PROJ_LEVELS]
                 )
-            elif mode == CGShapingMode.Top_down:
+            elif mode == CGShapingMode.TOP_DOWN:
                 proj.cg_top_down(
                     self.call_graph,
-                    self.params[Parameters.CGProjLevels],
-                    self.params[Parameters.CGProjKeepLeaf]
+                    self.params[Parameters.CG_PROJ_LEVELS],
+                    self.params[Parameters.CG_PROJ_KEEP_LEAF]
                 )
 
         # Perform the static baseline
-        if Optimizations.BaselineStatic in optimizations:
+        if Optimizations.BASELINE_STATIC in optimizations:
             sbase.complexity_filter(
                 self.call_graph,
-                self.params[Parameters.SourceFiles],
-                self.params[Parameters.StaticComplexity],
-                self.params[Parameters.StaticKeepTop]
+                self.params[Parameters.SOURCE_FILES],
+                self.params[Parameters.STATIC_COMPLEXITY],
+                self.params[Parameters.STATIC_KEEP_TOP]
             )
 
         checks = [
-            (dbase.call_limit_filter, self.params[Parameters.DynBaseHardThreshold]),
-            (dbase.constant_filter, self.params[Parameters.DynBaseSoftThreshold]),
+            (dbase.call_limit_filter, self.params[Parameters.DYNBASE_HARD_THRESHOLD]),
+            (dbase.constant_filter, self.params[Parameters.DYNBASE_SOFT_THRESHOLD]),
             (dbase.wrapper_filter, 0),
         ]
-        if Optimizations.BaselineDynamic in optimizations:
+        if Optimizations.BASELINE_DYNAMIC in optimizations:
             dbase.filter_functions(self.call_graph, self.dynamic_stats.global_stats, checks)
-        if Optimizations.DynamicSampling in optimizations:
+        if Optimizations.DYNAMIC_SAMPLING in optimizations:
             sampling.set_sampling(
                 self.call_graph, self.dynamic_stats.global_stats,
-                self.params[Parameters.DynSampleStep],
-                self.params[Parameters.DynSampleThreshold]
+                self.params[Parameters.DYNSAMPLE_STEP],
+                self.params[Parameters.DYNSAMPLE_THRESHOLD]
             )
 
         # Extract the remaining functions from the call graph - these should be probed
-        diff_solo = len(optimizations) == 1 and Optimizations.DiffTracing in optimizations
+        diff_solo = len(optimizations) == 1 and Optimizations.DIFF_TRACING in optimizations
         # If only diff tracing is on, probe only the changed functions
         remaining_func = self.call_graph.get_functions(diff_only=diff_solo)
         config.prune_functions(remaining_func)
@@ -305,12 +305,12 @@ class CollectOptimization:
         """
         # Create a dictionary of parameters and values, they need to be serializable
         run_optimization_parameters = {
-            Parameters.TimedSampleFreq.value:
-                self.params[Parameters.TimedSampleFreq],
-            Parameters.ProbingReattach.value:
-                self.params[Parameters.ProbingReattach],
-            Parameters.ProbingThreshold.value:
-                self.params[Parameters.ProbingThreshold]
+            Parameters.TIMEDSAMPLE_FREQ.value:
+                self.params[Parameters.TIMEDSAMPLE_FREQ],
+            Parameters.PROBING_REATTACH.value:
+                self.params[Parameters.PROBING_REATTACH],
+            Parameters.PROBING_THRESHOLD.value:
+                self.params[Parameters.PROBING_THRESHOLD]
         }
         # Set the optimization methods and their parameters
         config.set_run_optimization(
@@ -338,7 +338,7 @@ class CollectOptimization:
                 self._level_i_metric()
             # Store the gathered Dynamic Stats
             resources.store(
-                resources.Resources.PerunStats,
+                resources.Resources.PERUN_STATS,
                 stats_name=self.dynamic_stats_name,
                 dynamic_stats=self.dynamic_stats,
                 no_update=config.no_ds_update
@@ -389,7 +389,7 @@ class CollectOptimization:
                 )
                 if func_stats['sampled_count'] > max_calls[1]:
                     max_calls = (func_name, func_stats['sampled_count'], func_cg_level)
-        max_bu_length = proj._cg_bottom_sets(self.call_graph)[1]
+        max_bu_length = proj.cg_bottom_sets(self.call_graph)[1]
         metrics.add_metric('cg_level_times_exclusive', exclusive_level_time)
         metrics.add_metric('cg_level_funcs', level_funcs)
         metrics.add_metric('max_calls', max_calls)
@@ -481,7 +481,7 @@ class CollectOptimization:
         total_violations, total_confirmations = 0, 0
 
         # Analyze the functions according to the call graph levels
-        for depth, level in enumerate(self.call_graph.levels):
+        for level in self.call_graph.levels:
             # For each function, we check how many callees have larger call count than the
             # function and if not, we measure by how much the call count differs
             for func in level:
@@ -489,9 +489,9 @@ class CollectOptimization:
                     c for c in self.call_graph[func]['callees']
                     if c not in self.call_graph.backedges[func]
                 ]
-                v, c = self._check_assumption(violations_stats, func, callees)
-                total_violations += v
-                total_confirmations += c
+                violations, confirmations = self._check_assumption(violations_stats, func, callees)
+                total_violations += violations
+                total_confirmations += confirmations
         # Transform the violations statistics into percents
         for key, value in violations_stats.items():
             try:
@@ -525,8 +525,8 @@ class CollectOptimization:
         dyn_stats = self.dynamic_stats.global_stats
         func_violations, func_confirmations = 0, 0
         func_count = dyn_stats.get(parent, {'count': 0})['count']
-        callee_counts = [(c, dyn_stats.get(c, {'count': 0})['count']) for c in callees]
-        for callee, count in callee_counts:
+        callee_counts = [dyn_stats.get(c, {'count': 0})['count'] for c in callees]
+        for count in callee_counts:
             if 0 < count < func_count:
                 func_violations += 1
                 self._assumption_violated(violations_stats, func_count, count)
@@ -577,7 +577,7 @@ def optimize(runner_type, runner_phase, **collect_params):
         Optimization.post_optimize_pipeline(**collect_params)
 
 
-def build_stats_names(config, cg_type=CallGraphTypes.Static):
+def build_stats_names(config, cg_type=CallGraphTypes.STATIC):
     """ Build names of call graph and dynamic stats files.
 
     The CG stats name is built using the main binary and possible libraries with no emphasis on
@@ -596,8 +596,8 @@ def build_stats_names(config, cg_type=CallGraphTypes.Static):
         '--'.join([arg for arg in [config.executable.args, config.executable.workload] if arg])
     ).replace('.', '_')
     cg_prefix = 'cg'
-    if cg_type == CallGraphTypes.Dynamic:
+    if cg_type == CallGraphTypes.DYNAMIC:
         cg_prefix= 'dcg'
-    elif cg_type == CallGraphTypes.Mixed:
+    elif cg_type == CallGraphTypes.MIXED:
         cg_prefix = 'mcg'
     return '{}--{}'.format(cg_prefix, binaries), 'ds--' + '--'.join([binaries, binaries_param])

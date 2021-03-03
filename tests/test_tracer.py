@@ -96,14 +96,14 @@ def _mocked_trace_stack(_, __):
     """Provides trace stack for exception output"""
     trace_stack = {
         'func': {5983: (
-            [TraceRecord(RecordType.FuncBegin, 0, 'ruby_init', 0, 5983, 0),
-             TraceRecord(RecordType.FuncBegin, 1, 'ruby_setup', 3, 5983, 0),
-             TraceRecord(RecordType.FuncBegin, 2, 'rb_define_global_function', 53036, 5983, 1),
-             TraceRecord(RecordType.FuncBegin, 3, 'rb_define_module_function', 53041, 5983, 1),
-             TraceRecord(RecordType.FuncBegin, 4, 'rb_define_private_method', 53045, 5983, 12),
-             TraceRecord(RecordType.FuncBegin, 5, 'rb_intern', 53049, 5983, 63),
-             TraceRecord(RecordType.FuncBegin, 6, 'rb_intern2', 53053, 5983, 70),
-             TraceRecord(RecordType.FuncBegin, 7, 'rb_intern3', 53062, 5983, 70)], []
+            [TraceRecord(RecordType.FUNC_BEGIN, 0, 'ruby_init', 0, 5983, 0),
+             TraceRecord(RecordType.FUNC_BEGIN, 1, 'ruby_setup', 3, 5983, 0),
+             TraceRecord(RecordType.FUNC_BEGIN, 2, 'rb_define_global_function', 53036, 5983, 1),
+             TraceRecord(RecordType.FUNC_BEGIN, 3, 'rb_define_module_function', 53041, 5983, 1),
+             TraceRecord(RecordType.FUNC_BEGIN, 4, 'rb_define_private_method', 53045, 5983, 12),
+             TraceRecord(RecordType.FUNC_BEGIN, 5, 'rb_intern', 53049, 5983, 63),
+             TraceRecord(RecordType.FUNC_BEGIN, 6, 'rb_intern2', 53053, 5983, 70),
+             TraceRecord(RecordType.FUNC_BEGIN, 7, 'rb_intern3', 53062, 5983, 70)], []
         )},
         'static': {5983: {
             'array__create': [
@@ -233,7 +233,7 @@ def test_collect_trace_utils(pcs_full):
     target_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_trace')
     target = os.path.join(target_dir, 'last_line_test.txt')
 
-    last_line = stap._get_last_line_of(target, FileSize.Long)
+    last_line = stap._get_last_line_of(target, FileSize.LONG)
     assert last_line[1] == 'end /home/jirka/perun/experiments/quicksort\n'
 
     # Attempt the locking with another conflicting lock already present

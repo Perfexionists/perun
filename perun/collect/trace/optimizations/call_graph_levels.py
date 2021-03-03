@@ -35,8 +35,8 @@ class LevelEstimator(Enum):
     each node its level based on the obtained path length.
     """
     DFS = 'DFS'
-    Dom = 'DOM'
-    LongestPath = 'LP'
+    DOM = 'DOM'
+    LONGEST_PATH = 'LP'
 
 
 # TODO: unify leaves / bottom across multiple estimators!!!
@@ -54,8 +54,8 @@ class CGLevelMixin:
         """
         _dispatcher = {
             LevelEstimator.DFS: self._dfs_estimator,
-            LevelEstimator.Dom: self._dom_estimator,
-            LevelEstimator.LongestPath: self._lp_estimator,
+            LevelEstimator.DOM: self._dom_estimator,
+            LevelEstimator.LONGEST_PATH: self._lp_estimator,
         }
         return _dispatcher[estimator]
 
@@ -90,7 +90,7 @@ class CGLevelMixin:
         # Backedges are represented as 'func': set(f1, f2, ..) where f1 and f2 are callees of 'func'
         self.backedges = {node: set() for node in self.cg_map.keys()}
         # List of unvisited callees for each visited node
-        edge_list = {'main': [callee for callee in self['main']['callees']]}
+        edge_list = {'main': list(self['main']['callees'])}
         # Stack trace of the current traversed path
         stack_trace = ['main']
         while stack_trace:
@@ -106,7 +106,7 @@ class CGLevelMixin:
                 continue
             stack_trace.append(next_node)
             # In case the node was not yet encountered, register it
-            edge_list.setdefault(next_node, [callee for callee in self[next_node]['callees']])
+            edge_list.setdefault(next_node, list(self[next_node]['callees']))
 
     def _dom_estimator(self):
         """ Computes the dominance relation using the immediate dominators.

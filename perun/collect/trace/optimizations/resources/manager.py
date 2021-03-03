@@ -16,9 +16,9 @@ class Resources(Enum):
     """ An enumeration for all currently used optimization resources and their corresponding
     extraction / storage methods, if any.
     """
-    CallGraphAngr = angr_provider.extract,
-    PerunCallGraph = perun_cg.extract, perun_cg.store
-    PerunStats = perun_stats.extract, perun_stats.store
+    CALL_GRAPH_ANGR = (angr_provider.extract,)
+    PERUN_CALL_GRAPH = perun_cg.extract, perun_cg.store
+    PERUN_STATS = perun_stats.extract, perun_stats.store
 
 
 def extract(resource, **kwargs):

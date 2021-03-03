@@ -40,9 +40,8 @@ def call_graph_trimming(call_graph, level_thr, min_functions, keep_leaf):
                 # Trim the rest of the functions
                 trim_funcs.extend(level)
                 continue
-            else:
-                # We haven't reached the required number of functions
-                coverage_mode = True
+            # We haven't reached the required number of functions
+            coverage_mode = True
 
         # Partition the functions in this level into those that should be kept or removed
         keep, trim = partition_list(level, _check_for_leaf)
@@ -91,7 +90,7 @@ def call_graph_pruning(call_graph, chain_length, keep_top):
         all_candidates.add(leaf['name'])
         leaf_candidates = {leaf['name']}
         # Iterate the callers up the call chain according to the specified chain length
-        for step in range(chain_length - 1):
+        for _ in range(chain_length - 1):
             step_callers = set()
             # Get all the candidate callers, filter the protected levels and already present callers
             for candidate in inspect_list:

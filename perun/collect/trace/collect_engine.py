@@ -50,7 +50,6 @@ class CollectEngine(ABC):
     def check_dependencies(self):
         """ Check that the specific dependencies for a given engine are satisfied.
         """
-        pass
 
     @abstractmethod
     def available_usdt(self, **kwargs):
@@ -61,7 +60,6 @@ class CollectEngine(ABC):
 
         :return dict: a list of the USDT probe names per binary file
         """
-        pass
 
     @abstractmethod
     def assemble_collect_program(self, **kwargs):
@@ -69,7 +67,6 @@ class CollectEngine(ABC):
 
         :param kwargs: the required parameters
         """
-        pass
 
     @abstractmethod
     def collect(self, **kwargs):
@@ -78,7 +75,6 @@ class CollectEngine(ABC):
 
         :param kwargs: the required parameters
         """
-        pass
 
     @abstractmethod
     def transform(self, **kwargs):
@@ -88,7 +84,6 @@ class CollectEngine(ABC):
 
         :return iterable: a generator object that produces the resources
         """
-        pass
 
     @abstractmethod
     def cleanup(self, **kwargs):
@@ -96,7 +91,6 @@ class CollectEngine(ABC):
 
         :param kwargs: the required parameters
         """
-        pass
 
     @staticmethod
     def available():

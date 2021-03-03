@@ -56,7 +56,7 @@ def _get_complexity_classes(sources):
         elif bounds['local bound']:
             bounds['complexity'] = Complexity.max(bounds['local bound'])
         else:
-            bounds['complexity'] = Complexity.Generic
+            bounds['complexity'] = Complexity.GENERIC
 
     return bounds_map
 
@@ -74,7 +74,7 @@ def _call_graph_filter(call_graph, bounds_map, complexity, keep_top):
     # Assign complexity to all CG functions, if we failed to infer one, use the default
     for level in reversed(call_graph.levels[keep_top:]):
         for func in level:
-            func_complexity = bounds_map.get(func, {'complexity': Complexity.Generic})['complexity']
+            func_complexity = bounds_map.get(func, {'complexity': Complexity.GENERIC})['complexity']
             call_graph[func]['complexity'] = Complexity(func_complexity)
             # Filter functions that are below the threshold
             if func_complexity <= complexity:

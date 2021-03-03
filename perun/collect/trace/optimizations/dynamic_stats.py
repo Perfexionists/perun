@@ -57,9 +57,9 @@ class DynamicStats:
         stats.threads = stats_data['t']
 
         # func_values, process_records = stats._process_resources_of(profile)
-        stats._compute_process_hierarchy(process_records)
-        stats._compute_global(func_values, probed_functions)
-        stats._compute_per_thread(func_values, probed_functions)
+        stats.compute_process_hierarchy(process_records)
+        stats.compute_global(func_values, probed_functions)
+        stats.compute_per_thread(func_values, probed_functions)
         return stats
 
     @classmethod
@@ -124,7 +124,7 @@ class DynamicStats:
                 pass
         return funcs, processes
 
-    def _compute_process_hierarchy(self, processes):
+    def compute_process_hierarchy(self, processes):
         """ Build the process hierarchy structure based on the process resources.
 
         :param dict processes: processes dictionary with PID as keys
@@ -132,7 +132,6 @@ class DynamicStats:
         # Create the parent-child connection in the hierarchy
         for pid, procs in processes.items():
             for ppid, amount in procs:
-                ppid = ppid
                 self.process_hierarchy[ppid]['spawn'].append(pid)
                 self.process_hierarchy[pid]['ppid'].append(ppid)
                 self.process_hierarchy[pid]['duration'] = amount
@@ -182,7 +181,7 @@ class DynamicStats:
             # The spawned processes are now the top ones
             top = spawned
 
-    def _compute_global(self, func_values, probed_funcs):
+    def compute_global(self, func_values, probed_funcs):
         """ Compute global statistics across all bottom processes. Currently, we limit ourselves
         to bottom processes only since we do not have access to exclusive time of functions
         that would be needed otherwise.
@@ -212,7 +211,7 @@ class DynamicStats:
         # min_time = min(self.global_stats.items(), key=lambda f_stats: f_stats[1]['min'])
         # metrics.add_metric('min_time', {min_time[0]: min_time[1]['min']})
 
-    def _compute_per_thread(self, func_values, probed_funcs):
+    def compute_per_thread(self, func_values, probed_funcs):
         """ Compute per-thread statistics across all threads
 
         :param dict func_values: function amount values on a per-thread basis

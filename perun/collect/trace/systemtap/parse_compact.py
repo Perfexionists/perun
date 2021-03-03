@@ -21,20 +21,6 @@ from perun.utils import chunkify
 from perun.utils.exceptions import SignalReceivedException, StatsFileNotFoundException
 from perun.utils.helpers import SuppressedExceptions
 
-# import cProfile
-# import pstats
-# import io
-
-# pr = cProfile.Profile()
-# pr.enable()
-# # Profiled code
-# pr.disable()
-# s = io.StringIO()
-# sortby = 'tottime'
-# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-# ps.print_stats()
-# print(s.getvalue())
-
 
 class ThreadContext:
     """ Class that keeps track of function call stack, USDT hit stack, function call sequence
@@ -111,8 +97,6 @@ def trace_to_profile(data_file, config, probes, **_):
     :param Probes probes: an object containing info about probed locations
     :return Profile: the resulting profile
     """
-    # data_file = '/home/jirka/experiments-backup/ccsds/.perun/tmp/trace/files/collect_data_2020-12-01-09-54-27_6438.txt'
-
     # Profile should not be generated, simply process the raw data and return empty profile
     if config.no_profile:
         for _ in process_records(data_file, config, probes):
@@ -136,9 +120,6 @@ def trace_to_profile(data_file, config, probes, **_):
         profile = profile_queue.read()
 
         return profile
-    except SignalReceivedException:
-        # Re-raise the signal exception
-        raise
     finally:
         # Cleanup the queues
         resource_queue.close_writer()
@@ -172,6 +153,7 @@ def profile_builder(resource_queue, profile_queue):
         profile_queue.end_of_input()
     except SignalReceivedException:
         # Interrupt signals should cause the process to properly terminate
+        # We do not want to raise an exception since this runs as another process
         pass
     finally:
         # Regardless of type of termination, queue resources should be cleaned
@@ -212,7 +194,7 @@ def process_records(data_file, config, probes):
         metrics.end_timer('data-processing')
         metrics.add_metric('coverages', {tid: {
             'hotspot_coverage_abs': sum(val for val in bottom.values()),
-            'hotspot_coverage_count': len([name for name in bottom.keys()])
+            'hotspot_coverage_count': len(bottom.keys())
         } for tid, bottom in ctx.bottom.items()})
         metrics.add_metric('trace_level_times_exclusive', dict(ctx.level_times_exclusive))
         all_probes = set(probes.func.keys()) | set(probes.usdt.keys())
@@ -239,7 +221,7 @@ def process_records(data_file, config, probes):
 def _build_mixed_cg_tmp(config, ctx):
     cg_stats_name, _ = build_stats_names(config)
     static_cg = resources.extract(
-        resources.Resources.CallGraphAngr, stats_name=cg_stats_name,
+        resources.Resources.CALL_GRAPH_ANGR, stats_name=cg_stats_name,
         binary=config.get_target(), libs=config.libs,
         cache=False, restricted_search=False
     )
@@ -249,7 +231,7 @@ def _build_mixed_cg_tmp(config, ctx):
 
     mixed_call_graph = CallGraphResource().add_dyn(ctx.dyn_cg, cg_map, static_cg['control_flow'])
     resources.store(
-        resources.Resources.PerunCallGraph, stats_name= cg_stats_name,
+        resources.Resources.PERUN_CALL_GRAPH, stats_name= cg_stats_name,
         call_graph=mixed_call_graph, cache=False
     )
 
@@ -290,11 +272,11 @@ def _build_alternative_cg(config, ctx):
 
     # Store the new call graph versions
     resources.store(
-        resources.Resources.PerunCallGraph, stats_name='m' + cg_stats_name,
+        resources.Resources.PERUN_CALL_GRAPH, stats_name='m' + cg_stats_name,
         call_graph=mixed_call_graph, cache=False
     )
     resources.store(
-        resources.Resources.PerunCallGraph, stats_name='d' + cg_stats_name,
+        resources.Resources.PERUN_CALL_GRAPH, stats_name='d' + cg_stats_name,
         call_graph=dynamic_call_graph, cache=False
     )
 
@@ -305,16 +287,16 @@ def _record_handlers():
     :return dict: the mapping dictionary
     """
     return {
-        vals.RecordType.ProcessBegin.value: _record_process_begin,
-        vals.RecordType.ProcessEnd.value: _record_process_end,
-        vals.RecordType.ThreadBegin: _record_thread_begin,
-        vals.RecordType.ThreadEnd: _record_thread_end,
-        vals.RecordType.FuncBegin.value: _record_func_begin,
-        vals.RecordType.FuncEnd.value: _record_func_end,
-        vals.RecordType.USDTBegin.value: _record_usdt_begin,
-        vals.RecordType.USDTEnd.value: _record_usdt_end,
-        vals.RecordType.USDTSingle.value: _record_usdt_single,
-        vals.RecordType.Corrupt.value: _record_corrupt
+        vals.RecordType.PROCESS_BEGIN.value: _record_process_begin,
+        vals.RecordType.PROCESS_END.value: _record_process_end,
+        vals.RecordType.THREAD_BEGIN: _record_thread_begin,
+        vals.RecordType.THREAD_END: _record_thread_end,
+        vals.RecordType.FUNC_BEGIN.value: _record_func_begin,
+        vals.RecordType.FUNC_END.value: _record_func_end,
+        vals.RecordType.USDT_BEGIN.value: _record_usdt_begin,
+        vals.RecordType.USDT_END.value: _record_usdt_end,
+        vals.RecordType.USDT_SINGLE.value: _record_usdt_single,
+        vals.RecordType.CORRUPT.value: _record_corrupt
     }
 
 
@@ -607,7 +589,7 @@ def parse_records(file_name, probes, verbose_trace):
             except Exception:
                 WATCH_DOG.info("Corrupted data record: '{}'".format(line.rstrip('\n')))
                 yield {
-                    'type': vals.RecordType.Corrupt.value,
+                    'type': vals.RecordType.CORRUPT.value,
                     'tid': -1,
                     'timestamp': -1,
                     'id': -1

@@ -49,7 +49,6 @@ class BpfEngine(engine.CollectEngine):
         The dependencies check is done indirectly by importing the bcc python module
         - if it exists, then the OS should already support the eBPF.
         """
-        pass
 
     def available_usdt(self, **_):
         """ Extracts the names of the available USDT probes within the binary files and libraries.
@@ -122,7 +121,7 @@ class BpfEngine(engine.CollectEngine):
         with open(self.data, 'r') as raw_data:
             for line in raw_data:
                 # Partition and convert the line
-                pid, func_id, call_time, amount = list(map(int, line.split()))
+                pid, func_id, _, amount = list(map(int, line.split()))
                 # Create the profile resource
                 yield {'amount': amount,
                        'uid': func_map[func_id]['name'],

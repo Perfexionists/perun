@@ -203,7 +203,7 @@ class SystemTapEngine(engine.CollectEngine):
             match = STAP_MODULE_REGEX.search(self.stap_module)
         except TypeError:
             # If not, he kernel module should be in the last log line
-            line = _get_last_line_of(logfile, FileSize.Short)[1]
+            line = _get_last_line_of(logfile, FileSize.SHORT)[1]
             match = STAP_MODULE_REGEX.search(line)
         if not match:
             # No kernel module found, warn the user that something is not right
@@ -279,9 +279,9 @@ class SystemTapEngine(engine.CollectEngine):
         # Set the process pipes according to the selected output handling mode
         # DEVNULL for suppress mode, STDERR -> STDOUT = PIPE for capture
         profiled_args = {}
-        if config.output_handling == OutputHandling.Suppress:
+        if config.output_handling == OutputHandling.SUPPRESS:
             profiled_args = dict(stderr=DEVNULL, stdout=DEVNULL)
-        elif config.output_handling == OutputHandling.Capture:
+        elif config.output_handling == OutputHandling.CAPTURE:
             profiled_args = dict(stderr=STDOUT, stdout=PIPE, bufsize=1)
 
         # Start the profiled command
@@ -299,7 +299,7 @@ class SystemTapEngine(engine.CollectEngine):
             WATCH_DOG.debug("Profiled command process: '{}'".format(profiled.pid))
             # Start the periodic thread so that the user is periodically updated about the progress
             with PeriodicThread(HEARTBEAT_INTERVAL, _heartbeat_command, [self.data]):
-                if config.output_handling == OutputHandling.Capture:
+                if config.output_handling == OutputHandling.CAPTURE:
                     # Start the 'tee' thread if the output is being captured
                     NonBlockingTee(profiled.stdout, self.capture)
                 # Wait indefinitely (until the process ends) or for a 'timeout' seconds
@@ -413,7 +413,7 @@ def _get_last_line_of(file, length):
                    note: the line number is not available for long files
     """
     # In order to use the optimized version for long files, the file has to be opened in binary mode
-    if length == FileSize.Long:
+    if length == FileSize.LONG:
         with open(file, 'rb') as file_handle:
             try:
                 file_handle.seek(-1, os.SEEK_END)
@@ -484,7 +484,7 @@ def _wait_for_systemtap_startup(logfile, stap_process):
         status = stap_process.poll()
         if status is None:
             # Check the last line of the SystemTap log file if the process is still running
-            line_no, line = _get_last_line_of(logfile, FileSize.Short)
+            line_no, line = _get_last_line_of(logfile, FileSize.SHORT)
             # The log file should contain at least 4 lines from the compilation and another
             # 5 lines from the startup
             if line_no >= ((2 * STAP_PHASES) - 1) and ' 5: ' in line:
@@ -516,8 +516,8 @@ def _wait_for_systemtap_data(datafile):
             with SuppressedExceptions(IndexError):
                 # Periodically scan the last line of the data file
                 # The file can be potentially long, use the optimized method to get the last line
-                last_line = _get_last_line_of(datafile, FileSize.Long)[1]
-                if int(last_line.split()[0]) == RecordType.ProcessEnd.value:
+                last_line = _get_last_line_of(datafile, FileSize.LONG)[1]
+                if int(last_line.split()[0]) == RecordType.PROCESS_END.value:
                     WATCH_DOG.info('The data file is fully written.')
                     return
             time.sleep(LOG_WAIT)
@@ -536,7 +536,7 @@ def _heartbeat_stap(logfile, phase):
     """
     # Report log line count and the last record
     WATCH_DOG.info("{} status update: 'log lines count' ; 'last log line'".format(phase))
-    WATCH_DOG.info("'{}' ; '{}'".format(*_get_last_line_of(logfile, FileSize.Short)))
+    WATCH_DOG.info("'{}' ; '{}'".format(*_get_last_line_of(logfile, FileSize.SHORT)))
 
 
 def _extract_processes(extract_command):

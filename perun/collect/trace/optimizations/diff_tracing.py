@@ -22,8 +22,6 @@ JUMP_INSTRUCTIONS = {
     'jno', 'jp', 'jpe', 'jnp', 'jpo', 'js', 'jns'
 }
 
-# The set of registers used in the x86-64 architecture
-REGISTERS = set()
 
 # Delimiters used in the disassembly operands specification
 OPERANDS_SPLIT = re.compile(r'([\s,:+*\-\[\]]+)')
@@ -35,8 +33,11 @@ def _build_registers_set():
 
     Since the set of registers is rather large, we construct the set (instead of simple
     enumeration) using some base names and prefixes/suffixes/counters.
+
+    :return set: the set of x86-64 instructions
     """
-    global REGISTERS
+    # The set of registers used in the x86-64 architecture
+    registers = set()
 
     reg_classes = {
         'full': ['ax', 'cx', 'dx', 'bx'],
@@ -55,30 +56,32 @@ def _build_registers_set():
 
     # Create Rrr, Err, rr, rL, rH variants
     for reg in reg_classes['full']:
-        REGISTERS |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
-        REGISTERS |= {'{}{}'.format(reg[:1], post) for post in reg_classes['postfix']}
+        registers |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
+        registers |= {'{}{}'.format(reg[:1], post) for post in reg_classes['postfix']}
 
     # Create Rrr, Err, rr, rrL variants
     for reg in reg_classes['partial']:
-        REGISTERS |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
-        REGISTERS.add('{}{}'.format(reg, reg_classes['postfix'][0]))
+        registers |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
+        registers.add('{}{}'.format(reg, reg_classes['postfix'][0]))
 
     # Add segment registers as-is
-    REGISTERS |= set(reg_classes['segment'])
+    registers |= set(reg_classes['segment'])
     # Create RIP, EIP, IP registers
-    REGISTERS |= {'{}{}'.format(pre, reg_classes['ip']) for pre in reg_classes['prefix']}
+    registers |= {'{}{}'.format(pre, reg_classes['ip']) for pre in reg_classes['prefix']}
     # Create 64b register variants R8-R15
     start64, end64 = reg_classes['64b-cnt']
     for idx in range(start64, end64 + 1):
-        REGISTERS |= {
+        registers |= {
             '{}{}{}'.format(reg_classes['64b'], str(idx), post) for post in reg_classes['64b-post']
         }
     # Create sse and avx register variants XMM0-XMM7 / YMM0 - YMM7
     start_sse, end_sse = reg_classes['sse-cnt']
     for idx in range(start_sse, end_sse + 1):
-        REGISTERS |= {
+        registers |= {
             '{}{}'.format(reg, str(idx)) for reg in [reg_classes['sse'], reg_classes['avx']]
         }
+
+    return registers
 
 
 def diff_tracing(call_graph, call_graph_old, keep_leaf, inspect_all, cfg_mode):
@@ -208,7 +211,7 @@ def _compare_cfg_blocks(blocks, blocks_old, renames, eq_criterion):
                 return False
             return True
         # The block type is different
-        elif isinstance(block, str) or isinstance(block_old, str):
+        if isinstance(block, str) or isinstance(block_old, str):
             return False
         # Use the checking method
         return eq_criterion(block, block_old)
@@ -260,8 +263,8 @@ def _cfg_strict(block, block_old):
     if not _cfg_soft(block, block_old):
         return False
     # Also check that the op-codes and operands match
-    for (instr, op), (instr_old, op_old) in zip(block, block_old):
-        if instr != instr_old or (instr not in JUMP_INSTRUCTIONS and op != op_old):
+    for (instr, operands), (instr_old, operands_old) in zip(block, block_old):
+        if instr != instr_old or (instr not in JUMP_INSTRUCTIONS and operands != operands_old):
             return False
     return True
 
@@ -285,7 +288,7 @@ def _cfg_coloring(block, block_old):
         :return generator: generates updated operand tokens where registers are substituted
         """
         for expr in operand_parts:
-            if expr in REGISTERS:
+            if expr in _cfg_coloring.registers:
                 # Fetch the register's color, or assign it a new one
                 instr_colors.append(color_map.setdefault(expr, str(next(color_counter))))
                 yield '<r>'
@@ -302,9 +305,9 @@ def _cfg_coloring(block, block_old):
         color_counter = itertools.count()
         color_map = {}
         # Parse the instructions and operands, substitute and color registers
-        for (instr, op) in [instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS]:
+        for (instr, oper) in [instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS]:
             instr_colors = []
-            op_parts = re.split(OPERANDS_SPLIT, op)
+            op_parts = re.split(OPERANDS_SPLIT, oper)
             instr_full = '{} '.format(instr) + ''.join(_color_registers(op_parts))
             stack.append((instr_full, instr_colors))
         # Sort the instruction stack to invalidate instruction reordering
@@ -325,15 +328,15 @@ def _cfg_coloring(block, block_old):
     return True
 
 
-def _filter_leaves(funcs, cg):
+def _filter_leaves(funcs, call_graph):
     """ Filter leaf functions
 
     :param set funcs: the set of functions to filter
-    :param CallGraphResource cg: the corresponding CGR
+    :param CallGraphResource call_graph: the corresponding CGR
 
     :return list: list of non-leaf functions
     """
-    return [func for func in funcs if not cg[func]['leaf']]
+    return [func for func in funcs if not call_graph[func]['leaf']]
 
 
 def _inspect_all(call_graph, call_graph_old, new_funcs, renamed):
@@ -361,27 +364,27 @@ def _inspect_all(call_graph, call_graph_old, new_funcs, renamed):
     return changed
 
 
-def _find_renames(new_funcs, del_funcs, cg, cg_old):
+def _find_renames(new_funcs, del_funcs, call_graph, call_graph_old):
     """ Creates the renames mapping
 
     :param list new_funcs: a collection of new functions
     :param list del_funcs: a collection of deleted functions
-    :param CallGraphResource cg: the CGR of the current project version
-    :param CallGraphResource cg_old: the CGR of the previous project version
+    :param CallGraphResource call_graph: the CGR of the current project version
+    :param CallGraphResource call_graph_old: the CGR of the previous project version
 
     :return dict: the renames mapping
     """
     renamed = {}
     # Get the new functions sorted by level in descending order
-    new_funcs = cg.sort_by_level(new_funcs)
+    new_funcs = call_graph.sort_by_level(new_funcs)
     # Get the deleted functions sorted by level and also obtain their callers / callees
     deleted_funcs = []
-    for del_name, _ in cg_old.sort_by_level(del_funcs):
-        deleted_funcs.append((del_name, _get_callers_and_callees(del_name, cg_old)))
+    for del_name, _ in call_graph_old.sort_by_level(del_funcs):
+        deleted_funcs.append((del_name, _get_callers_and_callees(del_name, call_graph_old)))
 
     # Iterate the new functions and compare the callers / callees
     for new_name, _ in new_funcs:
-        callers, callees = _get_callers_and_callees(new_name, cg, renamed)
+        callers, callees = _get_callers_and_callees(new_name, call_graph, renamed)
         for idx, (del_name, (del_callers, del_callees)) in enumerate(deleted_funcs):
             # If the callers / callees match, then we assume that rename took place
             if callers == del_callers and callees == del_callees:
@@ -392,16 +395,16 @@ def _find_renames(new_funcs, del_funcs, cg, cg_old):
     return renamed
 
 
-def _get_callers_and_callees(func_name, cg, rename_map=None):
+def _get_callers_and_callees(func_name, call_graph, rename_map=None):
     """ Obtain callers and callees for a specified function
 
     :param str func_name: the function name
-    :param CallGraphResource cg: the CGR of the current project version
+    :param CallGraphResource call_graph: the CGR of the current project version
     :param dict rename_map: the renames mapping
 
     :return tuple: (callers, callees)
     """
-    func = cg[func_name]
+    func = call_graph[func_name]
     callers, callees = func['callers'], func['callees']
     return set(_rename_funcs(callers, rename_map)), set(_rename_funcs(callees, rename_map))
 
@@ -457,12 +460,12 @@ def _parse_git_diff(funcs, version_1, version_2):
 
 
 # Initialize the set of registers
-_build_registers_set()
+_cfg_coloring.registers = _build_registers_set()
 
 # The DiffTracing mode -> function dispatcher
 _DIFFMODE_MAP = {
-    DiffCfgMode.Soft: _cfg_soft,
-    DiffCfgMode.Semistrict: _cfg_semistrict,
-    DiffCfgMode.Strict: _cfg_strict,
-    DiffCfgMode.Coloring: _cfg_coloring
+    DiffCfgMode.SOFT: _cfg_soft,
+    DiffCfgMode.SEMISTRICT: _cfg_semistrict,
+    DiffCfgMode.STRICT: _cfg_strict,
+    DiffCfgMode.COLORING: _cfg_coloring
 }

@@ -50,9 +50,9 @@ def set_sampling(call_graph, stats, step, threshold):
                     # Normalize the value
                     func_sample = 1 if func_sample < 1 else func_sample
             else:
-                if cg_func['complexity'] == Complexity.Constant.value:
+                if cg_func['complexity'] == Complexity.CONSTANT.value:
                     func_sample *= _CONSTANT_RATIO
-                elif cg_func['complexity'] == Complexity.Linear.value:
+                elif cg_func['complexity'] == Complexity.LINEAR.value:
                     func_sample *= _LINEAR_RATIO
             # Normalize the sampling
             if func_sample > _SAMPLE_MAX:

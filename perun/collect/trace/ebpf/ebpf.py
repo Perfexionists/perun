@@ -48,8 +48,8 @@ class BpfContext:
 
         # Dynamic probing related data
         self.iter = 0
-        self.threshold = self.o_params[Parameters.ProbingThreshold.value]
-        self.re_attach = self.o_params[Parameters.ProbingReattach.value]
+        self.threshold = self.o_params[Parameters.PROBING_THRESHOLD.value]
+        self.re_attach = self.o_params[Parameters.PROBING_REATTACH.value]
         self.detached = []
         self.dynamic_probes = [{}] * len(self.config['func'])
         for func in self.config['func'].values():
@@ -148,7 +148,7 @@ class BpfContext:
         # Use single CPU to generate events only once (as opposed to every CPU generating events)
         self.bpf.attach_perf_event(
             ev_type=PerfType.SOFTWARE, ev_config=PerfSWConfig.CPU_CLOCK, fn_name='set_enabled',
-            sample_freq=self.o_params[Parameters.TimedSampleFreq.value], cpu=0
+            sample_freq=self.o_params[Parameters.TIMEDSAMPLE_FREQ.value], cpu=0
         )
 
     def attach_cache_counters(self, pid):
@@ -188,8 +188,8 @@ def ebpf_runner():
     """ Attaches the probes to the given program locations (functions, usdt, cache events, ...)
     and runs the profiled command to gather the performance data.
     """
-    timed_sampling_on = Optimizations.TimedSampling.value in BPF_CTX.optimizations
-    dynamic_probing_on = Optimizations.DynamicProbing.value in BPF_CTX.optimizations
+    timed_sampling_on = Optimizations.TIMED_SAMPLING.value in BPF_CTX.optimizations
+    dynamic_probing_on = Optimizations.DYNAMIC_PROBING.value in BPF_CTX.optimizations
 
     # Attach the probes
     BPF_CTX.attach_functions([probe['name'] for probe in BPF_CTX.config['func'].values()])

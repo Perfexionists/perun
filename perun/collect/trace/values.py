@@ -15,11 +15,11 @@ from perun.utils.exceptions import MissingDependencyException
 class Strategy(Enum):
     """ The supported probe extraction strategies.
     """
-    Userspace = 'userspace'
-    All = 'all'
-    Userspace_sampled = 'u_sampled'
-    All_sampled = 'a_sampled'
-    Custom = 'custom'
+    USERSPACE = 'userspace'
+    ALL = 'all'
+    USERSPACE_SAMPLED = 'u_sampled'
+    ALL_SAMPLED = 'a_sampled'
+    CUSTOM = 'custom'
 
     @staticmethod
     def supported():
@@ -35,7 +35,7 @@ class Strategy(Enum):
 
         :return str: the default strategy name
         """
-        return Strategy.Custom.value
+        return Strategy.CUSTOM.value
 
 
 class Zipper:
@@ -94,23 +94,23 @@ class FileSize(IntEnum):
     """ File sizes represented as a constants, used mainly to select appropriate algorithms based
     on the size of a file.
     """
-    Short = 0
-    Long = 1
+    SHORT = 0
+    LONG = 1
 
 
 class RecordType(IntEnum):
     """ Reference numbers of the various types of probes used in the collection script.
     """
-    FuncBegin = 0
-    FuncEnd = 1
-    USDTSingle = 2
-    USDTBegin = 3
-    USDTEnd = 4
-    ThreadBegin = 5
-    ThreadEnd = 6
-    ProcessBegin = 7
-    ProcessEnd = 8
-    Corrupt = 9
+    FUNC_BEGIN = 0
+    FUNC_END = 1
+    USDT_SINGLE = 2
+    USDT_BEGIN = 3
+    USDT_END = 4
+    THREAD_BEGIN = 5
+    THREAD_END = 6
+    PROCESS_BEGIN = 7
+    PROCESS_END = 8
+    CORRUPT = 9
 
 
 class OutputHandling(Enum):
@@ -120,9 +120,9 @@ class OutputHandling(Enum):
           (note that buffering causes a delay in the terminal output
         - suppress: redirects the output to the DEVNULL so nothing is stored or displayed
     """
-    Default = 'default'
-    Capture = 'capture'
-    Suppress = 'suppress'
+    DEFAULT = 'default'
+    CAPTURE = 'capture'
+    SUPPRESS = 'suppress'
 
     @staticmethod
     def to_list():
@@ -180,11 +180,11 @@ STAP_MODULE_REGEX = re.compile(r"(stap_[A-Fa-f0-9]+)_\d+\.ko")
 # Categorize record types into probe, thread and process sets since all those records have
 # different number of values
 PROBE_RECORDS = {
-    int(RecordType.FuncBegin), int(RecordType.FuncEnd),
-    int(RecordType.USDTSingle), int(RecordType.USDTBegin), int(RecordType.USDTEnd)
+    int(RecordType.FUNC_BEGIN), int(RecordType.FUNC_END),
+    int(RecordType.USDT_SINGLE), int(RecordType.USDT_BEGIN), int(RecordType.USDT_END)
 }
-THREAD_RECORDS = {int(RecordType.ThreadBegin), int(RecordType.ThreadEnd)}
-PROCESS_RECORDS = {int(RecordType.ProcessBegin), int(RecordType.ProcessEnd)}
+THREAD_RECORDS = {int(RecordType.THREAD_BEGIN), int(RecordType.THREAD_END)}
+PROCESS_RECORDS = {int(RecordType.PROCESS_BEGIN), int(RecordType.PROCESS_END)}
 SEQUENCED_RECORDS = {
-    int(RecordType.FuncBegin), int(RecordType.USDTSingle), int(RecordType.USDTBegin)
+    int(RecordType.FUNC_BEGIN), int(RecordType.USDT_SINGLE), int(RecordType.USDT_BEGIN)
 }

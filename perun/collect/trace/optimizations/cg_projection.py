@@ -57,12 +57,12 @@ def cg_bottom_up(call_graph, chain_length):
         return
     # Compute the set of the bottom functions
     call_graph.compute_bottom()
-    visited = _cg_bottom_sets(call_graph, chain_length)[0]
+    visited = cg_bottom_sets(call_graph, chain_length)[0]
     # Remove functions that were not added into the set
     call_graph.remove_or_filter(set(call_graph.cg_map.keys()) - visited, set_filtered=True)
 
 
-def _cg_bottom_sets(call_graph, chain_length=None):
+def cg_bottom_sets(call_graph, chain_length=None):
     """ Helper function that computes the iterative sets for each bottom function.
 
     :param CallGraphResource call_graph: the CGR optimization resource

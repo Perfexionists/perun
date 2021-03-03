@@ -5,9 +5,10 @@ Specifies before, collect, after and teardown functions to perform the initializ
 collection and postprocessing of collection data.
 """
 
-import click
 import time
 import os
+
+import click
 
 from perun.collect.trace.strategy import Strategy, extract_configuration
 from perun.collect.trace.watchdog import WATCH_DOG
@@ -193,7 +194,7 @@ def teardown(**kwargs):
 @click.option('--watchdog', '-w', is_flag=True, default=False,
               help='Enable detailed logging of the whole collection process.')
 @click.option('--output-handling', '-o', type=click.Choice(OutputHandling.to_list()),
-              default=OutputHandling.Default.value,
+              default=OutputHandling.DEFAULT.value,
               help='Sets the output handling of the profiled command:\n'
                    ' - default: the output is displayed in the terminal\n'
                    ' - capture: the output is being captured into a file as well as displayed'

@@ -49,7 +49,7 @@ class Probes:
         global_sampling = cli_config.get('global_sampling', DEFAULT_SAMPLE)
         self.global_sampling = 1 if global_sampling < 1 else global_sampling
         # Set the default sampling if sampled strategy is selected but sampling is not provided
-        if (self.strategy in (Strategy.Userspace_sampled, Strategy.All_sampled) and
+        if (self.strategy in (Strategy.USERSPACE_SAMPLED, Strategy.ALL_SAMPLED) and
                 self.global_sampling == 1):
             self.global_sampling = DEFAULT_SAMPLE
 
@@ -58,7 +58,7 @@ class Probes:
         func_probes = list(cli_config.get('func', ''))
         usdt_probes = list(cli_config.get('usdt', ''))
         for probe in func_probes:
-            parsed = self._parse_probe(probe, ProbeType.Func, main_binary)
+            parsed = self._parse_probe(probe, ProbeType.FUNC, main_binary)
             self.user_func[parsed['name']] = parsed
         # Process the USDT probes only if enabled
         if self.with_usdt:
@@ -97,7 +97,7 @@ class Probes:
                 sample = int(parts[2])
 
         # Set the default pair for function and normalize specified sampling
-        pair = name if probe_type == ProbeType.Func else None
+        pair = name if probe_type == ProbeType.FUNC else None
         sample = sample if sample > 1 else 1
         # Create the probe dictionary
         return self.create_probe_record(name, probe_type, pair=pair, lib=lib, sample=sample)
@@ -154,7 +154,7 @@ class Probes:
         :param str probe_name: the name of the probe
         :param ProbeType probe_type: the type of the probe
         """
-        if probe_type == ProbeType.Func:
+        if probe_type == ProbeType.FUNC:
             self.sampled_func.append(probe_name)
         else:
             self.sampled_usdt.append(probe_name)
@@ -209,7 +209,7 @@ class Probes:
         :return generator: generator object
         """
         probe_list = list(filter(lambda func: func['sample'] > 1, self.func.values()))
-        return self._retrieve_probes(probe_list)
+        return _retrieve_probes(probe_list)
 
     def get_sampled_usdt_probes(self):
         """ Return generator that iterates all sampled USDT probes in a sorted manner.
@@ -217,7 +217,7 @@ class Probes:
         :return generator: generator object
         """
         probe_list = list(filter(lambda usdt: usdt['sample'] > 1, self.usdt.values()))
-        return self._retrieve_probes(probe_list)
+        return _retrieve_probes(probe_list)
 
     def get_sampled_probes(self):
         """ Provides the dictionary of all the sampled probes from all the probe sources (i.e.
@@ -244,14 +244,15 @@ class Probes:
         """
         return len(self.func.keys()) + len(self.usdt.keys())
 
-    def _retrieve_probes(self, probe_list):
-        """ Sort a list of probes by name and transform them to a generator
 
-        :param list probe_list: a list of probe dictionaries to generate
-        :return generator: generator object
-        """
-        for probe in sorted(probe_list, key=lambda value: value['name']):
-            yield probe
+def _retrieve_probes(probe_list):
+    """ Sort a list of probes by name and transform them to a generator
+
+    :param list probe_list: a list of probe dictionaries to generate
+    :return generator: generator object
+    """
+    for probe in sorted(probe_list, key=lambda value: value['name']):
+        yield probe
 
 
 class ProbeType(str, Enum):
@@ -259,5 +260,5 @@ class ProbeType(str, Enum):
 
     Inherited from the str class so that JSON encoder can serialize it
     """
-    Func = 'F'
+    FUNC = 'F'
     USDT = 'U'

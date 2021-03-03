@@ -148,14 +148,14 @@ def assemble_system_tap_script(script_file, config, probes, **_):
     # Open the script file in write mode
     with open(script_file, 'w') as script_handle:
         # Obtain configuration for the timed sampling optimization
-        timed_sampling = Optimizations.TimedSampling.value in config.run_optimizations
+        timed_sampling = Optimizations.TIMED_SAMPLING.value in config.run_optimizations
         # Declare and init arrays, create the begin / end probes
         _add_script_init(script_handle, config, probes, timed_sampling)
         # Add the thread begin / end probes
         _add_thread_probes(script_handle, config.binary, bool(probes.sampled_probes_len()))
         # Add the timed sampling timer probe if needed
         if timed_sampling:
-            sampling_freq = config.run_optimization_parameters[Parameters.TimedSampleFreq.value]
+            sampling_freq = config.run_optimization_parameters[Parameters.TIMEDSAMPLE_FREQ.value]
             _add_timer_probe(script_handle, sampling_freq)
         # Create the timing probes for functions and USDT probes
         _add_program_probes(script_handle, probes, config.verbose_trace, timed_sampling)
@@ -205,10 +205,10 @@ probe process("{binary}").end
         binary=config.binary,
         timestamp=STOPWATCH_NAME,
         begin_handler=PROCESS_HANDLER_TEMPLATE.format(
-            type=int(RecordType.ProcessBegin), timestamp=STOPWATCH_NAME
+            type=int(RecordType.PROCESS_BEGIN), timestamp=STOPWATCH_NAME
         ),
         end_handler=PROCESS_HANDLER_TEMPLATE.format(
-            type=int(RecordType.ProcessEnd), timestamp=STOPWATCH_NAME
+            type=int(RecordType.PROCESS_END), timestamp=STOPWATCH_NAME
         ),
         timed_sampling=(
             "global {} = 1".format(TIMED_SWITCH) if timed_sampling else "# Timed Sampling omitted"
@@ -236,10 +236,10 @@ probe process("{binary}").thread.end {{
 """.format(
         binary=binary,
         begin_handler=THREAD_HANDLER_TEMPLATE.format(
-            type=int(RecordType.ThreadBegin), timestamp=STOPWATCH_NAME
+            type=int(RecordType.THREAD_BEGIN), timestamp=STOPWATCH_NAME
         ),
         end_handler=THREAD_HANDLER_TEMPLATE.format(
-            type=int(RecordType.ThreadEnd), timestamp=STOPWATCH_NAME
+            type=int(RecordType.THREAD_END), timestamp=STOPWATCH_NAME
         ),
         sampling_cleanup=(
             ('delete {sampling_cnt}[tid(), *]\n    delete {sampling_flag}[tid(), *]'
@@ -293,11 +293,11 @@ def _add_program_probes(handle, probes, verbose_trace, timed_sampling):
             'single_usdt': _build_usdt_events(single_usdt)
         },
         'h': {
-            'func_begin':  _build_probe_body(RecordType.FuncBegin, verbose_trace),
-            'func_exit': _build_probe_body(RecordType.FuncEnd, verbose_trace),
-            'usdt_begin': _build_probe_body(RecordType.USDTBegin, verbose_trace),
-            'usdt_exit': _build_probe_body(RecordType.USDTEnd, verbose_trace),
-            'usdt_single': _build_probe_body(RecordType.USDTSingle, verbose_trace)
+            'func_begin':  _build_probe_body(RecordType.FUNC_BEGIN, verbose_trace),
+            'func_exit': _build_probe_body(RecordType.FUNC_END, verbose_trace),
+            'usdt_begin': _build_probe_body(RecordType.USDT_BEGIN, verbose_trace),
+            'usdt_exit': _build_probe_body(RecordType.USDT_END, verbose_trace),
+            'usdt_single': _build_probe_body(RecordType.USDT_SINGLE, verbose_trace)
         }
     }
     # Create pairs of events-handlers to add to the script
@@ -461,5 +461,4 @@ def _id_type_value(value_set, verbose_trace):
     """
     if verbose_trace:
         return '%s', value_set[1]
-    else:
-        return '%d', value_set[0]
+    return '%d', value_set[0]
