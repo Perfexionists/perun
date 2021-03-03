@@ -7,7 +7,7 @@ interface is unified.
 
 from enum import Enum
 
-from perun.collect.trace.optimizations.resources import angr_wrapper
+from perun.collect.trace.optimizations.resources import angr_provider
 import perun.collect.trace.optimizations.resources.perun_call_graph as perun_cg
 import perun.collect.trace.optimizations.resources.perun_dynamic_stats as perun_stats
 
@@ -16,7 +16,7 @@ class Resources(Enum):
     """ An enumeration for all currently used optimization resources and their corresponding
     extraction / storage methods, if any.
     """
-    CallGraphAngr = angr_wrapper.extract,
+    CallGraphAngr = angr_provider.extract,
     PerunCallGraph = perun_cg.extract, perun_cg.store
     PerunStats = perun_stats.extract, perun_stats.store
 

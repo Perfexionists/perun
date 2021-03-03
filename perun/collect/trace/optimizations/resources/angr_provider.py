@@ -1,14 +1,63 @@
-""" Extracts the call graph and control flow graph structures from binary using the
-angr framework: http://angr.io/. Note that angr does not support Python <= 3.5, well,
-thus angr might need to be invoked as a separate process by Python 3.6+.
+""" The wrapper for invoking angr tool since Perun currently runs on Python 3.5 which is
+incompatible with angr atm.
 
 """
 
+
 import os
-import sys
 import json
 import angr
-from angr.knowledge_plugins.functions.function import Function
+
+import perun.logic.stats as stats
+from perun.utils.helpers import SuppressedExceptions
+from perun.utils.exceptions import StatsFileNotFoundException
+
+
+def extract(stats_name, binary, cache, **kwargs):
+    """ Extract the Call Graph and Control Flow Graph representation using the angr framework.
+
+    When caching is enabled and the current project version already has a call graph object
+    stored in the 'stats' directory, the cached version is used instead of extracting.
+
+    :param str stats_name: name of the call graph stats file name
+    :param str binary: path to the binary executable file
+    :param bool cache: sets the cache on / off mode
+    :param kwargs: additional optional parameters
+
+    :return dict: the extracted and transformed CG and CFG dictionaries
+    """
+    # Attempt to retrieve the call graph for the given configuration if it already exists
+    if cache:
+        with SuppressedExceptions(StatsFileNotFoundException):
+            return stats.get_stats_of(stats_name, ['perun_cg']).get('perun_cg', {})
+
+    # Otherwise extract the call graph using angr
+    # Load the binary (and selected libs) into internal representation
+    libs = kwargs.get('libs', [])
+    proj = angr.Project(binary, load_options={'auto_load_libs': False, 'force_load_libs': libs})
+
+    # Set parameters for Control Flow Graph analysis
+    cfg_params = {'normalize': True}
+    # Restricted search means that we want to analyze only functions reachable from main which
+    # represents the program starting point
+    if kwargs.get('restricted_search', True):
+        main = proj.loader.main_object.get_symbol("main")
+        cfg_params.update({
+            'function_starts': [main.rebased_addr],
+            'start_at_entry': False,
+            'symbols': False,
+            'function_prologues': False,
+            'force_complete_scan': False
+        })
+
+    # Run the CFG analysis to obtain the graphs
+    cfg = proj.analyses.CFGFast(**cfg_params)
+    # Separate the CG and CFG from the resulting output data
+    binaries = [os.path.basename(target) for target in [binary] + libs]
+    return {
+        'call_graph': extract_cg(cfg, binaries),
+        'control_flow': extract_func_cfg(proj, binaries)
+    }
 
 
 def extract_from(config_file):
@@ -131,15 +180,9 @@ def _build_block_repr(project, block):
     :return str or list: the basic block representation
     """
     # Function call blocks are represented by the function name
-    if isinstance(block, Function):
+    if isinstance(block, angr.knowledge_plugins.Function):
         return block.name.split('.')[0]
     # Obtain the ASM instructions and parameters for each block
     else:
         instr = angr.Block(block.addr, project=project, size=block.size).capstone.insns
         return [(i.insn.mnemonic, i.insn.op_str) for i in instr]
-
-
-# Run the main extraction function
-if __name__ == '__main__':
-    extract_from(sys.argv[1])
-    exit(0)

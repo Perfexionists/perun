@@ -69,10 +69,6 @@ def before(executable, **kwargs):
     WATCH_DOG.log_variable('before::kwargs::config', config.__dict__)
     WATCH_DOG.log_variable('before::kwargs::probes', kwargs['probes'].__dict__)
 
-    # Check all the required dependencies
-    check(GLOBAL_DEPENDENCIES)
-    config.engine.check_dependencies()
-
     stdout.done('\n\n')
     return CollectStatus.OK, "", dict(kwargs)
 
