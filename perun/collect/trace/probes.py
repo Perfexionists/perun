@@ -57,14 +57,22 @@ class Probes:
         # TODO: check that the probe and lib are valid
         func_probes = list(cli_config.get('func', ''))
         usdt_probes = list(cli_config.get('usdt', ''))
-        for probe in func_probes:
-            parsed = self._parse_probe(probe, ProbeType.FUNC, main_binary)
-            self.user_func[parsed['name']] = parsed
+        self._add_probes(func_probes, self.user_func, ProbeType.FUNC, main_binary)
         # Process the USDT probes only if enabled
         if self.with_usdt:
-            for probe in usdt_probes:
-                parsed = self._parse_probe(probe, ProbeType.USDT, main_binary)
-                self.usdt[parsed['name']] = parsed
+            self._add_probes(usdt_probes, self.usdt, ProbeType.USDT, main_binary)
+
+    def _add_probes(self, probe_set, storage, probe_type, binary):
+        """ Parse probes and store them in the appropriate storage.
+
+        :param list probe_set: list of probe names
+        :param dict storage: target dictionary to store the probes into
+        :param ProbeType probe_type: type of the parsed probe
+        :param str binary: name of the binary file
+        """
+        for probe in probe_set:
+            parsed = self._parse_probe(probe, probe_type, binary)
+            storage[parsed['name']] = parsed
 
     def _parse_probe(self, probe_specification, probe_type, binary):
         """ Parses the given probe specification in format <lib>#<probe>#<sampling> into the
@@ -159,13 +167,14 @@ class Probes:
         else:
             self.sampled_usdt.append(probe_name)
 
-    def get_func_probes(self):
-        """ Return all registered function probes, sorted according to the name of the associated
-        function.
+    def get_probes(self):
+        """ Return all function and USDT probes, sorted according to the name of the probe.
 
-        :return list: sorted list of function probes
+        :return iterable: a generator object which provides the probe dictionaries
         """
-        return sorted(list(self.func.values()), key=lambda value: value['name'])
+        for probe_set in [self.func.values(), self.usdt.values()]:
+            for probe in sorted(list(probe_set), key=lambda value: value['name']):
+                yield probe
 
     def get_partitioned_func_probes(self):
         """ Return all registered function probes, sorted by name and partitioned into two lists
@@ -177,13 +186,6 @@ class Probes:
             sorted(list(self.func.values()), key=lambda value: value['name']),
             lambda func: func['sample'] > 1
         )
-
-    def get_usdt_probes(self):
-        """ Return all registered USDT probes, sorted according to the name of UDST location.
-
-        :return list: sorted list of USDT probes
-        """
-        return sorted(list(self.usdt.values()), key=lambda value: value['name'])
 
     def get_partitioned_usdt_probes(self):
         """ Return all registered USDT probes, sorted by name and partitioned into three lists
@@ -202,22 +204,6 @@ class Probes:
             else:
                 paired_nonsampled.append(probe)
         return paired_sampled, paired_nonsampled, single
-
-    def get_sampled_func_probes(self):
-        """ Return generator that iterates all sampled function probes in a sorted manner.
-
-        :return generator: generator object
-        """
-        probe_list = list(filter(lambda func: func['sample'] > 1, self.func.values()))
-        return _retrieve_probes(probe_list)
-
-    def get_sampled_usdt_probes(self):
-        """ Return generator that iterates all sampled USDT probes in a sorted manner.
-
-        :return generator: generator object
-        """
-        probe_list = list(filter(lambda usdt: usdt['sample'] > 1, self.usdt.values()))
-        return _retrieve_probes(probe_list)
 
     def get_sampled_probes(self):
         """ Provides the dictionary of all the sampled probes from all the probe sources (i.e.

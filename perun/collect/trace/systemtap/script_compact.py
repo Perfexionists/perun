@@ -364,6 +364,10 @@ def _build_array_declaration(probes, verbose_trace, max_threads):
     )
 
 
+def _array_assign(arr_id, arr_idx, arr_value):
+    return f'    {arr_id}["{arr_idx}"] = {arr_value}\n'
+
+
 def _build_id_init(probes, verbose_trace):
     """ Build the probe name -> ID mapping initialization code
 
@@ -377,9 +381,8 @@ def _build_id_init(probes, verbose_trace):
         return '    # Probe name -> Probe ID is not used in verbose mode\n'
     # For each probe, map the name to the probe ID for compact output
     init_string = '    # Probe name -> Probe ID\n'
-    for probe_set in [probes.get_func_probes(), probes.get_usdt_probes()]:
-        for probe in probe_set:
-            init_string += '    {}["{}"] = {}\n'.format(ARRAY_PROBE_ID, probe['name'], probe['id'])
+    for probe in probes.get_probes():
+        init_string += _array_assign(ARRAY_PROBE_ID, probe['name'], probe['id'])
     return init_string
 
 
@@ -394,11 +397,8 @@ def _build_sampling_init(probes):
     # When the threshold is reached, the probe generates a data record
     threshold_string = '    # Probe name -> Probe sampling threshold\n'
     # Generate the initialization code for both the function and USDT sampled probes
-    for probe_set in [probes.get_sampled_func_probes(), probes.get_sampled_usdt_probes()]:
-        for probe in probe_set:
-            threshold_string += '    {}["{}"] = {}\n'.format(
-                ARRAY_SAMPLE_THRESHOLD, probe['name'], probe['sample']
-            )
+    for probe in probes.get_sampled_probes():
+        threshold_string += _array_assign(ARRAY_SAMPLE_THRESHOLD, probe['name'], probe['sample'])
     return threshold_string
 
 

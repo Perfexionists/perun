@@ -5,7 +5,6 @@ incompatible with angr atm.
 
 
 import os
-import json
 import angr
 
 import perun.logic.stats as stats
@@ -58,45 +57,6 @@ def extract(stats_name, binary, cache, **kwargs):
         'call_graph': extract_cg(cfg, binaries),
         'control_flow': extract_func_cfg(proj, binaries)
     }
-
-
-def extract_from(config_file):
-    """ Extracts the call graph and control flow graph from the specified project (i.e., binary)
-    in the DiGraph structure.
-
-    :param str config_file: path to the binary executable file that is to be analyzed
-    """
-    with open(config_file, 'r') as json_handle:
-        config = json.load(json_handle)
-    project = config['project']
-    result = config['result']
-    libs = config.get('libs', ())
-    restricted_search = config.get('restricted_search', True)
-
-    # Load the binary (and selected libs) into internal representation
-    proj = angr.Project(project, load_options={'auto_load_libs': False, 'force_load_libs': libs})
-
-    cfg_params = {'normalize': True}
-    if restricted_search:
-        main = proj.loader.main_object.get_symbol("main")
-        cfg_params.update({
-            'function_starts': [main.rebased_addr],
-            'start_at_entry': False,
-            'symbols': False,
-            'function_prologues': False,
-            'force_complete_scan': False
-        })
-    # Run the CFG analysis to obtain the graphs
-    cfg = proj.analyses.CFGFast(**cfg_params)
-
-    # The resulting output data separate the CG and CFG
-    binaries = [os.path.basename(target) for target in [project] + libs]
-    cfg_data = {
-        'call_graph': extract_cg(cfg, binaries),
-        'control_flow': extract_func_cfg(proj, binaries)
-    }
-    with open(result, 'w') as cg_handle:
-        json.dump(cfg_data, cg_handle, indent=2)
 
 
 def extract_cg(cfg, binaries):

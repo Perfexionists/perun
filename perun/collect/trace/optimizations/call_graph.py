@@ -411,7 +411,7 @@ class CallGraphResource(CGLevelMixin):
 
     @staticmethod
     def _add_connection(parent, callee):
-        """ Add 'edge' to the cg_map structure, i.e., set tha caller and callee relation
+        """ Add 'edge' to the cg_map structure, i.e., set the caller and callee relation
 
         :param dict parent: the dictionary of the parent function
         :param dict callee: the dictionary of the callee function

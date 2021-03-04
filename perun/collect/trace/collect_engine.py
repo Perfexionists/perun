@@ -15,6 +15,7 @@ from perun.collect.trace.values import CLEANUP_TIMEOUT, Zipper
 from perun.collect.trace.watchdog import WATCH_DOG
 
 
+# TODO: rethink the interface signatures to conform to LSP
 class CollectEngine(ABC):
     """ The base abstract class for all the collection engines. Stores some of the configuration
     parameters for easier access.

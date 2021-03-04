@@ -9,7 +9,6 @@ from perun.collect.trace.optimizations.structs import Optimizations, Pipeline, P
     CallGraphTypes, ParametersManager, CGShapingMode
 import perun.collect.trace.optimizations.resources.manager as resources
 from perun.collect.trace.optimizations.call_graph import CallGraphResource
-import perun.collect.trace.optimizations.cg_shaping as shaping
 import perun.collect.trace.optimizations.cg_projection as proj
 import perun.collect.trace.optimizations.dynamic_baseline as dbase
 import perun.collect.trace.optimizations.static_baseline as sbase
@@ -240,19 +239,6 @@ class CollectOptimization:
             if mode == CGShapingMode.MATCH:
                 # The match mode simply uses the call graph functions
                 pass
-            elif mode in [CGShapingMode.STRICT, CGShapingMode.SOFT]:
-                shaping.call_graph_trimming(
-                    self.call_graph,
-                    self.params[Parameters.CG_TRIM_LEVELS],
-                    self.params[Parameters.CG_TRIM_MIN_FUNCTIONS],
-                    self.params[Parameters.CG_TRIM_KEEP_LEAF]
-                )
-            elif mode == CGShapingMode.PRUNE:
-                shaping.call_graph_pruning(
-                    self.call_graph,
-                    self.params[Parameters.CG_PRUNE_CHAIN_LENGTH],
-                    self.params[Parameters.CG_PRUNE_KEEP_TOP]
-                )
             elif mode == CGShapingMode.BOTTOM_UP:
                 proj.cg_bottom_up(
                     self.call_graph,
@@ -355,19 +341,26 @@ class CollectOptimization:
                 # Ignore levels that were filtered
                 if all(self.call_graph[func]['filtered'] for func in lvl_funcs):
                     continue
-                immediate_callers = {
-                    c for func in lvl_funcs for c in self.call_graph[func]['callers']
-                }
-                immediate_callees = {
-                    c for func in lvl_funcs for c in self.call_graph[func]['callees']
-                }
                 lvl_coverage[tid][lvl] = {
-                    'caller_exc': sum(funcs.get(c, {'total_exclusive': 0})['total_exclusive']
-                                      for c in immediate_callers),
-                    'callee_exc': sum(funcs.get(c, {'total_exclusive': 0})['total_exclusive']
-                                      for c in immediate_callees)
+                    'caller_exc': self._caller_callee_exc(lvl_funcs, funcs, 'callers'),
+                    'callee_exc': self._caller_callee_exc(lvl_funcs, funcs, 'callees')
                 }
         metrics.add_metric('level_coverage', lvl_coverage)
+
+    def _caller_callee_exc(self, level_funcs, funcs, target):
+        """ Compute exclusive time for immediate callers or callees.
+
+        :param list level_funcs: list of functions in the given call graph level
+        :param dict funcs: function statistics
+        :param str target: identifies the target of the exclusive time computation.
+
+        :return int: the total exclusive time of immediate callers or callees
+        """
+        immediate_targets = {
+            c for func in level_funcs for c in self.call_graph[func][target]
+        }
+        return sum(funcs.get(c, {'total_exclusive': 0})['total_exclusive']
+                   for c in immediate_targets)
 
     def _level_time_metric(self):
         """ Helper function for computing level time metrics, such as Call Graph level exclusive

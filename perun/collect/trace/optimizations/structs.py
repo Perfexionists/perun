@@ -5,6 +5,8 @@ by numerous other modules.
 
 import os
 import math
+from functools import partial
+
 from enum import Enum
 from perun.utils.structs import OrderedEnum
 import perun.utils as utils
@@ -113,11 +115,6 @@ class Parameters(Enum):
     STATIC_COMPLEXITY = 'static-complexity'
     STATIC_KEEP_TOP = 'static-keep-top'
     CG_SHAPING_MODE = 'cg-mode'
-    CG_TRIM_LEVELS = 'cg-trim-levels'
-    CG_TRIM_MIN_FUNCTIONS = 'cg-trim-min-functions'
-    CG_TRIM_KEEP_LEAF = 'cg-trim-keep-leaf'
-    CG_PRUNE_CHAIN_LENGTH = 'cg-prune-chain-length'
-    CG_PRUNE_KEEP_TOP = 'cg-prune-keep-top'
     CG_PROJ_LEVELS = 'cg-proj-levels'
     CG_PROJ_KEEP_LEAF = 'cg-proj-keep-leaf'
     DYNSAMPLE_STEP = 'dyn-sample-step'
@@ -159,9 +156,6 @@ class CGShapingMode(Enum):
     """ Enumeration of the currently supported Call Graph Shaping modes.
     """
     MATCH = 'match'
-    PRUNE = 'prune'
-    SOFT = 'soft'
-    STRICT = 'strict'
     BOTTOM_UP = 'bottom-up'
     TOP_DOWN = 'top-down'
 
@@ -259,16 +253,11 @@ class ParametersManager:
         # Keep top 10% of call graph levels, however minimum of 1
         self._keep_top_ratio = 0.1
         self._default_keep_top = 1
-        # Call graph levels based on CG mode: strict - 25%, soft - 50%, minimum 2 levels
-        self._levels_strict_ratio = 0.25
-        self._levels_soft_ratio = 0.5
+        # Call graph default levels to keep: top 50%, minimum 2 levels
+        self._levels_ratio = 0.5
         self._default_min_levels = 2
-        # Pruning chain length: bottom 10% of the graph, minimum 1 - i.e. only leaf nodes removed
-        self._chain_length_ratio = 0.1
+        # Pruning chain length: minimum 1 - i.e. only leaf nodes kept
         self._default_chain_length = 1
-        # Minimum number of functions left after trimming is 10%, minimum 10
-        self._min_functions_ratio = 0.1
-        self._default_min_functions = 10
         # Default sampling step does not scale
         self._default_sampling_step = 2
         # Soft function call threshold for dynamic baseline / sampling is set 10000
@@ -298,8 +287,7 @@ class ParametersManager:
             },
             Parameters.DIFF_CG_MODE: {
                 'value': DiffCfgMode.SEMISTRICT,
-                'validate': lambda mode: DiffCfgMode(mode)
-                if mode in DiffCfgMode.supported() else None
+                'validate': partial(self._validate_enum, DiffCfgMode)
             },
             Parameters.SOURCE_FILES: {
                 'value': [],
@@ -311,8 +299,7 @@ class ParametersManager:
             },
             Parameters.STATIC_COMPLEXITY: {
                 'value': Complexity.CONSTANT,
-                'validate': lambda complexity: Complexity(complexity)
-                if complexity in Complexity.supported() else None
+                'validate': partial(self._validate_enum, Complexity)
             },
             Parameters.STATIC_KEEP_TOP: {
                 'value': self._default_keep_top,
@@ -320,28 +307,7 @@ class ParametersManager:
             },
             Parameters.CG_SHAPING_MODE: {
                 'value': CGShapingMode.MATCH,
-                'validate': lambda mode: CGShapingMode(mode)
-                if mode in CGShapingMode.supported() else None
-            },
-            Parameters.CG_TRIM_LEVELS: {
-                'value': self._default_min_levels,
-                'validate': self._validate_uint
-            },
-            Parameters.CG_TRIM_MIN_FUNCTIONS: {
-                'value': self._default_min_functions,
-                'validate': self._validate_uint
-            },
-            Parameters.CG_TRIM_KEEP_LEAF: {
-                'value': False,
-                'validate': self._validate_bool
-            },
-            Parameters.CG_PRUNE_CHAIN_LENGTH: {
-                'value': self._default_chain_length,
-                'validate': self._validate_uint
-            },
-            Parameters.CG_PRUNE_KEEP_TOP: {
-                'value': self._default_keep_top,
-                'validate': self._validate_uint
+                'validate': partial(self._validate_enum, CGShapingMode)
             },
             Parameters.CG_PROJ_LEVELS: {
                 'value': self._default_chain_length,
@@ -381,8 +347,7 @@ class ParametersManager:
             },
             Parameters.THRESHOLD_MODE: {
                 'value': ThresholdMode.SOFT,
-                'validate': lambda mode: ThresholdMode(mode)
-                if mode in ThresholdMode.supported() else None
+                'validate': partial(self._validate_enum, ThresholdMode)
             }
         }
 
@@ -472,11 +437,9 @@ class ParametersManager:
         # Keep the leaf functions if the total number of profiled functions is low
         if func_count <= self._functions_keep_leaves:
             self[Parameters.DIFF_KEEP_LEAF] = True
-            self[Parameters.CG_TRIM_KEEP_LEAF] = True
             self[Parameters.CG_PROJ_KEEP_LEAF] = True
         # Keep-top: 10% of levels, minimum is default
         keep_top = max(math.ceil(level_count * self._keep_top_ratio), self._default_keep_top)
-        self[Parameters.CG_PRUNE_KEEP_TOP] = keep_top
         self[Parameters.STATIC_KEEP_TOP] = keep_top
 
     def _infer_modes(self, selected_pipeline, user_modes):
@@ -485,18 +448,12 @@ class ParametersManager:
         :param Pipeline selected_pipeline: the currently selected pipeline
         :param list user_modes: list of pairs with user-specified modes
         """
+        self[Parameters.DIFF_CG_MODE] = DiffCfgMode.COLORING
+        self[Parameters.CG_SHAPING_MODE] = CGShapingMode.TOP_DOWN
         # The selected pipeline determines the used modes
         if selected_pipeline == Pipeline.BASIC:
-            self[Parameters.DIFF_CG_MODE] = DiffCfgMode.SOFT
-            self[Parameters.CG_SHAPING_MODE] = CGShapingMode.STRICT
             self[Parameters.THRESHOLD_MODE] = ThresholdMode.STRICT
-        elif selected_pipeline == Pipeline.ADVANCED:
-            self[Parameters.DIFF_CG_MODE] = DiffCfgMode.SEMISTRICT
-            self[Parameters.CG_SHAPING_MODE] = CGShapingMode.SOFT
-            self[Parameters.THRESHOLD_MODE] = ThresholdMode.SOFT
-        elif selected_pipeline == Pipeline.FULL:
-            self[Parameters.DIFF_CG_MODE] = DiffCfgMode.STRICT
-            self[Parameters.CG_SHAPING_MODE] = CGShapingMode.PRUNE
+        else:
             self[Parameters.THRESHOLD_MODE] = ThresholdMode.SOFT
         # Apply the user-supplied modes
         for mode_type, mode_value in user_modes:
@@ -510,23 +467,10 @@ class ParametersManager:
         """
         if func_count == 0 and level_count == 0:
             return
-        # Determine the number of trimmed levels based on the CG shaping mode
-        trim_levels = 0
-        if self[Parameters.CG_SHAPING_MODE] == CGShapingMode.STRICT:
-            trim_levels = math.ceil(level_count * self._levels_strict_ratio)
-        elif self[Parameters.CG_SHAPING_MODE] in (CGShapingMode.SOFT, CGShapingMode.TOP_DOWN,
-                                                  CGShapingMode.BOTTOM_UP):
-            trim_levels = round(level_count * self._levels_soft_ratio)
-
-        # Set the trim levels, the chain length and the minimum number of functions
-        self[Parameters.CG_TRIM_LEVELS] = max(trim_levels, self._default_min_levels)
+        # Determine the number of trimmed levels
+        trim_levels = round(level_count * self._levels_ratio)
+        # Set the trim levels
         self[Parameters.CG_PROJ_LEVELS] = max(trim_levels, self._default_min_levels)
-        self[Parameters.CG_PRUNE_CHAIN_LENGTH] = max(
-            math.floor(level_count * self._chain_length_ratio), self._default_chain_length
-        )
-        self[Parameters.CG_TRIM_MIN_FUNCTIONS] = max(
-            math.ceil(func_count * self._min_functions_ratio), self._default_min_functions
-        )
 
     def _infer_thresholds(self):
         """ Infer the threshold values based on the selected modes.
@@ -564,17 +508,8 @@ class ParametersManager:
         if not files and not dirs:
             dirs.append(os.path.dirname(binary))
 
-        sources = []
-        for src in dirs + files:
-            if os.path.isdir(src):
-                for root, _, files in os.walk(src):
-                    for file in files:
-                        if os.path.splitext(file)[1] in {'.c'}:
-                            sources.append(os.path.join(root, file))
-            elif os.path.splitext(src)[1] in {'.c'}:
-                sources.append(src)
         # Save the sources
-        self[Parameters.SOURCE_FILES] = list(set(sources))
+        self[Parameters.SOURCE_FILES] = list(set(_get_source_files(dirs, files)))
 
     @staticmethod
     def _validate_bool(value):
@@ -627,3 +562,33 @@ class ParametersManager:
         if not os.path.exists(os.path.realpath(path)):
             return None
         return os.path.realpath(path)
+
+    @staticmethod
+    def _validate_enum(enumclass, value):
+        """ Validate if value is supported in the given enum class
+
+        :param Enum enumclass: Enum class
+        :param str value: value to check
+
+        :return object or None: Enum item corresponding to the given string value
+        """
+        return enumclass(value) if value in enumclass.supported() else None
+
+
+def _get_source_files(dirs, files):
+    """ Get all source files in the supplied dirs and files
+
+    :param list dirs: list of directories
+    :param list files: list of files
+
+    :return list: list of file paths
+    """
+    candidate_files = []
+    for src in dirs + files:
+        if os.path.isdir(src):
+            for root, _, files in os.walk(src):
+                candidate_files.extend(os.path.join(root, file) for file in files)
+        elif os.path.isfile(src):
+            candidate_files.append(src)
+
+    return [file for file in candidate_files if os.path.splitext(file)[1] == '.c']

@@ -162,18 +162,18 @@ def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
         # Some functions may not have CFG counterpart
         if func not in cfg or old_func not in cfg_old:
             continue
-        func_blocks, cfg_edges = cfg[func]['blocks'], cfg[func]['edges']
-        func_blocks_old, cfg_edges_old = cfg_old[old_func]['blocks'], cfg_old[old_func]['edges']
+        f_blocks, f_edges = cfg[func]['blocks'], cfg[func]['edges']
+        f_blocks_old, f_edges_old = cfg_old[old_func]['blocks'], cfg_old[old_func]['edges']
         # Quick check that the number of blocks and edges is equal
-        if len(func_blocks) != len(func_blocks_old) or len(cfg_edges) != len(cfg_edges_old):
+        if len(f_blocks) != len(f_blocks_old) or len(f_edges) != len(f_edges_old):
             changes.append(func)
             continue
         # Compare the CFG edges
-        if not _compare_cfg_edges(cfg_edges, cfg_edges_old):
+        if not _compare_cfg_edges(f_edges, f_edges_old):
             changes.append(func)
             continue
         # Compare the CFG blocks according to the mode
-        if not _compare_cfg_blocks(func_blocks, func_blocks_old, renames, _DIFFMODE_MAP[mode]):
+        if not _compare_cfg_blocks(f_blocks, f_blocks_old, renames, _DIFFMODE_MAP[mode]):
             changes.append(func)
             continue
     return set(changes)

@@ -130,17 +130,12 @@ class BpfContext:
         """
         for usdt in usdt_probes.values():
             # If the USDT probe has no pair, attach a single probe
-            if usdt['pair'] == usdt['name']:
-                self.usdt_context.enable_probe(
-                    probe=usdt['name'], fn_name='usdt_{}'.format(usdt['name'])
-                )
-            else:
-                self.usdt_context.enable_probe(
-                    probe=usdt['name'], fn_name='entry_{}'.format(usdt['name'])
-                )
-                self.usdt_context.enable_probe(
-                    probe=usdt['name'], fn_name='exit_{}'.format(usdt['name'])
-                )
+            probes = [f"usdt_{usdt['name']}"]
+            # Otherwise attach both entry and exit probes
+            if usdt['pair'] != usdt['name']:
+                probes = [f"entry_{usdt['name']}", f"exit_{usdt['name']}"]
+            for probe in probes:
+                self.usdt_context.enable_probe(usdt['name'], probe)
 
     def attach_timer(self):
         """ Attach SW CPU CLOCK timer that will switch the phases of Timed Sampling
@@ -214,8 +209,7 @@ def ebpf_runner():
         start_time = time.time()
 
         # Get the BPF output buffer and read the performance data
-        print_func = _print_event_with_counts if dynamic_probing_on else _print_event
-        BPF_CTX.bpf["records"].open_perf_buffer(print_func, page_cnt=128, lost_cb=_log_lost)
+        BPF_CTX.bpf["records"].open_perf_buffer(_print_event, page_cnt=128, lost_cb=_log_lost)
         try:
             while profiled.poll() is None and not timeout.reached():
                 BPF_CTX.bpf.perf_buffer_poll(_BPF_POLL_SLEEP)
@@ -239,19 +233,6 @@ def ebpf_runner():
 
 
 def _print_event(_, data, __):
-    """ A callback function used when a new performance data is received through the buffer
-
-    :param data: the data part of the performance event
-    """
-    # Obtain the raw performance record produced by the eBPF process
-    duration = BPF_CTX.bpf['records'].event(data)
-    BPF_CTX.data.write(
-        '{} {} {} {}\n'.format(duration.pid, duration.id, duration.entry_ns,
-                               duration.exit_ns - duration.entry_ns)
-    )
-
-
-def _print_event_with_counts(_, data, __):
     """ A callback function used when a new performance data is received through the buffer.
     Also keeps track of how many times each function was called so that dynamic probing
     can be leveraged.
@@ -262,8 +243,7 @@ def _print_event_with_counts(_, data, __):
     duration = BPF_CTX.bpf['records'].event(data)
     BPF_CTX.add_count(duration.id)
     BPF_CTX.data.write(
-        '{} {} {} {}\n'.format(duration.pid, duration.id, duration.entry_ns,
-                               duration.exit_ns - duration.entry_ns)
+        f'{duration.pid} {duration.id} {duration.entry_ns} {duration.exit_ns - duration.entry_ns}\n'
     )
 
 

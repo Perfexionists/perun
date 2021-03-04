@@ -109,12 +109,11 @@ class DynamicStats:
         processes = collections.defaultdict(list)
         for _, resource in profile.all_resources():
             try:
-                if resource['uid'] == '!ProcessResource!':
+                if resource['uid'] in ('!ProcessResource!', '!ThreadResource!'):
                     # Process resources automatically create internal process and thread records
-                    processes[resource['pid']].append(resource)
                     self.threads[resource['tid']] = _Thread(resource['pid'], resource['amount'])
-                elif resource['uid'] == '!ThreadResource!':
-                    self.threads[resource['tid']] = _Thread(resource['pid'], resource['amount'])
+                    if resource['uid'] == '!ProcessResource!':
+                        processes[resource['pid']].append(resource)
                 else:
                     # Function resources are aggregated by TID and UID
                     funcs[resource['tid']][resource['uid']].append(
@@ -204,12 +203,7 @@ class DynamicStats:
                 for func_name, values in tid_funcs.items():
                     merged[func_name]['i'].extend(values['i'])
                     merged[func_name]['e'].extend(values['e'])
-        self.global_stats = {
-            uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
-            for uid, amounts in merged.items()
-        }
-        # min_time = min(self.global_stats.items(), key=lambda f_stats: f_stats[1]['min'])
-        # metrics.add_metric('min_time', {min_time[0]: min_time[1]['min']})
+        self.global_stats = _compute_funcs_stats(merged, probed_funcs)
 
     def compute_per_thread(self, func_values, probed_funcs):
         """ Compute per-thread statistics across all threads
@@ -218,11 +212,23 @@ class DynamicStats:
         :param dict probed_funcs: profiled functions and their profiling configuration
         """
         self.per_thread = {
-            tid: {
-                uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
-                for uid, amounts in uids.items()
-            } for tid, uids in func_values.items() if tid in self.threads
+            tid: _compute_funcs_stats(uids, probed_funcs)
+            for tid, uids in func_values.items() if tid in self.threads
         }
+
+
+def _compute_funcs_stats(source, probed_funcs):
+    """ Compute the dynamic statistics for a whole collection of functions.
+
+    :param dict source: dictionary of collected data per function
+    :param dict probed_funcs: profiled functions and their profiling configuration
+
+    :return dict: computed statistics per each function
+    """
+    return {
+        uid: _compute_func_stats(amounts, probed_funcs[uid]['sample'])
+        for uid, amounts in source.items()
+    }
 
 
 def _compute_func_stats(values, func_sample):

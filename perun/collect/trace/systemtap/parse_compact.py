@@ -464,19 +464,8 @@ def _record_usdt_single(record, ctx):
     :return dict: profile resource dictionary or empty dictionary if no resource could be created
     """
     ctx.probes_hit.add(record['id'])
-    stack = ctx.per_thread[record['tid']].usdt_stack[record['id']]
-    # If this is the first record of this USDT probe, add it to the stack
-    if not stack:
-        stack.append(record)
-        return {}
-    # Pair with itself and
-    # add the record into the trace stack to correctly measure time between each two hits
-    matching_record = stack.pop()
-    stack.append(record)
-    return _build_resource(
-        matching_record, record, matching_record['id'] + '#' + record['id'],
-        ctx.workload
-    )
+    matching_record, usdt_uid = _pair_usdt(ctx, record)
+    return _build_resource(matching_record, record, usdt_uid, ctx.workload)
 
 
 def _record_usdt_begin(record, ctx):
@@ -487,7 +476,6 @@ def _record_usdt_begin(record, ctx):
 
     :return dict: empty dictionary
     """
-    # Add the record to the stack
     ctx.probes_hit.add(record['id'])
     ctx.per_thread[record['tid']].usdt_stack[record['id']].append(record)
     return {}
@@ -502,13 +490,33 @@ def _record_usdt_end(record, ctx):
     :return dict: profile resource dictionary
     """
     # Obtain the corresponding probe pair and matching record
-    pair = ctx.probes.usdt_reversed[record['id']]
-    matching_record = ctx.per_thread[record['tid']].usdt_stack[pair].pop()
-    # Create the resource
-    return _build_resource(
-        matching_record, record, matching_record['id'] + '#' + record['id'],
-        ctx.workload
-    )
+    matching_record, usdt_uid = _pair_usdt(ctx, record, ctx.probes.usdt_reversed[record['id']])
+    return _build_resource(matching_record, record, usdt_uid, ctx.workload)
+
+
+def _pair_usdt(ctx, record, pair=None):
+    """ Obtain matching USDT record for the given record. The matching record is either specified
+    by the record ID (for single USDT) or pairing name (for paired USDT, i.e., distinct entry and
+    exit probes).
+
+    :param TransformContext ctx: the parsing context object
+    :param dict record: the parsed raw data record
+    :param str or None pair: ID of the paired probe
+    :return:
+    """
+    # Get the probe stack
+    stack = ctx.per_thread[record['tid']].usdt_stack[record['id'] if pair is None else pair]
+    try:
+        # Get the matching record and create resource UID
+        matching_record = stack.pop()
+        return matching_record, f"{matching_record['id']}#{record['id']}"
+    except IndexError:
+        # No matching record found
+        return {}, ""
+    finally:
+        # For single USDT probes we need to store the record for future pairing
+        if pair is not None:
+            stack.append(record)
 
 
 def _build_resource(record_entry, record_exit, uid, workload):
@@ -521,6 +529,8 @@ def _build_resource(record_entry, record_exit, uid, workload):
 
     :return dict: the resulting profile resource
     """
+    if not record_entry:
+        return {}
     # Can also contain exclusive
     return {
         'amount': record_exit['timestamp'] - record_entry['timestamp'],
