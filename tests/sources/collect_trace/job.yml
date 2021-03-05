@@ -1,8 +1,7 @@
 func:
     - 'main'
-func_sampled:
-    - ['_Z12QuickSortBadPii', 2]
-static:
+    - '_Z12QuickSortBadPii#2'
+usdt:
     - 'BEFORE_CYCLE'
     - 'BEFORE_CYCLE_end'
     - 'INSIDE_CYCLE'

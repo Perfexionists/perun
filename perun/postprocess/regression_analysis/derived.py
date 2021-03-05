@@ -5,6 +5,7 @@ standard regression analysis. Derived computations are more of a heuristics used
 for special cases.
 
 """
+import math
 
 import perun.postprocess.regression_analysis.tools as tools
 
@@ -43,25 +44,38 @@ def derived_const(analysis, const_ref, **_):
     for result in analysis:
         # Check the keys in the result dictionary
         tools.validate_dictionary_keys(
-            result, ['r_square', 'coeffs', 'y_sum', 'pts_num', 'x_start',
+            result, ['r_square', 'coeffs', 'y_sum', 'pts_num', 'x_start', 'tss',
                      'x_end', 'uid', 'method'], [])
 
         # Duplicate the constant model template
         const = const_ref.copy()
-        r = 1 - result['r_square']
-        slope = abs(result['coeffs'][1])
+        # TODO: compute change as the linear_model_start_y / (liner_model_start_y - linear_model_end_y)
+        # TODO: 5% change is threshold
+        # TODO: incorporate the TSS to modify the R^2
 
-        # Compute the modification coefficient
-        if slope > const['b1_threshold']:
-            # b1 bigger than threshold, the modifier should reduce the fitness of the const model
-            coeff = (slope / const['b1_threshold']) / 10
-            if coeff < 1:
-                coeff += 1
-            r /= coeff
+        y_start = result['coeffs'][0]
+        y_end = y_start + result['coeffs'][1] * result['x_end']
+        angle = math.atan2(abs(y_end - y_start), abs(result['x_end'] - result['x_start']))
+        slope_change = angle / 90
+        if slope_change > const['b1_threshold']:
+            r = result['r_square'] * (1 - slope_change)
         else:
-            # b1 smaller than threshold, the modifier should increase the fitness
-            coeff = (1 / const['b1_threshold']) * (const['b1_threshold'] - slope) + 1
-            r *= coeff
+            r = 1 - result['r_square']
+
+        # r = 1 - result['r_square']
+        # slope = abs(result['coeffs'][1])
+        #
+        # # Compute the modification coefficient
+        # if slope > const['b1_threshold']:
+        #     # b1 bigger than threshold, the modifier should reduce the fitness of the const model
+        #     coeff = (slope / const['b1_threshold']) / 10
+        #     if coeff < 1:
+        #         coeff += 1
+        #     r /= coeff
+        # else:
+        #     # b1 smaller than threshold, the modifier should increase the fitness
+        #     coeff = (1 / const['b1_threshold']) * (const['b1_threshold'] - slope) + 1
+        #     r *= coeff
 
         # Truncate the r value if needed
         if r > 1:
@@ -76,6 +90,17 @@ def derived_const(analysis, const_ref, **_):
         const['coeffs'] = [result['y_sum'] / result['pts_num'], 0]
         const['uid'] = result['uid']
         const['method'] = result['method']
+
+        # mean = const['coeffs'][0]
+        # standard_deviation = math.sqrt(result['tss'])
+        # standard_error = standard_deviation / math.sqrt(result['pts_num'])
+        # print('func: {}:'.format(result['uid']))
+        # print(' mean: {}'.format(mean))
+        # print(' sd: {}'.format(standard_deviation))
+        # print(' se: {}'.format(standard_error))
+        # print(' sd / mean: {}'.format(standard_deviation / mean))
+        # print(' se / mean: {}'.format(standard_error / mean))
+
         yield const
 
 
@@ -91,4 +116,4 @@ def _filter_by_models(analysis, models):
 
 
 # Use default threshold value if the provided is invalid
-_DEFAULT_THRESHOLD = 0.001
+_DEFAULT_THRESHOLD = 0.01

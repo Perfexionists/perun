@@ -11,6 +11,7 @@ import perun.postprocess.regression_analysis.regression_models as reg_models
 
 from perun.profile.factory import pass_profile
 from perun.utils.structs import PostprocessStatus
+import perun.utils.metrics as metrics
 
 __author__ = 'Jiri Pavela'
 
@@ -30,11 +31,48 @@ def postprocess(profile, **configuration):
     analysis = methods.compute(data_provider.data_provider_mapper(profile, **configuration),
                                configuration['method'], configuration['regression_models'],
                                steps=configuration['steps'])
-
+    store_model_counts(analysis)
     # Store the results
     profile = tools.add_models_to_profile(profile, analysis)
 
     return PostprocessStatus.OK, "", {'profile': profile}
+
+
+def store_model_counts(analysis):
+    """ Store the number of best-fit models for each model category as a metric.
+
+    :param list analysis: the list of inferred models.
+    """
+    # Ignore if metrics are disabled
+    if not metrics.is_enabled():
+        return
+
+    # Get the regression model with the highest R^2 for all functions
+    funcs = {}
+    func_summary = {}
+    for record in analysis:
+        func_record = funcs.setdefault(
+            record['uid'], {'r_square': record['r_square'], 'model': record['model']}
+        )
+        if record['r_square'] > func_record['r_square']:
+            func_record['r_square'] = record['r_square']
+            func_record['model'] = record['model']
+
+        summary_record = func_summary.setdefault(record['uid'], {})
+        summary_record[record['model']] = record['r_square']
+    metrics.save_separate('details/{}.json'.format(metrics.Metrics.metrics_id), func_summary)
+
+    # Count the number of respective models
+    models = {model: 0 for model in reg_models.get_supported_models() if model != 'all'}
+    models['undefined'] = 0
+    for func_record in funcs.values():
+        if func_record['r_square'] <= 0.5:
+            models['undefined'] += 1
+        else:
+            models[func_record['model']] += 1
+    # Store the counts in the metrics
+    for model, count in models.items():
+        metrics.add_metric('{}_model'.format(model), count)
 
 
 @click.command()

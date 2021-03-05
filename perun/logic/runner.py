@@ -17,6 +17,7 @@ import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.utils.helpers as helpers
 import perun.workload as workloads
+import perun.collect.trace.optimizations.optimization
 
 from perun.utils import get_module
 from perun.utils.structs import GeneratorSpec, Unit, Executable, RunnerReport, \
@@ -244,6 +245,11 @@ def run_all_phases_for(runner, runner_type, runner_params):
 
             if not report.is_ok():
                 break
+
+            # Run the optimizations
+            perun.collect.trace.optimizations.optimization.optimize(
+                runner_type, phase, **report.kwargs
+            )
 
     check_integrity_of_runner(runner, runner_type, report)
 

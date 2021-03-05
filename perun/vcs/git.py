@@ -145,6 +145,20 @@ def _get_minor_version_info(git_repo, minor_version):
 
 
 @create_repo_from_path
+def _minor_versions_diff(git_repo, minor_version_1, minor_version_2):
+    """ Create diff of two supplied minor versions.
+
+    :param git.Repo git_repo: wrapped repository of the perun
+    :param str minor_version_1: the specification of the first minor version (in form of sha e.g.)
+    :param str minor_version_2: the specification of the second minor version
+    :return str: the version diff as presented by git
+    """
+    minor_version_1 = 'HEAD~1' if minor_version_1 is None else minor_version_1
+    minor_version_2 = 'HEAD' if minor_version_2 is None else minor_version_2
+    return git_repo.git.diff(minor_version_1, minor_version_2)
+
+
+@create_repo_from_path
 def _get_head_major_version(git_repo):
     """Returns the head major branch (i.e. checked out branch).
 

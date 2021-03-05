@@ -61,6 +61,8 @@ from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModule
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException
 from perun.utils.structs import Executable
+from perun.collect.trace.optimizations.structs import Pipeline, Optimizations, CallGraphTypes
+from perun.collect.trace.optimizations.structs import Parameters
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
@@ -87,6 +89,10 @@ DEV_MODE = False
 @click.option('--version', help='Prints the current version of Perun.',
               is_eager=True, is_flag=True, default=False,
               callback=cli_helpers.print_version)
+@click.option('--metrics', '-m', type=(str, str), default=["", ""],
+              callback=cli_helpers.configure_metrics,
+              help='Enables the collection of metrics into the given temp file'
+                   '(first argument) under the supplied ID (second argument).')
 def cli(dev_mode=False, no_color=False, verbose=0, no_pager=False, **_):
     """Perun is an open source light-weight Performance Versioning System.
 
@@ -584,6 +590,27 @@ def postprocessby(ctx, profile, **_):
               ' This way the file with collected data will have a resulting filename w.r.t '
               ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'
               ' details about the format of the template.')
+@click.option('--optimization-pipeline', '-op', type=click.Choice(Pipeline.supported()),
+              default=Pipeline.default(), callback=cli_helpers.set_optimization,
+              help='Pre-configured combinations of collection optimization methods.')
+@click.option('--optimization-on', '-on',
+              type=click.Choice(Optimizations.supported()), multiple=True,
+              callback=cli_helpers.set_optimization,
+              help='Enable the specified collection optimization method.')
+@click.option('--optimization-off', '-off',
+              type=click.Choice(Optimizations.supported()), multiple=True,
+              callback=cli_helpers.set_optimization,
+              help='Disable the specified collection optimization method.')
+@click.option('--optimization-args', '-oa', type=(click.Choice(Parameters.supported()), str),
+              multiple=True, callback=cli_helpers.set_optimization_param,
+              help='Set parameter values for various optimizations.')
+@click.option('--optimization-cache-off', is_flag=True, callback=cli_helpers.set_optimization_cache,
+              help='Ignore cached optimization data (e.g., cached call graph).')
+@click.option('--optimization-reset-cache', is_flag=True, default=False,
+              callback=cli_helpers.reset_optimization_cache,
+              help='Remove the cached optimization resources and data.')
+@click.option('--use-cg-type', '-cg', type=(click.Choice(CallGraphTypes.supported())),
+              default=CallGraphTypes.default(), callback=cli_helpers.set_call_graph_type)
 @click.pass_context
 def collect(ctx, **kwargs):
     """Generates performance profile using selected collector.

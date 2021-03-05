@@ -4,132 +4,38 @@ multiple other modules across the whole trace collector.
 
 import re
 import collections
+import shutil
 from enum import IntEnum, Enum
 from zipfile import ZipFile, ZIP_LZMA
 
 from perun.collect.trace.watchdog import WATCH_DOG
+from perun.utils.exceptions import MissingDependencyException
 
 
-class Res:
-    """ The resource class used to store references to all of the resources that need a proper
-    termination or teardown when the data collection is over (either successfully or not,
-    including tha cases of signal interruption).
-
-    The various static methods provide names of the internal dictionary items so that they can
-    be easily modified in the future.
-
-    :ivar dict _res: the internal resource dictionary
+class Strategy(Enum):
+    """ The supported probe extraction strategies.
     """
-    def __init__(self):
-        """ Constructs the Res object
-        """
-        self._res = dict(
-            script=None, log=None, data=None, capture=None,
-            lock_binary=None, lock_stap=None, lock_module=None,
-            stap_compile=None, stap_collect=None, stap_module=None, stapio=None,
-            profiled_command=None
-        )
-
-    def __getitem__(self, item):
-        """ Method for accessing elements using the bracket notation.
-
-        :param str item: the resource name
-
-        :return: the resource object or None if the resource is not initialized
-        """
-        return self._res[item]
-
-    def __setitem__(self, key, value):
-        """ Method for setting a resource value using the bracket notation.
-
-        :param str key: the resource name
-        :param value: the resource object to store
-        """
-        self._res[key] = value
+    USERSPACE = 'userspace'
+    ALL = 'all'
+    USERSPACE_SAMPLED = 'u_sampled'
+    ALL_SAMPLED = 'a_sampled'
+    CUSTOM = 'custom'
 
     @staticmethod
-    def script():
+    def supported():
+        """ Convert the strategy options to a list of strings.
+
+        :return list: the strategies represented as strings
         """
-        :return str: the resource key of the SystemTap script file
-        """
-        return 'script'
+        return [strategy.value for strategy in Strategy]
 
     @staticmethod
-    def log():
-        """
-        :return str: the resource key of the SystemTap log file
-        """
-        return 'log'
+    def default():
+        """ Provide the default extraction strategy as a string value.
 
-    @staticmethod
-    def data():
+        :return str: the default strategy name
         """
-        :return str: the resource key of the SystemTap data file
-        """
-        return 'data'
-
-    @staticmethod
-    def capture():
-        """
-        :return str: the resource key of the output capture file
-        """
-        return 'capture'
-
-    @staticmethod
-    def lock_binary():
-        """
-        :return str: the resource key of the binary lock object
-        """
-        return 'lock_binary'
-
-    @staticmethod
-    def lock_stap():
-        """
-        :return str: the resource key of the SystemTap lock object
-        """
-        return 'lock_stap'
-
-    @staticmethod
-    def lock_module():
-        """
-        :return str: the resource key of the kernel module lock object
-        """
-        return 'lock_module'
-
-    @staticmethod
-    def stap_compile():
-        """
-        :return str: the resource key of the SystemTap compilation subprocess object
-        """
-        return 'stap_compile'
-
-    @staticmethod
-    def stap_collect():
-        """
-        :return str: the resource key of the SystemTap collection subprocess object
-        """
-        return 'stap_collect'
-
-    @staticmethod
-    def stap_module():
-        """
-        :return str: the resource key of the kernel module name
-        """
-        return 'stap_module'
-
-    @staticmethod
-    def stapio():
-        """
-        :return str: the resource key of the stapio process PID
-        """
-        return 'stapio'
-
-    @staticmethod
-    def profiled_command():
-        """
-        :return str: the resource key of the profiled command subprocess object
-        """
-        return 'profiled_command'
+        return Strategy.CUSTOM.value
 
 
 class Zipper:
@@ -188,19 +94,23 @@ class FileSize(IntEnum):
     """ File sizes represented as a constants, used mainly to select appropriate algorithms based
     on the size of a file.
     """
-    Short = 0
-    Long = 1
+    SHORT = 0
+    LONG = 1
 
 
 class RecordType(IntEnum):
     """ Reference numbers of the various types of probes used in the collection script.
     """
-    FuncBegin = 0
-    FuncEnd = 1
-    StaticSingle = 2
-    StaticBegin = 3
-    StaticEnd = 4
-    Corrupt = 9
+    FUNC_BEGIN = 0
+    FUNC_END = 1
+    USDT_SINGLE = 2
+    USDT_BEGIN = 3
+    USDT_END = 4
+    THREAD_BEGIN = 5
+    THREAD_END = 6
+    PROCESS_BEGIN = 7
+    PROCESS_END = 8
+    CORRUPT = 9
 
 
 class OutputHandling(Enum):
@@ -210,9 +120,9 @@ class OutputHandling(Enum):
           (note that buffering causes a delay in the terminal output
         - suppress: redirects the output to the DEVNULL so nothing is stored or displayed
     """
-    Default = 'default'
-    Capture = 'capture'
-    Suppress = 'suppress'
+    DEFAULT = 'default'
+    CAPTURE = 'capture'
+    SUPPRESS = 'suppress'
 
     @staticmethod
     def to_list():
@@ -223,19 +133,31 @@ class OutputHandling(Enum):
         return [handling.value for handling in OutputHandling]
 
 
+def check(dependencies):
+    """ Checks that all the required dependencies are present on the system.
+    Otherwise an exception is raised.
+    """
+    # Check that all the dependencies are present
+    WATCH_DOG.debug("Checking that all the dependencies '{}' are present".format(dependencies))
+    for dependency in dependencies:
+        if not shutil.which(dependency):
+            WATCH_DOG.debug("Missing dependency command '{}' detected".format(dependency))
+            raise MissingDependencyException(dependency)
+    WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
+
+
 # The trace record template
 TraceRecord = collections.namedtuple(
     'record', ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence']
 )
 
 # The list of required dependencies
-DEPENDENCIES = ['ps', 'grep', 'awk', 'nm', 'stap', 'lsmod', 'rmmod']
-# The set of supported strategies by the trace collector
-STRATEGIES = ['userspace', 'all', 'u_sampled', 'a_sampled', 'custom']
+GLOBAL_DEPENDENCIES = ['ps', 'grep', 'awk', 'nm']
 
 STAP_PHASES = 5  # The number of SystemTap startup phases
 LOCK_SUFFIX_LEN = 7  # Suffix length of the lock files
 MICRO_TO_SECONDS = 1000000.0  # The conversion constant for collected time records
+NANO_TO_SECONDS = 1000000000.0  # The conversion constant for collected time records
 DEFAULT_SAMPLE = 20  # The default global sampling for 'sample' strategies if not set by user
 SUFFIX_DELIMITERS = ('_', '-')  # The set of supported delimiters between probe and its suffix
 PS_FORMAT = 'pid,ppid,pgid,cmd'  # The format specification for an output from the 'ps' utility
@@ -247,5 +169,22 @@ HEARTBEAT_INTERVAL = 30  # Periodically inform user about progress each INTERVAL
 CLEANUP_TIMEOUT = 2  # The timeout for the cleanup operations
 CLEANUP_REFRESH = 0.2  # The refresh interval for cleaning up the resources
 
+# Multiprocessing Queue constants
+RESOURCE_CHUNK = 10000  # Number of resources transported as one element through a queue
+RESOURCE_QUEUE_CAPACITY = 10  # Maximum capacity of the resources queue
+QUEUE_TIMEOUT = 0.2  # The timeout for blocking operations of a queue
+
 # The regex to match the SystemTap module name out of the log and extract the non-PID dependent part
 STAP_MODULE_REGEX = re.compile(r"(stap_[A-Fa-f0-9]+)_\d+\.ko")
+
+# Categorize record types into probe, thread and process sets since all those records have
+# different number of values
+PROBE_RECORDS = {
+    int(RecordType.FUNC_BEGIN), int(RecordType.FUNC_END),
+    int(RecordType.USDT_SINGLE), int(RecordType.USDT_BEGIN), int(RecordType.USDT_END)
+}
+THREAD_RECORDS = {int(RecordType.THREAD_BEGIN), int(RecordType.THREAD_END)}
+PROCESS_RECORDS = {int(RecordType.PROCESS_BEGIN), int(RecordType.PROCESS_END)}
+SEQUENCED_RECORDS = {
+    int(RecordType.FUNC_BEGIN), int(RecordType.USDT_SINGLE), int(RecordType.USDT_BEGIN)
+}

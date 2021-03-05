@@ -153,6 +153,21 @@ def get_minor_version_info(minor_version):
     )
 
 
+def minor_versions_diff(minor_version_1, minor_version_2):
+    """ Returns the git diff of two specified minor versions.
+
+    :param str minor_version_1: the specification of the first minor version (in form of sha e.g.)
+    :param str minor_version_2: the specification of the second minor version
+    """
+    vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
+    perun_log.msg_to_stdout("Showing minor version diff of type {} and args {}, {}:{}".format(
+        vcs_type, vcs_path, minor_version_1, minor_version_2
+    ), 1)
+    return dynamic_module_function_call(
+        'perun.vcs', vcs_type, '_minor_versions_diff', vcs_path, minor_version_1, minor_version_2
+    )
+
+
 def get_head_major_version():
     """Returns the string representation of current major version of the
     wrapped repository.

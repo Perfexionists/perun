@@ -34,7 +34,7 @@ def slice_resources_by_uid(resources, models, uids):
             # plotting one point does not work (it has no real usage anyway), fix later
             continue
         # Filter models for the given uid
-        uid_models = list(filter(lambda m, u=uid: m['uid'] in u, models))
+        uid_models = [model for model in models if model['uid'] == uid]
         yield uid_slice, uid_models
 
 

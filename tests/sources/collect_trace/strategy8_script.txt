@@ -1,360 +1,218 @@
-global samp_0[29]
+
+
+global probe_id[35]
+
+global sampling_threshold[26]
+global sampling_counter[2048]
+global sampling_flag[2048]
+
+# Recursion arrays omitted
+
+# Timed Sampling omitted
+global stopwatch_on = 0
+
 probe process("cmp").begin {
-	samp_0[0] = 19
-	samp_0[1] = 19
-	samp_0[2] = 19
-	samp_0[3] = 19
-	samp_0[4] = 19
-	samp_0[5] = 19
-	samp_0[6] = 19
-	samp_0[7] = 19
-	samp_0[8] = 19
-	samp_0[9] = 19
-	samp_0[10] = 19
-	samp_0[11] = 19
-	samp_0[12] = 19
-	samp_0[13] = 19
-	samp_0[14] = 19
-	samp_0[15] = 19
-	samp_0[16] = 19
-	samp_0[17] = 19
-	samp_0[18] = 19
-	samp_0[19] = 19
-	samp_0[20] = 19
-	samp_0[21] = 19
-	samp_0[22] = 19
-	samp_0[23] = 19
-	samp_0[24] = 19
-	samp_0[25] = 19
-	samp_0[26] = 19
-	samp_0[27] = 19
-	samp_0[28] = 19
-	printf("cmp")
+    # Probe name -> Probe ID
+    probe_id["_GLOBAL__sub_I__Z9QuickSortPii"] = 0
+    probe_id["_Z10BubbleSortPii"] = 1
+    probe_id["_Z10InsertSortPii"] = 2
+    probe_id["_Z12BadPartitionPiii"] = 3
+    probe_id["_Z12QuickSortBadPii"] = 4
+    probe_id["_Z41__static_initialization_and_destruction_0ii"] = 5
+    probe_id["_Z4SwapRiS_"] = 6
+    probe_id["_Z4swapPiii"] = 7
+    probe_id["_Z8HeapSortPii"] = 8
+    probe_id["_Z9PartitionPiii"] = 9
+    probe_id["_Z9QuickSortPii"] = 10
+    probe_id["_Z9repairTopPiii"] = 11
+    probe_id["_fini"] = 12
+    probe_id["deregister_tm_clones"] = 13
+    probe_id["frame_dummy"] = 14
+    probe_id["main"] = 15
+    probe_id["register_tm_clones"] = 16
+    probe_id["array__create"] = 17
+    probe_id["array__end"] = 18
+    probe_id["cmethod__deconstruct"] = 19
+    probe_id["cmethod__entry"] = 20
+    probe_id["find__require__begin"] = 21
+    probe_id["find__require__entry"] = 22
+    probe_id["gc__mark__begin"] = 23
+    probe_id["gc__sweep__begin"] = 24
+    probe_id["hash__create"] = 25
+    probe_id["load__entry"] = 26
+    probe_id["method__cache__clear"] = 27
+    probe_id["method__entry"] = 28
+    probe_id["object__create"] = 29
+    probe_id["parse__begin"] = 30
+    probe_id["raise"] = 31
+    probe_id["require__entry"] = 32
+    probe_id["string__create"] = 33
+    probe_id["symbol__create"] = 34
+
+    # Probe name -> Probe sampling threshold
+    sampling_threshold["_GLOBAL__sub_I__Z9QuickSortPii"] = 20
+    sampling_threshold["_Z10BubbleSortPii"] = 20
+    sampling_threshold["_Z10InsertSortPii"] = 20
+    sampling_threshold["_Z12BadPartitionPiii"] = 20
+    sampling_threshold["_Z12QuickSortBadPii"] = 20
+    sampling_threshold["_Z41__static_initialization_and_destruction_0ii"] = 20
+    sampling_threshold["_Z4SwapRiS_"] = 20
+    sampling_threshold["_Z4swapPiii"] = 20
+    sampling_threshold["_Z8HeapSortPii"] = 20
+    sampling_threshold["_Z9PartitionPiii"] = 20
+    sampling_threshold["_Z9QuickSortPii"] = 20
+    sampling_threshold["_Z9repairTopPiii"] = 20
+    sampling_threshold["_fini"] = 20
+    sampling_threshold["deregister_tm_clones"] = 20
+    sampling_threshold["frame_dummy"] = 20
+    sampling_threshold["main"] = 20
+    sampling_threshold["register_tm_clones"] = 20
+    sampling_threshold["cmethod__entry"] = 20
+    sampling_threshold["find__require__entry"] = 20
+    sampling_threshold["gc__mark__begin"] = 20
+    sampling_threshold["gc__sweep__begin"] = 20
+    sampling_threshold["load__entry"] = 20
+    sampling_threshold["method__entry"] = 20
+    sampling_threshold["parse__begin"] = 20
+    sampling_threshold["require__entry"] = 20
+    sampling_threshold["symbol__create"] = 20
+
+    if (!stopwatch_on) {
+        stopwatch_on = 1
+        start_stopwatch("timestamp")
+    }
+    printf("7 %d %d %d %d;%s\n", tid(), pid(), ppid(), read_stopwatch_ns("timestamp"), execname())
 }
 
-probe process("cmp").function("_Z10BubbleSortPii").call? {
-	samp_0[0] ++
-	if(samp_0[0] == 20) {
-		printf("0 %s_Z10BubbleSortPii\n", thread_indent(1))
-		samp_0[0] = 0
-	}
-}
-probe process("cmp").function("_Z10BubbleSortPii").return? {
-	if(samp_0[0] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
+probe process("cmp").end
+{
+    printf("8 %d %d %d %d;%s\n", tid(), pid(), ppid(), read_stopwatch_ns("timestamp"), execname())
 }
 
-probe process("cmp").function("_Z10InsertSortPii").call? {
-	samp_0[1] ++
-	if(samp_0[1] == 20) {
-		printf("0 %s_Z10InsertSortPii\n", thread_indent(1))
-		samp_0[1] = 0
-	}
+
+probe process("cmp").thread.begin {
+    printf("5 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
 }
-probe process("cmp").function("_Z10InsertSortPii").return? {
-	if(samp_0[1] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
+    
+probe process("cmp").thread.end {
+    printf("6 %d %d %d;%s\n", tid(), pid(), read_stopwatch_ns("timestamp"), execname())
+    delete sampling_counter[tid(), *]
+    delete sampling_flag[tid(), *]
 }
 
-probe process("cmp").function("_Z12BadPartitionPiii").call? {
-	samp_0[2] ++
-	if(samp_0[2] == 20) {
-		printf("0 %s_Z12BadPartitionPiii\n", thread_indent(1))
-		samp_0[2] = 0
-	}
-}
-probe process("cmp").function("_Z12BadPartitionPiii").return? {
-	if(samp_0[2] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
-}
-
-probe process("cmp").function("_Z12QuickSortBadPii").call? {
-	samp_0[3] ++
-	if(samp_0[3] == 20) {
-		printf("0 %s_Z12QuickSortBadPii\n", thread_indent(1))
-		samp_0[3] = 0
-	}
-}
-probe process("cmp").function("_Z12QuickSortBadPii").return? {
-	if(samp_0[3] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
+probe process("cmp").mark("array__create")?,
+      process("cmp").mark("array__end")?,
+      process("cmp").mark("cmethod__deconstruct")?,
+      process("cmp").mark("find__require__begin")?,
+      process("cmp").mark("hash__create")?,
+      process("cmp").mark("method__cache__clear")?,
+      process("cmp").mark("object__create")?,
+      process("cmp").mark("raise")?,
+      process("cmp").mark("string__create")?
+{
+    pname = ppfunc()
+    tid = tid()
+    printf("2 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
 }
 
-probe process("cmp").function("_Z4SwapRiS_").call? {
-	samp_0[4] ++
-	if(samp_0[4] == 20) {
-		printf("0 %s_Z4SwapRiS_\n", thread_indent(1))
-		samp_0[4] = 0
-	}
-}
-probe process("cmp").function("_Z4SwapRiS_").return? {
-	if(samp_0[4] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
+probe process("cmp").function("_GLOBAL__sub_I__Z9QuickSortPii").call?,
+      process("cmp").function("_Z10BubbleSortPii").call?,
+      process("cmp").function("_Z10InsertSortPii").call?,
+      process("cmp").function("_Z12BadPartitionPiii").call?,
+      process("cmp").function("_Z12QuickSortBadPii").call?,
+      process("cmp").function("_Z41__static_initialization_and_destruction_0ii").call?,
+      process("cmp").function("_Z4SwapRiS_").call?,
+      process("cmp").function("_Z4swapPiii").call?,
+      process("cmp").function("_Z8HeapSortPii").call?,
+      process("cmp").function("_Z9PartitionPiii").call?,
+      process("cmp").function("_Z9QuickSortPii").call?,
+      process("cmp").function("_Z9repairTopPiii").call?,
+      process("cmp").function("_fini").call?,
+      process("cmp").function("deregister_tm_clones").call?,
+      process("cmp").function("frame_dummy").call?,
+      process("cmp").function("main").call?,
+      process("cmp").function("register_tm_clones").call?
+{
+    pname = ppfunc()
+    tid = tid()
+    
+    counter = sampling_counter[tid, pname]
+    if (counter == 0 || counter == sampling_threshold[pname]) {
+        counter = 0
+        sampling_flag[tid, pname] ++
+        printf("0 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
+    }
+    sampling_counter[tid, pname] ++
+
 }
 
-probe process("cmp").function("_Z4swapPiii").call? {
-	samp_0[5] ++
-	if(samp_0[5] == 20) {
-		printf("0 %s_Z4swapPiii\n", thread_indent(1))
-		samp_0[5] = 0
-	}
-}
-probe process("cmp").function("_Z4swapPiii").return? {
-	if(samp_0[5] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
+probe process("cmp").function("_GLOBAL__sub_I__Z9QuickSortPii").return?,
+      process("cmp").function("_Z10BubbleSortPii").return?,
+      process("cmp").function("_Z10InsertSortPii").return?,
+      process("cmp").function("_Z12BadPartitionPiii").return?,
+      process("cmp").function("_Z12QuickSortBadPii").return?,
+      process("cmp").function("_Z41__static_initialization_and_destruction_0ii").return?,
+      process("cmp").function("_Z4SwapRiS_").return?,
+      process("cmp").function("_Z4swapPiii").return?,
+      process("cmp").function("_Z8HeapSortPii").return?,
+      process("cmp").function("_Z9PartitionPiii").return?,
+      process("cmp").function("_Z9QuickSortPii").return?,
+      process("cmp").function("_Z9repairTopPiii").return?,
+      process("cmp").function("_fini").return?,
+      process("cmp").function("deregister_tm_clones").return?,
+      process("cmp").function("frame_dummy").return?,
+      process("cmp").function("main").return?,
+      process("cmp").function("register_tm_clones").return?
+{
+    pname = ppfunc()
+    tid = tid()
+    
+    if (sampling_flag[tid, pname] > 0) {
+        printf("1 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
+        sampling_flag[tid, pname] --
+    }
+
 }
 
-probe process("cmp").function("_Z8HeapSortPii").call? {
-	samp_0[6] ++
-	if(samp_0[6] == 20) {
-		printf("0 %s_Z8HeapSortPii\n", thread_indent(1))
-		samp_0[6] = 0
-	}
-}
-probe process("cmp").function("_Z8HeapSortPii").return? {
-	if(samp_0[6] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
+probe process("cmp").mark("cmethod__entry")?,
+      process("cmp").mark("find__require__entry")?,
+      process("cmp").mark("gc__mark__begin")?,
+      process("cmp").mark("gc__sweep__begin")?,
+      process("cmp").mark("load__entry")?,
+      process("cmp").mark("method__entry")?,
+      process("cmp").mark("parse__begin")?,
+      process("cmp").mark("require__entry")?,
+      process("cmp").mark("symbol__create")?
+{
+    pname = ppfunc()
+    tid = tid()
+    
+    counter = sampling_counter[tid, pname]
+    if (counter == 0 || counter == sampling_threshold[pname]) {
+        counter = 0
+        sampling_flag[tid, pname] ++
+        printf("3 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
+    }
+    sampling_counter[tid, pname] ++
+
 }
 
-probe process("cmp").function("_Z9PartitionPiii").call? {
-	samp_0[7] ++
-	if(samp_0[7] == 20) {
-		printf("0 %s_Z9PartitionPiii\n", thread_indent(1))
-		samp_0[7] = 0
-	}
-}
-probe process("cmp").function("_Z9PartitionPiii").return? {
-	if(samp_0[7] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
-}
+probe process("cmp").mark("cmethod__return")?,
+      process("cmp").mark("find__require__return")?,
+      process("cmp").mark("gc__mark__end")?,
+      process("cmp").mark("gc__sweep__end")?,
+      process("cmp").mark("load__return")?,
+      process("cmp").mark("method__return")?,
+      process("cmp").mark("parse__end")?,
+      process("cmp").mark("require__return")?,
+      process("cmp").mark("symbol__deconstruct")?
+{
+    pname = ppfunc()
+    tid = tid()
+    
+    if (sampling_flag[tid, pname] > 0) {
+        printf("4 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
+        sampling_flag[tid, pname] --
+    }
 
-probe process("cmp").function("_Z9QuickSortPii").call? {
-	samp_0[8] ++
-	if(samp_0[8] == 20) {
-		printf("0 %s_Z9QuickSortPii\n", thread_indent(1))
-		samp_0[8] = 0
-	}
-}
-probe process("cmp").function("_Z9QuickSortPii").return? {
-	if(samp_0[8] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
-}
-
-probe process("cmp").function("_Z9repairTopPiii").call? {
-	samp_0[9] ++
-	if(samp_0[9] == 20) {
-		printf("0 %s_Z9repairTopPiii\n", thread_indent(1))
-		samp_0[9] = 0
-	}
-}
-probe process("cmp").function("_Z9repairTopPiii").return? {
-	if(samp_0[9] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
-}
-
-probe process("cmp").function("main").call? {
-	samp_0[10] ++
-	if(samp_0[10] == 20) {
-		printf("0 %smain\n", thread_indent(1))
-		samp_0[10] = 0
-	}
-}
-probe process("cmp").function("main").return? {
-	if(samp_0[10] == 0) {
-		printf("1 %s\n", thread_indent(-1))
-	}
-}
-
-probe process("cmp").mark("array__create")? {
-	samp_0[11] ++
-	if(samp_0[11] == 20) {
-		printf("2 %s array__create\n", thread_indent(0))
-		samp_0[11] = 0
-	}
-}
-probe process("cmp").mark("array__end")? {
-	samp_0[12] ++
-	if(samp_0[12] == 20) {
-		printf("2 %s array__end\n", thread_indent(0))
-		samp_0[12] = 0
-	}
-}
-probe process("cmp").mark("cmethod__deconstruct")? {
-	samp_0[13] ++
-	if(samp_0[13] == 20) {
-		printf("2 %s cmethod__deconstruct\n", thread_indent(0))
-		samp_0[13] = 0
-	}
-}
-probe process("cmp").mark("cmethod__entry")? {
-	samp_0[14] ++
-	if(samp_0[14] == 20) {
-		printf("3 %scmethod__entry\n", thread_indent(0))
-		samp_0[14] = 0
-	}
-}
-probe process("cmp").mark("cmethod__return")? {
-	if(samp_0[14] == 0) {
-		printf("4 %scmethod__return\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("find__require__begin")? {
-	samp_0[15] ++
-	if(samp_0[15] == 20) {
-		printf("2 %s find__require__begin\n", thread_indent(0))
-		samp_0[15] = 0
-	}
-}
-probe process("cmp").mark("find__require__entry")? {
-	samp_0[16] ++
-	if(samp_0[16] == 20) {
-		printf("3 %sfind__require__entry\n", thread_indent(0))
-		samp_0[16] = 0
-	}
-}
-probe process("cmp").mark("find__require__return")? {
-	if(samp_0[16] == 0) {
-		printf("4 %sfind__require__return\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("gc__mark__begin")? {
-	samp_0[17] ++
-	if(samp_0[17] == 20) {
-		printf("3 %sgc__mark__begin\n", thread_indent(0))
-		samp_0[17] = 0
-	}
-}
-probe process("cmp").mark("gc__mark__end")? {
-	if(samp_0[17] == 0) {
-		printf("4 %sgc__mark__end\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("gc__sweep__begin")? {
-	samp_0[18] ++
-	if(samp_0[18] == 20) {
-		printf("3 %sgc__sweep__begin\n", thread_indent(0))
-		samp_0[18] = 0
-	}
-}
-probe process("cmp").mark("gc__sweep__end")? {
-	if(samp_0[18] == 0) {
-		printf("4 %sgc__sweep__end\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("hash__create")? {
-	samp_0[19] ++
-	if(samp_0[19] == 20) {
-		printf("2 %s hash__create\n", thread_indent(0))
-		samp_0[19] = 0
-	}
-}
-probe process("cmp").mark("load__entry")? {
-	samp_0[20] ++
-	if(samp_0[20] == 20) {
-		printf("3 %sload__entry\n", thread_indent(0))
-		samp_0[20] = 0
-	}
-}
-probe process("cmp").mark("load__return")? {
-	if(samp_0[20] == 0) {
-		printf("4 %sload__return\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("method__cache__clear")? {
-	samp_0[21] ++
-	if(samp_0[21] == 20) {
-		printf("2 %s method__cache__clear\n", thread_indent(0))
-		samp_0[21] = 0
-	}
-}
-probe process("cmp").mark("method__entry")? {
-	samp_0[22] ++
-	if(samp_0[22] == 20) {
-		printf("3 %smethod__entry\n", thread_indent(0))
-		samp_0[22] = 0
-	}
-}
-probe process("cmp").mark("method__return")? {
-	if(samp_0[22] == 0) {
-		printf("4 %smethod__return\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("object__create")? {
-	samp_0[23] ++
-	if(samp_0[23] == 20) {
-		printf("2 %s object__create\n", thread_indent(0))
-		samp_0[23] = 0
-	}
-}
-probe process("cmp").mark("parse__begin")? {
-	samp_0[24] ++
-	if(samp_0[24] == 20) {
-		printf("3 %sparse__begin\n", thread_indent(0))
-		samp_0[24] = 0
-	}
-}
-probe process("cmp").mark("parse__end")? {
-	if(samp_0[24] == 0) {
-		printf("4 %sparse__end\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("raise")? {
-	samp_0[25] ++
-	if(samp_0[25] == 20) {
-		printf("2 %s raise\n", thread_indent(0))
-		samp_0[25] = 0
-	}
-}
-probe process("cmp").mark("require__entry")? {
-	samp_0[26] ++
-	if(samp_0[26] == 20) {
-		printf("3 %srequire__entry\n", thread_indent(0))
-		samp_0[26] = 0
-	}
-}
-probe process("cmp").mark("require__return")? {
-	if(samp_0[26] == 0) {
-		printf("4 %srequire__return\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").mark("string__create")? {
-	samp_0[27] ++
-	if(samp_0[27] == 20) {
-		printf("2 %s string__create\n", thread_indent(0))
-		samp_0[27] = 0
-	}
-}
-probe process("cmp").mark("symbol__create")? {
-	samp_0[28] ++
-	if(samp_0[28] == 20) {
-		printf("3 %ssymbol__create\n", thread_indent(0))
-		samp_0[28] = 0
-	}
-}
-probe process("cmp").mark("symbol__deconstruct")? {
-	if(samp_0[28] == 0) {
-		printf("4 %ssymbol__deconstruct\n", thread_indent(0))
-	}
-}
-
-probe process("cmp").end {
-	printf("cmp")
 }

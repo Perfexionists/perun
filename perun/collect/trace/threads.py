@@ -1,4 +1,4 @@
-""" Module containing various thread related features such as timeout or heartbeat timers.
+""" Module containing various thread related features such as timeout or periodic timers.
 """
 
 import sys
@@ -54,8 +54,8 @@ class NonBlockingTee(Thread):
                 WATCH_DOG.debug("NonBlockingTee thread terminating")
 
 
-class HeartbeatThread(Thread):
-    """ The HeartbeatThread allows to periodically perform given action as long as the timer
+class PeriodicThread(Thread):
+    """ The PeriodicThread allows to periodically perform given action as long as the timer
     is not disabled. This is used to e.g. inform the user about the progress of time-intensive
     operations.
 
@@ -67,7 +67,7 @@ class HeartbeatThread(Thread):
     :ivar list callback_args: the arguments of the action function
     """
     def __init__(self, timer, callback, callback_args):
-        """ Creates the HeartbeatThread object
+        """ Creates the PeriodicThread object
 
         :param float timer: the interval of the periodical action
         :param function callback: the action to perform periodically
@@ -84,7 +84,7 @@ class HeartbeatThread(Thread):
         of time, the waiting is interrupted and the action is invoked.
         """
         WATCH_DOG.debug(
-            "HeartbeatThread starting, action will be performed every {}s".format(self._timer)
+            "PeriodicThread starting, action will be performed every {}s".format(self._timer)
         )
         # Repeat the wait as long as the stop event is not set
         while not self._stop_event.is_set():
@@ -94,12 +94,12 @@ class HeartbeatThread(Thread):
                 break
             # The sleep was interrupted by a wait timeout, perform the action
             self._callback(*self._callback_args)
-        WATCH_DOG.debug("HeartbeatThread stop_event detected, terminating the thread")
+        WATCH_DOG.debug("PeriodicThread stop_event detected, terminating the thread")
 
     def __enter__(self):
         """ The context manager entry sentinel, starts the thread loop.
 
-        :return HeartbeatThread: the thread object
+        :return PeriodicThread: the thread object
         """
         self.start()
         return self

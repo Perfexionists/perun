@@ -167,12 +167,12 @@ class Watchdog:
             formatted_data = pprint.pformat(data, indent=2)
             self.__logger.debug("Variable '%s':\n%s", name, formatted_data)
 
-    def log_probes(self, func_count, static_count, script):
+    def log_probes(self, func_count, usdt_count, script):
         """ Logs the SystemTap probe records and metrics, such as size of the script, # of probe
         locations etc.
 
         :param int func_count: number of function probes
-        :param int static_count: number of static probes
+        :param int usdt_count: number of USDT probes
         :param str script: path to the SystemTap script
         """
         if not self.__enabled:
@@ -180,8 +180,8 @@ class Watchdog:
 
         self.info("SystemTap script '{}', size '{}'"
                   .format(script, utils.format_file_size(os.stat(script).st_size)))
-        self.info("Number of function locations: '{}', static locations: '{}'"
-                  .format(func_count, static_count))
+        self.info("Number of function locations: '{}', usdt locations: '{}'"
+                  .format(func_count, usdt_count))
         self.info("Number of probe points in the script: '{}'"
                   .format(_count_script_probes(script)))
 
@@ -214,31 +214,6 @@ class Watchdog:
         self.log_variable('lockless_stap', lockless_stap)
         self.log_variable('locked_modules', locked_modules)
         self.log_variable('lockless_modules', lockless_modules)
-
-    def log_trace_stack(self, line, line_cnt, trace_stack):
-        """ Logs the current line and the stack trace state of the data-profile transformation.
-
-        :param str line: the current data file line
-        :param int line_cnt: the line number
-        :param dict trace_stack: the trace stack dictionary
-        """
-        if self.__enabled:
-            # Log the line that failed
-            self.__logger.debug(' Line no. %d: %s', line_cnt, line)
-            self.__logger.debug(' Func stack:')
-            # Log the function probe stack
-            if 'func' in trace_stack:
-                for thread, stack in trace_stack['func'].items():
-                    self.__logger.debug('  Thread %s:', str(thread))
-                    self.__logger.debug('%s', '   ' + '\n   '.join(map(str, stack[0])))
-            # Log the static probe stack
-            self.__logger.debug(' Static stack:')
-            if 'static' in trace_stack:
-                for thread, probes in trace_stack['static'].items():
-                    self.__logger.debug('  Thread %s:', str(thread))
-                    for name, stack in probes.items():
-                        self.__logger.debug('   Probe %s:', name)
-                        self.__logger.debug('%s', '    ' + '\n    '.join(map(str, stack)))
 
 
 WATCH_DOG = Watchdog()
