@@ -6,6 +6,12 @@ HEAD
 
 **To be included in next release**
 
+  - add engines to the Tracer architecture
+  - add eBPF instrumentation support to Tracer (using BCC)
+  - add Optimization module to the collection process
+  - add several optimization methods to the Optimization module
+  - update Tracer for Python 3.8
+
 0.18.3-hotfix2 (2020-08-31)
 --------------------------
 
