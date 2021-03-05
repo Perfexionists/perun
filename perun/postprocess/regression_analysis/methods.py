@@ -367,7 +367,7 @@ def _find_best_fitting_model(model_results):
 
 def _transform_to_output_data(data, extra_keys=None):
     """Transforms the data dictionary into their output format - omitting computational details
-    and keys that are not important for the result and it's further manipulation.
+    and keys that are not important for the result and its further manipulation.
 
     The function provides dictionary with 'model', 'coeffs', 'r_square', 'x_start' and
     'x_end' keys taken from the data dictionary. The function also allows to specify

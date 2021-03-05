@@ -437,7 +437,13 @@ def merge_resources_of(lhs, rhs):
     # Not Good: Temporary solution:
     if not isinstance(rhs, Profile):
         rhs = Profile(rhs)
+
     # Return lhs/rhs if rhs/lhs is empty
+    if rhs.resources_size() == 0:
+        return lhs
+    elif lhs.resources_size() == 0:
+        return rhs
+
     lhs_res = [res[1] for res in lhs.all_resources()] if lhs else []
     rhs_res = [res[1] for res in rhs.all_resources()] if rhs else []
     lhs_res.extend(rhs_res)

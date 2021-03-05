@@ -23,6 +23,8 @@ statsmodels>=0.10.0
 scikit-learn>=0.19.0
 Cython>=0.29.20
 pandas>=0.20.2
+networkx>=2.4
+angr>=9.0
 
 # We fix scipy and numpy version, because they mess everything up >.<
 scipy>=1.4.1
@@ -35,3 +37,4 @@ numpy>=1.15.1
 # This is temporary solution, since we would like to remove bkcharts as dependency
 # since it has been archived and is incompatible.
 ./libs/bkcharts-0.2-py3-none-any.whl
+

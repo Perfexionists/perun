@@ -28,10 +28,15 @@ class Profile(collections.MutableMapping):
         unique identifier of those resources
     :ivar Counter _uid_counter: counter of how many resources type uid has
     """
-    collectable = {'amount', 'structure-unit-size', 'call-order', 'order', 'address'}
+    collectable = {
+        'amount', 'structure-unit-size', 'call-order', 'order', 'address', 'timestamp', 'exclusive'
+    }
     persistent = {'trace', 'type', 'subtype', 'uid'}
 
-    independent = ['structure-unit-size', 'snapshot', 'order', 'call-order', 'address']
+    independent = [
+        'structure-unit-size', 'snapshot', 'order', 'call-order', 'address', 'timestamp',
+        'exclusive'
+    ]
     dependent = ['amount']
 
     def __init__(self, *args, **kwargs):
@@ -312,6 +317,14 @@ class Profile(collections.MutableMapping):
         maximal_snapshot = max(snapshot_map.keys())
         for i in range(0, maximal_snapshot+1):
             yield i, snapshot_map[i]
+
+    # TODO: discuss the intent of __len__ and possibly merge?
+    def resources_size(self):
+        """ Returns the number of resources stored in the internal storage.
+
+        :return int: the number of stored resources
+        """
+        return len(self._storage['resources'])
 
 
 # Click helper
