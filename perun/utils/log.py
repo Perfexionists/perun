@@ -346,16 +346,12 @@ def get_degradation_change_colours(degradation_result):
     :param PerformanceChange degradation_result: change of the performance
     :returns: tuple of (from model string colour, to model string colour)
     """
-    if degradation_result in (
-            PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
-    ):
-        return 'red', 'green'
-    elif degradation_result in (
-            PerformanceChange.Degradation, PerformanceChange.MaybeDegradation
-    ):
-        return 'green', 'red'
-    else:
-        return 'yellow', 'yellow'
+    colour = 'yellow', 'yellow'
+    if degradation_result in (PerformanceChange.Optimization, PerformanceChange.MaybeOptimization):
+        colour = 'red', 'green'
+    elif degradation_result in (PerformanceChange.Degradation, PerformanceChange.MaybeDegradation):
+        colour = 'green', 'red'
+    return colour
 
 
 def print_short_summary_of_degradations(degradation_list):

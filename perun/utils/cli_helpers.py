@@ -742,8 +742,9 @@ def set_optimization_param(_, __, value):
         # Process all parameters as 'parameter: value' tuples
         opt_name, opt_value = param[0], param[1]
         if Optimization.params.add_cli_parameter(opt_name, opt_value) is None:
-            raise click.BadParameter("Invalid value '{}' for optimization parameter '{}'"
-                                     .format(opt_value, opt_name))
+            raise click.BadParameter(
+                "Invalid value '{}' for optimization parameter '{}'".format(opt_value, opt_name)
+            )
     return value
 
 

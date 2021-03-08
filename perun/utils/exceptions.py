@@ -219,9 +219,7 @@ class DictionaryKeysValidationFailed(Exception):
         self.dictionary = dictionary
         self.missing_keys = missing_keys
         self.excess_keys = excess_keys
-        if not isinstance(self.dictionary, dict):
-            self.msg = "Validated object '{0}' is not a dictionary.".format(self.dictionary)
-        elif not self.missing_keys:
+        if not self.missing_keys:
             self.msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
                 self.dictionary, ', '.join(self.excess_keys))
         elif not self.excess_keys:
@@ -349,21 +347,6 @@ class SystemTapStartupException(Exception):
 
     def __str__(self):
         return "SystemTap startup error, see the corresponding {} file.".format(self.logfile)
-
-
-class HardTimeoutException(Exception):
-    """Raised when various sleep calls exceed specified hard timeout threshold"""
-    def __init__(self, msg):
-        """
-        :param str msg: specific exception message
-        """
-        super().__init__("")
-        self.msg = msg
-        if not msg:
-            self.msg += 'Hard timeout was reached during sleep operation'
-
-    def __str__(self):
-        return self.msg
 
 
 class ResourceLockedException(Exception):

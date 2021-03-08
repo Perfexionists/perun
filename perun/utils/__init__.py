@@ -98,11 +98,10 @@ def is_executable_elf(file, only_not_stripped=False):
     """
     # Determine file magic code, we are looking out for ELF files
     f_magic = magic.from_file(file)
-    if f_magic.startswith('ELF') and ('executable' in f_magic or 'shared object' in f_magic):
-        if only_not_stripped:
-            return 'not stripped' in f_magic
-        return True
-    return False
+    is_elf = f_magic.startswith('ELF') and ('executable' in f_magic or 'shared object' in f_magic)
+    if is_elf and only_not_stripped:
+        return 'not stripped' in f_magic
+    return is_elf
 
 
 def get_project_elf_executables(root='.', only_not_stripped=False):
@@ -563,6 +562,4 @@ def get_current_interpreter(required_version=None, fallback='python3'):
                 break
 
     # If no interpreter was found, use fallback
-    if not interpreter:
-        interpreter = fallback
-    return interpreter
+    return interpreter or fallback

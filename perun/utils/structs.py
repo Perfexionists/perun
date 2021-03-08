@@ -335,6 +335,7 @@ class OrderedEnum(Enum):
             return self.order < other.order
         return NotImplemented
 
+
 class ProfileListConfig:
     """
     :ivar str colour: colour of the printed list
