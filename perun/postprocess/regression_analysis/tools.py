@@ -112,18 +112,6 @@ def sort_points(x_pts, y_pts):
     return x_pts, y_pts
 
 
-def zip_points(x_pts, y_pts, len_start=0, len_end=-1):
-    """Creates points pair (x, y) useful for iteration.
-
-    :param list x_pts: list of x points
-    :param list y_pts: list of y points
-    :param int len_start: slicing start value
-    :param int len_end: slicing end value
-    :returns iterable: zip iterator object
-    """
-    return zip(x_pts[len_start:len_end], y_pts[len_start:len_end])
-
-
 def split_model_interval(start, end, steps):
     """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.

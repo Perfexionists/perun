@@ -1576,6 +1576,9 @@ def test_config(pcs_full, monkeypatch):
     result = runner.invoke(config_cli.config, ['--local', 'edit'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
+    result = runner.invoke(config_cli.config, ['--shared', 'edit'])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+
     def raiseexc(*_):
         raise exceptions.ExternalEditorErrorException
 

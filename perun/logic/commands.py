@@ -1010,18 +1010,17 @@ def load_profile_from_args(profile_name, minor_version):
     :param str minor_version: SHA-1 representation of the minor version
     :returns dict: loaded profile represented as dictionary
     """
-    # If the profile is in raw form
-    if not store.is_sha1(profile_name):
+    profiled_looked_up_already = store.is_sha1(profile_name)
+    profiles = [profile_name] if profiled_looked_up_already else []
+    # If the profile is defined by its path, we have to first look up it in the index
+    if not profiled_looked_up_already:
         _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
         # If there is nothing at all in the index, since it is not even created ;)
         #   we returning nothing otherwise we lookup entries in index
-        if not os.path.exists(minor_index_file):
-            return None
-        with open(minor_index_file, 'rb') as minor_handle:
-            lookup_pred = lambda entry: entry.path == profile_name
-            profiles = index.lookup_all_entries_within_index(minor_handle, lookup_pred)
-    else:
-        profiles = [profile_name]
+        if os.path.exists(minor_index_file):
+            with open(minor_index_file, 'rb') as minor_handle:
+                lookup_pred = lambda entry: entry.path == profile_name
+                profiles.extend(index.lookup_all_entries_within_index(minor_handle, lookup_pred))
 
     # If there are more profiles we should chose
     if not profiles:

@@ -258,7 +258,6 @@ def _bisection_step(x_pts, y_pts, computation_models, last_model):
     tries to compute each half. In case of model change, the interval is split again and the
     process repeats. Otherwise the last model is used as a final model.
 
-
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
     :param tuple of str computation_models: the collection of regression models to compute

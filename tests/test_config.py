@@ -7,6 +7,8 @@ import pytest
 import random
 import os
 
+from ruamel.yaml import scanner
+
 import perun.logic.commands as commands
 import perun.logic.config as config
 
@@ -194,5 +196,21 @@ def test_shared_dir_lookup(monkeypatch, capsys):
     assert config.lookup_shared_config_dir() == '/mnt/g/d'
 
 
-def test_recursive_lookup(capsys, tmpdir):
-    assert True
+def test_config_errors(monkeypatch, capsys, tmpdir):
+    """Test error states"""
+    def raise_scanner_error(*_):
+        raise scanner.ScannerError
+    monkeypatch.setattr("perun.utils.streams.safely_load_yaml_from_file", raise_scanner_error)
+    with pytest.raises(SystemExit):
+        config.read_config_from("dummy")
+    _, err = capsys.readouterr()
+    assert "corrupted configuration file: 'dummy'"
+
+    def raise_io_error(*_, **__):
+        raise IOError
+    monkeypatch.setattr("perun.logic.config.init_config_at", raise_io_error)
+    temp_dir = tmpdir.mkdir('.perun')
+    with pytest.raises(SystemExit):
+        config.load_config(str(temp_dir), 'shared')
+    _, err = capsys.readouterr()
+    assert "error initializing shared config: IOError"

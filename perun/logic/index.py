@@ -296,8 +296,9 @@ def walk_index(index_handle):
         yield entry
 
     if loaded_objects != number_of_objects:
-        perun_log.error("fatal: "
-                        "malformed index file: too many or too few objects registered in index")
+        perun_log.error(
+            "fatal: malformed index file: too many or too few objects registered in index"
+        )
 
 
 def print_index(index_file):
