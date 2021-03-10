@@ -25,8 +25,8 @@ def before(executable, **_):
     :returns tuple: (return code, status message, updated kwargs)
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
-    if not os.path.isfile("{}/{}".format(pwd, _lib_name)):
-        print("Missing compiled dynamic library 'lib{}'. Compiling from sources: ".format(
+    if not os.path.isfile(os.path.join(pwd, _lib_name)):
+        log.warn("Missing compiled dynamic library 'lib{}'. Compiling from sources: ".format(
             os.path.splitext(_lib_name)[0]
         ), end='')
         result = syscalls.init()
@@ -38,14 +38,14 @@ def before(executable, **_):
         else:
             log.done()
 
-    print("Checking if binary contains debugging information: ", end='')
+    log.info("Checking if binary contains debugging information: ", end='')
     if not syscalls.check_debug_symbols(executable.cmd):
         log.failed()
         error_msg = "Binary does not contain debug info section.\n"
         error_msg += "Please recompile your project with debug options (gcc -g | g++ -g)"
         return CollectStatus.ERROR, error_msg, {}
     log.done()
-    print("Finished preprocessing step!\n")
+    log.info("Finished preprocessing step!\n")
 
     return CollectStatus.OK, '', {}
 
@@ -56,7 +56,7 @@ def collect(executable, **_):
     :param Executable executable: executable profiled command
     :returns tuple: (return code, status message, updated kwargs)
     """
-    print("Collecting data: ", end='')
+    log.info("Collecting data: ", end='')
     result, collector_errors = syscalls.run(executable)
     if result:
         log.failed()
@@ -65,7 +65,7 @@ def collect(executable, **_):
         error_msg += collector_errors
         return CollectStatus.ERROR, error_msg, {}
     log.done()
-    print("Finished collection of the raw data!\n")
+    log.info("Finished collection of the raw data!\n")
     return CollectStatus.OK, '', {}
 
 
@@ -100,13 +100,9 @@ def after(executable, sampling=DEFAULT_SAMPLING, **kwargs):
 
     try:
         profile = parser.parse_log(_tmp_log_filename, executable, sampling)
-    except IndexError as i_err:
+    except (IndexError, ValueError) as parse_err:
         log.failed()
-        traceback.print_exc()
-        return CollectStatus.ERROR, 'Info missing in log file: {}'.format(str(i_err)), {}
-    except ValueError as v_err:
-        log.failed()
-        return CollectStatus.ERROR, 'Wrong format of log file: {}'.format(str(v_err)), {}
+        return CollectStatus.ERROR, 'Problems while parsing log file: {}'.format(str(parse_err)), {}
     log.done()
     filters.set_global_region(profile)
 

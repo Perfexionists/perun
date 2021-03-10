@@ -369,10 +369,7 @@ def _remove_argument_scopes(function_args):
     new_args = '('
     for arg in args:
         scope_op = arg.rfind('::')
-        if scope_op != -1:
-            # The argument is scoped, slice
-            arg = arg[scope_op + 2:]
-        new_args += arg + ','
+        new_args += (arg[scope_op + 2:] if scope_op != -1 else arg) + ','
     # Replace the last comma with end parentheses
     new_args = new_args[:-1]
     new_args += ')'

@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import perun.utils.log as log
+from perun.utils.helpers import SuppressedExceptions
 
 PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
@@ -96,10 +97,9 @@ def init():
     :returns bool: success of the operation
     """
     pwd = os.path.dirname(os.path.abspath(__file__))
-    try:
+    ret = 1
+    with SuppressedExceptions(subprocess.CalledProcessError):
         ret = subprocess.call(["make"], cwd=pwd)
-    except subprocess.CalledProcessError:
-        return 1
 
     return ret
 

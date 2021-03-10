@@ -64,12 +64,11 @@ def allocation_filter(profile, function, source):
     """
     def determinate(uid):
         """ Determinate expression """
-        if not uid:
-            return True
-        if uid['function'] in function:
-            return False
-        if any(map(lambda s: s is not None and str(uid['source']).endswith(s), source)):
-            return False
+        if uid:
+            if uid['function'] in function:
+                return False
+            if any(map(lambda s: s is not None and str(uid['source']).endswith(s), source)):
+                return False
         return True
 
     snapshots = profile['snapshots']

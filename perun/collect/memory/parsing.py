@@ -61,14 +61,10 @@ def parse_allocation_location(trace):
     :param list trace: list representing stack call trace
     :returns dict: first user's call to allocation
     """
-    if not trace:
-        return {}
-
-    for call in trace:
+    for call in trace or []:
         source = call['source']
         if source != "unreachable":
             return call
-
     return {}
 
 
@@ -120,7 +116,7 @@ def parse_log(filename, executable, snapshots_interval):
 
     :param string filename: name of the log file
     :param Executable executable: profiled binary
-    :param Decimal snapshots_interval: interval of snapshots [s]
+    :param int snapshots_interval: interval of snapshots [s]
     :returns structure: formatted structure representing section "snapshots" and "global"
         in memory profile
     """
@@ -156,9 +152,6 @@ def parse_log(filename, executable, snapshots_interval):
     data.update({'time': '{0:f}'.format(interval)})
     data.update({'resources': []})
     for allocation in allocations:
-        if not allocation:
-            continue
-
         # parsing timestamp,
         # it's the only one number on the 1st line
         time_string = allocation[0]
@@ -184,7 +177,3 @@ def parse_log(filename, executable, snapshots_interval):
         snapshots.append(data)
 
     return {'snapshots': snapshots, 'global': {'resources': []}}
-
-
-if __name__ == "__main__":
-    pass

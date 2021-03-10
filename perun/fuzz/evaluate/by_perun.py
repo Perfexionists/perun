@@ -39,10 +39,9 @@ def baseline_testing(executable, seeds, collector, postprocessor, minor_version_
             minor_version_list, **kwargs
         ))
 
-        with helpers.SuppressedExceptions(ZeroDivisionError):
-            file.deg_ratio = check_for_change(base_pg, target_pg)
-            if file.deg_ratio > DEGRADATION_RATIO_TRESHOLD:
-                base_pg = target_pg
+        file.deg_ratio = check_for_change(base_pg, target_pg)
+        if file.deg_ratio > DEGRADATION_RATIO_TRESHOLD:
+            base_pg = target_pg
     return base_pg
 
 
@@ -67,12 +66,9 @@ def target_testing(executable, workload, collector, postprocessor, minor_version
         minor_version_list, **kwargs
     ))
 
-    try:
-        # check
-        workload.deg_ratio = check_for_change(base_result, target_pg)
-        return workload.deg_ratio > DEGRADATION_RATIO_TRESHOLD
-    except ZeroDivisionError:
-        return False
+    # check
+    workload.deg_ratio = check_for_change(base_result, target_pg)
+    return workload.deg_ratio > DEGRADATION_RATIO_TRESHOLD
 
 
 def check_for_change(base_pg, target_pg, method='best-model'):
@@ -90,5 +86,5 @@ def check_for_change(base_pg, target_pg, method='best-model'):
         for perf_change in check.degradation_between_profiles(base_prof[1], target_prof[1], method):
             checks += 1
             degs += perf_change.result == PerformanceChange.Degradation
-        return degs/checks
+        return degs / checks if checks else 0
     return 0
