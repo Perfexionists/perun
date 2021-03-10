@@ -803,7 +803,3 @@ def launch_cli():
         launch_cli_in_dev_mode()
     else:
         launch_cli_safely()
-
-
-if __name__ == "__main__":
-    launch_cli()

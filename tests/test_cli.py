@@ -48,6 +48,16 @@ def test_cli(pcs_full):
     runner.invoke(cli.cli, ['-v', '-v', 'log'])
     assert log.VERBOSITY == log.VERBOSE_DEBUG
 
+    # Testing calling cli groups withouth commands
+    result = runner.invoke(cli.cli, ['utils'])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    result = runner.invoke(utils_cli.utils_group, ['temp', 'list'])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    result = runner.invoke(utils_cli.utils_group, ['stats'])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    result = runner.invoke(utils_cli.stats_group, ['delete', 'file'])
+    asserts.predicate_from_cli(result, result.exit_code == 2)
+
     # Restore the verbosity
     log.VERBOSITY = log.VERBOSE_RELEASE
     log.SUPPRESS_PAGING = True
@@ -2347,7 +2357,8 @@ def test_safe_cli(monkeypatch, capsys):
     def raise_exception():
         raise Exception("Something happened")
     monkeypatch.setattr('perun.cli.cli', raise_exception)
-    cli.launch_cli_safely()
+    monkeypatch.setattr('faulthandler.enable', lambda: None)
+    cli.launch_cli()
     out, err = capsys.readouterr()
     assert "Unexpected error: Exception: Something happened" in err
     assert "Saved dump" in out
@@ -2356,3 +2367,7 @@ def test_safe_cli(monkeypatch, capsys):
     with pytest.raises(Exception):
         cli.launch_cli()
     cli.DEV_MODE = False
+
+    with pytest.raises(Exception):
+        cli.launch_cli_in_dev_mode()()
+
