@@ -179,13 +179,21 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'already exists' in result.output)
 
-    # Simulate the failure of 'cmake' utility
+    # Simulate the failure of 'cmake'/'make' utility
     old_run = utils.run_external_command
+    def mocked_make(cmd, *_, **__):
+        if cmd == ['make']:
+            return 1
+        else:
+            return old_run(cmd, *_, **__)
     monkeypatch.setattr(utils, 'run_external_command', _mocked_external_command)
     command = ['-c{}'.format(job_params['target_dir']), 'complexity',
                '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'Command \'cmake\' returned non-zero exit status 1' in result.output)
+    monkeypatch.setattr(utils, 'run_external_command', mocked_make)
+    result = runner.invoke(cli.collect, command)
+    asserts.predicate_from_cli(result, 'Command \'make\' returned non-zero exit status 1' in result.output)
     monkeypatch.setattr(utils, 'run_external_command', old_run)
 
     # Simulate that the flag is supported, which leads to failure in build process for older g++

@@ -40,10 +40,9 @@ def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
     # Create basic graph:
     if cummulation_type == 'stacked':
         bar_graph = create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key)
-    elif cummulation_type == 'grouped':
-        bar_graph = create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key)
     else:
-        log.error("unknown aggregation type '{}'".format(cummulation_type))
+        # Is grouped
+        bar_graph = create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key)
 
     # Call basic configuration of the graph
     bokeh_helpers.configure_graph(

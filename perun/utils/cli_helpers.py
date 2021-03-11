@@ -639,6 +639,9 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
     :param Logger stdout: logged stdout
     :param Logger stderr: logged stderr
     """
+    stdout.flush()
+    stderr.flush()
+
     global CLI_DUMP_TEMPLATE
     if not CLI_DUMP_TEMPLATE:
         env = jinja2.Environment(

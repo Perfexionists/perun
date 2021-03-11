@@ -259,10 +259,8 @@ def generate_header_for_profile(job):
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
-    try:
-        collector = get_module('.'.join(['perun.collect', job.collector.name]))
-    except ImportError:
-        perun_log.error("could not find the package for collector {}".format(job.collector.name))
+    # At this point, the collector module should be valid
+    collector = get_module('.'.join(['perun.collect', job.collector.name]))
 
     return {
         'type': collector.COLLECTOR_TYPE,

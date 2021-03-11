@@ -240,12 +240,9 @@ def general_detection(
 
         best_corresponding_linear_model = best_baseline_models[uid]
         best_corresponding_baseline_model = best_baseline_models[uid]
-        if best_corresponding_linear_model:
-            confidence = min(
-                best_corresponding_linear_model.r_square, target_linear_model.r_square
-            )
-        else:
-            confidence = 0.0
+        confidence = min(
+            best_corresponding_linear_model.r_square, target_linear_model.r_square
+        ) if best_corresponding_linear_model else 0.0
 
         yield DegradationInfo(
             res=change,

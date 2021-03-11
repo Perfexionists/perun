@@ -231,7 +231,7 @@ class Profile(collections.MutableMapping):
                 "type": "memory",
                 "amount": 4,
                 "uid": "../memory_collect_test.c:main:22",
-                "uid:eource": "../memory_collect_test.c",
+                "uid:source": "../memory_collect_test.c",
                 "uid:function": "main",
                 "uid:line": 22
             }

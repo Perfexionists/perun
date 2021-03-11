@@ -134,10 +134,6 @@ def group_and_aggregate(data, group_through_key, func):
     """
     # Aggregate the data according to the func grouped by through_key
     through_data_group = data.groupby(group_through_key)
-    try:
-        aggregation_function = getattr(through_data_group, func)
-    except AttributeError:
-        log.error("{} function is not supported as aggregation for this visualization".format(
-            func
-        ))
+    # Note that at this point, we should be protected that the function is valid of the data group
+    aggregation_function = getattr(through_data_group, func)
     return aggregation_function()

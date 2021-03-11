@@ -66,10 +66,7 @@ def store_model_counts(analysis):
     models = {model: 0 for model in reg_models.get_supported_models() if model != 'all'}
     models['undefined'] = 0
     for func_record in funcs.values():
-        if func_record['r_square'] <= 0.5:
-            models['undefined'] += 1
-        else:
-            models[func_record['model']] += 1
+        models['undefined' if (func_record['r_square'] <= 0.5) else func_record['model']] += 1
     # Store the counts in the metrics
     for model, count in models.items():
         metrics.add_metric('{}_model'.format(model), count)

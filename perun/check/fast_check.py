@@ -48,8 +48,9 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
     }
     # executing the regression analysis
     for _, (x_pts, y_pts) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
-        updated_data['structure-unit-size'].append(x_pts)
-        updated_data['amount'].append(y_pts)
+        if not np.isnan(y_pts):
+            updated_data['structure-unit-size'].append(float(x_pts))
+            updated_data['amount'].append(float(y_pts))
     # Nasty hack, though it should work
     std_err_profile._storage['resources'] = {
         uid: updated_data
@@ -59,7 +60,6 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
             'uid': uid
         }
     }
-
     # Fixme: Extract of and per key
     regression_analysis_params = {
         "regression_models": [],

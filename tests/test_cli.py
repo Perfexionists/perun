@@ -40,7 +40,7 @@ __author__ = 'Tomas Fiedor'
 SIZE_REGEX = re.compile(r"([0-9]+ (Ki|Mi){0,1}B)")
 
 
-def test_cli(pcs_full):
+def test_cli(monkeypatch, pcs_full):
     """Generic tests for cli, such as testing verbosity setting etc."""
     runner = CliRunner()
 
@@ -65,6 +65,12 @@ def test_cli(pcs_full):
     result = runner.invoke(cli.cli, ['--version'])
     asserts.predicate_from_cli(result, result.output.startswith('Perun'))
     asserts.predicate_from_cli(result, result.exit_code == 0)
+
+    result = runner.invoke(cli.cli, ['--version'])
+    result.exception = "exception"
+    # Try that predicate from cli reraises
+    with pytest.raises(AssertionError):
+        asserts.predicate_from_cli(result, False)
 
 
 def run_non_param_test(runner, test_params, expected_exit_code, expected_output):

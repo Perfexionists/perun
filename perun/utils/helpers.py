@@ -395,12 +395,11 @@ def try_convert(value, list_of_types):
 
     :param object value: object that is going to be converted to one of the types
     :param list list_of_types: list or tuple of supported types
-    :return: converted value or value, if conversion failed for all of the types
+    :return: converted value or None, if conversion failed for all of the types
     """
     for checked_type in list_of_types:
         with SuppressedExceptions(Exception):
             return checked_type(value)
-    return value
 
 
 def identity(*args):

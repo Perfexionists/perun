@@ -9,6 +9,7 @@ import perun.logic.store as store
 import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
+import perun.check.fast_check as fast
 
 __author__ = 'Tomas Fiedor'
 
@@ -114,12 +115,16 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     result = list(aat.average_amount_threshold(profiles[1], profiles[2]))
     assert check.PerformanceChange.Degradation in [r.result for r in result]
 
-    # Can detect optimizations both using BMOE and AAT
+    # Can detect optimizations both using BMOE and AAT and Fast
     result = list(aat.average_amount_threshold(profiles[2], profiles[1]))
     assert check.PerformanceChange.Optimization in [r.result for r in result]
 
+    result = list(fast.fast_check(profiles[2], profiles[1]))
+    assert check.PerformanceChange.MaybeOptimization in [r.result for r in result]
+
     result = list(bmoe.best_model_order_equality(profiles[2], profiles[1]))
     assert check.PerformanceChange.Optimization in [r.result for r in result]
+
     # Try that we printed confidence
     deg_list = [(res, "", "") for res in result]
     log.print_list_of_degradations(deg_list)

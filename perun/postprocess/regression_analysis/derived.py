@@ -37,8 +37,7 @@ def derived_const(analysis, const_ref, **_):
     # Filter the required models from computed regression models
     analysis = _filter_by_models(analysis, const_ref['required'])
     # Set to default threshold if value is invalid
-    if const_ref['b1_threshold'] <= 0:
-        const_ref['b1_threshold'] = _DEFAULT_THRESHOLD
+    const_ref['b1_threshold'] = max(_DEFAULT_THRESHOLD, const_ref['b1_threshold'])
 
     # Compute const model for every linear
     for result in analysis:
@@ -49,9 +48,6 @@ def derived_const(analysis, const_ref, **_):
 
         # Duplicate the constant model template
         const = const_ref.copy()
-        # TODO: compute change as the linear_model_start_y / (liner_model_start_y - linear_model_end_y)
-        # TODO: 5% change is threshold
-        # TODO: incorporate the TSS to modify the R^2
 
         y_start = result['coeffs'][0]
         y_end = y_start + result['coeffs'][1] * result['x_end']

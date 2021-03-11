@@ -23,8 +23,6 @@ def profile_filter(generator, rule, return_type='prof'):
                 return profile[1]
             elif return_type == 'name':
                 return profile[0]
-            else:
-                return profile
 
 
 def index_filter(file):
