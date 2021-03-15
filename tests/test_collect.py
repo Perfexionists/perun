@@ -106,15 +106,6 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
                                          ] + files + rules + samplings)
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    # Test running the job from the params using the job file
-    # TODO: troubles with paths in job.yml, needs some proper solving
-    # script_dir = os.path.split(__file__)[0]
-    # source_dir = os.path.join(script_dir, 'collect_complexity')
-    # job_config_file = os.path.join(source_dir, 'job.yml')
-    # result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
-    #                                      '-p{}'.format(job_config_file), 'complexity'])
-    # assert result.exit_code == 0
-
     # test some scoped and templatized prototypes taken from a more difficult project
     monkeypatch.setattr(symbols, 'extract_symbols', _mocked_symbols_extraction)
     more_rules = ['Gif::Ctable::Ctable(Gif::Ctable&&)',
@@ -221,6 +212,18 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'Call stack error' in result.output)
     monkeypatch.setattr(complexity, '_process_file_record', old_record_processing)
+
+    # Simulate the failure of output processing
+    old_find_braces = symbols._find_all_braces
+    def mock_find_all_braces(s, b, e):
+        if b == '(' and e == ')':
+            return [1]
+        else:
+            return old_find_braces(s, b, e)
+    monkeypatch.setattr(symbols, '_find_all_braces', mock_find_all_braces)
+    result = runner.invoke(cli.collect, command)
+    asserts.predicate_from_cli(result, 'wrong prototype of function' in result.output)
+    monkeypatch.setattr(symbols, '_find_all_braces', old_find_braces)
 
     # Simulate missing dependencies
     monkeypatch.setattr("shutil.which", lambda *_: False)

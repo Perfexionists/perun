@@ -17,7 +17,7 @@ R_SQUARE_DEFAULT = 0.0
 APPROX_ZERO = 0.000001
 
 
-def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
+def validate_dictionary_keys(dictionary: dict, required_keys: list, forbidden_keys: list):
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
     :param dict dictionary: validated dictionary
@@ -27,9 +27,6 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
     """
     missing_keys, excess_keys = [], []
 
-    # Check the dictionary first
-    if not isinstance(dictionary, dict):
-        raise exceptions.DictionaryKeysValidationFailed(dictionary, [], [])
     # Check all the required keys
     for key in required_keys:
         if key not in dictionary:

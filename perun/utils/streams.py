@@ -48,12 +48,12 @@ def safely_load_yaml_from_stream(yaml_stream):
     # Remove the trailing double quotes screwing correct loading of yaml
     if isinstance(yaml_stream, str) and yaml_stream[0] == '"' and yaml_stream[-1] == '"':
         yaml_stream = yaml_stream[1:-1]
-    loaded_yaml = YAML().load(yaml_stream)
-
-    if not loaded_yaml and yaml_stream:
-        log.warn('stream is not in yaml format')
-
-    return loaded_yaml or {}
+    try:
+        loaded_yaml = YAML().load(yaml_stream)
+        return loaded_yaml or {}
+    except Exception as exc:
+        log.warn("malformed yaml stream: ".format(str(exc)))
+        return {}
 
 
 def safely_load_yaml(yaml_source):

@@ -997,6 +997,14 @@ def test_reg_analysis_correct(pcs_full):
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Successfully postprocessed' in result.output)
 
+    # Test the bisection method with more complex model
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
+    complex_file = os.path.join(pool_path, 'log2.perf')
+    result = runner.invoke(cli.postprocessby, [
+        "{}".format(complex_file), 'regression-analysis', '-m', 'bisection'])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, 'Successfully postprocessed' in result.output)
+
     # Test explicit models specification on full computation
     result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'full',
                                                '-r', 'all'])
@@ -1034,14 +1042,14 @@ def test_reg_analysis_correct(pcs_full):
     result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'iterative',
                                                '-r', 'all', '-s', '4'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, result.output.count('Too few points') == 5)
+    asserts.predicate_from_cli(result, result.output.count('Too few point') == 5)
     asserts.predicate_from_cli(result, 'Successfully postprocessed' in result.output)
 
     # Test too many steps output
     result = runner.invoke(cli.postprocessby, [cprof_idx, 'regression-analysis', '-m', 'iterative',
                                                '-r', 'all', '-s', '1000'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, result.output.count('Too few points') == 7)
+    asserts.predicate_from_cli(result, result.output.count('Too few point') == 7)
     asserts.predicate_from_cli(result, 'Successfully postprocessed' in result.output)
 
     # Test steps value clamping with iterative method
@@ -1963,7 +1971,7 @@ def test_error_runs(pcs_full, monkeypatch):
     result = runner.invoke(run_cli.run, ['matrix', '-q'])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "while postprocessing by regression_analysis" in result.output)
-    asserts.predicate_from_cli(result, "is missing required keys" in result.output)
+    asserts.predicate_from_cli(result, "Invalid dictionary" in result.output)
 
     # Test matrix with collect() that fails
     run_report = RunnerReport(None, "collector", {})

@@ -469,8 +469,10 @@ def format_file_size(size):
     return "{:.1f} PiB".format(size)
 
 
-def chunkify(iterable, chunk_size):
+def chunkify(generator, chunk_size):
     """ Slice generator into multiple generators and each generator yields up to chunk_size items.
+
+    Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
 
     Example: chunkify(it, 100); it generates a total of 450 elements:
         _it0: 100,
@@ -479,12 +481,12 @@ def chunkify(iterable, chunk_size):
         _it3: 100,
         _it4: 50
 
-    :param iterable iterable: a generator object
+    :param generator generator: a generator object
     :param int chunk_size: the maximum size of each chunk
     :return generator: a generator object
     """
-    for first in iterable:
-        yield itertools.chain([first], itertools.islice(iterable, chunk_size - 1))
+    for first in generator:
+        yield itertools.chain([first], itertools.islice(generator, chunk_size - 1))
 
 
 def create_empty_pass(return_code):

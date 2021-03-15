@@ -384,13 +384,11 @@ def _transform_to_output_data(data, extra_keys=None):
     :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     :returns dict: the output dictionary
     """
-    tools.validate_dictionary_keys(
-        data, ['model', 'coeffs', 'r_square', 'x_start', 'x_end'], [])
+    tools.validate_dictionary_keys(data, ['model', 'coeffs', 'r_square', 'x_start', 'x_end'], [])
 
     # Specify the keys which should be directly mapped
     transform_keys = ['model', 'r_square', 'x_start', 'x_end', 'method', 'uid']
-    if extra_keys is not None:
-        transform_keys += extra_keys
+    transform_keys += extra_keys or []
     transformed = {key: data[key] for key in transform_keys if key in data}
     # Transform the coefficients
     transformed['coeffs'] = []

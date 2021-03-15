@@ -29,7 +29,7 @@ def test_incorrect_calls(postprocess_profiles):
         postprocess(
             const_model, method='full', steps=7, of_key='amount', per_key='structure-unit-size'
         )
-    assert 'is missing required key' in str(exc.value)
+    assert 'Invalid dictionary' in str(exc.value)
 
 
 def test_const_model(pcs_full, postprocess_profiles):

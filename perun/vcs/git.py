@@ -202,21 +202,16 @@ def _massage_parameter(git_repo, parameter, parameter_type=None):
     :raises  VersionControlSystemException: when there is an error while rev-parsing the parameter
     """
     try:
-        if parameter_type:
-            parameter += "^{{{0}}}".format(parameter_type)
+        parameter += "^{{{0}}}".format(parameter_type) if parameter_type else ""
         return str(git_repo.rev_parse(parameter))
     except git.exc.BadName as bo_exception:
         raise VersionControlSystemException("parameter '{}' could not be found: {}".format(
             parameter, str(bo_exception)
         ))
-    except ValueError as ve_exception:
+    except (IndentationError, ValueError) as ve_exception:
         raise VersionControlSystemException("parameter '{}' could not be parsed: {}".format(
             parameter.replace('{', '{{').replace('}', '}}'),
             ve_exception.args[0].replace('{', '{{').replace('}', '}}')
-        ))
-    except IndentationError as ie_exception:
-        raise VersionControlSystemException("parameter '{}' represents invalid reflog: {}".format(
-            parameter, str(ie_exception)
         ))
 
 

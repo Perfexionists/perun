@@ -17,7 +17,7 @@ import perun.logic.commands as commands
 import perun.view as view
 import perun.utils.helpers as helpers
 from perun.utils.exceptions import SystemTapScriptCompilationException, SystemTapStartupException, \
-    ResourceLockedException
+    ResourceLockedException, UnsupportedModuleFunctionException
 from perun.collect.trace.optimizations.structs import Complexity
 
 from perun.utils.structs import Unit, OrderedEnum
@@ -268,3 +268,23 @@ def test_get_interpreter():
     """Tests that the python interpreter can be obtained in reasonable format"""
     assert re.search("python", utils.get_current_interpreter(required_version='3+'))
     assert re.search("python", utils.get_current_interpreter(required_version='3'))
+
+
+def test_common(capsys):
+    """Tests common functions from utils"""
+    def simple_generator():
+        for i in range(0, 10):
+            yield i
+    chunks = list(map(list, utils.chunkify(simple_generator(), 2)))
+    assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
+
+    with pytest.raises(UnsupportedModuleFunctionException):
+        utils.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
+
+    with pytest.raises(SystemExit):
+        utils.get_supported_module_names('nonexisting')
+
+    with pytest.raises(subprocess.CalledProcessError):
+        utils.run_safely_external_command("ls -3", quiet=False, check_results=True)
+    out, _ = capsys.readouterr()
+    assert 'captured stdout' in out
