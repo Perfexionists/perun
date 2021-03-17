@@ -12,10 +12,22 @@ __author__ = 'Tomas Fiedor'
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_malformed_indexes(tmpdir, monkeypatch):
+def test_malformed_indexes(tmpdir, monkeypatch, capsys):
     """Tests malformed indexes"""
     index_file = os.path.join(str(tmpdir), "index")
     index.touch_index(index_file)
+
+    # Try different number of stuff
+    old_read_int = store.read_int_from_handle
+    def mocked_read_int(_):
+        return 2
+    monkeypatch.setattr('perun.logic.store.read_int_from_handle', mocked_read_int)
+    with open(index_file, 'rb') as index_handle:
+        with pytest.raises(SystemExit):
+            print(list(index.walk_index(index_handle)))
+    _, err = capsys.readouterr()
+    assert "fatal: malformed index file: too many or too few objects registered in index" in err
+    monkeypatch.setattr('perun.logic.store.read_int_from_handle', old_read_int)
 
     monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.INDEX_VERSION - 1)
     with open(index_file, 'rb') as index_handle:
@@ -38,6 +50,7 @@ def test_correct_index(tmpdir):
     index_file = os.path.join(str(tmpdir), "index")
     index.touch_index(index_file)
     index.print_index(index_file)
+
 
 @pytest.mark.usefixtures('cleandir')
 def test_versions(tmpdir, monkeypatch):

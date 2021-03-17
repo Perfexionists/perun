@@ -5,12 +5,14 @@ Basic tests for fuzz-testing mode of perun
 import os
 import subprocess
 import pytest
+import inspect
 
 from click.testing import CliRunner
 
 import perun.utils as utils
 import perun.cli as cli
 import perun.fuzz.evaluate.by_coverage as coverage_fuzz
+import perun.fuzz.evaluate.by_perun as perun_fuzz
 from perun.fuzz.structs import CoverageConfiguration
 
 import perun.testing.asserts as asserts
@@ -413,3 +415,60 @@ def test_fuzzing_incorrect(pcs_full):
         '--regex-rules', 'e'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 1)
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_fuzzing_errors(pcs_full, monkeypatch):
+    """Test various error states"""
+    runner = CliRunner()
+    examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
+    txt_workload = os.path.join(examples, 'samples', 'txt')
+    tail = os.path.join(examples, "tail", "tail")
+
+    # Test when target testing returns error
+    old_run_process = utils.run_safely_external_command
+    def patched_run_process(*_, **__):
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        caller = calframe[1][3]
+        if caller == 'target_testing':
+            raise subprocess.CalledProcessError(1, "")
+        else:
+            return old_run_process(*_, **__)
+    monkeypatch.setattr(utils, 'run_safely_external_command', patched_run_process)
+    result = runner.invoke(cli.fuzz_cmd, [
+        '--cmd', tail,
+        '--output-dir', '.',
+        '--input-sample', txt_workload,
+        '--timeout', '1',
+        '--source-path', os.path.dirname(tail),
+        '--gcno-path', os.path.dirname(tail),
+        '--max-size-gain', '35000',
+        '--coverage-increase-rate', '1.05',
+        '--interesting-files-limit', '2',
+        '--no-plotting',
+    ])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, "Faults: 0" not in result.output)
+    monkeypatch.setattr(utils, 'run_safely_external_command', old_run_process)
+
+    # Test when target testing returns error
+    old_target_perun_testing = perun_fuzz.target_testing
+    def patched_target_testing(*_, **__):
+        raise subprocess.CalledProcessError(1, "")
+    monkeypatch.setattr(perun_fuzz, 'target_testing', patched_target_testing)
+    result = runner.invoke(cli.fuzz_cmd, [
+        '--cmd', tail,
+        '--output-dir', '.',
+        '--input-sample', txt_workload,
+        '--timeout', '1',
+        '--source-path', os.path.dirname(tail),
+        '--gcno-path', os.path.dirname(tail),
+        '--max-size-gain', '35000',
+        '--coverage-increase-rate', '1.05',
+        '--interesting-files-limit', '2',
+        '--no-plotting',
+    ])
+    asserts.predicate_from_cli(result, result.exit_code == 0)
+    asserts.predicate_from_cli(result, "Executing binary raised an exception" in result.output)
+    monkeypatch.setattr(coverage_fuzz, 'target_testing', old_target_perun_testing)
