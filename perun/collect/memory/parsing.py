@@ -127,8 +127,7 @@ def parse_log(filename, executable, snapshots_interval):
     log = log.split('\n\n')
 
     # Check that there is exit, and the Memory Log is thus not malformed
-    glob = log.pop().strip()
-    if glob.find('EXIT') == -1:
+    if log.pop().strip().find('EXIT') == -1:
         raise ValueError
 
     allocations = []
@@ -156,8 +155,7 @@ def parse_log(filename, executable, snapshots_interval):
         # it's the only one number on the 1st line
         time_string = allocation[0]
         # in some cases there is '.' instead of ',' in timestamp
-        index = time_string.find(',')
-        if index > 0:
+        if time_string.find(',') > 0:
             time_string = time_string.replace(',', '.')
 
         time = Decimal(PATTERN_TIME.search(time_string).group())

@@ -25,13 +25,10 @@ def build_demangle_cache(names):
     """
     global demangle_cache
 
-    list_of_names = list(names)
-    if not all(map(PATTERN_WORD.match, list_of_names)):
-        log.error("demangled names contain incorrect values: {}".format(list_of_names))
-    else:
-        sys_call = ['c++filt'] + list_of_names
-        output = subprocess.check_output(sys_call).decode("utf-8").strip()
-        demangle_cache = dict(zip(list_of_names, output.split("\n")))
+    list_of_names = [name for name in names if PATTERN_WORD.match(name)]
+    sys_call = ['c++filt'] + list_of_names
+    output = subprocess.check_output(sys_call).decode("utf-8").strip()
+    demangle_cache = dict(zip(list_of_names, output.split("\n")))
 
 
 def demangle(name):
@@ -53,17 +50,13 @@ def build_address_to_line_cache(addresses, binary_name):
     """
     global address_to_line_cache
 
-    list_of_addresses = [a[0] for a in addresses]
+    list_of_addresses = [a[0] for a in addresses if PATTERN_HEXADECIMAL.match(a[0])]
 
-    if not all(map(PATTERN_HEXADECIMAL.match, list_of_addresses)):
-        log.error("could not build address to line cache: incorrect format: "
-                  "addresses ({}) should be hexadecimal.".format(list_of_addresses))
-    else:
-        sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
-        output = subprocess.check_output(sys_call).decode("utf-8").strip()
-        address_to_line_cache = dict(zip(
-            list_of_addresses, map(lambda x: x.split(':'), output.split("\n"))
-        ))
+    sys_call = ['addr2line', '-e', binary_name] + list_of_addresses
+    output = subprocess.check_output(sys_call).decode("utf-8").strip()
+    address_to_line_cache = dict(zip(
+        list_of_addresses, map(lambda x: x.split(':'), output.split("\n"))
+    ))
 
 
 def address_to_line(ip):
@@ -110,12 +103,9 @@ def check_debug_symbols(cmd):
     :param string cmd: binary file to profile
     :returns bool: True if binary was compiled with debug symbols
     """
-    try:
+    with SuppressedExceptions(subprocess.CalledProcessError):
         output = subprocess.check_output(["objdump", "-h", cmd])
         raw_output = output.decode("utf-8")
-        if re.search("debug", raw_output) is None:
-            return False
-    except subprocess.CalledProcessError:
-        return False
-
-    return True
+        if re.search("debug", raw_output):
+            return True
+    return False
