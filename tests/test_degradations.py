@@ -2,6 +2,7 @@
 
 import os
 import git
+import pytest
 
 import perun.utils.log as log
 import perun.logic.config as config
@@ -137,6 +138,15 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     assert result
     # Assert there was no change
     assert check.PerformanceChange.NoChange in [r.result for r in result]
+
+    # Test incompatible profiles
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'full_profiles')
+    lhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-1-time-2017-03-19-19-17-36.perf'), True)
+    rhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-3-memory-2017-05-15-15-43-42.perf'), True)
+    with pytest.raises(SystemExit):
+        check.degradation_between_files(lhs, rhs, "HEAD", 'all')
+    _, err = capsys.readouterr()
+    assert 'incompatible configurations' in err
 
 
 def test_strategies():

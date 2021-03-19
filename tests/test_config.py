@@ -13,7 +13,7 @@ import perun.logic.commands as commands
 import perun.logic.config as config
 
 from perun.utils.exceptions import NotPerunRepositoryException, MissingConfigSectionException, \
-    ExternalEditorErrorException
+    ExternalEditorErrorException, InvalidParameterException
 
 __author__ = 'Tomas Fiedor'
 
@@ -52,6 +52,10 @@ def test_get_exists(pcs_full, capsys):
     # Try to recursively obtain nonexistant
     with pytest.raises(MissingConfigSectionException):
         commands.config_get('recursive', 'super.editor')
+
+    # Try to get wrong key
+    with pytest.raises(InvalidParameterException):
+        commands.config_get('local', 'general,editor')
 
 
 def test_set_exists(pcs_full, capsys):
