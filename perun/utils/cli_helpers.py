@@ -58,17 +58,14 @@ def process_bokeh_axis_title(ctx, param, value):
     :param object value: given value for the the option param
     :returns object: either value (if it is non-None) or default legend for given axis
     """
-    if value:
-        return value
-    elif param.human_readable_name.startswith('x'):
+    if not value and param.human_readable_name.startswith('x'):
         if 'per_key' in ctx.params.keys():
             return ctx.params['per_key']
         elif 'through_key' in ctx.params.keys():
             return ctx.params['through_key']
-        else:
-            log.error("internal perun error: you need 'per_key' or 'through_key' in params")
-    elif param.human_readable_name.startswith('y'):
+    elif not value and param.human_readable_name.startswith('y'):
         return ctx.params['of_key']
+    return value
 
 
 def process_resource_key_param(ctx, param, value):

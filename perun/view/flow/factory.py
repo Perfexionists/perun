@@ -8,7 +8,6 @@ with demandimport.enabled():
 
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
-import perun.utils.log as log
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
