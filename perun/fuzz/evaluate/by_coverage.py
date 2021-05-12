@@ -172,20 +172,17 @@ def parse_line(line, coverage_config):
     :param CoverageConfiguration coverage_config: configuration of the coverage
     :return: coverage info from one line
     """
-    try:
+    with SuppressedExceptions(ValueError):
         # intermediate text format
         if coverage_config.has_intermediate_format() and "lcount" in line:
             return int(line.split(",")[1])
         # standard gcov file format
         elif coverage_config.has_common_format():
             return int(line.split(":")[0])
-        else:
-            return 0
-    except ValueError:
-        return 0
+    return 0
 
 
-def get_coverage_info(cwd, coverage_config):
+def get_coverage_info(cwd, config):
     """ Executes gcov utility with source files, and gathers all output .gcov files.
 
     First of all, it changes current working directory to directory specified by
@@ -195,29 +192,26 @@ def get_coverage_info(cwd, coverage_config):
     Current working directory is now changed back.
 
     :param str cwd: current working directory for changing back
-    :param CoverageConfiguration coverage_config: configuration for coverage
+    :param CoverageConfiguration config: configuration for coverage
     :return list: absolute paths of generated .gcov files
     """
-    os.chdir(coverage_config.gcno_path)
+    os.chdir(config.gcno_path)
 
-    if coverage_config.has_intermediate_format():
-        command = ["gcov", "-i", "-o", "."]
-    else:
-        command = ["gcov", "-o", "."]
-    command.extend(coverage_config.source_files)
+    cmd = ["gcov", "-i", "-o", "."] if config.has_intermediate_format() else ["gcov", "-o", "."]
+    cmd.extend(config.source_files)
 
     with SuppressedExceptions(subprocess.CalledProcessError):
-        utils.run_safely_external_command(" ".join(command))
+        utils.run_safely_external_command(" ".join(cmd))
 
     # searching for gcov files, if they are not already known
-    if not coverage_config.gcov_files:
-        coverage_config.gcov_files = get_gcov_files(".")
+    if not config.gcov_files:
+        config.gcov_files = get_gcov_files(".")
 
     execs = 0
-    for gcov_file in coverage_config.gcov_files:
+    for gcov_file in config.gcov_files:
         with open(gcov_file, "r") as gcov_fp:
             for line in gcov_fp:
-                execs += parse_line(line, coverage_config)
+                execs += parse_line(line, config)
     os.chdir(cwd)
     return execs
 

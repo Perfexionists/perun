@@ -37,8 +37,7 @@ def derived_const(analysis, const_ref, **_):
     # Filter the required models from computed regression models
     analysis = _filter_by_models(analysis, const_ref['required'])
     # Set to default threshold if value is invalid
-    if const_ref['b1_threshold'] <= 0:
-        const_ref['b1_threshold'] = _DEFAULT_THRESHOLD
+    const_ref['b1_threshold'] = max(_DEFAULT_THRESHOLD, const_ref['b1_threshold'])
 
     # Compute const model for every linear
     for result in analysis:
@@ -49,9 +48,6 @@ def derived_const(analysis, const_ref, **_):
 
         # Duplicate the constant model template
         const = const_ref.copy()
-        # TODO: compute change as the linear_model_start_y / (liner_model_start_y - linear_model_end_y)
-        # TODO: 5% change is threshold
-        # TODO: incorporate the TSS to modify the R^2
 
         y_start = result['coeffs'][0]
         y_end = y_start + result['coeffs'][1] * result['x_end']
@@ -62,26 +58,8 @@ def derived_const(analysis, const_ref, **_):
         else:
             r = 1 - result['r_square']
 
-        # r = 1 - result['r_square']
-        # slope = abs(result['coeffs'][1])
-        #
-        # # Compute the modification coefficient
-        # if slope > const['b1_threshold']:
-        #     # b1 bigger than threshold, the modifier should reduce the fitness of the const model
-        #     coeff = (slope / const['b1_threshold']) / 10
-        #     if coeff < 1:
-        #         coeff += 1
-        #     r /= coeff
-        # else:
-        #     # b1 smaller than threshold, the modifier should increase the fitness
-        #     coeff = (1 / const['b1_threshold']) * (const['b1_threshold'] - slope) + 1
-        #     r *= coeff
-
         # Truncate the r value if needed
-        if r > 1:
-            r = 1
-        elif r < 0:
-            r = 0
+        r = 1 if r > 1 else (0 if r < 0 else r)
 
         # Build the const model record
         const['r_square'] = r
@@ -90,16 +68,6 @@ def derived_const(analysis, const_ref, **_):
         const['coeffs'] = [result['y_sum'] / result['pts_num'], 0]
         const['uid'] = result['uid']
         const['method'] = result['method']
-
-        # mean = const['coeffs'][0]
-        # standard_deviation = math.sqrt(result['tss'])
-        # standard_error = standard_deviation / math.sqrt(result['pts_num'])
-        # print('func: {}:'.format(result['uid']))
-        # print(' mean: {}'.format(mean))
-        # print(' sd: {}'.format(standard_deviation))
-        # print(' se: {}'.format(standard_error))
-        # print(' sd / mean: {}'.format(standard_deviation / mean))
-        # print(' se / mean: {}'.format(standard_error / mean))
 
         yield const
 

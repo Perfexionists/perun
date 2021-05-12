@@ -18,7 +18,6 @@ GRAPH_T_PADDING = 50
 
 class ColourSort:
     """Enumeration of sort modes"""
-    No = 0
     Reverse = 1
     ByOccurence = 2
 
@@ -27,22 +26,21 @@ def _sort_colours(colours, sort_color_style, keys):
     """Sorts the colours corresponding to the keys according to the given style
 
     Note: For different visualizations and outputs we want the colours in different format,
-    but still as a list. Some need them in reverse order, osme as they are in the palette and
-    some (like e.g. Bars) needs to be tied to the keys, as they are occuring in the graph.
+    but still as a list. Some need them in reverse order, some as they are in the palette and
+    some (like e.g. Bars) needs to be tied to the keys, as they are occurring in the graph.
 
     :param list colours: list of chosen colour palette
     :param ColourSort sort_color_style: style of the sorting of the colours
     :param list keys: list of keys, sorted by their appearance
     :returns list: sorted colours according to the chosen sorting mode
     """
-    if sort_color_style == ColourSort.ByOccurence:
+    if sort_color_style == ColourSort.Reverse:
+        return colours[::-1]
+    else:
+        # assert sort_color_style == ColourSort.ByOccurence
         keys_to_colour = list(zip(keys, colours))
         keys_to_colour.sort()
         return list(map(lambda x: x[1], keys_to_colour))
-    elif sort_color_style == ColourSort.Reverse:
-        return colours[::-1]
-    else:
-        return colours
 
 
 def get_unique_colours_for_(data_source, key, sort_color_style=ColourSort.ByOccurence):

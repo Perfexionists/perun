@@ -85,6 +85,11 @@ def test_temp_basics(pcs_with_empty_git):
         temp.list_all_temps('trace/lock.txt')
     assert 'is not a directory' in str(exc.value)
 
+    # Test the Context Manager
+    with temp.TempFile("tmp.file") as tmp_file:
+        assert os.path.exists(os.path.join(".", ".perun", "tmp", "tmp.file"))
+    assert not os.path.exists(os.path.join(".", ".perun", "tmp", "tmp.file"))
+
 
 def test_temp_file_operations(pcs_with_empty_git):
     """Test temporary file manipulation such as creating, reading, properties etc.

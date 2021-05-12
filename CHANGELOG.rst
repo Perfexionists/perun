@@ -11,6 +11,24 @@ HEAD
 
 `commit: 677a0ea2d997c285bc45bd47858b469b7997066d`
 
+**Enhance the Performance and Code Culture**
+
+  - Add performance tests to Perun
+  - Optimize perun at various places
+  - Extract selected profile queries directly to Profile
+  - Refactor minor issues
+  - Refactor complex code and simplified control flows
+  - Extract profile list configuration to isolate file
+  - Refactor and redocument log and status functions
+  - Remove unused cases and exceptions
+  - Add more tests
+  - Fix security issue with PyYAML
+
+0.20.1 (2021-05-12)
+-------------------
+
+`commit: 677a0ea2d997c285bc45bd47858b469b7997066d`
+
 **Update install instructions in readme**
 
   - Update README with additional install instructions

@@ -2,6 +2,7 @@
 
 import os
 import git
+import pytest
 
 import perun.utils.log as log
 import perun.logic.config as config
@@ -9,6 +10,7 @@ import perun.logic.store as store
 import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
+import perun.check.fast_check as fast
 
 __author__ = 'Tomas Fiedor'
 
@@ -114,12 +116,16 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     result = list(aat.average_amount_threshold(profiles[1], profiles[2]))
     assert check.PerformanceChange.Degradation in [r.result for r in result]
 
-    # Can detect optimizations both using BMOE and AAT
+    # Can detect optimizations both using BMOE and AAT and Fast
     result = list(aat.average_amount_threshold(profiles[2], profiles[1]))
     assert check.PerformanceChange.Optimization in [r.result for r in result]
 
+    result = list(fast.fast_check(profiles[2], profiles[1]))
+    assert check.PerformanceChange.MaybeOptimization in [r.result for r in result]
+
     result = list(bmoe.best_model_order_equality(profiles[2], profiles[1]))
     assert check.PerformanceChange.Optimization in [r.result for r in result]
+
     # Try that we printed confidence
     deg_list = [(res, "", "") for res in result]
     log.print_list_of_degradations(deg_list)
@@ -132,6 +138,15 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
     assert result
     # Assert there was no change
     assert check.PerformanceChange.NoChange in [r.result for r in result]
+
+    # Test incompatible profiles
+    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'full_profiles')
+    lhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-1-time-2017-03-19-19-17-36.perf'), True)
+    rhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-3-memory-2017-05-15-15-43-42.perf'), True)
+    with pytest.raises(SystemExit):
+        check.degradation_between_files(lhs, rhs, "HEAD", 'all')
+    _, err = capsys.readouterr()
+    assert 'incompatible configurations' in err
 
 
 def test_strategies():

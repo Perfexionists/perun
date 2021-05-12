@@ -201,6 +201,7 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     assert result.exit_code == 0
 
     # Test that non-existing command is not accepted
+    monkeypatch.setattr(shutil, 'which', lambda *_: None)
     result = runner.invoke(
         cli.collect, ['-c{}'.format(os.path.join('invalid', 'executable', 'path')), 'trace',
                       '-f', 'main']

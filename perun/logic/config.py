@@ -431,10 +431,9 @@ def gather_key_recursively(key):
     for config_instance in get_hierarchy():
         try:
             value = config_instance.get(key)
-            if isinstance(value, (list, comments.CommentedSeq)):
-                gathered_values.extend(value)
-            else:
-                gathered_values.append(value)
+            gathered_values.extend(
+                value if isinstance(value, (list, comments.CommentedSeq)) else [value]
+            )
         except exceptions.MissingConfigSectionException:
             continue
     return gathered_values

@@ -13,6 +13,7 @@ import perun.utils as utils
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
+import perun.collect.memory.parsing as parsing
 import perun.utils.log as log
 
 from subprocess import SubprocessError
@@ -105,15 +106,6 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
                                          ] + files + rules + samplings)
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    # Test running the job from the params using the job file
-    # TODO: troubles with paths in job.yml, needs some proper solving
-    # script_dir = os.path.split(__file__)[0]
-    # source_dir = os.path.join(script_dir, 'collect_complexity')
-    # job_config_file = os.path.join(source_dir, 'job.yml')
-    # result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
-    #                                      '-p{}'.format(job_config_file), 'complexity'])
-    # assert result.exit_code == 0
-
     # test some scoped and templatized prototypes taken from a more difficult project
     monkeypatch.setattr(symbols, 'extract_symbols', _mocked_symbols_extraction)
     more_rules = ['Gif::Ctable::Ctable(Gif::Ctable&&)',
@@ -178,13 +170,21 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'already exists' in result.output)
 
-    # Simulate the failure of 'cmake' utility
+    # Simulate the failure of 'cmake'/'make' utility
     old_run = utils.run_external_command
+    def mocked_make(cmd, *_, **__):
+        if cmd == ['make']:
+            return 1
+        else:
+            return old_run(cmd, *_, **__)
     monkeypatch.setattr(utils, 'run_external_command', _mocked_external_command)
     command = ['-c{}'.format(job_params['target_dir']), 'complexity',
                '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'Command \'cmake\' returned non-zero exit status 1' in result.output)
+    monkeypatch.setattr(utils, 'run_external_command', mocked_make)
+    result = runner.invoke(cli.collect, command)
+    asserts.predicate_from_cli(result, 'Command \'make\' returned non-zero exit status 1' in result.output)
     monkeypatch.setattr(utils, 'run_external_command', old_run)
 
     # Simulate that the flag is supported, which leads to failure in build process for older g++
@@ -212,6 +212,24 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'Call stack error' in result.output)
     monkeypatch.setattr(complexity, '_process_file_record', old_record_processing)
+
+    # Simulate the failure of output processing
+    old_find_braces = symbols._find_all_braces
+    def mock_find_all_braces(s, b, e):
+        if b == '(' and e == ')':
+            return [1]
+        else:
+            return old_find_braces(s, b, e)
+    monkeypatch.setattr(symbols, '_find_all_braces', mock_find_all_braces)
+    result = runner.invoke(cli.collect, command)
+    asserts.predicate_from_cli(result, 'wrong prototype of function' in result.output)
+    monkeypatch.setattr(symbols, '_find_all_braces', old_find_braces)
+
+    # Simulate missing dependencies
+    monkeypatch.setattr("shutil.which", lambda *_: False)
+    result = runner.invoke(cli.collect, command)
+    asserts.predicate_from_cli(result, "Could not find 'make'" in result.output)
+    asserts.predicate_from_cli(result, "Could not find 'cmake'" in result.output)
 
 
 def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_debug_job):
@@ -243,8 +261,6 @@ def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_
     # Assert that nothing was removed
     after_second_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
     assert after_object_count + 1 == after_second_object_count
-
-    # Fixme: Add check that the profile was correctly generated
 
     log.VERBOSITY = log.VERBOSE_DEBUG
     memory_collect_no_debug_job += ([head], )
@@ -279,6 +295,69 @@ def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_
 
     assert len(list(prof.all_resources())) == 0
 
+    # Try running memory from CLI
+    runner = CliRunner()
+    result = runner.invoke(cli.collect, ['-c{}'.format(job.executable.cmd), 'memory'])
+    assert result.exit_code == 0
+
+
+def test_collect_memory_incorrect(monkeypatch, capsys, pcs_full, memory_collect_job):
+    """Test collecting the profile using the memory collector"""
+    # Fixme: Add check that the profile was correctly generated
+    head = vcs.get_minor_version_info(vcs.get_minor_head())
+    memory_collect_job += ([head], )
+
+    # Patch os.path.isfile so for libmalloc.so it returns, that it is missing forcing recompilation
+    original_is_file = os.path.isfile
+    def patched_is_file(path):
+        if 'malloc.so' in path:
+            return False
+        else:
+            return original_is_file(path)
+    monkeypatch.setattr('os.path.isfile', patched_is_file)
+
+    original_call = subprocess.call
+    return_code_for_make = 0
+    def patched_call(cmd, *_, **__):
+        if cmd == ['make']:
+            return return_code_for_make
+        else:
+            return original_call(cmd, *_, **__)
+    monkeypatch.setattr('subprocess.call', patched_call)
+
+    # Try issue, when the libmalloc library is not there
+    run.run_single_job(*memory_collect_job)
+    out, _ = capsys.readouterr()
+    assert "Missing compiled dynamic library" in out
+
+    # Try compiling again, but now with an error during the compilation
+    return_code_for_make = 1
+    run.run_single_job(*memory_collect_job)
+    _, err = capsys.readouterr()
+    assert "Build of the library failed" in err
+
+    return_code_for_make = 0
+    fail_parse = True
+    original_parse = parsing.parse_log
+    # Try error while parsing logs
+    def patched_parse(*args):
+        if fail_parse:
+            raise IndexError
+        else:
+            return original_parse(*args)
+    monkeypatch.setattr("perun.collect.memory.parsing.parse_log", patched_parse)
+    run.run_single_job(*memory_collect_job)
+    _, err = capsys.readouterr()
+    assert "Problems while parsing log file: " in err
+    fail_parse = False
+
+    def patched_run(_):
+        return 42, "dummy"
+    monkeypatch.setattr("perun.collect.memory.syscalls.run", patched_run)
+    run.run_single_job(*memory_collect_job)
+    _, err = capsys.readouterr()
+    assert "Execution of binary failed with error code: 42" in err
+
 
 def test_collect_memory_with_generator(pcs_full, memory_collect_job):
     """Tries to collect the memory with integer generators"""
@@ -302,7 +381,7 @@ def test_collect_bounds(monkeypatch, pcs_full):
 
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.OK
-    assert len(prof['global']['resources']) == 17
+    assert len(prof['global']['resources']) == 19
 
     job = Job(Unit('bounds', {'sources': single_sources}), [], Executable('echo', '', 'hello'))
 
@@ -313,8 +392,10 @@ def test_collect_bounds(monkeypatch, pcs_full):
     original_function = utils.run_safely_external_command
 
     def before_returning_error(cmd, **kwargs):
-        if cmd.startswith('clang'):
+        if 'clang' in cmd:
             raise SubprocessError("something happened")
+        else:
+            original_function(cmd, **kwargs)
     monkeypatch.setattr("perun.utils.run_safely_external_command", before_returning_error)
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR
@@ -325,6 +406,7 @@ def test_collect_bounds(monkeypatch, pcs_full):
         else:
             original_function(cmd, **kwargs)
     monkeypatch.setattr("perun.utils.run_safely_external_command", collect_returning_error)
+
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR
 

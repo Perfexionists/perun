@@ -29,6 +29,7 @@ from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
 
 import perun.logic.temp as temp
 import perun.utils as utils
+from perun.utils.helpers import SuppressedExceptions
 from perun.utils.exceptions import ResourceLockedException, InvalidTempPathException
 
 
@@ -52,7 +53,6 @@ class LockType(Enum):
         for resource in cls:
             if resource.value == suffix:
                 return resource
-        return None
 
 
 class ResourceLock:
@@ -88,18 +88,14 @@ class ResourceLock:
         :param str lock_file: the path of the lock file
         :return ResourceLock or None: the lock object or None if the file does not represent a lock
         """
-        try:
+        with SuppressedExceptions(ValueError):
             # Get the resource name and pid
             name, rest = os.path.basename(lock_file).rsplit(':', maxsplit=1)
             pid = int(rest[:-LOCK_SUFFIX_LEN])
             # Transform the suffix into a LockResourceType
             resource_type = LockType.suffix_to_type(rest[-LOCK_SUFFIX_LEN:])
-            if resource_type is None:
-                # Invalid resource type = invalid resource lock
-                return None
-            return cls(resource_type, name, pid, os.path.dirname(lock_file))
-        except ValueError:
-            return None
+            if resource_type:
+                return cls(resource_type, name, pid, os.path.dirname(lock_file))
 
     def lock(self):
         """ Actually locks the resource represented by the lock object.

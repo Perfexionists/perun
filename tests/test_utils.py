@@ -3,6 +3,7 @@
 import glob
 import pkgutil
 import os
+import re
 import subprocess
 import signal
 import pytest
@@ -16,9 +17,10 @@ import perun.logic.commands as commands
 import perun.view as view
 import perun.utils.helpers as helpers
 from perun.utils.exceptions import SystemTapScriptCompilationException, SystemTapStartupException, \
-    ResourceLockedException
+    ResourceLockedException, UnsupportedModuleFunctionException
+from perun.collect.trace.optimizations.structs import Complexity
 
-from perun.utils.structs import Unit
+from perun.utils.structs import Unit, OrderedEnum
 from perun.utils.helpers import HandledSignals
 
 __author__ = 'Tomas Fiedor'
@@ -239,3 +241,50 @@ def test_safe_key_get():
     assert helpers.get_key_with_aliases(test_dict, ('foku', 'me', 'kokakola'), 2) == 2
     with pytest.raises(KeyError):
         helpers.get_key_with_aliases(test_dict, ('foku', 'me', 'kokakola'))
+
+
+def test_ordered_enum():
+    """Tests variosu operations with ordered enums that are not covered by other tests"""
+    assert Complexity.CONSTANT < Complexity.LINEAR
+    assert Complexity.CUBIC > Complexity.QUADRATIC
+    assert Complexity.GENERIC >= Complexity.CUBIC
+    assert Complexity.LINEAR <= Complexity.LINEAR
+
+    class DummyOrderable(OrderedEnum):
+        ONE = "one"
+        TWO = "two"
+
+    with pytest.raises(TypeError):
+        assert Complexity.CONSTANT < DummyOrderable.ONE
+    with pytest.raises(TypeError):
+        assert Complexity.CUBIC > DummyOrderable.TWO
+    with pytest.raises(TypeError):
+        assert Complexity.GENERIC >= DummyOrderable.ONE
+    with pytest.raises(TypeError):
+        assert Complexity.LINEAR <= DummyOrderable.TWO
+
+
+def test_get_interpreter():
+    """Tests that the python interpreter can be obtained in reasonable format"""
+    assert re.search("python", utils.get_current_interpreter(required_version='3+'))
+    assert re.search("python", utils.get_current_interpreter(required_version='3'))
+
+
+def test_common(capsys):
+    """Tests common functions from utils"""
+    def simple_generator():
+        for i in range(0, 10):
+            yield i
+    chunks = list(map(list, utils.chunkify(simple_generator(), 2)))
+    assert chunks == [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
+
+    with pytest.raises(UnsupportedModuleFunctionException):
+        utils.dynamic_module_function_call("perun.vcs", "git", "nonexisting")
+
+    with pytest.raises(SystemExit):
+        utils.get_supported_module_names('nonexisting')
+
+    with pytest.raises(subprocess.CalledProcessError):
+        utils.run_safely_external_command("ls -3", quiet=False, check_results=True)
+    out, _ = capsys.readouterr()
+    assert 'captured stdout' in out

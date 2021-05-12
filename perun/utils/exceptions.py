@@ -217,21 +217,11 @@ class DictionaryKeysValidationFailed(Exception):
         """
         super().__init__("")
         self.dictionary = dictionary
-        self.missing_keys = missing_keys
-        self.excess_keys = excess_keys
-        if not isinstance(self.dictionary, dict):
-            self.msg = "Validated object '{0}' is not a dictionary.".format(self.dictionary)
-        elif not self.missing_keys:
-            self.msg = "Validated dictionary '{0}' has excess forbidden keys: '{1}'.".format(
-                self.dictionary, ', '.join(self.excess_keys))
-        elif not self.excess_keys:
-            self.msg = "Validated dictionary '{0}' is missing required keys: '{1}'.".format(
-                self.dictionary, ', '.join(self.missing_keys))
-        else:
-            self.msg = ("Validated dictionary '{0}' has excess forbidden keys: '{1}' and is "
-                        "missing required keys: '{2}'.".format(self.dictionary,
-                                                               ', '.join(self.excess_keys),
-                                                               ', '.join(self.missing_keys)))
+        self.missing_keys = missing_keys or []
+        self.excess_keys = excess_keys or []
+        self.msg = "Invalid dictionary {} with forbidden keys ({}) and missing keys ({}).".format(
+            self.dictionary, ", ".join(self.excess_keys), ", ".join(self.missing_keys)
+        )
 
     def __str__(self):
         return self.msg
@@ -259,12 +249,10 @@ class InvalidPointsException(GenericRegressionExceptionBase):
         self.x_len = x_len
         self.y_len = y_len
         self.threshold = threshold
-        if self.x_len != self.y_len:
-            self.msg = ("Points coordinates x and y have different lengths - x:{0}, "
-                        "y:{1}.".format(self.x_len, self.y_len))
-        elif self.x_len < self.threshold or self.y_len < self.threshold:
-            self.msg = ("Too few points coordinates to perform regression - x:{0}, "
-                        "y:{1}.".format(self.x_len, self.y_len))
+        self.too_few = self.x_len < self.threshold or self.y_len < self.threshold
+        self.msg = "{0} point coordinates to perform regression - x:{1}, y:{2}.".format(
+            "Too few" if self.too_few else "Different", self.x_len, self.y_len
+        )
 
     def __str__(self):
         return self.msg
@@ -351,21 +339,6 @@ class SystemTapStartupException(Exception):
         return "SystemTap startup error, see the corresponding {} file.".format(self.logfile)
 
 
-class HardTimeoutException(Exception):
-    """Raised when various sleep calls exceed specified hard timeout threshold"""
-    def __init__(self, msg):
-        """
-        :param str msg: specific exception message
-        """
-        super().__init__("")
-        self.msg = msg
-        if not msg:
-            self.msg += 'Hard timeout was reached during sleep operation'
-
-    def __str__(self):
-        return self.msg
-
-
 class ResourceLockedException(Exception):
     """Raised when certain trace collector resource is already being used by another process"""
     def __init__(self, resource, pid):
@@ -394,12 +367,12 @@ class UnexpectedPrototypeSyntaxError(Exception):
         """
         :param str prototype_name: name of the prototype where the issue happened
         """
-        super().__init__("")
+        super().__init__()
         self.prototype_name = prototype_name
         self.cause = syntax_error
 
     def __str__(self):
-        return "prototype of function '{}' is wrong: {}".format(self.prototype_name, self.cause)
+        return "wrong prototype of function '{}': {}".format(self.prototype_name, self.cause)
 
 
 class SignalReceivedException(BaseException):

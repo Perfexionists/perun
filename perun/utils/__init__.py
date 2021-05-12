@@ -98,11 +98,10 @@ def is_executable_elf(file, only_not_stripped=False):
     """
     # Determine file magic code, we are looking out for ELF files
     f_magic = magic.from_file(file)
-    if f_magic.startswith('ELF') and ('executable' in f_magic or 'shared object' in f_magic):
-        if only_not_stripped:
-            return 'not stripped' in f_magic
-        return True
-    return False
+    is_elf = f_magic.startswith('ELF') and ('executable' in f_magic or 'shared object' in f_magic)
+    if is_elf and only_not_stripped:
+        return 'not stripped' in f_magic
+    return is_elf
 
 
 def get_project_elf_executables(root='.', only_not_stripped=False):
@@ -470,8 +469,10 @@ def format_file_size(size):
     return "{:.1f} PiB".format(size)
 
 
-def chunkify(iterable, chunk_size):
+def chunkify(generator, chunk_size):
     """ Slice generator into multiple generators and each generator yields up to chunk_size items.
+
+    Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
 
     Example: chunkify(it, 100); it generates a total of 450 elements:
         _it0: 100,
@@ -480,12 +481,12 @@ def chunkify(iterable, chunk_size):
         _it3: 100,
         _it4: 50
 
-    :param iterable iterable: a generator object
+    :param generator generator: a generator object
     :param int chunk_size: the maximum size of each chunk
     :return generator: a generator object
     """
-    for first in iterable:
-        yield itertools.chain([first], itertools.islice(iterable, chunk_size - 1))
+    for first in generator:
+        yield itertools.chain([first], itertools.islice(generator, chunk_size - 1))
 
 
 def create_empty_pass(return_code):
@@ -563,6 +564,4 @@ def get_current_interpreter(required_version=None, fallback='python3'):
                 break
 
     # If no interpreter was found, use fallback
-    if not interpreter:
-        interpreter = fallback
-    return interpreter
+    return interpreter or fallback

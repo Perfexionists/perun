@@ -90,7 +90,7 @@ def save_log_files(log_dir, fuzz_progress):
     results_data_file.close()
 
 
-def get_time_value(value, time_data, data):
+def get_time_for_value(value, time_data, data):
     """Function gets time value according to measured value.
 
     :param numeric value: selected y-axis value
@@ -98,10 +98,9 @@ def get_time_value(value, time_data, data):
     :param list data: measured values (y-axis)
     :return int: time value from `time_data` according to measured value from `data`
     """
-    for val in zip(time_data, data):
-        if val[1] >= value:
-            return val[0]
-    return 0
+    for (x, y) in zip(time_data, data):
+        if y >= value:
+            return x
 
 
 def lazy_initialize_matplotlib():
@@ -136,9 +135,9 @@ def plot_fuzz_time_series(time_series, filename, title, xlabel, ylabel):
 
     st_quartile, nd_quartile, rd_quartile = stats.mquantiles(time_series.y_axis)
     st_quartile, nd_quartile, rd_quartile = int(st_quartile), int(nd_quartile), int(rd_quartile)
-    st_time = get_time_value(st_quartile, time_series.x_axis, time_series.y_axis)
-    nd_time = get_time_value(nd_quartile, time_series.x_axis, time_series.y_axis)
-    rd_time = get_time_value(rd_quartile, time_series.x_axis, time_series.y_axis)
+    st_time = get_time_for_value(st_quartile, time_series.x_axis, time_series.y_axis)
+    nd_time = get_time_for_value(nd_quartile, time_series.x_axis, time_series.y_axis)
+    rd_time = get_time_for_value(rd_quartile, time_series.x_axis, time_series.y_axis)
 
     axis.axvline(x=st_time, ymin=0, ymax=1, linestyle='--',
                  linewidth=QUARTILE_LINE_WIDTH, alpha=QUARTILE_ALPHA, color='k')

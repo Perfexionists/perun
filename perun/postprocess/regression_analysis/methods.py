@@ -258,7 +258,6 @@ def _bisection_step(x_pts, y_pts, computation_models, last_model):
     tries to compute each half. In case of model change, the interval is split again and the
     process repeats. Otherwise the last model is used as a final model.
 
-
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
     :param tuple of str computation_models: the collection of regression models to compute
@@ -284,16 +283,21 @@ def _bisection_step(x_pts, y_pts, computation_models, last_model):
         yield last_model
         return
 
+    def _model_bisection(i):
+        """Wrapper that iterates over half of the model
+
+        :param int i: either 0 or 1 for iteration of left or right model
+        """
+        x, y = parts[i][0], parts[i][1]
+        for half_model in _bisection_solve_half_model(
+                x_pts[x:y], y_pts[x:y], computation_models, half_models[i], last_model
+        ):
+            yield half_model
+
     # Check the first half interval and continue with bisection if needed
-    for half_model in _bisection_solve_half_model(x_pts[parts[0][0]:parts[0][1]],
-                                                  y_pts[parts[0][0]:parts[0][1]],
-                                                  computation_models, half_models[0], last_model):
-        yield half_model
+    yield from _model_bisection(0)
     # Check the second half interval and continue with bisection if needed
-    for half_model in _bisection_solve_half_model(x_pts[parts[1][0]:parts[1][1]],
-                                                  y_pts[parts[1][0]:parts[1][1]],
-                                                  computation_models, half_models[1], last_model):
-        yield half_model
+    yield from _model_bisection(1)
 
 
 def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, last_model):
@@ -380,13 +384,11 @@ def _transform_to_output_data(data, extra_keys=None):
     :raises DictionaryKeysValidationFailed: in case the data format dictionary is incorrect
     :returns dict: the output dictionary
     """
-    tools.validate_dictionary_keys(
-        data, ['model', 'coeffs', 'r_square', 'x_start', 'x_end'], [])
+    tools.validate_dictionary_keys(data, ['model', 'coeffs', 'r_square', 'x_start', 'x_end'], [])
 
     # Specify the keys which should be directly mapped
     transform_keys = ['model', 'r_square', 'x_start', 'x_end', 'method', 'uid']
-    if extra_keys is not None:
-        transform_keys += extra_keys
+    transform_keys += extra_keys or []
     transformed = {key: data[key] for key in transform_keys if key in data}
     # Transform the coefficients
     transformed['coeffs'] = []
