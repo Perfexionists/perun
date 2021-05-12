@@ -16,7 +16,9 @@ import itertools
 from contextlib import contextmanager
 import magic
 
-from .log import error, cprint, warn
+from typing import List
+
+from .log import error, cprint, cprintln, warn
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 
@@ -219,7 +221,7 @@ def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeou
     cmd_no = len(unpiped_commands)
 
     # Run the command through pipes
-    objects = []
+    objects: List[subprocess.Popen] = []
     for i in range(cmd_no):
         executed_command = shlex.split(unpiped_commands[i])
 
@@ -233,7 +235,7 @@ def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeou
             shell=False, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr, **kwargs
         )
         if i != 0:
-            objects[i-1].stdout.close()
+            objects[i-1].stdout.close()  # type: ignore
         objects.append(piped_command)
 
     try:
@@ -253,8 +255,8 @@ def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeou
         for i in range(cmd_no):
             if objects[i].returncode:
                 if not quiet and (cmdout or cmderr):
-                    log.cprintln("captured stdout: {}".format(cmdout.decode('utf-8')), 'red')
-                    log.cprintln("captured stderr: {}".format(cmderr.decode('utf-8')), 'red')
+                    cprintln("captured stdout: {}".format(cmdout.decode('utf-8')), 'red')
+                    cprintln("captured stderr: {}".format(cmderr.decode('utf-8')), 'red')
                 raise subprocess.CalledProcessError(
                     objects[i].returncode, unpiped_commands[i]
                 )
@@ -338,7 +340,7 @@ def get_module(module_name):
     if module_name not in get_module.cache.keys():
         get_module.cache[module_name] = importlib.import_module(module_name)
     return get_module.cache[module_name]
-get_module.cache = {}
+get_module.cache = {}  # type: ignore
 
 
 def get_supported_module_names(package):

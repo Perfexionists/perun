@@ -227,7 +227,7 @@ class Complexity(OrderedEnum):
         return Complexity.map.get(polynomial, cls.GENERIC)
 
 
-Complexity.map = {
+Complexity.map = {  # type: ignore # static variable, that cannot be initialized anywhere else
     'O(1)': Complexity.CONSTANT,
     'O(n^1)': Complexity.LINEAR,
     'O(n^2)': Complexity.QUADRATIC,

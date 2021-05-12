@@ -3,6 +3,7 @@
 import collections
 import re
 
+from typing import Dict
 from decimal import Decimal
 import perun.profile.convert as convert
 import perun.collect.memory.syscalls as syscalls
@@ -12,7 +13,7 @@ PATTERN_WORD = re.compile(r"(\w+|[?])")
 PATTERN_TIME = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 PATTERN_INT = re.compile(r"\d+")
-UID_RESOURCE_MAP = collections.defaultdict(int)
+UID_RESOURCE_MAP: Dict[str, int] = collections.defaultdict(int)
 
 
 def parse_stack(stack):

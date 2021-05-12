@@ -20,7 +20,7 @@ import numpy as np
 _Q1, _Q2, _Q3 = 25, 50, 75
 
 # Remember the thread PID and duration
-_Thread = collections.namedtuple('Thread', ['pid', 'duration'])
+_Thread = collections.namedtuple('_Thread', ['pid', 'duration'])
 
 
 class DynamicStats:
