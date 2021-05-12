@@ -25,6 +25,7 @@ Cython>=0.29.20
 pandas>=0.20.2
 networkx>=2.4
 angr>=9.0
+mypy>=0.812
 
 # We fix scipy and numpy version, because they mess everything up >.<
 scipy>=1.4.1

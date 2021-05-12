@@ -4,6 +4,9 @@ init:
 test:
 	python3 -m pytest --cov=./ --cov-report term-missing:skip-covered tests/
 
+check:
+	mypy --ignore-missing-imports perun/
+
 dev:
 	python3 setup.py develop
 
