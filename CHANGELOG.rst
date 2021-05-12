@@ -6,8 +6,15 @@ HEAD
 
 **To be included in next release**
 
+0.20.1 (2021-05-12)
+-------------------
+
+`commit: 677a0ea2d997c285bc45bd47858b469b7997066d`
+
+**Update install instructions in readme**
+
   - Update README with additional install instructions
-  - SystemTap and BCC instructions for Ubuntu and Fedora 
+  - SystemTap and BCC instructions for Ubuntu and Fedora
 
 
 0.20 (2021-03-05)
