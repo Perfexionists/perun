@@ -37,7 +37,7 @@ def _sort_colours(colours, sort_color_style, keys):
     if sort_color_style == ColourSort.Reverse:
         return colours[::-1]
     else:
-        assert sort_color_style == ColourSort.ByOccurence
+        # assert sort_color_style == ColourSort.ByOccurence
         keys_to_colour = list(zip(keys, colours))
         keys_to_colour.sort()
         return list(map(lambda x: x[1], keys_to_colour))

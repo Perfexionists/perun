@@ -3,7 +3,6 @@
 import demandimport
 import perun.profile.convert as convert
 import perun.utils.bokeh_helpers as bokeh_helpers
-import perun.utils.log as log
 
 with demandimport.enabled():
     import bkcharts as charts

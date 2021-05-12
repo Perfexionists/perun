@@ -3,7 +3,6 @@
 import os
 import re
 import subprocess
-import perun.utils.log as log
 from perun.utils.helpers import SuppressedExceptions
 
 PATTERN_WORD = re.compile(r"(\w+)|[?]")

@@ -58,14 +58,13 @@ import perun.utils as utils
 import perun.utils.helpers as helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
-import perun.view
-from perun.collect.trace.optimizations.structs import Pipeline, Optimizations, CallGraphTypes
-from perun.collect.trace.optimizations.structs import Parameters
 import perun.cli_groups.check_cli as check_cli
 import perun.cli_groups.config_cli as config_cli
 import perun.cli_groups.run_cli as run_cli
 import perun.cli_groups.utils_cli as utils_cli
 
+from perun.collect.trace.optimizations.structs import Pipeline, Optimizations, CallGraphTypes
+from perun.collect.trace.optimizations.structs import Parameters
 from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException, \
     NotPerunRepositoryException, IncorrectProfileFormatException, EntryNotFoundException, \
     MissingConfigSectionException, ExternalEditorErrorException

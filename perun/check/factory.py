@@ -10,7 +10,6 @@ import distutils.util as dutils
 
 from perun.utils.structs import DegradationInfo, PerformanceChange
 
-import perun.utils.exceptions as exceptions
 import perun.utils.log as log
 import perun.profile.helpers as profiles
 import perun.profile.factory as profile_factory

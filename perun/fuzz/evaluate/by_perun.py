@@ -4,7 +4,6 @@ In general, this testing is trying to find performance degradation in newly gene
 profile comparing with baseline profile.
 """
 
-import perun.utils.helpers as helpers
 import perun.check.factory as check
 import perun.logic.runner as run
 from perun.utils.structs import PerformanceChange

@@ -1,7 +1,6 @@
 """This module contains methods needed by Perun logic"""
 
 import os
-import traceback
 
 import click
 
