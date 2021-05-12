@@ -25,9 +25,9 @@ _ProfileRecord = collections.namedtuple('record', ['action', 'func', 'timestamp'
 
 # The collect phase status messages
 _COLLECTOR_STATUS_MSG = {
-    0:  'OK',
-    1:  'Err: profile output file cannot be opened.',
-    2:  'Err: profile output file closed unexpectedly.',
+    0: 'OK',
+    1: 'Err: profile output file cannot be opened.',
+    2: 'Err: profile output file closed unexpectedly.',
     11: 'Err: runtime configuration file does not exists.',
     12: 'Err: runtime configuration file syntax error.',
     21: 'Err: command could not be run.'
@@ -144,10 +144,9 @@ def after(executable, **kwargs):
             if _process_file_record(record, call_stack, resources, address_map) != 0:
                 # Stack error
                 err_msg = 'Call stack error, record: ' + record.func + ', ' + record.action
-                if not call_stack:
-                    err_msg += ', stack top: empty'
-                else:
-                    err_msg += ', stack top: ' + call_stack[-1].func + ', ' + call_stack[-1].action
+                err_msg += ', stack top: '
+                err_msg += \
+                    call_stack[-1].func + ', ' + call_stack[-1].action if call_stack else 'empty'
                 log.failed()
                 return 1, err_msg, kwargs
 
@@ -178,9 +177,10 @@ def _process_file_record(record, call_stack, resources, address_map):
 
     :return int: the status code, nonzero values for errors
     """
+    returned_code = 1
     if record.action == 'i':
         call_stack.append(record)
-        return 0
+        returned_code = 0
     elif call_stack and call_stack[-1].action == 'i' and call_stack[-1].func == record.func:
         # Function exit, match with the function enter to create resources record
         matching_record = call_stack.pop()
@@ -189,27 +189,30 @@ def _process_file_record(record, call_stack, resources, address_map):
                           'type': 'mixed',
                           'subtype': _COLLECTOR_SUBTYPES['delta'],
                           'structure-unit-size': int(record.size)})
-        return 0
+        returned_code = 0
     # Call stack function frames not matching
-    return 1
+    return returned_code
 
 
 def _check_dependencies():
     """Validates that dependencies (cmake and make) are met"""
     log.cprint('Checking dependencies...', 'white')
-    print("")
+    log.newline()
     log.cprint("make:", 'white')
-    print("\t", end="")
+    log.info("\t", end="")
     if not shutil.which('make'):
         log.no()
-        log.error("Could not find 'make'. Please, install the makefile package.")
-    log.yes()
+        log.error("Could not find 'make'. Please, install the makefile package.", recoverable=True)
+    else:
+        log.yes()
     log.cprint("cmake:", 'white')
-    print("\t", end="")
+    log.info("\t", end="")
     if not shutil.which('cmake'):
         log.no()
-        log.error("Could not find 'cmake'. "
-                  "Please, install the build-essentials and cmake packages.")
+        log.error("Could not find 'cmake'. Please, install build-essentials and cmake packages.")
+    else:
+        log.yes()
+    log.newline()
     log.done()
 
 
@@ -258,14 +261,14 @@ def _sampling_to_dictionary(_, __, value):
               help='Target directory path for compiled binary and temporary build data.')
 @click.option('--files', '-f', type=click.Path(exists=True, resolve_path=True), multiple=True,
               help='List of C/C++ source files that will be used to build the'
-              ' custom binary with injected profiling commands. Must be valid'
-              ' resolvable path')
+                   ' custom binary with injected profiling commands. Must be valid'
+                   ' resolvable path')
 @click.option('--rules', '-r', type=str, multiple=True,
               help='Marks the function for profiling.')
 @click.option('--internal-data-filename', '-if', type=str,
               default=configurator.DEFAULT_DATA_FILENAME,
               help='Sets the different path for internal output filename for'
-              ' storing temporary profiling data file name.')
+                   ' storing temporary profiling data file name.')
 @click.option('--internal-storage-size', '-is', type=int, default=configurator.DEFAULT_STORAGE_SIZE,
               help='Increases the size of internal profiling data storage.')
 @click.option('--internal-direct-output', '-id', is_flag=True,

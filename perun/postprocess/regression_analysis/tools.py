@@ -17,7 +17,7 @@ R_SQUARE_DEFAULT = 0.0
 APPROX_ZERO = 0.000001
 
 
-def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
+def validate_dictionary_keys(dictionary: dict, required_keys: list, forbidden_keys: list):
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
     :param dict dictionary: validated dictionary
@@ -27,9 +27,6 @@ def validate_dictionary_keys(dictionary, required_keys, forbidden_keys):
     """
     missing_keys, excess_keys = [], []
 
-    # Check the dictionary first
-    if not isinstance(dictionary, dict):
-        raise exceptions.DictionaryKeysValidationFailed(dictionary, [], [])
     # Check all the required keys
     for key in required_keys:
         if key not in dictionary:
@@ -112,18 +109,6 @@ def sort_points(x_pts, y_pts):
     return x_pts, y_pts
 
 
-def zip_points(x_pts, y_pts, len_start=0, len_end=-1):
-    """Creates points pair (x, y) useful for iteration.
-
-    :param list x_pts: list of x points
-    :param list y_pts: list of y points
-    :param int len_start: slicing start value
-    :param int len_end: slicing end value
-    :returns iterable: zip iterator object
-    """
-    return zip(x_pts[len_start:len_end], y_pts[len_start:len_end])
-
-
 def split_model_interval(start, end, steps):
     """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
@@ -176,7 +161,7 @@ def add_models_to_profile(profile, models):
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
-    :param Profil profile: profile to add the analysis
+    :param Profile profile: profile to add the analysis
     :param list models: analysis executed by the individual postprocessor
     :return: method has no return value
     """

@@ -90,3 +90,12 @@ def test_saved_states(pcs_full):
     vcs.checkout(minor_versions[1])
     saved, _ = vcs.save_state()
     assert not saved
+
+
+def test_diffs(pcs_full):
+    """Test getting diff of two versions
+
+    Expecting correct behaviour and no error
+    """
+    diff = vcs.minor_versions_diff("HEAD", "HEAD~1")
+    assert diff != ""

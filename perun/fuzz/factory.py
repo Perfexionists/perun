@@ -43,8 +43,7 @@ def compute_safe_ratio(lhs, rhs):
     :return: probability for applying
     """
     try:
-        ratio = lhs / rhs
-        ratio = 0.1 if (ratio < 0.1) else ratio
+        ratio = 0.1 if (lhs / rhs < 0.1) else lhs / rhs
     except ZeroDivisionError:
         ratio = 1
     return ratio

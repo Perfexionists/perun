@@ -96,6 +96,9 @@ def test_basic_stats_operations(pcs_full):
     stats_content = stats.get_stats_of('custom_stats')
     assert (stats_content['entry_1'] == stats_entry_1 and stats_content['entry_2'] == stats_entry_2
             and stats_content['entry_3']) == stats_entry_3
+    stats_content = stats.get_latest('custom_stats')
+    assert (stats_content['entry_1'] == stats_entry_1 and stats_content['entry_2'] == stats_entry_2
+            and stats_content['entry_3']) == stats_entry_3
 
     # Try updating entries 2 and 3 and test that the change has been made
     stats.update_stats('custom_stats', ['entry_2', 'entry_3'], [entry_2_new, entry_3_new])

@@ -259,10 +259,8 @@ def generate_header_for_profile(job):
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
     """
-    try:
-        collector = get_module('.'.join(['perun.collect', job.collector.name]))
-    except ImportError:
-        perun_log.error("could not find the package for collector {}".format(job.collector.name))
+    # At this point, the collector module should be valid
+    collector = get_module('.'.join(['perun.collect', job.collector.name]))
 
     return {
         'type': collector.COLLECTOR_TYPE,
@@ -464,7 +462,7 @@ def _get_default_variable(profile, supported_variables):
     :return: default key picked from the list of supported fields (either for dependent or
         independent variables)
     """
-    resource_fields = list(query.all_resource_fields_of(profile))
+    resource_fields = list(profile.all_resource_fields())
     candidates = [var for var in supported_variables if var in set(resource_fields)]
     if candidates:
         # Return first suitable candidate, according to the given order

@@ -296,8 +296,9 @@ def walk_index(index_handle):
         yield entry
 
     if loaded_objects != number_of_objects:
-        perun_log.error("fatal: "
-                        "malformed index file: too many or too few objects registered in index")
+        perun_log.error(
+            "fatal: malformed index file: too many or too few objects registered in index"
+        )
 
 
 def print_index(index_file):
@@ -613,9 +614,8 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
         result_string = perun_log.in_color("{}".format(
             helpers.str_to_plural(removed_profile_number, "profile")
         ), 'white', 'bold')
-        index_sha = perun_log.in_color(minor_version, 'green')
         perun_log.info("successfully deregistered {} from {} index".format(
-            result_string, index_sha
+            result_string, perun_log.in_color(minor_version, 'green')
         ))
 
 

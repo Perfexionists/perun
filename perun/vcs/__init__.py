@@ -153,18 +153,19 @@ def get_minor_version_info(minor_version):
     )
 
 
-def minor_versions_diff(minor_version_1, minor_version_2):
+def minor_versions_diff(baseline_minor_version, target_minor_version):
     """ Returns the git diff of two specified minor versions.
 
-    :param str minor_version_1: the specification of the first minor version (in form of sha e.g.)
-    :param str minor_version_2: the specification of the second minor version
+    :param str baseline_minor_version: the specification of the first minor version (in form of sha e.g.)
+    :param str target_minor_version: the specification of the second minor version
     """
     vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
     perun_log.msg_to_stdout("Showing minor version diff of type {} and args {}, {}:{}".format(
-        vcs_type, vcs_path, minor_version_1, minor_version_2
+        vcs_type, vcs_path, baseline_minor_version, target_minor_version
     ), 1)
     return dynamic_module_function_call(
-        'perun.vcs', vcs_type, '_minor_versions_diff', vcs_path, minor_version_1, minor_version_2
+        'perun.vcs', vcs_type, '_minor_versions_diff', vcs_path,
+        baseline_minor_version, target_minor_version
     )
 
 

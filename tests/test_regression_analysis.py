@@ -13,6 +13,7 @@ import perun.utils.exceptions as exceptions
 from perun.postprocess.regression_analysis.run import postprocess
 import perun.testing.utils as test_utils
 from perun.testing.utils import compare_results, generate_models_by_uid
+import perun.utils.metrics as metrics
 
 __author__ = 'Jiri Pavela'
 
@@ -28,10 +29,10 @@ def test_incorrect_calls(postprocess_profiles):
         postprocess(
             const_model, method='full', steps=7, of_key='amount', per_key='structure-unit-size'
         )
-    assert 'is missing required key' in str(exc.value)
+    assert 'Invalid dictionary' in str(exc.value)
 
 
-def test_const_model(postprocess_profiles):
+def test_const_model(pcs_full, postprocess_profiles):
     """Test the constant model computation.
 
     The r^2 coefficient computation is currently not supported
@@ -40,6 +41,9 @@ def test_const_model(postprocess_profiles):
 
     Expects to pass all assertions.
     """
+    prev_enabled = metrics.Metrics.enabled
+    metrics.Metrics.configure("test_const_model", "HEAD")
+    metrics.Metrics.enabled = True
     # Get the profile with exponential model testing data
     const_model = test_utils.profile_filter(postprocess_profiles, 'const_model')
     assert const_model is not None
@@ -72,6 +76,8 @@ def test_const_model(postprocess_profiles):
     compare_results(model['r_square'], 0.0)
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b0'][0], 5.5)
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 0.0)
+    assert metrics.read_metric("constant_model") == 1
+    metrics.Metrics.enabled = prev_enabled
 
 
 def test_linear_model(postprocess_profiles):

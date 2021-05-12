@@ -160,10 +160,10 @@ def _add_profile_instructions(cmake_file, exclude_list):
     if exclude_list:
         # Create 'sym,sym,sym...' string list from excluded names
         exclude_string = ','.join(exclude_list)
-        cmake_file.write(' -finstrument-functions-exclude-function-list={0}")\n\n'
-                         .format(exclude_string))
-    else:
-        cmake_file.write('\n\n')
+        cmake_file.write(' -finstrument-functions-exclude-function-list={0}")'.format(
+            exclude_string
+        ))
+    cmake_file.write('\n\n')
 
 
 def _add_build_data(cmake_file, target_name, source_files):

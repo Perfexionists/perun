@@ -1,9 +1,8 @@
 import os
 import pytest
-import git
-import binascii
 
-import perun.logic.commands as commands
+import perun.utils.helpers as helpers
+import perun.utils.streams as streams
 import perun.logic.store as store
 import perun.logic.index as index
 import perun.utils.exceptions as exceptions
@@ -13,10 +12,22 @@ __author__ = 'Tomas Fiedor'
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_malformed_indexes(tmpdir, monkeypatch):
+def test_malformed_indexes(tmpdir, monkeypatch, capsys):
     """Tests malformed indexes"""
     index_file = os.path.join(str(tmpdir), "index")
     index.touch_index(index_file)
+
+    # Try different number of stuff
+    old_read_int = store.read_int_from_handle
+    def mocked_read_int(_):
+        return 2
+    monkeypatch.setattr('perun.logic.store.read_int_from_handle', mocked_read_int)
+    with open(index_file, 'rb') as index_handle:
+        with pytest.raises(SystemExit):
+            print(list(index.walk_index(index_handle)))
+    _, err = capsys.readouterr()
+    assert "fatal: malformed index file: too many or too few objects registered in index" in err
+    monkeypatch.setattr('perun.logic.store.read_int_from_handle', old_read_int)
 
     monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.INDEX_VERSION - 1)
     with open(index_file, 'rb') as index_handle:
@@ -39,6 +50,7 @@ def test_correct_index(tmpdir):
     index_file = os.path.join(str(tmpdir), "index")
     index.touch_index(index_file)
     index.print_index(index_file)
+
 
 @pytest.mark.usefixtures('cleandir')
 def test_versions(tmpdir, monkeypatch):
@@ -104,6 +116,7 @@ def test_versions(tmpdir, monkeypatch):
         stored = index.ExtendedIndexEntry.read_from(index_handle, index.IndexVersion.SlowLorris)
         assert stored.__dict__ == extended_entry.__dict__
 
+
 @pytest.mark.usefixtures('cleandir')
 def test_helpers(tmpdir):
     index_file = os.path.join(str(tmpdir), "index")
@@ -120,3 +133,34 @@ def test_helpers(tmpdir):
         index_handle.seek(current_position)
         stored_list = store.read_list_from_handle(index_handle)
         assert stored_list == ['hello', 'dolly']
+
+
+@pytest.mark.usefixtures('cleandir')
+def test_streams(tmpdir, monkeypatch):
+    """Test various untested behaviour"""
+    # Loading from nonexistant file
+    yaml = streams.safely_load_yaml_from_file("nonexistant")
+    assert yaml == {}
+
+    # Load file with incorrect encoding
+    tmp_file = tmpdir.mkdir("tmp").join("tmp.file")
+    with open(tmp_file, 'wb') as tmp:
+        tmp.write(bytearray("hello šunte", "windows-1252"))
+    file = streams.safely_load_file(tmp_file)
+    assert file == []
+
+    # Safely load from string
+    yaml = streams.safely_load_yaml_from_stream('"root: 1"')
+    assert yaml == {'root': 1}
+
+    # Bad yaml
+    yaml = streams.safely_load_yaml_from_stream('"root: "1 "')
+    assert yaml == {}
+
+    # Nonexistant file
+    with pytest.raises(exceptions.IncorrectProfileFormatException):
+        store.load_profile_from_file("nonexistant", False)
+
+    monkeypatch.setattr("perun.logic.store.read_and_deflate_chunk", lambda _: "p mixed 1\0tmp")
+    with pytest.raises(exceptions.IncorrectProfileFormatException):
+        store.load_profile_from_file(tmp_file, False)

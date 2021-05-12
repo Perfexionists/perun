@@ -10,7 +10,6 @@ import distutils.util as dutils
 
 from perun.utils.structs import DegradationInfo, PerformanceChange
 
-import perun.utils.exceptions as exceptions
 import perun.utils.log as log
 import perun.profile.helpers as profiles
 import perun.profile.factory as profile_factory
@@ -169,7 +168,7 @@ def degradation_in_history(head):
             log.print_list_of_degradations(newly_detected_changes)
             detected_changes.extend(newly_detected_changes)
             history.flush(with_border=True)
-    print("")
+    log.newline()
     log.print_short_summary_of_degradations(detected_changes)
     return detected_changes
 
@@ -228,7 +227,7 @@ def degradation_between_files(baseline_file, target_file, minor_version, models_
     store.save_degradation_list_for(
         pcs.get_object_directory(), target_minor_version, detected_changes
     )
-    print("")
+    log.newline()
     log.print_list_of_degradations(detected_changes, models_strategy)
     log.print_short_summary_of_degradations(detected_changes)
 
@@ -294,15 +293,7 @@ def get_strategies_for(profile):
         the same configuration type
     """
     # Retrieve the application strategy
-    try:
-        application_strategy = config.lookup_key_recursively('degradation.apply')
-    except exceptions.MissingConfigSectionException:
-        # set the default application strategy, when it was not found in any configuration
-        # - protection before the reference to the local variable before its assignment below
-        application_strategy = 'all'
-        log.error("'degradation.apply' could not be found in any configuration\n"
-                  "Run either 'perun config --local edit' or 'perun config --shared edit' and set "
-                  " the 'degradation.apply' to suitable value (either 'first' or 'all').")
+    application_strategy = config.lookup_key_recursively('degradation.apply', default='all')
 
     # Retrieve all of the strategies from configuration
     strategies = config.gather_key_recursively('degradation.strategies')
