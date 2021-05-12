@@ -16,6 +16,7 @@ script:
     # Just try that it was installed correctly
     - perun --help
     - make test
+    - make check
     - make docs
     - codecov
 
