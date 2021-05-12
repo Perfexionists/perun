@@ -7,6 +7,7 @@ the functions. Or various checker function, that checks given parameters of the 
 import inspect
 import functools
 
+from typing import Dict, List, Callable, Any
 from perun.utils.exceptions import InvalidParameterException
 
 __author__ = 'Tomas Fiedor'
@@ -35,7 +36,7 @@ def _singleton_core(func, always_singleton):
 
 singleton = functools.partial(_singleton_core, always_singleton=False)
 always_singleton = functools.partial(_singleton_core, always_singleton=True)
-registered_singletons = []
+registered_singletons: List[Callable[[], Any]] = []
 
 
 def arguments_to_key(func, *args, **kwargs):
@@ -88,7 +89,7 @@ def singleton_with_args(func):
         return func_args_cache[func.__name__][key]
 
     return wrapper
-func_args_cache = {}
+func_args_cache: Dict[str, Dict[str, Any]] = {}
 
 
 def remove_from_function_args_cache(funcname):

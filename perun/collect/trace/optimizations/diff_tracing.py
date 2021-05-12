@@ -460,7 +460,7 @@ def _parse_git_diff(funcs, version_1, version_2):
 
 
 # Initialize the set of registers
-_cfg_coloring.registers = _build_registers_set()
+_cfg_coloring.registers = _build_registers_set()  # type: ignore # cannot cope with static variables
 
 # The DiffTracing mode -> function dispatcher
 _DIFFMODE_MAP = {

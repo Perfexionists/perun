@@ -21,7 +21,7 @@ import perun.utils.log as log
 import perun.utils as utils
 
 # The profiling record template
-_ProfileRecord = collections.namedtuple('record', ['action', 'func', 'timestamp', 'size'])
+_ProfileRecord = collections.namedtuple('_ProfileRecord', ['action', 'func', 'timestamp', 'size'])
 
 # The collect phase status messages
 _COLLECTOR_STATUS_MSG = {

@@ -21,10 +21,10 @@ _SYMTABLE_ADDR_COLUMN = 2
 
 # The named tuple collection for storage of decomposed function prototypes
 PrototypeParts = collections.namedtuple(
-    'prototype_parts', ['identifier', 'args', 'scoped_body', 'scoped_args', 'full_body',
+    'PrototypeParts', ['identifier', 'args', 'scoped_body', 'scoped_args', 'full_body',
                         'full_args'])
 # The named tuple collection serving as a key for include list
-RuleKey = collections.namedtuple('rule_key', ['mangled_name', 'rule'])
+RuleKey = collections.namedtuple('RuleKey', ['mangled_name', 'rule'])
 
 
 def extract_symbols(executable_path):
