@@ -105,15 +105,14 @@ def process_continuous_key(ctx, _, value):
     :returns object: value or raises bad parameter
     :raises click.BadParameter: if the value is invalid for the profile
     """
-    if value == 'snapshots':
-        return value
-
-    # Get all of the numerical keys
-    valid_numeric_keys = set(query.all_numerical_resource_fields_of(ctx.parent.params['profile']))
-    if value not in valid_numeric_keys:
-        raise click.BadParameter("invalid choice: {}. (choose from {})".format(
-            value, ", ".join(str(vnk) for vnk in valid_numeric_keys) + ", snapshots"
-        ))
+    if value != 'snapshots':
+        # If the requested value is not 'snapshots', then get all of the numerical keys
+        valid_numeric_keys = set(query.all_numerical_resource_fields_of(ctx.parent.params['profile']))
+        # Check if the value is valid numeric key
+        if value not in valid_numeric_keys:
+            raise click.BadParameter("invalid choice: {}. (choose from {})".format(
+                value, ", ".join(str(vnk) for vnk in valid_numeric_keys) + ", snapshots"
+            ))
     return value
 
 

@@ -52,7 +52,7 @@ def safely_load_yaml_from_stream(yaml_stream):
         loaded_yaml = YAML().load(yaml_stream)
         return loaded_yaml or {}
     except Exception as exc:
-        log.warn("malformed yaml stream: ".format(str(exc)))
+        log.warn("malformed yaml stream: {}".format(str(exc)))
         return {}
 
 

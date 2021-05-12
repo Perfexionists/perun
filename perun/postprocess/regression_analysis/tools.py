@@ -161,7 +161,7 @@ def add_models_to_profile(profile, models):
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
-    :param Profil profile: profile to add the analysis
+    :param Profile profile: profile to add the analysis
     :param list models: analysis executed by the individual postprocessor
     :return: method has no return value
     """

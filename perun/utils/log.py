@@ -903,10 +903,9 @@ class History:
             if edge.prev == target:
                 tainted = edge.next in taints
                 fixed = edge.next in fixes
-                if tainted and fixed:
-                    edge.colour = 'yellow'
-                elif tainted:
-                    edge.colour = 'red'
+                edge.color = {}
+                if tainted:
+                    edge.colour = 'yellow' if fixed else 'red'
                 elif fixed:
                     edge.colour = 'green'
 
