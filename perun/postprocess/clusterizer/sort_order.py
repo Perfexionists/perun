@@ -2,8 +2,10 @@
 
 __author__ = 'Tomas Fiedor'
 
+from typing import List, Dict, Any
 
-def clusterize(sorted_resources, **_):
+
+def clusterize(sorted_resources: List[Dict[str, Any]], **_):
     """Clusterizes the resources according to their sort order
 
     Simple strategy for clusterizing the values according to the sort order
