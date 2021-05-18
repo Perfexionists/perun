@@ -24,18 +24,21 @@ The Integer Generator can be configured by following options:
 
 """
 
-from perun.workload.generator import Generator
+from typing import Dict, Tuple, Any, Iterable
+
+from perun.workload.generator import WorkloadGenerator
+from perun.utils.structs import Job
 
 
 
-class IntegerGenerator(Generator):
+class IntegerGenerator(WorkloadGenerator):
     """Generator of integer values
 
     :ivar int min_range: the minimal value that should be generated
     :ivar int max_range: the maximal value that should be generated
     :ivar int step: the step of the integer generation
     """
-    def __init__(self, job, min_range, max_range, step=1, **kwargs):
+    def __init__(self, job: Job, min_range: int, max_range: int, step: int = 1, **kwargs: Any):
         """Initializes the generator of integer workload
 
         :param Job job: job for which we are generating the workloads
@@ -50,7 +53,7 @@ class IntegerGenerator(Generator):
         self.max_range = int(max_range)
         self.step = int(step)
 
-    def _generate_next_workload(self):
+    def _generate_next_workload(self) -> Iterable[Tuple[Any, Dict[str, Any]]]:
         """Generates the next integer as the workload
 
         :return: integer number from the given range and after given step

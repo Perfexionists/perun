@@ -13,6 +13,8 @@ You can use some basic generators specified in shared configurations called ``ba
 1000).
 """
 
+from typing import Dict
+
 import perun.logic.config as config
 import perun.utils.log as log
 import perun.utils as utils
@@ -21,7 +23,7 @@ from perun.utils.structs import GeneratorSpec
 
 
 
-def load_generator_specifications():
+def load_generator_specifications() -> Dict[str, GeneratorSpec]:
     """Collects from configuration file all of the workload specifications and constructs a mapping
     of 'id' -> GeneratorSpec, which contains the constructor and parameters used for construction.
 
@@ -39,30 +41,30 @@ def load_generator_specifications():
     specifications_from_config = config.gather_key_recursively('generators.workload')
     spec_map = {}
     warnings = []
-    print("Loading workload generator specifications ", end='')
+    log.info("Loading workload generator specifications ", end='')
     for spec in specifications_from_config:
         if 'id' not in spec.keys() or 'type' not in spec.keys():
             warnings.append("incorrect workload specification: missing 'id' or 'type'")
-            print("F", end='')
+            log.info("F", end='')
             continue
         generator_module = "perun.workload.{}_generator".format(spec['type'].lower())
         constructor_name = "{}Generator".format(spec['type'].title())
         try:
             constructor = getattr(utils.get_module(generator_module), constructor_name)
             spec_map[spec['id']] = GeneratorSpec(constructor, spec)
-            print(".", end='')
+            log.info(".", end='')
         except (ImportError, AttributeError):
             warnings.append(
                 "incorrect workload generator '{}': '{}' is not valid workload type".format(
                     spec['id'], spec['type']
                 )
             )
-            print("F", end='')
+            log.info("F", end='')
 
     # Print the warnings and badge
     if warnings:
         log.failed()
-        print("\n".join(warnings))
+        log.info("\n".join(warnings))
     else:
         log.done()
 
