@@ -14,7 +14,7 @@ from perun.workload.singleton_generator import SingletonGenerator
 from perun.workload.string_generator import StringGenerator
 from perun.workload.textfile_generator import TextfileGenerator
 from perun.workload.external_generator import ExternalGenerator
-from perun.workload.generator import Generator
+from perun.workload.generator import WorkloadGenerator
 
 from subprocess import CalledProcessError
 
@@ -34,7 +34,7 @@ def test_integer_generator():
         assert len(profile['resources']) > 0
 
     # Try that the pure generator raises error
-    pure_generator = Generator(integer_job)
+    pure_generator = WorkloadGenerator(integer_job)
     with pytest.raises(SystemExit):
         _ = list(pure_generator.generate(runner.run_collector))
 

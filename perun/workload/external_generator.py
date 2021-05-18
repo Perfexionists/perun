@@ -34,16 +34,19 @@ The External Generator can be configured by following options:
 import os
 import subprocess
 
+from typing import Dict, Tuple, List, Any, Iterable
+
 import perun.utils as utils
 import perun.utils.log as log
 import perun.utils.helpers as helpers
 
-from perun.workload.generator import Generator
+from perun.workload.generator import WorkloadGenerator
+from perun.utils.structs import Job
 
 __author__ = 'Tomas Fiedor'
 
 
-class ExternalGenerator(Generator):
+class ExternalGenerator(WorkloadGenerator):
     """Generator of random text files
 
     :ivar str generator: string that is executed and that generates into @p output_dir list of
@@ -58,7 +61,8 @@ class ExternalGenerator(Generator):
         collectable/persistent parts for the resources
     :ivar list key: list of keys for extracted resources
     """
-    def __init__(self, job, external_generator, output_dir, file_format, delimiters='{}', **kwargs):
+    def __init__(self, job: Job, external_generator: str, output_dir: str, file_format: str,
+                 delimiters: str = '{}', **kwargs: Any):
         """Initializes the generator of random text files
 
         :param Job job: job for which we are generating workloads
@@ -81,7 +85,7 @@ class ExternalGenerator(Generator):
         self.delimiters = delimiters
         self.splits, self.keys = self._parse_workload_keys()
 
-    def _parse_workload_keys(self):
+    def _parse_workload_keys(self) -> Tuple[List[str], List[str]]:
         """Splits the workload format into fixed parts (splits) and format parts (keys)
 
         The format of the workload is specified using a set of delimited format keys. E.g.
@@ -96,7 +100,7 @@ class ExternalGenerator(Generator):
         ]
         return split_format[0::2], split_format[1::2]
 
-    def _parse_workload_values(self, workload):
+    def _parse_workload_values(self, workload: str) -> List[Any]:
         """Parses the real workload into a set of concrete amounts of resources.
 
         Each generated workload can contain further resources coded in the filename based on
@@ -122,7 +126,7 @@ class ExternalGenerator(Generator):
             values.append(helpers.try_convert(workload, [int, float]))
         return values
 
-    def _generate_next_workload(self):
+    def _generate_next_workload(self) -> Iterable[Tuple[Any, Dict[str, Any]]]:
         """Generates next file workload
 
         :return: path to a file

@@ -9,23 +9,26 @@
 
 import distutils.util as dutils
 
+from typing import Dict, Tuple, Any, Union, Callable, Iterable
+
 import perun.logic.config as config
 import perun.utils.log as log
 import perun.profile.helpers as profile
 import perun.profile.factory as factory
 
-from perun.utils.structs import CollectStatus
+from perun.utils.structs import CollectStatus, Job
+from perun.profile.factory import Profile
 
 __author__ = 'Tomas Fiedor'
 
 
-class Generator:
+class WorkloadGenerator:
     """Generator is a base object of all generators and contains generic options for all generators.
 
     :ivar bool profile_for_each_workload: if set to true, then we will generate one profile
         for each workload, otherwise the workload will be merged into one single profile
     """
-    def __init__(self, job, profile_for_each_workload=False, **_):
+    def __init__(self, job: Job, profile_for_each_workload: bool = False, **_):
         """Initializes the job of the generator
 
         :param Job job: job for which we will initialize the generator
@@ -37,7 +40,9 @@ class Generator:
         self.generator_name = self.job.executable.origin_workload
         self.for_each = dutils.strtobool(str(profile_for_each_workload))
 
-    def generate(self, collect_function):
+    def generate(self,
+                 collect_function: Callable[[str, Job], Tuple[CollectStatus, Union[dict, Profile]]]
+                 ) -> Iterable[Tuple[CollectStatus, Union[dict, Profile]]]:
         """Collects the data for the generated workload
 
         :return: tuple of collection status and collected profile
@@ -63,6 +68,11 @@ class Generator:
         if not self.for_each:
             yield collective_status, collective_profile
 
-    def _generate_next_workload(self):
-        """Logs error, since each generator should generate the workloads in different ways"""
+    def _generate_next_workload(self) -> Iterable[Tuple[Any, Dict[str, Any]]]:
+        """Logs error, since each generator should generate the workloads in different ways
+
+        :return: tuple of generated workload and deeper workload context (used when contructing
+            resources that will be added to profile)
+        """
+        yield from ()
         log.error("using invalid generator: does not implement _generate_next_workload function!")
