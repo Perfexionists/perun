@@ -77,6 +77,7 @@ def test_fuzzing_correct(pcs_full):
         '--timeout', '1',
         '--max', '10',
         '--no-plotting',
+        '--skip-coverage-testing'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -111,6 +112,7 @@ def test_fuzzing_correct(pcs_full):
         '--mutations-per-rule', 'probabilistic',
         '--regex-rules', regex_file,
         '--no-plotting',
+        '--skip-coverage-testing'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -123,6 +125,7 @@ def test_fuzzing_correct(pcs_full):
         '--input-sample', xml_workload,
         '--timeout', '1',
         '--no-plotting',
+        '--skip-coverage-testing'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 

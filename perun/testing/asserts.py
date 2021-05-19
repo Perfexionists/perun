@@ -1,10 +1,11 @@
 """Helper assertion function to be used in tests"""
 
+import click.testing
 import os
 import traceback
 
 
-def predicate_from_cli(cli_result, predicate):
+def predicate_from_cli(cli_result: click.testing.Result, predicate: bool):
     """Checks the correctness of the @p predicate.
 
     In case the predicate is violated, the function outputs additional helper information for
@@ -23,17 +24,16 @@ def predicate_from_cli(cli_result, predicate):
         print("=== Inner traceback ===")
         if cli_result.exception:
             print(cli_result.exception)
-        traceback.print_tb(cli_result.exc_info[2])
+        traceback.print_tb(cli_result.exc_info[2])  # type: ignore # nested list
         raise failed_assertion
 
 
-def invalid_cli_choice(cli_result, choice, file=None):
+def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: str = None):
     """Checks, that click correctly ended as invalid choice
 
-    Arguments:
-        cli_result(click.Result): result of the commandline interface
-        choice(str): choice that we tried
-        file(str): name of the file that should not be created (optional)
+    :param click.testing.Result cli_result: result of the commandline interface
+    :param str choice: choice that we tried
+    :param str file: name of the file that should not be created (optional)
     """
     predicate_from_cli(cli_result, cli_result.exit_code == 2)
     predicate_from_cli(cli_result, f"'{choice}' is not one of" in cli_result.output)
@@ -41,12 +41,11 @@ def invalid_cli_choice(cli_result, choice, file=None):
         assert file not in os.listdir(os.getcwd())
 
 
-def invalid_param_choice(cli_result, choice, file=None):
+def invalid_param_choice(cli_result: click.testing.Result, choice: str, file: str = None):
     """Checks that click correctly ended with invalid choice and 1 return code
-    Arguments:
-        cli_result(click.Result): result of the commandline interface
-        choice(str): choice that we tried
-        file(str): name of the file that should not be created (optional)
+    :param click.test.Result cli_result: result of the commandline interface
+    :param str choice: choice that we tried
+    :param str file: name of the file that should not be created (optional)
     """
     predicate_from_cli(cli_result, cli_result.exit_code == 1)
     predicate_from_cli(cli_result, "Invalid value '{}'".format(choice) in cli_result.output)

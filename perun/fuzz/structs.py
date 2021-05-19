@@ -63,8 +63,8 @@ class CoverageConfiguration:
         """
         :param dict kwargs: set of keyword configurations
         """
-        self.gcno_path: Optional[str] = kwargs.get('gcno_path')
-        self.source_path: Optional[str] = kwargs.get('source_path')
+        self.gcno_path: str = kwargs.get('gcno_path', '.')
+        self.source_path: str = kwargs.get('source_path', '.')
         self.gcov_version: int = get_gcov_version()
         self.gcov_files: List[str] = []
         self.source_files: List[str] = []
@@ -125,8 +125,7 @@ class FuzzingConfiguration:
         self.mutations_per_rule: int = kwargs.get("mutations_per_rule", 0)
         self.no_plotting: bool = kwargs.get('no_plotting', False)
         self.cov_rate: float = kwargs.get('coverage_increase_rate', 1.5)
-        self.coverage_testing: bool = \
-            (kwargs.get("source_path") and kwargs.get("gcno_path")) is not None
+        self.coverage_testing: bool = not kwargs.get('skip_coverage_testing', False)
         self.coverage: CoverageConfiguration = CoverageConfiguration(**kwargs)
 
     RATIO_INCR_CONST = 0.05
