@@ -18,7 +18,7 @@ def baseline_testing(executable, seeds, collector, postprocessor, minor_version_
 
     :param Executable executable: called command with arguments
     :param list seeds: list of workloads
-    :param list collector: list of collectors
+    :param str collector: list of collectors
     :param list postprocessor: list of postprocessors
     :param list minor_version_list: list of MinorVersion info
     :param dict kwargs: dictionary of additional params for postprocessor and collector
@@ -44,21 +44,20 @@ def baseline_testing(executable, seeds, collector, postprocessor, minor_version_
     return base_pg
 
 
-def target_testing(executable, workload, collector, postprocessor, minor_version_list, **kwargs):
+def target_testing(
+        executable, workload, collector, postprocessor, minor_version_list, base_result, **kwargs):
     """ Generates a profile for specified command with fuzzed workload, compares with
     baseline profile.
 
     :param Executable executable: called command with arguments
-    :param list workload: list of workloads
-    :param list collector: list of collectors
+    :param Mutation workload: list of workloads
+    :param str collector: list of collectors
     :param list postprocessor: list of postprocessors
     :param list minor_version_list: list of MinorVersion info
+    :param iterable base_result: list of results for baseline
     :param dict kwargs: dictionary of additional params for postprocessor and collector
     :return bool: True if performance degradation was detected, False otherwise.
     """
-    # baseline profile
-    base_result = kwargs["base_result"]
-
     # target profile with a new workload
     target_pg = list(run.generate_profiles_for(
         [executable.cmd], [executable.args], [workload.path], [collector], postprocessor,

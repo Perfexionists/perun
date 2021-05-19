@@ -10,17 +10,22 @@ import os.path as path
 import subprocess
 import statistics
 
+from typing import List, Any
+
 import perun.utils.log as log
 import perun.utils as utils
 
 from perun.utils.decorators import always_singleton
 from perun.utils.helpers import SuppressedExceptions
+from perun.utils.structs import Executable
+from perun.fuzz.structs import FuzzingConfiguration, Mutation, FuzzingProgress, \
+    CoverageConfiguration
 
 __author__ = 'Matus Liscinsky'
 
 
 @always_singleton
-def get_gcov_version():
+def get_gcov_version() -> int:
     """Checks the version of the gcov
 
     :return: version of the gcov
@@ -29,7 +34,7 @@ def get_gcov_version():
     return int((gcov_output.decode('utf-8').split("\n")[0]).split()[-1][0])
 
 
-def prepare_workspace(source_path):
+def prepare_workspace(source_path: str):
     """Prepares workspace for yielding coverage information using gcov.
 
     The .gcda file is generated when a program containing object files built with the GCC
@@ -48,7 +53,7 @@ def prepare_workspace(source_path):
             os.remove(path.join(source_path, file))
 
 
-def get_src_files(source_path):
+def get_src_files(source_path: str) -> List[str]:
     """ Gathers all C/C++ source files in the directory specified by `source_path`
 
     C/C++ files are identified with extensions: .c, .cc, .cpp. All these types of files located in
@@ -69,14 +74,16 @@ def get_src_files(source_path):
     return sources
 
 
-def baseline_testing(executable, workloads, config, **_):
+def baseline_testing(
+        executable: Executable, workloads: List[Mutation], config: FuzzingConfiguration
+) -> int:
     """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
     :param Executable executable: called command with arguments
     :param list workloads: workloads for initial testing
     :param FuzzingConfiguration config: configuration of the fuzzing
     :param dict _: additional information about paths to .gcno files and source files
-    :return tuple: median of measured coverages, paths to .gcov files, paths to source_files
+    :return tuple: median of measured coverages
     """
     # get source files (.c, .cc, .cpp, .h)
     config.coverage.source_files = get_src_files(config.coverage.source_path)
@@ -88,7 +95,10 @@ def baseline_testing(executable, workloads, config, **_):
     return get_initial_coverage(executable, workloads, config.hang_timeout, config)
 
 
-def get_initial_coverage(executable, seeds, timeout, fuzzing_config):
+def get_initial_coverage(
+        executable: Executable, seeds: List[Mutation], timeout: int,
+        fuzzing_config: FuzzingConfiguration
+) -> int:
     """ Provides initial testing with initial samples given by user.
 
     :param int timeout: specified timeout for run of target application
@@ -109,14 +119,17 @@ def get_initial_coverage(executable, seeds, timeout, fuzzing_config):
             utils.run_safely_external_command(command, timeout=timeout)
         except subprocess.CalledProcessError as serr:
             log.error("Initial testing with file " + seed.path + " caused " + str(serr))
-        seed.cov = get_coverage_info(os.getcwd(), fuzzing_config.coverage)
+        seed.cov = get_coverage_from_dir(os.getcwd(), fuzzing_config.coverage)
 
         coverages.append(seed.cov)
 
     return int(statistics.median(coverages))
 
 
-def target_testing(executable, workload, *_, config=None, parent=None, fuzzing_progress=None, **__):
+def target_testing(
+        executable: Executable, workload: Mutation, config: FuzzingConfiguration, parent: Mutation,
+        fuzzing_progress: FuzzingProgress, **__: Any
+) -> bool:
     """
     Testing function for coverage based fuzzing. Before testing it prepares the workspace
     using `prepare_workspace` func, executes given command and `get_coverage_info` to
@@ -127,15 +140,11 @@ def target_testing(executable, workload, *_, config=None, parent=None, fuzzing_p
     :param Mutation parent: parent we are mutating
     :param FuzzingConfiguration config: config of the fuzzing
     :param FuzzingProgress fuzzing_progress: progress of the fuzzing process
-    :param list _: additional information containing base result and path to .gcno files
     :param dict __: additional information containing base result and path to .gcno files
-    :return int: Greater coverage of the two (base coverage, just measured coverage)
+    :return bool: true if the base coverage has just increased
     """
-    gcno_path = config.coverage.gcno_path
-    prepare_workspace(gcno_path)
-    command = executable
-
-    command = " ".join([command.cmd, command.args, workload.path])
+    prepare_workspace(config.coverage.gcno_path)
+    command = " ".join([executable.cmd, executable.args, workload.path])
 
     try:
         utils.run_safely_external_command(command, timeout=config.hang_timeout)
@@ -146,13 +155,13 @@ def target_testing(executable, workload, *_, config=None, parent=None, fuzzing_p
         )
         raise err
 
-    workload.cov = get_coverage_info(os.getcwd(), config.coverage)
-    return evaluate_coverage(
+    workload.cov = get_coverage_from_dir(os.getcwd(), config.coverage)
+    return check_if_coverage_increased(
         fuzzing_progress.base_cov, workload.cov, parent.cov, config.cov_rate
     )
 
 
-def get_gcov_files(directory):
+def get_gcov_files(directory: str) -> List[str]:
     """ Searches for gcov files in `directory`.
     :param str directory: path of a directory, where searching will be provided
     :return list: absolute paths of found gcov files
@@ -165,8 +174,8 @@ def get_gcov_files(directory):
     return gcov_files
 
 
-def parse_line(line, coverage_config):
-    """
+def parse_coverage_from_line(line: str, coverage_config: CoverageConfiguration) -> int:
+    """Parses coverage information out of the line according to the version of gcov
 
     :param str line: one line in coverage info
     :param CoverageConfiguration coverage_config: configuration of the coverage
@@ -182,8 +191,8 @@ def parse_line(line, coverage_config):
     return 0
 
 
-def get_coverage_info(cwd, config):
-    """ Executes gcov utility with source files, and gathers all output .gcov files.
+def get_coverage_from_dir(cwd: str, config: CoverageConfiguration) -> int:
+    """Executes gcov utility with source files, and gathers all output .gcov files.
 
     First of all, it changes current working directory to directory specified by
     `source_path` and then executes utility gcov over all source files.
@@ -211,12 +220,14 @@ def get_coverage_info(cwd, config):
     for gcov_file in config.gcov_files:
         with open(gcov_file, "r") as gcov_fp:
             for line in gcov_fp:
-                execs += parse_line(line, config)
+                execs += parse_coverage_from_line(line, config)
     os.chdir(cwd)
     return execs
 
 
-def evaluate_coverage(base_cov, cov, parent_cov, increase_ratio=1.5):
+def check_if_coverage_increased(
+        base_cov: int, cov: int, parent_cov: int, increase_ratio: float = 1.5
+):
     """ Condition for adding mutated input to set of candidates(parents).
 
     :param int base_cov: base coverage
