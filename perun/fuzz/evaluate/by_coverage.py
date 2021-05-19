@@ -15,21 +15,10 @@ from typing import List, Any
 import perun.utils.log as log
 import perun.utils as utils
 
-from perun.utils.decorators import always_singleton
 from perun.utils.helpers import SuppressedExceptions
 from perun.utils.structs import Executable
 from perun.fuzz.structs import FuzzingConfiguration, Mutation, FuzzingProgress, \
     CoverageConfiguration
-
-
-@always_singleton
-def get_gcov_version() -> int:
-    """Checks the version of the gcov
-
-    :return: version of the gcov
-    """
-    gcov_output, _ = utils.run_safely_external_command("gcov --version")
-    return int((gcov_output.decode('utf-8').split("\n")[0]).split()[-1][0])
 
 
 def prepare_workspace(source_path: str):
@@ -85,7 +74,6 @@ def baseline_testing(
     """
     # get source files (.c, .cc, .cpp, .h)
     config.coverage.source_files = get_src_files(config.coverage.source_path)
-    config.coverage.gcov_version = get_gcov_version()
     log.info('Detected gcov version ', end='')
     log.cprint("{}".format(config.coverage.gcov_version), 'white')
     log.info("")

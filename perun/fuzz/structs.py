@@ -4,6 +4,9 @@ import os
 from collections import namedtuple
 from typing import Dict, List, Any, Optional
 
+import perun.utils as utils
+from perun.utils.decorators import always_singleton
+
 
 TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
 RuleSet = namedtuple("RuleSet", "rules hits")
@@ -37,6 +40,16 @@ class Mutation:
         self.fitness: float = fitness
 
 
+@always_singleton
+def get_gcov_version() -> int:
+    """Checks the version of the gcov
+
+    :return: version of the gcov
+    """
+    gcov_output, _ = utils.run_safely_external_command("gcov --version")
+    return int((gcov_output.decode('utf-8').split("\n")[0]).split()[-1][0])
+
+
 class CoverageConfiguration:
     """Configuration of the coverage testing
 
@@ -52,7 +65,7 @@ class CoverageConfiguration:
         """
         self.gcno_path: Optional[str] = kwargs.get('gcno_path')
         self.source_path: Optional[str] = kwargs.get('source_path')
-        self.gcov_version: Optional[int] = None
+        self.gcov_version: int = get_gcov_version()
         self.gcov_files: List[str] = []
         self.source_files: List[str] = []
 

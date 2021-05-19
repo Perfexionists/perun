@@ -30,7 +30,6 @@ def test_fuzzing_coverage(capsys):
         'gcno_path': gcno_files_path,
         'source_path': gcno_files_path
     })
-    coverage_config.gcov_version = coverage_fuzz.get_gcov_version()
     coverage_config.source_files.append(hang_source)
 
     process = subprocess.Popen(
