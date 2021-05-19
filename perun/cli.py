@@ -666,10 +666,12 @@ def collect(ctx, **kwargs):
 @click.option('--workloads-filter', '-wf', nargs=1, required=False,
               type=str, metavar='<regexp>', default="",
               help='Regular expression for filtering the workloads.')
-@click.option('--source-path', '-s', nargs=1, required=False,
+@click.option('--skip-coverage-testing', is_flag=True, required=False,
+              help="If set to true, then the coverage testing will not be performed.")
+@click.option('--source-path', '-s', nargs=1, required=False, default='.',
               type=click.Path(exists=True, readable=True), metavar='<path>',
               help='The path to the directory of the project source files.')
-@click.option('--gcno-path', '-g', nargs=1, required=False,
+@click.option('--gcno-path', '-g', nargs=1, required=False, default='.',
               type=click.Path(exists=True, writable=True), metavar='<path>',
               help='The path to the directory where .gcno files are stored.')
 @click.option('--output-dir', '-o', nargs=1, required=True,
