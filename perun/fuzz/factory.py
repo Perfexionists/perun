@@ -20,7 +20,8 @@ import perun.fuzz.filesystem as filesystem
 import perun.fuzz.filetype as filetype
 import perun.utils.log as log
 import perun.fuzz.randomizer as randomizer
-import perun.utils as utils
+import perun.fuzz.evaluate.by_perun as evaluate_workloads_by_perun
+import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
 from perun.fuzz.structs import FuzzingProgress, Mutation, FuzzingConfiguration
 
 
@@ -233,20 +234,6 @@ def print_results(fuzzing_report, fuzzing_config, rule_set):
     print_legend(rule_set)
 
 
-def evaluate_workloads(method, phase, *args, **kwargs):
-    """ Calls initializing function for `method` testing.
-
-    :param str method: testing method, can be "by_perun" or "by_coverage"
-    :param str phase: phase of the evaluation (either baseline or target testing)
-    :param list args: list of arguments for testing
-    :param dict kwargs: additional information for testing
-    :return: result of initial testing depending on `method`
-    """
-    result = utils.dynamic_module_function_call(
-        "perun.fuzz.evaluate", method, phase, *args, **kwargs)
-    return result
-
-
 def rate_parent(fuzz_progress, mutation):
     """ Rate the `mutation` with fitness function and adds it to list with fitness values.
 
@@ -443,9 +430,7 @@ def perform_baseline_coverage_testing(executable, parents, config):
     log.info("Performing coverage-based testing on parent seeds.")
     try:
         # Note that evaluate workloads modifies config as sideeffect
-        base_cov = evaluate_workloads(
-            "by_coverage", "baseline_testing", executable, parents, config
-        )
+        base_cov = evaluate_workloads_by_coverage.baseline_testing(executable, parents, config)
         log.done()
     except TimeoutExpired:
         log.error(
@@ -497,9 +482,8 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
 
     log.info("Performing perun-based testing on parent seeds.")
     # Init performance testing with seeds
-    base_result_profile = evaluate_workloads(
-        "by_perun", "baseline_testing", executable, parents, collector, postprocessor,
-        minor_version_list, **kwargs
+    base_result_profile = evaluate_workloads_by_perun.baseline_testing(
+        executable, parents, collector, postprocessor, minor_version_list, **kwargs
     )
     log.done()
 
@@ -536,11 +520,8 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
                         execs -= 1
                         fuzz_progress.stats["cov_execs"] += 1
                         # testing for coverage
-                        result = evaluate_workloads(
-                            "by_coverage", "target_testing", executable, mutation, collector,
-                            postprocessor, minor_version_list,
-                            config=config, fuzzing_progress=fuzz_progress,
-                            base_cov=fuzz_progress.base_cov, parent=current_workload, **kwargs
+                        result = evaluate_workloads_by_coverage.target_testing(
+                            executable, mutation, config, current_workload, fuzz_progress, **kwargs
                         )
                     # error occured
                     except CalledProcessError:
@@ -594,10 +575,9 @@ def run_fuzzing_for_command(executable, input_sample, collector, postprocessor, 
             sucessful_result = False
             try:
                 fuzz_progress.stats["perun_execs"] += 1
-                sucessful_result = evaluate_workloads(
-                        "by_perun", "target_testing", executable, mutation,
-                        collector, postprocessor, minor_version_list, base_result=base_copy,
-                        **kwargs
+                sucessful_result = evaluate_workloads_by_perun.target_testing(
+                    executable, mutation, collector, postprocessor, minor_version_list, base_copy,
+                    **kwargs
                 )
                 if sucessful_result:
                     process_successful_mutation(mutation, parents, fuzz_progress, rule_set, config)

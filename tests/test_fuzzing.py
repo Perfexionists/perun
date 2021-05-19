@@ -44,7 +44,7 @@ def test_fuzzing_coverage(capsys):
     out, _ = capsys.readouterr()
 
     utils.run_safely_external_command(command)
-    cov = coverage_fuzz.get_coverage_info(os.getcwd(), coverage_config)
+    cov = coverage_fuzz.get_coverage_from_dir(os.getcwd(), coverage_config)
     assert cov != 0
 
 
