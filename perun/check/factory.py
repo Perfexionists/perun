@@ -38,6 +38,7 @@ class CallableDetectionMethod(Protocol):
             uid: str,
             baseline_model: ModelRecord,
             target_model: ModelRecord,
+            target_profile: Profile,
             **kwargs: Any
     ) -> Dict[str, Any]:
         pass

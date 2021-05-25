@@ -63,6 +63,7 @@ def execute_analysis(
         uid: str,
         baseline_model: ModelRecord,
         target_model: ModelRecord,
+        target_profile: Profile,
         **kwargs: Any
 ) -> Dict[str, Any]:
     """
@@ -77,12 +78,13 @@ def execute_analysis(
     :param str uid: unique identification of given models (not used in this detection method)
     :param ModelRecord baseline_model: dictionary of baseline model with its required properties
     :param ModelRecord target_model: dictionary of target_model with its required properties
+    :param Profile target_profile: target profile for the analysis
     :param dict kwargs: unification with remaining detection methods (i.e. Integral Comparison)
     :return DegradationInfo: tuple with degradation info between pair of models:
         (deg. result, deg. location, deg. rate, confidence type and rate, etc.)
     """
     x_pts, baseline_y_pts, target_y_pts = nparam_helpers.preprocess_nonparam_models(
-        uid, baseline_model, kwargs.get('target_profile'), target_model
+        uid, baseline_model, target_profile, target_model
     )
 
     baseline_integral = compute_param_integral(baseline_model) if baseline_model.b1 is not None else \
