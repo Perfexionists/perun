@@ -6,7 +6,6 @@ The module contains the methods, that executes the computational logic of
 __author__ = 'Simon Stupinsky'
 
 import numpy as np
-import nptyping as npt
 import scipy.integrate as integrate
 
 from typing import Dict, Tuple, List, Any, Iterable
@@ -38,7 +37,7 @@ _STATS_DIFF_CHANGE = .25
 
 def compute_window_stats(
         x_pts: List[float], y_pts: List[float]
-) -> Tuple[Dict[str, npt.NDArray], npt.NDArray]:
+) -> Tuple[Dict[str, np.ndarray], np.ndarray]:
     """
     The method computes the local statistics from the given points.
 
@@ -195,7 +194,7 @@ def execute_analysis(
         baseline_model: ModelRecord,
         target_model: ModelRecord,
         target_profile: Profile,
-        **kwargs: Any
+        **_: Any
 ) -> Dict[str, Any]:
     """
     A method performs the primary analysis for pair of models.
@@ -214,12 +213,12 @@ def execute_analysis(
     :param dict kwargs: dictionary with baseline and target profiles
     :return:
     """
-    x_pts, baseline_y_pts, target_y_pts = nparam_helpers.preprocess_nonparam_models(
+    original_x_pts, baseline_y_pts, target_y_pts = nparam_helpers.preprocess_nonparam_models(
         uid, baseline_model, target_profile, target_model
     )
 
-    baseline_stats, _ = compute_window_stats(x_pts, baseline_y_pts)
-    target_stats, x_pts = compute_window_stats(x_pts, target_y_pts)
+    baseline_stats, _ = compute_window_stats(original_x_pts, baseline_y_pts)
+    target_stats, x_pts = compute_window_stats(original_x_pts, target_y_pts)
     change_info, partial_rel_error = classify_stats_diff(baseline_stats, target_stats)
 
     x_pts = np.append(x_pts, [x_pts[0]], axis=1) if x_pts.size == 1 else x_pts

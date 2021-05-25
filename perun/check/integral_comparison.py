@@ -64,7 +64,7 @@ def execute_analysis(
         baseline_model: ModelRecord,
         target_model: ModelRecord,
         target_profile: Profile,
-        **kwargs: Any
+        **_: Any
 ) -> Dict[str, Any]:
     """
     A method performs the primary analysis for pair of models.
