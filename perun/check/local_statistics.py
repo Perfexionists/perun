@@ -6,11 +6,17 @@ The module contains the methods, that executes the computational logic of
 __author__ = 'Simon Stupinsky'
 
 import numpy as np
+import nptyping as npt
 import scipy.integrate as integrate
+
+from typing import Dict, Tuple, List, Any, Iterable
 
 import perun.check.factory as factory
 import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.tools as tools
+
+from perun.profile.factory import Profile
+from perun.utils.structs import DegradationInfo, ModelRecord
 
 # minimum count of points in the interval in which are computed statistics
 _MIN_POINTS_IN_INTERVAL = 2
@@ -30,7 +36,9 @@ _STATS_DIFF_NO_CHANGE = .10
 _STATS_DIFF_CHANGE = .25
 
 
-def compute_window_stats(x_pts, y_pts):
+def compute_window_stats(
+        x_pts: List[float], y_pts: List[float]
+) -> Tuple[Dict[str, npt.NDArray], npt.NDArray]:
     """
     The method computes the local statistics from the given points.
 
@@ -46,7 +54,7 @@ def compute_window_stats(x_pts, y_pts):
     :param list y_pts: array with values of y-coordinates
     :return tuple: (dictionary with computed statistics, edges of individual sub-intervals)
     """
-    def reshape_array(array):
+    def reshape_array(array: np.ndarray) -> np.ndarray:
         """
         The method reshapes the given array into several
         smaller arrays according to the given count.
@@ -63,10 +71,10 @@ def compute_window_stats(x_pts, y_pts):
     # calculating the count of the points within the sub-intervals
     n = int(_INTERVAL_DENSITY * min(len(y_pts), len(x_pts)))
     # list -> np.ndarray
-    x_pts = np.asarray(x_pts)
-    y_pts = np.asarray(y_pts)
+    x_array = np.asarray(x_pts)
+    y_array = np.asarray(y_pts)
     # save the maximum value from x-coordinates (end of the interval)
-    max_x = np.max(x_pts)
+    max_x = np.max(x_array)
     # default axis along which the statistical metrics are computed (matrix 1x1)
     axis = 0
     # check whether the intervals will contain the minimal count of points
@@ -74,40 +82,42 @@ def compute_window_stats(x_pts, y_pts):
         # set vertical axes along which the statistical metrics are computed (matrix e.g. 4x4)
         axis = 1
         # reshape both arrays into 'n' smaller arrays on which will be computed statistical metrics
-        y_pts = reshape_array(y_pts)
-        x_pts = reshape_array(x_pts)
+        y_array = reshape_array(y_array)
+        x_array = reshape_array(x_array)
         # obtain the first and last point from the sub-intervals - edges of the intervals
-        x_edges = np.delete(x_pts, range(1, x_pts[0].size - 1), 1)
+        x_edges = np.delete(x_array, range(1, x_array[0].size - 1), 1)
         # replace the right edge of the last sub-interval with the saved maximum of whole interval:
         # - (10, NaN) -> (10, 10)
-        x_edges[np.isnan(np.delete(x_pts, range(1, x_pts[0].size - 1), 1))] = max_x
+        x_edges[np.isnan(np.delete(x_array, range(1, x_array[0].size - 1), 1))] = max_x
     # compute the statistical metrics on the whole interval of x-coordinates
     else:
         # obtain the edges of the whole interval
-        x_edges = np.delete(x_pts, range(1, x_pts.size - 1)).reshape(1, -1)
+        x_edges = np.delete(x_array, range(1, x_array.size - 1)).reshape(1, -1)
 
     # compute the all statistical metrics on the specified intervals
     return {
         # integral
-        'int': np.atleast_1d(integrate.simps(y_pts, x_pts, axis=axis)),
+        'int': np.atleast_1d(integrate.simps(y_array, x_array, axis=axis)),
         # average/mean
-        'avg': np.atleast_1d(np.nanmean(y_pts, axis=axis)),
+        'avg': np.atleast_1d(np.nanmean(y_array, axis=axis)),
         # median/2.percentile
-        'med': np.atleast_1d(np.nanmedian(y_pts, axis=axis)),
+        'med': np.atleast_1d(np.nanmedian(y_array, axis=axis)),
         # maximum
-        'max': np.atleast_1d(np.nanmax(y_pts, axis=axis)),
+        'max': np.atleast_1d(np.nanmax(y_array, axis=axis)),
         # minimum
-        'min': np.atleast_1d(np.nanmin(y_pts, axis=axis)),
+        'min': np.atleast_1d(np.nanmin(y_array, axis=axis)),
         # summary value
-        'sum': np.atleast_1d(np.nansum(y_pts, axis=axis)),
+        'sum': np.atleast_1d(np.nansum(y_array, axis=axis)),
         # 1.percentile
-        'per_q1': np.atleast_1d(np.nanpercentile(y_pts, 25, axis=axis)),
+        'per_q1': np.atleast_1d(np.nanpercentile(y_array, 25, axis=axis)),
         # 3.percentile
-        'per_q2': np.atleast_1d(np.nanpercentile(y_pts, 75, axis=axis)),
+        'per_q2': np.atleast_1d(np.nanpercentile(y_array, 75, axis=axis)),
     }, x_edges
 
 
-def classify_stats_diff(baseline_stats, target_stats):
+def classify_stats_diff(
+        baseline_stats: Dict[str, np.ndarray], target_stats: Dict[str, np.ndarray]
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     The method performs the classification of computed statistical metrics.
 
@@ -125,9 +135,12 @@ def classify_stats_diff(baseline_stats, target_stats):
     # create vectorized functions which take a np.arrays as inputs and perform actions over it
     compare_diffs = np.vectorize(compare_diff_values)
     classify_change = np.vectorize(nparam_helpers.classify_change)
+    stat_no = len(baseline_stats.keys())
+    stat_size = baseline_stats.get(list(baseline_stats.keys())[0])
+
     # initialize np.arrays about the size of sub-intervals from given stats
-    change_score = np.full_like(baseline_stats.get(list(baseline_stats.keys())[0]), 0)
-    rel_error = np.full_like(baseline_stats.get(list(target_stats.keys())[0]), 0)
+    change_score = np.full_like(stat_size, 0)
+    rel_error = np.full_like(stat_size, 0)
     # iteration over each metric in the given stats
     for baseline_stat_key, baseline_stat_value in baseline_stats.items():
         # compute difference between the metrics from both models
@@ -143,13 +156,12 @@ def classify_stats_diff(baseline_stats, target_stats):
         change_score = compare_diffs(change_score, new_rel_error)
 
     change_states = classify_change(
-        change_score, _STATS_FOR_NO_CHANGE, _STATS_FOR_CHANGE, len(baseline_stats.keys())
+        change_score, _STATS_FOR_NO_CHANGE, _STATS_FOR_CHANGE, stat_no
     )
-    return np.atleast_1d(change_states), \
-        np.atleast_1d(np.divide(rel_error, len(baseline_stats.keys())))
+    return np.atleast_1d(change_states), np.atleast_1d(np.divide(rel_error, stat_no))
 
 
-def compare_diff_values(change_score, rel_error):
+def compare_diff_values(change_score: float, rel_error: float) -> float:
     """
     The method updates change score according to the value of relative error.
 
@@ -178,7 +190,12 @@ def compare_diff_values(change_score, rel_error):
     return change_score
 
 
-def execute_analysis(uid, baseline_model, target_model, **kwargs):
+def execute_analysis(
+        uid: str,
+        baseline_model: ModelRecord,
+        target_model: ModelRecord,
+        **kwargs: Any
+) -> Dict[str, Any]:
     """
     A method performs the primary analysis for pair of models.
 
@@ -222,7 +239,9 @@ def execute_analysis(uid, baseline_model, target_model, **kwargs):
     }
 
 
-def local_statistics(baseline_profile, target_profile, models_strategy='best-model'):
+def local_statistics(
+        baseline_profile: Profile, target_profile: Profile, models_strategy: str = 'best-model'
+) -> Iterable[DegradationInfo]:
     """
     The wrapper of `local_statistics` detection method. Method calls the general method
     for running the detection between pairs of profile (baseline and target) and subsequently

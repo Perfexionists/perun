@@ -32,9 +32,9 @@ from perun.utils.exceptions import NotPerunRepositoryException, \
 from perun.utils.helpers import \
     TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
     PROFILE_TYPE_COLOURS, SUPPORTED_PROFILE_TYPES, HEADER_ATTRS, HEADER_COMMIT_COLOUR, \
-    HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, PROFILE_DELIMITER, MinorVersion
+    HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, PROFILE_DELIMITER
 from perun.utils.log import cprint, cprintln
-from perun.utils.structs import ProfileListConfig
+from perun.utils.structs import ProfileListConfig, MinorVersion
 
 # Init colorama for multiplatform colours
 colorama.init()
@@ -382,9 +382,9 @@ def log(minor_version, short=False, **_):
         minor_versions = list(vcs.walk_minor_versions(minor_version))
         # Reduce the descriptions of minor version to one liners
         for mv_no, minor in enumerate(minor_versions):
-            minor_versions[mv_no] = minor._replace(desc=minor.desc.split("\n")[0])
+            minor_versions[mv_no] = minor.to_short()
         minor_version_maxima = calculate_maximal_lengths_for_object_list(
-            minor_versions, MinorVersion._fields
+            minor_versions, MinorVersion.valid_fields()
         )
         # Update manually the maxima for the printed supported profile types, each requires two
         # characters and 9 stands for " profiles" string

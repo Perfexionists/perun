@@ -8,7 +8,10 @@ import re
 
 import distutils.util as dutils
 
-from perun.utils.structs import DegradationInfo, PerformanceChange
+from typing import Dict, Tuple, List, Any, Iterable, Protocol
+
+from perun.utils.structs import DegradationInfo, PerformanceChange, MinorVersion, ModelRecord
+from perun.profile.helpers import ProfileInfo
 
 import perun.utils.log as log
 import perun.profile.helpers as profiles
@@ -28,7 +31,15 @@ __author__ = 'Tomas Fiedor'
 _MIN_CONFIDANCE_RATE = 0.15
 
 
-def get_supported_detection_models_strategies():
+class CallableDetectionMethod(Protocol):
+    """Protocol for Callable detection method"""
+    def __call__(
+            self, uid: str, base: ModelRecord, target: ModelRecord, **kwargs: Any
+    ) -> Dict[str, Any]:
+        pass
+
+
+def get_supported_detection_models_strategies() -> List[str]:
     """
     Provides supported detection models strategies to execute
     the degradation check between two profiles with different kinds
@@ -51,7 +62,7 @@ def get_supported_detection_models_strategies():
     ]
 
 
-def profiles_to_queue(minor_version):
+def profiles_to_queue(minor_version: str) -> Dict[Tuple[str, str, str, str, str], ProfileInfo]:
     """Retrieves the list of profiles corresponding to minor version and transforms them to map.
 
     The map represents both the queue and also provides the mapping of configurations to profiles.
@@ -66,7 +77,7 @@ def profiles_to_queue(minor_version):
 
 
 @decorators.static_variables(minor_version_cache=set())
-def pre_collect_profiles(minor_version):
+def pre_collect_profiles(minor_version: MinorVersion):
     """For given minor version, collects performance profiles according to the job matrix
 
     This is applied if the profiles were not already collected by this function for the given minor,
@@ -102,7 +113,9 @@ def pre_collect_profiles(minor_version):
         pre_collect_profiles.minor_version_cache.add(minor_version.checksum)
 
 
-def degradation_in_minor(minor_version, quiet=False):
+def degradation_in_minor(
+        minor_version: str, quiet: bool = False
+) -> List[Tuple[DegradationInfo, str, str]]:
     """Checks for degradation according to the profiles stored for the given minor version.
 
     :param str minor_version: representation of head point of degradation checking
@@ -152,7 +165,7 @@ def degradation_in_minor(minor_version, quiet=False):
 
 @log.print_elapsed_time
 @decorators.phase_function('check whole repository')
-def degradation_in_history(head):
+def degradation_in_history(head: str) -> List[Tuple[DegradationInfo, str, str]]:
     """Walks through the minor version starting from the given head, checking for degradation.
 
     :param str head: starting point of the checked history for degradation.
@@ -173,7 +186,9 @@ def degradation_in_history(head):
     return detected_changes
 
 
-def degradation_between_profiles(baseline_profile, target_profile, models_strategy):
+def degradation_between_profiles(
+        baseline_profile: ProfileInfo, target_profile: ProfileInfo, models_strategy: str
+) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     We first find the suitable strategy for the profile configuration and then call the appropriate
@@ -199,14 +214,18 @@ def degradation_between_profiles(baseline_profile, target_profile, models_strate
 
 @log.print_elapsed_time
 @decorators.phase_function('check two profiles')
-def degradation_between_files(baseline_file, target_file, minor_version, models_strategy):
+def degradation_between_files(
+        baseline_file: profile_factory.Profile,
+        target_file: profile_factory.Profile,
+        minor_version: str,
+        models_strategy: str
+):
     """Checks between pair of files (baseline, target) whether there are any changes in performance.
 
     :param dict baseline_file: baseline profile we are checking against
     :param dict target_file: target profile we are testing
     :param str minor_version: targ minor_version
     :param str models_strategy: name of detection models strategy to obtains relevant model kinds
-    :returns None: no return value
     """
     # First check if the configurations are compatible
     baseline_config = profiles.to_config_tuple(baseline_file)
@@ -232,7 +251,7 @@ def degradation_between_files(baseline_file, target_file, minor_version, models_
     log.print_short_summary_of_degradations(detected_changes)
 
 
-def is_rule_applicable_for(rule, configuration):
+def is_rule_applicable_for(rule: Dict[str, Any], configuration: Dict[str, Any]) -> bool:
     """Helper function for testing, whether the rule is applicable for the given profile
 
     Profiles are w.r.t specification (:ref:`profile-spec`), the rule is as a dictionary, where
@@ -265,7 +284,7 @@ def is_rule_applicable_for(rule, configuration):
     return True
 
 
-def parse_strategy(strategy):
+def parse_strategy(strategy: str) -> str:
     """Translates the given string to the real name of the strategy---callable function.
 
     This handles short names for the degradation strategies.
@@ -285,7 +304,7 @@ def parse_strategy(strategy):
     return short_strings.get(strategy, strategy)
 
 
-def get_strategies_for(profile):
+def get_strategies_for(profile: ProfileInfo) -> Iterable[str]:
     """Retrieves the best strategy for the given profile configuration
 
     :param ProfileInfo profile: Profile information with configuration tuple
@@ -311,8 +330,11 @@ def get_strategies_for(profile):
 
 
 def run_detection_with_strategy(
-        detection_method, baseline_profile, target_profile, models_strategy
-):
+        detection_method: CallableDetectionMethod,
+        baseline_profile: profile_factory.Profile,
+        target_profile: profile_factory.Profile,
+        models_strategy: str
+) -> Iterable[DegradationInfo]:
     """
     The wrapper for running detection methods for all kinds of models.
 
@@ -346,8 +368,13 @@ def run_detection_with_strategy(
 
 
 def _run_detection_for_models(
-        detection_method, baseline_profile, baseline_models, target_profile, target_models, **kwargs
-):
+        detection_method: CallableDetectionMethod,
+        baseline_profile: profile_factory.Profile,
+        baseline_models: Dict[str, ModelRecord],
+        target_profile: profile_factory.Profile,
+        target_models: Dict[str, ModelRecord],
+        **kwargs: Any
+) -> Iterable[DegradationInfo]:
     """
     The runner of detection methods for a set of models pairs (base and targ).
 

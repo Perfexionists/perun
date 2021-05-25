@@ -2,15 +2,25 @@ import re
 
 import numpy as np
 
+from typing import Tuple, List
+
+import perun.check.factory
 import perun.check.general_detection as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regressogram.methods as rg_methods
 import perun.utils.log as log
+import perun.utils.structs
 
 from perun.check.factory import PerformanceChange
+from perun.profile.factory import Profile
 
 
-def classify_change(diff_value, no_change, change, baseline_per=1):
+def classify_change(
+        diff_value: float,
+        no_change_threshold: float,
+        change_threshold: float,
+        baseline_per: float = 1
+) -> PerformanceChange:
     """
     Classification of changes according to the value of relative error.
 
@@ -27,24 +37,30 @@ def classify_change(diff_value, no_change, change, baseline_per=1):
         ||| -> else DIFF_VALUE > CHANGE_THRESHOLD then state=CHANGE
 
     :param float diff_value: value of diff value computed between compared profiles
-    :param float no_change: threshold to determine `no_change` state
-    :param float change: threshold to determine remaining two states (`maybe_change` and `change`)
+    :param float no_change_threshold: threshold to determine `no_change` state
+    :param float change_threshold: threshold to determine remaining two states
+        (`maybe_change` and `change`)
     :param float baseline_per: percentage rate from the threshold according to the baseline value
     :return PerformanceChange: determined changes in the basis of given arguments
     """
-    if abs(diff_value) <= no_change * baseline_per:
-        change = PerformanceChange.NoChange
-    elif abs(diff_value) <= change * baseline_per:
-        change = PerformanceChange.MaybeOptimization if diff_value < 0 else \
+    if abs(diff_value) <= no_change_threshold * baseline_per:
+        result = PerformanceChange.NoChange
+    elif abs(diff_value) <= change_threshold * baseline_per:
+        result = PerformanceChange.MaybeOptimization if diff_value < 0 else \
             PerformanceChange.MaybeDegradation
     else:
-        change = PerformanceChange.Optimization if diff_value < 0 else \
+        result = PerformanceChange.Optimization if diff_value < 0 else \
             PerformanceChange.Degradation
 
-    return change
+    return result
 
 
-def unify_buckets_in_regressogram(uid, baseline_model, target_model, target_profile):
+def unify_buckets_in_regressogram(
+        uid: str,
+        baseline_model_record: perun.utils.structs.ModelRecord,
+        target_model_record: perun.utils.structs.ModelRecord,
+        target_profile: Profile
+) -> perun.utils.structs.ModelRecord:
     """
     The method unifies the regressograms into the same count of buckets.
 
@@ -55,20 +71,22 @@ def unify_buckets_in_regressogram(uid, baseline_model, target_model, target_prof
     regressogram model, which has the same 'uid' as the given models.
 
     :param str uid: unique identification of both analysed models
-    :param ModelRecord baseline_model: baseline regressogram model with all its parameters
-    :param ModelRecord target_model: target regressogram model with all its parameters
+    :param ModelRecord baseline_model_record: baseline regressogram model with all its parameters
+    :param ModelRecord target_model_record: target regressogram model with all its parameters
     :param Profile target_profile: target profile corresponding to the checked minor version
     :return dict: new regressogram model with the required 'uid'
     """
-    uid = re.sub(baseline_model.type + '$', '', uid)
+    uid = re.sub(baseline_model_record.type + '$', '', uid)
+    baseline_coeff_len = baseline_model_record.coeff_size()
+    target_coeff_len = target_model_record.coeff_size()
     log.warn(
         '{0}: {1} models with different length ({2} != {3}) are slicing'.format(
-            uid, baseline_model.type, len(baseline_model.b0), len(target_model.b0)
+            uid, baseline_model_record.type, baseline_coeff_len, target_coeff_len
         ), end=": "
     )
     log.cprint('Target regressogram model will be post-processed again.\n', 'yellow')
     # find target model with all needed items from target profile
-    target_model = target_profile.get_model_of(target_model.type, uid)
+    target_model = target_profile.get_model_of(target_model_record.type, uid)
     # set needed parameters for regressogram post-processors
     mapper_keys = {
         'per_key': target_model['per_key'],
@@ -76,7 +94,7 @@ def unify_buckets_in_regressogram(uid, baseline_model, target_model, target_prof
     }
     config = {
         'statistic_function': target_model['statistic_function'],
-        'bucket_number': len(baseline_model.b0),
+        'bucket_number': baseline_coeff_len,
         'bucket_method': None,
     }
     config.update(mapper_keys)
@@ -90,7 +108,12 @@ def unify_buckets_in_regressogram(uid, baseline_model, target_model, target_prof
     return methods.create_model_record(model)
 
 
-def preprocess_nonparam_models(uid, baseline_model, target_profile, target_model):
+def preprocess_nonparam_models(
+        uid: str,
+        baseline_model: perun.utils.structs.ModelRecord,
+        target_profile: Profile,
+        target_model: perun.utils.structs.ModelRecord
+) -> Tuple[List[float], List[float], List[float]]:
     """
     Function prepare models to execute the computation of statistics between them.
 
@@ -107,7 +130,7 @@ def preprocess_nonparam_models(uid, baseline_model, target_profile, target_model
     :param ModelRecord target_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """
-    def get_model_coordinates(model):
+    def get_model_coordinates(model: perun.utils.structs.ModelRecord) -> Tuple[List[float], List[float]]:
         """
         Function obtains the coordinates of given model.
 
@@ -126,7 +149,7 @@ def preprocess_nonparam_models(uid, baseline_model, target_profile, target_model
             y_pts = model.b0
         return x_pts, y_pts
 
-    def check_model_coordinates():
+    def check_model_coordinates() -> Tuple[List[float], List[float], List[float], List[float]]:
         """
         Function check the lengths of the coordinates from both models.
 
@@ -155,7 +178,7 @@ def preprocess_nonparam_models(uid, baseline_model, target_profile, target_model
 
     # check whether both models are regressogram and whether there are not about the same length
     if baseline_model.type == 'regressogram' and target_model.type == 'regressogram' and \
-            len(baseline_model.b0) != len(target_model.b0):
+            baseline_model.coeff_size() != target_model.coeff_size():
         target_model = unify_buckets_in_regressogram(
             uid, baseline_model, target_model, target_profile
         )

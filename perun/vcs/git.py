@@ -13,7 +13,7 @@ import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps
 import perun.utils.decorators as decorators
 from perun.utils.exceptions import VersionControlSystemException
-from perun.utils.helpers import MinorVersion, MajorVersion
+from perun.utils.structs import MinorVersion, MajorVersion
 
 __author__ = "Tomas Fiedor"
 
