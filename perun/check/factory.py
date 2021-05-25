@@ -32,7 +32,11 @@ _MIN_CONFIDANCE_RATE = 0.15
 class CallableDetectionMethod(Protocol):
     """Protocol for Callable detection method"""
     def __call__(
-            self, uid: str, base: ModelRecord, target: ModelRecord, **kwargs: Any
+            self,
+            uid: str,
+            baseline_model: ModelRecord,
+            target_model: ModelRecord,
+            **kwargs: Any
     ) -> Dict[str, Any]:
         pass
 
