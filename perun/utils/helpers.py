@@ -2,7 +2,6 @@
 import os
 import re
 import operator
-import collections
 import signal
 
 from perun.utils.structs import PerformanceChange
@@ -18,10 +17,6 @@ TEXT_ATTRS = 'none'
 TEXT_EMPH_COLOUR = 'green'
 TEXT_WARN_COLOUR = 'red'
 AGGREGATIONS = "sum", "mean", "count", "nunique", "median", "min", "max"
-
-# Minor Version specific things
-MinorVersion = collections.namedtuple("MinorVersion", "date author email checksum desc parents")
-MajorVersion = collections.namedtuple("MajorVersion", "name head")
 
 # Profile specific stuff
 SUPPORTED_PROFILE_TYPES = ['memory', 'mixed', 'time']

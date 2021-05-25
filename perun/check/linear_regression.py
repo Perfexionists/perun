@@ -5,13 +5,22 @@ according to computed metrics and models from these profiles, based on the linea
 
 """
 import scipy.stats as stats
+import nptyping as npt
+
+from typing import Any, Iterable
 
 import perun.utils as utils
 import perun.check.general_detection as detect
 import perun.check.fast_check as fast_check
+import perun.utils.structs
+
+from perun.profile.factory import Profile
+from perun.utils.structs import DegradationInfo
 
 
-def linear_regression(baseline_profile, target_profile, **_):
+def linear_regression(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
@@ -27,9 +36,12 @@ def linear_regression(baseline_profile, target_profile, **_):
 
 
 def exec_linear_regression(
-        uid, baseline_x_pts, lin_abs_error, threshold, linear_diff_b1,
-        baseline_model, target_model, baseline_profile
-):
+        uid: str,
+        baseline_x_pts: npt.NDArray, lin_abs_error: npt.NDArray,
+        threshold: int, linear_diff_b1: int,
+        baseline_model: perun.utils.structs.ModelRecord, target_model: perun.utils.structs.ModelRecord,
+        baseline_profile: Profile
+) -> str:
     """Function executes the classification of performance change between two profiles with using
     function from scipy module, concretely linear regression and regression analysis. If that fails
     classification using linear regression, so it will be used regression analysis to the result of

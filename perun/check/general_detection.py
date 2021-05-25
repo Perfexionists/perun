@@ -8,7 +8,6 @@ these profiles. Module contains two other temporary methods, which are using by 
 general methods.
 """
 
-from collections import namedtuple
 from enum import Enum
 
 import numpy as np
@@ -18,13 +17,11 @@ import perun.postprocess.regression_analysis.regression_models as regression_mod
 import perun.profile.query as query
 import perun.utils.helpers
 
-from perun.utils.structs import PerformanceChange, DegradationInfo
+from perun.utils.structs import PerformanceChange, DegradationInfo, ModelRecord
 
 
 SAMPLES = 1000
-ModelRecord = namedtuple(
-    'ModelRecord', 'type r_square b0 b1 b2 x_start x_end'
-)
+
 ClassificationMethod = Enum(
     'ClassificationMethod', 'FastCheck LinearRegression PolynomialRegression'
 )
@@ -58,7 +55,7 @@ def filter_by_r_square(model_map, model):
     :param dict model: model of given uid
     :return: filter function that retrieves only the best model w.r.t r_square
     """
-    return model_map[model['uid']][1] < model['r_square']
+    return model_map[model['uid']].r_square < model['r_square']
 
 
 def create_model_record(model):
@@ -222,7 +219,7 @@ def general_detection(
                     uid, baseline_profile, baseline_x_pts, abs_error
                 )
                 std_err_model = get_filtered_best_models_of(err_profile, group='param')
-                change_type = std_err_model[uid][0].upper()
+                change_type = std_err_model[uid].type.upper()
 
         # check the relevant degree of changes and its type (negative or positive)
         if change != PerformanceChange.NoChange:

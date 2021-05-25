@@ -6,12 +6,20 @@ according to computed metrics and models from these profiles, based on the regre
 
 import copy
 import numpy as np
+import nptyping as npt
+
+from typing import Dict, List, Any, Iterable
 
 import perun.logic.runner as runner
 import perun.check.general_detection as detect
 
+from perun.profile.factory import Profile
+from perun.utils.structs import DegradationInfo
 
-def fast_check(baseline_profile, target_profile, **_):
+
+def fast_check(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
@@ -25,11 +33,11 @@ def fast_check(baseline_profile, target_profile, **_):
     )
 
 
-def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
-    """The function executes the classification of performance change between two profiles with
-    using regression analysis. The type of the best model from the regressed profile, which
-    contains the value absolute error, computed from the best models of both profile, is returned
-    such as the degree of the changes.
+def exec_fast_check(
+        uid: str, baseline_profile: Profile, baseline_x_pts: npt.NDArray, abs_error: npt.NDArray
+) -> Profile:
+    """For the values specified in the abs_error points, constructs a profile and performs
+    a regression analysis inferring set of models.
 
     :param string uid: unique identifier of function for which we are creating the model
     :param Profile baseline_profile: baseline against which we are checking the degradation
@@ -42,7 +50,7 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
     std_err_profile = copy.deepcopy(baseline_profile)
     std_err_profile['models'].clear()
 
-    updated_data = {
+    updated_data: Dict[str, List[float]] = {
         'structure-unit-size': [],
         'amount': []
     }

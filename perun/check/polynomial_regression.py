@@ -6,12 +6,20 @@ according to computed metrics and models from these profiles, based on the polyn
 
 import numpy as np
 
+from typing import Any, Iterable
+from nptyping import NDArray
+
 import perun.check.general_detection as detect
+
+from perun.profile.factory import Profile
+from perun.utils.structs import DegradationInfo
 
 THRESHOLD = 100000000
 
 
-def polynomial_regression(baseline_profile, target_profile, **_):
+def polynomial_regression(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
@@ -26,7 +34,7 @@ def polynomial_regression(baseline_profile, target_profile, **_):
     )
 
 
-def exec_polynomial_regression(baseline_x_pts, lin_abs_error):
+def exec_polynomial_regression(baseline_x_pts: NDArray, lin_abs_error: NDArray) -> str:
     """The function executes the classification of performance change between two profiles with
     using function from numpy module, concretely polyfit. Our effort is well-fit interleaving of
     the data by polynomials of the certain degrees can pretty accurately classify how big change

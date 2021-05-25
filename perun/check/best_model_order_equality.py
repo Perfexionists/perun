@@ -40,10 +40,13 @@ value `1.0` (which would mean, that the model precisely fits the measured values
 that the best model fit the data tightly and hence the detected optimization is **not spurious**.
 """
 
+from typing import Any, Iterable
+
 import perun.check.factory as check
 import perun.check.general_detection as detection
 
 from perun.utils.structs import DegradationInfo
+from perun.profile.factory import Profile
 
 
 CONFIDENCE_THRESHOLD = 0.9
@@ -57,7 +60,9 @@ MODEL_ORDERING = [
 ]
 
 
-def best_model_order_equality(baseline_profile, target_profile, **_):
+def best_model_order_equality(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     This is based on simple heuristic, where for the same function models, we only check the order

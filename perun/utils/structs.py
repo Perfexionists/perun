@@ -2,8 +2,12 @@
 
 import collections
 import shlex
+from dataclasses import dataclass
 
 from enum import Enum
+from typing import Union
+
+import nptyping as npt
 
 
 GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
@@ -365,3 +369,83 @@ class ProfileListConfig:
         self.id_width = len(str(self.list_len))
         # The magic 3 corresponds to the fixed string @p or @i
         self.header_width = self.id_width + 3
+
+
+@dataclass()
+class MinorVersion:
+    """Single MinorVersion (commit) from the Version Control System
+
+    :ivar str data: date when the minor version was commited
+    :ivar str author: author of the minor version
+    :ivar str email: email of the author of the minor version
+    :ivar str checksum: sha checksum of the minor version
+    :ivar str desc: description of the changes commited in the minor version
+    :ivar list parents: list of parents of the minor version (empty if root)
+    """
+    date: str
+    author: str
+    email: str
+    checksum: str
+    desc: str
+    parents: list
+
+    def to_short(self):
+        """Returns corresponding minor version with shorted one-liner description
+
+        :return: minor version with one line description
+        """
+        return MinorVersion(
+            self.date,
+            self.author,
+            self.email,
+            self.checksum,
+            self.desc.split("\n")[0],
+            self.parents
+        )
+
+    @staticmethod
+    def valid_fields():
+        """
+        :return: list of valid fields in the dataclass
+        """
+        return ["date", "author", "email", "checksum", "desc", "parents"]
+
+
+@dataclass()
+class MajorVersion:
+    """Single Major Version (branch) of the Version Control System
+
+    :ivar str name: name of the major version
+    :ivar str head: sha checksum of the corresponding head minor version
+    """
+    name: str
+    head: str
+
+
+@dataclass()
+class ModelRecord:
+    """
+    Helper class for holding the model parts
+
+    :ivar str type: type of the model (i.e. its class)
+    :ivar float r_square: R^2 value of the model
+    :ivar float b0: constant coefficient of the model
+    :ivar float b1: slope coefficient of the model
+    :ivar float b2: quadratic coefficient of the model
+    :ivar int x_start: start of the interval, where the model holds
+    :ivar int x_end: end of the interval, where the model holds
+    """
+    type: str
+    r_square: float
+    b0: Union[float, npt.NDArray]
+    b1: float
+    b2: float
+    x_start: float
+    x_end: float
+
+    def coeff_size(self) -> int:
+        """Counts the number of coefficients in the model
+
+        :return: lenght of the bins if the model is bin-like, else number of non-zero coefficients
+        """
+        return len(self.b0) if hasattr(self.b0, '__len__') else 1 + self.b1 != 0.0 + self.b2 != 0.0 # type: ignore
