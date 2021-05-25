@@ -321,7 +321,7 @@ def to_string(profile):
 def to_config_tuple(profile):
     """Converts the profile to the tuple representing its configuration
 
-    :param dict profile: profile we are converting to configuration tuple
+    :param Profile profile: profile we are converting to configuration tuple
     :returns: tuple of (collector.name, cmd, args, workload, [postprocessors])
     """
     profile_header = profile['header']

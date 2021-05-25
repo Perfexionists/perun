@@ -11,7 +11,7 @@ import distutils.util as dutils
 from typing import Dict, Tuple, List, Any, Iterable, Protocol
 
 from perun.utils.structs import DegradationInfo, PerformanceChange, MinorVersion, ModelRecord
-from perun.profile.helpers import ProfileInfo
+from perun.profile.helpers import Profile, ProfileInfo
 
 import perun.utils.log as log
 import perun.profile.helpers as profiles
@@ -142,19 +142,21 @@ def degradation_in_minor(
         baseline_profiles = profiles_to_queue(baseline)
 
         # Iterate through the profiles and check degradation between those of same configuration
-        for baseline_config, baseline_profile in baseline_profiles.items():
-            target_profile = target_profile_queue.get(baseline_config)
+        for baseline_config, baseline_profile_info in baseline_profiles.items():
+            target_profile_info = target_profile_queue.get(baseline_config)
             cmdstr = profiles.config_tuple_to_cmdstr(baseline_config)
-            if target_profile:
+            if target_profile_info:
                 # Print information about configuration
                 # and extend the list of the detected changes including the configuration
                 # and source minor version.
+                baseline_prof = store.load_profile_from_file(baseline_profile_info.realpath, False)
+                target_prof = store.load_profile_from_file(target_profile_info.realpath, False)
                 detected_changes.extend([
                     (deg, cmdstr, baseline_info.checksum) for deg in
-                    degradation_between_profiles(baseline_profile, target_profile, 'best-model')
+                    degradation_between_profiles(baseline_prof, target_prof, 'best-model')
                     if deg.result != PerformanceChange.NoChange
                 ])
-                del target_profile_queue[target_profile.config_tuple]
+                del target_profile_queue[target_profile_info.config_tuple]
 
         # Store the detected degradation
         store.save_degradation_list_for(pcs.get_object_directory(), minor_version, detected_changes)
@@ -187,7 +189,9 @@ def degradation_in_history(head: str) -> List[Tuple[DegradationInfo, str, str]]:
 
 
 def degradation_between_profiles(
-        baseline_profile: ProfileInfo, target_profile: ProfileInfo, models_strategy: str
+        baseline_profile: Profile,
+        target_profile: Profile,
+        models_strategy: str
 ) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
@@ -199,11 +203,6 @@ def degradation_between_profiles(
     :param str models_strategy: name of detection models strategy to obtains relevant model kinds
     :returns: tuple (degradation result, degradation location, degradation rate)
     """
-    if not isinstance(baseline_profile, profile_factory.Profile):
-        baseline_profile = store.load_profile_from_file(baseline_profile.realpath, False)
-    if not isinstance(target_profile, profile_factory.Profile):
-        target_profile = store.load_profile_from_file(target_profile.realpath, False)
-
     # We run all of the degradation methods suitable for the given configuration of profile
     for degradation_method in get_strategies_for(baseline_profile):
         yield from utils.dynamic_module_function_call(
@@ -251,7 +250,7 @@ def degradation_between_files(
     log.print_short_summary_of_degradations(detected_changes)
 
 
-def is_rule_applicable_for(rule: Dict[str, Any], configuration: Dict[str, Any]) -> bool:
+def is_rule_applicable_for(rule: Dict[str, Any], configuration: Profile) -> bool:
     """Helper function for testing, whether the rule is applicable for the given profile
 
     Profiles are w.r.t specification (:ref:`profile-spec`), the rule is as a dictionary, where
@@ -304,10 +303,10 @@ def parse_strategy(strategy: str) -> str:
     return short_strings.get(strategy, strategy)
 
 
-def get_strategies_for(profile: ProfileInfo) -> Iterable[str]:
+def get_strategies_for(profile: Profile) -> Iterable[str]:
     """Retrieves the best strategy for the given profile configuration
 
-    :param ProfileInfo profile: Profile information with configuration tuple
+    :param Profileprofile: Profile information with configuration tuple
     :return: method to be used for checking degradation between profiles of
         the same configuration type
     """
