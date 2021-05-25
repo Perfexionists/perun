@@ -192,6 +192,7 @@ def execute_analysis(
         uid: str,
         baseline_model: ModelRecord,
         target_model: ModelRecord,
+        target_profile: Profile,
         **kwargs: Any
 ) -> Dict[str, Any]:
     """
@@ -207,11 +208,12 @@ def execute_analysis(
     :param str uid: unique identification of both analysed models
     :param dict baseline_model: baseline model with all its parameters for comparison
     :param dict target_model: target model with all its parameters for comparison
+    :param Profile target_profile: target model for the comparison
     :param dict kwargs: dictionary with baseline and target profiles
     :return:
     """
     x_pts, baseline_y_pts, target_y_pts = nparam_helpers.preprocess_nonparam_models(
-        uid, baseline_model, kwargs.get('target_profile'), target_model
+        uid, baseline_model, target_profile, target_model
     )
 
     baseline_stats, _ = compute_window_stats(x_pts, baseline_y_pts)
