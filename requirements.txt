@@ -1,0 +1,42 @@
+pytest>=3.6.3
+pytest-cov>=2.5.1
+click==7.0
+termcolor==1.1.0
+colorama==0.3.7
+ruamel.yaml>=0.15.6
+PyYaml==5.4
+bokeh==0.12.6
+demandimport==0.3.4
+Sphinx==1.6.4
+sphinx-click==1.0.3
+Jinja2>=2.10.1,<=3.0.1
+python-magic==0.4.15
+Faker>=0.8.16
+GitPython>=2.1.11
+codecov==2.0.15
+path.py==7.7.1
+matplotlib==1.5.1
+binaryornot==0.4.4
+tabulate==0.8.6
+importlib-metadata>=0.8
+statsmodels>=0.10.0
+scikit-learn>=0.19.0
+Cython>=0.29.20
+pandas>=0.20.2
+networkx>=2.4
+angr>=9.0
+pyelftools>=0.28
+seaborn>=0.11.2
+
+# We fix scipy and numpy version, because they mess everything up >.<
+scipy>=1.4.1
+numpy>=1.15.1
+
+# The official PyQt-Fit is broken when installed by pip with python 3.6+
+# this is due to distribute library dependency, hence, we use the custom wheel.
+./libs/PyQt_Fit-1.4.0-py3-none-any.whl
+
+# This is temporary solution, since we would like to remove bkcharts as dependency
+# since it has been archived and is incompatible.
+./libs/bkcharts-0.2-py3-none-any.whl
+

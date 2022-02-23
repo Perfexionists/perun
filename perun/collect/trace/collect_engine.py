@@ -31,7 +31,7 @@ class CollectEngine(ABC):
     """
 
     # Set the supported engines
-    _supported = ["stap", "ebpf"]
+    _supported = ['stap', 'ebpf', 'pin']
 
     def __init__(self, config):
         """Initializes the default engine parameters.

@@ -12,6 +12,7 @@ from collections.abc import MutableMapping
 import operator
 import itertools
 import click
+import re
 
 from typing import Any, Iterator, Iterable, TYPE_CHECKING
 
@@ -147,13 +148,15 @@ class Profile(MutableMapping[str, Any]):
 
         for resource in resource_list:
             persistent_properties = [
-                (key, value) for (key, value) in resource.items() if key not in Profile.collectable
+                (key, value) for (key, value) in resource.items() if key not in Profile.collectable and not key.startswith('arg_value#')
             ] + ctx_persistent_properties
+
             persistent_properties.extend(list(additional_params.items()))
             persistent_properties.sort(key=operator.itemgetter(0))
             collectable_properties = [
-                (key, value) for (key, value) in resource.items() if key in Profile.collectable
+                (key, value) for (key, value) in resource.items() if key in Profile.collectable or key.startswith('arg_value#')
             ] + ctx_collectable_properties
+
             resource_type = self.register_resource_type(
                 resource["uid"], tuple(persistent_properties)
             )

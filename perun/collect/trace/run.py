@@ -25,8 +25,8 @@ import perun.logic.runner as runner
 import perun.utils.log as stdout
 import perun.utils.metrics as metrics
 import perun.utils as utils
-from perun.profile.factory import Profile
 from perun.utils.structs import CollectStatus
+from perun.profile.factory import Profile
 
 
 def before(executable, **kwargs):
@@ -61,14 +61,15 @@ def before(executable, **kwargs):
     check(GLOBAL_DEPENDENCIES)
     config.engine.check_dependencies()
 
-    # Extract and / or post-process the collect configuration
-    extract_configuration(config.engine, kwargs["probes"])
-    if not kwargs["probes"].func and not kwargs["probes"].usdt:
-        msg = (
-            "No profiling probes created (due to invalid specification, failed extraction or "
-            "filtering)"
-        )
-        return CollectStatus.ERROR, msg, dict(kwargs)
+    if config.engine.name != 'pin':
+        # Extract and / or post-process the collect configuration
+        extract_configuration(config.engine, kwargs["probes"])
+        if not kwargs["probes"].func and not kwargs["probes"].usdt:
+            msg = (
+                "No profiling probes created (due to invalid specification, failed extraction or "
+                "filtering)"
+            )
+            return CollectStatus.ERROR, msg, dict(kwargs)
 
     # Set the variables for optimization methods
     kwargs["binary"] = config.binary
@@ -126,10 +127,10 @@ def after(**kwargs):
     WATCH_DOG.info("Raw data file size: {}".format(utils.format_file_size(data_size)))
 
     # Dirty temporary hack
-    if kwargs["config"].engine.name == "ebpf":
-        kwargs["profile"] = Profile()
-        kwargs["profile"].update_resources(
-            {"resources": list(kwargs["config"].engine.transform(**kwargs))}, "global"
+    if kwargs['config'].engine.name in ('ebpf', 'pin'):
+        kwargs['profile'] = Profile()
+        kwargs['profile'].update_resources(
+            {'resources': list(kwargs['config'].engine.transform(**kwargs))}, 'global'
         )
     else:
         kwargs["profile"] = kwargs["config"].engine.transform(**kwargs)

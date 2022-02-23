@@ -1,0 +1,15 @@
+PIN_ROOT = {{ pin_root }}
+CONFIG_ROOT = $(PIN_ROOT)/source/tools/Config
+NAME = pintool
+SO = obj-intel64/$(NAME).so
+
+mytool:
+	mkdir -p obj-intel64
+	$(MAKE) TARGET=intel64 $(SO)
+
+clean-obj-intel64:
+	rm -rf obj-intel64
+
+include $(CONFIG_ROOT)/makefile.config
+include $(CONFIG_ROOT)/makefile.default.rules
+

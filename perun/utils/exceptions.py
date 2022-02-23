@@ -435,3 +435,37 @@ class SignalReceivedException(BaseException):
 
     def __str__(self) -> str:
         return f"Received signal: {self.signum}"
+
+
+class PinUnspecifiedPinRoot(Exception):
+    """Raised when PIN_ROOT os variable isn't defined.
+    """
+    def __init__(self):
+        super().__init__("")
+        self.msg = "Undefined PIN_ROOT! Please execute: export PIN_ROOT=<absolute-path-to-pin>"
+
+    def __str__(self):
+        return self.msg
+
+
+class PinBinaryScanUnsuccessful(Exception):
+    """Raised when SUT isn't compiled with gcc7.5 or prior, or when dwarf debug info wasn't included.
+    """
+    def __init__(self):
+        super().__init__("")
+        self.msg = "Couldn't read the DWARF debug info, please ensure that the binary is compiled with gcc<=7.5 and " \
+                   "-gdwarf option."
+
+    def __str__(self):
+        return self.msg
+
+
+class PinBinaryInstrumentationFailed(Exception):
+    """Raised when PIN fails to instrument program"""
+
+    def __init__(self):
+        super().__init__()
+        self.msg = "Failed to instrument the program!"
+
+    def __str__(self):
+        return self.msg
