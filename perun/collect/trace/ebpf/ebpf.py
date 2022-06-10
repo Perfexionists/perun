@@ -48,8 +48,8 @@ class BpfContext:
 
         # Dynamic probing related data
         self.iter = 0
-        self.threshold = self.o_params[Parameters.PROBING_THRESHOLD.value]
-        self.re_attach = self.o_params[Parameters.PROBING_REATTACH.value]
+        self.threshold = self.o_params.get(Parameters.PROBING_THRESHOLD.value, None)
+        self.re_attach = self.o_params.get(Parameters.PROBING_REATTACH.value, None)
         self.detached = []
         self.dynamic_probes = [{}] * len(self.config['func'])
         for func in self.config['func'].values():

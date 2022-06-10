@@ -117,7 +117,7 @@ def trace_to_profile(data_file, config, probes, **_):
             resource_queue.write(list(res))
         resource_queue.end_of_input()
         # After all resources have been sent, wait for the resulting profile
-        profile = profile_queue.read()
+        profile = profile_queue.read_large()
 
         return profile
     finally:
@@ -147,7 +147,6 @@ def profile_builder(resource_queue, profile_queue):
         while profile_resources is not None:
             profile.update_resources({'resources': profile_resources}, 'global')
             profile_resources = resource_queue.read()
-
         # Pass the resulting profile back to the main process
         profile_queue.write(profile)
         profile_queue.end_of_input()
@@ -597,7 +596,7 @@ def parse_records(file_name, probes, verbose_trace):
             # In case there is any issue with parsing, return corrupted trace record
             # We want to catch any error since parsing should be bullet-proof and should not crash
             except Exception:
-                WATCH_DOG.info("Corrupted data record: '{}'".format(line.rstrip('\n')))
+                WATCH_DOG.info("Corrupted data record on ln {}: {}".format(cnt, line.rstrip('\n')))
                 yield {
                     'type': vals.RecordType.CORRUPT.value,
                     'tid': -1,
