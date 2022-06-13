@@ -539,7 +539,7 @@ def _build_resource(record_entry, record_exit, uid, workload):
         'tid': record_entry['tid'],
         'type': 'mixed',
         'subtype': 'time delta',
-        'loc': record_entry['loc'],
+        'location': record_entry['loc'],
         'workload': workload
     }
 
