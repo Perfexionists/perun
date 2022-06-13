@@ -32,7 +32,7 @@ class Profile(collections.MutableMapping):
     collectable = {
         'amount', 'structure-unit-size', 'call-order', 'order', 'address', 'timestamp', 'exclusive'
     }
-    persistent = {'trace', 'type', 'subtype', 'uid'}
+    persistent = {'trace', 'type', 'subtype', 'uid', 'loc'}
 
     independent = [
         'structure-unit-size', 'snapshot', 'order', 'call-order', 'address', 'timestamp',

@@ -539,6 +539,7 @@ def _build_resource(record_entry, record_exit, uid, workload):
         'tid': record_entry['tid'],
         'type': 'mixed',
         'subtype': 'time delta',
+        'loc': record_entry['loc'],
         'workload': workload
     }
 
@@ -563,8 +564,12 @@ def parse_records(file_name, probes, verbose_trace):
 
     with open(file_name, 'r') as trace:
         cnt = 0
-        for cnt, line in enumerate(trace):
+        while True:
             try:
+                cnt += 1
+                line = trace.readline()
+                if not line:
+                    break
                 # The line should contain the following values:
                 # 'type' 'tid' ['pid'] ['ppid'] 'timestamp';'probe id'
                 # where thread records have 'pid' and process records have 'pid', 'ppid'
@@ -580,6 +585,7 @@ def parse_records(file_name, probes, verbose_trace):
                     'timestamp': int(minor_components[-1]),
                     'id': record_id,
                     'seq': 0,
+                    'loc': probes.func[record_id]['lib']
                 }
                 if record_type in vals.SEQUENCED_RECORDS:
                     # Sequenced records need to update their sequence number
