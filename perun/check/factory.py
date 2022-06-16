@@ -281,6 +281,7 @@ def parse_strategy(strategy):
         'fast': 'fast_check',
         'int': 'integral_comparison',
         'loc': 'local_statistics',
+        'eto': 'exclusive_time_outliers'
     }
     return short_strings.get(strategy, strategy)
 

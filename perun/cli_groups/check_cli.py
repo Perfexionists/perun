@@ -71,6 +71,7 @@ def check_group(**_):
       5. Fast Check (FAST)
       6. Integral Comparison (INT)
       7. Local Statistics (LOC)
+      8. Exclusive Time Outliers (ETO)
 
     """
     should_precollect = dutils.strtobool(str(
