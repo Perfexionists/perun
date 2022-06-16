@@ -11,7 +11,9 @@ GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
 
 PerformanceChange = Enum(
     'PerformanceChange',
-    'Degradation MaybeDegradation Unknown NoChange MaybeOptimization Optimization'
+    ('NotInBaseline TotalDegradation SevereDegradation Degradation MaybeDegradation '
+     'Unknown NoChange '
+     'MaybeOptimization Optimization SevereOptimization TotalOptimization NotInTarget')
 )
 
 
