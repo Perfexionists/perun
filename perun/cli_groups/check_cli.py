@@ -15,6 +15,12 @@ __author__ = 'Tomas Fiedor'
 
 
 @click.group('check')
+@click.option('--force', '-f',
+              is_flag=True, default=False,
+              help="Force comparison of the selected profiles even if their configuration"
+                   "does not match. This may be necessary when, e.g., different project"
+                   "versions build binaries with version information in their name"
+                   "(python3.10 and python3.11), thus failing the consistency check. ")
 @click.option('--compute-missing', '-c',
               callback=cli_helpers.set_config_option_from_flag(
                   perun_config.runtime, 'degradation.collect_before_check'),
@@ -170,5 +176,6 @@ def check_profiles(ctx, baseline_profile, target_profile, minor, **_):
     """
     log.newline()
     check.degradation_between_files(
-        baseline_profile, target_profile, minor, ctx.parent.params['models_type']
+        baseline_profile, target_profile, minor,
+        ctx.parent.params['models_type'], ctx.parent.params['force']
     )
