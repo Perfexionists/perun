@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, Generator, Dict, List, Tuple
+from typing import Optional, Generator, Dict, List, Tuple
 from difflib import SequenceMatcher, get_close_matches
 
 import pandas as pd
@@ -8,8 +8,7 @@ from perun.utils.structs import DegradationInfo
 from perun.check.factory import PerformanceChange
 import perun.profile.convert as convert
 
-if TYPE_CHECKING:
-    from perun.profile.factory import Profile
+from perun.profile.factory import Profile
 
 __author__ = 'Jiri Pavela'
 
@@ -17,13 +16,13 @@ __author__ = 'Jiri Pavela'
 MZS_CORRECTION = 0.6745
 
 
-def exclusive_time_outliers(baseline_profile: Profile, target_profile: Profile, location_filter: Optional[str], **_):
+def exclusive_time_outliers(baseline_profile: Profile, target_profile: Profile, location_filter: Optional[str] = None, **_):
     diff_prof = DiffProfile(baseline_profile, target_profile, location_filter)
     yield from diff_prof.detect_changes()
 
 
 class DiffProfile:
-    def __init__(self, baseline_profile: Profile, target_profile: Profile, location_filter: Optional[str]) -> None:
+    def __init__(self, baseline_profile: Profile, target_profile: Profile, location_filter: Optional[str] = None) -> None:
         self.location_filter: Optional[str] = location_filter
         self.df: pd.DataFrame = self._merge_and_diff(
             self._prepare_profile(baseline_profile), self._prepare_profile(target_profile)
@@ -58,7 +57,7 @@ class DiffProfile:
             '-exclusive T [ms]', '+exclusive T [ms]',
             'exclusive T Δ [ms]', 'prog exclusive T Δ [%]'
         ]
-        for _, row in self.df[columns].groupby(['location']).sum().iterrows():
+        for _, row in self.df[columns].groupby(['location']).sum().reset_index().iterrows():
             yield DegradationInfo(
                 res=PerformanceChange.TotalDegradation if row['prog exclusive T Δ [%]'] > 0 else PerformanceChange.TotalOptimization,
                 loc=row['location'],
@@ -93,7 +92,6 @@ class DiffProfile:
             result = PerformanceChange.NotInBaseline if exc_time > 0 else PerformanceChange.NotInTarget
 
         return result, ct, cr
-
 
     def modified_z_score(self) -> None:
         # https://www.kaggle.com/code/jainyk/anomaly-detection-using-zscore-and-modified-zscore/notebook
@@ -134,14 +132,14 @@ class DiffProfile:
 
     def std_dev_multiple(self) -> None:
         df_filtered = self.df.loc[~(self.df['Mzs flag']) & ~(self.df['IQR flag'])]
-        stddev = df_filtered['total exc. T Δ [ms]'].std()
-        self.df['StdDev multiple'] = self.df['total exc. T Δ [ms]'] / stddev
+        stddev = df_filtered['exclusive T Δ [ms]'].std()
+        self.df['StdDev multiple'] = self.df['exclusive T Δ [ms]'] / stddev
         stddev_filter = (self.df['StdDev multiple'] < -2.0) | (self.df['StdDev multiple'] > 2.0)
         self.df['StdDev flag'] = stddev_filter
 
     def new_deleted_functions(self) -> None:
         new_removed_filter = (
-                self.df['+total exc. T [ms]'].isna() | self.df['-total exc. T [ms]'].isna()
+                self.df['+exclusive T [ms]'].isna() | self.df['-exclusive T [ms]'].isna()
         )
         self.df['NewDel flag'] = new_removed_filter
 
@@ -159,20 +157,20 @@ class DiffProfile:
     @staticmethod
     def _merge_and_diff(baseline_profile: pd.DataFrame, target_profile: pd.DataFrame) -> pd.DataFrame:
         # Rename the exclusive time columns appropriately (- for old, + for new) and merge them
-        baseline_profile.rename(columns={'exclusive': '-exclusive T [ms]'})
-        target_profile.rename(columns={'exclusive': '+exclusive T [ms]'})
+        baseline_profile.rename(columns={'exclusive': '-exclusive T [ms]'}, inplace=True)
+        target_profile.rename(columns={'exclusive': '+exclusive T [ms]'}, inplace=True)
         # Rename the locations in the baseline and target profiles to match. We employ a string
         # similarity check to discover possible changes of binaries name, e.g., due to version num.
         rename_old, rename_new = _map_similar_names(
             list(baseline_profile['location'].unique()), list(target_profile['location'].unique())
         )
-        baseline_profile['location'].replace(rename_old)
-        target_profile['location'].replace(rename_new)
+        baseline_profile['location'].replace(rename_old, inplace=True)
+        target_profile['location'].replace(rename_new, inplace=True)
 
-        df_merge = pd.merge(target_profile, baseline_profile, on='uid', how='left')
+        df_merge = pd.merge(target_profile, baseline_profile, on=['uid', 'location'], how='left')
         # Compute the exclusive time diff
         df_merge['exclusive T Δ [ms]'] = df_merge.apply(
-            lambda row: row['+exclusive T [ms]'] - row['-exclusive T [ms]']
+            lambda row: row['+exclusive T [ms]'] - row['-exclusive T [ms]'], axis=1
         )
         # Prepare filters
         new_nan_filt = df_merge['+exclusive T [ms]'].isna()
@@ -205,10 +203,10 @@ def _map_similar_names(strings_old: List[str], strings_new: List[str]) -> Tuple[
             lcp = SequenceMatcher(None, old_name, match).find_longest_match(
                 0, len(old_name), 0, len(match)
             )
-            new_name = match[lcp.b:lcp.b + lcp.size]
+            new_name = str(match[lcp.b:lcp.b + lcp.size]) + "_"
             # Update the rename map
-            renames_old[old_name] = str(new_name)
-            renames_old[str(match)] = str(new_name)
+            renames_old[old_name] = new_name
+            renames_new[str(match)] = new_name
             # Remove the already matched name
             strings_new.remove(str(match))
     return renames_old, renames_new
