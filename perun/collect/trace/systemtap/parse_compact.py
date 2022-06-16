@@ -579,13 +579,14 @@ def parse_records(file_name, probes, verbose_trace):
                 record_tid = int(minor_components[1])
                 probe_id = major_components[1].rstrip('\n')
                 record_id, probe_step = probe_map.get(probe_id, (probe_id, 0))
+                # 'loc' default value is for process records
                 record = {
                     'type': record_type,
                     'tid': record_tid,
                     'timestamp': int(minor_components[-1]),
                     'id': record_id,
                     'seq': 0,
-                    'loc': probes.func[record_id]['lib']
+                    'loc': probes.func.get(record_id, {'lib': record_id})['lib']
                 }
                 if record_type in vals.SEQUENCED_RECORDS:
                     # Sequenced records need to update their sequence number
