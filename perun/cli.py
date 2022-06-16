@@ -798,7 +798,7 @@ def launch_cli_safely():
 
 def launch_cli():
     """Runs the CLI either in developer mode or in safe mode"""
-    if DEV_MODE:
+    if DEV_MODE or '--dev-mode' in sys.argv or '-d' in sys.argv:
         launch_cli_in_dev_mode()
     else:
         launch_cli_safely()
