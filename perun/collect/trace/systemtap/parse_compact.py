@@ -592,7 +592,7 @@ def parse_records(file_name, probes, verbose_trace):
                     'timestamp': int(minor_components[-1]),
                     'id': record_id,
                     'seq': 0,
-                    'loc': lib_map.get(record_id, {'lib': record_id})['lib']
+                    'loc': lib_map.get(probe_id, {'lib': record_id})['lib']
                 }
                 if record_type in vals.SEQUENCED_RECORDS:
                     # Sequenced records need to update their sequence number
