@@ -556,17 +556,11 @@ def parse_records(file_name, probes, verbose_trace):
     # ID (numeric id or name) -> (NAME, SAMPLE)
     dict_key = 'name' if verbose_trace else 'id'
     probe_map = {
-        str(probe[dict_key]): (probe['name'], probe['sample'])
+        str(probe[dict_key]): (probe['name'], probe['sample'], os.path.basename(probe['lib']))
         for probe in list(probes.func.values()) + list(probes.usdt.values())
     }
     # TID -> UID -> SEQUENCE
     seq_map = collections.defaultdict(lambda: collections.defaultdict(int))
-    # TODO: temporary
-    # UID -> LIB basename
-    lib_map = {
-        str(probe[dict_key]): os.path.basename(probe['lib'])
-        for probe in list(probes.func.values()) + list(probes.usdt.values())
-    }
 
     with open(file_name, 'r') as trace:
         cnt = 0
@@ -584,7 +578,7 @@ def parse_records(file_name, probes, verbose_trace):
                 record_type = int(minor_components[0])
                 record_tid = int(minor_components[1])
                 probe_id = major_components[1].rstrip('\n')
-                record_id, probe_step = probe_map.get(probe_id, (probe_id, 0))
+                record_id, probe_step, probe_lib = probe_map.get(probe_id, (probe_id, 0, probe_id))
                 # 'loc' default value is for process records
                 record = {
                     'type': record_type,
@@ -592,7 +586,7 @@ def parse_records(file_name, probes, verbose_trace):
                     'timestamp': int(minor_components[-1]),
                     'id': record_id,
                     'seq': 0,
-                    'loc': lib_map.get(probe_id, {'lib': record_id})['lib']
+                    'loc': probe_lib
                 }
                 if record_type in vals.SEQUENCED_RECORDS:
                     # Sequenced records need to update their sequence number
