@@ -85,7 +85,7 @@ class DiffProfile:
                 res=result,
                 loc=row['uid'],
                 fb=str(0.0 if pd.isnull(row['-exclusive T [ms]']) else row['-exclusive T [ms]']),
-                tt=str(0.0 if pd.isnull(row['+exclusive T [ms]']) else row['0exclusive T [ms]']),
+                tt=str(0.0 if pd.isnull(row['+exclusive T [ms]']) else row['+exclusive T [ms]']),
                 t='time',
                 rd=row['exclusive T Δ [ms]'],
                 rdr=row['prog exclusive T Δ [%]'],
