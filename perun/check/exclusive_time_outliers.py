@@ -127,22 +127,22 @@ class DiffProfile:
                 result = PerformanceChange.SevereOptimization
             # We use IQR multiple instead of the mod. z-score to make the human comparison easier
             # ct, cr = 'Modified Z-score', row['Modified Z-score']
-            ct, cr = 'IQR multiple', row['IQR multiple']
+            ct, cr = 'IQR_multiple', row['IQR multiple']
         elif row['IQR flag']:
             if exc_time > 0:
                 result = PerformanceChange.Degradation
             else:
                 result = PerformanceChange.Optimization
-            ct, cr = 'IQR multiple', row['IQR multiple']
+            ct, cr = 'IQR_multiple', row['IQR multiple']
         elif row['StdDev flag']:
             if exc_time > 0:
                 result = PerformanceChange.MaybeDegradation
             else:
                 result = PerformanceChange.MaybeOptimization
-            ct, cr = 'StdDev multiple', row['StdDev multiple']
+            ct, cr = 'StdDev_multiple', row['StdDev multiple']
         else:
             result = PerformanceChange.NoChange
-            ct, cr = 'StdDev multiple', row['StdDev multiple']
+            ct, cr = 'StdDev_multiple', row['StdDev multiple']
 
         # Update the result if the function is actually new or deleted
         if row['NewDel flag']:
