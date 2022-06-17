@@ -248,7 +248,8 @@ def parse_changelog_line(line):
         tokens.group('to'),
         tokens.group('drate'),
         tokens.group('ctype'),
-        float(tokens.group('crate'))
+        float(tokens.group('crate')),
+        rdr=float(tokens.group('rdrate')),
     )
     return deg_info, tokens.group('cmdstr'), tokens.group('minor')
 

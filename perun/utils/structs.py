@@ -197,9 +197,10 @@ class DegradationInfo:
         optimized or degraded
     :ivar str confidence_type: type of the confidence we have in the detected degradation, e.g. r^2
     :ivar float confidence_rate: value of the confidence we have in the detected degradation
+    :ivar float rate_degradation_relative: relative rate of the degradation
     """
 
-    def __init__(self, res, loc, fb, tt, t="-", rd=0, ct=0, cr=0, pi=None):
+    def __init__(self, res, loc, fb, tt, t="-", rd=0, ct=0, cr=0, pi=None, rdr=0.0):
         """Each degradation consists of its results, the location, where the change has happened
         (this is e.g. the unique id of the resource, like function or concrete line), then the pair
         of best models for baseline and target, and the information about confidence.
@@ -219,6 +220,7 @@ class DegradationInfo:
         :param float rd: quantified rate of the degradation, i.e. how much exactly it degrades
         :param str ct: type of the confidence we have in the detected degradation, e.g. r^2
         :param float cr: value of the confidence we have in the detected degradation
+        :param float rdr: relative rate of the degradation (i.e. to the entire program run)
         """
         self.result = res
         self.type = t
@@ -229,13 +231,14 @@ class DegradationInfo:
         self.confidence_type = ct
         self.confidence_rate = float(cr)
         self.partial_intervals = pi
+        self.rate_degradation_relative = float(rdr)
 
     def to_storage_record(self):
         """Transforms the degradation info to a storage_record
 
         :return: string representation of the degradation as a stored record in the file
         """
-        return "{} {} {} {} {} {} {} {}".format(
+        return "{} {} {} {} {} {} {} {} {}".format(
             self.location,
             self.result,
             self.type,
@@ -243,7 +246,8 @@ class DegradationInfo:
             self.to_target,
             self.rate_degradation,
             self.confidence_type,
-            self.confidence_rate
+            self.confidence_rate,
+            self.rate_degradation_relative,
         )
 
 

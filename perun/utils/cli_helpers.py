@@ -430,12 +430,17 @@ def lookup_any_profile_callback(ctx, _, value):
     profile_path = os.path.join(pcs.get_job_directory(), value)
     if os.path.exists(profile_path):
         metrics.add_metric('profile size', os.stat(profile_path).st_size)
+    parts = value.split('^')
+    rev = None
+    if len(parts) > 1:
+        rev, value = parts[0], parts[1]
+        rev = vcs.massage_parameter(rev)
     # 0) First check if the value is tag or not
     index_tag_match = store.INDEX_TAG_REGEX.match(value)
     if index_tag_match:
         try:
             index_profile = profiles.get_nth_profile_of(
-                int(index_tag_match.group(1)), ctx.params['minor']
+                int(index_tag_match.group(1)), rev
             )
             return store.load_profile_from_file(index_profile, is_raw_profile=False)
         except TagOutOfRangeException as exc:
@@ -447,7 +452,7 @@ def lookup_any_profile_callback(ctx, _, value):
         return store.load_profile_from_file(pending_profile, is_raw_profile=True)
 
     # 1) Check the index, if this is registered
-    profile_from_index = commands.load_profile_from_args(value, ctx.params['minor'])
+    profile_from_index = commands.load_profile_from_args(value, rev)
     if profile_from_index:
         return profile_from_index
 

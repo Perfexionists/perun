@@ -60,20 +60,32 @@ COLLECT_PHASE_ATTRS_HIGH = 'none'
 # Degradation specific
 CHANGE_CMD_COLOUR = 'magenta'
 CHANGE_STRINGS = {
+    PerformanceChange.NotInBaseline: 'Not in Baseline',
+    PerformanceChange.TotalDegradation: 'Total Degradation',
+    PerformanceChange.SevereDegradation: 'Severe Degradation',
     PerformanceChange.Degradation: 'Degradation',
     PerformanceChange.MaybeDegradation: 'Maybe Degradation',
     PerformanceChange.NoChange: 'No Change',
     PerformanceChange.Unknown: 'Unknown',
     PerformanceChange.MaybeOptimization: 'Maybe Optimization',
-    PerformanceChange.Optimization: 'Optimization'
+    PerformanceChange.Optimization: 'Optimization',
+    PerformanceChange.SevereOptimization: 'Severe Optimization',
+    PerformanceChange.TotalOptimization: 'Total Optimization',
+    PerformanceChange.NotInTarget: 'Not in Target',
 }
 CHANGE_COLOURS = {
+    PerformanceChange.NotInBaseline: 'yellow',
+    PerformanceChange.TotalDegradation: 'red',
+    PerformanceChange.SevereDegradation: 'red',
     PerformanceChange.Degradation: 'red',
     PerformanceChange.MaybeDegradation: 'yellow',
     PerformanceChange.NoChange: 'white',
     PerformanceChange.Unknown: 'grey',
     PerformanceChange.MaybeOptimization: 'cyan',
-    PerformanceChange.Optimization: 'green'
+    PerformanceChange.Optimization: 'green',
+    PerformanceChange.SevereOptimization: 'green',
+    PerformanceChange.TotalOptimization: 'green',
+    PerformanceChange.NotInTarget: 'green',
 }
 CHANGE_TYPE_COLOURS = {
     'time': 'blue',
@@ -91,6 +103,7 @@ LINE_PARSING_REGEX = re.compile(
     r"(?P<drate>\S+)\s"
     r"(?P<ctype>\S+)\s"
     r"(?P<crate>\S+)\s"
+    r"(?P<rdrate>\S+)\s"
     r"(?P<minor>\S+)\s"
     r"(?P<cmdstr>.+)"
 )
