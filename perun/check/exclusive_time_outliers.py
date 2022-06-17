@@ -84,8 +84,10 @@ class DiffProfile:
             yield DegradationInfo(
                 res=result,
                 loc=row['uid'],
-                fb=str(0.0 if pd.isnull(row['-exclusive T [ms]']) else row['-exclusive T [ms]']),
-                tt=str(0.0 if pd.isnull(row['+exclusive T [ms]']) else row['+exclusive T [ms]']),
+                fb=str(0.0 if pd.isnull(row['-exclusive T [ms]']) else
+                       round(row['-exclusive T [ms]'], 3)),
+                tt=str(0.0 if pd.isnull(row['+exclusive T [ms]']) else
+                       round(row['+exclusive T [ms]'], 3)),
                 t='time',
                 rd=row['exclusive T Δ [ms]'],
                 rdr=row['prog exclusive T Δ [%]'],
@@ -107,8 +109,8 @@ class DiffProfile:
             yield DegradationInfo(
                 res=result,
                 loc=row['location'],
-                fb=row['-exclusive T [ms]'],
-                tt=row['+exclusive T [ms]'],
+                fb=round(row['-exclusive T [ms]'], 3),
+                tt=round(row['+exclusive T [ms]'], 3),
                 t='time',
                 rd=row['exclusive T Δ [ms]'],
                 rdr=row['prog exclusive T Δ [%]'],
