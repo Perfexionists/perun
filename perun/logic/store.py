@@ -241,14 +241,14 @@ def parse_changelog_line(line):
     """
     tokens = LINE_PARSING_REGEX.match(line)
     deg_info = DegradationInfo(
-        PerformanceChange[tokens.group('result')],
-        tokens.group('type'),
-        tokens.group('location'),
-        tokens.group('from'),
-        tokens.group('to'),
-        tokens.group('drate'),
-        tokens.group('ctype'),
-        float(tokens.group('crate')),
+        res=PerformanceChange[tokens.group('result')],
+        t=tokens.group('type'),
+        loc=tokens.group('location'),
+        fb=tokens.group('from'),
+        tt=tokens.group('to'),
+        rd=tokens.group('drate'),
+        ct=tokens.group('ctype'),
+        cr=float(tokens.group('crate')),
         rdr=float(tokens.group('rdrate')),
     )
     return deg_info, tokens.group('cmdstr'), tokens.group('minor')
