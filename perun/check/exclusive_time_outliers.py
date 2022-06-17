@@ -84,8 +84,8 @@ class DiffProfile:
             yield DegradationInfo(
                 res=result,
                 loc=row['uid'],
-                fb=str(row['-exclusive T [ms]']),
-                tt=str(row['+exclusive T [ms]']),
+                fb=str(0.0 if pd.isnull(row['-exclusive T [ms]']) else row['-exclusive T [ms]']),
+                tt=str(0.0 if pd.isnull(row['+exclusive T [ms]']) else row['0exclusive T [ms]']),
                 t='time',
                 rd=row['exclusive T Δ [ms]'],
                 rdr=row['prog exclusive T Δ [%]'],
@@ -100,8 +100,12 @@ class DiffProfile:
             'exclusive T Δ [ms]', 'prog exclusive T Δ [%]'
         ]
         for _, row in self.df[columns].groupby(['location']).sum().reset_index().iterrows():
+            if row['prog exclusive T Δ [%]'] > 0:
+                result = PerformanceChange.TotalDegradation
+            else:
+                result = PerformanceChange.TotalOptimization
             yield DegradationInfo(
-                res=PerformanceChange.TotalDegradation if row['prog exclusive T Δ [%]'] > 0 else PerformanceChange.TotalOptimization,
+                res=result,
                 loc=row['location'],
                 fb=row['-exclusive T [ms]'],
                 tt=row['+exclusive T [ms]'],
@@ -115,15 +119,24 @@ class DiffProfile:
     def _determine_result_and_confidence(row: pd.Series) -> Tuple[PerformanceChange, str, float]:
         exc_time = row['exclusive T Δ [ms]']
         if row['Mzs flag']:
-            result = PerformanceChange.SevereDegradation if exc_time > 0 else PerformanceChange.SevereOptimization
+            if exc_time > 0:
+                result = PerformanceChange.SevereDegradation
+            else:
+                result = PerformanceChange.SevereOptimization
             # We use IQR multiple instead of the mod. z-score to make the human comparison easier
             # ct, cr = 'Modified Z-score', row['Modified Z-score']
             ct, cr = 'IQR multiple', row['IQR multiple']
         elif row['IQR flag']:
-            result = PerformanceChange.Degradation if exc_time > 0 else PerformanceChange.Optimization
+            if exc_time > 0:
+                result = PerformanceChange.Degradation
+            else:
+                result = PerformanceChange.Optimization
             ct, cr = 'IQR multiple', row['IQR multiple']
         elif row['StdDev flag']:
-            result = PerformanceChange.MaybeDegradation if exc_time > 0 else PerformanceChange.MaybeOptimization
+            if exc_time > 0:
+                result = PerformanceChange.MaybeDegradation
+            else:
+                result = PerformanceChange.MaybeOptimization
             ct, cr = 'StdDev multiple', row['StdDev multiple']
         else:
             result = PerformanceChange.NoChange
@@ -131,7 +144,10 @@ class DiffProfile:
 
         # Update the result if the function is actually new or deleted
         if row['NewDel flag']:
-            result = PerformanceChange.NotInBaseline if exc_time > 0 else PerformanceChange.NotInTarget
+            if exc_time > 0:
+                result = PerformanceChange.NotInBaseline
+            else:
+                result = PerformanceChange.NotInTarget
 
         return result, ct, cr
 
@@ -197,13 +213,18 @@ class DiffProfile:
         return df
 
     @staticmethod
-    def _merge_and_diff(baseline_profile: pd.DataFrame, target_profile: pd.DataFrame) -> pd.DataFrame:
+    def _merge_and_diff(
+            baseline_profile: pd.DataFrame, target_profile: pd.DataFrame
+    ) -> pd.DataFrame:
+        def _delta_exc(row) -> float:
+            exc_new = 0.0 if pd.isnull(row['+exclusive T [ms]']) else row['+exclusive T [ms]']
+            exc_old = 0.0 if pd.isnull(row['-exclusive T [ms]']) else row['-exclusive T [ms]']
+            return exc_new - exc_old
+
         # Rename the exclusive time columns appropriately (- for old, + for new) and merge them
         baseline_profile.rename(columns={'exclusive': '-exclusive T [ms]'}, inplace=True)
         target_profile.rename(columns={'exclusive': '+exclusive T [ms]'}, inplace=True)
-        # Do some data polishing - convert to ms, replace nan-s
-        baseline_profile['-exclusive T [ms]'] = baseline_profile['-exclusive T [ms]'].fillna(0.0)
-        target_profile['+exclusive T [ms]'] = target_profile['+exclusive T [ms]'].fillna(0.0)
+        # Convert ns to ms
         baseline_profile['-exclusive T [ms]'] = baseline_profile['-exclusive T [ms]'].div(NS_TO_MS)
         target_profile['+exclusive T [ms]'] = target_profile['+exclusive T [ms]'].div(NS_TO_MS)
         # Rename the locations in the baseline and target profiles to match. We employ a string
@@ -216,9 +237,7 @@ class DiffProfile:
 
         df_merge = pd.merge(target_profile, baseline_profile, on=['uid', 'location'], how='left')
         # Compute the exclusive time diff
-        df_merge['exclusive T Δ [ms]'] = df_merge.apply(
-            lambda row: row['+exclusive T [ms]'] - row['-exclusive T [ms]'], axis=1
-        )
+        df_merge['exclusive T Δ [ms]'] = df_merge.apply(_delta_exc, axis=1)
         # Prepare filters
         new_nan_filt = df_merge['+exclusive T [ms]'].isna()
         old_nan_filt = df_merge['-exclusive T [ms]'].isna()
@@ -239,7 +258,9 @@ class DiffProfile:
         return df_merge.sort_values(by='exclusive T Δ [ms]', ascending=False).reset_index(drop=True)
 
 
-def _map_similar_names(strings_old: List[str], strings_new: List[str]) -> Tuple[Dict[str, str], Dict[str, str]]:
+def _map_similar_names(
+        strings_old: List[str], strings_new: List[str]
+) -> Tuple[Dict[str, str], Dict[str, str]]:
     renames_old, renames_new = {}, {}
     for old_name in strings_old:
         matching_name = get_close_matches(old_name, strings_new, n=1)

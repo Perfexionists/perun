@@ -74,7 +74,7 @@ CHANGE_STRINGS = {
     PerformanceChange.NotInTarget: 'Not in Target',
 }
 CHANGE_COLOURS = {
-    PerformanceChange.NotInBaseline: 'yellow',
+    PerformanceChange.NotInBaseline: 'magenta',
     PerformanceChange.TotalDegradation: 'red',
     PerformanceChange.SevereDegradation: 'red',
     PerformanceChange.Degradation: 'red',
@@ -85,7 +85,7 @@ CHANGE_COLOURS = {
     PerformanceChange.Optimization: 'green',
     PerformanceChange.SevereOptimization: 'green',
     PerformanceChange.TotalOptimization: 'green',
-    PerformanceChange.NotInTarget: 'green',
+    PerformanceChange.NotInTarget: 'magenta',
 }
 CHANGE_TYPE_COLOURS = {
     'time': 'blue',

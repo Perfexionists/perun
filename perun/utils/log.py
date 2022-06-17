@@ -525,7 +525,7 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
         for deg_info, cmd, __ in changes:
             print('\u2514 ', end='')
             if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
-                cprint('{}ms ({}x)'.format(
+                cprint('{}ms ({}%)'.format(
                     round(deg_info.rate_degradation, 2),
                     round(deg_info.rate_degradation_relative, 2)
                 ), 'white', 'bold')
