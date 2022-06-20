@@ -270,7 +270,7 @@ def _ascend_by_section_safely(section_iterator, section_key):
     :raises exceptions.MissingConfigSectionException: when the given section_key is not found in the
         configuration object.
     """
-    if section_key not in section_iterator:
+    if section_key not in (section_iterator or []):
         raise exceptions.MissingConfigSectionException(section_key)
     return section_iterator[section_key]
 
