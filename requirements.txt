@@ -9,7 +9,7 @@ bokeh==0.12.6
 demandimport==0.3.4
 Sphinx==1.6.4
 sphinx-click==1.0.3
-Jinja2>=2.10.1
+Jinja2>=2.10.1,<=3.0.1
 python-magic==0.4.15
 Faker>=0.8.16
 GitPython>=2.1.11

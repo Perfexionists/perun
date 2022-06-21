@@ -371,10 +371,6 @@ Profile Conversions API
 
 .. autofunction:: resources_to_pandas_dataframe
 
-.. autofunction:: to_heap_map_format
-
-.. autofunction:: to_heat_map_format
-
 .. autofunction:: to_flame_graph_format
 
 .. autofunction:: plot_data_from_coefficients_of
@@ -387,8 +383,6 @@ Profile Query API
 .. automodule:: perun.profile.query
 
 .. autofunction:: all_items_of
-
-.. autofunction:: all_resource_fields_of
 
 .. autofunction:: all_numerical_resource_fields_of
 
