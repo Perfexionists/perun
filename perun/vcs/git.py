@@ -93,7 +93,7 @@ def _walk_minor_versions(git_repo, head):
     """
     try:
         head_commit = git_repo.commit(head)
-    except ValueError:
+    except (ValueError, git.exc.BadName):
         return
     for commit in git_repo.iter_commits(head_commit):
         yield _parse_commit(commit)
