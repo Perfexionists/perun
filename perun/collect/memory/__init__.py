@@ -1,6 +1,5 @@
 """Memory collector collects allocations of C/C++ functions, target addresses
-of allocations, type of allocations, etc. The collected data are suitable for
-visualiation using e.g. :ref:`views-heapmap`.
+of allocations, type of allocations, etc.
 """
 
 COLLECTOR_TYPE = 'memory'
