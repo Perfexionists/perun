@@ -150,7 +150,6 @@ class DiffProfile:
                 result = PerformanceChange.NotInBaseline
             else:
                 result = PerformanceChange.NotInTarget
-
         return result, ct, cr
 
     def modified_z_score(self) -> None:
