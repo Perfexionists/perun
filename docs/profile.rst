@@ -384,8 +384,6 @@ Profile Query API
 
 .. autofunction:: all_items_of
 
-.. autofunction:: all_resource_fields_of
-
 .. autofunction:: all_numerical_resource_fields_of
 
 .. autofunction:: unique_resource_values_of
