@@ -450,7 +450,6 @@ def _record_func_end(record, ctx):
         func = ctx.funcs[resource['tid']][resource['uid']]
         func['e'].append(abs(resource['exclusive']))
         func['i'].append(abs(resource['amount']))
-
     return resource
 
 
