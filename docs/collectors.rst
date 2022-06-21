@@ -130,18 +130,6 @@ where made during the program run.
 The :ref:`views-flame-graph` is an efficient visualization of inclusive consumption of resources.
 The width of the base of one flame shows the bottleneck and hotspots of profiled binaries.
 
-.. image:: /../examples/memory-heapmap.*
-
-The :ref:`views-heapmap` shows the address space through the time (snapshots) and visualize the
-fragmentation of memory allocation per each allocation site. The `heap map` aboe shows the
-difference between allocations using lists (purple), skiplists (pinkish) and standard vectors
-(blue). The map itself is interactive and displays details about individual address cells.
-
-.. image:: /../examples/memory-heatmap.*
-
-`Heat map` is a mode of heap map, which aggregates the allocations over all of the snapshots and
-uses warmer colours for address cells, where more allocations were performed.
-
 .. _collectors-time:
 
 Time Collector

@@ -161,12 +161,7 @@ def bounds(ctx, **kwargs):
             "type": "bound",
     }
 
-
-    `Memory` profiles can be efficiently interpreted using :ref:`views-heapmap`
-    technique (together with its `heat` mode), which shows memory allocations
-    (by functions) in memory address map.
-
-    Refer to :ref:`collectors-memory` for more thorough description and
-    examples of `memory` collector.
+    Refer to :ref:`collectors-bounds` for more thorough description and
+    examples of `bounds` collector.
     """
     runner.run_collector_from_cli_context(ctx, 'bounds', kwargs)
