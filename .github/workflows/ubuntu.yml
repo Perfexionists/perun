@@ -44,7 +44,7 @@ jobs:
       - name: Prepare test enviroment
         run: |
           git config --global user.email "perun-allmighty@gmail.com"
-          git config --global ser.name "Perun Allmighty"
+          git config --global user.name "Perun Allmighty"
 
       - name: Run tests
         run: |
