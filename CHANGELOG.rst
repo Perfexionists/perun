@@ -6,7 +6,21 @@ HEAD
 
 **To be included in next release**
 
-0.20.1 (2021-05-12)
+0.20.2-hotfix (2022-06-21)
+--------------------------
+
+`commit: 0a19a8a63816a2a7bb1481fe3a89ea092af606e6`
+
+**Enhance the Performance and Code Culture**
+
+  - Fix an issue with uncompilable documentation
+  - Fix an issue with traversing wrongly configured sections
+  - Fix an uncaught exception
+  - Fix issue in depedencies
+  - Fix an issue with dev mode
+  - Add continuous integration
+
+0.20.2 (2021-05-12)
 -------------------
 
 `commit: 677a0ea2d997c285bc45bd47858b469b7997066d`
