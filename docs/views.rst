@@ -34,10 +34,6 @@ Perun's tool suite currently contains the following visualizations:
        customization possibilities. This visualization also display regression models, if the input
        profile was postprocessed by :ref:`postprocessors-regression-analysis`.
 
-    5. :ref:`views-heapmap` visualizes the `memory` consumption as a heap map of allocation
-       resources to target memory addresses. Note that the output is dependent on ncurses_ library and hence
-       can currently be used only from UNIX terminals.
-
     5. :ref:`views-tableof` transforms either the resources or models of the profile into a tabular
        representation. The table can be further modified by (1) changing the format (see tabulate_
        for table formats), (2) limiting rows or columns displayed, or (3) sorting w.r.t specified
@@ -142,36 +138,6 @@ where made during the program run.
 
 The :ref:`views-flow` above shows the trend of the average running time of the ``SLList_search``
 function depending on the size of the structure we execute the search on.
-
-.. _views-heapmap:
-
-Heap Map
-~~~~~~~~
-
-.. automodule:: perun.view.heapmap
-
-Overview and Command Line Interface
-"""""""""""""""""""""""""""""""""""
-
-.. click:: perun.view.heapmap.run:heapmap
-   :prog: perun show heapmap
-
-.. _views-heapmap-examples:
-
-Examples of Output
-""""""""""""""""""
-
-.. image:: /../examples/memory-heapmap.*
-
-The :ref:`views-heapmap` shows the address space through the time (snapshots) and visualize the
-fragmentation of memory allocation per each allocation site. The `heap map` aboe shows the
-difference between allocations using lists (purple), skiplists (pinkish) and standard vectors
-(blue). The map itself is interactive and displays details about individual address cells.
-
-.. image:: /../examples/memory-heatmap.*
-
-`Heat map` is a mode of heap map, which aggregates the allocations over all of the snapshots and
-uses warmer colours for address cells, where more allocations were performed.
 
 .. _views-scatter:
 
@@ -284,7 +250,6 @@ You can register your new visualization as follows:
             |-- /bars
             |-- /flamegraph
             |-- /flow
-            |-- /heapmap
             |-- /scatter
 
     2. First, implement the ``__init__.py`` file, including the module docstring with brief
