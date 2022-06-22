@@ -255,6 +255,7 @@ class DiffProfile:
         df_merge.loc[no_nan_filt, 'prog exclusive T Δ [%]'] = (
                 (df_merge['+exclusive T [ms]'] - df_merge['-exclusive T [ms]']) / total_exc * 100
         )
+        
         # Sort by the most significant time difference
         return df_merge.sort_values(by='exclusive T Δ [ms]', ascending=False).reset_index(drop=True)
 
