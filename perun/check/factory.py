@@ -199,7 +199,9 @@ def degradation_between_profiles(baseline_profile, target_profile, models_strate
 
 @log.print_elapsed_time
 @decorators.phase_function('check two profiles')
-def degradation_between_files(baseline_file, target_file, minor_version, models_strategy, force):
+def degradation_between_files(
+        baseline_file, target_file, minor_version, models_strategy, force=False
+):
     """Checks between pair of files (baseline, target) whether there are any changes in performance.
 
     :param dict baseline_file: baseline profile we are checking against
