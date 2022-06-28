@@ -8,6 +8,16 @@ HEAD
 
   - Add new degradation detection method "Exclusive Time Outliers" (ETO).
 
+0.20.3 (2022-06-28)
+-------------------
+
+`commit: 1e7fb33f3b38b3a9d915d6cf52cdddb50b7eff35`
+
+**Fix issues in Tracer**
+
+  - Fix some issues in Tracer raw data parsing.
+  - Add location information (binary file path) of profiled functions to the profile.
+
 0.20.2-hotfix2 (2022-06-28)
 ---------------------------
 
@@ -16,8 +26,6 @@ HEAD
 **Hotfix failing nondeterministic test**
 
   - Fix test_regression_detections_methods having too specific mock results
-  - Fix some issues in Tracer raw data parsing.
-  - Add location information (binary file path) of profiled functions to the profile.
 
 0.20.2-hotfix (2022-06-21)
 --------------------------
