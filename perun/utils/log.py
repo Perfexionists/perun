@@ -347,9 +347,15 @@ def get_degradation_change_colours(degradation_result):
     :returns: tuple of (from model string colour, to model string colour)
     """
     colour = 'yellow', 'yellow'
-    if degradation_result in (PerformanceChange.Optimization, PerformanceChange.MaybeOptimization):
+    if degradation_result in (
+            PerformanceChange.TotalOptimization, PerformanceChange.SevereOptimization,
+            PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
+    ):
         colour = 'red', 'green'
-    elif degradation_result in (PerformanceChange.Degradation, PerformanceChange.MaybeDegradation):
+    elif degradation_result in (
+            PerformanceChange.TotalDegradation, PerformanceChange.SevereDegradation,
+            PerformanceChange.Degradation, PerformanceChange.MaybeDegradation
+    ):
         colour = 'green', 'red'
     return colour
 
@@ -365,8 +371,8 @@ def print_short_summary_of_degradations(degradation_list):
     counts = count_degradations_per_group(degradation_list)
 
     print_short_change_string(counts)
-    optimization_count = counts.get('Optimization', 0)
-    degradation_count = counts.get('Degradation', 0)
+    optimization_count = counts.get('Optimization', 0) + counts.get('SevereOptimization', 0)
+    degradation_count = counts.get('Degradation', 0) + counts.get('SevereDegradation', 0)
     print("{}({}), {}({})".format(
         str_to_plural(optimization_count, "optimization"), OPTIMIZATION_ICON,
         str_to_plural(degradation_count, "degradation"), DEGRADATION_ICON
@@ -518,7 +524,13 @@ def print_list_of_degradations(degradation_list, model_strategy="best-model"):
         # Iterate and print all of the infos
         for deg_info, cmd, __ in changes:
             print('\u2514 ', end='')
-            cprint('{}x'.format(round(deg_info.rate_degradation, 2)), 'white', 'bold')
+            if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
+                cprint('{}ms ({}%)'.format(
+                    round(deg_info.rate_degradation, 2),
+                    round(deg_info.rate_degradation_relative, 2)
+                ), 'white', 'bold')
+            else:
+                cprint('{}x'.format(round(deg_info.rate_degradation, 2)), 'white', 'bold')
             print(': ', end='')
             cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, 'white'))
             print(' ', end='')
