@@ -79,7 +79,7 @@ probe {probe_events}
 ENTRY_APPROX_SAMPLE_TEMPLATE = """
     counter = {sampling_cnt}[tid, pname]
     if (counter == 0 || counter == {sampling_thr}[pname]) {{{{
-        counter = 0
+        {sampling_cnt}[tid, pname] = 0
         {sampling_flag}[tid, pname] ++
         {{probe_handler}}
     }}}}

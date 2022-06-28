@@ -61,7 +61,7 @@ class SafeQueue:
             except queue.Full:
                 continue
 
-    def read(self):
+    def read(self, timeout=QUEUE_TIMEOUT, retries=1):
         """ Read data from the queue.
 
         :return object: the obtained data.
@@ -70,15 +70,29 @@ class SafeQueue:
         while True:
             # Attempt to get data from the queue
             try:
-                return self._queue.get(block=True, timeout=QUEUE_TIMEOUT)
+                return self._queue.get(block=True, timeout=timeout)
             except queue.Empty:
                 # If EOI event has been signalled, attempt the 'get' operation once more
                 # since there are generally some delays before the written data are accessible
                 # to the consumer, although the EOI might had already been set.
                 if self._eoi_event.is_set():
-                    if retry < 1:
+                    if retry < retries:
                         retry += 1
                         continue
                     # If no data are available even after a retry, assume the queue to be empty
                     return None
                 continue
+
+    # TODO: temporary hack, maybe sent/recv object counting would be better?
+    def read_large(self):
+        """ Read large data from the queue (i.e., Profile object)
+
+        :return object: the obtained data.
+        """
+        # We know that a profile has been sent through a queue, however, it might take a while
+        # until it is accessible
+        for _ in range(20):
+            profile = self.read(QUEUE_TIMEOUT * 5, 10)
+            if profile is not None:
+                return profile
+        return None

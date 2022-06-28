@@ -14,6 +14,8 @@ HEAD
 **Hotfix failing nondeterministic test**
 
   - Fix test_regression_detections_methods having too specific mock results
+  - Fix some issues in Tracer raw data parsing.
+  - Add location information (binary file path) of profiled functions to the profile.
 
 0.20.2-hotfix (2022-06-21)
 --------------------------

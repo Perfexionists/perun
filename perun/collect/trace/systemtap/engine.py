@@ -513,7 +513,7 @@ def _wait_for_systemtap_data(datafile):
     )
     with TimeoutThread(HARD_TIMEOUT) as timeout:
         while not timeout.reached():
-            with SuppressedExceptions(IndexError):
+            with SuppressedExceptions(IndexError, ValueError):
                 # Periodically scan the last line of the data file
                 # The file can be potentially long, use the optimized method to get the last line
                 last_line = _get_last_line_of(datafile, FileSize.LONG)[1]
