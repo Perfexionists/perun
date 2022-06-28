@@ -6,6 +6,12 @@ HEAD
 
 **To be included in next release**
 
+0.20.4 (2022-06-28)
+-------------------
+
+`commit: 862f02acefbeae7e68c1f9271abfbca2c0026697`
+
+**Add exclusive time outliers check**
   - Add new degradation detection method "Exclusive Time Outliers" (ETO).
 
 0.20.3 (2022-06-28)
