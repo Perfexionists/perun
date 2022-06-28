@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - Fix test_regression_detections_methods having too specific mock results
+
 0.20.2-hotfix (2022-06-21)
 --------------------------
 
