@@ -67,9 +67,9 @@ def load_profiles(param):
 
 def check_degradation_result(baseline_profile, target_profile, expected_result, function):
     result = list(function(baseline_profile, target_profile))
-    assert expected_result['result'] in [r.result for r in result]
-    assert expected_result['type'] in [r.type for r in result]
-    assert expected_result['rate'] in [round(r.rate_degradation) for r in result]
+    assert expected_result['result'] & {r.result for r in result}
+    assert expected_result['type'] & {r.type for r in result}
+    assert expected_result['rate'] & {round(r.rate_degradation) for r in result}
 
 
 def test_regression_detections_methods():
