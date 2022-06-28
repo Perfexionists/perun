@@ -11,6 +11,7 @@ import perun.check.factory as check
 import perun.check.average_amount_threshold as aat
 import perun.check.best_model_order_equality as bmoe
 import perun.check.fast_check as fast
+import perun.check.exclusive_time_outliers as eto
 
 __author__ = 'Tomas Fiedor'
 
@@ -101,6 +102,26 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
         store.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True),
         store.load_profile_from_file(os.path.join(pool_path, 'zero.perf'), True)
     ]
+    tracer_profiles = [
+        store.load_profile_from_file(os.path.join(pool_path, 'tracer_baseline.perf'), True),
+        store.load_profile_from_file(os.path.join(pool_path, 'tracer_target.perf'), True)
+    ]
+
+    # Test degradation detection using ETO
+    result = list(eto.exclusive_time_outliers(tracer_profiles[0], tracer_profiles[1]))
+    expected_changes = {check.PerformanceChange.TotalDegradation, check.PerformanceChange.NoChange}
+    assert expected_changes & set(r.result for r in result)
+
+    # Test degradation detection using ETO on the same profile - no Degradation should be found.
+    result = list(eto.exclusive_time_outliers(tracer_profiles[0], tracer_profiles[0]))
+    # We allow TotalDegradation and TotalOptimization since one them is always reported
+    allowed = {
+        check.PerformanceChange.NoChange, check.PerformanceChange.TotalDegradation,
+        check.PerformanceChange.TotalOptimization
+    }
+    # No other result should be present here
+    assert not set(r.result for r in result) - allowed
+
     # Cannot detect degradation using BMOE strategy betwen these pairs of profiles,
     # since the best models are same with good confidence
     result = list(bmoe.best_model_order_equality(profiles[0], profiles[1]))
