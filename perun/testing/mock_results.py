@@ -12,24 +12,24 @@ _PREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'constant', 'rate': 999},
+            {'result': {pc.Degradation}, 'type': {'constant'}, 'rate': {999}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'constant', 'rate': -91},
+            {'result': {pc.Optimization}, 'type': {'constant'}, 'rate': {-91}},
         ],
         # LINEAR
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'constant', 'rate': 5993},
+            {'result': {pc.Degradation}, 'type': {'constant'}, 'rate': {5993}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'constant', 'rate': -98},
+            {'result': {pc.Optimization}, 'type': {'constant'}, 'rate': {-98}},
         ],
         # QUADRATIC
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'linear',
-             'rate': 966206052007956736},
+            {'result': {pc.Degradation}, 'type': {'linear'},
+             'rate': {966206052007956736}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'linear', 'rate': -98},
+            {'result': {pc.Optimization}, 'type': {'linear'}, 'rate': {-98}},
         ],
     ],
     # LINEAR MODEL
@@ -37,23 +37,23 @@ _PREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'constant', 'rate': 55},
+            {'result': {pc.Degradation}, 'type': {'constant'}, 'rate': {55}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'constant', 'rate': -24},
+            {'result': {pc.MaybeOptimization}, 'type': {'constant'}, 'rate': {-24}},
         ],
         # LINEAR
         [
             # ERROR
-            {'result': pc.MaybeDegradation, 'type': 'linear', 'rate': 20},
+            {'result': {pc.MaybeDegradation}, 'type': {'linear'}, 'rate': {20}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'linear', 'rate': -17},
+            {'result': {pc.MaybeOptimization}, 'type': {'linear'}, 'rate': {-17}},
         ],
         # QUADRATIC
         [
             # ERROR
-            {'result': pc.MaybeDegradation, 'type': 'linear', 'rate': 7},
+            {'result': {pc.MaybeDegradation}, 'type': {'linear', 'constant'}, 'rate': {7}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'linear', 'rate': -33},
+            {'result': {pc.Optimization}, 'type': {'linear', 'constant'}, 'rate': {-33}},
         ],
     ],
     # LOGARITHMIC MODEL
@@ -61,23 +61,23 @@ _PREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.NoChange, 'type': '', 'rate': 24},
+            {'result': {pc.NoChange}, 'type': {''}, 'rate': {24}},
             # IMPROVEMENT
-            {'result': pc.NoChange, 'type': '', 'rate': -19},
+            {'result': {pc.NoChange}, 'type': {''}, 'rate': {-19}},
         ],
         # LINEAR
         [
             # ERROR
-            {'result': pc.MaybeDegradation, 'type': 'linear', 'rate': 20},
+            {'result': {pc.MaybeDegradation}, 'type': {'linear'}, 'rate': {20}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'linear', 'rate': -17},
+            {'result': {pc.MaybeOptimization}, 'type': {'linear'}, 'rate': {-17}},
         ],
         # QUADRATIC
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'linear', 'rate': 36},
+            {'result': {pc.Degradation}, 'type': {'linear'}, 'rate': {36}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'linear', 'rate': 57},
+            {'result': {pc.MaybeOptimization}, 'type': {'linear'}, 'rate': {57}},
         ],
     ],
     # QUADRATIC MODEL
@@ -85,23 +85,23 @@ _PREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'constant', 'rate': 27},
+            {'result': {pc.Degradation}, 'type': {'constant'}, 'rate': {27}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'constant', 'rate': -21},
+            {'result': {pc.MaybeOptimization}, 'type': {'constant'}, 'rate': {-21}},
         ],
         # LINEAR
         [
             # ERROR
-            {'result': pc.MaybeDegradation, 'type': 'linear', 'rate': 19},
+            {'result': {pc.MaybeDegradation}, 'type': {'linear'}, 'rate': {19}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'linear', 'rate': -16},
+            {'result': {pc.MaybeOptimization}, 'type': {'linear'}, 'rate': {-16}},
         ],
         # QUADRATIC
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'linear', 'rate': 43},
+            {'result': {pc.Degradation}, 'type': {'linear'}, 'rate': {43}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'linear', 'rate': -28},
+            {'result': {pc.Optimization}, 'type': {'linear'}, 'rate': {-28}},
         ],
     ],
     # POWER MODEL
@@ -109,23 +109,23 @@ _PREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'constant', 'rate': 5219},
+            {'result': {pc.Degradation}, 'type': {'constant'}, 'rate': {5219}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'constant', 'rate': -98},
+            {'result': {pc.Optimization}, 'type': {'constant'}, 'rate': {-98}},
         ],
         # LINEAR
         [
             # ERROR
-            {'result': pc.NoChange, 'type': '', 'rate': -1.0},
+            {'result': {pc.NoChange}, 'type': {''}, 'rate': {-1.0}},
             # IMPROVEMENT
-            {'result': pc.NoChange, 'type': '', 'rate': 1.0},
+            {'result': {pc.NoChange}, 'type': {''}, 'rate': {1.0}},
         ],
         # QUADRATIC
         [
             # ERROR
-            {'result': pc.Optimization, 'type': 'linear', 'rate': -99},
+            {'result': {pc.Optimization}, 'type': {'linear'}, 'rate': {-99}},
             # IMPROVEMENT
-            {'result': pc.Degradation, 'type': 'linear', 'rate': 14016},
+            {'result': {pc.Degradation}, 'type': {'linear'}, 'rate': {14016}},
         ],
     ],
     # EXPONENTIAL MODEL
@@ -133,23 +133,23 @@ _PREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'constant', 'rate': 38},
+            {'result': {pc.Degradation}, 'type': {'constant'}, 'rate': {38}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'constant', 'rate': -24},
+            {'result': {pc.MaybeOptimization}, 'type': {'constant'}, 'rate': {-24}},
         ],
         # LINEAR
         [
             # ERROR
-            {'result': pc.MaybeDegradation, 'type': 'linear', 'rate': 21},
+            {'result': {pc.MaybeDegradation}, 'type': {'linear'}, 'rate': {21}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'linear', 'rate': -18},
+            {'result': {pc.MaybeOptimization}, 'type': {'linear'}, 'rate': {-18}},
         ],
         # QUADRATIC
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'linear', 'rate': 44},
+            {'result': {pc.Degradation}, 'type': {'linear'}, 'rate': {44}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'linear', 'rate': -29},
+            {'result': {pc.Optimization}, 'type': {'linear'}, 'rate': {-29}},
         ],
     ],
 ]
@@ -163,9 +163,9 @@ _LREG_EXPECTED_RESULTS = [
         # LINEAR
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'linear', 'rate': 5993},
+            {'result': {pc.Degradation}, 'type': {'linear'}, 'rate': {5993}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'linear', 'rate': -98},
+            {'result': {pc.Optimization}, 'type': {'linear'}, 'rate': {-98}},
         ],
         # QUADRATIC
         _PREG_EXPECTED_RESULTS[0][2],
@@ -181,9 +181,9 @@ _LREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'linear', 'rate': 5219},
+            {'result': {pc.Degradation}, 'type': {'linear'}, 'rate': {5219}},
             # IMPROVEMENT
-            {'result': pc.Optimization, 'type': 'linear', 'rate': -98},
+            {'result': {pc.Optimization}, 'type': {'linear'}, 'rate': {-98}},
         ],
         # LINEAR
         _PREG_EXPECTED_RESULTS[4][1],
@@ -195,9 +195,9 @@ _LREG_EXPECTED_RESULTS = [
         # CONSTANT
         [
             # ERROR
-            {'result': pc.Degradation, 'type': 'linear', 'rate': 38},
+            {'result': {pc.Degradation}, 'type': {'linear'}, 'rate': {38}},
             # IMPROVEMENT
-            {'result': pc.MaybeOptimization, 'type': 'linear', 'rate': -24},
+            {'result': {pc.MaybeOptimization}, 'type': {'linear'}, 'rate': {-24}},
         ],
         # LINEAR
         _PREG_EXPECTED_RESULTS[5][1],
