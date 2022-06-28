@@ -6,6 +6,8 @@ HEAD
 
 **To be included in next release**
 
+  - Add new degradation detection method "Exclusive Time Outliers" (ETO).
+
 0.20.2-hotfix2 (2022-06-28)
 ---------------------------
 
