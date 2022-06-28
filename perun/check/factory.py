@@ -199,23 +199,28 @@ def degradation_between_profiles(baseline_profile, target_profile, models_strate
 
 @log.print_elapsed_time
 @decorators.phase_function('check two profiles')
-def degradation_between_files(baseline_file, target_file, minor_version, models_strategy):
+def degradation_between_files(
+        baseline_file, target_file, minor_version, models_strategy, force=False
+):
     """Checks between pair of files (baseline, target) whether there are any changes in performance.
 
     :param dict baseline_file: baseline profile we are checking against
     :param dict target_file: target profile we are testing
     :param str minor_version: targ minor_version
     :param str models_strategy: name of detection models strategy to obtains relevant model kinds
+    :param bool force: force profiles check despite different configurations
     :returns None: no return value
     """
     # First check if the configurations are compatible
     baseline_config = profiles.to_config_tuple(baseline_file)
     target_config = profiles.to_config_tuple(target_file)
     target_minor_version = target_file.get('origin', minor_version)
-    if baseline_config != target_config:
-        log.error("incompatible configurations '{}' and '{}'".format(
-            baseline_config, target_config
-        ) + "\n\nPerformance check does not make sense for profiles collected in different ways!")
+    if not force:
+        if baseline_config != target_config:
+            log.error("incompatible configurations '{}' and '{}'".format(
+                baseline_config, target_config
+            ) + "\n\nPerformance check does not make sense for profiles "
+                "collected in different ways!")
 
     detected_changes = [
         (deg, profiles.config_tuple_to_cmdstr(baseline_config), target_minor_version) for deg in
@@ -281,6 +286,7 @@ def parse_strategy(strategy):
         'fast': 'fast_check',
         'int': 'integral_comparison',
         'loc': 'local_statistics',
+        'eto': 'exclusive_time_outliers'
     }
     return short_strings.get(strategy, strategy)
 

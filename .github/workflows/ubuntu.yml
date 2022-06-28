@@ -3,7 +3,7 @@ name: Ubuntu (build-&-test)
 on:
   push:
     branches: 
-      - master 
+      - master
       - develop
   pull_request:
     branches: 
