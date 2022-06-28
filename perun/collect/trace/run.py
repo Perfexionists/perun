@@ -20,6 +20,7 @@ import perun.logic.runner as runner
 import perun.utils.log as stdout
 import perun.utils.metrics as metrics
 import perun.utils as utils
+from perun.profile.factory import Profile
 from perun.utils.structs import CollectStatus
 
 
@@ -116,7 +117,14 @@ def after(**kwargs):
     metrics.add_metric('data_size', data_size)
     WATCH_DOG.info('Raw data file size: {}'.format(utils.format_file_size(data_size)))
 
-    kwargs['profile'] = kwargs['config'].engine.transform(**kwargs)
+    # Dirty temporary hack
+    if kwargs['config'].engine.name == 'ebpf':
+        kwargs['profile'] = Profile()
+        kwargs['profile'].update_resources(
+            {'resources': list(kwargs['config'].engine.transform(**kwargs))}, 'global'
+        )
+    else:
+        kwargs['profile'] = kwargs['config'].engine.transform(**kwargs)
 
     WATCH_DOG.info('Data processing finished.')
     stdout.done('\n\n')
