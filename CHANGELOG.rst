@@ -6,6 +6,15 @@ HEAD
 
 **To be included in next release**
 
+0.20.2-hotfix2 (2022-06-28)
+---------------------------
+
+`commit: b16b5cd65b8746368f55247d2dab53abc105d846`
+
+**Hotfix failing nondeterministic test**
+
+  - Fix test_regression_detections_methods having too specific mock results
+
 0.20.2-hotfix (2022-06-21)
 --------------------------
 
