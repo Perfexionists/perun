@@ -95,8 +95,7 @@ NS_TO_MS = 1000000
 def exclusive_time_outliers(
         baseline_profile: Profile, target_profile: Profile, **_
 ) -> Generator[DegradationInfo, None, None]:
-    """ Checks the pair of (baseline, target) profiles for changes regarding function exclusive
-    times.
+    """Checks the pair of (baseline, target) profiles for changes in function exclusive times.
 
     The method works by detecting 'exclusive time delta' outliers and classifying their severity
     based on the outliers detection method that found them.
@@ -111,8 +110,10 @@ def exclusive_time_outliers(
 
 
 class DiffProfile:
-    """ A representation of a difference profile that contains a merge of the baseline and target
-    profiles, as well as their exclusive time deltas (absolute and relative).
+    """ A representation of a difference profile.
+
+    Contains a merge of the baseline and target profiles, as well as their exclusive time deltas
+    (absolute and relative).
 
     The difference profile is represented as Pandas DataFrame with columns
     [
@@ -138,7 +139,7 @@ class DiffProfile:
     :ivar df: the difference profile as specified above
     """
     def __init__(self, baseline_profile: Profile, target_profile: Profile) -> None:
-        """ Constructor.
+        """Constructor.
 
         :param baseline_profile: baseline against which we are checking the degradation
         :param target_profile: profile corresponding to the checked minor version
@@ -156,7 +157,7 @@ class DiffProfile:
         )
 
     def detect_changes(self) -> Generator[DegradationInfo, None, None]:
-        """ Detect and report the exclusive time changes and the overall degradation / optimization.
+        """Detect and report the exclusive time changes and the overall degradation / optimization.
 
         The method runs three outlier detection methods, where z-score flags the most significant
         outliers and StdDev flags the least significant ones.
@@ -219,8 +220,7 @@ class DiffProfile:
 
     @staticmethod
     def _determine_result_and_confidence(row: pd.Series) -> Tuple[PerformanceChange, str, float]:
-        """ Select the severity, confidence type and confidence rate of the detected exclusive
-        time change.
+        """Select the severity, confidence type and confidence rate of the exclusive time change.
 
         :param row: DataFrame row of specific 'uid' (i.e., function) record
 
@@ -260,10 +260,10 @@ class DiffProfile:
         return result, ct, cr
 
     def modified_z_score(self) -> None:
-        """ Compute the modified Z-score (Mzs) for each function in the DataFrame. Flag those
-        records that are below or above the Mzs cut-off score (not the same cut-off score as the
-        one that can be configured in config).
+        """Compute the modified Z-score (Mzs) for each function in the DataFrame.
 
+        Also flag those records that are below or above the Mzs cut-off score (not the same cut-off
+        score as the one that can be configured in config).
 
         Modified z-score mzs_i = (x_i − x_median) / (k * MAD)
           - MAD is the median of the absolute deviation from the median.
@@ -293,8 +293,9 @@ class DiffProfile:
         self.df['Mzs flag'] = mzs_filter
 
     def iqr_multiple(self) -> None:
-        """ Compute the IQR multiple for each function in the DataFrame. Flag those records that
-        are below or above the IQR cut-off score.
+        """Compute the IQR multiple for each function in the DataFrame.
+
+        Also flag those records that are below or above the IQR cut-off score.
         """
         # Compute IQR
         q1 = self.df['exclusive T Δ [ms]'].quantile(0.25)
@@ -311,9 +312,9 @@ class DiffProfile:
         self.df['IQR flag'] = iqr_filter
 
     def std_dev_multiple(self) -> None:
-        """ Compute the StdDev multiple for each function in the DataFrame. Flag those records that
-        are below or above the StdDev cut-off score.
+        """Compute the StdDev multiple for each function in the DataFrame.
 
+        Also flag those records that are below or above the StdDev cut-off score.
         Note that we compute the stddev without the previously detected outliers that would
         otherwise heavily skew the stddev value.
         """
@@ -325,16 +326,16 @@ class DiffProfile:
         self.df['StdDev flag'] = stddev_filter
 
     def new_deleted_functions(self) -> None:
-        """ Flag functions that are new or missing in the target profile.
-        """
+        """Flag functions that are new or missing in the target profile."""
         new_removed_filter = (
                 self.df['+exclusive T [ms]'].isna() | self.df['-exclusive T [ms]'].isna()
         )
         self.df['NewDel flag'] = new_removed_filter
 
     def _prepare_profile(self, profile: Profile) -> pd.DataFrame:
-        """ Extract the profile resources as DataFrame in the desired format. Namely:
+        """Extract the profile resources as DataFrame in the desired format.
 
+        Namely:
         1) keep only the 'uid' (function name), 'exclusive' (time) and 'location' columns
         2) sum all of the individual exclusive time records
         3) filter the location based on the supplied regex
@@ -357,7 +358,7 @@ class DiffProfile:
     def _merge_and_diff(
             baseline_profile: pd.DataFrame, target_profile: pd.DataFrame
     ) -> pd.DataFrame:
-        """ Merge the baseline and target DataFrames and compute the absolute and relative deltas.
+        """Merge the baseline and target DataFrames and compute the absolute and relative deltas.
 
         :param baseline_profile: baseline profile DataFrame
         :param target_profile: baseline profile DataFrame
@@ -419,8 +420,9 @@ class DiffProfile:
 def _map_similar_names(
         strings_old: List[str], strings_new: List[str]
 ) -> Tuple[OldLocMap, NewLocMap]:
-    """ Map profile location names that might have slightly changed in different versions, e.g.,
-    due to the names containing the version number (mylib-3.4 vs mylib-3.5).
+    """Map profile location names that might have slightly changed in different versions.
+
+    E.g., due to the names containing the version number (mylib-3.4 vs mylib-3.5).
 
     :param strings_old: a collection of location names found in the previous version
     :param strings_new: a collection of location names found in the current version
@@ -445,7 +447,7 @@ def _map_similar_names(
 
 
 def _longest_common_prefix(string1: str, string2: str) -> str:
-    """ Find longest common prefix of two strings.
+    """Find longest common prefix of two strings.
 
     :param string1: the first string
     :param string2: the second string
