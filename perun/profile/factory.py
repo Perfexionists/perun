@@ -22,7 +22,7 @@ from perun.postprocess.regressogram.methods import get_supported_nparam_methods
 __author__ = 'Tomas Fiedor'
 
 
-class Profile(collections.MutableMapping):
+class Profile(collections.abc.MutableMapping):
     """
     :ivar dict _storage: internal storage of the profile
     :ivar dict _tuple_to_resource_type_map: map of tuple of persistent records of resources to
