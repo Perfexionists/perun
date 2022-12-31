@@ -248,6 +248,9 @@ def full_profiles():
 def pcs_with_degradations():
     """
     """
+    git_config_parser = git.config.GitConfigParser()
+    git_default_branch_name = git_config_parser.get_value('init', 'defaultBranch', 'master')
+
     pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profiles = [
         os.path.join(pool_path, 'linear_base.perf'),
@@ -279,7 +282,7 @@ def pcs_with_degradations():
     middle_head = repo.index.commit("second commit")
 
     # Create third commit
-    repo.git.checkout('master')
+    repo.git.checkout(git_default_branch_name)
     file3 = os.path.join(pcs_path, "file3")
     helpers.touch_file(file3)
     repo.index.add([file3])

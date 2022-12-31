@@ -22,16 +22,19 @@ def test_major_versions(pcs_full):
 
     Expecting correct behaviour and no error
     """
+    git_config_parser = git.config.GitConfigParser()
+    git_default_branch_name = git_config_parser.get_value('init', 'defaultBranch', 'master')
+
     major_versions = list(vcs.walk_major_versions())
 
     assert len(major_versions) == 1
     major_version = major_versions[0]
-    assert major_version.name == 'master'
+    assert major_version.name == git_default_branch_name
     assert store.is_sha1(major_version.head)
 
     head_major = vcs.get_head_major_version()
     assert not store.is_sha1(str(head_major))
-    assert str(head_major) == 'master'
+    assert str(head_major) == git_default_branch_name
 
     prev_commit = vcs.get_minor_version_info(vcs.get_minor_head()).parents[0]
     git_repo = git.Repo(pcs_full.get_vcs_path())
