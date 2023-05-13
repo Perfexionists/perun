@@ -60,7 +60,7 @@ def get_function_info_from_binary(filename: str) -> List[FunctionInfo]:
             try:
                 top_DIE = compilation_unite.get_top_DIE()
             except Exception:
-                #FIXME exception - this tends to fail sometimes (needs more testing to determine when)
+                #FIXME exception - this fails sometimes (needs more testing to determine when)
                 raise PinBinaryScanUnsuccessful
 
             functions += _get_function_info_from_die(top_DIE)

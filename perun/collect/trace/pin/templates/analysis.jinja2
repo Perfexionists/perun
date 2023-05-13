@@ -5,13 +5,17 @@ VOID {% if location==0 %}rtn_analysis_before{% else %}rtn_analysis_after{% endif
     UINT64 timeStamp;
     PIN_MutexLock(&outFileLock);
     OS_Time(&timeStamp);
-    outFile << Granularity::G_RTN << ";"
-            << {% if location==0 %}Location::L_BEFORE{% else %}Location::L_AFTER{% endif %} << ";"
-            << {% if probed %}PIN_GetTid(){% else %}tid{% endif %} << ";"
-            << PIN_GetPid() << ";"
-            << timeStamp << ";"
-            << routineInfo->id << ";"
-            << routineInfo->name << endl;
+    outFile << Granularity::G_RTN
+            << ";" << {% if location==0 %}Location::L_BEFORE{% else %}Location::L_AFTER{% endif %}
+            << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}
+            << ";" << PIN_GetPid()
+            << ";" << timeStamp
+            << ";" << routineInfo->id
+            << ";" << routineInfo->name
+            << ";" << routineInfo->sourceCodeLine
+            << ";" << routineInfo->sourceCodeFile
+            << endl;
+    outFile.flush();
     PIN_MutexUnlock(&outFileLock);
 }
 {% endfor -%}
@@ -20,18 +24,23 @@ VOID {% if location==0 %}rtn_analysis_before{% else %}rtn_analysis_after{% endif
 {%- if bbl %}
 // --- Analysis functions for basic blocks ---
 {%- for location in range(2) %}
-VOID {% if location==0 %}bbl_analysis_before{% else %}bbl_analysis_after{% endif %}(RoutineInfo* routineInfo, THREADID tid, ADDRINT bbl_id){
+VOID {% if location==0 %}bbl_analysis_before{% else %}bbl_analysis_after{% endif %}(BasicBlockInfo* basicBlockInfo, THREADID tid) {
     UINT64 timeStamp;
     PIN_MutexLock(&outFileLock);
     OS_Time(&timeStamp);
-    outFile << Granularity::G_BBL << ";"
-            << {% if location==0 %}Location::L_BEFORE{% else %}Location::L_AFTER{% endif %} << ";"
-            << tid << ";"
-            << PIN_GetPid() << ";"
-            << timeStamp << ";"
-            << routineInfo->id << ";"
-            << routineInfo->name << ";"
-            << bbl_id << endl;
+    outFile << Granularity::G_BBL
+            << ";" << {% if location==0 %}Location::L_BEFORE{% else %}Location::L_AFTER{% endif %}
+            << ";" << tid
+            << ";" << PIN_GetPid()
+            << ";" << timeStamp
+            << ";" << basicBlockInfo->routineId
+            << ";" << basicBlockInfo->routineName
+            << ";" << basicBlockInfo->sourceCodeLineStart
+            << ";" << basicBlockInfo->sourceCodeFile
+            << ";" << basicBlockInfo->sourceCodeLineEnd
+            << ";" << basicBlockInfo->id
+            << endl;
+    outFile.flush();
     PIN_MutexUnlock(&outFileLock);
 }
 {%- endfor %}
@@ -44,17 +53,20 @@ VOID rtn_analysis_before_{{ function.name }}(RoutineInfo* routineInfo{% if not p
     UINT64 timeStamp;
     PIN_MutexLock(&outFileLock);
     OS_Time(&timeStamp);
-    outFile << Granularity::G_RTN << ";"
-            << Location::L_BEFORE << ";"
-            << {% if probed %}PIN_GetTid(){% else %}tid{% endif %} << ";"
-            << PIN_GetPid() << ";"
-            << timeStamp << ";"
-            << routineInfo->id << ";"
-            << routineInfo->name
+    outFile << Granularity::G_RTN
+            << ";" << Location::L_BEFORE
+            << ";" << {% if probed %}PIN_GetTid(){% else %}tid{% endif %}
+            << ";" << PIN_GetPid()
+            << ";" << timeStamp
+            << ";" << routineInfo->id
+            << ";" << routineInfo->name
+            << ";" << routineInfo->sourceCodeLine
+            << ";" << routineInfo->sourceCodeFile
             {% for arg in function.arguments -%}
             << ";" << *arg{{ arg.index }}
             {%- endfor %}
             << endl;
+    outFile.flush();
     PIN_MutexUnlock(&outFileLock);
 }
 {% endfor %}

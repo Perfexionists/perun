@@ -15,7 +15,7 @@ Faker>=0.8.16
 GitPython>=2.1.11
 codecov==2.0.15
 path.py==7.7.1
-matplotlib==1.5.1
+matplotlib>=1.5.2
 binaryornot==0.4.4
 tabulate==0.8.6
 importlib-metadata>=0.8

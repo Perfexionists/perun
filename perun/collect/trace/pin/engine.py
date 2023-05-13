@@ -11,7 +11,14 @@ from perun.logic.pcs import get_tmp_directory
 import perun.utils as utils
 import perun.collect.trace.pin.parse as parse
 import perun.collect.trace.pin.scan_binary as scan_binary
-from perun.utils.exceptions import PinUnspecifiedPinRoot, PinBinaryInstrumentationFailed, InvalidParameterException
+from perun.utils.exceptions import (
+    InvalidBinaryException,
+    PinUnspecifiedPinRoot,
+    PinBinaryInstrumentationFailed,
+    InvalidParameterException
+)
+from elftools.elf.elffile import ELFFile
+
 
 class PinEngine(engine.CollectEngine):
     """ Implementation of CollectEngine using PIN framework.
@@ -53,6 +60,11 @@ class PinEngine(engine.CollectEngine):
         if not os.path.isdir(self.__pinroot) or not os.path.isabs(self.__pinroot):
             msg_to_stdout(f'[Debug]: PIN_ROOT environmental variable exists, but is not valid absolute path.', 3)
             raise PinUnspecifiedPinRoot()
+
+        # The specified binary needs to include dwarf4 info
+        with open(self.binary, 'rb') as binary:
+            if not ELFFile(binary).has_dwarf_info():  # File has no DWARF info
+                raise InvalidBinaryException(self.binary)
 
     def available_usdt(self, **_):
         """ This method isn't used by the pin engine and therefore returns empty dictionary.

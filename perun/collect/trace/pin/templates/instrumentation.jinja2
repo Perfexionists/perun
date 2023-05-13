@@ -1,10 +1,10 @@
-// Function that executes every time a new routine is found durring the execution of the program
+// Function that executes every time a new routine is found during the execution of the program
 VOID Routine(RTN rtn, VOID* v){
-    // Determine if the the routine is valid and should be instrumented
+    // Determine if the routine is valid and should be instrumented
     if (IMG_IsMainExecutable(SEC_Img(RTN_Sec(rtn))) && RTN_Valid(rtn){% if not probed %} && !RTN_IsDynamic(rtn){% endif %} && !RTN_IsArtificial(rtn){% if probed %} && RTN_IsSafeForProbedInsertion(rtn){% endif %}) {
         std::string rtn_name = PIN_UndecorateSymbolName(RTN_Name(rtn), UNDECORATION_NAME_ONLY);
-        if (rtn_name.rfind("__",0) == 0){
-            // Filter out internal functions. These funcions don't need to be profiled and their filtration reduces size
+        if (rtn_name.rfind("__",0) == 0 || rtn_name.rfind("_GLOBAL__sub_I__",0) == 0){
+            // Filter out internal functions. These functions don't need to be profiled and their filtration reduces size
             // of collected data as well as shortens the time required to parse this data.
             return;
         }
@@ -13,6 +13,17 @@ VOID Routine(RTN rtn, VOID* v){
         RoutineInfo* rc = new RoutineInfo;
         rc->name = rtn_name;
         rc->id = RTN_Id(rtn);
+
+        // Retrieve the location of the routine in the source code
+        INT32 sourceCodeCol;
+        PIN_LockClient();
+        // Requires debugging information in instrumented binary
+        PIN_GetSourceLocation(RTN_Address(rtn), &sourceCodeCol, &(rc->sourceCodeLine), &(rc->sourceCodeFile));
+        PIN_UnlockClient();
+        if (rc->sourceCodeFile == "") {
+            // skip the functions since its location is not known
+            return;
+        }
 
         {% if probed %}
         // FIXME: Here is the main problem with probed mode. A function prototype needs to be created for every 
@@ -63,23 +74,39 @@ VOID Routine(RTN rtn, VOID* v){
 // Pin calls this function every time a new Trace is executed
 VOID Trace(TRACE trace, VOID *v) {
 
-    if (!RTN_Valid(TRACE_Rtn(trace)) || RTN_IsDynamic(TRACE_Rtn(trace)) || 
+    if (!RTN_Valid(TRACE_Rtn(trace)) || RTN_IsDynamic(TRACE_Rtn(trace)) ||
         RTN_IsArtificial(TRACE_Rtn(trace)) ||
         !IMG_Valid(SEC_Img(RTN_Sec(TRACE_Rtn(trace)))) ||
         !IMG_IsMainExecutable(SEC_Img(RTN_Sec(TRACE_Rtn(trace))))) {
         return;
     }
 
-    RoutineInfo* rc = new RoutineInfo;
-    rc->name = PIN_UndecorateSymbolName(RTN_Name(TRACE_Rtn(trace)), UNDECORATION_NAME_ONLY);
-    rc->id = RTN_Id(TRACE_Rtn(trace));
+    BasicBlockInfo* basicBlockInfo = new BasicBlockInfo;
+    basicBlockInfo->routineName = PIN_UndecorateSymbolName(RTN_Name(TRACE_Rtn(trace)), UNDECORATION_NAME_ONLY);
+    basicBlockInfo->routineId = RTN_Id(TRACE_Rtn(trace));
 
-    //NOTE: bbl could be invalid
-    for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
-    {
-        ADDRINT bbl_id = INS_Address(BBL_InsHead(bbl));
-        INS_InsertCall(BBL_InsHead(bbl), IPOINT_BEFORE, (AFUNPTR)bbl_analysis_before, IARG_PTR, rc, IARG_THREAD_ID, IARG_ADDRINT, bbl_id, IARG_END);
-        INS_InsertCall(BBL_InsTail(bbl), IPOINT_BEFORE, (AFUNPTR)bbl_analysis_after, IARG_PTR, rc, IARG_THREAD_ID, IARG_ADDRINT, bbl_id, IARG_END);
+    ADDRINT firstInstrAddr, lastInstrAddr;
+    INT32 sourceCodeCol;
+
+    for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
+
+        firstInstrAddr = INS_Address(BBL_InsHead(bbl));
+        lastInstrAddr = INS_Address(BBL_InsTail(bbl));
+        basicBlockInfo->id = firstInstrAddr;
+
+        PIN_LockClient();
+        // Requires debugging information in instrumented binary
+        PIN_GetSourceLocation(lastInstrAddr, &sourceCodeCol, &(basicBlockInfo->sourceCodeLineEnd),
+                                                             &(basicBlockInfo->sourceCodeFile));
+        PIN_GetSourceLocation(firstInstrAddr, &sourceCodeCol, &(basicBlockInfo->sourceCodeLineStart),
+                                                              &(basicBlockInfo->sourceCodeFile));
+        PIN_UnlockClient();
+
+
+        INS_InsertCall(BBL_InsHead(bbl), IPOINT_BEFORE, (AFUNPTR)bbl_analysis_before,
+                       IARG_PTR, basicBlockInfo, IARG_THREAD_ID, IARG_END);
+        INS_InsertCall(BBL_InsTail(bbl), IPOINT_BEFORE, (AFUNPTR)bbl_analysis_after,
+                       IARG_PTR, basicBlockInfo, IARG_THREAD_ID, IARG_END);
     }
 }
 {%- endif %}

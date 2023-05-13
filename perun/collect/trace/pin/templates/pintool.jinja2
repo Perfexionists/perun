@@ -25,7 +25,26 @@ string function_names[FUNC_CNT] { {{ func_names }} };
 typedef struct RoutineInfo {
     UINT32 id;
     string name;
+
+    // Location of the routine
+    INT32 sourceCodeLine;
+    string sourceCodeFile;
 } RoutineInfo;
+
+typedef struct BasicBlockInfo {
+    // Address of the first instruction in the block
+    ADDRINT id;
+
+    // The parent routine information
+    string routineName;
+    UINT32 routineId;
+    ADDRINT routineAddress;
+
+    // Location of the basic block
+    INT32 sourceCodeLineStart;
+    INT32 sourceCodeLineEnd;
+    string sourceCodeFile;
+} BasicBlockInfo;
 
 // Function is called when the application exits and cleans up the used resources.
 VOID Fini(INT32 code, VOID* v){
