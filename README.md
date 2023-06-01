@@ -97,6 +97,9 @@ Furthermore, kernel debug symbols package must be installed in order to use Syst
     sudo apt-get update
     sudo apt-get install linux-image-$(uname -r)-dbgsym
 
+Alternately, if your elfutils is recent enough (0.179+), debuginfo may be downloaded
+automatically if $DEBUGINFOD_URLS includes https://debuginfod.ubuntu.com/ .
+
 To test that SystemTap works correctly, run the following command:
 
     stap -v -e 'probe vfs.read {printf("read performed\n"); exit()}'
@@ -109,12 +112,12 @@ SystemTap can be installed using `yum`:
 
     sudo yum install systemtap systemtap-runtime
 
-Similarly to the Ubuntu case, additional kernel packages must be installed to run 
+Similarly to the Ubuntu case, additional kernel package must be installed to run 
 SystemTap properly:
 
-    kernel-debuginfo
-    kernel-debuginfo-common
     kernel-devel
+    
+Debuginfo will be downloaded automatically from https://debuginfod.fedoraproject.org/.
 
 Different Fedora versions use different methods for obtaining those packages. Please refer to
 the [SystemTap setup guide](https://www.sourceware.org/systemtap/SystemTap_Beginners_Guide/using-systemtap.html#using-setup)
