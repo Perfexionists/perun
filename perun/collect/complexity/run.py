@@ -11,6 +11,7 @@ import shutil
 
 from subprocess import CalledProcessError
 from typing import List, Dict, Tuple, TypedDict
+from typing_extensions import Unpack
 
 import click
 
@@ -23,6 +24,14 @@ import perun.utils.log as log
 import perun.utils as utils
 
 from perun.utils.structs import Executable, CollectStatus
+
+
+class Kwargs(TypedDict):
+    target_dir: str
+    internal_data_filename: str
+    files: List[str]
+    rules: List[str]
+    profile: Dict
 
 
 # The profiling record template
@@ -47,7 +56,7 @@ _COLLECTOR_SUBTYPES = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(executable: Executable, **kwargs: Dict) -> Tuple[CollectStatus, str, Dict]:
+def before(executable: Executable, **kwargs: Unpack[Kwargs]) -> Tuple[CollectStatus, str, Dict]:
     """ Builds, links and configures the complexity collector executable
     In total, this function creates the so-called configuration executable (used to obtain
     information about the available functions for profiling) and the collector executable
@@ -99,7 +108,7 @@ def before(executable: Executable, **kwargs: Dict) -> Tuple[CollectStatus, str, 
 
 
 def collect(
-        executable: Executable, **kwargs: Dict
+        executable: Executable, **kwargs: Unpack[Kwargs]
 ) -> Tuple[CollectStatus, str, Dict]:
     """ Runs the collector executable and extracts the performance data
 
@@ -123,7 +132,7 @@ def collect(
 
 
 def after(
-        executable: Executable, **kwargs: Dict
+        executable: Executable, **kwargs: Unpack[Kwargs]
 ) -> Tuple[CollectStatus, str, Dict]:
     """ Performs the transformation of the raw data output into the profile format
 
@@ -157,7 +166,7 @@ def after(
                 err_msg += \
                     call_stack[-1].func + ', ' + call_stack[-1].action if call_stack else 'empty'
                 log.failed()
-                return CollectStatus.ERROR, err_msg, kwargs
+                return CollectStatus.ERROR, err_msg, dict(kwargs)
 
             # Get the first and last record timestamps to determine the profiling time
             profile_end = record.timestamp
@@ -230,7 +239,7 @@ def _check_dependencies():
     log.done()
 
 
-def _validate_input(**kwargs: Dict):
+def _validate_input(**kwargs: Unpack[Kwargs]):
     """Validate the collector input parameters. In case of some error, an according exception
     is raised
 
@@ -295,7 +304,7 @@ def _sampling_to_dictionary(
 @click.option('--sampling', '-s', type=(str, int), multiple=True, callback=_sampling_to_dictionary,
               help='Sets the sampling of the given function to every <int> call.')
 @click.pass_context
-def complexity(ctx: click.Context, **kwargs: Dict):
+def complexity(ctx: click.Context, **kwargs: Unpack[Kwargs]):
     """Generates `complexity` performance profile, capturing running times of
     function depending on underlying structural sizes.
 
