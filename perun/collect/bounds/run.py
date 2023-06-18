@@ -10,6 +10,7 @@ import shutil
 import time as systime
 
 from subprocess import SubprocessError
+from typing import List, Tuple, Dict
 
 import click
 
@@ -25,7 +26,7 @@ _LLVM_EXT = '.bc'
 _LIB_Z3 = "libz3.so"
 
 
-def before(sources, **kwargs):
+def before(sources: List[str], **kwargs: Dict) -> Tuple[CollectStatus, str, Dict]:
     """Compiles the sources into LLVM intermediate code
 
         $ clang-3.5 -g -emit-llvm -c ${sources}
@@ -50,7 +51,7 @@ def before(sources, **kwargs):
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
-def collect(sources, **kwargs):
+def collect(sources: List[str], **kwargs: Dict) -> Tuple[CollectStatus, str, Dict]:
     """Runs the Loopus on compiled LLVM sources
 
         $ export $LD_LIBRARY_PATH="${DIR}/libz3.so"
@@ -97,7 +98,7 @@ def collect(sources, **kwargs):
     }}
 
 
-def lookup_source_files(ctx, _, value):
+def lookup_source_files(ctx: click.Context, _: click.Option, value: List[str]) -> List[str]:
     """Lookus up sources for the analysis.
 
     The sources can either be single file, or directory which contains .c files.
@@ -131,7 +132,7 @@ def lookup_source_files(ctx, _, value):
               metavar='<dir>', callback=lookup_source_files,
               help='Directory, where source C files are stored. All of the existing files with '
                    'valid extensions (.c).')
-def bounds(ctx, **kwargs):
+def bounds(ctx: click.Context, **kwargs: Dict):
     """Generates `memory` performance profile, capturing memory allocations of
     different types along with target address and full call trace.
 
