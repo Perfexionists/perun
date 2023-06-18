@@ -2,17 +2,19 @@
 
 import click
 
+from typing import Dict
+
 import perun.profile.helpers as profiles
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.bokeh_helpers as bokeh_helpers
 import perun.view.scatter.factory as scatter_factory
 
-from perun.profile.factory import pass_profile
+from perun.profile.factory import pass_profile, Profile
 
 __author__ = 'Jiri Pavela'
 
 
-def process_title(ctx, _, value):
+def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     """ Creates default title for scatter plot graph, if not provided by the user.
 
     If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
@@ -55,7 +57,7 @@ def process_title(ctx, _, value):
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
               help="Will show the graph in browser.")
 @pass_profile
-def scatter(profile, filename, view_in_browser, **kwargs):
+def scatter(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Dict):
     """Interactive visualization of resources and models in scatter plot format.
 
     Scatter plot shows resources as points according to the given parameters.

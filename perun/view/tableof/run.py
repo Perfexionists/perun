@@ -3,15 +3,18 @@
 import os
 import operator
 from itertools import groupby
+from typing import List, Callable, Tuple
 import click
 import tabulate
+import pandas
 
 import perun.profile.convert as convert
 import perun.profile.query as query
 import perun.profile.helpers as profiles
 
+from perun.profile.factory import Profile
 
-def get_headers(ctx):
+def get_headers(ctx: click.Context) -> List[str]:
     """According to the loaded profile, checks the list of possible keys that can be used for
     filtering, sorting, etc.
 
@@ -41,7 +44,14 @@ def output_table_to(table, target, target_file):
         print(table)
 
 
-def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, filter_by):
+def create_table_from(
+        profile: Profile,
+        conversion_function: Callable[[Profile], pandas.DataFrame],
+        headers: List[str],
+        tablefmt: str,
+        sort_by: str,
+        filter_by: List[Tuple[str, str]]
+) -> str:
     """Using the tabulate package, transforms the profile into table.
 
     Currently, the representation contains all of the possible keys.
@@ -52,6 +62,7 @@ def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, 
     :param str sort_by: key for which we will sort
     :param list filter_by list of keys that will be potentially filtered
     :param str tablefmt: format of the table
+    :param str filter_by: key by which we filter
     :return: tabular representation of the profile in string
     """
     dataframe = conversion_function(profile)
@@ -74,7 +85,7 @@ def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, 
     return tabulate.tabulate(resource_table, headers=headers, tablefmt=tablefmt)
 
 
-def process_filter(ctx, option, value):
+def process_filter(ctx: click.Context, option: click.Option, value: List[str]) -> List[str]:
     """Processes option for filtering of the table, according to the profile keys
 
     :param click.Context ctx: context of the called command
@@ -96,7 +107,7 @@ def process_filter(ctx, option, value):
     return value
 
 
-def process_sort_key(ctx, option, value):
+def process_sort_key(ctx: click.Context, option: click.Option, value: str) -> str:
     """Processes the key for sorting the table
 
     :param click.Context ctx: context of the called command
@@ -108,14 +119,14 @@ def process_sort_key(ctx, option, value):
 
     if value and value not in headers:
         raise click.BadOptionUsage(
-            option, "invalid key choice for sorting the table: {} (choose from {})".format(
+            option.name, "invalid key choice for sorting the table: {} (choose from {})".format(
                 value, ", ".join(headers)
             )
         )
     return value
 
 
-def process_headers(ctx, option, value):
+def process_headers(ctx: click.Context, option: click.Option, value: List[str]) -> List[str]:
     """Processes list of headers of the outputted table
 
     :param click.Context ctx: context of the called command
@@ -130,7 +141,7 @@ def process_headers(ctx, option, value):
         for val in value:
             if val not in headers:
                 raise click.BadOptionUsage(
-                    option, "invalid choice for table header: {} (choose from {})".format(
+                    option.name, "invalid choice for table header: {} (choose from {})".format(
                         val, ", ".join(headers)
                     )
                 )
@@ -140,7 +151,7 @@ def process_headers(ctx, option, value):
         return sorted(headers)
 
 
-def process_output_file(ctx, _, value):
+def process_output_file(ctx: click.Context, _, value: str) -> str:
     """Generates the name of the output file, if no value is issued
 
     If no output file is set, then we generate the profile name according to the profile
@@ -221,9 +232,11 @@ def tableof(*_, **__):
               nargs=2, metavar='<key> <value>', callback=process_filter, multiple=True,
               help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
                    " several times, then rows satisfying all rules will be selected for different"
-                   " keys; and the rows satisfying some rule will be sellected for same key.")
+                   " keys; and the rows satisfying some rule will be selected for same key.")
 @click.pass_context
-def resources(ctx, headers, sort_by, filter_by, **_):
+def resources(
+        ctx: click.Context, headers: List[str], sort_by: str, filter_by: List[Tuple[str, str]], **_
+):
     """Outputs the resources of the profile as a table"""
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
@@ -249,7 +262,9 @@ def resources(ctx, headers, sort_by, filter_by, **_):
               help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
                    " several times, then rows satisfying all rules will be selected for different"
                    " keys; and the rows satisfying some rule will be sellected for same key.")
-def models(ctx, headers, sort_by, filter_by, **_):
+def models(
+        ctx: click.Context, headers: List[str], sort_by: str, filter_by: List[Tuple[str, str]], **_
+):
     """Outputs the models of the profile as a table"""
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']

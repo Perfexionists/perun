@@ -226,13 +226,13 @@ def execute_analysis(
     x_pts_odd = x_pts[:, 1::2].reshape(-1, x_pts.size // 2)[0].round(2)
     partial_intervals = np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T
 
-    change_info = nparam_helpers.classify_change(
+    change_info_enum = nparam_helpers.classify_change(
         tools.safe_division(np.sum(partial_rel_error), partial_rel_error.size),
         _STATS_DIFF_NO_CHANGE, _STATS_DIFF_CHANGE
     )
 
     return {
-        'change_info': change_info,
+        'change_info': change_info_enum,
         'rel_error': round(
             tools.safe_division(np.sum(partial_rel_error), partial_rel_error.size), 2
         ),

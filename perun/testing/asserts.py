@@ -4,6 +4,8 @@ import click.testing
 import os
 import traceback
 
+from typing import Optional
+
 __author__ = 'Tomas Fiedor'
 
 
@@ -30,7 +32,7 @@ def predicate_from_cli(cli_result: click.testing.Result, predicate: bool):
         raise failed_assertion
 
 
-def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: str = None):
+def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None):
     """Checks, that click correctly ended as invalid choice
 
     :param click.testing.Result cli_result: result of the commandline interface
@@ -43,7 +45,7 @@ def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: str 
         assert file not in os.listdir(os.getcwd())
 
 
-def invalid_param_choice(cli_result: click.testing.Result, choice: str, file: str = None):
+def invalid_param_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None):
     """Checks that click correctly ended with invalid choice and 1 return code
     :param click.test.Result cli_result: result of the commandline interface
     :param str choice: choice that we tried

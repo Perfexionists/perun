@@ -8,7 +8,9 @@ collection and postprocessing of collection data.
 import collections
 import os
 import shutil
+
 from subprocess import CalledProcessError
+from typing import List, Dict, Tuple, TypedDict
 
 import click
 
@@ -19,6 +21,9 @@ import perun.logic.runner as runner
 import perun.utils.exceptions as exceptions
 import perun.utils.log as log
 import perun.utils as utils
+
+from perun.utils.structs import Executable, CollectStatus
+
 
 # The profiling record template
 _ProfileRecord = collections.namedtuple('_ProfileRecord', ['action', 'func', 'timestamp', 'size'])
@@ -42,7 +47,7 @@ _COLLECTOR_SUBTYPES = {
 _MICRO_TO_SECONDS = 1000000.0
 
 
-def before(executable, **kwargs):
+def before(executable: Executable, **kwargs: Dict) -> Tuple[CollectStatus, str, Dict]:
     """ Builds, links and configures the complexity collector executable
     In total, this function creates the so-called configuration executable (used to obtain
     information about the available functions for profiling) and the collector executable
@@ -56,7 +61,6 @@ def before(executable, **kwargs):
                     dict of modified kwargs with 'cmd' value representing the executable
     """
     try:
-
         # Validate the inputs and dependencies first
         _validate_input(**kwargs)
         _check_dependencies()
@@ -85,16 +89,18 @@ def before(executable, **kwargs):
         # Create the internal configuration file
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
         executable.cmd = exec_path
-        return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+        return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
     # The "expected" exception types
     except (OSError, ValueError, CalledProcessError,
             UnicodeError, exceptions.UnexpectedPrototypeSyntaxError) as exception:
         log.failed()
-        return 1, str(exception), kwargs
+        return CollectStatus.ERROR, str(exception), dict(kwargs)
 
 
-def collect(executable, **kwargs):
+def collect(
+        executable: Executable, **kwargs: Dict
+) -> Tuple[CollectStatus, str, Dict]:
     """ Runs the collector executable and extracts the performance data
 
     :param Executable executable: executable configuration (command, arguments and workloads)
@@ -110,13 +116,15 @@ def collect(executable, **kwargs):
     try:
         utils.run_safely_external_command(str(executable), cwd=collect_dir)
         log.done()
-        return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+        return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
     except (CalledProcessError, IOError) as err:
         log.failed()
-        return 21, _COLLECTOR_STATUS_MSG[21] + ": {}".format(str(err)), dict(kwargs)
+        return CollectStatus.ERROR, _COLLECTOR_STATUS_MSG[21] + f": {str(err)}", dict(kwargs)
 
 
-def after(executable, **kwargs):
+def after(
+        executable: Executable, **kwargs: Dict
+) -> Tuple[CollectStatus, str, Dict]:
     """ Performs the transformation of the raw data output into the profile format
 
     :param Executable executable: full collected command with arguments and workload
@@ -128,10 +136,11 @@ def after(executable, **kwargs):
     """
     # Get the trace log path
     log.cprint('Starting the post-processing phase...', 'white')
-    data_path = os.path.join(os.path.dirname(executable.cmd), kwargs['internal_data_filename'])
+    internal_filename = kwargs.get('internal_data_filename', configurator.DEFAULT_DATA_FILENAME)
+    data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
 
-    resources, call_stack = [], []
+    resources, call_stack = [], []  # type: List[Dict], List[_ProfileRecord]
     profile_start, profile_end = 0, 0
 
     with open(data_path, 'r') as profile:
@@ -148,7 +157,7 @@ def after(executable, **kwargs):
                 err_msg += \
                     call_stack[-1].func + ', ' + call_stack[-1].action if call_stack else 'empty'
                 log.failed()
-                return 1, err_msg, kwargs
+                return CollectStatus.ERROR, err_msg, kwargs
 
             # Get the first and last record timestamps to determine the profiling time
             profile_end = record.timestamp
@@ -157,17 +166,22 @@ def after(executable, **kwargs):
                 profile_start = record.timestamp
 
     # Update the profile dictionary
-    kwargs['profile'] = {
+    kwargs['profile'] = {  # type: ignore
         'global': {
             'time': str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + 's',
             'resources': resources
         }
     }
     log.done()
-    return 0, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
+    return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
 
-def _process_file_record(record, call_stack, resources, address_map):
+def _process_file_record(
+        record: _ProfileRecord,
+        call_stack: List[_ProfileRecord],
+        resources: List[Dict],
+        address_map: Dict[str, str]
+) -> int:
     """ Processes the next profile record and tries to pair it with stack record if possible
 
     :param _ProfileRecord record: the _ProfileRecord tuple containing the record data
@@ -216,7 +230,7 @@ def _check_dependencies():
     log.done()
 
 
-def _validate_input(**kwargs):
+def _validate_input(**kwargs: Dict):
     """Validate the collector input parameters. In case of some error, an according exception
     is raised
 
@@ -235,7 +249,9 @@ def _validate_input(**kwargs):
         raise click.exceptions.BadParameter("At least one --files parameter must be supplied.")
 
 
-def _sampling_to_dictionary(_, __, value):
+def _sampling_to_dictionary(
+        _: click.Context, __: click.Option, value: List[Tuple[str, int]]
+) -> List[Dict]:
     """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
 
     :param dict _: click context
@@ -279,7 +295,7 @@ def _sampling_to_dictionary(_, __, value):
 @click.option('--sampling', '-s', type=(str, int), multiple=True, callback=_sampling_to_dictionary,
               help='Sets the sampling of the given function to every <int> call.')
 @click.pass_context
-def complexity(ctx, **kwargs):
+def complexity(ctx: click.Context, **kwargs: Dict):
     """Generates `complexity` performance profile, capturing running times of
     function depending on underlying structural sizes.
 
