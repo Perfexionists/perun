@@ -2,6 +2,9 @@
 
 import click
 
+from typing import TypedDict, Any
+from typing_extensions import Unpack
+
 import perun.logic.runner as runner
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
@@ -17,7 +20,15 @@ import perun.utils.metrics as metrics
 _DEFAULT_STEPS = 3
 
 
-def postprocess(profile, **configuration):
+class Configuration(TypedDict):
+    method: str
+    regression_models: list[str]
+    steps: int
+
+
+def postprocess(
+        profile: dict, **configuration: Unpack[Configuration]
+) -> tuple[PostprocessStatus, str, dict]:
     """Invoked from perun core, handles the postprocess actions
 
     :param dict profile: the profile to analyze
@@ -37,7 +48,7 @@ def postprocess(profile, **configuration):
     return PostprocessStatus.OK, "", {'profile': profile}
 
 
-def store_model_counts(analysis):
+def store_model_counts(analysis: list[dict]):
     """ Store the number of best-fit models for each model category as a metric.
 
     :param list analysis: the list of inferred models.
@@ -47,8 +58,8 @@ def store_model_counts(analysis):
         return
 
     # Get the regression model with the highest R^2 for all functions
-    funcs = {}
-    func_summary = {}
+    funcs = {}  # type: dict[str, Any]
+    func_summary = {}  # type: dict[str, dict]
     for record in analysis:
         func_record = funcs.setdefault(
             record['uid'], {'r_square': record['r_square'], 'model': record['model']}
@@ -93,7 +104,7 @@ def store_model_counts(analysis):
               default='amount', callback=cli_helpers.process_resource_key_param,
               help="Sets key for which we are finding the model.")
 @pass_profile
-def regression_analysis(profile, **kwargs):
+def regression_analysis(profile: dict, **kwargs: Unpack[Configuration]):
     """Finds fitting regression models to estimate models of profiled resources.
 
     \b

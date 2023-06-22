@@ -6,6 +6,8 @@ from random import shuffle
 from operator import itemgetter
 import numpy as np
 
+from typing import Mapping, Any
+
 import perun.utils.exceptions as exceptions
 
 
@@ -17,7 +19,9 @@ R_SQUARE_DEFAULT = 0.0
 APPROX_ZERO = 0.000001
 
 
-def validate_dictionary_keys(dictionary: dict, required_keys: list, forbidden_keys: list):
+def validate_dictionary_keys(
+        dictionary: Mapping[str, Any], required_keys: list, forbidden_keys: list
+):
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
     :param dict dictionary: validated dictionary
