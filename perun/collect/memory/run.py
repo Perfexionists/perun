@@ -4,12 +4,22 @@ import os
 
 import click
 
+from typing import Tuple, Dict, TypedDict, List
+from typing_extensions import Unpack
+
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser
 import perun.collect.memory.syscalls as syscalls
 import perun.logic.runner as runner
 import perun.utils.log as log
-from perun.utils.structs import CollectStatus
+from perun.utils.structs import CollectStatus, Executable
+
+
+class Kwargs(TypedDict):
+    all: bool
+    no_func: List[str]
+    no_source: List[str]
+
 
 __author__ = 'Radim Podola'
 _lib_name = "malloc.so"
@@ -17,7 +27,7 @@ _tmp_log_filename = "MemoryLog"
 DEFAULT_SAMPLING = 0.001
 
 
-def before(executable, **_):
+def before(executable: Executable, **_) -> Tuple[CollectStatus, str, Dict]:
     """ Phase for initialization the collect module
 
     :param Executable executable: executable profiled command
@@ -49,7 +59,7 @@ def before(executable, **_):
     return CollectStatus.OK, '', {}
 
 
-def collect(executable, **_):
+def collect(executable: Executable, **_) -> Tuple[CollectStatus, str, Dict]:
     """ Phase for collection of the profile data
 
     :param Executable executable: executable profiled command
@@ -68,7 +78,11 @@ def collect(executable, **_):
     return CollectStatus.OK, '', {}
 
 
-def after(executable, sampling=DEFAULT_SAMPLING, **kwargs):
+def after(
+        executable: Executable,
+        sampling: float = DEFAULT_SAMPLING,
+        **kwargs: Unpack[Kwargs]
+) -> Tuple[CollectStatus, str, Dict]:
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
 
@@ -94,12 +108,13 @@ def after(executable, sampling=DEFAULT_SAMPLING, **kwargs):
         excluding allocators and unreachable records in call trace
     """
     include_all = kwargs.get('all', False)
-    exclude_funcs = kwargs.get('no_func', None)
-    exclude_sources = kwargs.get('no_source', None)
+    exclude_funcs = kwargs.get('no_func', [])
+    exclude_sources = kwargs.get('no_source', [])
 
     try:
         profile = parser.parse_log(_tmp_log_filename, executable, sampling)
     except (IndexError, ValueError) as parse_err:
+
         log.failed()
         return CollectStatus.ERROR, 'Problems while parsing log file: {}'.format(str(parse_err)), {}
     log.done()
@@ -113,7 +128,7 @@ def after(executable, sampling=DEFAULT_SAMPLING, **kwargs):
 
     if exclude_funcs or exclude_sources:
         log.info("Excluding functions and sources: ", end='')
-        filters.allocation_filter(profile, function=[exclude_funcs], source=[exclude_sources])
+        filters.allocation_filter(profile, function=exclude_funcs, source=exclude_sources)
         log.done()
 
     log.info("Clearing records without assigned UID from profile: ", end='')
@@ -125,21 +140,21 @@ def after(executable, sampling=DEFAULT_SAMPLING, **kwargs):
 
 
 @click.command()
-@click.option('--sampling', '-s', default=DEFAULT_SAMPLING,
+@click.option('--sampling', '-s', default=DEFAULT_SAMPLING, type=click.FLOAT,
               help='Sets the sampling interval for profiling the allocations.'
               ' I.e. memory snapshots will be collected each <sampling>'
               ' seconds.')
-@click.option('--no-source',
+@click.option('--no-source', multiple=True,
               help='Will exclude allocations done from <no_source> file during'
               ' the profiling.')
-@click.option('--no-func',
+@click.option('--no-func', multiple=True,
               help='Will exclude allocations done by <no func> function during'
               ' the profiling.')
 @click.option('--all', '-a', is_flag=True, default=False,
               help='Will record the full trace for each allocation, i.e. it'
               ' will include all allocators and even unreachable records.')
 @click.pass_context
-def memory(ctx, **kwargs):
+def memory(ctx: click.Context, **kwargs):
     """Generates `memory` performance profile, capturing memory allocations of
     different types along with target address and full call trace.
 
