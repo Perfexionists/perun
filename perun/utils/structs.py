@@ -5,7 +5,7 @@ import shlex
 from dataclasses import dataclass
 
 from enum import Enum
-from typing import Union
+from typing import Union, Optional
 
 import nptyping as npt
 
@@ -378,8 +378,8 @@ class MinorVersion:
     :ivar list parents: list of parents of the minor version (empty if root)
     """
     date: str
-    author: str
-    email: str
+    author: Optional[str]
+    email: Optional[str]
     checksum: str
     desc: str
     parents: list

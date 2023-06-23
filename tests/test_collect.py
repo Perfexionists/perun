@@ -188,11 +188,11 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     monkeypatch.setattr(utils, 'run_external_command', old_run)
 
     # Simulate that the flag is supported, which leads to failure in build process for older g++
-    old_flag = makefiles._is_flag_support
-    monkeypatch.setattr(makefiles, '_is_flag_support', _mocked_flag_support)
+    old_flag = makefiles._is_flag_supported
+    monkeypatch.setattr(makefiles, '_is_flag_supported', _mocked_flag_support)
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'stored profile' in result.output or 'Command \'make\' returned non-zero exit status 2' in result.output)
-    monkeypatch.setattr(makefiles, '_is_flag_support', old_flag)
+    monkeypatch.setattr(makefiles, '_is_flag_supported', old_flag)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
