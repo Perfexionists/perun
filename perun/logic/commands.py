@@ -148,7 +148,7 @@ def init(dst, configuration_template='master', **kwargs):
     Inits the performance control system at a given directory. Optionally inits the
     wrapper of the Version Control System that is used as tracking point.
 
-    :param path dst: path where the pcs will be initialized
+    :param str dst: path where the pcs will be initialized
     :param dict kwargs: keyword arguments of the initialization
     :param str configuration_template: name of the template that will be used for initialization
         of local configuration

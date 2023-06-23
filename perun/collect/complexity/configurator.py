@@ -11,7 +11,11 @@
 
 import os
 import json
+
+from typing import TextIO, TypedDict
+
 import perun.collect.complexity.symbols as symbols
+
 
 # Default internal parameters
 DEFAULT_DATA_FILENAME = 'trace.log'
@@ -21,7 +25,23 @@ DEFAULT_DIRECT_OUTPUT = False
 _HEX_BASE = 16
 
 
-def create_runtime_config(executable_path, runtime_filter, include_list, configuration):
+class Configuration(TypedDict):
+    target_dir: str
+    internal_data_filename: str
+    files: list[str]
+    rules: list[str]
+    profile: dict
+    sampling: list[dict]
+    internal_storage_size: int
+    internal_direct_output: bool
+
+
+def create_runtime_config(
+        executable_path: str,
+        runtime_filter: list[str],
+        include_list: list[symbols.RuleKey],
+        configuration: Configuration
+):
     """ Creates the config.conf configuration
 
     :param str executable_path: path to the executable which will use the configuration
@@ -33,11 +53,14 @@ def create_runtime_config(executable_path, runtime_filter, include_list, configu
     config_path = os.path.join(os.path.dirname(executable_path), 'circ.conf')
     with open(config_path, 'w+') as config_handle:
         # Write the configuration settings
-        _write_config_to(config_handle, executable_path, runtime_filter, include_list,
-                         configuration)
+        _write_config_to(
+            config_handle, executable_path, runtime_filter, include_list, configuration
+        )
 
 
-def _convert_symbols_to_addresses(executable_path, runtime_filter, sample_map):
+def _convert_symbols_to_addresses(
+        executable_path: str, runtime_filter: list[str], sample_map: dict[str, int]
+) -> tuple[list[int], dict[int, int]]:
     """ Translates the identifiers in filter and sample configuration to their
         symbol table addresses
 
@@ -63,7 +86,13 @@ def _convert_symbols_to_addresses(executable_path, runtime_filter, sample_map):
     return final_filter, final_sample
 
 
-def _write_config_to(config_handle, executable_path, runtime_filter, include_list, job_settings):
+def _write_config_to(
+        config_handle: TextIO,
+        executable_path: str,
+        runtime_filter: list[str],
+        include_list: list[symbols.RuleKey],
+        job_settings: Configuration
+):
     """ Writes the configuration stored in the config dictionary into the file
 
     :param file config_handle: file handle to the opened config file
@@ -76,8 +105,9 @@ def _write_config_to(config_handle, executable_path, runtime_filter, include_lis
     # Create the translation table for identifiers
     if 'sampling' in job_settings:
         sample_map = _create_sample_from(include_list, job_settings['sampling'])
-    filter_list, sample_dict = _convert_symbols_to_addresses(executable_path, runtime_filter,
-                                                             sample_map)
+    filter_list, sample_dict = _convert_symbols_to_addresses(
+        executable_path, runtime_filter, sample_map
+    )
 
     # Create the internal configuration
     internal_conf = {
@@ -99,7 +129,9 @@ def _write_config_to(config_handle, executable_path, runtime_filter, include_lis
     config_handle.write('CIRC = {0}'.format(json.dumps(internal_conf, sort_keys=True, indent=2)))
 
 
-def _create_sample_from(include_list, sample_list):
+def _create_sample_from(
+        include_list: list[symbols.RuleKey], sample_list: list[dict]
+) -> dict[str, int]:
     """ Creates the sample map as 'sample func mangled name: sample ratio' from the
         include list and sample list
 

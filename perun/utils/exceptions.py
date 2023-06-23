@@ -1,5 +1,9 @@
 """Collection of helper exception classes"""
 
+
+from typing import Any
+
+
 class InvalidParameterException(Exception):
     """Raises when the given parameter is invalid"""
     def __init__(self, parameter, parameter_value, choices_msg=""):
@@ -135,7 +139,7 @@ class VersionControlSystemException(Exception):
 
     For example, when there is incorrect sha-1 specification of the minor version.
     """
-    def __init__(self, msg, *args):
+    def __init__(self, msg: str, *args: Any):
         """
         :param str msg: format string of the error message
         :param list args: list of arguments for format string

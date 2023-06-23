@@ -1,13 +1,15 @@
-"""Git is an wrapper over git repository used within perun control system
+"""Git is a wrapper over git repository used within perun control system
 
-Contains concrete implementation of the function needed by perun to extract informations and work
+Contains concrete implementation of the function needed by perun to extract information and work
 with version control systems.
 """
 
 import os
 
 import git
-import git.exc
+
+from git.exc import NoSuchPathError, InvalidGitRepositoryError, GitCommandError, BadName
+from typing import Iterator, Optional
 
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps
@@ -16,24 +18,27 @@ from perun.utils.exceptions import VersionControlSystemException
 from perun.utils.structs import MinorVersion, MajorVersion
 
 
-def contains_git_repo(path):
+from typing import Callable, Union, Any
+
+
+def contains_git_repo(path: str) -> bool:
     """Checks if there is a git repo at the given @p path.
 
-    :param str path: path where we wanna check if there is a git repo
+    :param str path: path where we want to check if there is a git repo
     :returns bool: true if @p path contains a git repo already
     """
     try:
         return git.Repo(path).git_dir is not None
-    except (git.exc.InvalidGitRepositoryError, git.exc.NoSuchPathError):
+    except (InvalidGitRepositoryError, NoSuchPathError):
         return False
 
 
-def create_repo_from_path(func):
+def create_repo_from_path(func: Callable) -> Callable:
     """Transforms the first argument---the git path---to git repo object
 
     :param function func: wrapped function for which we will do the lookup
     """
-    def wrapper(repo_path, *args, **kwargs):
+    def wrapper(repo_path: Union[str, git.Repo], *args: list[Any], **kwargs: dict) -> Any:
         """Wrapper function for the decorator"""
         if isinstance(repo_path, git.Repo):
             return func(repo_path, *args, **kwargs)
@@ -42,7 +47,7 @@ def create_repo_from_path(func):
     return wrapper
 
 
-def _init(vcs_path, vcs_init_params):
+def _init(vcs_path: str, vcs_init_params: dict) -> bool:
     """
     :param path vcs_path: path where the vcs will be initialized
     :param dict vcs_init_params: list of additional params for initialization of the vcs
@@ -52,8 +57,8 @@ def _init(vcs_path, vcs_init_params):
     path_contains_git_repo = contains_git_repo(vcs_path)
     try:
         git.Repo.init(vcs_path, **(vcs_init_params or {}))
-    except git.exc.GitCommandError as gce:
-        # If by calling the init we created empty directory in vcs_path, we cleanup after ourselves
+    except GitCommandError as gce:
+        # If by calling the init we created empty directory in vcs_path, we clean up after ourselves
         if os.path.exists(vcs_path) and dir_was_newly_created and not os.listdir(vcs_path):
             os.rmdir(vcs_path)
         perun_log.error("while git init: {}".format(gce))
@@ -66,7 +71,7 @@ def _init(vcs_path, vcs_init_params):
 
 
 @create_repo_from_path
-def _get_minor_head(git_repo):
+def _get_minor_head(git_repo: git.Repo) -> str:
     """
     Fixme: This would be better to internally use rev-parse ;)
 
@@ -78,7 +83,7 @@ def _get_minor_head(git_repo):
 
 
 @create_repo_from_path
-def _walk_minor_versions(git_repo, head):
+def _walk_minor_versions(git_repo: git.Repo, head: str) -> Iterator[MinorVersion]:
     """Return the sorted list of minor versions starting from the given head.
 
     Initializes the worklist with the given head commit and then iteratively retrieve the
@@ -98,18 +103,18 @@ def _walk_minor_versions(git_repo, head):
 
 
 @create_repo_from_path
-def _walk_major_versions(git_repo):
+def _walk_major_versions(git_repo: git.Repo) -> Iterator[MajorVersion]:
     """
     :param git.Repo git_repo: wrapped git repository object
     :returns MajorVersion: yields stream of major versions
     :raises VersionControlSystemException: when the master head cannot be massaged
     """
-    for branch in git_repo.branches:
+    for branch in git_repo.branches:  # type: ignore
         yield MajorVersion(branch.name, _massage_parameter(git_repo, branch.name))
 
 
 @decorators.static_variables(commit_cache=dict())
-def _parse_commit(commit):
+def _parse_commit(commit: git.objects.Commit) -> MinorVersion:
     """
     :param git.Commit commit: commit object
     :returns MinorVersion: namedtuple of minor version (date author email checksum desc parents)
@@ -126,13 +131,15 @@ def _parse_commit(commit):
 
         commit_description = str(commit.message)
 
-        minor_version = MinorVersion(date, author, email, checksum, commit_description, commit_parents)
+        minor_version = MinorVersion(
+            date, author, email, checksum, commit_description, commit_parents
+        )
         _parse_commit.commit_cache[checksum] = minor_version
     return _parse_commit.commit_cache[checksum]
 
 
 @create_repo_from_path
-def _get_minor_version_info(git_repo, minor_version):
+def _get_minor_version_info(git_repo: git.Repo, minor_version: str) -> MinorVersion:
     """
     :param git.Repo git_repo: wrapped repository of the perun
     :param str minor_version: identification of minor_version
@@ -143,7 +150,9 @@ def _get_minor_version_info(git_repo, minor_version):
 
 
 @create_repo_from_path
-def _minor_versions_diff(git_repo, baseline_minor_version, target_minor_version):
+def _minor_versions_diff(
+        git_repo: git.Repo, baseline_minor_version: str, target_minor_version: str
+) -> str:
     """ Create diff of two supplied minor versions.
 
     :param git.Repo git_repo: wrapped repository of the perun
@@ -158,7 +167,7 @@ def _minor_versions_diff(git_repo, baseline_minor_version, target_minor_version)
 
 
 @create_repo_from_path
-def _get_head_major_version(git_repo):
+def _get_head_major_version(git_repo: git.Repo) -> str:
     """Returns the head major branch (i.e. checked out branch).
 
     Runs the git branch and parses the output in order to infer the currently
@@ -174,26 +183,28 @@ def _get_head_major_version(git_repo):
 
 
 @create_repo_from_path
-def _check_minor_version_validity(git_repo, minor_version):
+def _check_minor_version_validity(git_repo: git.Repo, minor_version: str):
     """
     :param git.Repo git_repo: wrapped repository object
     :param str minor_version: string representing a minor version in the git
     """
     try:
         git_repo.rev_parse(str(minor_version))
-    except (git.exc.BadName, ValueError) as inner_exception:
+    except (BadName, ValueError) as inner_exception:
         raise VersionControlSystemException(
             "minor version '{}' could not be found: {}", minor_version, str(inner_exception)
         )
 
 
 @create_repo_from_path
-def _massage_parameter(git_repo, parameter, parameter_type=None):
+def _massage_parameter(
+        git_repo: git.Repo, parameter: str, parameter_type: Optional[str] = None
+) -> str:
     """Parameter massaging takes a parameter and unites it to the unified context
 
     Given a parameter (in the context of git, this is rev), of a given parameter_type (e.g. tree,
     commit, blob, etc.) calls 'git rev-parse parameter^{parameter_type}' to translate the rev to
-    to be used for other.
+    be used for others.
 
     :param git.Repo git_repo: wrapped git repository
     :returns str: massaged parameter
@@ -202,7 +213,7 @@ def _massage_parameter(git_repo, parameter, parameter_type=None):
     try:
         parameter += "^{{{0}}}".format(parameter_type) if parameter_type else ""
         return str(git_repo.rev_parse(parameter))
-    except git.exc.BadName as bo_exception:
+    except BadName as bo_exception:
         raise VersionControlSystemException("parameter '{}' could not be found: {}".format(
             parameter, str(bo_exception)
         ))
@@ -214,7 +225,7 @@ def _massage_parameter(git_repo, parameter, parameter_type=None):
 
 
 @create_repo_from_path
-def _is_dirty(git_repo):
+def _is_dirty(git_repo: git.Repo) -> bool:
     """Returns true, if the repository is dirty, i.e. there are some uncommited changes either in
     index or working dir.
 
@@ -225,7 +236,7 @@ def _is_dirty(git_repo):
 
 
 @create_repo_from_path
-def _save_state(git_repo):
+def _save_state(git_repo: git.Repo) -> tuple[bool, str]:
     """Saves stashed changes and previous head
 
     This returns either the real detached head commit, or the previous reference. This is to ensure
@@ -248,7 +259,7 @@ def _save_state(git_repo):
 
 
 @create_repo_from_path
-def _restore_state(git_repo, has_saved_stashed_changes, previous_state):
+def _restore_state(git_repo: git.Repo, has_saved_stashed_changes: bool, previous_state: str):
     """Restores the previous state of the repository by restoring the stashed changes and checking
     out the previous head.
 
@@ -264,7 +275,7 @@ def _restore_state(git_repo, has_saved_stashed_changes, previous_state):
 
 
 @create_repo_from_path
-def _checkout(git_repo, minor_version):
+def _checkout(git_repo: git.Repo, minor_version: str):
     """
 
     :param git.Repo git_repo: git repository

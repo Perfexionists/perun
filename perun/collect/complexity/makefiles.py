@@ -4,7 +4,7 @@
     the configuration executable is required, as it provides useful data for creation of time
     efficient collector executable.
 
-    Configuration executable is simply a executable built from the workload source and header files,
+    Configuration executable is simply an executable built from workload source and header files,
     with no additional compiler settings or libraries. It is used for function symbols extraction
     and their filtering in order to create symbols exclude list (see symbols.py).
 
@@ -21,6 +21,7 @@
 
 import os
 from subprocess import DEVNULL, CalledProcessError
+from typing import TextIO
 
 import perun.utils.log as log
 import perun.utils as utils
@@ -61,7 +62,7 @@ def create_config_cmake(target_path, file_paths):
     return cmake_path
 
 
-def create_collector_cmake(target_path, file_paths, exclude_list):
+def create_collector_cmake(target_path: str, file_paths: list[str], exclude_list: list[str]):
     """ Creates the cmake file for workload collector executable
 
     :param str target_path: cmake target directory path
@@ -91,7 +92,7 @@ def create_collector_cmake(target_path, file_paths, exclude_list):
     return cmake_path
 
 
-def build_executable(cmake_path, target_name):
+def build_executable(cmake_path: str, target_name: str) -> str:
     """ Invokes call sequence of cmake -> make to build the executable
        Warning - can be time expensive function due to cmake generator and g++ compilation
 
@@ -116,7 +117,7 @@ def build_executable(cmake_path, target_name):
     return os.path.realpath(os.path.join(cmake_dir, CMAKE_BIN_TARGET, target_name))
 
 
-def _construct_cmake_file_path(target_path):
+def _construct_cmake_file_path(target_path: str) -> str:
     """ Constructs the cmake file absolute path
 
     :param str target_path: cmake target directory path
@@ -127,14 +128,14 @@ def _construct_cmake_file_path(target_path):
     return os.path.realpath(os.path.join(target_path, 'CMakeLists.txt'))
 
 
-def _init_cmake(cmake_file):
+def _init_cmake(cmake_file: TextIO):
     """ Writes init configuration to the cmake file
 
     :param file cmake_file: file handle to the opened cmake file
     """
     # Check if -no-pie is supported by the compiler
     cc_flags = '-std=c++11 -g -fno-pic'
-    if _is_flag_support('-no-pie'):
+    if _is_flag_supported('-no-pie'):
         cc_flags += ' -no-pie'
     # Sets the cmake version, paths and compiler config
     cmake_file.write('cmake_minimum_required(VERSION {0})\n\n'
@@ -147,7 +148,7 @@ def _init_cmake(cmake_file):
                      .format(CMAKE_VERSION, CMAKE_BIN_TARGET, cc_flags))
 
 
-def _add_profile_instructions(cmake_file, exclude_list):
+def _add_profile_instructions(cmake_file: TextIO, exclude_list: list[str]):
     """ Extends the compiler configuration with instrumentation options
 
     :param file cmake_file: file handle to the opened cmake file
@@ -166,7 +167,7 @@ def _add_profile_instructions(cmake_file, exclude_list):
     cmake_file.write('\n\n')
 
 
-def _add_build_data(cmake_file, target_name, source_files):
+def _add_build_data(cmake_file: TextIO, target_name: str, source_files: list[str]):
     """ Writes build configuration to the cmake file
 
     :param file cmake_file: file handle to the opened cmake file
@@ -174,20 +175,17 @@ def _add_build_data(cmake_file, target_name, source_files):
     :param list source_files: paths to the workload source and header files
     """
     # Set the source variable
-    cmake_file.write('# set the sources\n'
-                     'set(SOURCE_FILES\n\t')
+    cmake_file.write('# set the sources\nset(SOURCE_FILES\n\t')
     # Supply all the workload source files
     sources = '\n\t'.join(str(source) for source in source_files)
     sources += '\n)\n\n'
     cmake_file.write(sources)
 
     # Specify the executable
-    cmake_file.write('# create the executable\n'
-                     'add_executable({0} ${{SOURCE_FILES}})\n'
-                     .format(target_name))
+    cmake_file.write(f'# create the executable\nadd_executable({target_name} ${{SOURCE_FILES}})\n')
 
 
-def _find_library(cmake_file, lib_name, lib_path):
+def _find_library(cmake_file: TextIO, lib_name: str, lib_path: str) -> str:
     """ Finds the profiling library location
 
 
@@ -200,12 +198,13 @@ def _find_library(cmake_file, lib_name, lib_path):
     # Create the library variable name
     library_var = 'LIB_{}'.format(lib_name)
     # Create instruction to find the library
-    cmake_file.write('\n# Find the library\nfind_library({0} {1} PATHS "{2}")\n'
-                     .format(library_var, lib_name, lib_path))
+    cmake_file.write(
+        f'\n# Find the library\nfind_library({library_var} {lib_name} PATHS "{lib_path}")\n'
+    )
     return library_var
 
 
-def _link_libraries(cmake_file, library_vars, target_name):
+def _link_libraries(cmake_file: TextIO, library_vars: list[str], target_name: str):
     """ Links the profiling library with the collection executable
 
     :param file cmake_file: file handle to the opened cmake file
@@ -215,12 +214,13 @@ def _link_libraries(cmake_file, library_vars, target_name):
     # Create the string list of all libraries
     libraries = ' '.join('${{{0}}}'.format(lib) for lib in library_vars)
     # Create the target
-    cmake_file.write('\n# Link the libraries to the target\n'
-                     'target_link_libraries({0} {1})\n'
-                     .format(target_name, libraries))
+    cmake_file.write(
+        f'\n# Link the libraries to the target\n'
+        f'target_link_libraries({target_name} {libraries})\n'
+    )
 
 
-def _get_libs_path():
+def _get_libs_path() -> str:
     """Return the path to the directory where the libraries needed for compilation should be
     located, or a default location if the directory cannot be found.
 
@@ -240,7 +240,7 @@ def _get_libs_path():
         return '${CMAKE_SOURCE_DIR}'
 
 
-def _libraries_exist(libs_dir):
+def _libraries_exist(libs_dir: str) -> bool:
     """Checks if the required libraries are present in the given directory
 
      :param str libs_dir: the path to the libraries location
@@ -251,7 +251,7 @@ def _libraries_exist(libs_dir):
             os.path.exists(os.path.join(libs_dir, 'libprofile.so')))
 
 
-def _is_flag_support(flag):
+def _is_flag_supported(flag: str) -> bool:
     """Checks if the specified flag is supported by the default g++ version
 
     :param str flag: the flag to be tested

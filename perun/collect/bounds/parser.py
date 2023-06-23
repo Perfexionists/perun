@@ -42,16 +42,18 @@ Total Complexity: FAILED
 """
 import re
 
+from typing import Callable, Any
+
 RE_FUNCTION = re.compile(r"Function (?P<funcname>\S+)")
 RE_FILE = re.compile(r"file (?P<filename>\S+)")
 RE_LINE = re.compile(r"line (?P<line>\d+) / (?P<column>\d+)")
 RE_TOTAL = re.compile(r"Total Complexity: (?P<total>.+)")
 
 
-def partition_list(source_list, pred):
+def partition_list(source_list: list, pred: Callable[[str], bool]) -> list[list]:
     """Helper function that partitions the list to several chunks according to the given predicate.
 
-    First we find all of the elements of the list that satisfy @p pred, then we break the list into
+    First we find all the elements of the list that satisfy @p pred, then we break the list into
     chunks between these indexes.
 
     :param list source_list:
@@ -66,7 +68,7 @@ def partition_list(source_list, pred):
     return partitions
 
 
-def parse_file(file_info, source_map):
+def parse_file(file_info: str, source_map: dict[str, str]) -> list[dict[str, Any]]:
     """Parses the result of analysis of single file
 
     Each file consist of several functions which are preceeded by keyword Function and the function
@@ -77,14 +79,17 @@ def parse_file(file_info, source_map):
     :return: list of resources
     """
     filtered_file = list(filter(lambda line: not re.match(r"^\s*$", line), file_info.split("\n")))
-    file_name = RE_FILE.search(filtered_file[0]).group('filename')
+    file_match = RE_FILE.search(filtered_file[0])
+    file_name = file_match.group('filename') if file_match else "<unknown_filename>"
     resources = []
     for func in partition_list(filtered_file, lambda x: 'Function' in x):
         resources.extend(parse_function(func, source_map[file_name]))
     return resources
 
 
-def lookup_function_location(function_name, file_name, lines_for_bounds):
+def lookup_function_location(
+        function_name: str, file_name: str, lines_for_bounds: list[int]
+) -> tuple[int, int]:
     """For given function, finds its location in the file, i.e. the line and column.
 
     If no bounds were inferred we return 0, 0, since we do not really precisely detect the position.
@@ -105,15 +110,15 @@ def lookup_function_location(function_name, file_name, lines_for_bounds):
     return prototype_lineno, prototype_line.find(function_name)
 
 
-def parse_function(func_info, file_name):
+def parse_function(func_info: list[str], file_name: str) -> list[dict[str, Any]]:
     """Parses the result of analysis for single function.
 
     Each function consists of several bounds, for each cycle in the function (since non-cycles has
     constant bounds).
 
-    Each results is of one of the following forms:
+    Each results is one of the following forms:
 
-      1. The bounds was successfully analysed. Then loopus returns bound (i.e. ranking function)
+      1. The bounds were successfully analysed. Then loopus returns bound (i.e. ranking function)
          and complexity class of the cycle (i.e. the highest polynom, such as n^2, etc.)
         line <row> / <col>
         <bound>
@@ -133,10 +138,12 @@ def parse_function(func_info, file_name):
     collective_bounds = []
     collective_lines = []
     total_complexity_line = func_info[-1].replace('\u001b[37;31mFAILED\u001b[0m', 'FAILED').strip()
-    function_name = RE_FUNCTION.search(func_info[0]).group('funcname')
+    function_match = RE_FUNCTION.search(func_info[0])
+    function_name = function_match.group('funcname') if function_match else "<unknown function>"
     for resource in partition_list(func_info[1:-1], lambda x: 'line' in x):
         line_match = RE_LINE.search(resource[0])
-        line, col = line_match.group('line'), line_match.group('column')
+        line = line_match.group('line') if line_match else -1
+        col = line_match.group('column') if line_match else -1
         if len(resource) == 3:
             # Case (1): the bounds were successfully inferred;
             bound = resource[1].strip()
@@ -176,7 +183,7 @@ def parse_function(func_info, file_name):
     return resources
 
 
-def parse_output(output, source_map):
+def parse_output(output: str, source_map: dict[str, str]) -> list[dict[str, Any]]:
     """Parses the output of Loopus in the list of resources.
 
     Each resource specifies the collection fo bounds of functions specified in files.
