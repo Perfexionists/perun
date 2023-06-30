@@ -7,9 +7,13 @@ import scipy.stats.mstats as stats
 with demandimport.enabled():
     import matplotlib.pyplot as plt
 
+from typing import TextIO, Optional
+
 import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.fuzz.filesystem as filesystem
+
+from perun.fuzz.structs import Mutation, TimeSeries, FuzzingProgress
 
 __author__ = 'Matus Liscinsky'
 
@@ -28,13 +32,12 @@ QUARTILE_ALPHA = 0.4
 QUARTILE_LINE_WIDTH = 2
 
 
-def save_anomalies(anomalies, anomaly_type, file_handle):
+def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: TextIO):
     """Saves anomalies (faults and hangs) into the file
 
     :param list anomalies: list of
     :param str anomaly_type: type of the anomalies (e.g. Faults, Hangs)
     :param File file_handle: file, where the anomalies are written
-    :return:
     """
     if anomalies:
         file_handle.write("{}s:\n".format(anomaly_type.capitalize()))
@@ -45,7 +48,7 @@ def save_anomalies(anomalies, anomaly_type, file_handle):
             log.info('.')
 
 
-def save_time_series(file_handle, time_series):
+def save_time_series(file_handle: TextIO, time_series: TimeSeries):
     """Saves the time series data into the file handle
 
     :param File file_handle: opened file handle for writing
@@ -58,7 +61,7 @@ def save_time_series(file_handle, time_series):
         log.info('.')
 
 
-def save_log_files(log_dir, fuzz_progress):
+def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress):
     """ Saves information about fuzzing in log file. Note: refactor
 
     :param str log_dir: path to the output log directory
@@ -90,7 +93,7 @@ def save_log_files(log_dir, fuzz_progress):
     results_data_file.close()
 
 
-def get_time_for_value(value, time_data, data):
+def get_time_for_value(value: int, time_data: list[int], data: list[int]) -> Optional[int]:
     """Function gets time value according to measured value.
 
     :param numeric value: selected y-axis value
@@ -101,6 +104,7 @@ def get_time_for_value(value, time_data, data):
     for (x, y) in zip(time_data, data):
         if y >= value:
             return x
+    return time_data[-1]
 
 
 def lazy_initialize_matplotlib():
@@ -112,7 +116,13 @@ def lazy_initialize_matplotlib():
         MATPLOT_LIB_INITIALIZED = True
 
 
-def plot_fuzz_time_series(time_series, filename, title, xlabel, ylabel):
+def plot_fuzz_time_series(
+        time_series: TimeSeries,
+        filename: str,
+        title: str,
+        xlabel: str,
+        ylabel: str
+):
     """Plots the measured values to time series graph.
 
     :param TimeSeries time_series: measured values (x and y-axis)
@@ -168,7 +178,7 @@ def plot_fuzz_time_series(time_series, filename, title, xlabel, ylabel):
     plt.savefig(filename, bbox_inches='tight', format='pdf')
 
 
-def files_diff(fuzz_progress, diffs_dir):
+def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str):
     """Creates html files showing the difference between mutations and its predecessor
     in diff unified format.
 
@@ -178,6 +188,8 @@ def files_diff(fuzz_progress, diffs_dir):
     log.info("Computing deltas")
     for mutations in [fuzz_progress.final_results, fuzz_progress.faults, fuzz_progress.hangs]:
         for res in mutations:
+            if res.predecessor is None:
+                continue
             pred = streams.safely_load_file(res.predecessor.path)
             result = streams.safely_load_file(res.path)
 

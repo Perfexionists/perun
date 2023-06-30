@@ -7,12 +7,12 @@ import os
 import os.path as path
 import re
 
-from perun.fuzz.structs import Mutation
+from perun.fuzz.structs import Mutation, FuzzingProgress
 import perun.utils.log as log
 import perun.utils.helpers as helpers
 
 
-def get_corpus(workloads, pattern):
+def get_corpus(workloads: list[str], pattern: str) -> list[Mutation]:
     """ Iteratively search for files to fill input corpus.
 
     :param list workloads: list of paths to sample files or directories of sample files
@@ -40,7 +40,7 @@ def get_corpus(workloads, pattern):
     return init_seeds
 
 
-def move_file_to(filename, directory):
+def move_file_to(filename: str, directory: str) -> str:
     """Useful function for moving file to the special output directory.
 
     :param str filename: path to a file
@@ -52,7 +52,7 @@ def move_file_to(filename, directory):
     return os.path.join(directory, file)
 
 
-def make_output_dirs(output_dir, new_dirs):
+def make_output_dirs(output_dir: str, new_dirs: list[str]) -> dict[str, str]:
     """Creates special output directories for diffs and mutations causing fault or hang.
 
     :param str output_dir: path to user-specified output directory
@@ -66,7 +66,7 @@ def make_output_dirs(output_dir, new_dirs):
     return dirs_dict
 
 
-def del_temp_files(parents, fuzz_progress, output_dir):
+def del_temp_files(parents: list[Mutation], fuzz_progress: FuzzingProgress, output_dir: str):
     """ Deletes temporary files that are not positive results of fuzz testing
 
     :param list parents: list of parent mutations

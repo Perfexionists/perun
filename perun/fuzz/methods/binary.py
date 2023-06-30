@@ -14,7 +14,7 @@ RULE_ITERATIONS = 10
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def insert_byte(lines):
+def insert_byte(lines: list):
     """**Rule B.3: Insert random byte.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -29,7 +29,7 @@ def insert_byte(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def remove_byte(lines):
+def remove_byte(lines: list):
     """**Rule B.4: Remove random byte.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -43,7 +43,7 @@ def remove_byte(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def swap_byte(lines):
+def swap_byte(lines: list):
     """**Rule B.5: Swap random bytes.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -72,7 +72,7 @@ def swap_byte(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def flip_bit(lines):
+def flip_bit(lines: list):
     """**Rule B.6: Flip random bit.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -90,7 +90,7 @@ def flip_bit(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def remove_zero_byte(lines):
+def remove_zero_byte(lines: list):
     """**Rule B.1: Remove random zero byte**
 
      * **Input**: This is C string.\0 You are gonna love it.\0
@@ -109,7 +109,7 @@ def remove_zero_byte(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def insert_zero_byte(lines):
+def insert_zero_byte(lines: list):
     """**Rule B.2: Insert random zero byte.**
 
      * **Input**: This is C string. You are gonna love it.\0

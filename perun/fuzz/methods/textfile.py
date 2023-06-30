@@ -12,12 +12,12 @@ WS_MAX = 1000
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def change_character(lines):
+def change_character(lines: list[str]):
     """**Rule T.4: Change random character.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
      * **Mutation**: "the quack brown [b]ox jumps over the lazy dog"
-     * **Description**: Adaptation of classical rule for text files. Changes a random character at
+     * **Description**: Adaptation of classical rule for text files. Changes a random character
        at random line to different character.
      * **Known Issues**: none
     """
@@ -28,7 +28,7 @@ def change_character(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def divide_line(lines):
+def divide_line(lines: list[str]):
     """**Rule T.3: Divide line.**
 
      * **Input**: "<author>Gambardella, Matthew</author>"
@@ -42,7 +42,7 @@ def divide_line(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def insert_whitespace(lines):
+def insert_whitespace(lines: list[str]):
     """**Rule T.10: Insert whitespaces on a random place.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -61,7 +61,7 @@ def insert_whitespace(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def double_line(lines):
+def double_line(lines: list[str]):
     """**Rule T.1: Double the size of a line.**
 
      * **Input**: "The quick brown fox."
@@ -80,7 +80,7 @@ def double_line(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def append_whitespace(lines):
+def append_whitespace(lines: list[str]):
     """**Rule T.8: Append whitespaces.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -94,7 +94,7 @@ def append_whitespace(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def bloat_words(lines):
+def bloat_words(lines: list[str]):
     """**Rule T.12: Remove whitespaces.**
 
      * **Input**: "The quick brown fox."
@@ -108,7 +108,7 @@ def bloat_words(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def repeat_whitespace(lines):
+def repeat_whitespace(lines: list[str]):
     """**Rule T.11: Repeat whitespaces.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -123,7 +123,7 @@ def repeat_whitespace(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def prepend_whitespace(lines):
+def prepend_whitespace(lines: list[str]):
     """**Rule T.9: Prepend whitespaces.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -140,7 +140,7 @@ def prepend_whitespace(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def duplicate_line(lines):
+def duplicate_line(lines: list[str]):
     """**Rule T.2: Duplicate a line.**
 
      * **Input**: "The quick brown fox."
@@ -154,7 +154,7 @@ def duplicate_line(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def sort_line(lines):
+def sort_line(lines: list[str]):
     """**Rule T.6: Sort words or numbers of a line.**
 
      * **Input**: "The quick brown fox."
@@ -173,7 +173,7 @@ def sort_line(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def sort_line_in_reverse(lines):
+def sort_line_in_reverse(lines: list[str]):
     """**Rule T.7: Sort words or numbers of a line in reverse.**
 
      * **Input**: "The quick brown fox."
@@ -192,7 +192,7 @@ def sort_line_in_reverse(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def repeat_word(lines):
+def repeat_word(lines: list[str]):
     """**Rule T.5: Repeat random word of a line.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -213,7 +213,7 @@ def repeat_word(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def delete_line(lines):
+def delete_line(lines: list[str]):
     """**Rule T.13: Remove random line.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -226,7 +226,7 @@ def delete_line(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def delete_word(lines):
+def delete_word(lines: list[str]):
     """**Rule T.14: Remove random word**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
@@ -241,7 +241,7 @@ def delete_word(lines):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def delete_character(lines):
+def delete_character(lines: list[str]):
     """**Rule T.15: remove a random character.**
 
      * **Input**: "the quick brown fox jumps over the lazy dog"
