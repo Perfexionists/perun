@@ -2,7 +2,7 @@
 import perun.collect.memory.parsing as parsing
 
 
-def remove_allocators(profile):
+def remove_allocators(profile: dict) -> dict:
     """ Remove records in trace with direct allocation function
 
         Allocators are better to remove because they are
@@ -11,14 +11,16 @@ def remove_allocators(profile):
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile
     :returns dict: updated profile
     """
-    allocators = ['malloc', 'calloc', 'realloc', 'free', 'memalign',
-                  'posix_memalign', 'valloc', 'aligned_alloc']
+    allocators = [
+        'malloc', 'calloc', 'realloc', 'free', 'memalign', 'posix_memalign', 'valloc',
+        'aligned_alloc'
+    ]
     trace_filter(profile, function=allocators, source=[])
 
     return profile
 
 
-def trace_filter(profile, function, source):
+def trace_filter(profile: dict, function: list[str], source: list[str]) -> dict:
     """ Remove records in trace section matching source or function
 
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile
@@ -26,7 +28,7 @@ def trace_filter(profile, function, source):
     :param list source: list of "source" records to omit
     :returns dict: updated profile
     """
-    def determinate(call):
+    def determinate(call: dict) -> bool:
         """ Determinate expression """
         return (call['source'] not in source and
                 call['function'] not in function)
@@ -37,22 +39,21 @@ def trace_filter(profile, function, source):
         resources = snapshot['resources']
         for res in resources:
             # removing call records
-            res['trace'] = [call for call in res['trace']
-                            if determinate(call)]
+            res['trace'] = [call for call in res['trace'] if determinate(call)]
             # updating "uid"
             res['uid'] = parsing.parse_allocation_location(res['trace'])
 
     return profile
 
 
-def set_global_region(profile):
+def set_global_region(profile: dict):
     """
     :param dict profile: partially computed profile
     """
     profile['global'] = {}
 
 
-def allocation_filter(profile, function, source):
+def allocation_filter(profile: dict, function: list[str], source: list[str]) -> dict:
     """ Remove record of specified function or source code out of the profile
 
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile
@@ -60,7 +61,7 @@ def allocation_filter(profile, function, source):
     :param list source: source's name to remove record of
     :returns dict: updated profile
     """
-    def determinate(uid):
+    def determinate(uid: dict) -> bool:
         """ Determinate expression """
         if uid:
             if uid['function'] in function:
@@ -77,7 +78,7 @@ def allocation_filter(profile, function, source):
     return profile
 
 
-def remove_uidless_records_from(profile):
+def remove_uidless_records_from(profile: dict) -> dict:
     """ Remove record without UID out of the profile
 
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile
@@ -88,7 +89,3 @@ def remove_uidless_records_from(profile):
         snapshot['resources'] = [res for res in snapshot['resources'] if res['uid']]
 
     return profile
-
-
-if __name__ == "__main__":
-    pass
