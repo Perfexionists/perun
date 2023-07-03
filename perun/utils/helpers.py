@@ -4,6 +4,8 @@ import re
 import operator
 import signal
 
+from typing import Optional, Any
+
 from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
 
@@ -408,3 +410,15 @@ def identity(*args):
     """
     # Unpack the tuple if it is single
     return args if len(args) > 1 else args[0]
+
+
+def safe_match(pattern: re.Pattern, searched_string: str, default: Optional[Any] = None):
+    """Safely matches groups in searched string; if string not found returns @p default
+
+    :param re.Pattern pattern: compiled regular expression pattern
+    :param str searched_string: searched string
+    :param Optional[Any] default: default value returned if not matched
+    :return: matched value or default
+    """
+    match = pattern.search(searched_string)
+    return match.group() if match else default

@@ -5,8 +5,26 @@ import re
 
 from typing import Dict
 from decimal import Decimal
+
+from typing import TypedDict
+from typing_extensions import Unpack
+
 import perun.profile.convert as convert
 import perun.collect.memory.syscalls as syscalls
+import perun.utils.helpers as helpers
+
+from perun.utils.structs import Executable
+
+
+class Resource(TypedDict):
+    amount: int
+    address: int
+    trace: list[dict]
+    type: str
+    subtype: str
+    uid: dict
+    allocation_order: int
+
 
 __author__ = "Radim Podola"
 
@@ -17,7 +35,7 @@ PATTERN_INT = re.compile(r"\d+")
 UID_RESOURCE_MAP: Dict[str, int] = collections.defaultdict(int)
 
 
-def parse_stack(stack):
+def parse_stack(stack: list[str]) -> list[dict]:
     """ Parse stack information of one allocation
 
     :param list stack: list of raw stack data
@@ -29,14 +47,14 @@ def parse_stack(stack):
 
         # parsing name of function,
         # it's the first word in the call record
-        func = PATTERN_WORD.search(call).group()
+        func = helpers.safe_match(PATTERN_WORD, call, "<?>")
         # demangling name of function
         func = syscalls.demangle(func)
-        call_data.update({'function': func})
+        call_data['function'] = func
 
         # parsing instruction pointer,
         # it's the first hexadecimal number in the call record
-        instruction_pointer = PATTERN_HEXADECIMAL.search(call).group()
+        instruction_pointer = helpers.safe_match(PATTERN_HEXADECIMAL, call, "<?>")
 
         # getting information of instruction pointer,
         # the source file and line number in the source file
@@ -46,17 +64,17 @@ def parse_stack(stack):
         if ip_info[1] in ["?", "??"]:
             ip_info[1] = 0
         else:
-            ip_info[1] = PATTERN_INT.search(ip_info[1]).group()
+            ip_info[1] = helpers.safe_match(PATTERN_INT, ip_info[1], "<?>")
 
-        call_data.update({'source': ip_info[0]})
-        call_data.update({'line': int(ip_info[1])})
+        call_data['source'] = ip_info[0]
+        call_data['line'] = int(ip_info[1])
 
         data.append(call_data)
 
     return data
 
 
-def parse_allocation_location(trace):
+def parse_allocation_location(trace: list) -> dict:
     """ Parse the location of user's allocation from stack trace
 
     :param list trace: list representing stack call trace
@@ -69,63 +87,63 @@ def parse_allocation_location(trace):
     return {}
 
 
-def parse_resources(allocation):
+def parse_resources(allocation: list[str]) -> Resource:
     """ Parse resources of one allocation
 
     :param list allocation: list of raw allocation data
     :returns structure: formatted structure representing resources of one allocation
     """
-    data = {}
+    data:  Resource = {}  # type: ignore
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
-    amount = PATTERN_INT.search(allocation[1]).group()
-    data.update({'amount': int(amount)})
+    amount = helpers.safe_match(PATTERN_INT, allocation[1], -1)
+    data['amount'] = int(amount)
 
     # parsing allocate function,
     # it's the first word on the second line
-    allocator = PATTERN_WORD.search(allocation[1]).group()
-    data.update({'subtype': allocator})
+    allocator = helpers.safe_match(PATTERN_WORD, allocation[1], "<?>")
+    data['subtype'] = allocator
 
     # parsing address of allocated memory,
     # it's the second number on the second line
     address = PATTERN_INT.findall(allocation[1])[1]
-    data.update({'address': int(address)})
+    data['address'] = int(address)
 
     # parsing stack in the moment of allocation
     # to getting trace of it
     trace = parse_stack(allocation[2:])
-    data.update({'trace': trace})
+    data['trace'] = trace
 
     # parsed data is memory type
-    data.update({'type': 'memory'})
+    data['type'] = 'memory'
 
     # parsing call trace to get first user call
     # to allocation function
-    data.update({'uid': parse_allocation_location(trace)})
+    data['uid'] = parse_allocation_location(trace)
 
     # update the resource number
     flattened_uid = convert.flatten(data['uid'])
     UID_RESOURCE_MAP[flattened_uid] += 1
-    data.update({'allocation_order': UID_RESOURCE_MAP[flattened_uid]})
+    data['allocation_order'] = UID_RESOURCE_MAP[flattened_uid]
 
     return data
 
 
-def parse_log(filename, executable, snapshots_interval):
+def parse_log(filename: str, executable: Executable, snapshots_interval: float) -> dict:
     """ Parse raw data in the log file
 
     :param string filename: name of the log file
     :param Executable executable: profiled binary
-    :param int snapshots_interval: interval of snapshots [s]
+    :param float snapshots_interval: interval of snapshots [s]
     :returns structure: formatted structure representing section "snapshots" and "global"
         in memory profile
     """
     interval = snapshots_interval
     with open(filename) as logfile:
-        log = logfile.read()
-    # allocations are splitted by empty line
-    log = log.split('\n\n')
+        log_lines = logfile.read()
+    # allocations are split by empty line
+    log = log_lines.split('\n\n')
 
     # Check that there is exit, and the Memory Log is thus not malformed
     if log.pop().strip().find('EXIT') == -1:
@@ -148,9 +166,7 @@ def parse_log(filename, executable, snapshots_interval):
     syscalls.build_address_to_line_cache(ips, executable.cmd)
 
     snapshots = []
-    data = {}
-    data.update({'time': '{0:f}'.format(interval)})
-    data.update({'resources': []})
+    data = {'time': f'{interval:f}', 'resources': []}
     for allocation in allocations:
         # parsing timestamp,
         # it's the only one number on the 1st line
@@ -159,18 +175,18 @@ def parse_log(filename, executable, snapshots_interval):
         if time_string.find(',') > 0:
             time_string = time_string.replace(',', '.')
 
-        time = Decimal(PATTERN_TIME.search(time_string).group())
+        time = Decimal(helpers.safe_match(PATTERN_TIME, time_string, -1))
 
         while time > interval:
             snapshots.append(data)
             interval += snapshots_interval
-            data = {}
-            data.update({'resources': []})
-            data.update({'time': '{0:f}'.format(interval)})
+            data = {
+                'resources': [], 'time': f'{interval:f}'
+            }
 
         # using parse_resources()
         # parsing resources,
-        data['resources'].append(parse_resources(allocation))
+        data['resources'].append(parse_resources(allocation))  # type: ignore
 
     if data:
         snapshots.append(data)

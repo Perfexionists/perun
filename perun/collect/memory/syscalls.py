@@ -3,7 +3,9 @@
 import os
 import re
 import subprocess
+
 from perun.utils.helpers import SuppressedExceptions
+from perun.utils.structs import Executable
 
 PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
@@ -14,7 +16,7 @@ demangle_cache = {}
 address_to_line_cache = {}
 
 
-def build_demangle_cache(names):
+def build_demangle_cache(names: set[str]):
     """Builds global cache for demangle() function calls.
 
     Instead of continuous calls to subprocess, this takes all of the collected names
@@ -30,7 +32,7 @@ def build_demangle_cache(names):
     demangle_cache = dict(zip(list_of_names, output.split("\n")))
 
 
-def demangle(name):
+def demangle(name: str) -> str:
     """
     :param string name: name to demangle
     :returns string: demangled name
@@ -38,10 +40,10 @@ def demangle(name):
     return demangle_cache[name]
 
 
-def build_address_to_line_cache(addresses, binary_name):
+def build_address_to_line_cache(addresses: set[tuple[str, str]], binary_name: str):
     """Builds global cache for address_to_line() function calls.
 
-    Instead of continuous calls to subprocess, this takes all of the collected
+    Instead of continuous calls to subprocess, this takes all of collected
     names and calls the addr2line just once.
 
     :param set addresses: set of addresses that will be translated to line info
@@ -58,7 +60,7 @@ def build_address_to_line_cache(addresses, binary_name):
     ))
 
 
-def address_to_line(ip):
+def address_to_line(ip: str) -> list:
     """
     :param string ip: instruction pointer value
     :returns list: list of two objects, 1st is the name of the source file, 2nd is the line number
@@ -66,7 +68,7 @@ def address_to_line(ip):
     return address_to_line_cache[ip][:]
 
 
-def run(executable):
+def run(executable: Executable) -> tuple[int, str]:
     """
     :param Executable executable: executable command
     :returns int: return code of executed binary
@@ -78,12 +80,12 @@ def run(executable):
         ret = subprocess.call(sys_call, shell=True, stderr=error_log)
 
     with open('ErrorCollectLog', 'r') as error_log:
-        error_log = error_log.readlines()
+        errors = error_log.readlines()
 
-    return ret, "".join(error_log)
+    return ret, "".join(errors)
 
 
-def init():
+def init() -> int:
     """ Initialize the injected library
 
     :returns bool: success of the operation
@@ -96,7 +98,7 @@ def init():
     return ret
 
 
-def check_debug_symbols(cmd):
+def check_debug_symbols(cmd: str) -> bool:
     """ Check if binary was compiled with debug symbols
 
     :param string cmd: binary file to profile
