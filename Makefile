@@ -5,10 +5,13 @@ test:
 	python3 -m pytest --cov=./ --cov-report term-missing:skip-covered tests/
 
 dev:
-	python3 setup.py develop
+	pip3 install -e .
+	pip3 install -e .[test,dev,docs]
+	pip3 install -r requirements.txt
 
 install:
-	python3 setup.py install
+	pip3 install .
+	pip3 install -r requirements.txt
 
 docs:
 	$(MAKE) -C docs html
