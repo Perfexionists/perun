@@ -57,7 +57,7 @@ def get_averages(profile):
     # Short fix for non-measured (static) profiles
     if 'amount' not in data_frame:
         data_frame['amount'] = 0
-    return data_frame.groupby('uid').mean().to_dict()['amount']
+    return data_frame.groupby('uid').mean(numeric_only=True).to_dict()['amount']
 
 
 def average_amount_threshold(baseline_profile, target_profile, **_):
