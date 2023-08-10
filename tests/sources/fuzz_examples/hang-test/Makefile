@@ -4,7 +4,7 @@ PROG=hang
 all: $(PROG)
 
 hang: main.c
-	$(CC) $< -g --coverage -o $@
+	$(CC) $< -g --coverage -dumpbase '' -o $@
 
 clean:
 	rm -rf $(PROG) *.gc*

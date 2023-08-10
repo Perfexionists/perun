@@ -233,7 +233,7 @@ def test_fuzzing_hangs(pcs_full):
         '--source-path', os.path.dirname(hang_test),
         '--gcno-path', os.path.dirname(hang_test),
         '--mutations-per-rule', 'proportional',
-        '--hang-timeout', '0.10',
+        '--hang-timeout', '0.05',
         '--exec-limit', '1',
         '--no-plotting',
     ])
