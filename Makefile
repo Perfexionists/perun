@@ -5,7 +5,6 @@ test:
 	python3 -m pytest --cov=./ --cov-report term-missing:skip-covered tests/
 
 dev:
-	pip3 install -e .
 	pip3 install -e .[test,dev,docs]
 	pip3 install -r requirements.txt
 
