@@ -1,0 +1,2 @@
+Sphinx==1.6.4
+sphinx-click==1.0.3
