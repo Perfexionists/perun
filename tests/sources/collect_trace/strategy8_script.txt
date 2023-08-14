@@ -138,7 +138,7 @@ probe process("cmp").function("_GLOBAL__sub_I__Z9QuickSortPii").call?,
     
     counter = sampling_counter[tid, pname]
     if (counter == 0 || counter == sampling_threshold[pname]) {
-        counter = 0
+        sampling_counter[tid, pname] = 0
         sampling_flag[tid, pname] ++
         printf("0 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
     }
@@ -189,7 +189,7 @@ probe process("cmp").mark("cmethod__entry")?,
     
     counter = sampling_counter[tid, pname]
     if (counter == 0 || counter == sampling_threshold[pname]) {
-        counter = 0
+        sampling_counter[tid, pname] = 0
         sampling_flag[tid, pname] ++
         printf("3 %d %d;%d\n", tid, read_stopwatch_ns("timestamp"), probe_id[pname])
     }
