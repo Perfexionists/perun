@@ -95,6 +95,35 @@ perun = [
 ]
 
 
+# Mypy configuration
+# ----------------------
+# Some packages are not shipping type hints yet, ignore the 'missing import' errors
+[[tool.mypy.overrides]]
+module = [
+    "scipy.*",
+    "sklearn.*",
+    "statsmodels.*",
+]
+ignore_missing_imports = true
+
+# Ignore thirdparty package as it contains ported code that is hard to type
+[[tool.mypy.overrides]]
+module = [
+"perun.thirdparty.*"
+]
+ignore_errors = true
+
+
+# Pylint configuration
+# --------------------
+[tool.pylint]
+ignore-paths = [
+    "perun/thirdparty/*"
+]
+
+
+# Pytest configuration
+# --------------------
 [tool.pytest.ini_options]
 addopts = "-p no:warnings -p no:logging"
 norecursedirs = [
@@ -102,6 +131,8 @@ norecursedirs = [
     "venv",
 ]
 
+# Coverage configuration
+# ----------------------
 [tool.coverage.run]
 source = [
     "perun",
@@ -109,4 +140,5 @@ source = [
 omit = [
     "tests/*",
     "perun/collect/trace/*",
+    "perun/thirdparty/*"
 ]
