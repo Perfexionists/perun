@@ -13,6 +13,7 @@ visualizations.
 
 Perun currently exists as CLI application, with GUI application being in development.
 """
+import importlib.metadata
 
 __author__ = 'Tomas Fiedor'
-__version__ = '0.20.4'
+__version__ = importlib.metadata.version(__package__)
