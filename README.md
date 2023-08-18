@@ -198,10 +198,15 @@ documentation:
 
 If you wish to test only against a single Python version, run Tox as:
 
-    tox run -e pyXY
+    tox run -e py3.Y
 
-where `XY` is the python version you wish to test. 
-    
+where `Y` is the python sub-version you wish to test. To see the available Tox environments (and
+consequently, the supported Python versions), run:
+
+    tox list
+
+---
+
 If you are interested in contributing to Perun project, please refer to
 [contributing](CONTRIBUTING) section. If you think your results could help others, please [send us
 PR](https://github.com/tfiedor/perun/pull/new/develop), we will review the code and in case it is
