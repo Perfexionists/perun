@@ -1,14 +1,11 @@
 """Scatter plot interpretation of the profile"""
 
 import click
-import holoviews as hv
 
 import perun.profile.helpers as profiles
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.view_helpers as bokeh_helpers
 import perun.view.scatter.factory as scatter_factory
-
 from perun.profile.factory import pass_profile
+from perun.utils import cli_helpers, view_helpers
 
 __author__ = "Jiri Pavela"
 
@@ -106,6 +103,5 @@ def scatter(profile, filename, view_in_browser, **kwargs):
     # Temporary solution for plotting multiple graphs from one command
     graphs = scatter_factory.create_from_params(profile, **kwargs)
     for uid, graph in graphs:
-        filename_uid = f"{filename}_{profiles.sanitize_filepart(uid)}"
-        hv.save(graph, filename_uid)
-        # bokeh_helpers.save_graphs_in_column([graph], filename_uid, view_in_browser)
+        filename_uid = f"{filename}_{profiles.sanitize_filepart(uid)}.html"
+        view_helpers.save_view_graph(graph, filename_uid, view_in_browser)

@@ -10,10 +10,10 @@ import demandimport
 
 with demandimport.enabled():
     import numpy as np
-    import bokeh.palettes as palettes
     import holoviews as hv
+    from bokeh import palettes
 
-import perun.utils.view_helpers as view_helpers
+from perun.utils import view_helpers
 from perun.profile import query, convert
 from perun.postprocess.regression_analysis import data_provider
 
@@ -79,7 +79,9 @@ def create_from_params(
                 size=7,
             ),
             hv.opts.Curve(
-                color=hv.Cycle(list(palettes.viridis(len(models_slice)))), line_width=3.5
+                # The max function is here so that when there are no models, the Cycle object
+                # is initialized properly
+                color=hv.Cycle(list(palettes.viridis(max(len(models_slice), 1)))), line_width=3.5
             ),
         )
 

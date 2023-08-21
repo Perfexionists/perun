@@ -1,16 +1,11 @@
 """Flow graphs visualization of the profiles."""
 
 import click
-import holoviews as hv
 
-import perun.utils.view_helpers as bokeh_helpers
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.log as log
-import perun.utils.helpers as helpers
-import perun.view.flow.factory as flow_factory
-import perun.profile.helpers as profiles
+from perun.utils import view_helpers, cli_helpers, log, helpers
 from perun.utils.exceptions import InvalidParameterException
 from perun.profile.factory import pass_profile
+import perun.view.flow.factory as flow_factory
 
 
 __author__ = "Radim Podola"
@@ -129,14 +124,9 @@ def flow(profile, filename, view_in_browser, **kwargs):
     Refer to :ref:`views-flow` for more thorough description and example of
     `flow` interpretation possibilities.
     """
-    profiles.is_key_aggregatable_by(profile, kwargs["func"], kwargs["of_key"], "of_key")
-    graph = flow_factory.create_from_params(profile, **kwargs)
-    hv.save(graph, filename)
-
-    # TODO: update
-    # try:
-    #     bokeh_helpers.process_profile_to_graphs(
-    #         flow_factory, profile, filename, view_in_browser, **kwargs
-    #     )
-    # except (InvalidParameterException, AttributeError) as iap_error:
-    #     log.error("while creating flow graph: {}".format(str(iap_error)))
+    try:
+        view_helpers.process_profile_to_graphs(
+            flow_factory, profile, filename, view_in_browser, **kwargs
+        )
+    except (InvalidParameterException, AttributeError) as iap_error:
+        log.error(f"while creating flow graph: {str(iap_error)}")

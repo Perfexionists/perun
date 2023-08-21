@@ -1,15 +1,9 @@
 """Bar's graphs interpretation of the profiles."""
 
 import click
-import holoviews as hv
 
 import perun.view.bars.factory as bars_factory
-import perun.utils.log as log
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.view_helpers as bokeh_helpers
-import perun.utils.helpers as helpers
-import perun.profile.helpers as profiles
-
+from perun.utils import cli_helpers, view_helpers, log, helpers
 from perun.profile.factory import pass_profile
 from perun.utils.exceptions import InvalidParameterException
 
@@ -129,15 +123,9 @@ def bars(profile, filename, view_in_browser, **kwargs):
     Refer to :ref:`views-bars` for more thorough description and example of
     `bars` interpretation possibilities.
     """
-    profiles.is_key_aggregatable_by(profile, kwargs["func"], kwargs["of_key"], "of_key")
-
-    graph = bars_factory.create_from_params(profile, **kwargs)
-    hv.save(graph, filename)
-
-    # TODO: update
-    # try:
-    #     bokeh_helpers.process_profile_to_graphs(
-    #         bars_factory, profile, filename, view_in_browser, **kwargs
-    #     )
-    # except (InvalidParameterException, AttributeError) as iap_error:
-    #     log.error("while creating bar graph: {}".format(str(iap_error)))
+    try:
+        view_helpers.process_profile_to_graphs(
+            bars_factory, profile, filename, view_in_browser, **kwargs
+        )
+    except (InvalidParameterException, AttributeError) as iap_error:
+        log.error(f"while creating bar graph: {str(iap_error)}")
