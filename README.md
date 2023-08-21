@@ -56,7 +56,6 @@ You can install Perun as follows:
 
     git clone https://github.com/tfiedor/perun.git
     cd perun
-    make init
     make install
 
 These commands install Perun to your system as a runnable python package. You can then run Perun
@@ -182,7 +181,6 @@ Alternatively you can install Perun in development mode:
 
     git clone https://github.com/tfiedor/perun.git
     cd perun
-    make init
     make dev
 
 This method of installation allows you to make a changes to the code, which will be then reflected
@@ -191,7 +189,24 @@ by the installation.
 Again, it is advised to verify that Perun is running correctly in your environment as follows:
 
     make test
-    
+
+Alternatively, you can use [Tox](https://tox.wiki/en/latest/) to run tests for all the supported
+Python versions, as well as run static type checking, code style linting and generating
+documentation:
+
+    tox run
+
+If you wish to test only against a single Python version, run Tox as:
+
+    tox run -e py3.Y
+
+where `Y` is the python sub-version you wish to test. To see the available Tox environments (and
+consequently, the supported Python versions), run:
+
+    tox list
+
+---
+
 If you are interested in contributing to Perun project, please refer to
 [contributing](CONTRIBUTING) section. If you think your results could help others, please [send us
 PR](https://github.com/tfiedor/perun/pull/new/develop), we will review the code and in case it is

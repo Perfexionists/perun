@@ -168,7 +168,8 @@ __attribute__ ((constructor)) void initialize (void) {
 __attribute__((destructor)) void finalize (void) {
     if(logFile != NULL){
         fprintf(logFile, "EXIT %fs\n", clock() / (double)CLOCKS_PER_SEC);
-        fclose(logFile);
+        // FIXME: This is causing segfaults for some reason, hotfix
+        // fclose(logFile);
     }
 }
 

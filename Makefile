@@ -5,10 +5,14 @@ test:
 	python3 -m pytest --cov=./ --cov-report term-missing:skip-covered tests/
 
 dev:
-	python3 setup.py develop
+	# Setuptools fails for nested requirements file when installed as `pip install .`, so sadly no
+	# simple "dev" optional dependency
+	pip3 install -e .[typing,lint,test,docs]
+	pip3 install -r requirements.txt
 
 install:
-	python3 setup.py install
+	pip3 install .
+	pip3 install -r requirements.txt
 
 docs:
 	$(MAKE) -C docs html
