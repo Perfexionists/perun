@@ -1,18 +1,20 @@
 """Flow graphs visualization of the profiles."""
 
 import click
+import holoviews as hv
 
 import perun.utils.view_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
 import perun.utils.helpers as helpers
 import perun.view.flow.factory as flow_factory
+import perun.profile.helpers as profiles
 from perun.utils.exceptions import InvalidParameterException
 from perun.profile.factory import pass_profile
 
 
-__author__ = 'Radim Podola'
-__coauthored__ = 'Tomas Fiedor'
+__author__ = "Radim Podola"
+__coauthored__ = "Tomas Fiedor"
 
 
 def process_title(ctx, _, value):
@@ -29,13 +31,13 @@ def process_title(ctx, _, value):
     :param object value: value that is being processed ad add to parameter
     :returns object: either value (if it is non-None) or default title of the graph
     """
-    if not value:
-        # Construct default title of the graph
-        return "{} of '{}' through '{}' for each {} {}".format(
-            ctx.params['func'].capitalize(), ctx.params['of_key'], ctx.params['through_key'],
-            ctx.params['by_key'], ctx.params['stacked']*"(stacked)"
-        )
-    return value
+    return value or (
+        f"{ctx.params['func'].capitalize()} "
+        f"of '{ctx.params['of_key']}' "
+        f"through '{ctx.params['through_key']}' "
+        f"for each {ctx.params['by_key']} "
+        f"{ctx.params['stacked']*'(stacked)'}"
+    )
 
 
 @click.command()
@@ -127,9 +129,14 @@ def flow(profile, filename, view_in_browser, **kwargs):
     Refer to :ref:`views-flow` for more thorough description and example of
     `flow` interpretation possibilities.
     """
-    try:
-        bokeh_helpers.process_profile_to_graphs(
-            flow_factory, profile, filename, view_in_browser, **kwargs
-        )
-    except (InvalidParameterException, AttributeError) as iap_error:
-        log.error("while creating flow graph: {}".format(str(iap_error)))
+    profiles.is_key_aggregatable_by(profile, kwargs["func"], kwargs["of_key"], "of_key")
+    graph = flow_factory.create_from_params(profile, **kwargs)
+    hv.save(graph, filename)
+
+    # TODO: update
+    # try:
+    #     bokeh_helpers.process_profile_to_graphs(
+    #         flow_factory, profile, filename, view_in_browser, **kwargs
+    #     )
+    # except (InvalidParameterException, AttributeError) as iap_error:
+    #     log.error("while creating flow graph: {}".format(str(iap_error)))

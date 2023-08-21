@@ -1,44 +1,58 @@
 """This module contains the Flow usage graph creating functions"""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Dict, Hashable
 
 import demandimport
+
 with demandimport.enabled():
-    import bkcharts as charts
-    import bokeh.models as models
-    import pandas
+    import holoviews as hv
 
-# import holoviews as hv
-
-import perun.profile.convert as convert
-import perun.utils.view_helpers as bokeh_helpers
-
-__author__ = 'Radim Podola'
-__coauthored__ = 'Tomas Fiedor'
+from perun.profile import convert
+from perun.utils import view_helpers
 
 
-def create_from_params(profile, func, of_key, through_key, by_key, stacked, accumulate,
-                       x_axis_label, y_axis_label, graph_title, graph_width=800):
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
+    import pandas as pd
+
+
+__author__ = "Radim Podola"
+__coauthored__ = "Tomas Fiedor"
+
+
+def create_from_params(
+    profile: Profile,
+    func: str,
+    of_key: str,
+    through_key: str,
+    by_key: str,
+    stacked: bool,
+    accumulate: bool,
+    x_axis_label: str,
+    y_axis_label: str,
+    graph_title: str,
+) -> hv.Overlay:
     """Creates Flow graph according to the given parameters.
 
-    Takes the input profile, converts it first to pandas.DataFrame. Then the data are grouped
-    according to the 'by_key' and then grouped again for each 'through' key. For this atomic
-    groups aggregation function is used.
+    The data are grouped according to the 'by_key' and then grouped again for each 'through' key.
+    For this, atomic groups aggregation function is used.
 
-    For each computed data, we output the area and points.
-
-    :param dict profile: dictionary with measured data
-    :param str func: function that will be used for aggregation of the data
-    :param str of_key: key that specifies which fields of the resource entry will be used as data
-    :param str through_key: key that specifies fields of the resource that will be on the x axis
-    :param str by_key: key that specifies values for which graphs will be outputed
-    :param bool stacked: true if the values of the graphs should be stacked on each other -> this
-        shows the overall values
-    :param bool accumulate: true if the values from previous x values should be accumulated
-    :param str x_axis_label: label on the x axis
-    :param str y_axis_label: label on the y axis
-    :param str graph_title: name of the graph
-    :param int graph_width: width of the created bokeh graph
-    :returns charts.Area: flow graph according to the params
+    :param profile: a Perun profile.
+    :param func: function that will be used for data aggregation.
+    :param of_key: the data column (Y-axis) key.
+    :param through_key: the X-axis values column key.
+    :param by_key: the group-by column bey.
+    :param stacked: specifies whether the flow graph should be in stacked format or not.
+    :param accumulate: specifies whether the previous X values should be accumulated.
+    :param x_axis_label: X-axis label text.
+    :param y_axis_label: Y-axis label text
+    :param graph_title: title of the graph.
+    :returns: a constructed Overlay object containing the individual Area plots.
     """
+    hv.extension("bokeh")
+    hv.renderer("bokeh").theme = view_helpers.build_bokeh_theme()
+
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)
     data_source = construct_data_source_from(
@@ -46,64 +60,54 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
     )
 
     # Obtain colours, which will be sorted in reverse
-    key_colours = bokeh_helpers.get_unique_colours_for_(
-        data_frame, by_key, sort_color_style=bokeh_helpers.ColourSort.REVERSE
+    key_colours = view_helpers.get_unique_colours_for_(
+        data_frame, by_key, sort_color_style=view_helpers.ColourSort.REVERSE
     )
 
-    # Construct the area chart
-    area_chart = charts.Area(data_source, stack=stacked, color=key_colours)
-
-    # Configure graph and return it
-    bokeh_helpers.configure_graph(
-        area_chart, profile, func, graph_title, x_axis_label, y_axis_label, graph_width
+    # Construct the Area objects and combine them into an overlay
+    flow_graph = hv.Overlay(
+        [hv.Area(y_values, label=source_name) for source_name, y_values in data_source.items()]
     )
-    configure_area_chart(area_chart, data_frame, data_source, through_key, stacked)
-
-    return area_chart
-
-
-def configure_area_chart(area_chart, data_frame, data_source, through_key, stacked):
-    """Sets additional configuration details to the area chart, specific for flow visualization.
-
-    Configures the legend location, click policy and ranges of the graph.
-
-    :param charts.Area area_chart: area chart which will be further configured
-    :param pandas.DataFrame data_frame: original data frame
-    :param pandas.DataFrame data_source: transformed data frame with aggregated data
-    :param str through_key: key on the x axis
-    :param bool stacked: true if the values in the graph are stacked
-    """
-    # Get minimal and maximal values; note we will add some small bonus to the maximal value
-    minimal_x_value = data_frame[through_key].min()
-    maximal_x_value = data_frame[through_key].max()
-    values_data_frame = pandas.DataFrame(data_source)
-    minimal_y_value = values_data_frame.min().min()
-    value_maxima = values_data_frame.max()
-    maximal_y_value = 1.05*(value_maxima.max() if not stacked else value_maxima.sum())
-
-    # Configure flow specific options
-    area_chart.legend.location = 'top_left'
-    area_chart.legend.click_policy = 'hide'
-    area_chart.x_range = models.Range1d(minimal_x_value, maximal_x_value - 1)
-    area_chart.y_range = models.Range1d(minimal_y_value, maximal_y_value)
+    # For stacked flow graph, we need to stack the individual Area objects from the overlay
+    if stacked:
+        flow_graph = hv.Area.stack(flow_graph)
+    # Configuration options for the individual Area objects
+    flow_graph.opts(hv.opts.Area(color=hv.Cycle(key_colours), fill_alpha=1 if stacked else 0.7))
+    # Configuration options for the entire plot
+    flow_graph.opts(
+        title=graph_title,
+        tools=["zoom_in", "zoom_out"],
+        responsive=True,
+        xlabel=x_axis_label,
+        ylabel=view_helpers.add_y_units(profile["header"], of_key, y_axis_label),
+        legend_position="top_left",
+    )
+    return flow_graph
 
 
-def construct_data_source_from(data_frame, func, of_key, by_key, through_key, accumulate):
-    """Transforms the data frame using the aggregating functions, breaking into groups.
+def construct_data_source_from(
+    data_frame: pd.DataFrame,
+    func: str,
+    of_key: str,
+    by_key: str,
+    through_key: str,
+    accumulate: bool,
+) -> Dict[Hashable, list[int]]:
+    """Transforms the data frame using the aggregating functions, breaking it into groups.
 
     Takes the original data frame, groups it by the 'by_key' and then for each group, groups values
     again by the 'through_key', which are further aggregated by func and optionally accumulated.
 
-    :param pandas.DataFrame data_frame: source data for the aggregated data frame
-    :param str func: function that will be used for aggregation of the data
-    :param str of_key: key that specifies which fields of the resource entry will be used as data
-    :param str through_key: key that specifies fields of the resource that will be on the x axis
-    :param str by_key: key that specifies values for which graphs will be outputed
-    :param bool accumulate: true if the values from previous x values should be accumulated
-    :returns pandas.DataFrame: transformed data frame
+    :param data_frame: source data for the aggregated data frame.
+    :param func: the aggregation function's name.
+    :param of_key: the data column (Y-axis) key.
+    :param through_key: the X-axis values column key.
+    :param by_key: the group-by column bey.
+    :param accumulate: specifies whether the previous X values should be accumulated.
+    :returns: the transformed source data.
     """
     # Compute extremes for X axis
-    #  -> this is needed for offseting of the values for the area chart
+    #  -> this is needed for offsetting of the values for the area chart
     minimal_x_value = data_frame[through_key].min()
     maximal_x_value = data_frame[through_key].max()
 
@@ -112,7 +116,7 @@ def construct_data_source_from(data_frame, func, of_key, by_key, through_key, ac
     #   (i.e. for each value on X axis), the values are either accumulated or not
     data_source = {}
     for group_name, by_key_group_data_frame in data_frame.groupby(by_key):
-        data_source[group_name] = [0]*(maximal_x_value + 1)
+        data_source[group_name] = [0] * (maximal_x_value + 1)
         source_data_frame = group_and_aggregate(by_key_group_data_frame, through_key, func)
         if accumulate:
             accumulated_value = 0
@@ -125,13 +129,13 @@ def construct_data_source_from(data_frame, func, of_key, by_key, through_key, ac
     return data_source
 
 
-def group_and_aggregate(data, group_through_key, func):
-    """Groups the data by group_through_key and then aggregates it through function
+def group_and_aggregate(data: pd.DataFrame, group_through_key: str, func: str) -> pd.DataFrame:
+    """Groups the data by group_through_key and then aggregates it through the 'func'.
 
-    :param pandas.DataFrame data: data frame with partially grouped data
-    :param str group_through_key: key which will be used for further aggregation
-    :param str func: aggregation function for the grouped data
-    :returns dict: source data frame
+    :param data: partially grouped data.
+    :param group_through_key: key by which to further aggregate.
+    :param func: name of the aggregation function to use.
+    :returns: the grouped and aggregated data.
     """
     # Aggregate the data according to the func grouped by through_key
     through_data_group = data.groupby(group_through_key)
