@@ -1,90 +1,78 @@
 """This module contains the BAR graphs creating functions"""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import demandimport
-import perun.profile.convert as convert
-import perun.utils.view_helpers as bokeh_helpers
-# import holoviews as hv
 
 with demandimport.enabled():
-    import bkcharts as charts
+    import holoviews as hv
 
-__author__ = 'Radim Podola'
-__coauthored__ = 'Tomas Fiedor'
+from perun.profile import convert
+from perun.utils import view_helpers
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
-def create_from_params(profile, func, of_key, per_key, by_key, cummulation_type,
-                       x_axis_label, y_axis_label, graph_title, graph_width=800):
+__author__ = "Radim Podola"
+__coauthored__ = "Tomas Fiedor"
+
+
+def create_from_params(
+    profile: Profile,
+    func: str,
+    of_key: str,
+    per_key: str,
+    by_key: str,
+    grouping_type: str,
+    x_axis_label: str,
+    y_axis_label: str,
+    graph_title: str,
+) -> hv.Bars:
     """Creates Bar graph according to the given parameters.
 
-    Takes the input profile, convert it to pandas.DataFrame. Then the data according to 'of_key'
-    parameter are used as values and are output by aggregation function of 'func' depending on
-    values of 'per_key'. Values are further stacked by 'by_key' key and cummulated according to the
-    type.
+    The 'of_key' is a data column (Y-axis) that is further aggregated by the 'func' depending on
+    the values of 'per_key' (X-axis). Values are further grouped by the 'by_key' column and
+    visualised according to the 'grouping_type'.
 
-    :param dict profile: dictionary with measured data
-    :param str func: function that will be used for aggregation of the data
-    :param str of_key: key that specifies which fields of the resource entry will be used as data
-    :param str per_key: key that specifies fields of the resource that will be on the x axis
-    :param str by_key: key that specifies grouping or stacking of the resources
-    :param str cummulation_type: type of the cummulation of the data (either stacked or grouped)
-    :param str x_axis_label: label on the x axis
-    :param str y_axis_label: label on the y axis
-    :param str graph_title: name of the graph
-    :param int graph_width: width of the created bokeh graph
-    :returns charts.Bar: bar graph according to the params
+    :param profile: a Perun profile.
+    :param func: function that will be used for data aggregation.
+    :param of_key: the data column (Y-axis) key.
+    :param per_key: the X-axis values column key.
+    :param by_key: the group-by column bey.
+    :param grouping_type: determines if the bars are stacked or grouped w.r.t. the 'by_key'.
+    :param x_axis_label: X-axis label text.
+    :param y_axis_label: Y-axis label text
+    :param graph_title: title of the graph.
+    :returns: a constructed and configured Bar graph object.
     """
+    hv.extension("bokeh")
+    hv.renderer("bokeh").theme = view_helpers.build_bokeh_theme()
+
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)
     data_frame.sort_values([per_key, by_key], inplace=True)
 
-    # Create basic graph:
-    if cummulation_type == 'stacked':
-        bar_graph = create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key)
-    else:
-        # Is grouped
-        bar_graph = create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key)
+    # Holoviews improperly implements pandas aggregation for non-numeric vdims. Their aggregation
+    # accepts only np.size as an aggregation function for non-numeric columns. Let's do the data
+    # preparation ourselves and let the users handle potential warnings when they select columns
+    # and aggregation function combination that is invalid.
+    grouped = data_frame[[per_key, by_key, of_key]].groupby([per_key, by_key], sort=False)
+    data_frame = grouped[[of_key]].aggregate(func=func).reset_index()
+    # Build the bar graph: X axis is multi-key, where the by_key is used in grouping/stacking
+    bars = hv.Bars(data_frame, kdims=[per_key, by_key], vdims=[of_key])
 
-    # Call basic configuration of the graph
-    bokeh_helpers.configure_graph(
-        bar_graph, profile, func, graph_title, x_axis_label, y_axis_label, graph_width
+    # Configure the plot's visual properties
+    bars.opts(
+        title=graph_title,
+        xlabel=x_axis_label,
+        ylabel=view_helpers.add_y_units(profile["header"], of_key, y_axis_label),
+        tools=["zoom_in", "zoom_out", "hover"],
+        responsive=True,
+        bar_width=1.0,
+        color=hv.Cycle(view_helpers.get_unique_colours_for_(data_frame, by_key)),
+        stacked=grouping_type == "stacked",
+        multi_level=False,
     )
-
-    return bar_graph
-
-
-def create_stacked_bar_graph(data_frame, func, of_key, per_key, by_key):
-    """Creates a bar graph with stacked values.
-
-    :param pandas.DataFrame data_frame: data frame with values of resources
-    :param str func: aggregation function for the values
-    :param str of_key: key specifying the values of the graph
-    :param str per_key: key specifying the x labels
-    :param str by_key: key specifying the stacking field
-    :returns charts.Bar: stacked bar
-    """
-    bar_graph = charts.Bar(
-        data_frame, label=per_key, values=of_key, agg=func, stack=by_key, bar_width=1.0,
-        tooltips=[(by_key, '@{}'.format(by_key))],
-        tools="pan,wheel_zoom,box_zoom,zoom_in,zoom_out,reset,save",
-        color=bokeh_helpers.get_unique_colours_for_(data_frame, by_key)
-    )
-    return bar_graph
-
-
-def create_grouped_bar_graph(data_frame, func, of_key, per_key, by_key):
-    """Creates a bar graph with grouped values.
-
-    :param pandas.DataFrame data_frame: data frame with values of resources
-    :param str func: aggregation function for the values
-    :param str of_key: key specifying the values of the graph
-    :param str per_key: key specifying the x labels
-    :param str by_key: key specifying the stacking field
-    :returns charts.Bar: stacked bar
-    """
-    bar_graph = charts.Bar(
-        data_frame, label=per_key, values=of_key, agg=func, group=by_key, bar_width=1.0,
-        tooltips=[(by_key, '@{}'.format(by_key))],
-        tools="pan,wheel_zoom,box_zoom,zoom_in,zoom_out,reset,save",
-        color=bokeh_helpers.get_unique_colours_for_(data_frame, by_key)
-    )
-    return bar_graph
+    return bars
