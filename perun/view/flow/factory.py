@@ -6,8 +6,10 @@ with demandimport.enabled():
     import bokeh.models as models
     import pandas
 
+# import holoviews as hv
+
 import perun.profile.convert as convert
-import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.utils.view_helpers as bokeh_helpers
 
 __author__ = 'Radim Podola'
 __coauthored__ = 'Tomas Fiedor'
@@ -45,7 +47,7 @@ def create_from_params(profile, func, of_key, through_key, by_key, stacked, accu
 
     # Obtain colours, which will be sorted in reverse
     key_colours = bokeh_helpers.get_unique_colours_for_(
-        data_frame, by_key, sort_color_style=bokeh_helpers.ColourSort.Reverse
+        data_frame, by_key, sort_color_style=bokeh_helpers.ColourSort.REVERSE
     )
 
     # Construct the area chart

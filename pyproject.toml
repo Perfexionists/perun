@@ -103,6 +103,10 @@ module = [
     "scipy.*",
     "sklearn.*",
     "statsmodels.*",
+    "demandimport.*",
+    "pandas.*",
+    "numpy.*",
+    "holoviews.*",
 ]
 ignore_missing_imports = true
 

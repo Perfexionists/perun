@@ -1,31 +1,128 @@
 """ Module with graphs creation and configuration functions. """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Dict, Tuple, Any
+from collections.abc import Iterator
 
 from operator import itemgetter
-from collections import defaultdict
 
 import demandimport
+
 with demandimport.enabled():
-    import bkcharts as charts
+    import numpy as np
     import bokeh.palettes as palettes
-import numpy as np
+    import holoviews as hv
 
-import perun.profile.query as query
-import perun.profile.convert as convert
-import perun.utils.bokeh_helpers as bokeh_helpers
-import perun.postprocess.regression_analysis.data_provider as data_provider
-import perun.postprocess.regressogram.methods as rg_methods
+import perun.utils.view_helpers as view_helpers
+from perun.profile import query, convert
+from perun.postprocess.regression_analysis import data_provider
 
-__author__ = 'Jiri Pavela'
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
+    import pandas as pd
+
+__author__ = "Jiri Pavela"
+
+ProfileModel = Dict[str, Any]
+ProfileModels = List[ProfileModel]
 
 
-def slice_resources_by_uid(resources, models, uids):
-    """ Splits the resource tables and models into slices by the unique uids found in the resources.
+def create_from_params(
+    profile: Profile,
+    of_key: str,
+    per_key: str,
+    x_axis_label: str,
+    y_axis_label: str,
+    graph_title: str,
+) -> Iterator[Tuple[str, hv.Scatter]]:
+    """Creates Scatter plot graph according to the given parameters.
 
-    :param pandas.DataFrame resources: the data table from resources
-    :param list of dict models: the list of models from profile
-    :param map uids: the list of unique uids from profile
-    :returns generator: resources and models slices of unique uid as pair
-        (data_slice(pandas.DataFrame), uid_models(list))
+    The 'of_key' is a data column (Y-axis) that is depending on the values of 'per_key' (X-axis).
+    Furthermore, models records are also plotted if the profile contains them.
+
+    :param profile: a Perun profile.
+    :param of_key: the data column (Y-axis) key.
+    :param per_key: the X-axis values column key.
+    :param x_axis_label: X-axis label text.
+    :param y_axis_label: Y-axis label text
+    :param graph_title: title of the graph.
+    :returns: UID and a Scatter plot with models, if there are any.
+    """
+    hv.extension("bokeh")
+    hv.renderer("bokeh").theme = view_helpers.build_bokeh_theme()
+
+    y_axis_label = view_helpers.add_y_units(profile["header"], of_key, y_axis_label)
+    for data_slice, models_slice in _generate_plot_data_slices(profile):
+        # Plot the points as a scatter plot
+        scatter = hv.Scatter(data_slice, (per_key, x_axis_label), (of_key, y_axis_label))
+        # Add models to the plot, if there are any
+        scatter *= _draw_models(profile, models_slice)
+
+        # Create the graph title as a combination of default parameter, uid, method and
+        # interval values (only if models are plotted) for easier identification
+        graph_title = f"{graph_title}; uid: {data_slice.uid.values[0]}"
+        if models_slice:
+            graph_title += (
+                f";method {models_slice[0]['model']}; "
+                f"interval [{models_slice[0]['x_start']}, {models_slice[0]['x_end']}]"
+            )
+
+        # Configure the plot's visual properties
+        scatter.opts(
+            hv.opts.Scatter(
+                title=graph_title,
+                tools=["zoom_in", "zoom_out", "hover"],
+                responsive=True,
+                fill_color="indianred",
+                line_width=1,
+                line_color="black",
+                size=7,
+            ),
+            hv.opts.Curve(
+                color=hv.Cycle(list(palettes.viridis(len(models_slice)))), line_width=3.5
+            ),
+        )
+
+        yield f"{data_slice.uid.values[0]}", scatter
+
+
+def _generate_plot_data_slices(profile: Profile) -> Iterator[Tuple[pd.DataFrame, ProfileModels]]:
+    """Generates data slices for plotting resources and models.
+
+    The resources are split per UID and models are sliced per UID and interval.
+
+    :param profile: a complete perun profile.
+    :returns: slices of resources (per UID) and models (per UID and interval).
+    """
+    # Get resources for scatter plot points and models for curves
+    resource_table = convert.resources_to_pandas_dataframe(profile)
+    models = list(map(itemgetter(1), profile.all_models()))
+    # Get unique uids from profile, each uid (and optionally interval) will have separate graph
+    uids = map(convert.flatten, query.unique_resource_values_of(profile, "uid"))
+
+    # Process each uid data
+    for uid_slice, uid_models in _slice_resources_by_uid(resource_table, models, uids):
+        # Slice the uid models according to different intervals (each interval is plotted
+        # separately as it improves readability)
+        if uid_models:
+            for interval_models in _slice_models_by_interval(uid_models):
+                yield uid_slice, interval_models
+        else:
+            # There are no models to plot
+            yield uid_slice, []
+
+
+def _slice_resources_by_uid(
+    resources: pd.DataFrame,
+    models: ProfileModels,
+    uids: Iterator[str],
+) -> Iterator[Tuple[pd.DataFrame, ProfileModels]]:
+    """Splits the resource tables and models into slices by the unique uids found in the resources.
+
+    :param resources: the ``resources`` part of a profile, i.e., recorded performance data.
+    :param models: the ``models`` part of a profile.
+    :param uids: UIDs found in the profile.
+    :returns: per-UID ``resources`` and ``models`` slices.
     """
     for uid in uids:
         # Slice only the plotted uid from the data table
@@ -34,206 +131,141 @@ def slice_resources_by_uid(resources, models, uids):
             # plotting one point does not work (it has no real usage anyway), fix later
             continue
         # Filter models for the given uid
-        uid_models = [model for model in models if model['uid'] == uid]
+        uid_models = [model for model in models if model["uid"] == uid]
         yield uid_slice, uid_models
 
 
-def slice_models_by_interval(models):
-    """ Splits the models list into slices with different x axis intervals.
+def _slice_models_by_interval(models: ProfileModels) -> Iterator[ProfileModels]:
+    """Splits profile models into slices according to their x-axis intervals.
 
-    :param list of dict models: the list of models to split
-    :returns generator: stream of models slices (list)
+    :param models: the models to split.
+    :returns: model slices according to their x-axis intervals.
     """
-    # Sort the models by intervals first, to yield them in order
-    models = sorted(models, key=itemgetter('x_start', 'x_end'))
+    # Sort the models by intervals first to yield them in order
+    models = sorted(models, key=itemgetter("x_start", "x_end"))
     # Separate the models into groups according to intervals
-    intervals = defaultdict(list)
+    intervals: Dict[Tuple[int, int], ProfileModels] = {}
     for model in models:
-        intervals[(model['x_start'], model['x_end'])].append(model)
+        intervals.setdefault((model["x_start"], model["x_end"]), []).append(model)
     # Yield the list of models with the same interval
-    for interval_models in intervals.items():
-        yield interval_models[1]
+    for interval_models in intervals.values():
+        yield interval_models
 
 
-def generate_plot_data_slices(profile):
-    """ Generates data slices for plotting resources and models. The resources are split by unique
-        uids, models are sliced into parts by uid and interval.
+def _draw_models(profile: Profile, models: ProfileModels) -> hv.Overlay:
+    """Build models overlay that can be rendered in the scatter plot.
 
-    :param Profile profile: loaded perun profile
-    :returns generator: generator: resources and models slices of unique uid as pair
-        (data_slice(pandas.DataFrame), uid_models(list))
+    :param profile: a complete Perun profile.
+    :param models: models to plot.
+
+    :returns: an overlay object with models to plot.
     """
-    # Get resources for scatter plot points and models for curves
-    resource_table = convert.resources_to_pandas_dataframe(profile)
-    models = list(map(itemgetter(1), profile.all_models()))
-    # Get unique uids from profile, each uid (and optionally interval) will have separate graph
-    uids = map(convert.flatten, query.unique_resource_values_of(profile, 'uid'))
-
-    # Process each uid data
-    for uid_slice, uid_models in slice_resources_by_uid(resource_table, models, uids):
-        # Slice the uid models according to different intervals (each interval is plotted
-        # separately as it improves readability)
-        if uid_models:
-            for interval_models in slice_models_by_interval(uid_models):
-                yield uid_slice, interval_models
-        else:
-            # There are no models to plot
-            yield uid_slice, []
+    # Create an overlay object that will group the model curves
+    curves = hv.Overlay()
+    for model in models:
+        if "coeffs" in model:
+            # This is a parametric model, add it to the overlay
+            curves *= _create_parametric_model(model)
+        # Non-parametric models don't contain coefficients
+        elif model["model"] == "regressogram":
+            curves *= _create_regressogram_model(model)
+        elif model["model"] in ("moving_average", "kernel_regression"):
+            for curve in _create_non_param_model(profile, model):
+                curves *= curve
+    return curves
 
 
-def draw_models(graph, models, profile):
-    """ Add models renderers to the graph.
+def _create_parametric_model(model: ProfileModel) -> hv.Curve:
+    """Build a render object for a specific parametric model using its coefficients.
 
-    :param charts.Graph graph: the scatter plot without models
-    :param list models: list of models to plot
-    :param dict profile: dictionary with measured data to pairing model with resources
-    :returns charts.Graph: the modified graph with model curves renderers
+    :param model: the parametric model.
+
+    :returns: a Curve plot element that represents the model.
     """
-    # Get unique colors for the model curves
-    colour_palette = palettes.viridis(len(models))
-    for idx, model in enumerate(models):
-        # Coefficients are part only of parametric models
-        if 'coeffs' in model:
-            graph = create_parametric_model(graph, model, colour_palette[idx])
-        # The non-parametric models do not contain the coefficients
-        elif model['model'] == 'regressogram':
-            graph = create_regressogram_model(graph, model, colour_palette[idx])
-        elif model['model'] in ('moving_average', 'kernel_regression'):
-            graph = create_non_param_model(graph, model, profile, colour_palette[idx])
-    return graph
+    # First transform the model type and coefficients into X and Y points that can be plotted
+    model_conv = convert.plot_data_from_coefficients_of(model)
+    # Create a Curve plot element that represents the model
+    return hv.Curve((model_conv["plot_x"], model_conv["plot_y"]), label=_build_model_legend(model))
 
 
-def create_parametric_model(graph, model, colour):
+def _create_non_param_model(profile: Profile, model: ProfileModel) -> Iterator[hv.Curve]:
+    """Build a render object for a moving average model according to its computed properties.
+
+    :param model: the moving average model.
+    :param profile: a Perun profile containing the model's X coordinates.
+    :returns: Curve elements that represent the model.
     """
-    Rendering the parametric models according to its coefficients.
+    params = {
+        # TODO: obtain of_key from the "postprocess" entry in profile
+        "of_key": "amount",
+        "per_key": model["per_key"],
+    }
+    legend = _build_model_legend(model)
+    # Obtain the x-coordinates with the required uid to pair with current model
+    for x_pts, _, uid in data_provider.data_provider_mapper(profile, **params):
+        if uid == model["uid"]:
+            # Build the model
+            yield hv.Curve(
+                (sorted(x_pts), model.get("kernel_stats", model.get("bucket_stats"))), label=legend
+            )
 
-    :param charts.Graph graph: the scatter plot to render new models
-    :param model: the parametric model to be render to the graph
-    :param colour: the color of the current model to distinguish in the case of several models
-        in the graph
-    :return charts.Graph: the modified graph with new model curves
+
+def _create_regressogram_model(model: ProfileModel) -> hv.Curve:
+    """Build a render object for a regressogram model according to its computed properties.
+
+    :param model: the regressogram model.
+    :returns: a Curve plot element that represents the model.
     """
-    # Convert the coefficients to points that can be plotted
-    model = convert.plot_data_from_coefficients_of(model)
-
-    # Create legend for the plotted model
-    coeffs = ', '.join('{}={:f}'.format(c['name'], c['value']) for c in model['coeffs'])
-    legend = '{0}: {1}, r^2={2:f}'.format(model['model'], coeffs, model['r_square'])
-
-    # Plot the model
-    graph.line(
-        x=model['plot_x'], y=model['plot_y'], line_color='#000000', line_width=7.5, legend=legend
-    )
-    graph.line(
-        x=model['plot_x'], y=model['plot_y'], line_color=colour, line_width=3.5, legend=legend
-    )
-    return graph
-
-
-def create_regressogram_model(graph, model, colour):
-    """
-    Rendering the regressogram model according to its computed properties.
-
-    :param charts.Graph graph: the scatter plot to render new models
-    :param model: the regressogram model which to be rendered to the graph
-    :param colour: the color of the current model to distinguish in the case of
-        several models in the graph
-    :return charts.Graph: the modified graph with new regressogram model
-    """
-    bucket_no = len(model['bucket_stats'])
-    # Evenly division of the interval by number of buckets
-    x_pts = np.linspace(
-        model['x_start'], model['x_end'], num=bucket_no+ 1
-    )
+    bucket_no = len(model["bucket_stats"])
+    # Even division of the model interval by the number of buckets
+    x_pts = np.linspace(model["x_start"], model["x_end"], num=bucket_no + 1)
     # Add the beginning of the first edge
-    y_pts = np.append(model['y_start'], model['bucket_stats'])
-    # Create legend for the plotted model
-    legend = '{0}: buckets={1}, stat: {2}, R^2={3:f}'.format(
-        model['model'][:3], bucket_no, model['statistic_function'], model['r_square']
-    )
-    # Plot the render_step_function function for regressogram model
-    graph_params = {'color': colour, 'line_width': 3.5, 'legend': legend}
-    return rg_methods.render_step_function(graph, x_pts, y_pts, graph_params)
+    y_pts = np.append(model["y_start"], model["bucket_stats"])
+    # Build the model
+    return _render_step_function(x_pts, y_pts, legend=_build_model_legend(model))
 
 
-def create_non_param_model(graph, model, profile, colour):
+def _render_step_function(x_pts: np.ndarray, y_pts: np.ndarray, legend: str) -> hv.Curve:
+    """Build regressogram's step lines according to given coordinates.
+
+    :param x_pts: the x-coordinates for the line.
+    :param y_pts: the y-coordinates for the line.
+    :returns: a Curve element representing the step lines.
     """
-    Rendering the moving average model according to its computed properties.
+    x_x = np.sort(list(x_pts) + list(x_pts))
+    x_x = x_x[:-1]
+    y_y = list(y_pts) + list(y_pts)
+    y_y[::2] = y_pts
+    y_y[1::2] = y_pts
+    y_y = y_y[1:]
+    return hv.Curve((x_x, y_y), label=legend)
 
-    :param charts.Graph graph: the scatter plot to render new models
-    :param model: the moving average model which to be rendered to the graph
-    :param dict profile: the profile to obtains the x-coordinates
-    :param colour: the color of the current model to distinguish in the case of
-        several models in the graph
-    :return charts.Graph: the modified graph with new moving average model
+
+def _build_model_legend(model: ProfileModel) -> str:
+    """Creates a legend (label) for the given model.
+
+    :param model: the model to create a legend for.
+
+    :returns: a string representation of the model's legend.
     """
-    def draw_model(y_pts):
-        # Obtains the x-coordinates with the required uid to pair with current model
-        params = {
-            'of_key': 'amount',
-            'per_key': model['per_key']
-        }
-        for x_pts, _, uid in data_provider.data_provider_mapper(profile, **params):
-            if uid == model['uid']:
-                # Plot the model
-                graph.line(
-                    x=sorted(x_pts), y=y_pts, line_color=colour, line_width=3.5, legend=legend
-                )
-        return graph
-
-    legend = ""
-    if model['model'] == 'moving_average':
-        # Create legend for the plotted moving_average model
-        legend = '{0}: window={1}, R^2={2:f}'.format(
-            model['moving_method'], model['window_width'], model['r_square']
+    if "coeffs" in model:
+        # Create a legend for parametric model
+        coeffs = ", ".join(f"{c['name']}={c['value']:f}" for c in model["coeffs"])
+        return f"{model['model']}: {coeffs}, r^2={model['r_square']:.3f}"
+    if model["model"] == "moving_average":
+        # Create a legend for moving_average model
+        return (
+            f"{model['moving_method']}: window={model['window_width']}, "
+            f"R^2={model['r_square']:.3f}"
         )
-    elif model['model'] == 'kernel_regression':
-        # Create legend for the plotted kernel models
-        legend = '{0}: bw={1}, R^2={2:f}'.format(
-            model['kernel_mode'], model['bandwidth'], model['r_square']
+    if model["model"] == "kernel_regression":
+        # Create a legend for kernel model
+        return f"{model['kernel_mode']}: bw={model['bandwidth']}, R^2={model['r_square']:f}"
+    if model["model"] == "regressogram":
+        # Create a legend for regressogram model
+        return (
+            f"{model['model'][:3]}: buckets={len(model['bucket_stats'])}, "
+            f"stat: {model['statistic_function']}, "
+            f"R^2={model['r_square']:.3f}"
         )
-    # Render kernel models to the current graph
-    return draw_model(y_pts=model.get('kernel_stats', model.get('bucket_stats')))
-
-
-def create_from_params(profile, of_key, per_key, x_axis_label, y_axis_label, graph_title,
-                       graph_width=800):
-    """Creates Scatter plot graph according to the given parameters.
-
-    Takes the input profile, convert it to pandas.DataFrame. Then the data according to 'of_key'
-    parameter are used as values and are output depending on values of 'per_key'.
-    Furthermore, models records are also plotted if the profile contains them.
-
-    :param dict profile: dictionary with measured data
-    :param str of_key: key that specifies which fields of the resource entry will be used as data
-    :param str per_key: key that specifies fields of the resource that will be on the x axis
-    :param str x_axis_label: label on the x axis
-    :param str y_axis_label: label on the y axis
-    :param str graph_title: name of the graph
-    :param int graph_width: width of the created bokeh graph
-    :returns uid, charts.Scatter: uid and scatter plot graph with models built according to the
-        params
-    """
-    for data_slice, models_slice in generate_plot_data_slices(profile):
-        # Plot the points as a scatter plot
-        scatter = charts.Scatter(data_slice, x=per_key, y=of_key, title=graph_title,
-                                 xlabel=x_axis_label, ylabel=y_axis_label,
-                                 tools='pan,wheel_zoom,box_zoom,zoom_in,zoom_out,crosshair,'
-                                       'reset,save')
-
-        # Configure the graph properties
-        # Create the graph title as a combination of default parameter, uid, method and
-        # interval values (only if models are plotted) for easier identification
-        this_graph_title = graph_title + '; uid: {0}'.format(data_slice.uid.values[0])
-        if models_slice:
-            this_graph_title += ('; method: {0}; interval <{1}, {2}>'
-                                 .format(models_slice[0]['model'],
-                                         models_slice[0]['x_start'],
-                                         models_slice[0]['x_end']))
-        bokeh_helpers.configure_graph(
-            scatter, profile, 'count', this_graph_title, x_axis_label, y_axis_label, graph_width)
-
-        # Plot all models
-        scatter = draw_models(scatter, models_slice, profile)
-
-        yield '{}'.format(data_slice.uid.values[0]), scatter
+    return ""

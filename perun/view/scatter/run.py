@@ -1,19 +1,20 @@
 """Scatter plot interpretation of the profile"""
 
 import click
+import holoviews as hv
 
 import perun.profile.helpers as profiles
 import perun.utils.cli_helpers as cli_helpers
-import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.utils.view_helpers as bokeh_helpers
 import perun.view.scatter.factory as scatter_factory
 
 from perun.profile.factory import pass_profile
 
-__author__ = 'Jiri Pavela'
+__author__ = "Jiri Pavela"
 
 
 def process_title(ctx, _, value):
-    """ Creates default title for scatter plot graph, if not provided by the user.
+    """Creates default title for scatter plot graph, if not provided by the user.
 
     If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
     create some optimal name for the graph ourselves. We do this according to already processed
@@ -29,7 +30,7 @@ def process_title(ctx, _, value):
     :param object value: value that is being processed ad add to parameter
     :returns object: either value (if it is non-None) or default title of the graph
     """
-    return value or "Plot of '{}' per '{}'".format(ctx.params['of_key'], ctx.params['per_key'])
+    return value or f"Plot of '{ctx.params['of_key']}' per '{ctx.params['per_key']}'"
 
 
 @click.command()
@@ -105,5 +106,6 @@ def scatter(profile, filename, view_in_browser, **kwargs):
     # Temporary solution for plotting multiple graphs from one command
     graphs = scatter_factory.create_from_params(profile, **kwargs)
     for uid, graph in graphs:
-        filename_uid = filename + '_{}.html'.format(profiles.sanitize_filepart(uid))
-        bokeh_helpers.save_graphs_in_column([graph], filename_uid, view_in_browser)
+        filename_uid = f"{filename}_{profiles.sanitize_filepart(uid)}"
+        hv.save(graph, filename_uid)
+        # bokeh_helpers.save_graphs_in_column([graph], filename_uid, view_in_browser)

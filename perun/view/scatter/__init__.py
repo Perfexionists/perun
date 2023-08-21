@@ -7,6 +7,6 @@ is Bokeh_ library.
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
 """
 
-SUPPORTED_PROFILES = ['mixed']
+SUPPORTED_PROFILES = ["mixed"]
 
-__author__ = 'Jiri Pavela'
+__author__ = "Jiri Pavela"

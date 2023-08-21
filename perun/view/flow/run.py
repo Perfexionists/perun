@@ -2,7 +2,7 @@
 
 import click
 
-import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.utils.view_helpers as bokeh_helpers
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
 import perun.utils.helpers as helpers

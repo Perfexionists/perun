@@ -113,29 +113,6 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
         )
     }
 
-
-def render_step_function(graph, x_pts, y_pts, graph_params):
-    """
-    Render step lines according to given coordinates and other parameters.
-
-    :param charts.Graph graph: the scatter plot
-    :param x_pts: the x-coordinates for the points of the line
-    :param y_pts: the y-coordinates for the points of the line
-    :param dict graph_params: contains the specification of parameters for graph
-        (color, line_width, legend)
-    :returns charts.Graph: the modified graph with model of step function
-    """
-    x_x = np.sort(list(x_pts) + list(x_pts))
-    x_x = x_x[:-1]
-    y_y = list(y_pts) + list(y_pts)
-    y_y[::2] = y_pts
-    y_y[1::2] = y_pts
-    y_y = y_y[1:]
-    graph.line(x_x, y_y, color=graph_params.get('color'), line_width=graph_params.get('line_width'),
-               legend=graph_params.get('legend'))
-    return graph
-
-
 # Code for calculating number of buckets for regressogram can be got from SciPy:
 # https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
 

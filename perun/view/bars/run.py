@@ -5,7 +5,7 @@ import click
 import perun.view.bars.factory as bars_factory
 import perun.utils.log as log
 import perun.utils.cli_helpers as cli_helpers
-import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.utils.view_helpers as bokeh_helpers
 import perun.utils.helpers as helpers
 
 from perun.profile.factory import pass_profile

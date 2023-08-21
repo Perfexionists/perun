@@ -2,7 +2,8 @@
 
 import demandimport
 import perun.profile.convert as convert
-import perun.utils.bokeh_helpers as bokeh_helpers
+import perun.utils.view_helpers as bokeh_helpers
+# import holoviews as hv
 
 with demandimport.enabled():
     import bkcharts as charts
