@@ -14,6 +14,7 @@ import traceback
 import json
 import click
 import jinja2
+import tomli
 import pkg_resources
 
 import perun
@@ -650,9 +651,10 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
             line_statement_prefix='//',
         )
         CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
-    req_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'requirements.txt'))
-    with open(req_file, 'r') as requirements_handle:
-        reqs = {req.split('==')[0] for req in requirements_handle.readlines()}
+    toml_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'pyproject.toml'))
+    with open(toml_file, 'rb') as pyproject_handle:
+        pyproject_file = tomli.load(pyproject_handle)
+        reqs = {req.split('==')[0] for req in pyproject_file["project"]["dependencies"]}
 
     dump_directory = pcs.get_safe_path(os.getcwd())
     dump_file = os.path.join(dump_directory, 'dump-{}'.format(

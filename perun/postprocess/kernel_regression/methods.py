@@ -102,7 +102,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         :param np.ndarray gamma_values: range of gamma values to select one of them
         :return float: selected specific value of gamma from a given range of values
         """
-        mse = np.empty_like(gamma_values, dtype=np.float)
+        mse = np.empty_like(gamma_values, dtype=float)
         for i, gamma in enumerate(gamma_values):
             kernel = kernels.pairwise_kernels(self.x_pts, self.x_pts, self.kernel, gamma=gamma)
             np.fill_diagonal(kernel, 0)

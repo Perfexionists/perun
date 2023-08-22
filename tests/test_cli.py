@@ -5,10 +5,10 @@ this is done in appropriate test files, only the API is tested."""
 
 import os
 import git
-import numpy as np
 import re
 import shutil
 import time
+import warnings
 
 import pytest
 from click.testing import CliRunner
@@ -684,7 +684,7 @@ def test_kernel_regression_correct(pcs_full):
 
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
-    np.warnings.filterwarnings('ignore')
+    warnings.filterwarnings('ignore')
 
     correct_tests = [
         # TEST KERNEL-REGRESSION COMMON OPTIONS

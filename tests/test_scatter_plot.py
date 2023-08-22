@@ -1,14 +1,13 @@
 """ Basic tests for scatter plot visualization """
 
 import os
-import operator
 
 from click.testing import CliRunner
 
 import perun.cli as cli
 import perun.view.scatter.factory as scatter
 
-import perun.testing.asserts as asserts
+from perun.testing import asserts
 
 __author__ = 'Jiri Pavela'
 
@@ -27,7 +26,7 @@ def test_scatter_plot_regression_models(postprocess_profiles):
         graphs = scatter.create_from_params(profile[1], 'amount', 'structure-unit-size',
                                             'structure-unit-size', 'amount [us]',
                                             "Plot of 'amount' per 'structure-unit-size'")
-        results = list(map(operator.itemgetter(0), graphs))
+        results = list(graphs)
 
         # Check if scatter plot generated expected amount of graphs for each profile
         if ('full_computation.perf' in profile[0] or 'initial_guess_computation.perf' in profile[0]
@@ -53,7 +52,7 @@ def test_scatter_plot_non_param_methods(postprocess_profiles):
         graphs = scatter.create_from_params(profile[1], 'amount', 'structure-unit-size',
                                             'structure-unit-size', 'amount [us]',
                                             'Plot of "amount" per "structure-unit-size"')
-        results = list(map(operator.itemgetter(0), graphs))
+        results = list(graphs)
 
         # Check if scatter plot generated expected amount of graphs for each profile
         if 'exp_datapoints_rg_ma_kr.perf' in profile[0] or \
@@ -77,10 +76,8 @@ def test_scatter_plot_no_models(full_profiles):
     graphs = scatter.create_from_params(profile[1], 'amount', 'structure-unit-size',
                                         'structure-unit-size', 'amount [us]',
                                         "Plot of 'amount' per 'structure-unit-size'")
-    results = list(map(operator.itemgetter(0), graphs))
-
     # Graphs for two functions should be generated
-    assert len(results) == 2
+    assert len(list(graphs)) == 2
 
 
 def test_scatter_plot_cli(pcs_full, postprocess_profiles):
