@@ -1,9 +1,9 @@
 test:
 	python3 -m pytest --cov=./ --cov-report term-missing:skip-covered tests/
 
+# Setuptools fails for nested requirements file when installed as `pip install .`, so sadly no
+# simple "dev" optional dependency
 dev:
-	# Setuptools fails for nested requirements file when installed as `pip install .`, so sadly no
-	# simple "dev" optional dependency
 	pip3 install -e .[typing,lint,test,docs]
 
 install:

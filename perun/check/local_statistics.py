@@ -89,7 +89,7 @@ def compute_window_stats(x_pts, y_pts):
     # compute the all statistical metrics on the specified intervals
     return {
         # integral
-        'int': np.atleast_1d(integrate.simps(y_pts, x_pts, axis=axis)),
+        'int': np.atleast_1d(integrate.simps(y_pts, x_pts, axis=axis, even="avg")),
         # average/mean
         'avg': np.atleast_1d(np.nanmean(y_pts, axis=axis)),
         # median/2.percentile
