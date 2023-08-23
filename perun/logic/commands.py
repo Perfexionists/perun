@@ -11,8 +11,6 @@ import re
 
 from operator import itemgetter
 
-import colorama
-
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
 import perun.logic.store as store
@@ -36,8 +34,6 @@ from perun.utils.helpers import \
 from perun.utils.log import cprint, cprintln
 from perun.utils.structs import ProfileListConfig
 
-# Init colorama for multiplatform colours
-colorama.init()
 UNTRACKED_REGEX = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 # Regex for parsing the formating tag [<tag>:<size>f<fill_char>]

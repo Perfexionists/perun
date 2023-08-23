@@ -660,7 +660,7 @@ def collect(ctx, **kwargs):
               callback=cli_helpers.yaml_param_callback,
               help='Additional parameters for the <postprocessor> read from the'
                    ' file in YAML format')
-@click.option('--minor-version', '-m', 'minor_version_list', nargs=1,
+@click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
               callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
               help='Specifies the head minor version, for which the fuzzing will be performed.')
 @click.option('--workloads-filter', '-wf', nargs=1, required=False,

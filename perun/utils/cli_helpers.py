@@ -14,8 +14,7 @@ import traceback
 import json
 import click
 import jinja2
-import tomli
-import pkg_resources
+import importlib.metadata as metadata
 
 import perun
 import perun.profile.helpers as profiles
@@ -87,10 +86,9 @@ def process_resource_key_param(ctx, param, value):
     # Validate the keys, if it is one of the set
     valid_keys = set(ctx.parent.params['profile'].all_resource_fields())
     if value not in valid_keys:
-        error_msg_ending = ", snaphots" if param.human_readable_name == 'per_key' else ""
-        raise click.BadParameter("invalid choice: {}. (choose from {})".format(
-            value, ", ".join(str(vk) for vk in valid_keys) + error_msg_ending
-        ))
+        error_msg_ending = ", 'snaphots'" if param.human_readable_name == 'per_key' else ""
+        valid_keys_str = ", ".join(f"'{vk}'" for vk in valid_keys) + error_msg_ending
+        raise click.BadParameter(f"'{value}' is not one of {valid_keys_str}.")
     return value
 
 
@@ -111,9 +109,8 @@ def process_continuous_key(ctx, _, value):
         valid_numeric_keys = set(query.all_numerical_resource_fields_of(ctx.parent.params['profile']))
         # Check if the value is valid numeric key
         if value not in valid_numeric_keys:
-            raise click.BadParameter("invalid choice: {}. (choose from {})".format(
-                value, ", ".join(str(vnk) for vnk in valid_numeric_keys) + ", snapshots"
-            ))
+            valid_choices = ", ".join(f"'{vnk}'" for vnk in valid_numeric_keys | {"snapshots"})
+            raise click.BadParameter(f"'{value}' is not one of {valid_choices}.")
     return value
 
 
@@ -651,10 +648,8 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
             line_statement_prefix='//',
         )
         CLI_DUMP_TEMPLATE = env.from_string(CLI_DUMP_TEMPLATE_STRING)
-    toml_file = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'pyproject.toml'))
-    with open(toml_file, 'rb') as pyproject_handle:
-        pyproject_file = tomli.load(pyproject_handle)
-        reqs = {req.split('==')[0] for req in pyproject_file["project"]["dependencies"]}
+    version_delimiter = re.compile(r"[=><;~! ]")
+    reqs = [re.split(version_delimiter, req)[0] for req in metadata.requires("perun")]
 
     dump_directory = pcs.get_safe_path(os.getcwd())
     dump_file = os.path.join(dump_directory, 'dump-{}'.format(
@@ -684,12 +679,13 @@ def generate_cli_dump(reported_error, catched_exception, stdout, stderr):
                 'python': {
                     'version': sys.version.replace('\n', ''),
                     'packages': [
-                        inst.key + " (" + inst.version + ")"
-                        for inst in pkg_resources.working_set if inst.key in reqs
+                        f"{req.name} ({req.version})"
+                        for req in metadata.distributions()
+                        if req.name in reqs
                     ]
                 }
             },
-            'command': " ".join(['perun'] + click.get_os_args()),
+            'command': " ".join(['perun'] + sys.argv[1:]),
             'output': helpers.escape_ansi("".join([" "*4 + l for l in stdout.log.readlines()])),
             'error': helpers.escape_ansi("".join([" "*4 + l for l in stderr.log.readlines()])),
             'exception': reported_error,

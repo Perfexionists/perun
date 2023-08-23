@@ -119,7 +119,7 @@ def test_add_on_empty_repo(pcs_with_empty_git, valid_profile_pool, capsys):
     _, err = capsys.readouterr()
     expected = "fatal: while fetching head minor version: " \
                "Reference at 'refs/heads/master' does not exist"
-    assert err.strip() == termcolor.colored(expected, 'red')
+    assert err.strip() == termcolor.colored(expected, 'red', force_color=True)
 
 
 def test_add_on_no_vcs(pcs_without_vcs, valid_profile_pool):

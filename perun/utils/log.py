@@ -315,7 +315,7 @@ def in_color(output, color='white', attribute_style="none"):
     }.get(attribute_style, [])
 
     if COLOR_OUTPUT:
-        return termcolor.colored(output, color, attrs=attrs)
+        return termcolor.colored(output, color, attrs=attrs, force_color=True)
     else:
         return output
 

@@ -122,11 +122,9 @@ def test_scatter_plot_cli_errors(pcs_full, postprocess_profiles):
     # Try invalid --of value
     result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amou',
                                       '--per=structure-unit-size'])
-    asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, 'invalid choice: amou' in result.output)
+    asserts.invalid_cli_choice(result, "amou")
 
     # Try invalid --per value
     result = runner.invoke(cli.show, [profile[0], 'scatter', '--of=amount',
                                       '--per=struct'])
-    asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, 'invalid choice: struct' in result.output)
+    asserts.invalid_cli_choice(result, "struct")

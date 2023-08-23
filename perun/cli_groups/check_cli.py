@@ -53,31 +53,33 @@ def check_group(**_):
     The example of configuration snippet that sets rules and strategies for one project can be as
     follows:
 
-      .. code-block:: yaml
+    .. code-block:: yaml
 
-      \b
-          degradation:
-            apply: first
-            strategies:
-              - type: mixed
-                postprocessor: regression_analysis
-                method: bmoe
-              - cmd: mybin
-                type: memory
-                method: bmoe
-              - method: aat
+        \b
+
+        degradation:
+          apply: first
+          strategies:
+            - type: mixed
+              postprocessor: regression_analysis
+              method: bmoe
+            - cmd: mybin
+              type: memory
+              method: bmoe
+            - method: aat
 
     Currently we support the following methods:
 
-      \b
-      1. Best Model Order Equality (BMOE)
-      2. Average Amount Threshold (AAT)
-      3. Polynomial Regression (PREG)
-      4. Linear Regression (LREG)
-      5. Fast Check (FAST)
-      6. Integral Comparison (INT)
-      7. Local Statistics (LOC)
-      8. Exclusive Time Outliers (ETO)
+        \b
+
+        1. Best Model Order Equality (BMOE)
+        2. Average Amount Threshold (AAT)
+        3. Polynomial Regression (PREG)
+        4. Linear Regression (LREG)
+        5. Fast Check (FAST)
+        6. Integral Comparison (INT)
+        7. Local Statistics (LOC)
+        8. Exclusive Time Outliers (ETO)
 
     """
     should_precollect = dutils.strtobool(str(

@@ -1,7 +1,7 @@
 """This module contains the Flow usage graph creating functions"""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Hashable
+from typing import TYPE_CHECKING, Dict, List, Hashable
 
 import demandimport
 
@@ -92,7 +92,7 @@ def construct_data_source_from(
     by_key: str,
     through_key: str,
     accumulate: bool,
-) -> Dict[Hashable, list[int]]:
+) -> Dict[Hashable, List[int]]:
     """Transforms the data frame using the aggregating functions, breaking it into groups.
 
     Takes the original data frame, groups it by the 'by_key' and then for each group, groups values
@@ -114,7 +114,7 @@ def construct_data_source_from(
     # Construct the data source (first we group the values by 'by_key' (one graph per each key).
     #   And then we compute the aggregations of the data grouped again, but by through key
     #   (i.e. for each value on X axis), the values are either accumulated or not
-    data_source = {}
+    data_source: Dict[Hashable, List[int]] = {}
     for group_name, by_key_group_data_frame in data_frame.groupby(by_key):
         data_source[group_name] = [0] * (maximal_x_value + 1)
         source_data_frame = group_and_aggregate(by_key_group_data_frame, through_key, func)
