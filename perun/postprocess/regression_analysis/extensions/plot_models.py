@@ -3,6 +3,9 @@
 """
 import numpy as np
 
+from typing import Callable, Any, Optional
+import nptyping as npt
+
 import perun.postprocess.regression_analysis.tools as tools
 
 # Default model curve smoothness specified as number of points generated from x interval
@@ -11,7 +14,11 @@ import perun.postprocess.regression_analysis.tools as tools
 DEFAULT_SMOOTHNESS = 51
 
 
-def model_plot_computation(model_x, model_y, **data):
+def model_plot_computation(
+        model_x: Callable,
+        model_y: Callable,
+        **data: Any
+) -> dict:
     """ The model plotting computation wrapper.
 
     Handles required operations for all models, such as creating x and y plot points.
@@ -39,8 +46,13 @@ def model_plot_computation(model_x, model_y, **data):
     return plot_data
 
 
-def generic_plot_x_pts(x_start, x_end,
-                       smoothness=DEFAULT_SMOOTHNESS, transform_by=tools.as_plot_x_dict, **_):
+def generic_plot_x_pts(
+        x_start: int,
+        x_end: int,
+        smoothness: int = DEFAULT_SMOOTHNESS,
+        transform_by: Callable[[Any], dict] = tools.as_plot_x_dict,
+        **_: Any
+) -> dict:
     """Generic version of model x points computation.
 
     Splits the x interval of model into number of points.
@@ -56,7 +68,15 @@ def generic_plot_x_pts(x_start, x_end,
     return transform_by(tools.split_model_interval(x_start, x_end, smoothness))
 
 
-def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, transform_by=tools.as_plot_y_dict, **_):
+def generic_plot_y_pts(
+        plot_x: npt.NDArray,
+        b0: float,
+        b1: float,
+        formula: Callable[[npt.NDArray, float, float], list],
+        m_fx: Optional[Callable[[float], float]] = None,
+        transform_by: Callable[[Any], dict] = tools.as_plot_y_dict,
+        **_: Any
+) -> dict:
     """ The generic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.
@@ -83,7 +103,15 @@ def generic_plot_y_pts(plot_x, b0, b1, formula, m_fx=None, transform_by=tools.as
     return transform_by(np.array(formula(plot_x, b0, b1)))
 
 
-def quad_plot_y_pts(plot_x, b0, b1, b2, formula, transform_by=tools.as_plot_y_dict, **_):
+def quad_plot_y_pts(
+        plot_x: npt.NDArray,
+        b0: float,
+        b1: float,
+        b2: float,
+        formula: Callable[[npt.NDArray, float, float, float], list],
+        transform_by: Callable[[Any], dict] = tools.as_plot_y_dict,
+        **_: Any
+) -> dict:
     """ The quadratic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.

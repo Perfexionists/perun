@@ -1,11 +1,17 @@
 """Module for various means of regression data acquisition. """
 
 from operator import itemgetter
+from typing import Generator, Any, Callable
+
+from perun.profile.factory import Profile
 
 import perun.profile.convert as convert
 
+Data = Generator[tuple[list[float], list[float], str], None, None]
+DataProvider = Callable[[Profile, Any], Data]
 
-def data_provider_mapper(profile, **kwargs):
+
+def data_provider_mapper(profile: Profile, **kwargs: Any) -> Data:
     """Unified data provider for various profile types.
 
     :param dict profile: the loaded profile dictionary
@@ -13,10 +19,11 @@ def data_provider_mapper(profile, **kwargs):
     :returns generator: generator object created by specific provider function
     """
     profile_type = profile['header']['type']
-    return _PROFILE_MAPPER.get(profile_type, generic_profile_provider)(profile, **kwargs)
+    data_provider = _PROFILE_MAPPER.get(profile_type, generic_profile_provider)
+    return data_provider(profile, **kwargs)  # type: ignore
 
 
-def resource_sort_key(resource):
+def resource_sort_key(resource: dict) -> str:
     """Extracts the key from resource used for sorting
 
     :param dict resource: profiling resource
@@ -25,7 +32,7 @@ def resource_sort_key(resource):
     return convert.flatten(resource['uid'])
 
 
-def generic_profile_provider(profile, of_key, per_key, **_):
+def generic_profile_provider(profile: Profile, of_key: str, per_key: str, **_: Any) -> Data:
     """Data provider for trace collector profiling output.
 
     :param Profile profile: the trace profile dictionary
@@ -40,8 +47,8 @@ def generic_profile_provider(profile, of_key, per_key, **_):
 
     # Sort the dictionaries by function name for easier traversing
     resources = sorted(resources, key=resource_sort_key)
-    x_points_list = []
-    y_points_list = []
+    x_points_list = []  # type: list[float]
+    y_points_list = []  # type: list[float]
     function_name = convert.flatten(resources[0]['uid'])
     # Store all the points until the function name changes
     for resource in resources:
@@ -60,10 +67,11 @@ def generic_profile_provider(profile, of_key, per_key, **_):
     if x_points_list:
         yield x_points_list, y_points_list, function_name
 
+
 # profile types : data provider functions mapping dictionary
 # to add new profile type - simply add new keyword and specific provider function with signature:
 #  - return value: generator object that produces required profile data
 #  - parameter: profile dictionary
-_PROFILE_MAPPER = {
-    'default': generic_profile_provider
+_PROFILE_MAPPER: dict[str, DataProvider] = {
+    'default': generic_profile_provider  # type: ignore
 }

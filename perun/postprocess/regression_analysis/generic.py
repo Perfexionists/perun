@@ -14,10 +14,14 @@ the given argument and return value conventions.
 """
 
 from math import sqrt
+from typing import Any, Iterable, Callable
+
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def generic_compute_regression(data_gen, func_list, **model):
+def generic_compute_regression(
+        data_gen: Iterable[dict], func_list: list[Callable], **model: Any
+) -> Iterable[dict]:
     """The core of the computation process.
 
     Computes the regression model according to the provided sequence of generator ('data_gen')
@@ -44,7 +48,14 @@ def generic_compute_regression(data_gen, func_list, **model):
         yield data
 
 
-def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
+def generic_regression_data(
+        x_pts: list[float],
+        y_pts: list[float],
+        f_x: Callable[[float], float],
+        f_y: Callable[[float], float],
+        steps: int,
+        **_: Any
+) -> Iterable[dict]:
     """The generic data generator.
 
     Produces the sums of x, y, square x, square y and x * y values. Also provides the x min/max
@@ -111,7 +122,16 @@ def generic_regression_data(x_pts, y_pts, f_x, f_y, steps, **_):
 
 
 def generic_regression_coefficients(
-        f_a, f_b, x_sum, y_sum, xy_sum, x_sq_sum, pts_num, num_sqrt, **_):
+        f_a: Callable[[float], float],
+        f_b: Callable[[float], float],
+        x_sum: float,
+        y_sum: float,
+        xy_sum: float,
+        x_sq_sum: float,
+        pts_num: int,
+        num_sqrt: float,
+        **_: Any
+) -> dict:
     """The generic function for coefficients computation.
 
     The function uses the general coefficient computation formula, which produces two coefficients
@@ -137,7 +157,7 @@ def generic_regression_coefficients(
             -> SUM(x^2) - (SUM(x) / sqrt(n))^2
 
             for x, y in range <0, n - 1>
-            the formulas are transformed (->) to avoid computation with extremely big values,
+            the formulas are transformed (->) to avoid computation with huge values,
             which can occur in models that use power of x / y values (e.g. power ...)
 
     The coefficients are further modified using the 'f_a' and 'f_b':
@@ -171,7 +191,9 @@ def generic_regression_coefficients(
     return data
 
 
-def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
+def generic_regression_error(
+        s_xy: float, s_xx: float, y_sum: float, y_sq_sum: float, num_sqrt: float, **_: Any
+) -> dict:
     """The generic function for error (r^2) computation.
 
     Returns data dictionary with 'r_square' value representing the model error.
@@ -186,7 +208,7 @@ def generic_regression_error(s_xy, s_xx, y_sum, y_sq_sum, num_sqrt, **_):
 
             for x, y in range <0, n - 1> and S_xy, S_xx from coefficients computation
 
-            the formulas are transformed (->) to avoid computation with extremely big values,
+            the formulas are transformed (->) to avoid computation with huge values,
             which can occur in models that use power of x / y values (e.g. quad, power ...)
 
         RSS equals to the Regression sum of squares, alternatively Explained sum of squares.

@@ -5,10 +5,14 @@ This module contains the required specific versions for the models computation.
 
 """
 
+from typing import Any, Iterable
+
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def specific_quad_data(x_pts, y_pts, steps, **_):
+def specific_quad_data(
+        x_pts: list[float], y_pts: list[float], steps: int, **_: Any
+) -> Iterable[dict]:
     """The quadratic data generator.
 
     Produces the sums of x, y, square x, x^3, x^4, square y, x * y and x^2 * y values.
@@ -55,16 +59,25 @@ def specific_quad_data(x_pts, y_pts, steps, **_):
 
         # Computation step is complete, save the data
         pts_num = part_end - skipped
-        data = dict(
-            x_sum=x_sum, y_sum=y_sum, xy_sum=xy_sum, x_sq_sum=x_square_sum, y_sq_sum=y_square_sum,
-            x_cube_sum=x_cube_sum, x4_sum=x4_sum, x_sq_y_sum=x_square_y_sum,
-            pts_num=pts_num, x_start=x_min, x_end=x_max
-        )
+        data = {
+            'x_sum': x_sum, 'y_sum': y_sum, 'xy_sum': xy_sum, 'x_sq_sum': x_square_sum,
+            'y_sq_sum': y_square_sum, 'x_cube_sum': x_cube_sum, 'x4_sum': x4_sum,
+            'x_sq_y_sum': x_square_y_sum, 'pts_num': pts_num, 'x_start': x_min, 'x_end': x_max
+        }
         yield data
 
 
 def specific_quad_coefficients(
-        x_sum, y_sum, xy_sum, x_sq_sum, x_cube_sum, x4_sum, x_sq_y_sum, pts_num, **_):
+        x_sum: float,
+        y_sum: float,
+        xy_sum: float,
+        x_sq_sum: float,
+        x_cube_sum: float,
+        x4_sum: float,
+        x_sq_y_sum: float,
+        pts_num: int,
+        **_: Any
+) -> dict:
     """The quadratic specific function for coefficients computation.
 
     The function uses the specific coefficient computation formula, which produces three
@@ -116,7 +129,15 @@ def specific_quad_coefficients(
     return data
 
 
-def specific_quad_error(coeffs, y_sum, y_sq_sum, xy_sum, x_sq_y_sum, pts_num, **_):
+def specific_quad_error(
+        coeffs: list[float],
+        y_sum: float,
+        y_sq_sum: float,
+        xy_sum: float,
+        x_sq_y_sum: float,
+        pts_num: int,
+        **_: Any
+) -> dict:
     """The quadratic specific function for error (r^2) computation.
 
     Returns data dictionary with 'r_square' value representing the model error.

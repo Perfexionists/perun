@@ -12,7 +12,7 @@ import perun.utils.cli_helpers as cli_helpers
 import perun.postprocess.regression_analysis.methods as methods
 import perun.postprocess.regression_analysis.regression_models as reg_models
 
-from perun.profile.factory import pass_profile
+from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 import perun.utils.metrics as metrics
 
@@ -22,12 +22,12 @@ _DEFAULT_STEPS = 3
 
 class Configuration(TypedDict):
     method: str
-    regression_models: list[str]
+    regression_models: tuple[str]
     steps: int
 
 
 def postprocess(
-        profile: dict, **configuration: Unpack[Configuration]
+        profile: Profile, **configuration: Unpack[Configuration]
 ) -> tuple[PostprocessStatus, str, dict]:
     """Invoked from perun core, handles the postprocess actions
 
@@ -43,9 +43,9 @@ def postprocess(
                                steps=configuration['steps'])
     store_model_counts(analysis)
     # Store the results
-    profile = tools.add_models_to_profile(profile, analysis)
+    new_profile = tools.add_models_to_profile(profile, analysis)
 
-    return PostprocessStatus.OK, "", {'profile': profile}
+    return PostprocessStatus.OK, "", {'profile': new_profile}
 
 
 def store_model_counts(analysis: list[dict]):
@@ -104,7 +104,7 @@ def store_model_counts(analysis: list[dict]):
               default='amount', callback=cli_helpers.process_resource_key_param,
               help="Sets key for which we are finding the model.")
 @pass_profile
-def regression_analysis(profile: dict, **kwargs: Unpack[Configuration]):
+def regression_analysis(profile: Profile, **kwargs: Unpack[Configuration]):
     """Finds fitting regression models to estimate models of profiled resources.
 
     \b
