@@ -7,13 +7,15 @@ for special cases.
 """
 import math
 
+from typing import Any, Iterable
+
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def derived_const(analysis, const_ref, **_):
+def derived_const(analysis: list[dict], const_ref: dict, **_: Any) -> Iterable[dict]:
     """The computation of a constant model based on a linear regression model.
 
-    Current implementation is based on a assumption that linear model with
+    Current implementation is based on an assumption that linear model with
     very small b1 (slope) coefficient and small R^2 coefficient is similar
     to the constant model and can be used in estimation of its parameters.
 
@@ -72,7 +74,7 @@ def derived_const(analysis, const_ref, **_):
         yield const
 
 
-def _filter_by_models(analysis, models):
+def _filter_by_models(analysis: list[dict], models: list[str]) -> list[dict]:
     """Filters regression results by computed models.
 
     :param list of dict analysis: the computed regression models

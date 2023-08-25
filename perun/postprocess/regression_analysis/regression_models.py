@@ -8,6 +8,10 @@ the sections of _MODELS dictionary representing the model properties.
 
 import math
 
+from typing import Callable, Generator, Union
+
+ModelGenerator = Generator[dict, None, None]
+
 import perun.postprocess.regression_analysis.generic as generic
 import perun.postprocess.regression_analysis.specific as specific
 import perun.postprocess.regression_analysis.derived as derived
@@ -15,7 +19,7 @@ import perun.postprocess.regression_analysis.extensions.plot_models as plot
 import perun.utils.exceptions as exceptions
 
 
-def get_formula_of(model):
+def get_formula_of(model: str) -> Callable:
     """
     Method returns the formula for y coordinates computation according
     to the given model type (e.g. linear, constant, etc.).
@@ -23,10 +27,10 @@ def get_formula_of(model):
     :param str model: the type of model which formula is required
     :return lambda: formula for y coordinates computation
     """
-    return _MODELS[model]['transformations']['plot_model']['formula']
+    return _MODELS[model]['transformations']['plot_model']['formula']  # type: ignore
 
 
-def get_supported_models():
+def get_supported_models() -> list[str]:
     """Provides all currently supported models as a list of their names.
 
     The 'all' specifier is used in reverse mapping as it enables to easily specify all models
@@ -37,7 +41,7 @@ def get_supported_models():
     return [key for key in sorted(_MODELS.keys())]
 
 
-def get_supported_transformations(model_key):
+def get_supported_transformations(model_key: str) -> list[str]:
     """Provides all currently supported transformations for given model as a list of their names.
 
     :param str model_key: model key (e.g. 'log') for which the transformations are gathered
@@ -46,7 +50,7 @@ def get_supported_transformations(model_key):
     return [t for t in _MODELS.get(model_key, {}).get('transformations', {}).keys()]
 
 
-def get_transformation_data_for(regression_model, transformation):
+def get_transformation_data_for(regression_model: str, transformation: str) -> dict:
     """Provides transformation dictionary from _MODELS for specific transformation and model.
 
     :param str regression_model: the regression model in which to search for transformation
@@ -56,7 +60,7 @@ def get_transformation_data_for(regression_model, transformation):
     """
     # Get the model key first
     key = map_model_to_key(regression_model)
-    if key is None:
+    if key is "":
         # Model does not exist
         raise exceptions.InvalidModelException(regression_model)
 
@@ -67,7 +71,7 @@ def get_transformation_data_for(regression_model, transformation):
     return _MODELS[key]['transformations'][transformation]
 
 
-def map_keys_to_models(regression_models_keys):
+def map_keys_to_models(regression_models_keys: tuple[str]) -> ModelGenerator:
     """The mapping generator which provides the sections of _MODELS dictionary according to
     specified model keys list.
 
@@ -94,7 +98,7 @@ def map_keys_to_models(regression_models_keys):
                 yield _MODELS[model].copy()
 
 
-def map_model_to_key(model):
+def map_model_to_key(model: str) -> str:
     """ The mapping function which takes model name and provides the _MODELS key containing
         the model dictionary.
 
@@ -104,12 +108,12 @@ def map_model_to_key(model):
     # Collect all models in _MODELS as a dict of model: key
     elements = {_MODELS[m].get('model'): m for m in _MODELS}
     # Check the key validity
-    if model is not None and model in elements:
+    if model in elements:
         return elements[model]
-    return None
+    return ""
 
 
-def filter_derived(regression_models_keys):
+def filter_derived(regression_models_keys: Union[tuple[str], str]) -> tuple[tuple[str], tuple[str]]:
     """Filtering of the selected models to standard and derived models.
 
     :param tuple of str regression_models_keys: the models to be computed
@@ -117,14 +121,15 @@ def filter_derived(regression_models_keys):
     """
     # Convert single value to list
     if not isinstance(regression_models_keys, tuple):
-        regression_models_keys = tuple(regression_models_keys)
+        regression_models_keys = tuple(regression_models_keys)  # type: ignore
 
     # Get all models
     if not regression_models_keys or 'all' in regression_models_keys:
-        regression_models_keys = list(filter(lambda m: m != 'all', _MODELS.keys()))
+        regression_models_keys = tuple(filter(lambda m: m != 'all', _MODELS.keys()))  # type: ignore
 
     # Split the models into derived and non-derived
-    der, normal = [], []
+    der: list[str] = []
+    normal: list[str] = []
     for model in regression_models_keys:
         if model not in _MODELS.keys():
             raise exceptions.InvalidModelException(model)
@@ -140,7 +145,7 @@ def filter_derived(regression_models_keys):
             if _MODELS[model]['required'] not in _MODELS.keys():
                 raise exceptions.InvalidModelException(model)
             normal.append(_MODELS[model]['required'])
-    return tuple(der), tuple(normal)
+    return tuple(der), tuple(normal)  # type: ignore
 
 
 # Supported models properties
@@ -164,7 +169,7 @@ def filter_derived(regression_models_keys):
 # -- model_y: function that produces y coordinates of points
 # -- m_fx: function that modifies x coordinates according to formulae
 # -- formula: function with formula for y coordinates computation
-_MODELS = {
+_MODELS: dict[str, dict] = {
     'all': {},  # key representing all models
     'constant': {
         'model': 'constant',
