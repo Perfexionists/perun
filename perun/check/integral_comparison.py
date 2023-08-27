@@ -11,7 +11,6 @@ import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.postprocess.regression_analysis.tools as tools
 
-__author__ = 'Simon Stupinsky'
 
 # acceptable value of relative error between compared profiles to detect NO_CHANGE state
 _INTEGRATE_DIFF_NO_CHANGE = .10

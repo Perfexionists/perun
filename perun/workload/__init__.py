@@ -19,7 +19,6 @@ import perun.utils as utils
 
 from perun.utils.structs import GeneratorSpec
 
-__author__ = 'Tomas Fiedor'
 
 
 def load_generator_specifications():

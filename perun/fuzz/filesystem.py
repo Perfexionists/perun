@@ -1,7 +1,6 @@
 """ Module contains functions dedicated for various operations over files and directories in
 file system, helpful for fuzzing process."""
 
-__author__ = 'Matus Liscinsky'
 
 import os
 import os.path as path

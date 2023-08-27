@@ -38,4 +38,3 @@ in :doc:`internals`.
     :width: 100%
     :align: center
 """
-__author__ = 'Tomas Fiedor'

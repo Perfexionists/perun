@@ -7,8 +7,6 @@ import perun.view.scatter.factory as scatter_factory
 from perun.profile.factory import pass_profile
 from perun.utils import cli_helpers, view_helpers
 
-__author__ = "Jiri Pavela"
-
 
 def process_title(ctx, _, value):
     """Creates default title for scatter plot graph, if not provided by the user.

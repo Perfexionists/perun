@@ -13,8 +13,6 @@ import perun.utils.helpers as helpers
 from perun.utils.decorators import singleton, singleton_with_args
 from perun.utils.exceptions import NotPerunRepositoryException
 
-__author__ = 'Tomas Fiedor'
-
 
 def get_safe_path(default):
     """Locates the instance of the perun starting from the current directory. In case the

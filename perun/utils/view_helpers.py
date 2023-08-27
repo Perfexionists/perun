@@ -22,8 +22,6 @@ if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-__author__ = "Tomas Fiedor"
-
 GRAPH_LR_PADDING = 0
 GRAPH_B_PADDING = 100
 GRAPH_T_PADDING = 50

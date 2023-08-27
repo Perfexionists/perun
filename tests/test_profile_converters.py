@@ -8,9 +8,6 @@ import perun.utils.exceptions as exceptions
 import perun.profile.convert as convert
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
-__coauthored__ = 'Jiri Pavela'
-
 
 def test_convert_models_to_dataframe(postprocess_profiles):
     """Test conversion of models"""

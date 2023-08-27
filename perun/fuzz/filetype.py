@@ -11,8 +11,6 @@ import perun.fuzz.methods.xml as xml
 import perun.fuzz.methods.textfile as textfile
 from perun.fuzz.structs import RuleSet
 
-__author__ = 'Matus Liscinsky'
-
 
 def custom_rules(regex_rules, fuzzing_methods):
     """ Adds custom rules specified by regexps, and read from the file in YAML format.

@@ -21,8 +21,6 @@ if TYPE_CHECKING:
     from perun.profile.factory import Profile
     import pandas as pd
 
-__author__ = "Jiri Pavela"
-
 ProfileModel = Dict[str, Any]
 ProfileModels = List[ProfileModel]
 

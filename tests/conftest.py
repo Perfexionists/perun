@@ -22,8 +22,6 @@ import perun.vcs as vcs
 
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
-
 
 @pytest.fixture(scope="session", autouse=True)
 def initialize_cli_modules():

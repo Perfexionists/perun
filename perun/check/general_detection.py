@@ -20,7 +20,6 @@ import perun.utils.helpers
 
 from perun.utils.structs import PerformanceChange, DegradationInfo
 
-__author__ = 'Simon Stupinsky'
 
 SAMPLES = 1000
 ModelRecord = namedtuple(

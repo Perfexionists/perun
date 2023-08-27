@@ -11,8 +11,6 @@ from perun.utils import view_helpers
 from perun.logic import store
 from perun.testing import asserts
 
-__author__ = 'Tomas Fiedor'
-
 
 @pytest.mark.usefixtures('cleandir')
 def test_bokeh_bars(memory_profiles):

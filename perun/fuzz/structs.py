@@ -3,8 +3,6 @@
 import os
 from collections import namedtuple
 
-__author__ = 'Tomas Fiedor'
-
 
 TimeSeries = namedtuple("TimeSeries", "x_axis y_axis")
 RuleSet = namedtuple("RuleSet", "rules hits")

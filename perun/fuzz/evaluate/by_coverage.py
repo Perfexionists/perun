@@ -16,8 +16,6 @@ import perun.utils as utils
 from perun.utils.decorators import always_singleton
 from perun.utils.helpers import SuppressedExceptions
 
-__author__ = 'Matus Liscinsky'
-
 
 @always_singleton
 def get_gcov_version():

@@ -36,4 +36,3 @@ techniques respectively. Internals of perun storage is described in
     :width: 100%
     :align: center
 """
-__author__ = 'Tomas Fiedor'

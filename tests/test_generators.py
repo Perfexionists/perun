@@ -18,8 +18,6 @@ from perun.workload.generator import Generator
 
 from subprocess import CalledProcessError
 
-__author__ = 'Tomas Fiedor'
-
 
 def test_integer_generator():
     """Tests generation of integers from given range"""

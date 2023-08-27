@@ -1,8 +1,6 @@
 """This module provides methods for filtering the profile"""
 import perun.collect.memory.parsing as parsing
 
-__author__ = "Radim Podola"
-
 
 def remove_allocators(profile):
     """ Remove records in trace with direct allocation function

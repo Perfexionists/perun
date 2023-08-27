@@ -5,8 +5,6 @@ import perun.logic.store as store
 import perun.utils.streams as streams
 import perun.logic.index as index
 
-__author__ = 'Tomas Fiedor'
-
 
 def profile_filter(generator, rule, return_type='prof'):
     """Finds concrete profile by the rule in profile generator.

@@ -36,8 +36,6 @@ from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeE
     StatsFileNotFoundException, NotPerunRepositoryException
 from perun.utils.helpers import SuppressedExceptions
 
-__author__ = 'Tomas Fiedor'
-
 
 def print_version(_, __, value):
     """Prints current version of Perun and ends"""

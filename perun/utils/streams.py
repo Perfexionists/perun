@@ -12,8 +12,6 @@ from ruamel.yaml import YAML
 
 import perun.utils.log as log
 
-__author__ = 'Tomas Fiedor'
-
 
 def store_json(profile, file_path):
     """Stores profile w.r.t. :ref:`profile-spec` to output file.

@@ -7,8 +7,6 @@ import operator
 import perun.vcs as vcs
 import perun.logic.store as store
 
-__author__ = 'Tomas Fiedor'
-
 
 def test_on_empty_git(pcs_with_empty_git):
     """Tests how vcs handles the git without any commits (should not fail or so)

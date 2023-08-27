@@ -34,8 +34,6 @@ from perun.utils.structs import CollectStatus, RunnerReport
 import perun.testing.asserts as asserts
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
-
 
 SIZE_REGEX = re.compile(r"([0-9]+ (Ki|Mi){0,1}B)")
 

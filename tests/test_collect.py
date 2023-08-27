@@ -25,8 +25,6 @@ from perun.workload.integer_generator import IntegerGenerator
 import perun.testing.asserts as asserts
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
-
 
 def _mocked_external_command(_, **__):
     return 1

@@ -17,7 +17,6 @@ import perun.utils.log as log
 import perun.utils.streams as streams
 
 
-__author__ = 'Tomas Fiedor'
 RUN_SINGLE = False
 
 

@@ -10,8 +10,6 @@ import perun.logic.config as config
 
 from perun.utils.exceptions import ExternalEditorErrorException
 
-__author__ = 'Tomas Fiedor'
-
 
 def create_unit_from_template(template_type, no_edit, **kwargs):
     """Function for creating a module in the perun developer directory from template

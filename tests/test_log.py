@@ -16,8 +16,6 @@ import perun.logic.commands as commands
 import perun.utils.helpers as helpers
 from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException
 
-__author__ = 'Tomas Fiedor'
-
 
 @pytest.mark.usefixtures('cleandir')
 def test_log_not_in_pcs():

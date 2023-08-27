@@ -61,7 +61,6 @@ import jinja2
 import perun.utils.log as log
 import perun.utils as utils
 
-__author__ = 'Tomas Fiedor'
 
 CONFIG_FILE_STRING = """
 vcs:

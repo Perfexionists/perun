@@ -1,7 +1,5 @@
 """Collection of global methods for fuzz testing."""
 
-__author__ = 'Tomas Fiedor, Matus Liscinsky'
-
 import copy
 import difflib
 import itertools
@@ -24,6 +22,7 @@ import perun.utils.log as log
 import perun.fuzz.randomizer as randomizer
 import perun.utils as utils
 from perun.fuzz.structs import FuzzingProgress, Mutation, FuzzingConfiguration
+
 
 # to ignore numpy division warnings
 np.seterr(divide='ignore', invalid='ignore')

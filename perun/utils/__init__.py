@@ -19,9 +19,6 @@ import magic
 from .log import error, cprint, warn
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
-__author__ = 'Tomas Fiedor'
-__coauthor__ = 'Jiri Pavela'
-
 
 # Parse the obtained python version identifier into groups of digits and postfixes
 # We assume 3 blocks of version specification, where each block consists of:

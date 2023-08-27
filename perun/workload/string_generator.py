@@ -30,7 +30,6 @@ import string
 
 from perun.workload.generator import Generator
 
-__author__ = 'Tomas Fiedor'
 
 
 class StringGenerator(Generator):

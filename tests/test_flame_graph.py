@@ -10,8 +10,6 @@ import perun.view.flamegraph.flamegraph as flamegraphs
 
 import perun.testing.asserts as asserts
 
-__author__ = 'Tomas Fiedor'
-
 
 def test_flame_graph(pcs_full, valid_profile_pool):
     """Test creating flame graph out of the memory profile

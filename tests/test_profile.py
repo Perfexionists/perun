@@ -10,8 +10,6 @@ from perun.profile.factory import Profile
 
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
-
 
 def test_loading(pcs_full, valid_profile_pool):
     """Test new feature of loading the profile straight out of profile info

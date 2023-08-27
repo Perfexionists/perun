@@ -71,7 +71,6 @@ from perun.utils.exceptions import UnsupportedModuleException, UnsupportedModule
 from perun.utils.structs import Executable
 
 
-__author__ = 'Tomas Fiedor'
 DEV_MODE = False
 
 

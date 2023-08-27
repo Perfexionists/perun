@@ -21,7 +21,7 @@ from perun.utils.helpers import COLLECT_PHASE_ATTRS, CHANGE_COLOURS, CHANGE_STRI
     DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
 from perun.utils.structs import PerformanceChange
 
-__author__ = 'Tomas Fiedor'
+
 VERBOSITY = 0
 COLOR_OUTPUT = True
 

@@ -12,7 +12,6 @@ import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
 from perun.utils.structs import PostprocessStatus
 
-__author__ = 'Simon Stupinsky'
 
 # set the labels at the center of the window as default
 _DEFAULT_CENTER = True

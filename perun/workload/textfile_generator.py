@@ -40,7 +40,6 @@ import faker
 
 from perun.workload.generator import Generator
 
-__author__ = 'Tomas Fiedor'
 
 
 class TextfileGenerator(Generator):

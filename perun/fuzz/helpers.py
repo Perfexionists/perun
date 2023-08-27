@@ -1,8 +1,5 @@
 """Collection of helper functions used in fuzzing"""
 
-__author__ = 'Tomas Fiedor'
-
-
 def insert_at_split(lines, index, split_position, inserted_bytes):
     """
 

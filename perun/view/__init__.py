@@ -43,5 +43,3 @@ for easy specification of visualized profiles.
 .. _ncurses: https://www.gnu.org/software/ncurses/ncurses.html
 .. _pandas: https://pandas.pydata.org/
 """
-
-__author__ = 'Tomas Fiedor'

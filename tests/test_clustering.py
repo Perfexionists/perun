@@ -12,8 +12,6 @@ import perun.logic.store as store
 
 import perun.testing.asserts as asserts
 
-__author__ = 'Tomas Fiedor'
-
 
 def test_from_cli(pcs_full):
     """Tests running the clusterization from CLI"""

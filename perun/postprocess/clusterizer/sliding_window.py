@@ -6,7 +6,6 @@ and height).
 """
 
 import perun.utils.log as log
-__author__ = 'Tomas Fiedor'
 
 
 def compute_window_width(_, window_width, width_measure, resource_number):

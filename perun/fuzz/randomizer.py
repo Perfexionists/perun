@@ -1,8 +1,6 @@
 """Module that simply encapsulate all the random functions that are used in fuzzing,
 with only one call of function from random package."""
 
-__author__ = 'Matus Liscinsky'
-
 import random
 
 

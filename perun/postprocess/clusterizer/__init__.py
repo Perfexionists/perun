@@ -13,5 +13,3 @@ SUPPORTED_STRATEGIES = [
     'sliding_window'
 ]
 DEFAULT_STRATEGY = SUPPORTED_STRATEGIES[0]
-
-__author__ = 'Tomas Fiedor'

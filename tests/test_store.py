@@ -8,8 +8,6 @@ import perun.logic.index as index
 import perun.utils.exceptions as exceptions
 import perun.utils.timestamps as timestamps
 
-__author__ = 'Tomas Fiedor'
-
 
 @pytest.mark.usefixtures('cleandir')
 def test_malformed_indexes(tmpdir, monkeypatch, capsys):

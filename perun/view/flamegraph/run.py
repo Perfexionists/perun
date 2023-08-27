@@ -4,8 +4,6 @@ import click
 import perun.view.flamegraph.flamegraph as flame
 from perun.profile.factory import pass_profile
 
-__author__ = 'Radim Podola'
-
 
 @click.command()
 @click.option('--filename', '-f', default="flame.svg",

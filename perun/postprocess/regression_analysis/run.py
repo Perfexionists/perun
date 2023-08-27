@@ -13,7 +13,6 @@ from perun.profile.factory import pass_profile
 from perun.utils.structs import PostprocessStatus
 import perun.utils.metrics as metrics
 
-__author__ = 'Jiri Pavela'
 
 _DEFAULT_STEPS = 3
 

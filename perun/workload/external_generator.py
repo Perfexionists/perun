@@ -40,7 +40,6 @@ import perun.utils.helpers as helpers
 
 from perun.workload.generator import Generator
 
-__author__ = 'Tomas Fiedor'
 
 
 class ExternalGenerator(Generator):

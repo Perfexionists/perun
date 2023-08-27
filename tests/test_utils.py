@@ -23,8 +23,6 @@ from perun.collect.trace.optimizations.structs import Complexity
 from perun.utils.structs import Unit, OrderedEnum
 from perun.utils.helpers import HandledSignals
 
-__author__ = 'Tomas Fiedor'
-
 
 def assert_all_registered_modules(package_name, package, must_have_function_names):
     """Asserts that for given package all of its modules are properly registered in Perun

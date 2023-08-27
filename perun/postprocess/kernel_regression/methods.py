@@ -15,8 +15,6 @@ from perun.postprocess.regression_analysis import tools
 import perun.thirdparty.pyqt_fit_port as pyqt_fit
 
 
-__author__ = 'Simon Stupinsky'
-
 # set numpy variables to ignore warning messages at computation
 # - it is only temporary solution for clearly listings
 np.seterr(divide='ignore', invalid='ignore')

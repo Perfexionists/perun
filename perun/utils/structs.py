@@ -5,7 +5,6 @@ import shlex
 
 from enum import Enum
 
-__author__ = 'Tomas Fiedor'
 
 GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
 

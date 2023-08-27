@@ -10,5 +10,3 @@ groups will be stacked on top of each other).
 """
 
 SUPPORTED_PROFILES = ["memory"]
-
-__author__ = "Radim Podola"

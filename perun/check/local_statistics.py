@@ -3,14 +3,13 @@ The module contains the methods, that executes the computational logic of
 `local_statistics` detection method.
 """
 
-__author__ = 'Simon Stupinsky'
-
 import numpy as np
 import scipy.integrate as integrate
 
 import perun.check.factory as factory
 import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.tools as tools
+
 
 # minimum count of points in the interval in which are computed statistics
 _MIN_POINTS_IN_INTERVAL = 2

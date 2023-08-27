@@ -8,7 +8,6 @@ from perun.utils.helpers import SuppressedExceptions
 PATTERN_WORD = re.compile(r"(\w+)|[?]")
 PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
 
-__author__ = "Radim Podola"
 
 demangle_cache = {}
 address_to_line_cache = {}

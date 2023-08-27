@@ -27,8 +27,6 @@ from perun.utils.helpers import COLLECT_PHASE_COLLECT, COLLECT_PHASE_POSTPROCESS
 from perun.workload.singleton_generator import SingletonGenerator
 from perun.utils.exceptions import SignalReceivedException
 
-__author__ = 'Tomas Fiedor'
-
 
 def construct_job_matrix(cmd, args, workload, collector, postprocessor, **kwargs):
     """Constructs the job matrix represented as dictionary.

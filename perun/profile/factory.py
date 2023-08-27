@@ -20,8 +20,6 @@ from perun.check.general_detection import get_filtered_best_models_of
 from perun.postprocess.regression_analysis.regression_models import get_supported_models
 from perun.postprocess.regressogram.methods import get_supported_nparam_methods
 
-__author__ = 'Tomas Fiedor'
-
 
 class Profile(MutableMapping):
     """

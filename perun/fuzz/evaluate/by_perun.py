@@ -8,7 +8,6 @@ import perun.check.factory as check
 import perun.logic.runner as run
 from perun.utils.structs import PerformanceChange
 
-__author__ = 'Matus Liscinsky'
 
 DEGRADATION_RATIO_TRESHOLD = 0
 

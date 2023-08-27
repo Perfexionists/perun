@@ -14,7 +14,6 @@ import perun.utils as utils
 import perun.utils.helpers as helpers
 from perun.utils.structs import CollectStatus
 
-__author__ = 'Tomas Fiedor'
 
 TIME_TYPES = ('real', 'user', 'sys')
 

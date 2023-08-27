@@ -13,7 +13,6 @@ The Singleton Generator can be configured by following options:
 
 from perun.workload.generator import Generator
 
-__author__ = 'Tomas Fiedor'
 
 
 class SingletonGenerator(Generator):

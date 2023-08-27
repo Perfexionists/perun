@@ -8,7 +8,6 @@ import signal
 from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
 
-__author__ = 'Tomas Fiedor'
 
 # File system specific
 READ_CHUNK_SIZE = 1024

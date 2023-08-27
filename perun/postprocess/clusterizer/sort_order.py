@@ -1,8 +1,5 @@
 """A simple clusterization technique, which classifies resources according to sorted values."""
 
-__author__ = 'Tomas Fiedor'
-
-
 def clusterize(sorted_resources, **_):
     """Clusterizes the resources according to their sort order
 

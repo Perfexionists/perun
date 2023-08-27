@@ -12,7 +12,6 @@ import perun.utils.cli_helpers as cli_helpers
 from perun.profile.factory import pass_profile
 from perun.utils.structs import PostprocessStatus
 
-__author__ = 'Simon Stupinsky'
 
 _DEFAULT_BUCKETS_METHOD = 'doane'
 _DEFAULT_STATISTIC = 'mean'

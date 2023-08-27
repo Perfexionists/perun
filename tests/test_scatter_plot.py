@@ -9,8 +9,6 @@ import perun.view.scatter.factory as scatter
 
 from perun.testing import asserts
 
-__author__ = 'Jiri Pavela'
-
 
 def test_scatter_plot_regression_models(postprocess_profiles):
     """ Test the scatter plot on complexity profiles with regression models.

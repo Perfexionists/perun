@@ -24,10 +24,6 @@ with demandimport.enabled():
     import pandas
 
 
-__author__ = 'Radim Podola'
-__coauthors__ = ['Tomas Fiedor', 'Jirka Pavela']
-
-
 def resources_to_pandas_dataframe(profile):
     """Converts the profile (w.r.t :ref:`profile-spec`) to format supported by
     `pandas`_ library.
