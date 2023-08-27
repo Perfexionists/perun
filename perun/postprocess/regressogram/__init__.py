@@ -7,4 +7,3 @@ the whole interval.
 
 SUPPORTED_PROFILES = ['mixed|memory|time']
 
-__author__ = 'Simon Stupinsky'

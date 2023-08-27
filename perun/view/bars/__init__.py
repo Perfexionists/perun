@@ -10,5 +10,3 @@ different groups will be displayed next to each other).
 """
 
 SUPPORTED_PROFILES = ["memory"]
-
-__author__ = "Radim Podola"

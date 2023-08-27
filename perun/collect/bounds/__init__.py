@@ -12,6 +12,3 @@ COLLECTOR_TYPE = "time"
 COLLECTOR_DEFAULT_UNITS = {
     "bound": "iterations"
 }
-
-
-__author__ = 'Tomas Fiedor'

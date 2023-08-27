@@ -10,7 +10,6 @@ import perun.utils.log as log
 from perun.utils.helpers import RAW_ITEM_COLOUR, RAW_KEY_COLOUR
 from perun.profile.factory import pass_profile
 
-__author__ = 'Tomas Fiedor'
 
 RAW_INDENT = 4
 

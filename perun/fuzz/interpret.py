@@ -11,7 +11,6 @@ import perun.utils.streams as streams
 import perun.utils.log as log
 import perun.fuzz.filesystem as filesystem
 
-__author__ = 'Matus Liscinsky'
 
 MATPLOT_LIB_INITIALIZED = False
 

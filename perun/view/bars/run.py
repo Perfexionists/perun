@@ -8,10 +8,6 @@ from perun.profile.factory import pass_profile
 from perun.utils.exceptions import InvalidParameterException
 
 
-__author__ = "Radim Podola"
-__coauthored__ = "Tomas Fiedor"
-
-
 def process_title(ctx, _, value):
     """Processes default value for the title.
 

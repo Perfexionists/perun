@@ -9,9 +9,6 @@ import perun.profile.helpers as helpers
 import perun.testing.utils as test_utils
 
 
-__author__ = "Jiri Pavela"
-
-
 # number of expected resource fields in memory profile
 _MEMORY_RESOURCES_COUNT = 34
 # number of expected resource fields in complexity profile

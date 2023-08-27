@@ -41,7 +41,6 @@ import perun.postprocess.regression_analysis.tools as tools
 
 from perun.utils.structs import DegradationInfo
 
-__author__ = 'Tomas Fiedor'
 
 DEGRADATION_THRESHOLD = 2.0
 OPTIMIZATION_THRESHOLD = 0.5

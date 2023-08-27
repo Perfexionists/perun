@@ -35,8 +35,6 @@ from perun.utils.exceptions import InvalidParameterException, MissingConfigSecti
                                    TagOutOfRangeException
 from perun.utils.structs import Unit, Executable, Job
 
-__author__ = 'Tomas Fiedor'
-
 
 PROFILE_COUNTER = 0
 DEFAULT_SORT_KEY = 'time'

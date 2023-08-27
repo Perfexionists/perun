@@ -8,8 +8,6 @@ import perun.logic.runner as runner
 from perun.profile.factory import pass_profile
 from perun.utils.structs import PostprocessStatus
 
-__author__ = 'Tomas Fiedor'
-
 
 def get_resource_type(resource):
     """Checks if the resource has defined type and returns empty type otherwise.

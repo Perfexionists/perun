@@ -3,6 +3,3 @@ certain columns only and allow output to the file.
 """
 
 SUPPORTED_PROFILES = ["time|memory|mixed"]
-
-
-__author__ = 'Tomas Fiedor'

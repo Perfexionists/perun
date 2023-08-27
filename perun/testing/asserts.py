@@ -3,8 +3,6 @@
 import os
 import traceback
 
-__author__ = 'Tomas Fiedor'
-
 
 def predicate_from_cli(cli_result, predicate):
     """Checks the correctness of the @p predicate.

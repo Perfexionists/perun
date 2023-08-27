@@ -9,8 +9,6 @@ from perun.logic import store
 from perun.utils import view_helpers
 from perun.testing import asserts
 
-__author__ = 'Tomas Fiedor'
-
 
 def test_flow_cli(pcs_full, valid_profile_pool):
     """Test runing and creating bokeh flow from the cli

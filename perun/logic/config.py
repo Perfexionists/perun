@@ -24,8 +24,6 @@ import perun.utils.streams as streams
 
 from perun.utils.helpers import SuppressedExceptions
 
-__author__ = 'Tomas Fiedor'
-
 
 def is_valid_key(key):
     """Validation function for key representing one option in config section.

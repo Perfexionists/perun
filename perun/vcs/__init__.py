@@ -14,8 +14,6 @@ import perun.logic.pcs as pcs
 import perun.utils.decorators as decorators
 from perun.utils import dynamic_module_function_call
 
-__author__ = 'Tomas Fiedor'
-
 
 def lookup_minor_version(func):
     """If the minor_version is not given by the caller, it looks up the HEAD in the repo.

@@ -15,8 +15,6 @@ import perun.utils.decorators as decorators
 from perun.utils.exceptions import VersionControlSystemException
 from perun.utils.helpers import MinorVersion, MajorVersion
 
-__author__ = "Tomas Fiedor"
-
 
 def contains_git_repo(path):
     """Checks if there is a git repo at the given @p path.

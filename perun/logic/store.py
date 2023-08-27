@@ -22,7 +22,6 @@ from perun.profile.factory import Profile
 with demandimport.enabled():
     import hashlib
 
-__author__ = 'Tomas Fiedor'
 
 INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")
 INDEX_TAG_RANGE_REGEX = re.compile(r"^(\d+)@i-(\d+)@i$")

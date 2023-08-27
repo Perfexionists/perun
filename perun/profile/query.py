@@ -11,16 +11,11 @@ profile to query over profiles, iterate over resources or models, etc.::
 Combined with ``perun.profile.factory``, ``perun.profile.convert`` and e.g.
 `Pandas library`_ one can obtain efficient interpreter for executing more
 complex queries and statistical tests over the profiles.
-
-
 """
 
 import operator
 import numbers
 import perun.utils.helpers as helpers
-
-__author__ = 'Tomas Fiedor'
-__coauthored__ = "Jiri Pavela"
 
 
 def flattened_values(root_key, root_value):

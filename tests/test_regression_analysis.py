@@ -15,8 +15,6 @@ import perun.testing.utils as test_utils
 from perun.testing.utils import compare_results, generate_models_by_uid
 import perun.utils.metrics as metrics
 
-__author__ = 'Jiri Pavela'
-
 
 def test_incorrect_calls(postprocess_profiles):
     """Test various incorrect calls and exceptions"""

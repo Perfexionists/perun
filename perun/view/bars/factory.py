@@ -15,10 +15,6 @@ if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-__author__ = "Radim Podola"
-__coauthored__ = "Tomas Fiedor"
-
-
 def create_from_params(
     profile: Profile,
     func: str,

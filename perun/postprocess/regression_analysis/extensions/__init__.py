@@ -6,5 +6,3 @@
     plotting as a series of lines forming a curved line.
 
 """
-
-__author__ = "Jiri Pavela"

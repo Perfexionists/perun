@@ -45,7 +45,6 @@ import perun.check.general_detection as detection
 
 from perun.utils.structs import DegradationInfo
 
-__author__ = 'Tomas Fiedor'
 
 CONFIDENCE_THRESHOLD = 0.9
 MODEL_ORDERING = [

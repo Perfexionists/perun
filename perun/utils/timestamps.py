@@ -8,8 +8,6 @@ import datetime
 import struct
 import time
 
-__author__ = 'Tomas Fiedor'
-
 
 def write_timestamp(file_handle, timestamp):
     """Helper function for writing timestamp into the file

@@ -9,8 +9,6 @@ import functools
 
 from perun.utils.exceptions import InvalidParameterException
 
-__author__ = 'Tomas Fiedor'
-
 
 def _singleton_core(func, always_singleton):
     """

@@ -17,10 +17,6 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-__author__ = "Radim Podola"
-__coauthored__ = "Tomas Fiedor"
-
-
 def create_from_params(
     profile: Profile,
     func: str,

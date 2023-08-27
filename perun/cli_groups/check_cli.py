@@ -11,9 +11,6 @@ import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
 
 
-__author__ = 'Tomas Fiedor'
-
-
 @click.group('check')
 @click.option('--force', '-f',
               is_flag=True, default=False,

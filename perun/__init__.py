@@ -15,5 +15,4 @@ Perun currently exists as CLI application, with GUI application being in develop
 """
 import importlib.metadata
 
-__author__ = 'Tomas Fiedor'
 __version__ = importlib.metadata.version(__package__)

@@ -22,8 +22,6 @@ import perun.utils.decorators as decorators
 import perun.vcs as vcs
 
 
-__author__ = 'Tomas Fiedor'
-
 # Minimal confidence rate from both models to perform the detection
 _MIN_CONFIDANCE_RATE = 0.15
 

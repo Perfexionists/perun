@@ -11,7 +11,6 @@ import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
 from perun.utils.structs import PostprocessStatus
 
-__author__ = 'Simon Stupinsky'
 
 # Supported types of regression estimator:
 # - 'lc': local-constant (Nadaraya-Watson kernel regression), 'll': local-linear

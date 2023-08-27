@@ -8,4 +8,3 @@ COLLECTOR_DEFAULT_UNITS = {
     'mixed(time delta)': 'us'
 }
 
-__author__ = 'Jiri Pavela'

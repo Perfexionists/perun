@@ -22,8 +22,6 @@ from perun.utils.exceptions import (EntryNotFoundException, MalformedIndexFileEx
                                     IndexNotFoundException)
 
 
-__author__ = 'Tomas Fiedor'
-
 # List of current versions of format and magic constants
 INDEX_ENTRIES_START_OFFSET = 12
 INDEX_NUMBER_OF_ENTRIES_OFFSET = 8

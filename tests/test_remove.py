@@ -15,8 +15,6 @@ from perun.utils.exceptions import NotPerunRepositoryException, EntryNotFoundExc
 
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
-
 
 @pytest.mark.usefixtures('cleandir')
 def test_rm_outside_pcs(stored_profile_pool):

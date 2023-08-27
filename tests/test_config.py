@@ -15,8 +15,6 @@ import perun.logic.config as config
 from perun.utils.exceptions import NotPerunRepositoryException, MissingConfigSectionException, \
     ExternalEditorErrorException, InvalidParameterException
 
-__author__ = 'Tomas Fiedor'
-
 
 @pytest.mark.usefixtures('cleandir')
 def test_get_outside_of_pcs():

@@ -20,8 +20,6 @@ from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModul
 
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
-
 
 def assert_before_add(path, commit, valid_profile):
     """Helper assertion for the state of the index before successfully adding a profile

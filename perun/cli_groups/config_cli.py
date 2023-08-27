@@ -9,9 +9,6 @@ from perun.utils.exceptions import NotPerunRepositoryException, MissingConfigSec
     ExternalEditorErrorException
 
 
-__author__ = 'Tomas Fiedor'
-
-
 @click.group()
 @click.option('--local', '-l', 'store_type', flag_value='local',
               help='Sets the local config, i.e. ``.perun/local.yml``, as the source config.')

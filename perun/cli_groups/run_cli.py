@@ -11,9 +11,6 @@ import perun.utils.log as perun_log
 from perun.utils.structs import CollectStatus
 
 
-__author__ = 'Tomas Fiedor'
-
-
 @click.group()
 @click.option('--output-filename-template', '-ot', default=None,
               callback=cli_helpers.set_config_option_from_flag(

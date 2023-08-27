@@ -79,9 +79,6 @@ from perun.logic import config
 from perun.profile.factory import Profile
 
 
-__author__ = 'Jiri Pavela'
-
-
 OldLocMap = Dict[str, str]
 NewLocMap = Dict[str, str]
 

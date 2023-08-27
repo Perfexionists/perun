@@ -7,7 +7,6 @@ from decimal import Decimal
 import perun.profile.convert as convert
 import perun.collect.memory.syscalls as syscalls
 
-__author__ = "Radim Podola"
 
 PATTERN_WORD = re.compile(r"(\w+|[?])")
 PATTERN_TIME = re.compile(r"\d+([,.]\d*)?|[,.]\d+")

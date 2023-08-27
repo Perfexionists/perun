@@ -14,9 +14,6 @@ import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
 from perun.utils.exceptions import ExternalEditorErrorException
 
-__author__ = 'Tomas Fiedor'
-__coauthor__ = 'Jiri Pavela'
-
 
 @click.group('utils')
 def utils_group():
@@ -34,8 +31,6 @@ def utils_group():
               help='If set to true, the unit will not have before() function defined.')
 @click.option('--no-after-phase', '-na', default=False, is_flag=True,
               help='If set to true, the unit will not have after() function defined.')
-@click.option('--author', nargs=1,
-              help='Specifies the author of the unit')
 @click.option('--no-edit', '-ne', default=False, is_flag=True,
               help='Will open the newly created files in the editor specified by '
                    ':ckey:`general.editor` configuration key.')

@@ -10,4 +10,3 @@ Currently, we support the following types of rules:
   3. **XML**: domain specific rules tuned for XML files currently. These remove parts of the XML
      structure.
 """
-__author__ = 'Tomas Fiedor'

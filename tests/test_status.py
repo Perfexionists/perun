@@ -22,7 +22,7 @@ from perun.utils.exceptions import NotPerunRepositoryException
 
 import perun.testing.utils as test_utils
 
-__author__ = 'Tomas Fiedor'
+
 TIMESTAMP_RE = re.compile(r"-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}.perf")
 
 

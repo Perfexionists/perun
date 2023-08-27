@@ -3,12 +3,11 @@ In case of binary files we cannot apply specific domain knowledge nor can we be 
 existing performance issues. Instead, we mostly adapt the classical fuzzing rules.
 """
 
-__author__ = 'Matus Liscinsky'
-
 import os
 
 import perun.fuzz.randomizer as randomizer
 import perun.fuzz.helpers as helpers
+
 
 RULE_ITERATIONS = 10
 

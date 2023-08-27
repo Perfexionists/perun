@@ -16,7 +16,6 @@ import perun.profile.factory as factory
 
 from perun.utils.structs import CollectStatus
 
-__author__ = 'Tomas Fiedor'
 
 
 class Generator:

@@ -13,8 +13,6 @@ import perun.check.best_model_order_equality as bmoe
 import perun.check.fast_check as fast
 import perun.check.exclusive_time_outliers as eto
 
-__author__ = 'Tomas Fiedor'
-
 
 def test_degradation_precollect(monkeypatch, pcs_full, capsys):
     """Set of basic tests for testing degradation in concrete minor version point

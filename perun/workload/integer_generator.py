@@ -26,7 +26,6 @@ The Integer Generator can be configured by following options:
 
 from perun.workload.generator import Generator
 
-__author__ = 'Tomas Fiedor'
 
 
 class IntegerGenerator(Generator):

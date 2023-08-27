@@ -4,7 +4,6 @@ import perun.fuzz.randomizer as randomizer
 import perun.fuzz.helpers as helpers
 from perun.utils.helpers import SuppressedExceptions
 
-__author__ = 'Matus Liscinsky'
 
 RULE_ITERATIONS = 10
 WS_MIN = 100

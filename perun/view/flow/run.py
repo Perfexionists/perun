@@ -8,10 +8,6 @@ from perun.profile.factory import pass_profile
 import perun.view.flow.factory as flow_factory
 
 
-__author__ = "Radim Podola"
-__coauthored__ = "Tomas Fiedor"
-
-
 def process_title(ctx, _, value):
     """Processes the default value for the flow graph title.
 
