@@ -7,13 +7,13 @@ validate the options and to execute the individual computations.
 """
 import click.exceptions as click
 import numpy as np
-import pyqt_fit.nonparam_regression as smooth
-import sklearn.base as sklearn
-import sklearn.metrics as metrics
+from sklearn import metrics, base as sklearn
 import sklearn.metrics.pairwise as kernels
 import statsmodels.nonparametric.api as nparam
 
-import perun.postprocess.regression_analysis.tools as tools
+from perun.postprocess.regression_analysis import tools
+import perun.thirdparty.pyqt_fit_port as pyqt_fit
+
 
 __author__ = 'Simon Stupinsky'
 
@@ -85,7 +85,9 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         :param list x_pts: the list of x points coordinates to predict
         :return np.ndarray: array with values of resulting kernel estimates
         """
-        kernel = kernels.pairwise_kernels(self.x_pts, x_pts, metric=self.kernel, gamma=self.gamma)
+        kernel = kernels.pairwise_kernels(
+            self.x_pts, x_pts, metric=self.kernel, gamma=self.gamma
+        )
         return (kernel * self.y_pts[:, None]).sum(axis=0) / kernel.sum(axis=0)
 
     def _optimize_gamma(self, gamma_values):
@@ -100,7 +102,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         :param np.ndarray gamma_values: range of gamma values to select one of them
         :return float: selected specific value of gamma from a given range of values
         """
-        mse = np.empty_like(gamma_values, dtype=np.float)
+        mse = np.empty_like(gamma_values, dtype=float)
         for i, gamma in enumerate(gamma_values):
             kernel = kernels.pairwise_kernels(self.x_pts, self.x_pts, self.kernel, gamma=gamma)
             np.fill_diagonal(kernel, 0)
@@ -227,7 +229,7 @@ def iterative_computation(x_pts, y_pts, kernel_estimate, **kwargs):
         # Inappropriate bandwidth cause LinAlgError (`Matrix is singular`)
         except np.linalg.LinAlgError:
             # Compute the new kernel estimate with increased bandwidth value
-            kernel_estimate = smooth.NonParamRegression(
+            kernel_estimate = pyqt_fit.NonParamRegression(
                 x_pts, y_pts, bandwidth=kernel_estimate.bandwidth[0][0] + 1,
                 kernel=kwargs.get('kernel'), method=kwargs.get('method')
             )
@@ -265,17 +267,17 @@ def kernel_smoothing(x_pts, y_pts, config):
     # User entered the bandwidth value directly
     if config['bandwidth_value']:
         # Perform the non-parametric kernel regression with user-selected kernel bandwidth
-        kernel_estimate = smooth.NonParamRegression(
+        kernel_estimate = pyqt_fit.NonParamRegression(
             x_pts, y_pts, bandwidth=config['bandwidth_value'], kernel=kernel, method=method
         )
     else:  # User entered the method for bandwidth selection or did not choose any option
         # Compute the optimal kernel bandwidth according to selected method
         if config['bandwidth_method'] == 'scott':
-            covariance = smooth.npr_methods.kde.scotts_covariance(x_pts)
+            covariance = pyqt_fit.scotts_covariance(x_pts)
         else:
-            covariance = smooth.npr_methods.kde.silverman_covariance(x_pts)
+            covariance = pyqt_fit.silverman_covariance(x_pts)
         # Perform the non-parametric kernel regression with method-computed kernel bandwidth
-        kernel_estimate = smooth.NonParamRegression(
+        kernel_estimate = pyqt_fit.NonParamRegression(
             x_pts, y_pts, method=method, kernel=kernel, covariance=covariance
         )
 
@@ -449,18 +451,18 @@ _MODES_REQUIRED_KEYS = {
 # dict contains the supported kernel types for `kernel-smoothing` mode, respectively its instances
 # - more information about individual types of kernel are described in Perun documentation
 _KERNEL_TYPES_MAPS = {
-    'normal': smooth.kernels.normal_kernel(dim=1),
-    'tricube': smooth.kernels.tricube(),
-    'epanechnikov': smooth.kernels.Epanechnikov(),
-    'epanechnikov4': smooth.kernels.Epanechnikov_order4(),
-    'normal4': smooth.kernels.normal_order4(),
+    'normal': pyqt_fit.NormalKernel(dim=1),
+    'tricube': pyqt_fit.Tricube(),
+    'epanechnikov': pyqt_fit.Epanechnikov(),
+    'epanechnikov4': pyqt_fit.EpanechnikovOrder4(),
+    'normal4': pyqt_fit.NormalOrder4(),
 }
 
 # dict contains the regression methods for `kernel-smoothing` mode, respectively their instances
 # - using lambda expressions are used due to unification at calling this dictionary
 # -- more information about individual types of kernel are described in Perun documentation
 _SMOOTHING_METHODS_MAPS = {
-    'local-polynomial': lambda dim: smooth.npr_methods.LocalPolynomialKernel(q=dim),
-    'spatial-average': lambda _: smooth.npr_methods.SpatialAverage(),
-    'local-linear': lambda _: smooth.npr_methods.LocalLinearKernel1D(),
+    'local-polynomial': lambda dim: pyqt_fit.LocalPolynomialKernel(q=dim),
+    'spatial-average': lambda _: pyqt_fit.SpatialAverage(),
+    'local-linear': lambda _: pyqt_fit.LocalLinearKernel1D(),
 }

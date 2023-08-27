@@ -5,10 +5,10 @@ this is done in appropriate test files, only the API is tested."""
 
 import os
 import git
-import numpy as np
 import re
 import shutil
 import time
+import warnings
 
 import pytest
 from click.testing import CliRunner
@@ -89,32 +89,32 @@ def test_regressogram_incorrect(pcs_full):
         # Test the lack of arguments
         {'params': [], 'output': 'Usage'},
         # Test non-existing argument
-        {'params': ['-a'], 'output': 'no such option: -a'},
+        {'params': ['-a'], 'output': 'No such option: -a'},
         # Test malformed bucket_number argument
         {'params': ['--buckets_numbers'],
-            'output': 'no such option: --buckets_numbers'},
+            'output': 'No such option: --buckets_numbers'},
         # Test missing bucket_number value
-        {'params': ['-bn'], 'output': '-bn option requires an argument'},
+        {'params': ['-bn'], 'output': "Option '-bn' requires an argument."},
         # Test invalid bucket_number value
         {'params': ['-bn', 'user'],
             'output': 'Invalid value'},
         # Test malformed bucket_method argument
         {'params': ['--buckets_methods'],
-            'output': 'no such option: --buckets_methods'},
+            'output': 'No such option: --buckets_methods'},
         # Test missing bucket_method value
         {'params': ['--bucket_method'],
-            'output': '--bucket_method option requires an argument'},
+            'output': "Option '--bucket_method' requires an argument."},
         # Test invalid bucket_method value
         {'params': ['-bm', 'user'],
             'output': 'Invalid value'},
         # Test malformed statistic_function argument
-        {'params': ['--statistic_functions'], 'output': 'no such option: --statistic_functions'},
+        {'params': ['--statistic_functions'], 'output': 'No such option: --statistic_functions'},
         # Test invalid model name
         {'params': ['-sf', 'max'], 'output': 'Invalid value'},
         # Test missing statistic_function value
         {
             'params': ['--statistic_function'],
-            'output': '--statistic_function option requires an argument'
+            'output': "Option '--statistic_function' requires an argument."
         },
     ]
     # TODO: multiple values check
@@ -216,15 +216,15 @@ def test_moving_average_incorrect(pcs_full):
     incorrect_tests = [
         # TESTS MOVING AVERAGE COMMAND AND OPTIONS
         # 1. Test non-existing argument
-        {'params': ['--abcd'], 'output': 'no such option: --abcd'},
+        {'params': ['--abcd'], 'output': 'No such option: --abcd'},
         # 2. Test non-existing command
         {'params': ['cma'], 'output': 'No such command'},
         # 3. Test non-existing argument
-        {'params': ['-b'], 'output': 'no such option: -b'},
+        {'params': ['-b'], 'output': 'No such option: -b'},
         # 4. Test malformed min_periods argument
-        {'params': ['--min_period'], 'output': 'no such option: --min_period'},
+        {'params': ['--min_period'], 'output': 'No such option: --min_period'},
         # 5. Test missing min_period value
-        {'params': ['-mp'], 'output': '-mp option requires an argument'},
+        {'params': ['-mp'], 'output': "Option '-mp' requires an argument."},
         # 6. Test invalid range min_periods value
         {'params': ['--min_periods', 0],
             'output': 'Invalid value'},
@@ -232,17 +232,17 @@ def test_moving_average_incorrect(pcs_full):
         {'params': ['-mp', 'A'],
             'output': 'Invalid value'},
         # 8. Test malformed per_key argument
-        {'params': ['--per-keys'], 'output': 'no such option: --per-keys'},
+        {'params': ['--per-keys'], 'output': 'No such option: --per-keys'},
         # 9. Test missing per_key value
-        {'params': ['-per'], 'output': '-per option requires an argument'},
+        {'params': ['-per'], 'output': "Option '-per' requires an argument."},
         # 10. Test invalid value per_key arguments
         {'params': ['--per-key', 'unknown'],
             'output': 'Invalid value'},
         # 11. Test malformed of_key argument
-        {'params': ['--off'], 'output': 'no such option: --off'},
+        {'params': ['--off'], 'output': 'No such option: --off'},
         # 12. Test missing of_key value
         {'params': ['--of-key'],
-            'output': '--of-key option requires an argument'},
+            'output': "Option '--of-key' requires an argument."},
         # 13. Test invalid value of_key arguments
         {'params': ['-of', 'unknown'],
             'output': 'Invalid value'},
@@ -250,9 +250,9 @@ def test_moving_average_incorrect(pcs_full):
         # TESTS SIMPLE MOVING AVERAGE COMMAND AND SIMPLE MOVING MEDIAN COMMAND
         # 14. Test malformed window-width argument
         {'params': ['--window_widh'],
-            'output': 'no such option: --window_widh'},
+            'output': 'No such option: --window_widh'},
         # 15. Test missing window-width value
-        {'params': ['-ww'], 'output': '-ww option requires an argument'},
+        {'params': ['-ww'], 'output': "Option '-ww' requires an argument."},
         # 16. Test invalid range window-width argument
         {'params': ['-ww', -1],
             'output': 'Invalid value'},
@@ -260,9 +260,9 @@ def test_moving_average_incorrect(pcs_full):
         {'params': ['--window_width', 0.5],
             'output': 'Invalid value'},
         # 18. Test malformed center argument
-        {'params': ['--centers'], 'output': 'no such option: --centers'},
+        {'params': ['--centers'], 'output': 'No such option: --centers'},
         # 19. Test malformed no-center argument
-        {'params': ['--mo-center'], 'output': 'no such option: --mo-center'},
+        {'params': ['--mo-center'], 'output': 'No such option: --mo-center'},
         # 20. Test value for center argument
         {'params': ['--center', 'True'],
             'output': 'Got unexpected extra argument (True)'},
@@ -273,19 +273,19 @@ def test_moving_average_incorrect(pcs_full):
         # TESTS SIMPLE MOVING AVERAGE COMMAND
         # 22. Test malformed window-type argument
         {'params': ['--windov_type'],
-            'output': 'no such option: --windov_type'},
+            'output': 'No such option: --windov_type'},
         # 23. Test missing window-type value
         {'params': ['--window_type'],
-            'output': '--window_type option requires an argument'},
+            'output': "Option '--window_type' requires an argument."},
         # 24. Test invalid range window-type argument
         {'params': ['-wt', "boxcars"],
             'output': 'Invalid value'},
 
         # TESTS EXPONENTIAL MOVING AVERAGE COMMAND
         # 25. Test malformed decay argument
-        {'params': ['--decays'], 'output': 'no such option: --decays'},
+        {'params': ['--decays'], 'output': 'No such option: --decays'},
         # 26. Test missing decay value
-        {'params': ['-d'], 'output': '-d option requires 2 arguments'},
+        {'params': ['-d'], 'output': "Option '-d' requires 2 arguments."},
         # 27. Test invalid type of first value in decay argument
         {'params': ['--decay', 'spam', 3],
             'output': 'Invalid value'},
@@ -453,23 +453,23 @@ def test_kernel_regression_incorrect(pcs_full):
     incorrect_tests = [
         # TEST COMMON OPTIONS OF KERNEL-REGRESSION CLI AND IT COMMANDS
         # 1. Test non-existing argument
-        {'params': ['--ajax'], 'output': 'no such option: --ajax'},
+        {'params': ['--ajax'], 'output': 'No such option: --ajax'},
         # 2. Test non-existing command
         {'params': ['my-selection'],
             'output': 'No such command'},
         # 3. Test non-existing argument
-        {'params': ['-c'], 'output': 'no such option: -c'},
+        {'params': ['-c'], 'output': 'No such option: -c'},
         # 4. Test malformed per-key argument
-        {'params': ['--per-keys'], 'output': 'no such option: --per-keys'},
+        {'params': ['--per-keys'], 'output': 'No such option: --per-keys'},
         # 5. Test missing per-key value
-        {'params': ['-per'], 'output': '-per option requires an argument'},
+        {'params': ['-per'], 'output': "Option '-per' requires an argument."},
         # 6. Test invalid value for per-key argument
         {'params': ['--per-key', 'randomize'],
             'output': 'Invalid value'},
         # 7. Test malformed of-key argument
-        {'params': ['--off-key'], 'output': 'no such option: --off-key'},
+        {'params': ['--off-key'], 'output': 'No such option: --off-key'},
         # 8. Test missing of-key value
-        {'params': ['-of'], 'output': '-of option requires an argument'},
+        {'params': ['-of'], 'output': "Option '-of' requires an argument."},
         # 9. Test invalid value for per-key argument
         {'params': ['-of', 'invalid'],
             'output': 'Invalid value'},
@@ -491,40 +491,40 @@ def test_kernel_regression_incorrect(pcs_full):
 
         # TEST OPTIONS OF ESTIMATOR-SETTINGS MODES IN KERNEL-REGRESSION CLI
         # 15. Test malformed reg-type argument
-        {'params': ['--reg-types'], 'output': 'no such option: --reg-types'},
+        {'params': ['--reg-types'], 'output': 'No such option: --reg-types'},
         # 16. Test missing reg-type value
-        {'params': ['-rt'], 'output': '-rt option requires an argument'},
+        {'params': ['-rt'], 'output': "Option '-rt' requires an argument."},
         # 17. Test invalid value for reg-type argument
         {'params': ['--reg-type', 'lp'],
             'output': 'Invalid value'},
         # 18. Test malformed bandwidth-method argument
         {'params': ['--bandwidht-method'],
-            'output': 'no such option: --bandwidht-method'},
+            'output': 'No such option: --bandwidht-method'},
         # 19. Test missing bandwidth-value value
-        {'params': ['-bw'], 'output': '-bw option requires an argument'},
+        {'params': ['-bw'], 'output': "Option '-bw' requires an argument."},
         # 20. Test invalid value for bandwidth-value argument
         {'params': ['-bw', 'cv-ls'],
             'output': 'Invalid value'},
         # 21. Test malformed n-sub argument
         {'params': ['--n-sub-sample'],
-            'output': 'no such option: --n-sub-sample'},
+            'output': 'No such option: --n-sub-sample'},
         # 22. Test missing n-sub argument
-        {'params': ['-nsub'], 'output': '-nsub option requires an argument'},
+        {'params': ['-nsub'], 'output': "Option '-nsub' requires an argument."},
         # 23. Test invalid value for n-sub argument
         {'params': ['-nsub', 0],
             'output': 'Invalid value'},
         # 24. Test malformed n-res argument
         {'params': ['--n-re-sample'],
-            'output': 'no such option: --n-re-sample'},
+            'output': 'No such option: --n-re-sample'},
         # 25. Test missing n-sub argument
-        {'params': ['-nres'], 'output': '-nres option requires an argument'},
+        {'params': ['-nres'], 'output': "Option '-nres' requires an argument."},
         # 26. Test invalid value for n-sub argument
         {'params': ['--n-re-samples', 0],
             'output': 'Invalid value'},
         # 27. Test malformed efficient argument
-        {'params': ['--eficient'], 'output': 'no such option: --eficient'},
+        {'params': ['--eficient'], 'output': 'No such option: --eficient'},
         # 28. Test malformed no-uniformly argument
-        {'params': ['--uniformlys'], 'output': 'no such option: --uniformlys'},
+        {'params': ['--uniformlys'], 'output': 'No such option: --uniformlys'},
         # 29. Test value for efficient argument
         {'params': ['--efficient', 'True'],
             'output': 'Got unexpected extra argument (True)'},
@@ -532,10 +532,10 @@ def test_kernel_regression_incorrect(pcs_full):
         {'params': ['--uniformly', 'False'],
             'output': 'Got unexpected extra argument (False)'},
         # 31. Test malformed randomize argument
-        {'params': ['--randomized'], 'output': 'no such option: --randomized'},
+        {'params': ['--randomized'], 'output': 'No such option: --randomized'},
         # 32. Test malformed no-randomize argument
         {'params': ['--no-randomized'],
-            'output': 'no such option: --no-randomized'},
+            'output': 'No such option: --no-randomized'},
         # 33. Test value for randomize argument
         {'params': ['--randomize', 'False'],
             'output': 'Got unexpected extra argument (False)'},
@@ -544,10 +544,10 @@ def test_kernel_regression_incorrect(pcs_full):
             'output': 'Got unexpected extra argument (True)'},
         # 35. Test malformed return-median argument
         {'params': ['--returns-median'],
-            'output': 'no such option: --returns-median'},
+            'output': 'No such option: --returns-median'},
         # 36. Test malformed return-mean argument
         {'params': ['--returns-mean'],
-            'output': 'no such option: --returns-mean'},
+            'output': 'No such option: --returns-mean'},
         # 37. Test value for return-median argument
         {'params': ['--return-median', 'True'],
             'output': 'Got unexpected extra argument (True)'},
@@ -557,46 +557,46 @@ def test_kernel_regression_incorrect(pcs_full):
 
         # TEST OPTIONS OF METHOD-SELECTION MODES IN KERNEL-REGRESSION CLI
         # 39. Test malformed reg-type argument
-        {'params': ['--reg-types'], 'output': 'no such option: --reg-types'},
+        {'params': ['--reg-types'], 'output': 'No such option: --reg-types'},
         # 40. Test missing reg-type value
-        {'params': ['-rt'], 'output': '-rt option requires an argument'},
+        {'params': ['-rt'], 'output': "Option '-rt' requires an argument."},
         # 41. Test invalid value for reg-type argument
         {'params': ['--reg-type', 'lb'],
             'output': 'Invalid value'},
         # 42. Test malformed bandwidth-method argument
         {'params': ['--bandwidth-methods'],
-            'output': 'no such option: --bandwidth-methods'},
+            'output': 'No such option: --bandwidth-methods'},
         # 43. Test missing bandwidth-method value
-        {'params': ['-bm'], 'output': '-bm option requires an argument'},
+        {'params': ['-bm'], 'output': "Option '-bm' requires an argument."},
         # 44. Test invalid value for bandwidth-method argument
         {'params': ['-bm', 'goldman'],
             'output': 'Invalid value'},
 
         # TEST OPTIONS OF USER-SELECTION MODES IN KERNEL-REGRESSION CLI
         # 45. Test malformed reg-type argument
-        {'params': ['--reg-types'], 'output': 'no such option: --reg-types'},
+        {'params': ['--reg-types'], 'output': 'No such option: --reg-types'},
         # 46. Test missing reg-type value
-        {'params': ['-rt'], 'output': '-rt option requires an argument'},
+        {'params': ['-rt'], 'output': "Option '-rt' requires an argument."},
         # 47. Test invalid value for reg-type argument
         {'params': ['--reg-type', 'pp'],
             'output': 'Invalid value'},
         # 48. Test malformed bandwidth-value argument
         {'params': ['--bandwidth-values'],
-            'output': 'no such option: --bandwidth-values'},
+            'output': 'No such option: --bandwidth-values'},
         # 49. Test missing bandwidth-value value
-        {'params': ['-bv'], 'output': '-bv option requires an argument'},
+        {'params': ['-bv'], 'output': "Option '-bv' requires an argument."},
         # 50. Test invalid value for bandwidth-value argument
         {'params': ['--bandwidth-value', -2],
             'output': 'Invalid value'},
 
         # TEST OPTIONS OF KERNEL-RIDGE MODES IN KERNEL-REGRESSION CLI
         # 51. Test malformed gamma-range argument
-        {'params': ['--gama-range'], 'output': 'no such option: --gama-range'},
+        {'params': ['--gama-range'], 'output': 'No such option: --gama-range'},
         # 52. Test missing gamma-range value
-        {'params': ['-gr'], 'output': '-gr option requires 2 arguments'},
+        {'params': ['-gr'], 'output': "Option '-gr' requires 2 arguments."},
         # 53. Test wrong count of value gamma-range argument
         {'params': ['--gamma-range', 2],
-            'output': '--gamma-range option requires 2 arguments'},
+            'output': "Option '--gamma-range' requires 2 arguments."},
         # 54. Test wrong type of values gamma-range argument
         {'params': ['-gr', 'A', 'A'],
             'output': 'Invalid value'},
@@ -605,9 +605,9 @@ def test_kernel_regression_incorrect(pcs_full):
             'output': 'Invalid values: 1.value must be < then the 2.value'},
         # 56. Test malformed gamma-step argument
         {'params': ['--gamma-steps'],
-            'output': 'no such option: --gamma-steps'},
+            'output': 'No such option: --gamma-steps'},
         # 57. Test missing gamma-step value
-        {'params': ['-gs'], 'output': '-gs option requires an argument'},
+        {'params': ['-gs'], 'output': "Option '-gs' requires an argument."},
         # 58. Test invalid value gamma-step argument no.1
         {'params': ['--gamma-step', 0],
             'output': 'Invalid value'},
@@ -620,9 +620,9 @@ def test_kernel_regression_incorrect(pcs_full):
         # TEST OPTIONS OF KERNEL-SMOOTHING MODES IN KERNEL-REGRESSION CLI
         # 60. Test malformed kernel-type argument
         {'params': ['--kernel-typse'],
-            'output': 'no such option: --kernel-typse'},
+            'output': 'No such option: --kernel-typse'},
         # 61. Test missing kernel-type value
-        {'params': ['-kt'], 'output': '-kt option requires an argument'},
+        {'params': ['-kt'], 'output': "Option '-kt' requires an argument."},
         # 62. Test invalid value of kernel-type argument
         {
             'params': ['--kernel-type', 'epanechnikov5'],
@@ -630,25 +630,25 @@ def test_kernel_regression_incorrect(pcs_full):
         },
         # 63. Test malformed smoothing-method argument
         {'params': ['--smothing-method'],
-            'output': 'no such option: --smothing-method'},
+            'output': 'No such option: --smothing-method'},
         # 64. Test missing smoothing-method value
-        {'params': ['-sm'], 'output': '-sm option requires an argument'},
+        {'params': ['-sm'], 'output': "Option '-sm' requires an argument."},
         # 65. Test invalid value of smoothing method argument
         {'params': ['-sm', 'local-constant'],
             'output': 'Invalid value'},
         # 66. Test malformed bandwidth-value argument
         {'params': ['--bandwith-value'],
-            'output': 'no such option: --bandwith-value'},
+            'output': 'No such option: --bandwith-value'},
         # 67. Test missing bandwidth-value value
-        {'params': ['-bv'], 'output': '-bv option requires an argument'},
+        {'params': ['-bv'], 'output': "Option '-bv' requires an argument."},
         # 68. Test invalid value for bandwidth-value argument
         {'params': ['-bv', -100],
             'output': 'Invalid value'},
         # 69. Test malformed bandwidth-method argument
         {'params': ['--bandwidht-method'],
-            'output': 'no such option: --bandwidht-method'},
+            'output': 'No such option: --bandwidht-method'},
         # 70. Test missing bandwidth-method value
-        {'params': ['-bm'], 'output': '-bm option requires an argument'},
+        {'params': ['-bm'], 'output': "Option '-bm' requires an argument."},
         # 71. Test invalid value for bandwidth-method argument
         {
             'params': ['--bandwidth-method', 'sccot'],
@@ -656,9 +656,9 @@ def test_kernel_regression_incorrect(pcs_full):
         },
         # 72. Test malformed polynomial-order argument
         {'params': ['--polynomila-order'],
-            'output': 'no such option: --polynomila-order'},
+            'output': 'No such option: --polynomila-order'},
         # 73. Test missing value for polynomial-order argument
-        {'params': ['-q'], 'output': '-q option requires an argument'},
+        {'params': ['-q'], 'output': "Option '-q' requires an argument."},
         # 74. Test invalid value for polynomial-order argument
         {'params': ['-q', 0],
             'output': 'Invalid value'},
@@ -684,7 +684,7 @@ def test_kernel_regression_correct(pcs_full):
 
     Expecting no exceptions and errors, all tests should end with status code 0.
     """
-    np.warnings.filterwarnings('ignore')
+    warnings.filterwarnings('ignore')
 
     correct_tests = [
         # TEST KERNEL-REGRESSION COMMON OPTIONS
@@ -871,19 +871,19 @@ def test_reg_analysis_incorrect(pcs_full):
     result = runner.invoke(cli.postprocessby, [
                            '1@i', 'regression-analysis', '-f'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, 'no such option: -f' in result.output)
+    asserts.predicate_from_cli(result, 'No such option: -f' in result.output)
 
     # Test malformed method argument
     result = runner.invoke(cli.postprocessby, [
                            '1@i', 'regression-analysis', '--metod', 'full'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, 'no such option: --metod' in result.output)
+    asserts.predicate_from_cli(result, 'No such option: --metod' in result.output)
 
     # Test missing method value
     result = runner.invoke(cli.postprocessby, [
                            '1@i', 'regression-analysis', '-m'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '-m option requires an argument' in result.output)
+    asserts.predicate_from_cli(result, "Option '-m' requires an argument." in result.output)
 
     # Test invalid method name
     result = runner.invoke(cli.postprocessby, [
@@ -895,13 +895,13 @@ def test_reg_analysis_incorrect(pcs_full):
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'full',
                                                '--regresion_models'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, 'no such option: --regresion_models' in result.output)
+    asserts.predicate_from_cli(result, 'No such option: --regresion_models' in result.output)
 
     # Test missing model value
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'full',
                                                '-r'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '-r option requires an argument' in result.output)
+    asserts.predicate_from_cli(result, "Option '-r' requires an argument." in result.output)
 
     # Test invalid model name
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full', '-r',
@@ -919,19 +919,19 @@ def test_reg_analysis_incorrect(pcs_full):
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'all', '--seps'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, ' no such option: --seps' in result.output)
+    asserts.predicate_from_cli(result, ' No such option: --seps' in result.output)
 
     # Test missing steps value
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'all', '-s'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '-s option requires an argument' in result.output)
+    asserts.predicate_from_cli(result, "Option '-s' requires an argument." in result.output)
 
     # Test invalid steps type
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full', '-r',
                                                'all', '-s', '0.5'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '0.5 is not a valid integer' in result.output)
+    asserts.predicate_from_cli(result, "'0.5' is not a valid integer range." in result.output)
 
     # Test multiple method specification resulting in extra argument
     result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-dp', 'snapshots',

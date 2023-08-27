@@ -69,6 +69,7 @@ from difflib import get_close_matches
 
 import pandas as pd
 import numpy as np
+from scipy import stats
 
 from perun.utils.structs import DegradationInfo
 from perun.check.factory import PerformanceChange
@@ -278,7 +279,7 @@ class DiffProfile:
         Recommendation for cut-off score 3.5
         https://hwbdocuments.env.nm.gov/Los%20Alamos%20National%20Labs/TA%2054/11587.pdf
         """
-        mad = self.df['exclusive T Δ [ms]'].mad()
+        mad = stats.median_abs_deviation(self.df['exclusive T Δ [ms]'], scale=1.0)
         median = self.df['exclusive T Δ [ms]'].median()
         self.df['AD'] = abs(self.df['exclusive T Δ [ms]'] - median)
         try:

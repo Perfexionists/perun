@@ -38,7 +38,7 @@ def invalid_cli_choice(cli_result, choice, file=None):
         file(str): name of the file that should not be created (optional)
     """
     predicate_from_cli(cli_result, cli_result.exit_code == 2)
-    predicate_from_cli(cli_result, "invalid choice: {}".format(choice) in cli_result.output)
+    predicate_from_cli(cli_result, f"'{choice}' is not one of" in cli_result.output)
     if file:
         assert file not in os.listdir(os.getcwd())
 

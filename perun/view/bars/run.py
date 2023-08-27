@@ -3,17 +3,13 @@
 import click
 
 import perun.view.bars.factory as bars_factory
-import perun.utils.log as log
-import perun.utils.cli_helpers as cli_helpers
-import perun.utils.bokeh_helpers as bokeh_helpers
-import perun.utils.helpers as helpers
-
+from perun.utils import cli_helpers, view_helpers, log, helpers
 from perun.profile.factory import pass_profile
 from perun.utils.exceptions import InvalidParameterException
 
 
-__author__ = 'Radim Podola'
-__coauthored__ = 'Tomas Fiedor'
+__author__ = "Radim Podola"
+__coauthored__ = "Tomas Fiedor"
 
 
 def process_title(ctx, _, value):
@@ -23,16 +19,19 @@ def process_title(ctx, _, value):
     create some optimal name for the graph ourselves. We do this according to already processed
     parameters as follows:
 
-      Func of 'of-key' per 'per-key' 'cummulated' by 'by-key'
+      Func of 'of-key' per 'per-key' 'grouped' by 'by-key'
 
     :param click.Context ctx: called context of the process
     :param object _: unused parameter
     :param object value: value that is being processed ad add to parameter
     :returns object: either value (if it is non-None) or default title of the graph
     """
-    return value or "{} of '{}' per '{}' {} by {}".format(
-        ctx.params['func'].capitalize(), ctx.params['of_key'], ctx.params['per_key'],
-        ctx.params['cummulation_type'], ctx.params['by_key']
+    return value or (
+        f"{ctx.params['func'].capitalize()} "
+        f"of '{ctx.params['of_key']}' "
+        f"per '{ctx.params['per_key']}' "
+        f"{ctx.params['grouping_type']} "
+        f"by {ctx.params['by_key']}"
     )
 
 
@@ -50,11 +49,11 @@ def process_title(ctx, _, value):
               is_eager=True, callback=cli_helpers.process_resource_key_param,
               help="Sets the key that will be used either for stacking or"
               " grouping of values")
-@click.option('--stacked', '-s', 'cummulation_type', flag_value='stacked', default=True,
+@click.option('--stacked', '-s', 'grouping_type', flag_value='stacked', default=True,
               is_eager=True,
               help="Will stack the values by <resource_key> specified by"
                    " option --by.")
-@click.option('--grouped', '-g', 'cummulation_type', flag_value='grouped',
+@click.option('--grouped', '-g', 'grouping_type', flag_value='grouped',
               is_eager=True,
               help="Will stack the values by <resource_key> specified by"
                    " option --by.")
@@ -125,8 +124,8 @@ def bars(profile, filename, view_in_browser, **kwargs):
     `bars` interpretation possibilities.
     """
     try:
-        bokeh_helpers.process_profile_to_graphs(
+        view_helpers.process_profile_to_graphs(
             bars_factory, profile, filename, view_in_browser, **kwargs
         )
     except (InvalidParameterException, AttributeError) as iap_error:
-        log.error("while creating bar graph: {}".format(str(iap_error)))
+        log.error(f"while creating bar graph: {str(iap_error)}")

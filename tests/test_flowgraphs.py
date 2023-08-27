@@ -1,14 +1,13 @@
 import os
 
-import bokeh.plotting as plotting
 import pytest
 from click.testing import CliRunner
 
-import perun.cli as cli
-import perun.logic.store as store
-import perun.view.flow.factory as bokeh_graphs
-
-import perun.testing.asserts as asserts
+import perun.view.flow.factory as flow_factory
+from perun import cli
+from perun.logic import store
+from perun.utils import view_helpers
+from perun.testing import asserts
 
 __author__ = 'Tomas Fiedor'
 
@@ -79,14 +78,13 @@ def test_flow_cli_errors(pcs_full, valid_profile_pool):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_bokeh_flow(memory_profiles):
+def test_holoviews_flow(memory_profiles):
     """Test creating bokeh flow graph
 
     Expecting no errors
     """
     for memory_profile in memory_profiles:
-        bargraph = bokeh_graphs.create_from_params(memory_profile, 'sum', 'amount', 'snapshots',
+        bargraph = flow_factory.create_from_params(memory_profile, 'sum', 'amount', 'snapshots',
                                                    'uid', True, True, 'snapshot', 'amount [B]', '?')
-        plotting.output_file('flow.html')
-        plotting.save(bargraph, 'flow.html')
+        view_helpers.save_view_graph(bargraph, "flow.html", False)
         assert 'flow.html' in os.listdir(os.getcwd())

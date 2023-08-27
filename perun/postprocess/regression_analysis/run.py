@@ -82,7 +82,7 @@ def store_model_counts(analysis):
               help=('Restricts the list of regression models used by the'
                     ' specified <method> to fit the data. If omitted, all'
                     ' regression models will be used in the computation.'))
-@click.option('--steps', '-s', type=click.IntRange(1, None, True),
+@click.option('--steps', '-s', type=click.IntRange(1, None, clamp=True),
               required=False, default=_DEFAULT_STEPS,
               help=('Restricts the number of number of steps / data parts used'
                     ' by the iterative, interval and initial guess methods'))

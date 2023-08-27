@@ -66,7 +66,10 @@ might require root permissions to install Perun.
 
 It is advised to verify that Perun is running correctly in your environment as follows:
 
+    pip install .[test]
     make test
+
+or alternatively using Tox (see the [developing section](#developing)).
 
 ### Installing Tracer Dependencies
 

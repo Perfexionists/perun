@@ -2,15 +2,14 @@
 
 import os
 
-import bokeh.plotting as plotting
 import pytest
 from click.testing import CliRunner
 
-import perun.cli as cli
-import perun.logic.store as store
-import perun.view.bars.factory as bargraphs
-
-import perun.testing.asserts as asserts
+import perun.view.bars.factory as bars_factory
+from perun import cli
+from perun.utils import view_helpers
+from perun.logic import store
+from perun.testing import asserts
 
 __author__ = 'Tomas Fiedor'
 
@@ -22,10 +21,18 @@ def test_bokeh_bars(memory_profiles):
     Expecting no error.
     """
     for memory_profile in memory_profiles:
-        bargraph = bargraphs.create_from_params(memory_profile, 'sum', 'amount', 'snapshots',
-                                                'uid', 'stacked', 'snapshot', 'amount [B]', 'test')
-        plotting.output_file('bars.html')
-        plotting.save(bargraph, 'bars.html')
+        bargraph = bars_factory.create_from_params(
+            memory_profile,
+            'sum',
+            'amount',
+            'snapshots',
+            'uid',
+            'stacked',
+            'snapshot',
+            'amount [B]',
+            'test',
+        )
+        view_helpers.save_view_graph(bargraph, "bars.html", False)
         assert 'bars.html' in os.listdir(os.getcwd())
 
 
