@@ -5,7 +5,7 @@ Postprocessor module with non-parametric analysis using the moving average metho
 import functools
 import click
 
-from typing import TypedDict, Callable
+from typing import TypedDict, Callable, TYPE_CHECKING
 from typing_extensions import Unpack
 
 import perun.logic.runner as runner
@@ -14,6 +14,9 @@ import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
 from perun.utils.structs import PostprocessStatus
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 class Configuration(TypedDict):
@@ -39,7 +42,7 @@ _WINDOW_TYPES = [
 ]
 
 
-def postprocess(profile: dict, **configuration: dict) -> tuple[PostprocessStatus, str, dict]:
+def postprocess(profile: Profile, **configuration: dict) -> tuple[PostprocessStatus, str, dict]:
     """
     Invoked from perun core, handles the postprocess actions
 

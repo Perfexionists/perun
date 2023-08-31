@@ -5,13 +5,22 @@ This module contains the methods that implements the whole set of methods
 to execute the kernel regression. Also contains the auxiliary methods to
 validate the options and to execute the individual computations.
 """
-import click.exceptions as click
+from __future__ import annotations
+
+import click.exceptions as click_exp
 import numpy as np
 import pyqt_fit.nonparam_regression as smooth
 import sklearn.base as sklearn
 import sklearn.metrics as metrics
 import sklearn.metrics.pairwise as kernels
 import statsmodels.nonparametric.api as nparam
+
+from typing import Any, TYPE_CHECKING, Callable
+
+if TYPE_CHECKING:
+    from nptyping import NDArray
+    from perun.postprocess.regression_analysis.data_provider import Data
+    import click
 
 import perun.postprocess.regression_analysis.tools as tools
 
@@ -46,7 +55,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
     :param sklearn.base.RegressorMixin: mixin class for all regression estimators in scikit-learn
     """
 
-    def __init__(self, gamma=None):
+    def __init__(self, gamma: NDArray | float = None):
         """
         Initialization method for `KernelRidge` class.
 
@@ -54,11 +63,12 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
                 if the np.ndarray is given, then is executing the selection with minimizing the
                 `mse` of leave-one-out cross-validation
         """
-        self.x_pts, self.y_pts = [], []
-        self.kernel = 'rbf'
-        self.gamma = gamma
+        self.x_pts: NDArray = []
+        self.y_pts: NDArray = []
+        self.kernel: str = 'rbf'
+        self.gamma: NDArray | float = gamma
 
-    def fit(self, x_pts, y_pts):
+    def fit(self, x_pts: NDArray, y_pts: NDArray) -> KernelRidge:
         """
         The method provides the fitting of the model according to the given set of points.
         If the user entered the sequence of gamma values, then one of these values is
@@ -78,7 +88,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
 
         return self
 
-    def predict(self, x_pts):
+    def predict(self, x_pts: NDArray) -> NDArray:
         """
         This method predict target values using the kernel function.
 
@@ -88,7 +98,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         kernel = kernels.pairwise_kernels(self.x_pts, x_pts, metric=self.kernel, gamma=self.gamma)
         return (kernel * self.y_pts[:, None]).sum(axis=0) / kernel.sum(axis=0)
 
-    def _optimize_gamma(self, gamma_values):
+    def _optimize_gamma(self, gamma_values: NDArray) -> float:
         """
         This method select a specific value from a given range of values.
 
@@ -108,9 +118,10 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
             mse[i] = (err ** 2).mean()
 
         self.gamma = gamma_values[np.nanargmin(mse) if not np.isnan(mse).all() else 0]
+        return self.gamma
 
 
-def compute_kernel_regression(data_gen, config):
+def compute_kernel_regression(data_gen: Data, config: dict) -> list[dict]:
     """
     This method represents the wrapper for all modes of kernel regression postprocessor.
 
@@ -142,7 +153,7 @@ def compute_kernel_regression(data_gen, config):
     return kernel_models
 
 
-def kernel_regression(x_pts, y_pts, config):
+def kernel_regression(x_pts: list[float], y_pts: list[float], config: dict) -> dict:
     """
     This method executing the computation of three modes of kernel regression
     postprocessor: `estimator-settings`, `method-selection` and `user selection`.
@@ -203,7 +214,7 @@ def kernel_regression(x_pts, y_pts, config):
     }
 
 
-def iterative_computation(x_pts, y_pts, kernel_estimate, **kwargs):
+def iterative_computation(x_pts: list[float], y_pts: list[float], kernel_estimate: Any, **kwargs: Any) -> Any:
     """
     The method represents the wrapper over the kernel-smoothing estimator.
 
@@ -234,7 +245,7 @@ def iterative_computation(x_pts, y_pts, kernel_estimate, **kwargs):
     return kernel_estimate
 
 
-def kernel_smoothing(x_pts, y_pts, config):
+def kernel_smoothing(in_x_pts: list[float], in_y_pts: list[float], config: dict) -> dict:
     """
     This method executing the computation of `kernel-smoothing` mode.
 
@@ -248,14 +259,14 @@ def kernel_smoothing(x_pts, y_pts, config):
     last steps of this analysis is fitted the estimated data a returns the obtained kernel
     models.
 
-    :param list x_pts: the list of x points coordinates
-    :param list y_pts: the list of y points coordinates
+    :param list in_x_pts: the list of x points coordinates
+    :param list in_y_pts: the list of y points coordinates
     :param dict config: the perun and option context contains the entered options and commands
     :return dict: the output dictionary with result of kernel regression
     """
     # Retype the coordinated list for requirements of computational class
-    x_pts = np.asanyarray(x_pts, dtype=np.float_)
-    y_pts = np.asanyarray(y_pts, dtype=np.float_)
+    x_pts = np.asanyarray(in_x_pts, dtype=np.float_)
+    y_pts = np.asanyarray(in_y_pts, dtype=np.float_)
 
     # Obtaining the kernel instance from supported types according to the given name
     kernel = _KERNEL_TYPES_MAPS[config['kernel_type']]
@@ -295,7 +306,7 @@ def kernel_smoothing(x_pts, y_pts, config):
     }
 
 
-def kernel_ridge(x_pts, y_pts, config):
+def kernel_ridge(in_x_pts: list[float], in_y_pts: list[float], config: dict) -> dict:
     """
     This method executing the computation of `kernel-ridge` mode.
 
@@ -308,14 +319,14 @@ def kernel_ridge(x_pts, y_pts, config):
     `Kernel Regressor` class from `sklearn` package. For more details about
     this approach you can see class `KernelRidge` or Perun Documentation.
 
-    :param list x_pts: the list of x points coordinates
-    :param list y_pts: the list of y points coordinates
+    :param list in_x_pts: the list of x points coordinates
+    :param list in_y_pts: the list of y points coordinates
     :param dict config: the perun and option context contains the entered options and commands
     :return dict: the output dictionary with result of kernel regression
     """
     # Retype the coordinated list for requirements of computational class
-    x_pts = np.asanyarray(x_pts, dtype=np.float_).reshape(-1, 1)
-    y_pts = np.asanyarray(y_pts, dtype=np.float_)
+    x_pts = np.asanyarray(in_x_pts, dtype=np.float_).reshape(-1, 1)
+    y_pts = np.asanyarray(in_y_pts, dtype=np.float_)
 
     # Obtaining the edges of the given range
     low_boundary = config['gamma_range'][0]
@@ -336,7 +347,7 @@ def kernel_ridge(x_pts, y_pts, config):
     }
 
 
-def execute_kernel_regression(x_pts, y_pts, config):
+def execute_kernel_regression(x_pts: list[float], y_pts: list[float], config: dict) -> dict:
     """
     This method serves to call the individual computing methods of a kernel regression.
 
@@ -353,7 +364,7 @@ def execute_kernel_regression(x_pts, y_pts, config):
     :return dict: the output dictionary with result of kernel regression
     """
     # Sort the points to the right order for computation
-    x_pts, y_pts = zip(*sorted(zip(x_pts, y_pts)))
+    x_pts, y_pts = zip(*sorted(zip(x_pts, y_pts)))  # type: ignore
 
     # Create the initial dictionary, that contains the common items for all modes
     kernel_model = {
@@ -382,7 +393,7 @@ def execute_kernel_regression(x_pts, y_pts, config):
     return kernel_model
 
 
-def valid_range_values(_, param, value):
+def valid_range_values(_: click.Context, param: click.Option, value: tuple[float, float]) -> tuple[float, float]:
     """
     This method represents click callback option method.
 
@@ -401,13 +412,13 @@ def valid_range_values(_, param, value):
     if value[0] < value[1]:
         return value
     else:
-        raise click.BadOptionUsage(
+        raise click_exp.BadOptionUsage(
             param.name, 'Invalid values: 1.value must be < then the 2.value (%g >= %g)'
             % (value[0], value[1])
         )
 
 
-def valid_step_size(step, range_length):
+def valid_step_size(step: float, range_length: float) -> bool:
     """
     This method represents click callback option method.
 
@@ -424,7 +435,7 @@ def valid_step_size(step, range_length):
     if step < range_length:
         return True
     else:
-        raise click.BadOptionUsage(
+        raise click_exp.BadOptionUsage(
             "--gamma-step/-gs", 'Invalid values: step must be < then the length of the range'
                                 '(%g >= %g)' % (step, range_length)
         )
@@ -448,7 +459,7 @@ _MODES_REQUIRED_KEYS = {
 
 # dict contains the supported kernel types for `kernel-smoothing` mode, respectively its instances
 # - more information about individual types of kernel are described in Perun documentation
-_KERNEL_TYPES_MAPS = {
+_KERNEL_TYPES_MAPS: dict[str, Any] = {
     'normal': smooth.kernels.normal_kernel(dim=1),
     'tricube': smooth.kernels.tricube(),
     'epanechnikov': smooth.kernels.Epanechnikov(),
@@ -459,7 +470,7 @@ _KERNEL_TYPES_MAPS = {
 # dict contains the regression methods for `kernel-smoothing` mode, respectively their instances
 # - using lambda expressions are used due to unification at calling this dictionary
 # -- more information about individual types of kernel are described in Perun documentation
-_SMOOTHING_METHODS_MAPS = {
+_SMOOTHING_METHODS_MAPS: dict[str, Callable] = {
     'local-polynomial': lambda dim: smooth.npr_methods.LocalPolynomialKernel(q=dim),
     'spatial-average': lambda _: smooth.npr_methods.SpatialAverage(),
     'local-linear': lambda _: smooth.npr_methods.LocalLinearKernel1D(),

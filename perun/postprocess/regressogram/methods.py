@@ -1,11 +1,18 @@
 """
 Module with regressogram computational method and auxiliary methods at executing of this method.
 """
+from __future__ import annotations
+
 import inspect
 import numpy as np
 import numpy.lib.histograms as numpy_bucket_selectors
 import scipy.stats
 import sklearn.metrics
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import perun.postprocess.regression_analysis.data_provider as data_provider
 
 import perun.postprocess.regression_analysis.tools as tools
 
@@ -13,7 +20,7 @@ import perun.postprocess.regression_analysis.tools as tools
 _REQUIRED_KEYS = ['bucket_method', 'statistic_function']
 
 
-def get_supported_nparam_methods():
+def get_supported_nparam_methods() -> list[str]:
     """Provides all currently supported computational methods, to
     estimate the optimal number of buckets, as a list of their names.
 
@@ -22,7 +29,7 @@ def get_supported_nparam_methods():
     return _METHODS
 
 
-def get_supported_selectors():
+def get_supported_selectors() -> list[str]:
     """Provides all currently supported computational methods, to
     estimate the optimal number of buckets, as a list of their names.
 
@@ -31,7 +38,7 @@ def get_supported_selectors():
     return list(_BUCKET_SELECTORS.keys())
 
 
-def compute_regressogram(data_gen, config):
+def compute_regressogram(data_gen: data_provider.Data, config: dict) -> list[dict]:
     """
     The regressogram wrapper to execute the analysis on the individual chunks of resources.
 
@@ -60,7 +67,7 @@ def compute_regressogram(data_gen, config):
     return analysis
 
 
-def regressogram(x_pts, y_pts, statistic_function, buckets):
+def regressogram(x_pts: list[float], y_pts: list[float], statistic_function: str, buckets: str | int) -> dict:
     """
     Compute the regressogram (binning approach) of a set of data.
 
@@ -114,7 +121,7 @@ def regressogram(x_pts, y_pts, statistic_function, buckets):
     }
 
 
-def render_step_function(graph, x_pts, y_pts, graph_params):
+def render_step_function(graph: Any, x_pts: list[float], y_pts: list[float], graph_params: dict) -> Any:
     """
     Render step lines according to given coordinates and other parameters.
 

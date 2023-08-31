@@ -9,10 +9,10 @@ import perun.postprocess.regression_analysis.tools as tools
 import perun.postprocess.regressogram.methods as methods
 import perun.utils.cli_helpers as cli_helpers
 
-from typing import TypedDict
+from typing import Any
 from typing_extensions import Unpack
 
-from perun.profile.factory import pass_profile
+from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 
 __author__ = 'Simon Stupinsky'
@@ -21,13 +21,9 @@ _DEFAULT_BUCKETS_METHOD = 'doane'
 _DEFAULT_STATISTIC = 'mean'
 
 
-class Configuration(TypedDict):
-    pass
-
-
 def postprocess(
-        profile: dict,
-        **configuration: Unpack[Configuration]
+        profile: Profile,
+        **configuration: Any
 ) -> tuple[PostprocessStatus, str, dict]:
     """
     Invoked from perun core, handles the postprocess actions
@@ -61,7 +57,7 @@ def postprocess(
                    'for points within each bucket of regressogram.')
 @cli_helpers.resources_key_options
 @pass_profile
-def regressogram(profile: dict, **kwargs: Unpack[Configuration]):
+def regressogram(profile: dict, **kwargs: Any):
     """
     Execution of the interleaving of profiled resources by **regressogram** models.
 
