@@ -7,17 +7,30 @@ import numpy as np
 import pandas as pd
 import sklearn.metrics
 
+from typing import Callable, TYPE_CHECKING
+from dataclasses import dataclass
+
 import perun.postprocess.regression_analysis.tools as tools
 
+if TYPE_CHECKING:
+    import perun.postprocess.regression_analysis.data_provider as data_provider
+
+
+@dataclass()
+class DecayParamInfo:
+    condition: Callable[[float], bool]
+    err_msg: str
+
+
 # required precision for moving average models when the window width was not entered
-_MIN_R_SQUARE = .88
+_MIN_R_SQUARE: float = .88
 # increase of the window width value in each loop, if it has not been reached the required precision
-_WINDOW_WIDTH_INCREASE = .15
+_WINDOW_WIDTH_INCREASE: float = .15
 # starting window width as the part of the length from the whole current interval
-_INTERVAL_LENGTH = .05
+_INTERVAL_LENGTH: float = .05
 
 
-def get_supported_decay_params():
+def get_supported_decay_params() -> list[str]:
     """Provides all names of currently supported parameters to specify
     the relationship to determine the smoothing parameter at Exponential
     Moving Average.
@@ -27,7 +40,7 @@ def get_supported_decay_params():
     return list(_DECAY_PARAMS_INFO.keys())
 
 
-def compute_window_width_change(window_width, r_square):
+def compute_window_width_change(window_width: int, r_square: float) -> int:
     """
     Computation of window width change based on the difference of required and current
     coefficient of determination (R^2) and possible change of the window width.
@@ -49,7 +62,7 @@ def compute_window_width_change(window_width, r_square):
     return max(1, window_width - max(1, int(min(.9 * window_width - 1, window_change))))
 
 
-def compute_moving_average(data_gen, configuration):
+def compute_moving_average(data_gen: data_provider.Data, configuration: dict):
     """
     The moving average wrapper to execute the analysis on the individual chunks of resources.
 
@@ -73,7 +86,7 @@ def compute_moving_average(data_gen, configuration):
     return moving_average_models
 
 
-def execute_computation(y_pts, config):
+def execute_computation(y_pts: list[float], config: dict) -> tuple[pd.Series, float]:
     """
     The computation wrapper of supported methods of moving average approach.
 
@@ -109,19 +122,21 @@ def execute_computation(y_pts, config):
             halflife=decay_dict.get('halflife'),
             min_periods=config['min_periods'] or config['window_width']
         ).mean()
+    else:
+        bucket_stats = pd.Series()
     # computation of the coefficient of determination (R^2)
     r_square = sklearn.metrics.r2_score(y_pts, np.nan_to_num(bucket_stats))
     return bucket_stats, r_square
 
 
-def moving_average(x_pts, y_pts, configuration):
+def moving_average(x_pts: list[float], y_pts: list[float], configuration: dict) -> dict:
     """
     Compute the moving average of a set of data.
 
     The main control method, that covers all actions needed at executing the
     analysis using the moving average approach. Based on the specified parameters
     obtains the result of the analysis, from which creates the relevant dictionary.
-    This dictionary contains the whole set of helpful keys and it is the result of
+    This dictionary contains the whole set of helpful keys, and it is the result of
     the whole moving average analysis.
 
     :param list x_pts: the list of x points coordinates
@@ -130,7 +145,7 @@ def moving_average(x_pts, y_pts, configuration):
     :return dict: the output dictionary with result of analysis
     """
     # Sort the points to the right order for computation
-    x_pts, y_pts = zip(*sorted(zip(x_pts, y_pts)))
+    x_pts, y_pts = map(list, zip(*sorted(zip(x_pts, y_pts))))  # type: ignore
 
     # If has been specified the window width by user, then will be followed the direct computation
     if configuration.get('window_width'):
@@ -153,7 +168,7 @@ def moving_average(x_pts, y_pts, configuration):
     }
 
 
-def iterative_analysis(x_pts, y_pts, config):
+def iterative_analysis(x_pts: list[float], y_pts: list[float], config: dict) -> tuple[pd.Series, float, int]:
     """
     Compute the iterative analysis of a set of data by moving average methods.
 
@@ -162,7 +177,7 @@ def iterative_analysis(x_pts, y_pts, config):
     `coefficient of determination` (:math:`R^2`), which guaranteed, that the resulting
     models will have the desired smoothness. In first step of iterative analysis is
     set the initial value of window width and then follows the interleaving of the
-    given dataset, which runs until the the value of `coefficient of determination`
+    given dataset, which runs until the value of `coefficient of determination`
     will not reach the required level.
 
     :param list x_pts: the list of x points coordinates
@@ -176,6 +191,7 @@ def iterative_analysis(x_pts, y_pts, config):
     config['window_width'] = max(1, int(_INTERVAL_LENGTH * (max(x_pts) - min(x_pts))))
     r_square, window_new_change = 0.0, 1
     # executing the iterative analysis until the value of R^2 will not reach the required level
+    bucket_stats = pd.Series()
     while r_square < _MIN_R_SQUARE and window_new_change:
         # obtaining new results from moving average analysis
         bucket_stats, r_square = execute_computation(y_pts, config)
@@ -187,7 +203,7 @@ def iterative_analysis(x_pts, y_pts, config):
     return bucket_stats, r_square, config['window_width']
 
 
-def validate_decay_param(_, param, value):
+def validate_decay_param(_: click.Context, param: click.Option, value: tuple[str, int]) -> tuple[str, int]:
     """
     Callback method for `decay` parameter at Exponential Moving Average.
 
@@ -206,11 +222,11 @@ def validate_decay_param(_, param, value):
     # calling the condition and then checking its validity
     # - value[0] contains the name of the selected `decay` method (e.g. com)
     # - value[1] contains the numeric value (e.g. 3)
-    if _DECAY_PARAMS_INFO[value[0]]['condition'](value[1]):
+    if _DECAY_PARAMS_INFO[value[0]].condition(value[1]):
         return value
     else:  # value out of acceptable range
         # obtaining the error message according to name of `decay` method
-        err_msg = _DECAY_PARAMS_INFO[value[0]]['err_msg']
+        err_msg = _DECAY_PARAMS_INFO[value[0]].err_msg
         raise click.BadOptionUsage(
             param.name, 'Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg)
         )
@@ -218,7 +234,7 @@ def validate_decay_param(_, param, value):
 
 # dictionary contains the required keys to check before the access to this keys
 # - required keys are divided according to individual supported methods
-_METHOD_REQUIRED_KEYS = {
+_METHOD_REQUIRED_KEYS: dict[str, list[str]] = {
     'sma': ['moving_method', 'center', 'window_type', 'min_periods', 'per_key'],
     'smm': ['moving_method', 'center', 'min_periods', 'per_key'],
     'ema': ['decay', 'min_periods', 'per_key']
@@ -227,9 +243,9 @@ _METHOD_REQUIRED_KEYS = {
 # dictionary serves for validation values at `decay` parameter - validation of acceptable range
 # - dictionary contains the recognized `decay` method names as key
 # -- dictionary contains the validate condition and warning message as value
-_DECAY_PARAMS_INFO = {
-    'com': {'condition': lambda value: value >= .0, 'err_msg': '>= 0.0'},
-    'span': {'condition': lambda value: value >= 1.0, 'err_msg': '>= 1.0'},
-    'halflife': {'condition': lambda value: value > .0, 'err_msg': '> 0.0'},
-    'alpha': {'condition': lambda value: 0 < value <= 1.0, 'err_msg': '0.0 < alpha <= 1.0'}
+_DECAY_PARAMS_INFO: dict[str, DecayParamInfo] = {
+    'com': DecayParamInfo(lambda value: value >= .0, '>= 0.0'),
+    'span': DecayParamInfo(lambda value: value >= 1.0, '>= 1.0'),
+    'halflife': DecayParamInfo(lambda value: value > .0, '> 0.0'),
+    'alpha': DecayParamInfo(lambda value: 0 < value <= 1.0, '0.0 < alpha <= 1.0'),
 }

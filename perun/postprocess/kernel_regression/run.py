@@ -5,7 +5,7 @@ Postprocessor module with non-parametric analysis using the kernel regression me
 import click
 
 from typing import TypedDict
-from typing_extensions import Unpack
+from typing_extensions import Unpack, TYPE_CHECKING
 
 import perun.logic.runner as runner
 import perun.postprocess.kernel_regression.methods as methods
@@ -14,6 +14,9 @@ import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
 
 from perun.utils.structs import PostprocessStatus
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 class Kwargs(TypedDict):
@@ -56,7 +59,7 @@ _DEFAULT_GAMMA_RANGE = (1e-5, 2e-1)
 _DEFAULT_GAMMA_STEP = 1e-5
 
 
-def postprocess(profile: dict, **configuration: dict) -> tuple[PostprocessStatus, str, dict]:
+def postprocess(profile: Profile, **configuration: dict) -> tuple[PostprocessStatus, str, dict]:
     """
     Invoked from perun core, handles the postprocess actions
 
