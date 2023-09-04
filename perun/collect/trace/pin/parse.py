@@ -273,10 +273,22 @@ def _find_caller_name(function_calls_backlog: List[RawDataEntry], called_functio
     if len(function_calls_backlog) == 0:
         return ""
 
-    for function_call in function_calls_backlog:
-        if function_call.name != called_function_name:  # Not a recursive call
-            return function_call.name
-    return ""
+    # Skip recursion
+    idx = 0
+    for fn in function_calls_backlog:
+        if fn.name != called_function_name:
+            break
+        idx += 1
+
+
+    # for function_call in function_calls_backlog[idx:]:
+    #     if function_call.name != called_function_name:  # Not a recursive call
+    #         return function_call.name
+    caller = ""
+    for function_call in function_calls_backlog[idx:]:
+        caller += function_call.name + "#"
+
+    return caller[:-1]
 
 
 def parse_data(file: str, workload: str,
@@ -323,6 +335,7 @@ def parse_data(file: str, workload: str,
                                                     call_order=function_call_counter, caller=function_caller_name)
                     else:
                         function_caller_name = _find_caller_name(backlog_rtn, data_entry.name)
+                        function_caller_name = f"{data_entry.name}{'#' if function_caller_name else ''}{function_caller_name}"
                         record = BasicBlockRecord(start_entry=data_entry, end_entry=data, workload=workload,
                                                   caller=function_caller_name)
                     backlog.pop(data_entry_index)

@@ -27,6 +27,7 @@ networkx>=2.4
 angr>=9.0
 pyelftools>=0.28
 seaborn>=0.11.2
+plotly>=5.14.1
 
 # We fix scipy and numpy version, because they mess everything up >.<
 scipy>=1.4.1

@@ -1,4 +1,4 @@
-"""`Function Arguments` - display the dependance of function run-time on its 
+"""`Function Arguments` - display the dependence of function run-time on its
 arguments
 
 Displays simple scatter plot with ability to filter out functions or squash

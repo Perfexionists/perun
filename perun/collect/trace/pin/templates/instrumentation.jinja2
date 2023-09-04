@@ -80,6 +80,12 @@ VOID Trace(TRACE trace, VOID *v) {
         !IMG_IsMainExecutable(SEC_Img(RTN_Sec(TRACE_Rtn(trace))))) {
         return;
     }
+    std::string rtn_name = PIN_UndecorateSymbolName(RTN_Name(TRACE_Rtn(trace)), UNDECORATION_NAME_ONLY);
+    if (rtn_name.rfind("__",0) == 0 || rtn_name.rfind("_GLOBAL__sub_I__",0) == 0){
+        // Filter out internal functions. These functions don't need to be profiled and their filtration reduces size
+        // of collected data as well as shortens the time required to parse this data.
+        return;
+    }
 
     BasicBlockInfo* basicBlockInfo = new BasicBlockInfo;
     basicBlockInfo->routineName = PIN_UndecorateSymbolName(RTN_Name(TRACE_Rtn(trace)), UNDECORATION_NAME_ONLY);
@@ -102,6 +108,10 @@ VOID Trace(TRACE trace, VOID *v) {
                                                               &(basicBlockInfo->sourceCodeFile));
         PIN_UnlockClient();
 
+        if (basicBlockInfo->sourceCodeFile == "") {
+            // skip the basic block since its location is not known
+            continue;
+        }
 
         INS_InsertCall(BBL_InsHead(bbl), IPOINT_BEFORE, (AFUNPTR)bbl_analysis_before,
                        IARG_PTR, basicBlockInfo, IARG_THREAD_ID, IARG_END);
