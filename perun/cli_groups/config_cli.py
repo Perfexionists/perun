@@ -8,6 +8,8 @@ import perun.utils.log as perun_log
 from perun.utils.exceptions import NotPerunRepositoryException, MissingConfigSectionException, \
     ExternalEditorErrorException
 
+from typing import Any
+
 
 @click.group()
 @click.option('--local', '-l', 'store_type', flag_value='local',
@@ -19,7 +21,7 @@ from perun.utils.exceptions import NotPerunRepositoryException, MissingConfigSec
                    ' lookup strategy can differ for ``set`` and '
                    '``get``/``edit``.')
 @click.pass_context
-def config(ctx, **kwargs):
+def config(ctx: click.Context, **kwargs: Any):
     """Manages the stored local and shared configuration.
 
     Perun supports two external configurations:
@@ -61,7 +63,7 @@ def config(ctx, **kwargs):
 @click.argument('key', required=True, metavar='<key>',
                 callback=cli_helpers.config_key_validation_callback)
 @click.pass_context
-def config_get(ctx, key):
+def config_get(ctx: click.Context, key: str):
     """Looks up the given ``<key>`` within the configuration hierarchy and returns
     the stored value.
 
@@ -100,7 +102,7 @@ def config_get(ctx, key):
                 callback=cli_helpers.config_key_validation_callback)
 @click.argument('value', required=True, metavar='<value>')
 @click.pass_context
-def config_set(ctx, key, value):
+def config_set(ctx: click.Context, key: str, value: Any):
     """Sets the value of the ``<key>`` to the given ``<value>`` in the target
     configuration file.
 
@@ -131,7 +133,7 @@ def config_set(ctx, key, value):
 
 @config.command('edit')
 @click.pass_context
-def config_edit(ctx):
+def config_edit(ctx: click.Context):
     """Edits the configuration file in the external editor.
 
     The used editor is specified by the :ckey:`general.editor` option,
@@ -150,11 +152,11 @@ def config_edit(ctx):
 @click.argument('config_template', required=False, default='master',
                 metavar='<template>')
 @click.pass_context
-def config_reset(ctx, config_template):
+def config_reset(ctx: click.Context, config_template: str):
     """Resets the configuration file to a sane default.
 
     If we are resetting the local configuration file we can specify a <template> that
-    will be used to generate a predefined set of options. Currently we support the following:
+    will be used to generate a predefined set of options. Currently, we support the following:
 
       1. **user** configuration is meant for beginner users, that have no experience with Perun and
       have not read the documentation thoroughly. This contains a basic preconfiguration that should

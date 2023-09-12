@@ -9,7 +9,7 @@ import os
 import git
 
 from git.exc import NoSuchPathError, InvalidGitRepositoryError, GitCommandError, BadName
-from typing import Iterator, Optional
+from typing import Optional, Iterator
 
 import perun.utils.log as perun_log
 import perun.utils.timestamps as timestamps

@@ -10,6 +10,10 @@ import perun.logic.config as perun_config
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as log
 
+from typing import Any, TYPE_CHECKING, Optional
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
+
 
 @click.group('check')
 @click.option('--force', '-f',
@@ -31,7 +35,7 @@ import perun.utils.log as log
                    "the detection between two profiles, respectively between relevant "
                    "kinds of its models. Available only in the following detection "
                    "methods: Integral Comparison (IC) and Local Statistics (LS).")
-def check_group(**_):
+def check_group(**_: Any):
     """Applies for the points of version history checks for possible performance changes.
 
     This command group either runs the checks for one point of history (``perun check head``) or for
@@ -105,7 +109,7 @@ def check_group(**_):
 @check_group.command('head')
 @click.argument('head_minor', required=False, metavar='<hash>', nargs=1,
                 callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
-def check_head(head_minor='HEAD'):
+def check_head(head_minor: str = 'HEAD'):
     """Checks for changes in performance between between specified minor version (or current `head`)
     and its predecessor minor versions.
 
@@ -124,7 +128,7 @@ def check_head(head_minor='HEAD'):
 @check_group.command('all')
 @click.argument('minor_head', required=False, metavar='<hash>', nargs=1,
                 callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
-def check_all(minor_head='HEAD'):
+def check_all(minor_head: str = 'HEAD'):
     """Checks for changes in performance for the specified interval of version history.
 
     The commands crawls through the whole history of project versions starting from the specified
@@ -147,12 +151,14 @@ def check_all(minor_head='HEAD'):
               help='Will check the index of different minor version <hash>'
                    ' during the profile lookup.')
 @click.pass_context
-def check_profiles(ctx, baseline_profile, target_profile, minor, **_):
+def check_profiles(
+        ctx: click.Context, baseline_profile: Profile, target_profile: Profile, minor: Optional[str], **_: str
+):
     """Checks for changes in performance between two profiles.
 
-    The commands checks for the changes between two isolate profiles, that can be stored in pending
+    The command checks for the changes between two isolate profiles, that can be stored in pending
     profiles, registered in index, or be simply stored in filesystem. Then for the pair of profiles
-    <baseline> and <target> the command runs the performance chekc according to the set of
+    <baseline> and <target> the command runs the performance check according to the set of
     strategies set in the configuration (see :ref:`degradation-config` or :doc:`config`).
 
     <baseline> and <target> profiles will be looked up in the following steps:
