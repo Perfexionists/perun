@@ -13,12 +13,14 @@ For further manipulations refer either to :ref:`profile-conversion-api`
 (implemented in ``perun.profile.query module``). For full specification how to
 handle the JSON objects in Python refer to `Python JSON library`_.
 """
+from __future__ import annotations
 
 import json
 import os
 import time
 import re
 import operator
+import types
 
 import perun.logic.pcs as pcs
 import perun.logic.config as config
@@ -40,7 +42,7 @@ PROFILE_COUNTER = 0
 DEFAULT_SORT_KEY = 'time'
 
 
-def lookup_value(container, key, missing):
+def lookup_value(container: dict, key: str, missing: str) -> str:
     """Helper function for getting the key from the container. If it is not present in the container
     or it is empty string or empty object, the function should return the missing constant.
 
@@ -53,25 +55,24 @@ def lookup_value(container, key, missing):
     return str(container.get(key, missing)) or missing
 
 
-def sanitize_filepart(part):
+def sanitize_filepart(part: str) -> str:
     """Helper function for sanitization of part of the filenames
 
-    :param part: part of the filename, that needs to be sanitized, i.e. we are removing invalid
-        characters
+    :param part: part of the filename, that needs to be sanitized, i.e. we are removing invalid characters
     :return: sanitized string representation of the part
     """
     invalid_characters = r"# %&{}\<>*?/ $!'\":@"
     return "".join('_' if c in invalid_characters else c for c in str(part))
 
 
-def lookup_param(profile, unit, param):
+def lookup_param(profile: dict, unit: str, param: str) -> str:
     """Helper function for looking up the unit in the profile (can be either collector or
     postprocessor and finds the value of the param in it
 
     :param dict profile: dictionary with profile information w.r.t profile specification
     :param str unit: unit in which the parameter is located
     :param str param: parameter we will use in the resulting profile
-    :return:
+    :return: collector or postprocess unit name that is incorporated in the filename
     """
     unit_param_map = {
         post['name']: post['params'] for post in profile.get('postprocessors', [])
@@ -89,7 +90,7 @@ def lookup_param(profile, unit, param):
         return "_"
 
 
-def generate_profile_name(profile):
+def generate_profile_name(profile: dict) -> str:
     """Constructs the profile name with the extension .perf from the job.
 
     The profile is identified by its binary, collector, workload and the time
@@ -121,7 +122,8 @@ def generate_profile_name(profile):
     :returns str: string for the given profile that will be stored
     """
     global PROFILE_COUNTER
-    fmt_parser = re.Scanner([
+    # TODO: This might be broken in new versions?
+    fmt_parser = re.Scanner([  # type: ignore
         (r"%collector%", lambda scanner, token:
             lookup_value(profile['collector_info'], 'name', "_")
         ),
@@ -162,7 +164,7 @@ def generate_profile_name(profile):
     return "".join(tokens) + ".perf"
 
 
-def load_list_for_minor_version(minor_version):
+def load_list_for_minor_version(minor_version: str) -> list['ProfileInfo']:
     """Returns profiles assigned to the given minor version.
 
     :param str minor_version: identification of the commit (preferably sha1)
@@ -193,7 +195,7 @@ def load_list_for_minor_version(minor_version):
 
 
 @vcs.lookup_minor_version
-def get_nth_profile_of(position, minor_version):
+def get_nth_profile_of(position: int, minor_version: str) -> str:
     """Returns the profile at nth position in the index
 
     :param int position: position of the profile we are obtaining
@@ -210,7 +212,7 @@ def get_nth_profile_of(position, minor_version):
 
 
 @vcs.lookup_minor_version
-def find_profile_entry(profile, minor_version):
+def find_profile_entry(profile: str, minor_version: str) -> index.BasicIndexEntry:
     """ Finds the profile entry within the index file of the minor version.
 
     :param str profile: the profile identification, can be given as tag, sha value,
@@ -228,20 +230,22 @@ def find_profile_entry(profile, minor_version):
         profile = get_nth_profile_of(int(tag_match.group(1)), minor_version)
     # Transform the sha-path (obtained or given) to the sha value
     if not store.is_sha1(profile) and not profile.endswith('.perf'):
-        profile = store.version_path_to_sha(profile)
+        profile = store.version_path_to_sha(profile) or ""
 
     # Search the minor index for the requested profile
     with open(minor_index, 'rb') as index_handle:
         # The profile can be only sha value or source path now
         if store.is_sha1(profile):
-            return index.lookup_entry_within_index(index_handle, lambda x: x.checksum == profile,
-                                                   profile)
+            return index.lookup_entry_within_index(
+                index_handle, lambda x: x.checksum == profile, profile
+            )
         else:
-            return index.lookup_entry_within_index(index_handle, lambda x: x.path == profile,
-                                                   profile)
+            return index.lookup_entry_within_index(
+                index_handle, lambda x: x.path == profile, profile
+            )
 
 
-def generate_units(collector):
+def generate_units(collector: types.ModuleType) -> dict:
     """Generate information about units used by the collector.
 
     Note that this is mostly placeholder for future extension, how the units will be handled.
@@ -252,7 +256,7 @@ def generate_units(collector):
     return collector.COLLECTOR_DEFAULT_UNITS
 
 
-def generate_header_for_profile(job):
+def generate_header_for_profile(job: Job) -> dict:
     """
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
@@ -269,7 +273,7 @@ def generate_header_for_profile(job):
     }
 
 
-def generate_collector_info(job):
+def generate_collector_info(job: Job) -> dict:
     """
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'collector_info': {}} corresponding to the perun
@@ -281,7 +285,7 @@ def generate_collector_info(job):
     }
 
 
-def generate_postprocessor_info(job):
+def generate_postprocessor_info(job: Job) -> list[dict]:
     """
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
@@ -294,10 +298,10 @@ def generate_postprocessor_info(job):
     ]
 
 
-def finalize_profile_for_job(profile, job):
+def finalize_profile_for_job(profile: dict, job: Job) -> dict:
     """
     :param dict profile: collected profile through some collector
-    :param Job job: job with informations about the computed profile
+    :param Job job: job with information about the computed profile
     :returns dict: valid profile JSON file
     """
     profile.update({'origin': vcs.get_minor_head()})
@@ -307,7 +311,7 @@ def finalize_profile_for_job(profile, job):
     return profile
 
 
-def to_string(profile):
+def to_string(profile: Profile) -> str:
     """Converts profile from dictionary to string
 
     :param Profile profile: profile we are converting to string
@@ -316,7 +320,7 @@ def to_string(profile):
     return json.dumps(profile.serialize())
 
 
-def to_config_tuple(profile):
+def to_config_tuple(profile: dict) -> tuple[str, str, str, str, list[str]]:
     """Converts the profile to the tuple representing its configuration
 
     :param Profile profile: profile we are converting to configuration tuple
@@ -332,7 +336,7 @@ def to_config_tuple(profile):
     )
 
 
-def config_tuple_to_cmdstr(config_tuple):
+def config_tuple_to_cmdstr(config_tuple: tuple[str, str, str, str, list[str]]) -> str:
     """Converts tuple to command string
 
     :param tuple config_tuple: tuple of (collector, cmd, args, workload, postprocessors)
@@ -341,7 +345,7 @@ def config_tuple_to_cmdstr(config_tuple):
     return " ".join(filter(lambda x: x, config_tuple[1:4]))
 
 
-def extract_job_from_profile(profile):
+def extract_job_from_profile(profile: dict) -> Job:
     """Extracts information from profile about job, that was done to generate the profile.
 
     Fixme: Add assert that profile is profile
@@ -364,15 +368,15 @@ def extract_job_from_profile(profile):
     return Job(collector, posts, executable)
 
 
-def is_key_aggregatable_by(profile, func, key, keyname):
+def is_key_aggregatable_by(profile: Profile, func: str, key: str, keyname: str) -> bool:
     """Check if the key can be aggregated by the function.
 
     Everything is countable and hence 'count' and 'nunique' (number of unique values) are
-    valid aggregation functions for everything. Otherwise (e.g. sum, mean), we need numerical
+    valid aggregation functions for everything. Otherwise, (e.g. sum, mean), we need numerical
     values.
 
-    :param dict profile: profile that will be used against in the validation
-    :param function func: function used for aggregation of the data
+    :param Profile profile: profile that will be used against in the validation
+    :param str func: function used for aggregation of the data
     :param str key: key that will be aggregated in the graph
     :param str keyname: name of the validated key
     :returns bool: true if the key is aggregatable by the function
@@ -393,7 +397,7 @@ def is_key_aggregatable_by(profile, func, key, keyname):
     return True
 
 
-def sort_profiles(profile_list, reverse_profiles=True):
+def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = True):
     """Sorts the profiles according to the key set in either configuration.
 
     The key can either be specified in temporary configuration, or in any of the local or global
@@ -423,7 +427,7 @@ def sort_profiles(profile_list, reverse_profiles=True):
     profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)
 
 
-def merge_resources_of(lhs, rhs):
+def merge_resources_of(lhs: Profile, rhs: Profile | dict) -> Profile:
     """Merges the resources of lhs and rhs profiles
 
     :param Profile lhs: left operator of the profile merge
@@ -448,7 +452,7 @@ def merge_resources_of(lhs, rhs):
     return lhs
 
 
-def _get_default_variable(profile, supported_variables):
+def _get_default_variable(profile: Profile, supported_variables: list[str]) -> str:
     """Helper function that determines default variable for profile based on list of supported
     variables.
 
@@ -471,9 +475,10 @@ def _get_default_variable(profile, supported_variables):
                 "(" + ", ".join(supported_variables) + ")"
             )
         )
+        return ""
 
 
-def get_default_independent_variable(profile):
+def get_default_independent_variable(profile: Profile) -> str:
     """Returns default independent variable for the given profile
 
     :param Profile profile: input profile
@@ -482,7 +487,7 @@ def get_default_independent_variable(profile):
     return _get_default_variable(profile, Profile.independent)
 
 
-def get_default_dependent_variable(profile):
+def get_default_dependent_variable(profile: Profile) -> str:
     """Returns default dependent variable for the given profile
 
     :param Profile profile: input profile
@@ -497,7 +502,7 @@ class ProfileInfo:
     This is mainly used for formatted output of the profile list using
     the command line interface
     """
-    def __init__(self, path, real_path, mtime, profile_info, is_raw_profile=False):
+    def __init__(self, path: str, real_path: str, mtime: str, profile_info: dict, is_raw_profile: bool = False):
         """
         :param str path: contains the name of the file, which identifies it in the index
         :param str real_path: real path to the profile, i.e. how can it really be accessed
@@ -525,7 +530,7 @@ class ProfileInfo:
             ",".join(self.postprocessors)
         )
 
-    def load(self):
+    def load(self) -> Profile:
         """Loads the profile from given file
 
         This is basically a wrapper that loads the profile, whether it is raw (i.e. in pending)

@@ -12,11 +12,18 @@ Combined with ``perun.profile.factory``, ``perun.profile.query`` and e.g.
 `pandas`_ library one can obtain efficient interpreter for executing more
 complex queries and statistical tests over the profiles.
 """
+from __future__ import annotations
+
+import operator
+import array
+
+from typing import TYPE_CHECKING, Any
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
+
 import perun.utils.helpers as helpers
 import perun.profile.query as query
 import perun.postprocess.regression_analysis.transform as transform
-import operator
-import array
 
 import demandimport
 with demandimport.enabled():
@@ -24,7 +31,9 @@ with demandimport.enabled():
     import pandas
 
 
-def resources_to_pandas_dataframe(profile):
+
+
+def resources_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     """Converts the profile (w.r.t :ref:`profile-spec`) to format supported by
     `pandas`_ library.
 
@@ -57,7 +66,7 @@ def resources_to_pandas_dataframe(profile):
     """
     # Since some keys may be missing in the resources, we consider all of the possible fields
     resource_keys = list(profile.all_resource_fields())
-    values = {key: [] for key in resource_keys}
+    values: dict[str, list | array.array] = {key: [] for key in resource_keys}
     values['snapshots'] = array.array('I')
 
     # All resources at this point should be flat
@@ -69,11 +78,11 @@ def resources_to_pandas_dataframe(profile):
     return pandas.DataFrame(values)
 
 
-def models_to_pandas_dataframe(profile):
+def models_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     """Converts the models of profile (w.r.t :ref:`profile-spec`) to format
     supported by `pandas`_ library.
 
-    Queries through all of the models in the `profile`, and flattens each
+    Queries through all the models in the `profile`, and flattens each
     key and value to the tabular representation. Refer to `pandas`_ library for
     more possibilities how to work with the tabular representation of models.
 
@@ -82,7 +91,7 @@ def models_to_pandas_dataframe(profile):
     """
     # Note that we need to to this inefficiently, because some keys can be missing in resources
     model_keys = list(query.all_model_fields_of(profile))
-    values = {key: [] for key in model_keys}
+    values: dict[str, list] = {key: [] for key in model_keys}
 
     for _, model in profile.all_models():
         flattened_resources = dict(list(query.all_items_of(model)))
@@ -92,7 +101,7 @@ def models_to_pandas_dataframe(profile):
     return pandas.DataFrame(values)
 
 
-def to_flame_graph_format(profile):
+def to_flame_graph_format(profile: Profile) -> list[str]:
     """Transforms the **memory** profile w.r.t. :ref:`profile-spec` into the
     format supported by perl script of Brendan Gregg.
 
@@ -135,13 +144,13 @@ def to_flame_graph_format(profile):
     return stacks
 
 
-def to_string_line(frame):
+def to_string_line(frame: dict) -> str:
     """ Create string representing call stack's frame
 
     :param dict frame: call stack's frame
     :returns str: line representing call stack's frame
     """
-    return "{}()~{}~{}".format(frame['function'], frame['source'], frame['line'])
+    return f"{frame['function']}()~{frame['source']}~{frame['line']}"
 
 
 def plot_data_from_coefficients_of(model):
@@ -159,7 +168,7 @@ def plot_data_from_coefficients_of(model):
     return model
 
 
-def flatten(flattened_value):
+def flatten(flattened_value: Any) -> Any:
     """Converts the value to something that can be used as one value.
 
     Flattens the value to single level, lists are processed to comma separated representation and

@@ -5,12 +5,17 @@ so called resource types, which are dictionaries of persistent less
 frequently changed aspects of resources. Moreover, we optimize other
 regions and flatten the format.
 """
+from __future__ import annotations
 
 import collections
 from collections.abc import MutableMapping
 import operator
 import itertools
 import click
+
+from typing import Any, Iterator, Iterable, TYPE_CHECKING, Optional
+if TYPE_CHECKING:
+    from perun.utils.structs import ModelRecord
 
 import perun.profile.convert as convert
 import perun.profile.query as query
@@ -39,7 +44,7 @@ class Profile(MutableMapping):
     ]
     dependent = ['amount']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         """Initializes the internal storage
 
         :param list args: positional arguments for dictionary
@@ -53,9 +58,9 @@ class Profile(MutableMapping):
             'resource_type_map': {},
             'models': global_data.get('models', []) if isinstance(global_data, dict) else []
         }
-        self._tuple_to_resource_type_map = {}
-        self._resource_type_to_flattened_resources_map = {}
-        self._uid_counter = collections.Counter()
+        self._tuple_to_resource_type_map: dict[str, str] = {}
+        self._resource_type_to_flattened_resources_map: dict[str, dict] = {}
+        self._uid_counter: collections.Counter = collections.Counter()
 
         for key, value in initialization_data.items():
             if key in ('resources', 'snapshots', 'global'):
@@ -64,7 +69,12 @@ class Profile(MutableMapping):
                 self._storage[key] = value
         config.runtime().append('context.profiles', self)
 
-    def update_resources(self, resource_list, resource_type='list', clear_existing_resources=False):
+    def update_resources(
+            self,
+            resource_list: Any,
+            resource_type: str = 'list',
+            clear_existing_resources: bool = False
+    ):
         """Given by @p resource_type updates the storage with new flattened resources
 
         This calls appropriate functions to translate older formats of resources to the
@@ -96,15 +106,15 @@ class Profile(MutableMapping):
         else:
             self._translate_resources(resource_list, {})
 
-    def _translate_resources(self, resource_list, additional_params):
+    def _translate_resources(self, resource_list: list[dict], additional_params: dict):
         """Translate the list of resources to efficient format
+
         Given a list of resources, this is all flattened into a new format: a dictionary that
         maps unique resource identifiers (set of persistent properties) to list of collectable
         properties (such as amounts, addresses, etc.)
 
-        :param resource_list:
-        :param additional_params:
-        :return:
+        :param resource_list: list of dictionaries, i.e. actual resources
+        :param additional_params: additional information that are added to resources in the list
         """
         ctx = config.runtime().safe_get('context.workload', {})
         ctx_persistent_properties = [
@@ -137,7 +147,7 @@ class Profile(MutableMapping):
             for (key, value) in collectable_properties:
                 self._storage['resources'][resource_type][key].append(value)
 
-    def register_resource_type(self, uid, persistent_properties):
+    def register_resource_type(self, uid: str, persistent_properties: tuple):
         """Registers tuple of persistent properties under new key or return existing one
 
         :param str uid: uid of the resource that will be used to describe the resource type
@@ -155,7 +165,7 @@ class Profile(MutableMapping):
             }
         return self._tuple_to_resource_type_map[property_key]
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> Any:
         """Returns the item stored in profile
 
         Note: No translation of resources is performed! Use all_resources instead!
@@ -165,7 +175,7 @@ class Profile(MutableMapping):
         """
         return self._storage[item]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any):
         """Sets the value into the storage under the key.
 
         Internally this finds a similar regions and registers them in either
@@ -179,35 +189,35 @@ class Profile(MutableMapping):
         """
         self._storage[key] = value
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str):
         """Deletes the item in the storage
 
         :param str key: key to be deleted
         """
         del self._storage[key]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         """Iterates through all of the stuff in storage.
 
         :return: storage iterator
         """
         return self._storage.__iter__()
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Returns the size of the internal storage
 
         :return: size of the internal storage
         """
         return len(self._storage)
 
-    def serialize(self):
+    def serialize(self) -> dict:
         """Returns serializable representation of the profile
 
         :return: serializable representation (i.e. the actual storage)
         """
         return self._storage
 
-    def _get_flattened_persistent_values_for(self, resource_type):
+    def _get_flattened_persistent_values_for(self, resource_type: str) -> dict:
         """Flattens the nested values of the resources to single level
 
         E.g. the following resource:
@@ -244,11 +254,11 @@ class Profile(MutableMapping):
             self._resource_type_to_flattened_resources_map[resource_type] = flattened_resources
         return self._resource_type_to_flattened_resources_map[resource_type]
 
-    def all_resources(self, flatten_values=False):
-        """Generator for iterating through all of the resources contained in the
+    def all_resources(self, flatten_values: bool = False) -> Iterable[tuple[int, dict]]:
+        """Generator for iterating through all the resources contained in the
         performance profile.
 
-        Generator iterates through all of the snapshots, and subsequently yields
+        Generator iterates through all the snapshots, and subsequently yields
         collected resources. For more thorough description of format of resources
         refer to :pkey:`resources`. Resources are not flattened and, thus, can
         contain nested dictionaries (e.g. for `traces` or `uids`).
@@ -278,8 +288,8 @@ class Profile(MutableMapping):
                 # In case we have only persistent properties
                 yield persistent_properties.get('snapshot', 0), persistent_properties
 
-    def all_resource_fields(self):
-        """Generator for iterating through all of the fields (both flattened and
+    def all_resource_fields(self) -> set[str]:
+        """Generator for iterating through all the fields (both flattened and
         original) that are occurring in the resources.
 
         E.g. considering the example profiles from :pkey:`resources`, the function
@@ -310,7 +320,7 @@ class Profile(MutableMapping):
             keys.update({k for (k, v) in persistent_properties})
         return keys
 
-    def all_filtered_models(self, models_strategy):
+    def all_filtered_models(self, models_strategy: str) -> dict[str, ModelRecord]:
         """
         The function obtains models according to the given strategy.
 
@@ -327,8 +337,10 @@ class Profile(MutableMapping):
             return get_filtered_best_models_of(self, group=group, model_filter=None)
         elif models_strategy in ('best-nonparam', 'best-model', 'best-param'):
             return get_filtered_best_models_of(self, group=group)
+        else:
+            return {}
 
-    def all_models(self, group='model'):
+    def all_models(self, group: str = 'model') -> Iterable[tuple[int, dict]]:
         """Generator of all 'models' records from the performance profile w.r.t.
         :ref:`profile-spec`.
 
@@ -364,7 +376,7 @@ class Profile(MutableMapping):
                (group == 'nonparam' and model.get('model') in get_supported_nparam_methods()):
                 yield model_idx, model
 
-    def get_model_of(self, model_type, uid):
+    def get_model_of(self, model_type: str, uid: str) -> Optional[dict]:
         """
         Finds specific model from profile according to the
         given kind of model and specific unique identification.
@@ -376,8 +388,9 @@ class Profile(MutableMapping):
         for _, model in enumerate(self._storage['models']):
             if model_type == model['model'] and model['uid'] == uid:
                 return model
+        return None
 
-    def all_snapshots(self):
+    def all_snapshots(self) -> Iterable[tuple[int, list[dict]]]:
         """Iterates through all the snapshots in resources
 
         Note this is required e.g. for heap map, which needs to group the resources by
@@ -395,7 +408,7 @@ class Profile(MutableMapping):
             yield i, snapshot_map[i]
 
     # TODO: discuss the intent of __len__ and possibly merge?
-    def resources_size(self):
+    def resources_size(self) -> int:
         """ Returns the number of resources stored in the internal storage.
 
         :return int: the number of stored resources
