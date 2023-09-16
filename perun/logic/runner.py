@@ -378,7 +378,8 @@ def store_generated_profile(prof: dict, job: Job, profile_name: Optional[str] = 
     full_profile_name = profile_name or profile.generate_profile_name(full_profile)
     profile_directory = pcs.get_job_directory()
     full_profile_path = os.path.join(profile_directory, full_profile_name)
-    streams.store_json(full_profile.serialize(), full_profile_path)
+    streams.store_json(full_profile.serialize(), full_profile_path)  # type: ignore
+    # FIXME: there is an inconsistency in dict/Profile types, needs to be investigated more thoroughly
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
     if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head

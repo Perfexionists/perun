@@ -228,11 +228,11 @@ def add(profile_names: Collection[str], minor_version: str, keep_profile: bool =
 
         # Remove origin from file
         unpacked_profile.pop('origin')
-        profile_content = profile.to_string(unpacked_profile)
+        str_profile_content = profile.to_string(unpacked_profile)
 
         # Append header to the content of the file
-        header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(profile_content))
-        profile_content = (header + profile_content).encode('utf-8')
+        header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(str_profile_content))
+        profile_content = (header + str_profile_content).encode('utf-8')
 
         # Transform to internal representation - file as sha1 checksum and content packed with zlib
         profile_sum = store.compute_checksum(profile_content)

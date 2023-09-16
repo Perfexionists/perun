@@ -16,7 +16,7 @@ from typing import TextIO
 import perun.utils.log as log
 
 
-def store_json(profile, file_path):
+def store_json(profile: dict, file_path: str):
     """Stores profile w.r.t. :ref:`profile-spec` to output file.
 
     :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
@@ -57,7 +57,7 @@ def safely_load_yaml_from_stream(yaml_stream: TextIO | str) -> dict:
         return {}
 
 
-def safely_load_yaml(yaml_source):
+def safely_load_yaml(yaml_source: str) -> dict:
     """Wrapper which takes the yaml source and either load it from the file or from the string
 
     :param str yaml_source: either string or name of the file
@@ -68,7 +68,7 @@ def safely_load_yaml(yaml_source):
     return safely_load_yaml_from_stream(yaml_source)
 
 
-def yaml_to_string(dictionary):
+def yaml_to_string(dictionary: dict) -> str:
     """Converts the dictionary representing the YAML into string
 
     :param dict dictionary: yaml stored as dictionary
@@ -81,7 +81,7 @@ def yaml_to_string(dictionary):
     return "".join([" "*4 + s for s in string_stream.readlines()])
 
 
-def safely_load_file(filename):
+def safely_load_file(filename: str) -> list:
     """Safely reads filename. In case of Unicode errors, returns empty list.
 
     :param str filename: read filename
