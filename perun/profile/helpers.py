@@ -296,7 +296,7 @@ def generate_postprocessor_info(job):
 
 def finalize_profile_for_job(profile, job):
     """
-    :param Profile profile: collected profile through some collector
+    :param dict profile: collected profile through some collector
     :param Job job: job with informations about the computed profile
     :returns dict: valid profile JSON file
     """

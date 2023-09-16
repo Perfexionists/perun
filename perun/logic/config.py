@@ -14,6 +14,7 @@ import sys
 
 from ruamel.yaml import YAML, scanner
 import ruamel.yaml.comments as comments
+from typing import Any, Iterable, Optional
 
 import perun.logic.config_templates as templates
 import perun.utils.decorators as decorators
@@ -25,7 +26,7 @@ import perun.utils.streams as streams
 from perun.utils.helpers import SuppressedExceptions
 
 
-def is_valid_key(key):
+def is_valid_key(key: str) -> bool:
     """Validation function for key representing one option in config section.
 
     Validates that the given string key is in form of dot separated (.) strings. Each delimited
@@ -58,7 +59,7 @@ class Config:
     If the path is set, then the config will be saved to the given path, if the config is modified
     during the run.
     """
-    def __init__(self, config_type, path, config_initial_data):
+    def __init__(self, config_type: str, path: str, config_initial_data: dict):
         """
         :param str config_type: type of the configuration (one of 'local', 'global', 'temporary')
         :param str path: path leading to the configuration (if stored internally)
@@ -70,7 +71,7 @@ class Config:
         self.data = config_initial_data
 
     @decorators.validate_arguments(['key'], is_valid_key)
-    def set(self, key, value):
+    def set(self, key: str, value: Any):
         """Overrides the value of the key in the config.
 
         :param str key: list of sections separated by dots
@@ -88,7 +89,7 @@ class Config:
             write_config_to(self.path, self.data)
 
     @decorators.validate_arguments(['key'], is_valid_key)
-    def append(self, key, value):
+    def append(self, key: str, value: Any):
         """Appends the value of the key to the given option in the config.
 
         This requires the key to point to a list option.
@@ -104,7 +105,7 @@ class Config:
         if self.path:
             write_config_to(self.path, self.data)
 
-    def safe_get(self, key, default):
+    def safe_get(self, key: str, default: Any) -> Any:
         """Safely returns the value of the key; i.e. in case it is missing default is used
 
         :param str key: key we are looking up
@@ -117,7 +118,7 @@ class Config:
             return default
 
     @decorators.validate_arguments(['key'], is_valid_key)
-    def get(self, key):
+    def get(self, key: str) -> Any:
         """Returns the value of the key stored in the config.
 
         :param str key: list of section separated by dots
@@ -132,7 +133,7 @@ class Config:
         return section_iterator
 
 
-def write_config_to(path, config_data):
+def write_config_to(path: str, config_data: dict):
     """Stores the config data on the path
 
     :param str path: path where the config will be stored to
@@ -145,7 +146,7 @@ def write_config_to(path, config_data):
         YAML().dump(config_data, yaml_file)
 
 
-def read_config_from(path):
+def read_config_from(path: str) -> dict:
     """Reads the config data from the path
 
     :param str path: source path of the config
@@ -157,9 +158,10 @@ def read_config_from(path):
     except scanner.ScannerError as scanner_error:
         perun_log.error("corrupted configuration file '{}': {}\n".format(path, str(scanner_error))
                         + "\nPerhaps you did not escape strings with special characters in quotes?")
+        return {}
 
 
-def init_shared_config_at(path):
+def init_shared_config_at(path: str):
     """Creates the new configuration at given path with sane defaults of e.g. editor, paging of
     outputs or formats for status or log commands.
 
@@ -208,7 +210,7 @@ generators:
     write_config_to(path, shared_config)
 
 
-def init_local_config_at(path, wrapped_vcs, config_template='master'):
+def init_local_config_at(path: str, wrapped_vcs: dict, config_template: str = 'master'):
     """Creates the new local configuration at given path with sane defaults and helper comments
     for use in order to initialize the config matrix.
 
@@ -229,7 +231,7 @@ def init_local_config_at(path, wrapped_vcs, config_template='master'):
     write_config_to(path, local_config)
 
 
-def init_config_at(path, config_type):
+def init_config_at(path: str, config_type: str) -> bool:
     """Wrapping function for calling appropriate initialization function of local and global config.
 
     :param str path: path where the empty shared config will be initialized
@@ -240,7 +242,7 @@ def init_config_at(path, config_type):
     return getattr(sys.modules[__name__], init_function_name)(path)
 
 
-def _locate_section_from_query(config_data, sections):
+def _locate_section_from_query(config_data: dict, sections: list) -> dict:
     """Iterates through the config dictionary and queries the subsections from the list of the
     sections, returning the last one.
 
@@ -257,7 +259,7 @@ def _locate_section_from_query(config_data, sections):
     return section_iterator
 
 
-def _ascend_by_section_safely(section_iterator, section_key):
+def _ascend_by_section_safely(section_iterator: dict, section_key: str) -> dict:
     """Ascends by one level in the section_iterator.
 
     In case the section_key is not in the section_iterator, MissingConfigSectionException is raised.
@@ -273,7 +275,7 @@ def _ascend_by_section_safely(section_iterator, section_key):
     return section_iterator[section_key]
 
 
-def load_config(config_dir, config_type):
+def load_config(config_dir: str, config_type: str) -> Config:  # type: ignore
     """Loads the configuration of given type from the appropriate file (either local.yml or
     global.yml).
 
@@ -294,13 +296,13 @@ def load_config(config_dir, config_type):
         ))
 
 
-def lookup_shared_config_dir():
+def lookup_shared_config_dir() -> str:
     """Performs a lookup of the shared config dir on the given platform.
 
     First we check if PERUN_CONFIG_DIR environmental variable is set, otherwise, we try to expand
     the home directory of the user and according to the platform we return the sane location.
 
-    On windows systems, we use the AppData\\Local\\perun directory in the user space, on linux
+    On Windows systems, we use the AppData\\Local\\perun directory in the user space, on linux
     system we use the ~/.config/perun. Other platforms are not supported, however can be initialized
     using the PERUN_CONFIG_DIR.
 
@@ -327,7 +329,7 @@ def lookup_shared_config_dir():
 
 
 @decorators.singleton
-def shared():
+def shared() -> Config:
     """Returns the configuration corresponding to the shared configuration data, i.e. the config
     possibly shared by all perun instances.
 
@@ -338,7 +340,7 @@ def shared():
 
 
 @decorators.singleton_with_args
-def local(path):
+def local(path) -> Config:
     """Returns the configuration corresponding to the one local configuration data, located at @p
     path.
 
@@ -356,7 +358,7 @@ def local(path):
 
 
 @decorators.singleton
-def runtime():
+def runtime() -> Config:
     """
     Returns the configuration corresponding to the one runtime of perun command, not stored anywhere
     and serving as a temporary shared storage through various functions. Moreover this is also
@@ -381,7 +383,7 @@ def runtime():
     })
 
 
-def get_hierarchy():
+def get_hierarchy() -> Iterable[Config]:
     """Iteratively yields the configurations of perun in order in which they should be looked
     up.
 
@@ -396,7 +398,7 @@ def get_hierarchy():
     yield shared()
 
 
-def lookup_key_recursively(key, default=None):
+def lookup_key_recursively(key: str, default: Optional[str] = None) -> Any:
     """Recursively looks up the key first in the local config and then in the global.
 
     This is used e.g. for formatting strings or editors, where first we have our local configs,
@@ -417,7 +419,7 @@ def lookup_key_recursively(key, default=None):
     raise exceptions.MissingConfigSectionException(key)
 
 
-def gather_key_recursively(key):
+def gather_key_recursively(key: str) -> list[Any]:
     """Recursively gathers the key, first in the temporary config, etc. up to the global config.
 
     Gathered keys are ordered in list. If no key is found, an empty list is returned.

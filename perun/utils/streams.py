@@ -3,12 +3,15 @@
 Some of the stuff are stored in the stream, like e.g. yaml and are reused in several places.
 This module encapulates such functions, so they can be used in CLI, in tests, in configs.
 """
+from __future__ import annotations
 
 import json
 import os
 import re
 import io
 from ruamel.yaml import YAML
+
+from typing import TextIO
 
 import perun.utils.log as log
 
@@ -25,7 +28,7 @@ def store_json(profile, file_path):
         profile_handle.write(serialized_profile)
 
 
-def safely_load_yaml_from_file(yaml_file):
+def safely_load_yaml_from_file(yaml_file: str) -> dict:
     """
     :param str yaml_file: name of the yaml file
     :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
@@ -38,7 +41,7 @@ def safely_load_yaml_from_file(yaml_file):
         return safely_load_yaml_from_stream(yaml_handle)
 
 
-def safely_load_yaml_from_stream(yaml_stream):
+def safely_load_yaml_from_stream(yaml_stream: TextIO | str) -> dict:
     """
     :param str yaml_stream: stream in the yaml format (or not)
     :raises ruamel.yaml.scanner.ScannerError: when the input file contains error

@@ -14,7 +14,7 @@ from perun.utils.decorators import singleton, singleton_with_args
 from perun.utils.exceptions import NotPerunRepositoryException
 
 
-def get_safe_path(default):
+def get_safe_path(default: str) -> str:
     """Locates the instance of the perun starting from the current directory. In case the
     directory is not Perun repository, returns the safe default.
 
@@ -28,7 +28,7 @@ def get_safe_path(default):
 
 
 @singleton
-def get_path():
+def get_path() -> str:
     """Locates the instance of the perun starting from the current working directory
 
     This basically returns the current instance of the Perun
@@ -40,7 +40,7 @@ def get_path():
 
 
 @singleton
-def get_vcs_type():
+def get_vcs_type() -> str:
     """Returns the type of the wrapped version control system
 
     :return: type of the wrapped version control system
@@ -50,7 +50,7 @@ def get_vcs_type():
 
 
 @singleton
-def get_vcs_path():
+def get_vcs_path() -> str:
     """Returns the path to the wrapped version control system
 
     :return: url to the wrapped version control system
@@ -62,7 +62,7 @@ def get_vcs_path():
 
 
 @singleton
-def local_config():
+def local_config() -> config.Config:
     """Get local config for the current Perun context
 
     :returns Config: local config object, that can be passed to functions of config module
@@ -71,7 +71,7 @@ def local_config():
 
 
 @singleton
-def global_config():
+def global_config() -> config.Config:
     """Get global config for the current Perun context
 
     :returns Config: global config object, that can be passed to function of config module
@@ -80,7 +80,7 @@ def global_config():
 
 
 @singleton
-def get_object_directory():
+def get_object_directory() -> str:
     """Returns the name of the directory, where objects are stored
 
     :returns str: directory, where the objects are stored
@@ -91,7 +91,7 @@ def get_object_directory():
 
 
 @singleton
-def get_log_directory():
+def get_log_directory() -> str:
     """Returns the name of the directory, where logs are stored
 
     :return str: directory, where logs are stored
@@ -102,7 +102,7 @@ def get_log_directory():
 
 
 @singleton
-def get_job_directory():
+def get_job_directory() -> str:
     """Returns the name of the directory, where pending profiles are stored
 
     :returns str: directory, where job outputs are stored
@@ -113,7 +113,7 @@ def get_job_directory():
 
 
 @singleton
-def get_job_index():
+def get_job_index() -> str:
     """Returns the name of the index, where pending profiles are registered
 
     :returns str: filename, where job outputs are registered
@@ -123,7 +123,7 @@ def get_job_index():
 
 
 @singleton
-def get_stats_directory():
+def get_stats_directory() -> str:
     """Returns the name of the directory where statistics are stored
 
     :return str: path to the statistics directory
@@ -134,7 +134,7 @@ def get_stats_directory():
 
 
 @singleton
-def get_stats_index():
+def get_stats_index() -> str:
     """Returns the path to the index file in stats directory where records about minor versions
     with stats files are stored
 
@@ -144,7 +144,7 @@ def get_stats_index():
 
 
 @singleton
-def get_tmp_directory():
+def get_tmp_directory() -> str:
     """Returns the name of the directory, where various or temporary files are stored
 
     :return str: path to the tmp directory
@@ -155,7 +155,7 @@ def get_tmp_directory():
 
 
 @singleton
-def get_tmp_index():
+def get_tmp_index() -> str:
     """Returns the path to the index file in tmp directory, where details about some tmp files
     are stored
 
@@ -166,7 +166,7 @@ def get_tmp_index():
 
 
 @singleton_with_args
-def get_config_file(config_type):
+def get_config_file(config_type: str) -> str:
     """Returns the config file for the given config type
 
     :returns str: path of the config of the given type
