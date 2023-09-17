@@ -54,6 +54,9 @@ dependencies = [
     "termcolor>=2.3",
     "tabulate>=0.9",
     "holoviews>=1.17",
+
+    # Transitive dependencies that we need to limit for some reason
+    "kiwisolver!=1.4.5", # matplotlib dep, 1.4.5 does not work when lazy-importing matplotlib
 ]
 # Optional dependencies are made dynamic so that we can reuse them in tox. The goal is to have each
 # dependency and its version constraints specified only once to avoid inconsistencies.
