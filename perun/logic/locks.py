@@ -98,7 +98,7 @@ class ResourceLock:
             resource_type = LockType.suffix_to_type(rest[-LOCK_SUFFIX_LEN:])
             if resource_type:
                 return cls(resource_type, name, pid, os.path.dirname(lock_file))
-            return None
+        return None
 
     def lock(self):
         """ Actually locks the resource represented by the lock object.

@@ -25,22 +25,11 @@ DEFAULT_DIRECT_OUTPUT = False
 _HEX_BASE = 16
 
 
-class Configuration(TypedDict):
-    target_dir: str
-    internal_data_filename: str
-    files: list[str]
-    rules: list[str]
-    profile: dict
-    sampling: list[dict]
-    internal_storage_size: int
-    internal_direct_output: bool
-
-
 def create_runtime_config(
         executable_path: str,
         runtime_filter: list[str],
         include_list: list[symbols.RuleKey],
-        configuration: Configuration
+        configuration: dict
 ):
     """ Creates the config.conf configuration
 
@@ -91,7 +80,7 @@ def _write_config_to(
         executable_path: str,
         runtime_filter: list[str],
         include_list: list[symbols.RuleKey],
-        job_settings: Configuration
+        job_settings: dict
 ):
     """ Writes the configuration stored in the config dictionary into the file
 

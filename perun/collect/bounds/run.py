@@ -10,7 +10,6 @@ import shutil
 import time as systime
 
 from subprocess import SubprocessError
-from typing import List, Tuple, Dict
 
 import click
 
@@ -26,7 +25,7 @@ _LLVM_EXT = '.bc'
 _LIB_Z3 = "libz3.so"
 
 
-def before(sources: List[str], **kwargs: Dict) -> Tuple[CollectStatus, str, Dict]:
+def before(sources: list[str], **kwargs: dict) -> tuple[CollectStatus, str, dict]:
     """Compiles the sources into LLVM intermediate code
 
         $ clang-3.5 -g -emit-llvm -c ${sources}
@@ -51,7 +50,7 @@ def before(sources: List[str], **kwargs: Dict) -> Tuple[CollectStatus, str, Dict
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
-def collect(sources: List[str], **kwargs: Dict) -> Tuple[CollectStatus, str, Dict]:
+def collect(sources: list[str], **kwargs: dict) -> tuple[CollectStatus, str, dict]:
     """Runs the Loopus on compiled LLVM sources
 
         $ export $LD_LIBRARY_PATH="${DIR}/libz3.so"
@@ -74,8 +73,8 @@ def collect(sources: List[str], **kwargs: Dict) -> Tuple[CollectStatus, str, Dic
         cmd = loopus_bin \
               + " -zPrintComplexity -zEnableOptimisticAssumptionsOnPointerAliasAndShapes " \
               + " ".join(source_filenames)
-        out, _ = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
-        out = out.decode('utf-8')
+        returned_out, _ = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
+        out = returned_out.decode('utf-8')
     except SubprocessError as sub_err:
         log.failed()
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
@@ -98,7 +97,7 @@ def collect(sources: List[str], **kwargs: Dict) -> Tuple[CollectStatus, str, Dic
     }}
 
 
-def lookup_source_files(ctx: click.Context, _: click.Option, value: List[str]) -> List[str]:
+def lookup_source_files(ctx: click.Context, _: click.Option, value: list[str]) -> list[str]:
     """Lookus up sources for the analysis.
 
     The sources can either be single file, or directory which contains .c files.
@@ -132,7 +131,7 @@ def lookup_source_files(ctx: click.Context, _: click.Option, value: List[str]) -
               metavar='<dir>', callback=lookup_source_files,
               help='Directory, where source C files are stored. All of the existing files with '
                    'valid extensions (.c).')
-def bounds(ctx: click.Context, **kwargs: Dict):
+def bounds(ctx: click.Context, **kwargs: dict):
     """Generates `memory` performance profile, capturing memory allocations of
     different types along with target address and full call trace.
 

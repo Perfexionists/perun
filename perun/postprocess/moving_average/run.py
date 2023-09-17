@@ -5,8 +5,7 @@ Postprocessor module with non-parametric analysis using the moving average metho
 import functools
 import click
 
-from typing import TypedDict, Callable, TYPE_CHECKING
-from typing_extensions import Unpack
+from typing import Callable, TYPE_CHECKING, Any
 
 import perun.logic.runner as runner
 import perun.postprocess.moving_average.methods as methods
@@ -18,11 +17,6 @@ from perun.utils.structs import PostprocessStatus
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
-
-class Configuration(TypedDict):
-    moving_method: str
-    window_width: int
-    decay: str
 
 
 # set the labels at the center of the window as default
@@ -83,7 +77,7 @@ def common_sma_options(func_obj: Callable) -> Callable:
                    'For further information about window types see the notes in the documentation.')
 @common_sma_options
 @click.pass_context
-def simple_moving_average(ctx: click.Context, **kwargs: Unpack[Configuration]):
+def simple_moving_average(ctx: click.Context, **kwargs: Any):
     """ **Simple Moving Average**
 
         In the most of cases, it is an unweighted Moving Average, this means that the each
@@ -132,7 +126,7 @@ def simple_moving_average(ctx: click.Context, **kwargs: Unpack[Configuration]):
 @click.command(name='smm')
 @common_sma_options
 @click.pass_context
-def simple_moving_median(ctx: click.Context, **kwargs: Unpack[Configuration]):
+def simple_moving_median(ctx: click.Context, **kwargs: Any):
     """ **Simple Moving Median**
 
         The second representative of Simple Moving Average methods is the Simple Moving **Median**.
@@ -154,7 +148,7 @@ def simple_moving_median(ctx: click.Context, **kwargs: Unpack[Configuration]):
                    'values and relationship between the parameters are specified in the '
                    'documentation (e.g. --decay=com 3).')
 @click.pass_context
-def exponential_moving_average(ctx: click.Context, **kwargs: Unpack[Configuration]):
+def exponential_moving_average(ctx: click.Context, **kwargs: Any):
     """ **Exponential Moving Average**
 
         This method is a type of moving average methods, also know as **Exponential** Weighted
@@ -199,7 +193,7 @@ def exponential_moving_average(ctx: click.Context, **kwargs: Unpack[Configuratio
                    ' If the number of possible observations smaller then result is NaN.')
 @cli_helpers.resources_key_options
 @click.pass_context
-def moving_average(ctx: click.Context, **_: Unpack[Configuration]):
+def moving_average(ctx: click.Context, **_: Any):
     """
     Execution of the interleaving of profiled resources by *moving average* models.
 

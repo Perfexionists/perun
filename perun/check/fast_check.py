@@ -8,7 +8,7 @@ import copy
 import numpy as np
 import nptyping as npt
 
-from typing import Dict, List, Any, Iterable
+from typing import Any, Iterable
 
 import perun.logic.runner as runner
 import perun.check.general_detection as detect
@@ -35,7 +35,7 @@ def fast_check(
 
 def exec_fast_check(
         uid: str, baseline_profile: Profile, baseline_x_pts: npt.NDArray, abs_error: npt.NDArray
-) -> Profile:
+) -> dict:
     """For the values specified in the abs_error points, constructs a profile and performs
     a regression analysis inferring set of models.
 
@@ -50,7 +50,7 @@ def exec_fast_check(
     std_err_profile = copy.deepcopy(baseline_profile)
     std_err_profile['models'].clear()
 
-    updated_data: Dict[str, List[float]] = {
+    updated_data: dict[str, list[float]] = {
         'structure-unit-size': [],
         'amount': []
     }
@@ -76,8 +76,8 @@ def exec_fast_check(
         "of_key": "amount",
         "per_key": "structure-unit-size"
     }
-    _, std_err_profile = runner.run_postprocessor_on_profile(
+    _, result_std_err_profile = runner.run_postprocessor_on_profile(
         std_err_profile, 'regression_analysis', regression_analysis_params, skip_store=True
     )
 
-    return std_err_profile
+    return result_std_err_profile

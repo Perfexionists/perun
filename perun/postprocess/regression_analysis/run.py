@@ -2,8 +2,7 @@
 
 import click
 
-from typing import TypedDict, Any
-from typing_extensions import Unpack
+from typing import Any
 
 import perun.logic.runner as runner
 import perun.postprocess.regression_analysis.data_provider as data_provider
@@ -20,14 +19,8 @@ import perun.utils.metrics as metrics
 _DEFAULT_STEPS = 3
 
 
-class Configuration(TypedDict):
-    method: str
-    regression_models: tuple[str]
-    steps: int
-
-
 def postprocess(
-        profile: Profile, **configuration: Unpack[Configuration]
+        profile: Profile, **configuration: Any
 ) -> tuple[PostprocessStatus, str, dict]:
     """Invoked from perun core, handles the postprocess actions
 
@@ -104,7 +97,7 @@ def store_model_counts(analysis: list[dict]):
               default='amount', callback=cli_helpers.process_resource_key_param,
               help="Sets key for which we are finding the model.")
 @pass_profile
-def regression_analysis(profile: Profile, **kwargs: Unpack[Configuration]):
+def regression_analysis(profile: Profile, **kwargs: Any):
     """Finds fitting regression models to estimate models of profiled resources.
 
     \b

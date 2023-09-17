@@ -164,7 +164,7 @@ class FuzzingProgress:
     :ivar dict stats: additional stats of fuzz testing
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         """
         self.faults: list[Mutation] = []

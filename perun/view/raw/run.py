@@ -7,14 +7,14 @@ formatting and visualization techniques at all.
 import click
 import perun.utils.log as log
 
-from typing import Dict
+from typing import Any
 
 from perun.utils.helpers import RAW_ITEM_COLOUR, RAW_KEY_COLOUR
 from perun.profile.factory import pass_profile, Profile
 
 
 
-def show(profile: Profile, **kwargs: Dict[str, int]):
+def show(profile: Profile, **kwargs: Any):
     """
     :param dict profile: dictionary profile
     :param dict _: additional keyword for the non coloured show
@@ -53,6 +53,6 @@ def show(profile: Profile, **kwargs: Dict[str, int]):
 @click.option('--indent', '-i', type=click.INT, metavar="<INT>", default=4,
               help="Sets indent to <INT>.")
 @pass_profile
-def raw(profile: Profile, **kwargs: Dict):
+def raw(profile: Profile, **kwargs: Any):
     """Raw display of the profile, without formating, as JSON object."""
     show(profile, **kwargs)

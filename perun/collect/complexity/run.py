@@ -10,8 +10,7 @@ import os
 import shutil
 
 from subprocess import CalledProcessError
-from typing import List, Dict, Tuple, TypedDict
-from typing_extensions import Unpack
+from typing import Any
 
 import click
 
@@ -49,8 +48,8 @@ _MICRO_TO_SECONDS = 1000000.0
 
 
 def before(
-        executable: Executable, **kwargs: Unpack[configurator.Configuration]
-) -> Tuple[CollectStatus, str, Dict]:
+        executable: Executable, **kwargs: Any
+) -> tuple[CollectStatus, str, dict]:
     """ Builds, links and configures the complexity collector executable
     In total, this function creates the so-called configuration executable (used to obtain
     information about the available functions for profiling) and the collector executable
@@ -102,8 +101,8 @@ def before(
 
 
 def collect(
-        executable: Executable, **kwargs: Unpack[configurator.Configuration]
-) -> Tuple[CollectStatus, str, Dict]:
+        executable: Executable, **kwargs: Any
+) -> tuple[CollectStatus, str, dict]:
     """ Runs the collector executable and extracts the performance data
 
     :param Executable executable: executable configuration (command, arguments and workloads)
@@ -126,8 +125,8 @@ def collect(
 
 
 def after(
-        executable: Executable, **kwargs: Unpack[configurator.Configuration]
-) -> Tuple[CollectStatus, str, Dict]:
+        executable: Executable, **kwargs: Any
+) -> tuple[CollectStatus, str, dict]:
     """ Performs the transformation of the raw data output into the profile format
 
     :param Executable executable: full collected command with arguments and workload
@@ -143,7 +142,7 @@ def after(
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
 
-    resources, call_stack = [], []  # type: List[Dict], List[_ProfileRecord]
+    resources, call_stack = [], []  # type: list[dict], list[_ProfileRecord]
     profile_start, profile_end = 0, 0
 
     with open(data_path, 'r') as profile:
@@ -181,9 +180,9 @@ def after(
 
 def _process_file_record(
         record: _ProfileRecord,
-        call_stack: List[_ProfileRecord],
-        resources: List[Dict],
-        address_map: Dict[str, str]
+        call_stack: list[_ProfileRecord],
+        resources: list[dict],
+        address_map: dict[str, str]
 ) -> int:
     """ Processes the next profile record and tries to pair it with stack record if possible
 
@@ -233,7 +232,7 @@ def _check_dependencies():
     log.done()
 
 
-def _validate_input(**kwargs: Unpack[configurator.Configuration]):
+def _validate_input(**kwargs: Any):
     """Validate the collector input parameters. In case of some error, an according exception
     is raised
 
@@ -253,8 +252,8 @@ def _validate_input(**kwargs: Unpack[configurator.Configuration]):
 
 
 def _sampling_to_dictionary(
-        _: click.Context, __: click.Option, value: List[Tuple[str, int]]
-) -> List[Dict]:
+        _: click.Context, __: click.Option, value: list[tuple[str, int]]
+) -> list[dict]:
     """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
 
     :param dict _: click context
@@ -298,7 +297,7 @@ def _sampling_to_dictionary(
 @click.option('--sampling', '-s', type=(str, int), multiple=True, callback=_sampling_to_dictionary,
               help='Sets the sampling of the given function to every <int> call.')
 @click.pass_context
-def complexity(ctx: click.Context, **kwargs: Unpack[configurator.Configuration]):
+def complexity(ctx: click.Context, **kwargs: Any):
     """Generates `complexity` performance profile, capturing running times of
     function depending on underlying structural sizes.
 

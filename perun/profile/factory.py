@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 import perun.profile.convert as convert
 import perun.profile.query as query
 import perun.logic.config as config
+import perun.utils.log as log
 
 from perun.check.general_detection import get_filtered_best_models_of
 from perun.postprocess.regression_analysis.regression_models import get_supported_models
@@ -376,7 +377,7 @@ class Profile(MutableMapping):
                (group == 'nonparam' and model.get('model') in get_supported_nparam_methods()):
                 yield model_idx, model
 
-    def get_model_of(self, model_type: str, uid: str) -> Optional[dict]:
+    def get_model_of(self, model_type: str, uid: str) -> dict:
         """
         Finds specific model from profile according to the
         given kind of model and specific unique identification.
@@ -388,7 +389,8 @@ class Profile(MutableMapping):
         for _, model in enumerate(self._storage['models']):
             if model_type == model['model'] and model['uid'] == uid:
                 return model
-        return None
+        log.error(f"missing {model_type} model for uid '{uid}'")
+        return {}  # this is only for type checking, in reality it is dead code
 
     def all_snapshots(self) -> Iterable[tuple[int, list[dict]]]:
         """Iterates through all the snapshots in resources

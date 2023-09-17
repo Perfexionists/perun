@@ -4,8 +4,7 @@ Postprocessor module with non-parametric analysis using the kernel regression me
 
 import click
 
-from typing import TypedDict
-from typing_extensions import Unpack, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import perun.logic.runner as runner
 import perun.postprocess.kernel_regression.methods as methods
@@ -17,12 +16,6 @@ from perun.utils.structs import PostprocessStatus
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
-
-
-class Kwargs(TypedDict):
-    kernel_mode: str
-    gamma_step: float
-    gamma_range: tuple[float, float]
 
 
 
@@ -110,7 +103,7 @@ def postprocess(profile: Profile, **configuration: dict) -> tuple[PostprocessSta
                     'sub-sample to estimate bandwidth of the full sample. If False (default), the '
                     'estimator used the mean.'))
 @click.pass_context
-def estimator_settings(ctx: click.Context, **kwargs: Unpack[Kwargs]):
+def estimator_settings(ctx: click.Context, **kwargs: Any):
     r"""
     Nadaraya-Watson kernel regression with specific settings for estimate.
 
@@ -243,7 +236,7 @@ def estimator_settings(ctx: click.Context, **kwargs: Unpack[Kwargs]):
               help='The float value of <bandwidth> defined by user, which '
                    'will be used at kernel regression.')
 @click.pass_context
-def user_selection(ctx: click.Context, **kwargs: Unpack[Kwargs]):
+def user_selection(ctx: click.Context, **kwargs: Any):
     """
     Nadaraya-Watson kernel regression with user bandwidth.
 
@@ -278,7 +271,7 @@ def user_selection(ctx: click.Context, **kwargs: Unpack[Kwargs]):
                    '<method_name> will be used to compute the bandwidth, which will be '
                    'used at kernel regression.')
 @click.pass_context
-def method_selection(ctx: click.Context, **kwargs: Unpack[Kwargs]):
+def method_selection(ctx: click.Context, **kwargs: Any):
     r"""
     Nadaraya-Watson kernel regression with supporting bandwidth selection method.
 
@@ -371,7 +364,7 @@ def method_selection(ctx: click.Context, **kwargs: Unpack[Kwargs]):
                     'to 3. Is accepted only by `local-polynomial` <smoothing-method>, another '
                     'methods ignoring it.'))
 @click.pass_context
-def kernel_smoothing(ctx: click.Context, **kwargs: Unpack[Kwargs]):
+def kernel_smoothing(ctx: click.Context, **kwargs: Any):
     r"""
     Kernel regression with different types of kernel and regression methods.
 
@@ -504,7 +497,7 @@ def kernel_smoothing(ctx: click.Context, **kwargs: Unpack[Kwargs]):
                    'the given <gamma-range>. Cannot be greater than length of <gamma-range>, else '
                    'will be set to value of the lower bound of the <gamma_range>.')
 @click.pass_context
-def kernel_ridge(ctx: click.Context, **kwargs: Unpack[Kwargs]):
+def kernel_ridge(ctx: click.Context, **kwargs: Any):
     """
     Nadaraya-Watson kernel regression with automatic bandwidth selection.
 

@@ -81,8 +81,8 @@ def translate_mangled_symbols(mangled_names: list[str]) -> dict[str, str]:
     mangled_str = '\n'.join(mangled_names)
 
     # Create demangled counterparts of the function names
-    demangled_names, _ = utils.run_safely_external_command(f'echo \'{mangled_str}\' | c++filt')
-    demangled_names = demangled_names.decode('utf-8').split('\n')
+    demangled_bytes, _ = utils.run_safely_external_command(f'echo \'{mangled_str}\' | c++filt')
+    demangled_names = demangled_bytes.decode('utf-8').split('\n')
     if '' in demangled_names:
         demangled_names.remove('')
 
@@ -141,10 +141,10 @@ def _get_symbols(executable_path: str, columns: list[int]) -> list[str]:
     )
 
     # Run the command to obtain function symbols
-    symbols, _ = utils.run_safely_external_command(cmd)
+    symbols_bytes, _ = utils.run_safely_external_command(cmd)
 
     # Decode the bytes and create list
-    symbols = symbols.decode('utf-8').replace(' ', '\n').split('\n')
+    symbols = symbols_bytes.decode('utf-8').replace(' ', '\n').split('\n')
     # Remove the redundant element
     if '' in symbols:
         symbols.remove('')

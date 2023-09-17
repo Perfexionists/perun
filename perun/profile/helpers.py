@@ -320,11 +320,11 @@ def to_string(profile: Profile) -> str:
     return json.dumps(profile.serialize())
 
 
-def to_config_tuple(profile: dict) -> tuple[str, str, str, str, list[str]]:
+def to_config_tuple(profile: dict) -> tuple[str, str, str, str, str]:
     """Converts the profile to the tuple representing its configuration
 
     :param Profile profile: profile we are converting to configuration tuple
-    :returns: tuple of (collector.name, cmd, args, workload, [postprocessors])
+    :returns: tuple of (collector.name, cmd, args, workload, postprocessors joined by ', ')
     """
     profile_header = profile['header']
     return (
@@ -332,11 +332,11 @@ def to_config_tuple(profile: dict) -> tuple[str, str, str, str, list[str]]:
         profile_header.get('cmd', ''),
         profile_header.get('args', ''),
         profile_header.get('workload', ''),
-        [postprocessor['name'] for postprocessor in profile['postprocessors']]
+        ', '.join([postprocessor['name'] for postprocessor in profile['postprocessors']])
     )
 
 
-def config_tuple_to_cmdstr(config_tuple: tuple[str, str, str, str, list[str]]) -> str:
+def config_tuple_to_cmdstr(config_tuple: tuple[str, str, str, str, str]) -> str:
     """Converts tuple to command string
 
     :param tuple config_tuple: tuple of (collector, cmd, args, workload, postprocessors)
