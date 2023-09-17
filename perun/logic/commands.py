@@ -11,7 +11,7 @@ import os
 import re
 
 from operator import itemgetter
-from typing import Any, Iterable, TYPE_CHECKING, Callable, Optional, Collection
+from typing import Any, TYPE_CHECKING, Callable, Optional, Collection
 
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
@@ -38,6 +38,7 @@ from perun.utils.structs import ProfileListConfig, MinorVersion
 
 if TYPE_CHECKING:
     from perun.profile.helpers import ProfileInfo
+    from perun.profile.factory import Profile
 
 UNTRACKED_REGEX: re.Pattern = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
@@ -400,7 +401,7 @@ def log(minor_version: str, short: bool = False, **_: Any):
                 pcs.get_object_directory(), minor_v.checksum
             )
 
-        def deg_count_retriever(minor_v: MinorVersion) -> dict[str, int]:
+        def deg_count_retriever(minor_v: MinorVersion) -> dict[str, str]:
             """Helper function for picking stats of the degradation strings of form ++--
 
             :param MinorVersion minor_v: minor version for which we are retrieving the stats
@@ -464,7 +465,7 @@ def print_shortlog_minor_version_info_list(minor_version_list: list[MinorVersion
     # Load formating string for profile
     minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
     fmt_tokens = perun_log.scan_formatting_string(
-        minor_version_info_fmt, {}, default_fmt_callback=lambda token: "%" + token + "%"
+        minor_version_info_fmt, lambda token: "%" + token + "%"
     )
 
     # Print header (2 is padding for id), e.g.:
@@ -737,7 +738,7 @@ def print_other_formatting_string(
 
 def calculate_maximal_lengths_for_stats(
         obj_list: list,
-        stat_function: Callable[[Any], dict[str, int]],
+        stat_function: Callable[[Any], dict[str, Any]],
         stat_header: str = ""
 ) -> dict[str, int]:
     """For given object lists and stat_function compute maximal lengths of the stats
@@ -819,7 +820,7 @@ def print_status_profile_list(
     # Load formating string for profile
     fmt_string = perun_config.lookup_key_recursively('format.status')
     fmt_tokens = perun_log.scan_formatting_string(
-        fmt_string, {}, default_fmt_callback=lambda token: "%" + token + "%"
+        fmt_string, lambda token: "%" + token + "%"
     )
     adjust_header_length(fmt_tokens, max_lengths, list_config)
 
@@ -1058,7 +1059,7 @@ def status(short: bool = False, **_: Any):
 
 
 @vcs.lookup_minor_version
-def load_profile_from_args(profile_name: str, minor_version: str) -> Optional[dict]:
+def load_profile_from_args(profile_name: str, minor_version: str) -> Optional[Profile]:
     """
     TODO: This needs to be properly refactored
 
@@ -1212,7 +1213,7 @@ def list_stat_objects(mode: str, **kwargs: Any):
         perun_log.info('== No results for the given parameters in the .perun/stats/ directory ==')
         return
 
-    results: list[tuple[Optional[str | int], str, str | int]] = []
+    results: list[tuple[Optional[float], str, str | int]] = []
     if mode == 'versions':
         # We need to print the versions, aggregate the files and their sizes
         results = [(sum(size for _, size in files), version, len(files))
@@ -1271,9 +1272,9 @@ def _print_total_size(total_size: int, enabled: bool):
     :param bool enabled: a flag describing if the total size should be displayed at all
     """
     if enabled:
-        total_size = utils.format_file_size(total_size)
+        formated_total_size = utils.format_file_size(total_size)
         perun_log.info('Total size of all the displayed files / directories: {}'.format(
-            perun_log.in_color(total_size, TEXT_EMPH_COLOUR))
+            perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR))
         )
 
 

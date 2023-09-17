@@ -3,6 +3,8 @@
 import os
 import jinja2
 
+from typing import Any
+
 import perun.utils as utils
 import perun.utils.helpers as helpers
 import perun.utils.log as log
@@ -11,14 +13,14 @@ import perun.logic.config as config
 from perun.utils.exceptions import ExternalEditorErrorException
 
 
-def create_unit_from_template(template_type, no_edit, **kwargs):
+def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any):
     """Function for creating a module in the perun developer directory from template
 
     This function serves as a generator of modules and packages of units and algorithms for perun.
-    According to the template_type this loads a concrete set of templates, (if needed) creates a
-    the target directory and then initializes all of the needed modules.
+    According to the template_type this loads a concrete set of templates, (if needed) creates
+    a target directory and then initializes all the needed modules.
 
-    If no_edit is set to true, all of the created modules, and the registration point (i.e. file,
+    If no_edit is set to true, all the created modules, and the registration point (i.e. file,
     where new modules has to be registered) are opened in the editor set in the general.config key
     (which is looked up recursively).
 
@@ -28,7 +30,7 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
     :raises ExternalEditorErrorException: When anything bad happens when processing newly created
         files with editor
     """
-    def template_name_filter(template_name):
+    def template_name_filter(template_name: str) -> bool:
         """Helper function for filtering functions which starts with the template_type name
 
         :param str template_name: name of the template set
@@ -41,11 +43,13 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
     if not os.path.isdir(perun_dev_dir) \
             or not os.access(perun_dev_dir, os.W_OK)\
             or template_type not in os.listdir(perun_dev_dir):
-        log.error("cannot use {} as target developer directory".format(perun_dev_dir) +
-                  " (either not writeable or does not exist)\n\n" +
-                  "Perhaps you are not working from perun dev folder?")
+        log.error(
+            f"cannot use {perun_dev_dir} as target developer directory "
+            f"(either not writeable or does not exist)\n\n"
+            f"Perhaps you are not working from perun dev folder?"
+        )
 
-    # Initialize the jinja2 environment and load all of the templates for template_type set
+    # Initialize the jinja2 environment and load all templates for template_type set
     env = jinja2.Environment(
         loader=jinja2.PackageLoader('perun', 'templates'),
         autoescape=True
@@ -59,11 +63,9 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
         helpers.touch_dir(target_dir)
     else:
         target_dir = os.path.join(perun_dev_dir, template_type)
-    print("Initializing new {} module in {}".format(
-        template_type, target_dir
-    ))
+    print(f"Initializing new {template_type} module in {target_dir}")
 
-    # Iterate through all of the templates and create the new files with rendered templates
+    # Iterate through all templates and create the new files with rendered templates
     successfully_created_files = []
     for template_file in list_of_templates:
         # Specify the target filename of the template file
@@ -72,7 +74,7 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
             template_filename.split('.')[1]
         template_filename += ".py"
         successfully_created_files.append(template_filename)
-        print("> creating module '{}' from template".format(template_filename), end='')
+        print(f"> creating module '{template_filename}' from template", end='')
 
         # Render and write the template into the resulting file
         with open(os.path.join(target_dir, template_filename), 'w') as template_handle:
@@ -89,12 +91,12 @@ def create_unit_from_template(template_type, no_edit, **kwargs):
         'collect': os.path.join('utils', '__init__.py'),
         'view': os.path.join('utils', '__init__.py')
     }.get(template_type, 'nowhere')))
-    print("Please register your new module in {}".format(successfully_created_files[-1]))
+    print(f"Please register your new module in {successfully_created_files[-1]}")
 
     # Unless specified in other way, open all of the files in the w.r.t the general.editor key
     if not no_edit:
         editor = config.lookup_key_recursively('general.editor')
-        print("Opening created files and registration point in {}".format(editor))
+        print(f"Opening created files and registration point in {editor}")
         try:
             utils.run_external_command([editor] + successfully_created_files[::-1])
         except Exception as inner_exception:

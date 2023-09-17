@@ -208,7 +208,7 @@ def get_nth_profile_of(position: int, minor_version: str) -> str:
     if 0 <= position < len(registered_profiles):
         return registered_profiles[position].realpath
     else:
-        raise TagOutOfRangeException(position, len(registered_profiles) - 1)
+        raise TagOutOfRangeException(position, len(registered_profiles) - 1, 'i')
 
 
 @vcs.lookup_minor_version

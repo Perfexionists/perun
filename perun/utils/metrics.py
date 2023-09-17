@@ -5,6 +5,8 @@ the specified ID.
 import time
 import atexit
 
+from typing import Any, Optional
+
 import perun.logic.temp as temp
 
 
@@ -27,7 +29,7 @@ class MetricsManager:
         self.timers = {}
         self.records = {}
 
-    def configure(self, metrics_filename, metrics_id):
+    def configure(self, metrics_filename: str, metrics_id: str):
         """ Sets the required properties for collecting metrics.
 
         :param str metrics_filename: the name of the temp file that stores the metrics
@@ -43,7 +45,7 @@ class MetricsManager:
             }
         }
 
-    def switch_id(self, new_id):
+    def switch_id(self, new_id: str):
         """ Assigns new active ID.
 
         :param str new_id: the name under which the metrics are stored
@@ -55,12 +57,12 @@ class MetricsManager:
             'id': new_id
         }
 
-    def add_sub_id(self, sub_id):
+    def add_sub_id(self, sub_id: str):
         """ Creates a new ID in the metrics file in format <base_id>.<sub_id>
 
         :param str sub_id: a suffix to the current base ID.
         """
-        new_id = "{}.{}".format(self.id_base, sub_id)
+        new_id = f"{self.id_base}.{sub_id}"
         self.records[new_id] = self.records.pop(self.id_base, {})
         self.records[new_id]['id'] = new_id
         self.metrics_id = new_id
@@ -69,7 +71,7 @@ class MetricsManager:
 Metrics = MetricsManager()
 
 
-def is_enabled():
+def is_enabled() -> bool:
     """ Checks if metrics collection is enabled.
 
     :return bool: True if metrics are being collected, False otherwise
@@ -77,7 +79,7 @@ def is_enabled():
     return Metrics.enabled
 
 
-def start_timer(name):
+def start_timer(name: str):
     """ Starts a new timer.
 
     :param str name: the name of the timer (and also the metric)
@@ -86,7 +88,7 @@ def start_timer(name):
         Metrics.timers[name] = time.time()
 
 
-def end_timer(name):
+def end_timer(name: str):
     """ Stops the specified running timer and stores the resulting time into metrics
 
     :param str name: the name of the timer
@@ -98,7 +100,7 @@ def end_timer(name):
 
 
 # TODO: change to getitem / setitem?
-def add_metric(name, value):
+def add_metric(name: str, value: Any):
     """ Add new metric and its value.
 
     :param str name: name of the metric
@@ -108,7 +110,7 @@ def add_metric(name, value):
         Metrics.records[Metrics.metrics_id][name] = value
 
 
-def read_metric(name, default=None):
+def read_metric(name: str, default: Optional[Any] = None) -> Any:
     """ Read the current value of a metric specified by its ID
 
     :param str name: the ID of the metric to fetch
@@ -131,7 +133,7 @@ def save():
         temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
 
 
-def save_separate(temp_name, data):
+def save_separate(temp_name: str, data: Any):
     temp.store_temp(temp_name, data, json_format=True)
 
 

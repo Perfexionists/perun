@@ -7,11 +7,11 @@ the functions. Or various checker function, that checks given parameters of the 
 import inspect
 import functools
 
-from typing import Dict, List, Callable, Any
+from typing import Dict, Callable, Any
 from perun.utils.exceptions import InvalidParameterException
 
 
-def _singleton_core(func, always_singleton):
+def _singleton_core(func: Callable, is_always_singleton: bool) -> Callable:
     """
     Wraps the function @p func so it will always return the same result,
     as given by the first call. I.e. the singleton. No params are expected.
@@ -19,25 +19,25 @@ def _singleton_core(func, always_singleton):
     :param function func: function that will be decorated
     :returns func: decorated function that will be run only once
     """
-    func.instance = None
-    if not always_singleton:
+    func.instance = None  # type: ignore
+    if not is_always_singleton:
         registered_singletons.append(func)
 
-    def wrapper():
+    def wrapper() -> Any:
         """Wrapper function of the @p func"""
-        if func.instance is None:
-            func.instance = func()
-        return func.instance
+        if func.instance is None:  # type: ignore
+            func.instance = func()  # type: ignore
+        return func.instance  # type: ignore
 
     return wrapper
 
 
 singleton = functools.partial(_singleton_core, always_singleton=False)
 always_singleton = functools.partial(_singleton_core, always_singleton=True)
-registered_singletons: List[Callable[[], Any]] = []
+registered_singletons: list[Callable[[], Any]] = []
 
 
-def arguments_to_key(func, *args, **kwargs):
+def arguments_to_key(func: Callable, *args: Any, **kwargs: Any) -> tuple:
     """
     Transforms the real parameters of the @p func call, i.e. the combination
     of args and kwargs into unique key. Note that this has to be generic and
@@ -52,7 +52,7 @@ def arguments_to_key(func, *args, **kwargs):
     f_args, _, _, f_defaults, _, f_kwonlydefaults, _ = inspect.getfullargspec(func)
 
     # get defaults that were updated
-    f_defaults = f_defaults or []
+    f_defaults = f_defaults or ()
     updated_defaults = list(f_defaults)
     number_of_updated_keyword_args = len(args) - (len(f_args) - len(f_defaults))
     if number_of_updated_keyword_args != 0:
@@ -60,7 +60,11 @@ def arguments_to_key(func, *args, **kwargs):
     keywords = f_args[-len(f_defaults):]
 
     # update the defaults with new values
-    real_kwargs = f_kwonlydefaults.update(kwargs) if f_kwonlydefaults is not None else kwargs
+    if f_kwonlydefaults is not None:
+        f_kwonlydefaults.update(kwargs)
+        real_kwargs = f_kwonlydefaults
+    else:
+        real_kwargs = kwargs
     real_kwargs.update(zip(keywords, updated_defaults))
 
     # get the
@@ -69,7 +73,7 @@ def arguments_to_key(func, *args, **kwargs):
     return tuple(real_posargs) + tuple(real_kwargs.items())
 
 
-def singleton_with_args(func):
+def singleton_with_args(func: Callable) -> Callable:
     """
     Wraps the function @p func, so it will always return the same result,
     as givn by the first call with given positional and keyword arguments.
@@ -79,7 +83,7 @@ def singleton_with_args(func):
     """
     func_args_cache[func.__name__] = {}
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         """Wrapper function of the @p func"""
         key = arguments_to_key(func, *args, **kwargs)
         if key not in func_args_cache[func.__name__].keys():
@@ -87,20 +91,21 @@ def singleton_with_args(func):
         return func_args_cache[func.__name__][key]
 
     return wrapper
-func_args_cache: Dict[str, Dict[str, Any]] = {}
 
 
-def remove_from_function_args_cache(funcname):
+func_args_cache: dict[str, dict[tuple, Any]] = {}
+
+
+def remove_from_function_args_cache(funcname: str):
     """Helper function for clearing the key from func args cache
 
     :param str funcname: function name that we are removing from the cache
-    :return:
     """
     if funcname in func_args_cache.keys():
         func_args_cache[funcname].clear()
 
 
-def validate_arguments(validated_args, validate, *args, **kwargs):
+def validate_arguments(validated_args: list[str], validate: Callable, *args: Any, **kwargs: Any) -> Callable:
     """
     Validates the arguments stated by validated_args with validate function.
     Note that positional and kwarguments are not supported by this decorator
@@ -111,11 +116,11 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
     :param dict kwargs: dictionary of additional keyword arguments to validate function
     :returns func: decorated function for which given parameters will be validated
     """
-    def inner_decorator(func):
+    def inner_decorator(func: Callable) -> Callable:
         """Wrapper function of the @p func"""
         f_args, *_ = inspect.getfullargspec(func)
 
-        def wrapper(*wargs, **wkwargs):
+        def wrapper(*wargs: Any, **wkwargs: Any) -> Any:
             """Wrapper function of the wrapper inner decorator"""
             params = list(zip(f_args[:len(wargs)], wargs)) + list(wkwargs.items())
 
@@ -131,12 +136,12 @@ def validate_arguments(validated_args, validate, *args, **kwargs):
     return inner_decorator
 
 
-def static_variables(**kwargs):
+def static_variables(**kwargs: Any) -> Callable:
     """
     :param dict kwargs: keyword with static variables and their values
     :returns func: decorated function for which static variables are set
     """
-    def inner_wrapper(func):
+    def inner_wrapper(func: Callable) -> Callable:
         """Inner wrapper of the function"""
         for key, value in kwargs.items():
             setattr(func, key, value)
@@ -144,7 +149,7 @@ def static_variables(**kwargs):
     return inner_wrapper
 
 
-def phase_function(phase_name):
+def phase_function(phase_name: str) -> Callable:
     """Sets the phase name for the given function
 
     The phase name is outputed when the elapsed time is printed.
@@ -152,12 +157,12 @@ def phase_function(phase_name):
     :param str phase_name: name of the phase to which the given function corresponds
     :return: decorated function with new phase name
     """
-    def inner_wrapper(func):
+    def inner_wrapper(func: Callable) -> Callable:
         """Inner wrapper of the decorated function
 
         :param function func: function we are decorating with its phase name
         :return: decorated function with new phase name
         """
-        func.phase_name = phase_name
+        func.phase_name = phase_name  # type: ignore
         return func
     return inner_wrapper

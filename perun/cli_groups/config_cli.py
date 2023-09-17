@@ -60,7 +60,7 @@ def config(ctx: click.Context, **kwargs: Any):
 
 
 @config.command('get')
-@click.argument('key', required=True, metavar='<key>',
+@click.argument('key', required=True, metavar='<key>', type=click.STRING,
                 callback=cli_helpers.config_key_validation_callback)
 @click.pass_context
 def config_get(ctx: click.Context, key: str):
@@ -98,7 +98,7 @@ def config_get(ctx: click.Context, key: str):
 
 
 @config.command('set')
-@click.argument('key', required=True, metavar='<key>',
+@click.argument('key', required=True, metavar='<key>', type=click.STRING,
                 callback=cli_helpers.config_key_validation_callback)
 @click.argument('value', required=True, metavar='<value>')
 @click.pass_context

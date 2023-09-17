@@ -26,7 +26,7 @@ APPROX_ZERO: float = 0.000001
 
 
 def validate_dictionary_keys(
-        dictionary: Mapping[str, Any], required_keys: list, forbidden_keys: list
+        dictionary: dict[str, Any], required_keys: list, forbidden_keys: list
 ):
     """Checks the dictionary for missing required keys and excess forbidden keys.
 

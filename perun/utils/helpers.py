@@ -1,10 +1,14 @@
 """Set of helper constants and helper named tuples for perun pcs"""
+from __future__ import annotations
+
 import os
 import re
 import operator
 import signal
+import traceback
+import types
 
-from typing import Optional, Any
+from typing import Optional, Any, Iterable, Callable
 
 from perun.utils.structs import PerformanceChange
 from perun.utils.exceptions import SignalReceivedException, NotPerunRepositoryException
@@ -105,23 +109,23 @@ LINE_PARSING_REGEX = re.compile(
 )
 
 
-def first_index_of_attr(tuple_list, attr, value):
-    """Helper function for getting the first index of value in list of tuples
+def first_index_of_attr(input_list: list, attr: str, value: Any) -> int:
+    """Helper function for getting the first index of a value in list of objects
 
-    :param list tuple_list: list of tuples
+    :param list input_list: list of object that have attributes
     :param str attr: name of the attribute we are getting
-    :param value: lookedup value
-    :return: index of the tuple or exception
-    :raises: ValueError when there is no object/tuple with attribute with given value
+    :param value: looked up value
+    :return: index in the list or exception
+    :raises: ValueError when there is no object with attribute with given value
     """
-    list_of_attributes = list(map(operator.attrgetter(attr), tuple_list))
+    list_of_attributes = list(map(operator.attrgetter(attr), input_list))
     return list_of_attributes.index(value)
 
 
-def uid_getter(uid):
+def uid_getter(uid: tuple) -> int:
     """Helper function for getting the order priority of the uid
 
-    By default the highest priority is the executed binary or command,
+    By default, the highest priority is the executed binary or command,
     then file and package structure, then modules, objects, concrete functions
     or methods, on lines up to instruction. If we encounter unknown key, then we
     use some kind of lexicographic sorting
@@ -151,20 +155,20 @@ class SuppressedExceptions:
 
     :ivar list exc: the list of exception classes that should be ignored
     """
-    def __init__(self, *exception_list):
+    def __init__(self, *exception_list: type[Exception]):
         """
         :param exception_list: the exception classes to ignore
         """
         self.exc = exception_list
 
-    def __enter__(self):
+    def __enter__(self) -> 'SuppressedExceptions':
         """Context manager entry sentinel, no set up needed
 
         :return object: the context manager class instance, shouldn't be needed
         """
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
         """Context manager exit sentinel, check if the code raised an exception and if the
         exception belongs to the list of suppressed exceptions.
 
@@ -177,7 +181,7 @@ class SuppressedExceptions:
         return isinstance(exc_val, tuple(self.exc))
 
 
-def str_to_plural(count, verb):
+def str_to_plural(count: int, verb: str) -> str:
     """Helper function that returns the plural of the string if count is more than 1
 
     :param int count: number of the verbs
@@ -186,7 +190,7 @@ def str_to_plural(count, verb):
     return str(count) + " " + verb + "s" if count != 1 else verb
 
 
-def format_counter_number(count, max_number):
+def format_counter_number(count: int, max_number: int) -> str:
     """Helper function that returns string formatted to number of places given by the lenght of max
     counter number.
 
@@ -230,7 +234,7 @@ class HandledSignals:
     :ivar list old_handlers: the list of previous signal handlers
 
     """
-    def __init__(self, *signals, **kwargs):
+    def __init__(self, *signals: int, **kwargs: Any):
         """
         :param signals: the identification of the handled signal, 'signal.SIG_' is recommended
         :param kwargs: additional properties of the context manager
@@ -240,9 +244,9 @@ class HandledSignals:
         self.handler_exc = kwargs.get('handler_exception', SignalReceivedException)
         self.callback = kwargs.get('callback')
         self.callback_args = kwargs.get('callback_args', [])
-        self.old_handlers = []
+        self.old_handlers: list[int | None | Callable[[int, Optional[types.FrameType]], Any]] = []
 
-    def __enter__(self):
+    def __enter__(self) -> 'HandledSignals':
         """ The CM entry sentinel, register the new signal handlers and store the previous ones.
 
         :return object: the CM instance
@@ -251,7 +255,7 @@ class HandledSignals:
             self.old_handlers.append(signal.signal(sig, self.handler))
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary):
         """ The CM exit sentinel, perform the callback and reset the signal handlers.
 
         :param type exc_type: the type of the exception
@@ -273,7 +277,7 @@ class HandledSignals:
         return isinstance(exc_val, self.handler_exc)
 
 
-def default_signal_handler(signum, frame):
+def default_signal_handler(signum: int, frame: traceback.StackSummary):
     """Default signal handler used by the HandledSignals CM.
 
     The function attempts to block any subsequent handler invocation of the same signal by ignoring
@@ -295,7 +299,7 @@ def default_signal_handler(signum, frame):
     raise SignalReceivedException(signum, frame)
 
 
-def is_variable_len_dict(list_value):
+def is_variable_len_dict(list_value: list[dict]) -> bool:
     """This tests for a case when list_value is a list with dictionaries containing name and list_value
     keys only.
 
@@ -304,12 +308,12 @@ def is_variable_len_dict(list_value):
     :param list list_value: object we are testing
     :return: true if list_value is variable length dictionary
     """
-    return len(list_value) and all(
+    return len(list_value) != 0 and all(
         isinstance(v, dict) and set(v.keys()) == {'name', 'value'} for v in list_value
     )
 
 
-def get_key_with_aliases(dictionary, key_aliases, default=None):
+def get_key_with_aliases(dictionary: dict, key_aliases: Iterable[str], default: Optional[Any] = None) -> Any:
     """Safely returns the key in the dictionary that has several aliases.
 
     This function assures the backward compatibility with older profiles, after renaming the keys.
@@ -327,10 +331,10 @@ def get_key_with_aliases(dictionary, key_aliases, default=None):
             return dictionary[key]
     if default is not None:
         return default
-    raise KeyError("None of the keys {} found in the dictionary".format(key_aliases))
+    raise KeyError(f"None of the keys {key_aliases} found in the dictionary")
 
 
-def escape_ansi(line):
+def escape_ansi(line: str) -> str:
     """Escapes the font/colour ansi characters in the line
 
     Based on: https://stackoverflow.com/a/38662876
@@ -342,7 +346,7 @@ def escape_ansi(line):
     return ansi_escape.sub('', line)
 
 
-def touch_file(touched_filename, times=None):
+def touch_file(touched_filename: str, times: Optional[tuple[int, int]] = None):
     """
     Corresponding implementation of touch inside python.
     Courtesy of:
@@ -355,7 +359,7 @@ def touch_file(touched_filename, times=None):
         os.utime(touched_filename, times)
 
 
-def touch_dir(touched_dir):
+def touch_dir(touched_dir: str):
     """
     Touches directory, i.e. if it exists it does nothing and
     if the directory does not exist, then it creates it.
@@ -366,8 +370,8 @@ def touch_dir(touched_dir):
         os.makedirs(touched_dir)
 
 
-def path_to_subpaths(path):
-    """Breaks path to all the subpaths, i.e. all of the prefixes of the given path.
+def path_to_subpaths(path: str) -> list[str]:
+    """Breaks path to all the subpaths, i.e. all the prefixes of the given path.
 
     >>> path_to_subpaths('/dir/subdir/subsubdir')
     ['/dir', '/dir/subdir', '/dir/subdir/subsubdir']
@@ -380,7 +384,7 @@ def path_to_subpaths(path):
            [os.sep.join(components[:till]) for till in range(2, len(components) + 1)]
 
 
-def locate_perun_dir_on(path):
+def locate_perun_dir_on(path: str) -> str:
     """Locates the nearest perun directory
 
     Locates the nearest perun directory starting from the @p path. It walks all of the
@@ -399,19 +403,19 @@ def locate_perun_dir_on(path):
     raise NotPerunRepositoryException(path)
 
 
-def try_convert(value, list_of_types):
+def try_convert(value: Any, list_of_types: list[type]) -> Any:
     """Tries to convert a value into one of the specified types
 
     :param object value: object that is going to be converted to one of the types
     :param list list_of_types: list or tuple of supported types
-    :return: converted value or None, if conversion failed for all of the types
+    :return: converted value or None, if conversion failed for all the types
     """
     for checked_type in list_of_types:
         with SuppressedExceptions(Exception):
             return checked_type(value)
 
 
-def identity(*args):
+def identity(*args: Any) -> Any:
     """Identity function, that takes the arguments and return them as they are
 
     Note that this is used as default transformator for to be used in arguments for transforming
