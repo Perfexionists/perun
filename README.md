@@ -1,8 +1,8 @@
 Perun: Lightweight Performance Version System
 =============================================
 
-![build status](https://github.com/Perfexionists/perun/actions/workflows/ubuntu.yml/badge.svg)
-[![codecov](https://codecov.io/gh/Perfexionists/perun/branch/devel/graph/badge.svg)](https://codecov.io/gh/Perfexionists/perun)
+[![build status](https://github.com/Perfexionists/perun/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/Perfexionists/perun/actions)
+[![codecov](https://codecov.io/gh/Perfexionists/perun/graph/badge.svg?token=3x4Luodr84)](https://codecov.io/gh/Perfexionists/perun)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c4002ae488f54aabb77920a0cc90b6f5)](https://www.codacy.com/app/tfiedor/perun?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tfiedor/perun&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/1e47ad63527d8d2e14c3/maintainability)](https://codeclimate.com/github/Perfexionists/perun/maintainability)
 [![GitHub tag](https://img.shields.io/github/tag/Perfexionists/perun.svg)](https://github.com/Perfexionists/perun)
