@@ -20,13 +20,20 @@ def predicate_from_cli(cli_result: click.testing.Result, predicate: bool):
     try:
         assert predicate
     except AssertionError as failed_assertion:
-        if cli_result.output:
+        if hasattr(cli_result, 'output') and cli_result.output:
             print("=== Captured output ===")
             print(cli_result.output)
+        elif isinstance(cli_result, list):
+            print("=== Captured output ===")
+            print("".join(cli_result))
+        else:
+            print("=== Captured output ===")
+            print(cli_result)
         print("=== Inner traceback ===")
-        if cli_result.exception:
+        if hasattr(cli_result, 'exception') and cli_result.exception:
             print(cli_result.exception)
-        traceback.print_tb(cli_result.exc_info[2])  # type: ignore # nested list
+        if hasattr(cli_result, 'exc_info'):
+            traceback.print_tb(cli_result.exc_info[2])  # type: ignore # nested list
         raise failed_assertion
 
 

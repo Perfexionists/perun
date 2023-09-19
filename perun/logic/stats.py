@@ -557,13 +557,9 @@ def _get_version_info(minor_version: Optional[str]) -> tuple[str, str]:
 
     :return tuple (str, str): the minor version details (checksum, date)
     """
-    if minor_version is None:
-        perun_log.error(f"{minor_version} is not a sha representation of a minor version")
-        return '', ''
-    else:
-        vcs.check_minor_version_validity(minor_version)
-        minor_version_info = vcs.get_minor_version_info(minor_version)
-        return minor_version_info.checksum, minor_version_info.date
+    vcs.check_minor_version_validity(minor_version)
+    minor_version_info = vcs.get_minor_version_info(minor_version)
+    return minor_version_info.checksum, minor_version_info.date
 
 
 def _add_versions_to_index(minor_versions: list[tuple[str, str]], index_stats: Optional[list[tuple[str, str]]] = None):
