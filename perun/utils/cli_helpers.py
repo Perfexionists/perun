@@ -3,6 +3,7 @@
 Contains functions for click api, for processing parameters from command line, validating keys,
 and returning default values.
 """
+from __future__ import annotations
 
 import time
 import functools

@@ -9,12 +9,13 @@ import signal
 import sys
 import time
 import threading
+import types
 from subprocess import CalledProcessError, TimeoutExpired
 from uuid import uuid4
 import numpy as np
 import tabulate
 
-from typing import Optional, Union, Any, Sequence
+from typing import Optional, Any, AnyStr
 
 import perun.utils.decorators as decorators
 import perun.utils.log as log
@@ -115,8 +116,8 @@ def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int)
 
 
 def contains_same_lines(
-        lines: list,
-        fuzzed_lines: list,
+        lines: list[AnyStr],
+        fuzzed_lines: list[AnyStr],
         is_binary: bool
 ) -> bool:
     """Compares two string list and check if they are equal.
@@ -200,7 +201,7 @@ def fuzz(
     return mutations
 
 
-def print_legend(rule_set: RuleSet):
+def print_legend(rule_set: RuleSet) -> None:
     """ Prints stats of each fuzzing method.
 
     :param RuleSet rule_set: selected fuzzing (mutation) strategies and their stats
@@ -213,7 +214,7 @@ def print_legend(rule_set: RuleSet):
     ], headers=["id", "Rule Efficiency", "Description"]))
 
 
-def print_results(fuzzing_report: dict, fuzzing_config: FuzzingConfiguration, rule_set: RuleSet):
+def print_results(fuzzing_report: dict, fuzzing_config: FuzzingConfiguration, rule_set: RuleSet) -> None:
     """Prints results of fuzzing.
 
     :param dict fuzzing_report: general information about current fuzzing
@@ -281,7 +282,7 @@ def rate_parent(fuzz_progress: FuzzingProgress, mutation: Mutation) -> bool:
     return False
 
 
-def update_parent_rate(parents: list[Mutation], mutation: Mutation):
+def update_parent_rate(parents: list[Mutation], mutation: Mutation) -> None:
     """ Update rate of the `parent` according to degradation ratio yielded from perf testing.
 
     :param list parents: sorted list of fitness score of parents
@@ -346,7 +347,7 @@ def choose_parent(parents: list[Mutation], num_intervals: int = 5) -> Mutation:
     return randomizer.rand_choice(parents[intervals[interval_idx][0]:intervals[interval_idx][1]])
 
 
-def save_fuzz_state(time_series: TimeSeries, state: int):
+def save_fuzz_state(time_series: TimeSeries, state: int) -> None:
     """Saves current state of fuzzing for plotting.
 
     :param TimeSeries time_series: list of data for x-axis (typically time values) and y-axis
@@ -365,7 +366,7 @@ def teardown(
         parents: list[Mutation],
         rule_set: RuleSet,
         config: FuzzingConfiguration
-):
+) -> None:
     """Teardown function at the end of the fuzzing, either by natural rundown of timeout or because
     of unnatural circumstances (e.g. exception)
 
@@ -408,7 +409,7 @@ def process_successful_mutation(
         fuzz_progress: FuzzingProgress,
         rule_set: RuleSet,
         config: FuzzingConfiguration
-):
+) -> None:
     """If the @p mutation is successful during the evaluation, we update the parent queue
     @p parents, as well as statistics for given rule in rule_set and stats stored in fuzzing
     progress.
@@ -434,7 +435,7 @@ def process_successful_mutation(
     fuzz_progress.stats["degradations"] += 1
 
 
-def save_state(fuzz_progress: FuzzingProgress):
+def save_state(fuzz_progress: FuzzingProgress) -> None:
     """Saves the state of the fuzzing at given time and schedules next save after SAMPLING time
 
     :param FuzzingProgress fuzz_progress:
@@ -482,7 +483,7 @@ def run_fuzzing_for_command(
         postprocessor: list[str],
         minor_version_list: list[str],
         **kwargs: Any
-):
+) -> None:
     """Runs fuzzing for a command w.r.t initial set of workloads
 
     :param Executable executable: called command with arguments
@@ -537,8 +538,8 @@ def run_fuzzing_for_command(
     fuzz_progress.stats["start_time"] = time.time()
 
     # SIGINT (CTRL-C) signal handler
-    def signal_handler(sig, _):
-        log.warn("Fuzzing process interrupted by signal {}...".format(sig))
+    def signal_handler(sig: int, _: Optional[types.FrameType]) -> None:
+        log.warn(f"Fuzzing process interrupted by signal {sig}...")
         teardown(fuzz_progress, output_dirs, parents, rule_set, config)
 
     signal.signal(signal.SIGINT, signal_handler)

@@ -10,13 +10,13 @@ import math
 
 from typing import Callable, Generator, Union
 
-ModelGenerator = Generator[dict, None, None]
-
 import perun.postprocess.regression_analysis.generic as generic
 import perun.postprocess.regression_analysis.specific as specific
 import perun.postprocess.regression_analysis.derived as derived
 import perun.postprocess.regression_analysis.extensions.plot_models as plot
 import perun.utils.exceptions as exceptions
+
+ModelGenerator = Generator[dict, None, None]
 
 
 def get_formula_of(model: str) -> Callable:

@@ -32,8 +32,8 @@ def _singleton_core(func: Callable, is_always_singleton: bool) -> Callable:
     return wrapper
 
 
-singleton = functools.partial(_singleton_core, always_singleton=False)
-always_singleton = functools.partial(_singleton_core, always_singleton=True)
+singleton = functools.partial(_singleton_core, is_always_singleton=False)
+always_singleton = functools.partial(_singleton_core, is_always_singleton=True)
 registered_singletons: list[Callable[[], Any]] = []
 
 

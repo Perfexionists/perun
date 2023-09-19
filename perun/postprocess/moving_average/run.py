@@ -1,6 +1,7 @@
 """
 Postprocessor module with non-parametric analysis using the moving average methods.
 """
+from __future__ import annotations
 
 import functools
 import click

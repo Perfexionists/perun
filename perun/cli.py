@@ -102,8 +102,8 @@ def cli(
         no_color: bool = False,
         verbose: int = 0,
         no_pager: bool = False,
-        **_: dict
-):
+        **_: Any
+) -> None:
     """Perun is an open source light-weight Performance Versioning System.
 
     In order to initialize Perun in current directory run the following::
@@ -138,7 +138,7 @@ def cli(
         perun_log.VERBOSITY = verbose
 
 
-def configure_local_perun(perun_path: str):
+def configure_local_perun(perun_path: str) -> None:
     """Configures the local perun repository with the interactive help of the user
 
     :param str perun_path: destination path of the perun repository
@@ -174,7 +174,7 @@ def configure_local_perun(perun_path: str):
               help='States the configuration template that will be used for initialization of local'
                    ' configuration. See :ref:`config-templates` for more details about predefined '
                    ' configurations.')
-def init(dst: str, configure: bool, config_template: str, **kwargs: dict):
+def init(dst: str, configure: bool, config_template: str, **kwargs: Any) -> None:
     """Initializes performance versioning system at the destination path.
 
     ``perun init`` command initializes the perun's infrastructure with basic
@@ -239,7 +239,7 @@ def init(dst: str, configure: bool, config_template: str, **kwargs: dict):
               help='If set to true, then the profile will be registered in the <hash> minor version'
                    'index, even if its origin <hash> is different. WARNING: This can screw the '
                    'performance history of your project.')
-def add(profile: list[str], minor: Optional[str], **kwargs: dict):
+def add(profile: list[str], minor: Optional[str], **kwargs: Any) -> None:
     """Links profile to concrete minor version storing its content in the
     ``.perun`` dir and registering the profile in internal minor version index.
 
@@ -316,8 +316,8 @@ def remove(
         from_index_generator: set[str],
         from_jobs_generator: set[str],
         minor: Optional[str],
-        **_: dict
-):
+        **_: Any
+) -> None:
     """Unlinks the profile from the given minor version, keeping the contents
     stored in ``.perun`` directory.
 
@@ -379,7 +379,7 @@ def remove(
 @click.option('--short', '-s', is_flag=True, default=False,
               help="Shortens the output of ``log`` to include only most "
               "necessary information.")
-def log(head: Optional[str], **kwargs: dict):
+def log(head: Optional[str], **kwargs: Any) -> None:
     """Shows history of versions and associated profiles.
 
     Shows the history of the wrapped version control system and all the
@@ -418,7 +418,7 @@ def log(head: Optional[str], **kwargs: dict):
               help="Sets the <key> in the local configuration for sorting profiles. "
                    "Note that after setting the <key> it will be used for sorting which is "
                    "considered in pending and index tags!")
-def status(**kwargs: dict):
+def status(**kwargs: Any) -> None:
     """Shows the status of vcs, associated profiles and perun.
 
     Shows the status of both the nearest perun and wrapped version control
@@ -460,7 +460,7 @@ def status(**kwargs: dict):
               help='Will check the index of different minor version <hash>'
               ' during the profile lookup')
 @click.pass_context
-def show(ctx: click.Context, profile: Profile, **_: dict):
+def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
     """Interprets the given profile using the selected visualization technique.
 
     Looks up the given profile and interprets it using the selected
@@ -522,7 +522,7 @@ def show(ctx: click.Context, profile: Profile, **_: dict):
               help='Will check the index of different minor version <hash>'
               ' during the profile lookup')
 @click.pass_context
-def postprocessby(ctx: click.Context, profile: Profile, **_: dict):
+def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
     """Postprocesses the given stored or pending profile using selected
     postprocessor.
 
@@ -627,7 +627,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: dict):
 @click.option('--use-cg-type', '-cg', type=(click.Choice(CallGraphTypes.supported())),
               default=CallGraphTypes.default(), callback=cli_helpers.set_call_graph_type)
 @click.pass_context
-def collect(ctx: click.Context, **kwargs: dict):
+def collect(ctx: click.Context, **kwargs: Any) -> None:
     """Generates performance profile using selected collector.
 
     Runs the single collector unit (registered in Perun) on given profiled
@@ -733,13 +733,13 @@ def collect(ctx: click.Context, **kwargs: dict):
               ' written in YAML format file.')
 @click.option('--no-plotting', '-np', is_flag=True, required=False,
               help='Avoiding sometimes lengthy plotting of graphs.')
-def fuzz_cmd(cmd: str, args: str, **kwargs: Any):
+def fuzz_cmd(cmd: str, args: str, **kwargs: Any) -> None:
     """Performs fuzzing for the specified command according to the initial sample of workload."""
     kwargs['executable'] = Executable(cmd, args)
     fuzz.run_fuzzing_for_command(**kwargs)
 
 
-def init_unit_commands(lazy_init: bool = True):
+def init_unit_commands(lazy_init: bool = True) -> None:
     """Runs initializations for all of subcommands (shows, collectors, postprocessors)
 
     Some of the subunits has to be dynamically initialized according to the registered modules,
@@ -776,7 +776,7 @@ cli.add_command(run_cli.run)
 cli.add_command(utils_cli.utils_group)
 
 
-def launch_cli_in_dev_mode():
+def launch_cli_in_dev_mode() -> None:
     """Runs the cli in developer mode.
 
     In this mode, all the exceptions are propagated, and additionally faulthandler and
@@ -789,7 +789,7 @@ def launch_cli_in_dev_mode():
     cli()
 
 
-def launch_cli_safely():
+def launch_cli_safely() -> None:
     """Safely runs the cli.
 
     In case any exceptions are raised, they are catched and dump is created with additional
@@ -811,7 +811,7 @@ def launch_cli_safely():
             cli_helpers.generate_cli_dump(reported_error, catched_exception, stdout_log, stderr_log)
 
 
-def launch_cli():
+def launch_cli() -> None:
     """Runs the CLI either in developer mode or in safe mode"""
     if DEV_MODE or '--dev-mode' in sys.argv or '-d' in sys.argv:
         launch_cli_in_dev_mode()

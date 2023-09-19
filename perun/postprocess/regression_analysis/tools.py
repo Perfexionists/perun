@@ -1,16 +1,17 @@
 """Regression tools module. Contains utility functions used by the other regression modules.
 
 """
+from __future__ import annotations
 
 from random import shuffle
 from operator import itemgetter
 import numpy as np
 
-from typing import Mapping, Any, Generator, TYPE_CHECKING, Union
+from typing import Any, Generator, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
-    from nptyping import NDArray
-    from perun.profile.factory import Profile
+    import nptyping as npt
+    import perun.profile.factory as profiles
 
 import perun.utils.exceptions as exceptions
 
@@ -119,7 +120,7 @@ def sort_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float], li
     return list(res_x_pts), list(res_y_pts)
 
 
-def split_model_interval(start: int, end: int, steps: int) -> NDArray:
+def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray:
     """ Splits the interval defined by its edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
 
@@ -167,7 +168,7 @@ def as_plot_y_dict(plot_y) -> dict[str, Any]:
     return dict(plot_y=plot_y)
 
 
-def add_models_to_profile(profile: Profile, models: list[dict]) -> Profile:
+def add_models_to_profile(profile: profiles.Profile, models: list[dict]) -> profiles.Profile:
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 

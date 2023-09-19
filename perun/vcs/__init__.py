@@ -7,6 +7,7 @@ the wrapper.
 Inside the wrapper are defined function that are used for lookup of the concrete implementations
 depending of the chosen type/module, like e.g. git, svn, etc.
 """
+from __future__ import annotations
 import inspect
 
 from typing import Callable, Any, Iterator, TYPE_CHECKING, Optional

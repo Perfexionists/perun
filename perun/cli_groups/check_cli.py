@@ -1,4 +1,5 @@
 """Group of CLI commands used for detecting degradations in VCS history"""
+from __future__ import annotations
 
 import distutils.util as dutils
 

@@ -1,4 +1,5 @@
 """Set of helper function for logging and printing warnings or errors"""
+from __future__ import annotations
 
 import builtins
 import collections
@@ -11,9 +12,12 @@ import pydoc
 import functools
 import traceback
 import time
+from types import TracebackType
+
 import numpy as np
 
-from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO
+from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, Iterator, AnyStr
+
 if TYPE_CHECKING:
     from nptyping import NDArray
 
@@ -993,13 +997,14 @@ class History:
             print("".join(line))
 
 
-class Logger:
+class Logger(TextIO):
     """Helper object that logs the stream into isolate string io
 
     :ivar object original: original stream
     :ivar StringIO log: log saving the stream
     """
-    def __init__(self, stream: Any):
+
+    def __init__(self, stream: TextIO):
         self.original = stream
         self.log = io.StringIO()
 
@@ -1015,3 +1020,57 @@ class Logger:
     def flush(self):
         """Flushes the original stream"""
         self.original.flush()
+
+    def close(self) -> None:
+        self.original.close()
+
+    def fileno(self) -> int:
+        return self.original.fileno()
+
+    def isatty(self) -> bool:
+        return self.original.isatty()
+
+    def read(self, __n: int = ...) -> AnyStr:
+        return self.original.read(__n)
+
+    def readable(self) -> bool:
+        return self.original.readable()
+
+    def readline(self, __limit: int = ...) -> AnyStr:
+        return self.original.readline(__limit)
+
+    def readlines(self, __hint: int = ...) -> list[AnyStr]:
+        return self.readlines(__hint)
+
+    def seek(self, __offset: int, __whence: int = ...) -> int:
+        return self.original.seek(__offset, __whence)
+
+    def seekable(self) -> bool:
+        return self.original.seekable()
+
+    def tell(self) -> int:
+        return self.original.tell()
+
+    def truncate(self, __size: int | None = ...) -> int:
+        return self.original.truncate(__size)
+
+    def writable(self) -> bool:
+        return self.original.writable()
+
+    def writelines(self, __lines: Iterable[AnyStr]) -> None:
+        self.original.writelines(__lines)
+
+    def __next__(self) -> AnyStr:
+        return self.original.__next__()
+
+    def __iter__(self) -> Iterator[AnyStr]:
+        return self.original.__iter__()
+
+    def __exit__(
+            self, __t: Type[BaseException] | None, __value: BaseException | None, __traceback: TracebackType | None
+    ) -> None:
+        self.__exit__(__t, __value, __traceback)
+
+    def __enter__(self) -> TextIO:
+        self.original.__enter__()
+        return self

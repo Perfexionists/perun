@@ -1,6 +1,7 @@
 """
 Postprocessor module with non-parametric analysis using the kernel regression methods.
 """
+from __future__ import annotations
 
 import click
 
