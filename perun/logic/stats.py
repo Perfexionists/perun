@@ -572,7 +572,7 @@ def _add_versions_to_index(minor_versions: list[tuple[str, str]], index_stats: O
     for checksum, date in minor_versions:
         # Find the correct location for inserting the new minor record, avoid duplicates
         insert_pos = _find_nearest_version(index_stats, checksum, date)
-        if insert_pos == len(index_stats) or index_stats[insert_pos] != [checksum, date]:
+        if insert_pos == len(index_stats) or index_stats[insert_pos] != (checksum, date):
             index_stats.insert(insert_pos, (checksum, date))
     index.save_custom_index(pcs.get_stats_index(), index_stats)
 
