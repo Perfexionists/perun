@@ -30,7 +30,7 @@ def create_runtime_config(
         runtime_filter: list[str],
         include_list: list[symbols.RuleKey],
         configuration: dict
-):
+) -> None:
     """ Creates the config.conf configuration
 
     :param str executable_path: path to the executable which will use the configuration
@@ -81,7 +81,7 @@ def _write_config_to(
         runtime_filter: list[str],
         include_list: list[symbols.RuleKey],
         job_settings: dict
-):
+) -> None:
     """ Writes the configuration stored in the config dictionary into the file
 
     :param file config_handle: file handle to the opened config file

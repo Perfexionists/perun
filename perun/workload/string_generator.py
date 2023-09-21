@@ -28,11 +28,10 @@ The String Generator can be configured by following options:
 import random
 import string
 
-from typing import Dict, Tuple, Any, Iterable
+from typing import Any, Iterable
 
 from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
-
 
 
 class StringGenerator(WorkloadGenerator):
@@ -42,7 +41,7 @@ class StringGenerator(WorkloadGenerator):
     :ivar int max_len: maximal length of generated strings
     :ivar int step_len: increment of the lengths
     """
-    def __init__(self, job: Job, min_len: int, max_len: int, step_len: int = 1, **kwargs: Any):
+    def __init__(self, job: Job, min_len: int, max_len: int, step_len: int = 1, **kwargs: Any) -> None:
         """Initializes the generator of string workloads
 
         :param Job job: job for which we are generating the workloads
@@ -57,7 +56,7 @@ class StringGenerator(WorkloadGenerator):
         self.max_len = int(max_len)
         self.step_len = int(step_len)
 
-    def _generate_next_workload(self) -> Iterable[Tuple[Any, Dict[str, Any]]]:
+    def _generate_next_workload(self) -> Iterable[tuple[Any, dict[str, Any]]]:
         """Generates the next random string with increased length
 
         :return: random string of length in interval (min, max)

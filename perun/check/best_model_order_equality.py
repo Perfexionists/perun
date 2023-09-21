@@ -42,10 +42,9 @@ that the best model fit the data tightly and hence the detected optimization is 
 
 from typing import Any, Iterable
 
-import perun.check.factory as check
 import perun.check.general_detection as detection
 
-from perun.utils.structs import DegradationInfo
+from perun.utils.structs import DegradationInfo, PerformanceChange
 from perun.profile.factory import Profile
 
 
@@ -85,12 +84,12 @@ def best_model_order_equality(
                 baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
                 target_ordering = MODEL_ORDERING.index(best_model.type)
                 if baseline_ordering > target_ordering:
-                    change = check.PerformanceChange.Optimization
+                    change = PerformanceChange.Optimization
                 else:
-                    change = check.PerformanceChange.Degradation
+                    change = PerformanceChange.Degradation
                 degradation_rate = target_ordering - baseline_ordering
             else:
-                change = check.PerformanceChange.NoChange
+                change = PerformanceChange.NoChange
                 degradation_rate = 0
 
             yield DegradationInfo(

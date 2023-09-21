@@ -45,7 +45,7 @@ class Profile(MutableMapping):
     ]
     dependent = ['amount']
 
-    def __init__(self, *args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes the internal storage
 
         :param list args: positional arguments for dictionary
@@ -107,7 +107,7 @@ class Profile(MutableMapping):
         else:
             self._translate_resources(resource_list, {})
 
-    def _translate_resources(self, resource_list: list[dict], additional_params: dict):
+    def _translate_resources(self, resource_list: list[dict], additional_params: dict) -> None:
         """Translate the list of resources to efficient format
 
         Given a list of resources, this is all flattened into a new format: a dictionary that
@@ -148,7 +148,7 @@ class Profile(MutableMapping):
             for (key, value) in collectable_properties:
                 self._storage['resources'][resource_type][key].append(value)
 
-    def register_resource_type(self, uid: str, persistent_properties: tuple):
+    def register_resource_type(self, uid: str, persistent_properties: tuple) -> None:
         """Registers tuple of persistent properties under new key or return existing one
 
         :param str uid: uid of the resource that will be used to describe the resource type
@@ -176,7 +176,7 @@ class Profile(MutableMapping):
         """
         return self._storage[item]
 
-    def __setitem__(self, key: str, value: Any):
+    def __setitem__(self, key: str, value: Any) -> None:
         """Sets the value into the storage under the key.
 
         Internally this finds a similar regions and registers them in either
@@ -190,7 +190,7 @@ class Profile(MutableMapping):
         """
         self._storage[key] = value
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         """Deletes the item in the storage
 
         :param str key: key to be deleted

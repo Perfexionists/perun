@@ -13,7 +13,7 @@ import perun.logic.config as config
 from perun.utils.exceptions import ExternalEditorErrorException
 
 
-def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any):
+def create_unit_from_template(template_type: str, no_edit: bool, **kwargs: Any) -> None:
     """Function for creating a module in the perun developer directory from template
 
     This function serves as a generator of modules and packages of units and algorithms for perun.

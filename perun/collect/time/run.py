@@ -8,7 +8,7 @@ import sys
 import time as systime
 import click
 
-from typing import Tuple, Dict
+from typing import Any
 
 import perun.utils.log as log
 import perun.logic.runner as runner
@@ -22,7 +22,7 @@ TIME_TYPES = ('real', 'user', 'sys')
 
 def collect(
         executable: Executable, repeat: int = 10, warmup: int = 3, **_
-) -> Tuple[CollectStatus, str, Dict]:
+) -> tuple[CollectStatus, str, dict]:
     """Times the runtime of the given command, with stated repeats.
 
     :param Executable executable: executed command, with arguments and workloads
@@ -83,7 +83,7 @@ def collect(
               default=10, nargs=1, type=click.INT, metavar='<int>',
               help='The timing of the given binaries will be repeated <int> times.')
 @click.pass_context
-def time(ctx: click.Context, **kwargs: Dict):
+def time(ctx: click.Context, **kwargs: Any) -> None:
     """Generates `time` performance profile, capturing overall running times of
     the profiled command.
 

@@ -146,7 +146,7 @@ def load_job_info_from_config() -> dict:
     return info
 
 
-def run_phase_function(report: RunnerReport, phase: str):
+def run_phase_function(report: RunnerReport, phase: str) -> None:
     """Runs the concrete phase function of the runner (collector or postprocessor)
 
     If the runner does not provide the function for phase then empty pass is created and
@@ -171,7 +171,7 @@ def run_phase_function(report: RunnerReport, phase: str):
         )
 
 
-def check_integrity_of_runner(runner: types.ModuleType, runner_type: str, report: RunnerReport):
+def check_integrity_of_runner(runner: types.ModuleType, runner_type: str, report: RunnerReport) -> None:
     """Checks that the runner has basic requirements of collectors and postprocessor.
 
     This function warns user that some expected conventions were not fulfilled. In particular,
@@ -196,7 +196,7 @@ def check_integrity_of_runner(runner: types.ModuleType, runner_type: str, report
         ))
 
 
-def runner_teardown_handler(status_report: RunnerReport, **kwargs: Any):
+def runner_teardown_handler(status_report: RunnerReport, **kwargs: Any) -> None:
     """The teardown callback used in the signal handler.
 
     :param RunnerReport status_report: the collection report object
@@ -213,7 +213,7 @@ def runner_teardown_handler(status_report: RunnerReport, **kwargs: Any):
     run_phase_function(status_report, 'teardown')
 
 
-def runner_signal_handler(signum: int, frame: Any):
+def runner_signal_handler(signum: int, frame: Any) -> None:
     """Custom signal handler that blocks all the handled signals until the __exit__ sentinel of
     the CM is reached.
 
@@ -303,7 +303,7 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict]:
     return collection_report.status, prof
 
 
-def run_collector_from_cli_context(ctx: click.Context, collector_name: str, collector_params: dict):
+def run_collector_from_cli_context(ctx: click.Context, collector_name: str, collector_params: dict) -> None:
     """Runs the collector according to the given cli context.
 
     This is used as a wrapper for calls from various collector modules. This was extracted,
@@ -367,7 +367,7 @@ def run_postprocessor(postprocessor: Unit, job: Job, prof: dict) -> tuple[Postpr
     return postprocess_report.status, prof
 
 
-def store_generated_profile(prof: dict, job: Job, profile_name: Optional[str] = None):
+def store_generated_profile(prof: dict, job: Job, profile_name: Optional[str] = None) -> None:
     """Stores the generated profile in the pending jobs directory.
 
     :param Profile prof: profile that we are storing in the repository
@@ -418,7 +418,7 @@ def run_postprocessor_on_profile(
 
 @log.print_elapsed_time
 @decorators.phase_function('prerun')
-def run_prephase_commands(phase: str, phase_colour: str = 'white'):
+def run_prephase_commands(phase: str, phase_colour: str = 'white') -> None:
     """Runs the phase before the actual collection of the methods
 
     This command first retrieves the phase from the configuration, and runs

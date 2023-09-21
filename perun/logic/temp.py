@@ -104,7 +104,7 @@ class TempFile:
     :ivar str filename: the name of the temporary file
     :ivar str abspath: the absolute path to the temporary file
     """
-    def __init__(self, filename: str):
+    def __init__(self, filename: str) -> None:
         """
         :param str filename: the name of the temporary file
         """
@@ -119,7 +119,7 @@ class TempFile:
         touch_temp_file(self.filename)
         return self
 
-    def __exit__(self, exc_type: type, exc_val: Exception, exc_tb: BaseException):
+    def __exit__(self, exc_type: type, exc_val: Exception, exc_tb: BaseException) -> None:
         """Context manager exit sentinel, deletes the managed temporary file.
 
         :param type exc_type: the type of the exception
@@ -152,7 +152,7 @@ def temp_path(path: str) -> str:
     return path
 
 
-def touch_temp_dir(dir_path: str):
+def touch_temp_dir(dir_path: str) -> None:
     """Touches the given directory path.
 
     For details regarding the path format, see the module docstring.
@@ -166,7 +166,7 @@ def touch_temp_dir(dir_path: str):
         os.makedirs(dir_path)
 
 
-def touch_temp_file(file_path: str, protect: bool = False):
+def touch_temp_file(file_path: str, protect: bool = False) -> None:
     """Touches the given temporary file and sets the protection level.
 
     For details regarding the path format, see the module docstring.
@@ -217,7 +217,7 @@ def create_new_temp(
         json_format: bool = False,
         protect: bool = False,
         compress: bool = False
-):
+) -> None:
     """Creates new temporary file if it does not exist yet and writes the 'content' into the file.
     An exception is raised if the file already exists.
 
@@ -239,7 +239,7 @@ def create_new_temp(
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
-def store_temp(file_path: str, content: str, json_format: bool = False, protect: bool = False, compress: bool = False):
+def store_temp(file_path: str, content: str, json_format: bool = False, protect: bool = False, compress: bool = False) -> None:
     """Writes the 'content' to the temporary file given by the 'file_path'. The temporary file is
     created if it does not exist and overwritten if it does.
 
@@ -289,7 +289,7 @@ def read_temp(file_path: str) -> Optional[str]:
         return None
 
 
-def reset_temp(file_path: str):
+def reset_temp(file_path: str) -> None:
     """Clears the content and resets properties of the temporary file 'file_path'
 
     For details regarding the path format, see the module docstring.
@@ -369,7 +369,7 @@ def get_temp_properties(file_path: str) -> tuple[bool, bool, bool]:
     return _get_index_entry(temp_path(file_path))
 
 
-def set_protected_status(file_path: str, protected: bool):
+def set_protected_status(file_path: str, protected: bool) -> None:
     """Sets a new protection status of a temporary file.
 
     For details regarding the path format, see the module docstring.
@@ -382,7 +382,7 @@ def set_protected_status(file_path: str, protected: bool):
     _add_to_index(file_path, protected=protected)
 
 
-def delete_temp_dir(root: str, ignore_protected: bool = False, force: bool = False):
+def delete_temp_dir(root: str, ignore_protected: bool = False, force: bool = False) -> None:
     """Delete the whole temporary directory given by the 'root' and all its content.
 
     For details regarding the path format, see the module docstring.
@@ -409,7 +409,7 @@ def delete_temp_dir(root: str, ignore_protected: bool = False, force: bool = Fal
     _delete_empty_directories(root)
 
 
-def delete_temp_file(file_path: str, ignore_protected: bool = False, force: bool = False):
+def delete_temp_file(file_path: str, ignore_protected: bool = False, force: bool = False) -> None:
     """Delete the temporary file identified by the 'file_path'.
 
     For details regarding the path format, see the module docstring.
@@ -432,7 +432,7 @@ def delete_temp_file(file_path: str, ignore_protected: bool = False, force: bool
     _delete_files([file_path], ignore_protected, force)
 
 
-def delete_all_temps(root: Optional[str] = None, ignore_protected: bool = False, force: bool = False):
+def delete_all_temps(root: Optional[str] = None, ignore_protected: bool = False, force: bool = False) -> None:
     """Deletes all the temporary files in the 'root' folder and its subfolders.
 
     For details regarding the path format, see the module docstring.
@@ -453,7 +453,7 @@ def delete_all_temps(root: Optional[str] = None, ignore_protected: bool = False,
     _delete_files(tmp_files, ignore_protected, force)
 
 
-def synchronize_index():
+def synchronize_index() -> None:
     """Synchronizes the index file with the content of the tmp/ directory.
 
     Namely removes index entries that are not needed or refer to no longer existing files
@@ -469,7 +469,7 @@ def synchronize_index():
     index.save_custom_index(pcs.get_tmp_index(), index_entries)
 
 
-def _is_tmp_path(path: str):
+def _is_tmp_path(path: str) -> None:
     """Checks if the provided path exists and is within the .perun/tmp/ directory. If not, an
     exception is raised.
 
@@ -479,7 +479,7 @@ def _is_tmp_path(path: str):
         raise exceptions.InvalidTempPathException(f"The 'tmp' path '{path}' does not exist.")
 
 
-def _is_tmp_file(path: str):
+def _is_tmp_file(path: str) -> None:
     """Checks if the provided path is valid and existing temporary file. If not, an exception is
     raised.
 
@@ -490,7 +490,7 @@ def _is_tmp_file(path: str):
         raise exceptions.InvalidTempPathException(f"The 'tmp' path '{path}' is not a file.")
 
 
-def _is_tmp_dir(path: str):
+def _is_tmp_dir(path: str) -> None:
     """Checks if the provided path is valid and existing temporary directory. if not, an exception
     is raised.
 
@@ -501,7 +501,7 @@ def _is_tmp_dir(path: str):
         raise exceptions.InvalidTempPathException(f"The 'tmp' path '{path}' is not a directory.")
 
 
-def _delete_files(tmp_files: list[str], ignore_protected: bool, force: bool):
+def _delete_files(tmp_files: list[str], ignore_protected: bool, force: bool) -> None:
     """Deletes the supplied temporary files.
 
     If 'ignore_protected' is False and the directory structure contains protected temporary files,
@@ -547,7 +547,7 @@ def _filter_protected_files(tmp_files: list[str]) -> tuple[list[str], list[str]]
     return unprotected, protected
 
 
-def _delete_empty_directories(root: str):
+def _delete_empty_directories(root: str) -> None:
     """Identifies and deletes all empty directories and subdirectories in the 'root' directory.
 
     The .perun/tmp/ directory, however, will not be deleted this way.
@@ -564,7 +564,7 @@ def _delete_empty_directories(root: str):
             os.rmdir(directory)
 
 
-def _write_to_temp(file_path: str, content: str, json_format: bool, protect: bool, compress: bool):
+def _write_to_temp(file_path: str, content: str, json_format: bool, protect: bool, compress: bool) -> None:
     """Writes the 'content' into the temporary file and stores the properties into the index
     if needed.
 
@@ -600,7 +600,7 @@ def _get_temps_size(tmp_files: list[str]) -> list[int]:
     return sizes
 
 
-def _add_to_index(tmp_file: str, json_format: bool = False, protected: bool = False, compressed: bool = False):
+def _add_to_index(tmp_file: str, json_format: bool = False, protected: bool = False, compressed: bool = False) -> None:
     """Adds a new entry into the index. The entry tracks 'json_format, protected, compressed'
     properties for the given tmp_file. If all of those properties are False, no entry is created.
 
@@ -639,7 +639,7 @@ def _get_index_entry(tmp_file: str) -> tuple[bool, bool, bool]:
     return file_record['json'], file_record['protected'], file_record['compressed']
 
 
-def _delete_index_entries(tmp_files: list[str]):
+def _delete_index_entries(tmp_files: list[str]) -> None:
     """Deletes the index entries (if they exist) of the supplied temporary files.
 
     :param list tmp_files: the list of the temporary files for which to delete the entries

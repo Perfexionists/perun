@@ -65,7 +65,7 @@ def make_output_dirs(output_dir: str, new_dirs: list[str]) -> dict[str, str]:
     return dirs_dict
 
 
-def del_temp_files(parents: list[Mutation], fuzz_progress: FuzzingProgress, output_dir: str):
+def del_temp_files(parents: list[Mutation], fuzz_progress: FuzzingProgress, output_dir: str) -> None:
     """ Deletes temporary files that are not positive results of fuzz testing
 
     :param list parents: list of parent mutations

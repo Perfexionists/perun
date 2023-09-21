@@ -80,7 +80,7 @@ def profiles_to_queue(minor_version: str) -> Dict[Tuple[str, str, str, str, str]
 
 
 @decorators.static_variables(minor_version_cache=set())
-def pre_collect_profiles(minor_version: MinorVersion):
+def pre_collect_profiles(minor_version: MinorVersion) -> None:
     """For given minor version, collects performance profiles according to the job matrix
 
     This is applied if the profiles were not already collected by this function for the given minor,

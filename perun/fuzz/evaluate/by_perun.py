@@ -68,7 +68,7 @@ def target_testing(
     return workload.deg_ratio > DEGRADATION_RATIO_TRESHOLD
 
 
-def check_for_change(base_pg, target_pg, method='best-model'):
+def check_for_change(base_pg, target_pg, method='best-model') -> int:
     """Function that randomly choose an index from list.
 
     :param generator base_pg: base performance profile generator

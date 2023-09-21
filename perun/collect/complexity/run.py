@@ -210,7 +210,7 @@ def _process_file_record(
     return returned_code
 
 
-def _check_dependencies():
+def _check_dependencies() -> None:
     """Validates that dependencies (cmake and make) are met"""
     log.cprint('Checking dependencies...', 'white')
     log.newline()
@@ -232,7 +232,7 @@ def _check_dependencies():
     log.done()
 
 
-def _validate_input(**kwargs: Any):
+def _validate_input(**kwargs: Any) -> None:
     """Validate the collector input parameters. In case of some error, an according exception
     is raised
 
@@ -297,7 +297,7 @@ def _sampling_to_dictionary(
 @click.option('--sampling', '-s', type=(str, int), multiple=True, callback=_sampling_to_dictionary,
               help='Sets the sampling of the given function to every <int> call.')
 @click.pass_context
-def complexity(ctx: click.Context, **kwargs: Any):
+def complexity(ctx: click.Context, **kwargs: Any) -> None:
     """Generates `complexity` performance profile, capturing running times of
     function depending on underlying structural sizes.
 

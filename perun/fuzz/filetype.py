@@ -17,7 +17,7 @@ from perun.fuzz.structs import RuleSet
 def custom_rules(
         regex_rules: dict[str, str],
         fuzzing_methods: list[tuple[Callable[[list], None], str]]
-):
+) -> None:
     """ Adds custom rules specified by regexps, and read from the file in YAML format.
     Format:
         del: add
@@ -28,7 +28,7 @@ def custom_rules(
     :param list fuzzing_methods: list of functions, fuzzing (mutation) strategies
     """
     for key, value in regex_rules.items():
-        def custom_rule(lines):
+        def custom_rule(lines: list[str]) -> None:
             comp_regexp = re.compile(key, flags=re.IGNORECASE)
             index = randomizer.rand_index(len(lines))
             lines[index] = comp_regexp.sub(value, lines[index])

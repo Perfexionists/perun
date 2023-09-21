@@ -21,7 +21,7 @@ from perun.fuzz.structs import FuzzingConfiguration, Mutation, FuzzingProgress, 
     CoverageConfiguration
 
 
-def prepare_workspace(source_path: str):
+def prepare_workspace(source_path: str) -> None:
     """Prepares workspace for yielding coverage information using gcov.
 
     The .gcda file is generated when a program containing object files built with the GCC
@@ -213,7 +213,7 @@ def get_coverage_from_dir(cwd: str, config: CoverageConfiguration) -> int:
 
 def check_if_coverage_increased(
         base_cov: int, cov: int, parent_cov: int, increase_ratio: float = 1.5
-):
+) -> bool:
     """ Condition for adding mutated input to set of candidates(parents).
 
     :param int base_cov: base coverage

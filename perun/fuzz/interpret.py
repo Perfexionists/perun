@@ -31,7 +31,7 @@ QUARTILE_ALPHA = 0.4
 QUARTILE_LINE_WIDTH = 2
 
 
-def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: TextIO):
+def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: TextIO) -> None:
     """Saves anomalies (faults and hangs) into the file
 
     :param list anomalies: list of
@@ -47,7 +47,7 @@ def save_anomalies(anomalies: list[Mutation], anomaly_type: str, file_handle: Te
             log.info('.')
 
 
-def save_time_series(file_handle: TextIO, time_series: TimeSeries):
+def save_time_series(file_handle: TextIO, time_series: TimeSeries) -> None:
     """Saves the time series data into the file handle
 
     :param File file_handle: opened file handle for writing
@@ -60,7 +60,7 @@ def save_time_series(file_handle: TextIO, time_series: TimeSeries):
         log.info('.')
 
 
-def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress):
+def save_log_files(log_dir: str, fuzz_progress: FuzzingProgress) -> None:
     """ Saves information about fuzzing in log file. Note: refactor
 
     :param str log_dir: path to the output log directory
@@ -106,7 +106,7 @@ def get_time_for_value(value: int, time_data: list[int], data: list[int]) -> Opt
     return time_data[-1]
 
 
-def lazy_initialize_matplotlib():
+def lazy_initialize_matplotlib() -> None:
     """Helper function for lazy initialization of matplotlib"""
     global MATPLOT_LIB_INITIALIZED
     if not MATPLOT_LIB_INITIALIZED:
@@ -121,7 +121,7 @@ def plot_fuzz_time_series(
         title: str,
         xlabel: str,
         ylabel: str
-):
+) -> None:
     """Plots the measured values to time series graph.
 
     :param TimeSeries time_series: measured values (x and y-axis)
@@ -177,7 +177,7 @@ def plot_fuzz_time_series(
     plt.savefig(filename, bbox_inches='tight', format='pdf')
 
 
-def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str):
+def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
     """Creates html files showing the difference between mutations and its predecessor
     in diff unified format.
 

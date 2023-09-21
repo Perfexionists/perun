@@ -19,7 +19,7 @@ class MetricsManager:
     :ivar dict timers: keeps track of running timers
     :ivar dict records: stores the metrics
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """ Initializes the manager. Unless configure is called, the metrics are not recorded.
         """
         self.enabled = False
@@ -29,7 +29,7 @@ class MetricsManager:
         self.timers = {}
         self.records = {}
 
-    def configure(self, metrics_filename: str, metrics_id: str):
+    def configure(self, metrics_filename: str, metrics_id: str) -> None:
         """ Sets the required properties for collecting metrics.
 
         :param str metrics_filename: the name of the temp file that stores the metrics
@@ -45,7 +45,7 @@ class MetricsManager:
             }
         }
 
-    def switch_id(self, new_id: str):
+    def switch_id(self, new_id: str) -> None:
         """ Assigns new active ID.
 
         :param str new_id: the name under which the metrics are stored
@@ -57,7 +57,7 @@ class MetricsManager:
             'id': new_id
         }
 
-    def add_sub_id(self, sub_id: str):
+    def add_sub_id(self, sub_id: str) -> None:
         """ Creates a new ID in the metrics file in format <base_id>.<sub_id>
 
         :param str sub_id: a suffix to the current base ID.
@@ -79,7 +79,7 @@ def is_enabled() -> bool:
     return Metrics.enabled
 
 
-def start_timer(name: str):
+def start_timer(name: str) -> None:
     """ Starts a new timer.
 
     :param str name: the name of the timer (and also the metric)
@@ -88,7 +88,7 @@ def start_timer(name: str):
         Metrics.timers[name] = time.time()
 
 
-def end_timer(name: str):
+def end_timer(name: str) -> None:
     """ Stops the specified running timer and stores the resulting time into metrics
 
     :param str name: the name of the timer
@@ -100,7 +100,7 @@ def end_timer(name: str):
 
 
 # TODO: change to getitem / setitem?
-def add_metric(name: str, value: Any):
+def add_metric(name: str, value: Any) -> None:
     """ Add new metric and its value.
 
     :param str name: name of the metric
@@ -121,7 +121,7 @@ def read_metric(name: str, default: Optional[Any] = None) -> Any:
         return Metrics.records[Metrics.metrics_id].get(name, default)
 
 
-def save():
+def save() -> None:
     """ Save the stored metrics into the metrics file.
     """
     if Metrics.enabled:
@@ -133,7 +133,7 @@ def save():
         temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
 
 
-def save_separate(temp_name: str, data: Any):
+def save_separate(temp_name: str, data: Any) -> None:
     temp.store_temp(temp_name, data, json_format=True)
 
 

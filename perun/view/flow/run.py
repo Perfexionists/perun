@@ -2,13 +2,15 @@
 
 import click
 
+from typing import Any
+
 from perun.utils import view_helpers, cli_helpers, log, helpers
 from perun.utils.exceptions import InvalidParameterException
-from perun.profile.factory import pass_profile
+from perun.profile.factory import pass_profile, Profile
 import perun.view.flow.factory as flow_factory
 
 
-def process_title(ctx, _, value):
+def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     """Processes the default value for the flow graph title.
 
     If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
@@ -69,7 +71,7 @@ def process_title(ctx, _, value):
               " browser (firefox will be used).")
 @pass_profile
 # Fixme: Consider breaking this to two
-def flow(profile, filename, view_in_browser, **kwargs):
+def flow(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any):
     """Customizable interpretation of resources using the flow format.
 
     .. _Bokeh: https://bokeh.pydata.org/en/latest/

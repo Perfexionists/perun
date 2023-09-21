@@ -7,7 +7,7 @@ from random import shuffle
 from operator import itemgetter
 import numpy as np
 
-from typing import Any, Generator, TYPE_CHECKING, Union
+from typing import Any, Generator, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import nptyping as npt
@@ -28,7 +28,7 @@ APPROX_ZERO: float = 0.000001
 
 def validate_dictionary_keys(
         dictionary: dict[str, Any], required_keys: list, forbidden_keys: list
-):
+) -> None:
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
     :param dict dictionary: validated dictionary
@@ -52,7 +52,7 @@ def validate_dictionary_keys(
         raise exceptions.DictionaryKeysValidationFailed(dictionary, missing_keys, excess_keys)
 
 
-def check_points(x_len: int, y_len: int, threshold: int):
+def check_points(x_len: int, y_len: int, threshold: int) -> None:
     """Checks the regression points for possible problems
 
     :param int x_len: the count of x coordinates
@@ -137,7 +137,7 @@ def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray:
     return x_pts
 
 
-def safe_division(dividend: Union[float, int], divisor: Union[float, int]) -> float:
+def safe_division(dividend: float, divisor: float) -> float:
     """Safe division of divident by operand
 
     :param number dividend: upper operand of the division

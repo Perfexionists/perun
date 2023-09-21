@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import os
 import shutil
 
-from typing import Tuple, List, Iterable, Union, Optional, Callable, BinaryIO
+from typing import Iterable, Optional, Callable, BinaryIO, Any
 
 import perun.logic.store as store
 import perun.utils.streams as streams
@@ -12,8 +14,8 @@ from perun.logic.index import BasicIndexEntry
 
 
 def profile_filter(
-        generator: Iterable[Tuple[str, Profile]], rule: str, return_type: str = 'prof'
-) -> Optional[Union[str, Profile]]:
+        generator: Iterable[tuple[str, Profile]], rule: str, return_type: str = 'prof'
+) -> Optional[str | Profile]:
     """Finds concrete profile by the rule in profile generator.
 
     :param generator generator: stream of profiles as tuple: (name, dict)
@@ -40,7 +42,7 @@ def index_filter(file: str) -> bool:
     return file != '.index'
 
 
-def populate_repo_with_untracked_profiles(pcs_path: str, untracked_profiles: List[str]):
+def populate_repo_with_untracked_profiles(pcs_path: str, untracked_profiles: list[str]) -> None:
     """
     Populates the jobs directory in the repo by untracked profiles
 
@@ -52,7 +54,7 @@ def populate_repo_with_untracked_profiles(pcs_path: str, untracked_profiles: Lis
         shutil.copy2(valid_profile, jobs_dir)
 
 
-def prepare_profile(dest_dir: str, profile: str, origin: str):
+def prepare_profile(dest_dir: str, profile: str, origin: str) -> str:
     """
     :param str dest_dir: destination of the prepared profile
     :param str profile: name of the profile that is going to be stored in pending jobs
@@ -99,7 +101,7 @@ def open_index(pcs_path: str, minor_version: str) -> BinaryIO:
     return open(minor_version_index, 'rb+')
 
 
-def count_contents_on_path(path: str) -> Tuple[int, int]:
+def count_contents_on_path(path: str) -> tuple[int, int]:
     """Helper function for counting the contents of the path
 
     :param str path: path to the director which we will list
@@ -115,7 +117,7 @@ def count_contents_on_path(path: str) -> Tuple[int, int]:
     return file_number, dir_number
 
 
-def compare_results(expected: float, actual: float, eps: float = 0.0001):
+def compare_results(expected: float, actual: float, eps: float = 0.0001) -> float:
     """Compare two float values with eps tolerance.
 
     :param float expected: the expected result value
@@ -126,8 +128,8 @@ def compare_results(expected: float, actual: float, eps: float = 0.0001):
 
 
 def generate_models_by_uid(
-        profile: Profile, value: str, uid_sequence: List[str], key: str = 'model'
-):
+        profile: Profile, value: str, uid_sequence: list[str], key: str = 'model'
+) -> list[dict[str, Any]]:
     """Provides computed models results for each uid in the specified uid sequence.
 
     :param Profile profile: the whole profile with 'models' results

@@ -183,7 +183,7 @@ def _get_head_major_version(git_repo: git.Repo) -> str:
 
 
 @create_repo_from_path
-def _check_minor_version_validity(git_repo: git.Repo, minor_version: str):
+def _check_minor_version_validity(git_repo: git.Repo, minor_version: str) -> None:
     """
     :param git.Repo git_repo: wrapped repository object
     :param str minor_version: string representing a minor version in the git
@@ -259,7 +259,7 @@ def _save_state(git_repo: git.Repo) -> tuple[bool, str]:
 
 
 @create_repo_from_path
-def _restore_state(git_repo: git.Repo, has_saved_stashed_changes: bool, previous_state: str):
+def _restore_state(git_repo: git.Repo, has_saved_stashed_changes: bool, previous_state: str) -> None:
     """Restores the previous state of the repository by restoring the stashed changes and checking
     out the previous head.
 
@@ -275,7 +275,7 @@ def _restore_state(git_repo: git.Repo, has_saved_stashed_changes: bool, previous
 
 
 @create_repo_from_path
-def _checkout(git_repo: git.Repo, minor_version: str):
+def _checkout(git_repo: git.Repo, minor_version: str) -> None:
     """
 
     :param git.Repo git_repo: git repository

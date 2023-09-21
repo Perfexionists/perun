@@ -16,7 +16,7 @@ from typing import TextIO
 import perun.utils.log as log
 
 
-def store_json(profile: dict, file_path: str):
+def store_json(profile: dict, file_path: str) -> None:
     """Stores profile w.r.t. :ref:`profile-spec` to output file.
 
     :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`

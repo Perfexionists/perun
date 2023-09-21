@@ -96,7 +96,7 @@ def singleton_with_args(func: Callable) -> Callable:
 func_args_cache: dict[str, dict[tuple, Any]] = {}
 
 
-def remove_from_function_args_cache(funcname: str):
+def remove_from_function_args_cache(funcname: str) -> None:
     """Helper function for clearing the key from func args cache
 
     :param str funcname: function name that we are removing from the cache

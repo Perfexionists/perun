@@ -16,7 +16,7 @@ import perun.fuzz.randomizer as randomizer
 RULE_ITERATIONS = 10
 
 
-def random_regex_replace(lines: list[str], pattern: str, repl: str):
+def random_regex_replace(lines: list[str], pattern: str, repl: str) -> None:
     """Helper function for replacing the string in lines given a pattern
 
     :param list lines: list of lines
@@ -34,7 +34,7 @@ def random_regex_replace(lines: list[str], pattern: str, repl: str):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def remove_attribute_value(lines: list[str]):
+def remove_attribute_value(lines: list[str]) -> None:
     """**Rule D.3: Removed attribute value.**
 
      * **Input**: <book id="bk106" pages="457">
@@ -46,7 +46,7 @@ def remove_attribute_value(lines: list[str]):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def remove_attribute_name(lines: list[str]):
+def remove_attribute_name(lines: list[str]) -> None:
     """**Rule D.2: Remove attribute name.**
 
      * **Input**: <book id="bk106" pages="457">
@@ -58,7 +58,7 @@ def remove_attribute_name(lines: list[str]):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def remove_attribute(lines: list[str]):
+def remove_attribute(lines: list[str]) -> None:
     """**Rule D.1: Remove an attribute.**
 
      * **Input**: <book id="bk106" pages="457">
@@ -70,7 +70,7 @@ def remove_attribute(lines: list[str]):
 
 
 @randomizer.random_repeats(RULE_ITERATIONS)
-def remove_tag(lines: list[str]):
+def remove_tag(lines: list[str]) -> None:
     """**Rule D.4: Remove tag.**
 
      * **Input**: <book id="bk106" pages="457">

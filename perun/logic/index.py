@@ -50,7 +50,7 @@ class BasicIndexEntry:
     """
     version = IndexVersion.SlowLorris
 
-    def __init__(self, time: str, checksum: str, path: str, offset: int, *_: Any):
+    def __init__(self, time: str, checksum: str, path: str, offset: int, *_: Any) -> None:
         """
         :param str time: modification timestamp of the entry profile
         :param str checksum: checksum of the object, i.e. the path to its real content
@@ -103,7 +103,7 @@ class BasicIndexEntry:
             byte = store.read_char_from_handle(index_handle)
         return BasicIndexEntry(file_time, file_sha, file_path, file_offset)
 
-    def write_to(self, index_handle: BinaryIO):
+    def write_to(self, index_handle: BinaryIO) -> None:
         """Writes entry at current location in the index_handle
 
         :param file index_handle: file handle of the index
@@ -145,7 +145,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
     """
     version = IndexVersion.FastSloth
 
-    def __init__(self, time: str, checksum: str, path: str, offset: int, profile: dict):
+    def __init__(self, time: str, checksum: str, path: str, offset: int, profile: dict) -> None:
         """
         :param str time: modification timestamp of the entry profile
         :param str checksum: checksum of the object, i.e. the path to its real content
@@ -227,7 +227,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
             basic_entry.time, basic_entry.checksum, basic_entry.path, basic_entry.offset, profile
         )
 
-    def write_to(self, index_handle: BinaryIO):
+    def write_to(self, index_handle: BinaryIO) -> None:
         """Writes entry at current location in the index_handle
 
         :param file index_handle: file handle of the index
@@ -309,7 +309,7 @@ def walk_index(index_handle: BinaryIO) -> Iterable[BasicIndexEntry]:
         )
 
 
-def print_index(index_file: str):
+def print_index(index_file: str) -> None:
     """Helper function for printing the contents of the index
 
     :param str index_file: path to the index file
@@ -318,7 +318,7 @@ def print_index(index_file: str):
         print_index_from_handle(index_handle)
 
 
-def print_index_from_handle(index_handle: BinaryIO):
+def print_index_from_handle(index_handle: BinaryIO) -> None:
     """Helper funciton for printing the contents of index inside the handle.
 
     :param file index_handle: opened file handle
@@ -333,7 +333,7 @@ def print_index_from_handle(index_handle: BinaryIO):
         print(str(entry))
 
 
-def touch_index(index_path: str):
+def touch_index(index_path: str) -> None:
     """Initializes and creates the index if it does not exists
 
     The Version 1 index is of following form:
@@ -357,7 +357,7 @@ def touch_index(index_path: str):
             initialize_index_in_handle(index_handle)
 
 
-def initialize_index_in_handle(index_handle: BinaryIO):
+def initialize_index_in_handle(index_handle: BinaryIO) -> None:
     """Initialize the index prefix in the handle.
 
     First the magic bytes are written, then the version of the index and at last the
@@ -371,7 +371,7 @@ def initialize_index_in_handle(index_handle: BinaryIO):
     index_handle.write(struct.pack('i', 0))
 
 
-def update_index_version(index_handle: BinaryIO):
+def update_index_version(index_handle: BinaryIO) -> None:
     """Updates the index handle to newer version
 
     :param File index_handle: opened index handle
@@ -382,7 +382,7 @@ def update_index_version(index_handle: BinaryIO):
     index_handle.seek(previous_position)
 
 
-def modify_number_of_entries_in_index(index_handle: BinaryIO, modify: Callable[[int], int]):
+def modify_number_of_entries_in_index(index_handle: BinaryIO, modify: Callable[[int], int]) -> None:
     """Helper function of inplace modification of number of entries in index
 
     :param file index_handle: handle of the opened index
@@ -394,7 +394,7 @@ def modify_number_of_entries_in_index(index_handle: BinaryIO, modify: Callable[[
     index_handle.write(struct.pack('i', modify(number_of_entries)))
 
 
-def write_entry_to_index(index_file: str, file_entry: BasicIndexEntry):
+def write_entry_to_index(index_file: str, file_entry: BasicIndexEntry) -> None:
     """Writes the file_entry to its appropriate position within the index.
 
     Given the file entry, writes the entry within the file, moving everything by the given offset
@@ -449,7 +449,7 @@ def write_entry_to_index(index_file: str, file_entry: BasicIndexEntry):
         update_index_version(index_handle)
 
 
-def write_list_of_entries(index_file: str, entry_list: list[BasicIndexEntry]):
+def write_list_of_entries(index_file: str, entry_list: list[BasicIndexEntry]) -> None:
     """Rewrites the index file to contain the list of entries only
 
     Clears the index and writes list of entries into the index
@@ -513,7 +513,7 @@ def find_minor_index(minor_version: str) -> str:
     return index_file
 
 
-def register_in_pending_index(registered_file: str, profile: dict):
+def register_in_pending_index(registered_file: str, profile: dict) -> None:
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -532,7 +532,7 @@ def register_in_pending_index(registered_file: str, profile: dict):
 
 def register_in_minor_index(
         base_dir: str, minor_version: str, registered_file: str, registered_checksum: str, profile: dict
-):
+) -> None:
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -552,7 +552,7 @@ def register_in_minor_index(
     register_in_index(minor_index_file, registered_file, registered_checksum, profile)
 
 
-def register_in_index(index_filename: str, registered_file: str, registered_file_checksum: str, profile: dict):
+def register_in_index(index_filename: str, registered_file: str, registered_file_checksum: str, profile: dict) -> None:
     """Registers file in the index corresponding to either minor_version or pending profiles
 
     :param str index_filename: source index filename
@@ -571,7 +571,7 @@ def register_in_index(index_filename: str, registered_file: str, registered_file
     perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
 
 
-def remove_from_index(base_dir: str, minor_version: str, removed_file_generator: Collection[str]):
+def remove_from_index(base_dir: str, minor_version: str, removed_file_generator: Collection[str]) -> None:
     """Removes stream of removed files from the index.
 
     Iterates through all the removed files, and removes their partial/full occurence from the
@@ -704,7 +704,7 @@ def load_custom_index(index_path: str) -> dict:
         return {}
 
 
-def save_custom_index(index_path: str, records: list | dict):
+def save_custom_index(index_path: str, records: list | dict) -> None:
     """Saves the index records to the custom index file.
     The index file is created if it does not exist or overwritten if it does.
 

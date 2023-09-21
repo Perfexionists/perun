@@ -41,7 +41,7 @@ def postprocess(
     return PostprocessStatus.OK, "", {'profile': new_profile}
 
 
-def store_model_counts(analysis: list[dict]):
+def store_model_counts(analysis: list[dict]) -> None:
     """ Store the number of best-fit models for each model category as a metric.
 
     :param list analysis: the list of inferred models.
@@ -97,7 +97,7 @@ def store_model_counts(analysis: list[dict]):
               default='amount', callback=cli_helpers.process_resource_key_param,
               help="Sets key for which we are finding the model.")
 @pass_profile
-def regression_analysis(profile: Profile, **kwargs: Any):
+def regression_analysis(profile: Profile, **kwargs: Any) -> None:
     """Finds fitting regression models to estimate models of profiled resources.
 
     \b

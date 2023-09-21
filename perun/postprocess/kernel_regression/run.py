@@ -104,7 +104,7 @@ def postprocess(profile: Profile, **configuration: dict) -> tuple[PostprocessSta
                     'sub-sample to estimate bandwidth of the full sample. If False (default), the '
                     'estimator used the mean.'))
 @click.pass_context
-def estimator_settings(ctx: click.Context, **kwargs: Any):
+def estimator_settings(ctx: click.Context, **kwargs: Any) -> None:
     r"""
     Nadaraya-Watson kernel regression with specific settings for estimate.
 
@@ -237,7 +237,7 @@ def estimator_settings(ctx: click.Context, **kwargs: Any):
               help='The float value of <bandwidth> defined by user, which '
                    'will be used at kernel regression.')
 @click.pass_context
-def user_selection(ctx: click.Context, **kwargs: Any):
+def user_selection(ctx: click.Context, **kwargs: Any) -> None:
     """
     Nadaraya-Watson kernel regression with user bandwidth.
 
@@ -272,7 +272,7 @@ def user_selection(ctx: click.Context, **kwargs: Any):
                    '<method_name> will be used to compute the bandwidth, which will be '
                    'used at kernel regression.')
 @click.pass_context
-def method_selection(ctx: click.Context, **kwargs: Any):
+def method_selection(ctx: click.Context, **kwargs: Any) -> None:
     r"""
     Nadaraya-Watson kernel regression with supporting bandwidth selection method.
 
@@ -365,7 +365,7 @@ def method_selection(ctx: click.Context, **kwargs: Any):
                     'to 3. Is accepted only by `local-polynomial` <smoothing-method>, another '
                     'methods ignoring it.'))
 @click.pass_context
-def kernel_smoothing(ctx: click.Context, **kwargs: Any):
+def kernel_smoothing(ctx: click.Context, **kwargs: Any) -> None:
     r"""
     Kernel regression with different types of kernel and regression methods.
 
@@ -498,7 +498,7 @@ def kernel_smoothing(ctx: click.Context, **kwargs: Any):
                    'the given <gamma-range>. Cannot be greater than length of <gamma-range>, else '
                    'will be set to value of the lower bound of the <gamma_range>.')
 @click.pass_context
-def kernel_ridge(ctx: click.Context, **kwargs: Any):
+def kernel_ridge(ctx: click.Context, **kwargs: Any) -> None:
     """
     Nadaraya-Watson kernel regression with automatic bandwidth selection.
 
@@ -533,7 +533,7 @@ def kernel_ridge(ctx: click.Context, **kwargs: Any):
 @click.group(invoke_without_command=True)
 @cli_helpers.resources_key_options
 @click.pass_context
-def kernel_regression(ctx: click.Context, **_: dict):
+def kernel_regression(ctx: click.Context, **_: Any) -> None:
     """
     Execution of the interleaving of profiles resources by *kernel* models.
 

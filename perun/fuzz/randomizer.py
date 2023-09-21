@@ -6,7 +6,7 @@ import random
 from typing import Callable, Any
 
 
-def random_repeats(repeats: int) -> Callable:
+def random_repeats(repeats: int) -> Callable[[Any], Any]:
     """Decorator for random number of repeats of inner function
 
     Note that the return value of the wrapped function is NOT checked or passed anywhere
@@ -14,13 +14,13 @@ def random_repeats(repeats: int) -> Callable:
     :param int repeats: the upper bound of number of repeats
     :return: decorator that takes function and repeats its call up to @p repeats times
     """
-    def inner_wrapper(func: Callable) -> Callable:
+    def inner_wrapper(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         """Inner wrapper
 
         :param function func: wrapped function
         :return: innermost wrapper
         """
-        def innermost_wrapper(*args: Any, **kwargs: Any):
+        def innermost_wrapper(*args: Any, **kwargs: Any) -> None:
             """Innermost wrapper
 
             :param list args: list of arguments

@@ -7,7 +7,7 @@ from typing import Any
 
 class InvalidParameterException(Exception):
     """Raises when the given parameter is invalid"""
-    def __init__(self, parameter: str, parameter_value: Any, choices_msg: str = ""):
+    def __init__(self, parameter: str, parameter_value: Any, choices_msg: str = "") -> None:
         """
         :param str parameter: name of the parameter that is invalid
         :param object parameter_value: value of the parameter
@@ -24,7 +24,7 @@ class InvalidParameterException(Exception):
 
 class MissingConfigSectionException(Exception):
     """Raised when the section in config is missing"""
-    def __init__(self, section_key: str):
+    def __init__(self, section_key: str) -> None:
         super().__init__("")
         self.section_key = section_key
 
@@ -37,7 +37,7 @@ class MissingConfigSectionException(Exception):
 
 class TagOutOfRangeException(Exception):
     """Raised when the requested profile tag is out of range."""
-    def __init__(self, position: int, total: int, tag_source: str):
+    def __init__(self, position: int, total: int, tag_source: str) -> None:
         super().__init__("")
         self.pos = position
         self.total = total
@@ -49,7 +49,7 @@ class TagOutOfRangeException(Exception):
 
 class ExternalEditorErrorException(Exception):
     """Raised when there is an error while invoking the external editor"""
-    def __init__(self, editor: str, reason: str):
+    def __init__(self, editor: str, reason: str) -> None:
         """
         :param str editor: name of the invoked editor
         :param str reason: reason why the editor failed
@@ -64,7 +64,7 @@ class ExternalEditorErrorException(Exception):
 
 class MalformedIndexFileException(Exception):
     """Raised when the read index is malformed"""
-    def __init__(self, reason: str):
+    def __init__(self, reason: str) -> None:
         """
         :param str reason: the reason that the index is considered to be malformed
         """
@@ -77,7 +77,7 @@ class MalformedIndexFileException(Exception):
 
 class EntryNotFoundException(Exception):
     """Raised when the looked up entry is not within the index"""
-    def __init__(self, entry: str, cause: str = ""):
+    def __init__(self, entry: str, cause: str = "") -> None:
         """
         :param str entry: entry we are looking up in the index
         """
@@ -92,7 +92,7 @@ class EntryNotFoundException(Exception):
 
 class IndexNotFoundException(Exception):
     """Raised when the index file for the minor version does not exist"""
-    def __init__(self, minor_version: str):
+    def __init__(self, minor_version: str) -> None:
         """
         :param str minor_version: the minor version that was supposed to have an index file
         """
@@ -105,7 +105,7 @@ class IndexNotFoundException(Exception):
 
 class StatsFileNotFoundException(Exception):
     """Raised when the looked up stats file does not exist"""
-    def __init__(self, filename: str):
+    def __init__(self, filename: str) -> None:
         super().__init__("")
         self.path = filename
         self.msg = f"The requested stats file '{self.path}' does not exist"
@@ -117,7 +117,7 @@ class StatsFileNotFoundException(Exception):
 class InvalidTempPathException(Exception):
     """Raised when the looked up temporary path (file or directory) does not exist or the given
     path is of invalid type for the given operation (file path for directory operation etc.)"""
-    def __init__(self, msg: str):
+    def __init__(self, msg: str) -> None:
         super().__init__("")
         self.msg = msg
 
@@ -127,7 +127,7 @@ class InvalidTempPathException(Exception):
 
 class ProtectedTempException(Exception):
     """Raised when an attempt to delete protected temp file is made."""
-    def __init__(self, msg: str):
+    def __init__(self, msg: str) -> None:
         super().__init__("")
         self.msg = msg
 
@@ -140,7 +140,7 @@ class VersionControlSystemException(Exception):
 
     For example, when there is incorrect sha-1 specification of the minor version.
     """
-    def __init__(self, msg: str, *args: Any):
+    def __init__(self, msg: str, *args: Any) -> None:
         """
         :param str msg: format string of the error message
         :param list args: list of arguments for format string
@@ -149,13 +149,13 @@ class VersionControlSystemException(Exception):
         self.msg = msg
         self.args = args
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.msg.format(*self.args)
 
 
 class IncorrectProfileFormatException(Exception):
     """Raised when the file is missing or the given format is not in the unified json format"""
-    def __init__(self, filename: str, msg: str):
+    def __init__(self, filename: str, msg: str) -> None:
         """
         :param str filename: filename of the profile in the wrong format
         :param str msg: additional message what is wrong withe profile
@@ -170,7 +170,7 @@ class IncorrectProfileFormatException(Exception):
 
 class NotPerunRepositoryException(Exception):
     """Raised when command is not called from within the scope of any Perun repository"""
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         super().__init__("")
         self.path = path
 
@@ -180,7 +180,7 @@ class NotPerunRepositoryException(Exception):
 
 class UnsupportedModuleException(Exception):
     """Raised when dynamically loading a module, that is not supported by the perun"""
-    def __init__(self, module: str):
+    def __init__(self, module: str) -> None:
         super().__init__("")
         self.module = module
 
@@ -193,7 +193,7 @@ class UnsupportedModuleFunctionException(Exception):
 
     I.e. there is no implementation of the given function.
     """
-    def __init__(self, module: str, func: str):
+    def __init__(self, module: str, func: str) -> None:
         """
         :param str module: name of the module that does not support the given function
         """
@@ -207,7 +207,7 @@ class UnsupportedModuleFunctionException(Exception):
 
 class DictionaryKeysValidationFailed(Exception):
     """Raised when validated dictionary is actually not a dictionary or has missing/excess keys"""
-    def __init__(self, dictionary: dict, missing_keys: list[str], excess_keys: list[str]):
+    def __init__(self, dictionary: dict, missing_keys: list[str], excess_keys: list[str]) -> None:
         """
         :param dict dictionary: the validated dictionary
         :param list missing_keys: list of missing keys in the dictionary
@@ -233,7 +233,7 @@ class GenericRegressionExceptionBase(Exception):
     - this allows to catch all regression exceptions in one clause
 
     """
-    def __init__(self, msg: str):
+    def __init__(self, msg: str) -> None:
         """Base constructor with exception message"""
         super().__init__("")
         self.msg = msg
@@ -242,7 +242,7 @@ class GenericRegressionExceptionBase(Exception):
 class InvalidPointsException(GenericRegressionExceptionBase):
     """Raised when regression data points count is too low or
     the x and y coordinates count is different"""
-    def __init__(self, x_len: int, y_len: int, threshold: int):
+    def __init__(self, x_len: int, y_len: int, threshold: int) -> None:
         super().__init__("")
         self.x_len = x_len
         self.y_len = y_len
@@ -258,7 +258,7 @@ class InvalidPointsException(GenericRegressionExceptionBase):
 
 class InvalidSequenceSplitException(GenericRegressionExceptionBase):
     """Raised when the sequence split would produce too few points to use in regression analysis"""
-    def __init__(self, parts: float, ratio: float):
+    def __init__(self, parts: float, ratio: float) -> None:
         super().__init__("")
         self.parts = parts
         self.ratio = ratio
@@ -273,7 +273,7 @@ class InvalidSequenceSplitException(GenericRegressionExceptionBase):
 
 class InvalidModelException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown regression model is requested"""
-    def __init__(self, model):
+    def __init__(self, model) -> None:
         super().__init__("")
         self.model = model
         self.msg = f"Invalid or unsupported regression model: {self.model}."
@@ -284,7 +284,7 @@ class InvalidModelException(GenericRegressionExceptionBase):
 
 class InvalidTransformationException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown model transformation is requested"""
-    def __init__(self, model: str, transformation: str):
+    def __init__(self, model: str, transformation: str) -> None:
         super().__init__("")
         self.model = model
         self.transformation = transformation
@@ -298,7 +298,7 @@ class InvalidTransformationException(GenericRegressionExceptionBase):
 
 class InvalidBinaryException(Exception):
     """Raised when collector parameter 'binary' is not actually executable ELF file"""
-    def __init__(self, binary: str):
+    def __init__(self, binary: str) -> None:
         """
         :param str binary: the supplied binary parameter
         """
@@ -314,7 +314,7 @@ class InvalidBinaryException(Exception):
 
 class SystemTapScriptCompilationException(Exception):
     """Raised when an error is encountered during the compilation of a SystemTap script"""
-    def __init__(self, logfile: str, code: int):
+    def __init__(self, logfile: str, code: int) -> None:
         """
         :param str logfile: log file that contains more details regarding the error
         :param int code: the exit code of the compilation process
@@ -323,7 +323,7 @@ class SystemTapScriptCompilationException(Exception):
         self.logfile = logfile
         self.code = code
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"SystemTap script compilation failure (code: {self.code}), see the corresponding {self.logfile} file."
         )
@@ -331,7 +331,7 @@ class SystemTapScriptCompilationException(Exception):
 
 class SystemTapStartupException(Exception):
     """Raised when a SystemTap error is encountered during its startup"""
-    def __init__(self, logfile: str):
+    def __init__(self, logfile: str) -> None:
         """
         :param str logfile: log file that contains more details regarding the error
         """
@@ -344,7 +344,7 @@ class SystemTapStartupException(Exception):
 
 class ResourceLockedException(Exception):
     """Raised when certain trace collector resource is already being used by another process"""
-    def __init__(self, resource: str, pid: int):
+    def __init__(self, resource: str, pid: int) -> None:
         super().__init__()
         self.resource = resource
         self.pid = pid
@@ -358,7 +358,7 @@ class ResourceLockedException(Exception):
 
 class MissingDependencyException(Exception):
     """Raised when some dependency is missing on a system"""
-    def __init__(self, dependency: str):
+    def __init__(self, dependency: str) -> None:
         super().__init__()
         self.dependency = dependency
 
@@ -368,7 +368,7 @@ class MissingDependencyException(Exception):
 
 class UnexpectedPrototypeSyntaxError(Exception):
     """Raised when the function prototype syntax is somehow different than expected"""
-    def __init__(self, prototype_name: str, syntax_error: str = "unknown cause"):
+    def __init__(self, prototype_name: str, syntax_error: str = "unknown cause") -> None:
         """
         :param str prototype_name: name of the prototype where the issue happened
         """
@@ -376,14 +376,14 @@ class UnexpectedPrototypeSyntaxError(Exception):
         self.prototype_name = prototype_name
         self.cause = syntax_error
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"wrong prototype of function '{self.prototype_name}': {self.cause}"
 
 
 class SignalReceivedException(BaseException):
     """Raised when a handled signal is encountered. BaseException used to avoid collision with
     other exception handlers that catch 'Exception' classes."""
-    def __init__(self, signum: int, frame: traceback.StackSummary):
+    def __init__(self, signum: int, frame: traceback.StackSummary) -> None:
         """
         :param int signum: a representation of the encountered signal
         :param object frame: a frame / stack trace object
@@ -392,5 +392,5 @@ class SignalReceivedException(BaseException):
         self.signum = signum
         self.frame = frame
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Received signal: {self.signum}"

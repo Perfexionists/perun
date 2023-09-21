@@ -4,7 +4,7 @@ import os
 
 import click
 
-from typing import Tuple, Dict, TypedDict, List
+from typing import TypedDict, Any
 from typing_extensions import Unpack
 
 import perun.collect.memory.filter as filters
@@ -17,8 +17,8 @@ from perun.utils.structs import CollectStatus, Executable
 
 class Kwargs(TypedDict):
     all: bool
-    no_func: List[str]
-    no_source: List[str]
+    no_func: list[str]
+    no_source: list[str]
 
 
 
@@ -27,7 +27,7 @@ _tmp_log_filename = "MemoryLog"
 DEFAULT_SAMPLING = 0.001
 
 
-def before(executable: Executable, **_) -> Tuple[CollectStatus, str, Dict]:
+def before(executable: Executable, **_) -> tuple[CollectStatus, str, dict]:
     """ Phase for initialization the collect module
 
     :param Executable executable: executable profiled command
@@ -59,7 +59,7 @@ def before(executable: Executable, **_) -> Tuple[CollectStatus, str, Dict]:
     return CollectStatus.OK, '', {}
 
 
-def collect(executable: Executable, **_) -> Tuple[CollectStatus, str, Dict]:
+def collect(executable: Executable, **_) -> tuple[CollectStatus, str, dict]:
     """ Phase for collection of the profile data
 
     :param Executable executable: executable profiled command
@@ -82,7 +82,7 @@ def after(
         executable: Executable,
         sampling: float = DEFAULT_SAMPLING,
         **kwargs: Unpack[Kwargs]
-) -> Tuple[CollectStatus, str, Dict]:
+) -> tuple[CollectStatus, str, dict]:
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
 
@@ -154,7 +154,7 @@ def after(
               help='Will record the full trace for each allocation, i.e. it'
               ' will include all allocators and even unreachable records.')
 @click.pass_context
-def memory(ctx: click.Context, **kwargs):
+def memory(ctx: click.Context, **kwargs: Any) -> None:
     """Generates `memory` performance profile, capturing memory allocations of
     different types along with target address and full call trace.
 

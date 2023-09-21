@@ -54,7 +54,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
 @click.option('--view-in-browser', '-v', default=False, is_flag=True,
               help="Will show the graph in browser.")
 @pass_profile
-def scatter(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Dict):
+def scatter(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Dict) -> None:
     """Interactive visualization of resources and models in scatter plot format.
 
     Scatter plot shows resources as points according to the given parameters.

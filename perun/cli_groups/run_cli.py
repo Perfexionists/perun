@@ -32,7 +32,7 @@ from perun.utils.structs import CollectStatus
               help='If set to true, then even if the repository is dirty, '
                    'the changes will not be stashed')
 @click.pass_context
-def run(ctx: click.Context, **kwargs: Any):
+def run(ctx: click.Context, **kwargs: Any) -> None:
     """Generates batch of profiles w.r.t. specification of list of jobs.
 
     Either runs the job matrix stored in local.yml configuration or lets the
@@ -45,7 +45,7 @@ def run(ctx: click.Context, **kwargs: Any):
 @click.pass_context
 @click.option('--without-vcs-history', '-q', 'quiet', is_flag=True, default=False,
               help="Will not print the VCS history tree during the collection of the data.")
-def matrix(ctx: click.Context, quiet: bool, **kwargs: Any):
+def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     """Runs the jobs matrix specified in the local.yml configuration.
 
     This commands loads the jobs configuration from local configuration, builds
@@ -96,7 +96,7 @@ def matrix(ctx: click.Context, quiet: bool, **kwargs: Any):
               help='Additional parameters for the <postprocessor> read from the'
                    ' file in YAML format')
 @click.pass_context
-def job(ctx: click.Context, **kwargs: Any):
+def job(ctx: click.Context, **kwargs: Any) -> None:
     """Run specified batch of perun jobs to generate profiles.
 
     This command correspond to running one isolated batch of profiling jobs,

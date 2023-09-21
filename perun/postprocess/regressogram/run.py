@@ -56,7 +56,7 @@ def postprocess(
                    'for points within each bucket of regressogram.')
 @cli_helpers.resources_key_options
 @pass_profile
-def regressogram(profile: dict, **kwargs: Any):
+def regressogram(profile: dict, **kwargs: Any) -> None:
     """
     Execution of the interleaving of profiled resources by **regressogram** models.
 

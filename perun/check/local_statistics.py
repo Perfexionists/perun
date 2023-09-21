@@ -2,11 +2,14 @@
 The module contains the methods, that executes the computational logic of
 `local_statistics` detection method.
 """
+from __future__ import annotations
 
 import numpy as np
 import scipy.integrate as integrate
 
-from typing import Dict, Tuple, List, Any, Iterable
+from typing import Any, Iterable, TYPE_CHECKING
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import perun.check.factory as factory
 import perun.check.nonparam_helpers as nparam_helpers
@@ -34,8 +37,8 @@ _STATS_DIFF_CHANGE = .25
 
 
 def compute_window_stats(
-        x_pts: List[float], y_pts: List[float]
-) -> Tuple[Dict[str, np.ndarray], np.ndarray]:
+        x_pts: list[float], y_pts: list[float]
+) -> tuple[dict[str, npt.NDArray[np.float64]], npt.NDArray[np.float64]]:
     """
     The method computes the local statistics from the given points.
 
@@ -51,13 +54,13 @@ def compute_window_stats(
     :param list y_pts: array with values of y-coordinates
     :return tuple: (dictionary with computed statistics, edges of individual sub-intervals)
     """
-    def reshape_array(array: np.ndarray) -> np.ndarray:
+    def reshape_array(array: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
         The method reshapes the given array into several
         smaller arrays according to the given count.
 
-        :param np.ndarray array: array with points to reshape
-        :return np.ndarray: the reshaped array according to the given options
+        :param npt.NDArray array: array with points to reshape
+        :return npt.NDArray: the reshaped array according to the given options
         """
         # check whether the array contains the sufficient number of points to reshape
         if array.size % n:
@@ -67,7 +70,7 @@ def compute_window_stats(
 
     # calculating the count of the points within the sub-intervals
     n = int(_INTERVAL_DENSITY * min(len(y_pts), len(x_pts)))
-    # list -> np.ndarray
+    # list -> npt.NDArray
     x_array = np.asarray(x_pts)
     y_array = np.asarray(y_pts)
     # save the maximum value from x-coordinates (end of the interval)
@@ -113,8 +116,8 @@ def compute_window_stats(
 
 
 def classify_stats_diff(
-        baseline_stats: Dict[str, np.ndarray], target_stats: Dict[str, np.ndarray]
-) -> Tuple[np.ndarray, np.ndarray]:
+        baseline_stats: dict[str, npt.NDArray[np.float64]], target_stats: dict[str, npt.NDArray[np.float64]]
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """
     The method performs the classification of computed statistical metrics.
 
@@ -173,9 +176,9 @@ def compare_diff_values(change_score: float, rel_error: float) -> float:
         || -> elif REL_ERROR <= CHANGE_THRESHOLD then change_score=change_score+(0.5*change_state)
         ||| -> else REL_ERROR > CHANGE_THRESHOLD then change_state=change_score+(1.0*change_state)
 
-    :param np.ndarray change_score: array contains the values of relative error for sub-intervals
+    :param npt.NDArray change_score: array contains the values of relative error for sub-intervals
     :param float rel_error: current value of relative error
-    :return np.ndarray: update array with new values of change score
+    :return npt.NDArray: update array with new values of change score
     """
     if abs(rel_error) <= _STATS_DIFF_NO_CHANGE:
         change_score += 0
@@ -192,8 +195,8 @@ def execute_analysis(
         baseline_model: ModelRecord,
         target_model: ModelRecord,
         target_profile: Profile,
-        **_: Any
-) -> Dict[str, Any]:
+        **__: Any
+) -> dict[str, Any]:
     """
     A method performs the primary analysis for pair of models.
 
@@ -215,9 +218,9 @@ def execute_analysis(
         uid, baseline_model, target_profile, target_model
     )
 
-    baseline_stats, _ = compute_window_stats(original_x_pts, baseline_y_pts)
-    target_stats, x_pts = compute_window_stats(original_x_pts, target_y_pts)
-    change_info, partial_rel_error = classify_stats_diff(baseline_stats, target_stats)
+    baseline_window_stats, _ = compute_window_stats(original_x_pts, baseline_y_pts)
+    target_window_stats, x_pts = compute_window_stats(original_x_pts, target_y_pts)
+    change_info, partial_rel_error = classify_stats_diff(baseline_window_stats, target_window_stats)
 
     x_pts = np.append(x_pts, [x_pts[0]], axis=1) if x_pts.size == 1 else x_pts
     x_pts_even = x_pts[:, 0::2].reshape(-1, x_pts.size // 2)[0].round(2)
@@ -225,14 +228,14 @@ def execute_analysis(
     partial_intervals = np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T
 
     change_info_enum = nparam_helpers.classify_change(
-        tools.safe_division(np.sum(partial_rel_error), partial_rel_error.size),
+        tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
         _STATS_DIFF_NO_CHANGE, _STATS_DIFF_CHANGE
     )
 
     return {
         'change_info': change_info_enum,
         'rel_error': round(
-            tools.safe_division(np.sum(partial_rel_error), partial_rel_error.size), 2
+            tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
         ),
         'partial_intervals': partial_intervals
     }

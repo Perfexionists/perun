@@ -1,11 +1,12 @@
 """List of helper and globally used structures and named tuples"""
+from __future__ import annotations
 
 import collections
 import shlex
 from dataclasses import dataclass
 
 from enum import Enum
-from typing import Union, Optional
+from typing import Union, Optional, Any
 
 import nptyping as npt
 
@@ -54,7 +55,7 @@ class RunnerReport:
         'postprocessor': PostprocessStatus.ERROR
     }
 
-    def __init__(self, runner, runner_type, kwargs):
+    def __init__(self, runner, runner_type, kwargs) -> None:
         """
         :param module runner: module of the runner
         :param str runner_type: type of the runner (either 'collector' or 'postprocessor'
@@ -72,7 +73,7 @@ class RunnerReport:
         self.message = "OK"
         self.kwargs = kwargs
 
-    def update_from(self, stat_code, message, params):
+    def update_from(self, stat_code, message, params) -> None:
         """Updates the report according to the successful results of one of the phases
 
         :param int stat_code: returned code of the run
@@ -92,7 +93,7 @@ class RunnerReport:
             self.message = ""
         self.message += message
 
-    def is_ok(self):
+    def is_ok(self) -> bool:
         """Checks if the status of the collection or postprocessing is so far ok
 
         :return: true if the status is OK
@@ -110,7 +111,7 @@ class Executable:
         note that this is to differentiate between actually generated workloads from generators and
         names of the generators.
     """
-    def __init__(self, cmd, args="", workload=""):
+    def __init__(self, cmd, args="", workload="") -> None:
         """Initializes the executable
 
         :param str cmd: command to be executed
@@ -122,7 +123,7 @@ class Executable:
         self.workload = str(workload)
         self.origin_workload = str(workload)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns nonescaped, nonlexed string representation of the executable
 
         :return: string representation of executable
@@ -132,7 +133,7 @@ class Executable:
         executable += " " + self.workload if self.workload else ""
         return executable
 
-    def to_escaped_string(self):
+    def to_escaped_string(self) -> str:
         """Returns escaped string representation of executable
 
         :return: escaped string representation of executable
@@ -149,7 +150,7 @@ class Unit:
     :ivar str name: name of the unit
     :ivar dict params: parameters for the unit
     """
-    def __init__(self, name, params):
+    def __init__(self, name, params) -> None:
         """Constructs the unit, with name being sanitized
 
         :param str name: name of the unit
@@ -160,7 +161,7 @@ class Unit:
 
 
     @classmethod
-    def desanitize_unit_name(cls, unit_name):
+    def desanitize_unit_name(cls, unit_name: str) -> str:
         """Replace the underscors in the unit name so it is CLI compatible.
 
         In Click 7.0 all subcommands have automatically replaced underscores (_) with dashes (-).
@@ -172,7 +173,7 @@ class Unit:
         return unit_name.replace('_', '-')
 
     @classmethod
-    def sanitize_unit_name(cls, unit_name):
+    def sanitize_unit_name(cls, unit_name: str) -> str:
         """Sanitizes module name so it is usable and uniform in the perun.
 
         As of Click 7.0 in all subcommands underscores (_) are automatically replaced by dashes (-).
@@ -203,7 +204,19 @@ class DegradationInfo:
     :ivar float rate_degradation_relative: relative rate of the degradation
     """
 
-    def __init__(self, res, loc, fb, tt, t="-", rd=0, ct=0, cr=0, pi=None, rdr=0.0):
+    def __init__(
+            self,
+            res: PerformanceChange,
+            loc: str,
+            fb: str,
+            tt: str,
+            t: str = "-",
+            rd: float = 0,
+            ct: float = 0,
+            cr: float = 0,
+            pi: Optional[list[float]] = None,
+            rdr: float = 0.0
+    ) -> None:
         """Each degradation consists of its results, the location, where the change has happened
         (this is e.g. the unique id of the resource, like function or concrete line), then the pair
         of best models for baseline and target, and the information about confidence.
@@ -236,7 +249,7 @@ class DegradationInfo:
         self.partial_intervals = pi
         self.rate_degradation_relative = float(rdr)
 
-    def to_storage_record(self):
+    def to_storage_record(self) -> str:
         """Transforms the degradation info to a storage_record
 
         :return: string representation of the degradation as a stored record in the file
@@ -261,7 +274,7 @@ class Job:
     :ivar list postprocessors: list of postprocessing units applied after the collection
     :ivar Executable executable: System Under Profiling (SUP)
     """
-    def __init__(self, collector, postprocessors, executable):
+    def __init__(self, collector, postprocessors, executable) -> None:
         """
         :param Unit collector: collection unit used to collect the SUP
         :param list postprocessors: list of postprocessing units applied after the collection
@@ -271,7 +284,7 @@ class Job:
         self.postprocessors = postprocessors
         self.executable = executable
 
-    def _asdict(self):
+    def _asdict(self) -> dict[str, Any]:
         """
         :return: representation as dictionary
         """
@@ -290,7 +303,7 @@ class OrderedEnum(Enum):
     :ivar int order: the order of the new element
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args) -> None:
         """ Create the new enumeration element and compute its order.
 
         :param args: additional element arguments
@@ -304,7 +317,7 @@ class OrderedEnum(Enum):
         ordered = len(self.__class__.__members__) + 1
         self.order = ordered
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
         """ Comparison operator >=.
 
         :param OrderedEnum other: the other enumeration element
@@ -314,7 +327,7 @@ class OrderedEnum(Enum):
             return self.order >= other.order
         return NotImplemented
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
         """ Comparison operator >.
 
         :param OrderedEnum other: the other enumeration element
@@ -324,7 +337,7 @@ class OrderedEnum(Enum):
             return self.order > other.order
         return NotImplemented
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
         """ Comparison operator <=.
 
         :param OrderedEnum other: the other enumeration element
@@ -334,7 +347,7 @@ class OrderedEnum(Enum):
             return self.order <= other.order
         return NotImplemented
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         """ Comparison operator <.
 
         :param OrderedEnum other: the other enumeration element
@@ -355,7 +368,7 @@ class ProfileListConfig:
         the profile in the list
     :ivar int header_width: overall width of the profile list
     """
-    def __init__(self, list_type, short, profile_list):
+    def __init__(self, list_type, short, profile_list) -> None:
         """Initializes the configuration for the profile list.
 
         :param str list_type: type of the profile list (either untracked or untracked)
@@ -389,7 +402,7 @@ class MinorVersion:
     desc: str
     parents: list
 
-    def to_short(self):
+    def to_short(self) -> MinorVersion:
         """Returns corresponding minor version with shorted one-liner description
 
         :return: minor version with one line description
@@ -404,7 +417,7 @@ class MinorVersion:
         )
 
     @staticmethod
-    def valid_fields():
+    def valid_fields() -> list[str]:
         """
         :return: list of valid fields in the dataclass
         """

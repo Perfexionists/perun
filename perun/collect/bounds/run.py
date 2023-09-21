@@ -10,6 +10,7 @@ import shutil
 import time as systime
 
 from subprocess import SubprocessError
+from typing import Any
 
 import click
 
@@ -131,7 +132,7 @@ def lookup_source_files(ctx: click.Context, _: click.Option, value: list[str]) -
               metavar='<dir>', callback=lookup_source_files,
               help='Directory, where source C files are stored. All of the existing files with '
                    'valid extensions (.c).')
-def bounds(ctx: click.Context, **kwargs: dict):
+def bounds(ctx: click.Context, **kwargs: Any) -> None:
     """Generates `memory` performance profile, capturing memory allocations of
     different types along with target address and full call trace.
 

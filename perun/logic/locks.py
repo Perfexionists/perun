@@ -67,7 +67,7 @@ class ResourceLock:
     :ivar str locks_dir: the path to the .perun directory where lock files are stored
     :ivar str file: the full path of the resulting lock file
     """
-    def __init__(self, resource_type: LockType, resource_name: str, pid: int, locks_dir: str):
+    def __init__(self, resource_type: LockType, resource_name: str, pid: int, locks_dir: str) -> None:
         """ Construct lock object
 
         :param LockType resource_type: the type of the resource to lock
@@ -100,7 +100,7 @@ class ResourceLock:
                 return cls(resource_type, name, pid, os.path.dirname(lock_file))
         return None
 
-    def lock(self):
+    def lock(self) -> None:
         """ Actually locks the resource represented by the lock object.
         """
         WATCH_DOG.debug(
@@ -116,13 +116,13 @@ class ResourceLock:
 
         WATCH_DOG.debug("Resource locked: '{}'".format(self.file))
 
-    def unlock(self):
+    def unlock(self) -> None:
         """ Unlocks the resource represented by the lock object.
         """
         # Attempt to delete the lock file if it was not deleted before
         self.delete_file()
 
-    def check_validity(self):
+    def check_validity(self) -> None:
         """ Checks the validity of the lock, i.e. if there are no other lock files representing the
         same resource (e.g. the profiled binary). If a collision is encountered, an exception
         is raised.
@@ -151,7 +151,7 @@ class ResourceLock:
 
         WATCH_DOG.debug("Lock for '{}:{}' is valid".format(self.name, self.pid))
 
-    def delete_file(self):
+    def delete_file(self) -> None:
         """ Attempts to remove the lock file from the file system.
         """
         try:

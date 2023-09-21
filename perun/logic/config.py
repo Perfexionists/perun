@@ -59,7 +59,7 @@ class Config:
     If the path is set, then the config will be saved to the given path, if the config is modified
     during the run.
     """
-    def __init__(self, config_type: str, path: str, config_initial_data: dict):
+    def __init__(self, config_type: str, path: str, config_initial_data: dict) -> None:
         """
         :param str config_type: type of the configuration (one of 'local', 'global', 'temporary')
         :param str path: path leading to the configuration (if stored internally)
@@ -71,7 +71,7 @@ class Config:
         self.data = config_initial_data
 
     @decorators.validate_arguments(['key'], is_valid_key)
-    def set(self, key: str, value: Any):
+    def set(self, key: str, value: Any) -> None:
         """Overrides the value of the key in the config.
 
         :param str key: list of sections separated by dots
@@ -89,7 +89,7 @@ class Config:
             write_config_to(self.path, self.data)
 
     @decorators.validate_arguments(['key'], is_valid_key)
-    def append(self, key: str, value: Any):
+    def append(self, key: str, value: Any) -> None:
         """Appends the value of the key to the given option in the config.
 
         This requires the key to point to a list option.
@@ -133,7 +133,7 @@ class Config:
         return section_iterator
 
 
-def write_config_to(path: str, config_data: dict):
+def write_config_to(path: str, config_data: dict) -> None:
     """Stores the config data on the path
 
     :param str path: path where the config will be stored to
@@ -161,7 +161,7 @@ def read_config_from(path: str) -> dict:
         return {}
 
 
-def init_shared_config_at(path: str):
+def init_shared_config_at(path: str) -> None:
     """Creates the new configuration at given path with sane defaults of e.g. editor, paging of
     outputs or formats for status or log commands.
 
@@ -210,7 +210,7 @@ generators:
     write_config_to(path, shared_config)
 
 
-def init_local_config_at(path: str, wrapped_vcs: dict, config_template: str = 'master'):
+def init_local_config_at(path: str, wrapped_vcs: dict, config_template: str = 'master') -> None:
     """Creates the new local configuration at given path with sane defaults and helper comments
     for use in order to initialize the config matrix.
 

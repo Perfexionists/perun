@@ -34,7 +34,7 @@ The External Generator can be configured by following options:
 import os
 import subprocess
 
-from typing import Dict, Tuple, List, Any, Iterable
+from typing import Any, Iterable
 
 import perun.utils as utils
 import perun.utils.log as log
@@ -42,7 +42,6 @@ import perun.utils.helpers as helpers
 
 from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
-
 
 
 class ExternalGenerator(WorkloadGenerator):
@@ -61,7 +60,7 @@ class ExternalGenerator(WorkloadGenerator):
     :ivar list key: list of keys for extracted resources
     """
     def __init__(self, job: Job, external_generator: str, output_dir: str, file_format: str,
-                 delimiters: str = '{}', **kwargs: Any):
+                 delimiters: str = '{}', **kwargs: Any) -> None:
         """Initializes the generator of random text files
 
         :param Job job: job for which we are generating workloads
@@ -84,7 +83,7 @@ class ExternalGenerator(WorkloadGenerator):
         self.delimiters = delimiters
         self.splits, self.keys = self._parse_workload_keys()
 
-    def _parse_workload_keys(self) -> Tuple[List[str], List[str]]:
+    def _parse_workload_keys(self) -> tuple[list[str], list[str]]:
         """Splits the workload format into fixed parts (splits) and format parts (keys)
 
         The format of the workload is specified using a set of delimited format keys. E.g.
@@ -99,7 +98,7 @@ class ExternalGenerator(WorkloadGenerator):
         ]
         return split_format[0::2], split_format[1::2]
 
-    def _parse_workload_values(self, workload: str) -> List[Any]:
+    def _parse_workload_values(self, workload: str) -> list[Any]:
         """Parses the real workload into a set of concrete amounts of resources.
 
         Each generated workload can contain further resources coded in the filename based on
@@ -125,7 +124,7 @@ class ExternalGenerator(WorkloadGenerator):
             values.append(helpers.try_convert(workload, [int, float]))
         return values
 
-    def _generate_next_workload(self) -> Iterable[Tuple[Any, Dict[str, Any]]]:
+    def _generate_next_workload(self) -> Iterable[tuple[Any, dict[str, Any]]]:
         """Generates next file workload
 
         :return: path to a file

@@ -11,7 +11,7 @@ import time
 from typing import BinaryIO
 
 
-def write_timestamp(file_handle: BinaryIO, timestamp: float):
+def write_timestamp(file_handle: BinaryIO, timestamp: float) -> None:
     """Helper function for writing timestamp into the file
 
     :param file file_handle: opened file handle

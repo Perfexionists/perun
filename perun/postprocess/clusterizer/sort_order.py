@@ -1,10 +1,10 @@
 """A simple clusterization technique, which classifies resources according to sorted values."""
 
 
-from typing import List, Dict, Any
+from typing import Any
 
 
-def clusterize(sorted_resources: List[Dict[str, Any]], **_):
+def clusterize(sorted_resources: list[dict[str, Any]], **_) -> None:
     """Clusterizes the resources according to their sort order
 
     Simple strategy for clusterizing the values according to the sort order

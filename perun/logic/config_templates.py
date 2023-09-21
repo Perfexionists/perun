@@ -267,7 +267,7 @@ class MasterConfiguration:
 
     Moreover, Master is sane default for most of the functions, except for CLI calling.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
 
 
@@ -289,7 +289,7 @@ class DeveloperConfiguration(MasterConfiguration):
     | :ckey:`execute.pre_run`                   | make                          |
     +-------------------------------------------+-------------------------------+
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
         super().__init__()
         self.execute = {
@@ -382,7 +382,7 @@ class UserConfiguration(DeveloperConfiguration):
                 executable_candidates.append(file)
         return executable_candidates
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
         super().__init__()
         self.collectors = [

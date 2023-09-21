@@ -36,7 +36,7 @@ if TYPE_CHECKING:
                    "the detection between two profiles, respectively between relevant "
                    "kinds of its models. Available only in the following detection "
                    "methods: Integral Comparison (IC) and Local Statistics (LS).")
-def check_group(**_: Any):
+def check_group(**_: Any) -> None:
     """Applies for the points of version history checks for possible performance changes.
 
     This command group either runs the checks for one point of history (``perun check head``) or for
@@ -110,7 +110,7 @@ def check_group(**_: Any):
 @check_group.command('head')
 @click.argument('head_minor', required=False, metavar='<hash>', nargs=1,
                 callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
-def check_head(head_minor: str = 'HEAD'):
+def check_head(head_minor: str = 'HEAD') -> None:
     """Checks for changes in performance between between specified minor version (or current `head`)
     and its predecessor minor versions.
 
@@ -129,7 +129,7 @@ def check_head(head_minor: str = 'HEAD'):
 @check_group.command('all')
 @click.argument('minor_head', required=False, metavar='<hash>', nargs=1,
                 callback=cli_helpers.lookup_minor_version_callback, default='HEAD')
-def check_all(minor_head: str = 'HEAD'):
+def check_all(minor_head: str = 'HEAD') -> None:
     """Checks for changes in performance for the specified interval of version history.
 
     The commands crawls through the whole history of project versions starting from the specified
@@ -154,7 +154,7 @@ def check_all(minor_head: str = 'HEAD'):
 @click.pass_context
 def check_profiles(
         ctx: click.Context, baseline_profile: Profile, target_profile: Profile, minor: Optional[str], **_: str
-):
+) -> None:
     """Checks for changes in performance between two profiles.
 
     The command checks for the changes between two isolate profiles, that can be stored in pending

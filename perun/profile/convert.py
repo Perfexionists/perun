@@ -153,7 +153,7 @@ def to_string_line(frame: dict) -> str:
     return f"{frame['function']}()~{frame['source']}~{frame['line']}"
 
 
-def plot_data_from_coefficients_of(model):
+def plot_data_from_coefficients_of(model: dict[str, Any]) -> dict[str, Any]:
     """Transform coefficients computed by
     :ref:`postprocessors-regression-analysis` into dictionary of points,
     plotable as a function or curve. This function serves as a public wrapper

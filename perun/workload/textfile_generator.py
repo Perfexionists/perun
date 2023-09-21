@@ -38,11 +38,10 @@ import tempfile
 import random
 import faker
 
-from typing import Dict, Tuple, Any, Iterable
+from typing import Any, Iterable
 
 from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
-
 
 
 class TextfileGenerator(WorkloadGenerator):
@@ -105,7 +104,7 @@ class TextfileGenerator(WorkloadGenerator):
             self._get_line() for _ in range(file_len)
         )
 
-    def _generate_next_workload(self) -> Iterable[Tuple[str, Dict[str, Any]]]:
+    def _generate_next_workload(self) -> Iterable[tuple[str, dict[str, Any]]]:
         """Generates next file workload
 
         :return: path to a file

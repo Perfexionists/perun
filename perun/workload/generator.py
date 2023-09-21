@@ -9,7 +9,7 @@
 
 import distutils.util as dutils
 
-from typing import Dict, Tuple, Any, Union, Callable, Iterable
+from typing import Any, Union, Callable, Iterable
 
 import perun.logic.config as config
 import perun.utils.log as log
@@ -27,7 +27,7 @@ class WorkloadGenerator:
     :ivar bool profile_for_each_workload: if set to true, then we will generate one profile
         for each workload, otherwise the workload will be merged into one single profile
     """
-    def __init__(self, job: Job, profile_for_each_workload: bool = False, **_):
+    def __init__(self, job: Job, profile_for_each_workload: bool = False, **_) -> None:
         """Initializes the job of the generator
 
         :param Job job: job for which we will initialize the generator
@@ -40,8 +40,8 @@ class WorkloadGenerator:
         self.for_each = dutils.strtobool(str(profile_for_each_workload))
 
     def generate(self,
-                 collect_function: Callable[[str, Job], Tuple[CollectStatus, Union[dict, Profile]]]
-                 ) -> Iterable[Tuple[CollectStatus, Union[dict, Profile]]]:
+                 collect_function: Callable[[str, Job], tuple[CollectStatus, Union[dict, Profile]]]
+                 ) -> Iterable[tuple[CollectStatus, Union[dict, Profile]]]:
         """Collects the data for the generated workload
 
         :return: tuple of collection status and collected profile
@@ -67,7 +67,7 @@ class WorkloadGenerator:
         if not self.for_each:
             yield collective_status, collective_profile
 
-    def _generate_next_workload(self) -> Iterable[Tuple[Any, Dict[str, Any]]]:
+    def _generate_next_workload(self) -> Iterable[tuple[Any, dict[str, Any]]]:
         """Logs error, since each generator should generate the workloads in different ways
 
         :return: tuple of generated workload and deeper workload context (used when contructing

@@ -11,11 +11,10 @@ The Singleton Generator can be configured by following options:
 
 """
 
-from typing import Dict, Tuple, List, Any, Iterable
+from typing import Any, Iterable
 
 from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
-
 
 
 class SingletonGenerator(WorkloadGenerator):
@@ -23,7 +22,7 @@ class SingletonGenerator(WorkloadGenerator):
 
     :ivar object value: singleton value used as workload
     """
-    def __init__(self, job: Job, value: Any, **kwargs: Any):
+    def __init__(self, job: Job, value: Any, **kwargs: Any) -> None:
         """Initializes the generator of singleton workload
 
         :param Job job: job for which we are generating the workloads
@@ -33,7 +32,7 @@ class SingletonGenerator(WorkloadGenerator):
 
         self.value = value
 
-    def _generate_next_workload(self) -> Iterable[Tuple[Any, Dict[str, Any]]]:
+    def _generate_next_workload(self) -> Iterable[tuple[Any, dict[str, Any]]]:
         """Generates the next integer as the workload
 
         :return: single value

@@ -3,15 +3,13 @@
 import operator
 import click
 
-from typing import Dict, Tuple, List
-
 import perun.logic.runner as runner
 
 from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 
 
-def get_resource_type(resource: Dict) -> str:
+def get_resource_type(resource: dict) -> str:
     """Checks if the resource has defined type and returns empty type otherwise.
 
     Checks if there is 'type' defined inside the resource, and if so then returns
@@ -23,7 +21,7 @@ def get_resource_type(resource: Dict) -> str:
     return resource['type'] if 'type' in resource.keys() else ''
 
 
-def normalize_resources(resources: List[Dict]):
+def normalize_resources(resources: list[dict]) -> None:
     """Normalize the global and snapshot resources according to the maximal values.
 
     Computes the maximal values per each type inside the snapshot of the resource,
@@ -32,7 +30,7 @@ def normalize_resources(resources: List[Dict]):
     :param list resources: list of resources
     """
     # First compute maximas per each type
-    maximum_per_type = {}  # type: Dict[str, int]
+    maximum_per_type = {}  # type: dict[str, int]
     for resource in resources:
         resource_type = get_resource_type(resource)
         type_maximum = maximum_per_type.get(resource_type, None)
@@ -48,7 +46,7 @@ def normalize_resources(resources: List[Dict]):
             else 1.0
 
 
-def postprocess(profile: Profile, **_: Dict) -> Tuple[PostprocessStatus, str, Dict]:
+def postprocess(profile: Profile, **_: dict) -> tuple[PostprocessStatus, str, dict]:
     """
     :param Profile profile: json-like profile that will be preprocessed by normalizer
     """
@@ -61,7 +59,7 @@ def postprocess(profile: Profile, **_: Dict) -> Tuple[PostprocessStatus, str, Di
 
 @click.command()
 @pass_profile
-def normalizer(profile: Profile):
+def normalizer(profile: Profile) -> None:
     """Normalizes performance profile into flat interval.
 
     \b

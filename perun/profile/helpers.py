@@ -397,7 +397,7 @@ def is_key_aggregatable_by(profile: Profile, func: str, key: str, keyname: str) 
     return True
 
 
-def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = True):
+def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = True) -> None:
     """Sorts the profiles according to the key set in either configuration.
 
     The key can either be specified in temporary configuration, or in any of the local or global
@@ -502,7 +502,7 @@ class ProfileInfo:
     This is mainly used for formatted output of the profile list using
     the command line interface
     """
-    def __init__(self, path: str, real_path: str, mtime: str, profile_info: dict, is_raw_profile: bool = False):
+    def __init__(self, path: str, real_path: str, mtime: str, profile_info: dict, is_raw_profile: bool = False) -> None:
         """
         :param str path: contains the name of the file, which identifies it in the index
         :param str real_path: real path to the profile, i.e. how can it really be accessed

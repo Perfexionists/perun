@@ -155,7 +155,7 @@ class SuppressedExceptions:
 
     :ivar list exc: the list of exception classes that should be ignored
     """
-    def __init__(self, *exception_list: type[Exception]):
+    def __init__(self, *exception_list: type[Exception]) -> None:
         """
         :param exception_list: the exception classes to ignore
         """
@@ -234,7 +234,7 @@ class HandledSignals:
     :ivar list old_handlers: the list of previous signal handlers
 
     """
-    def __init__(self, *signals: int, **kwargs: Any):
+    def __init__(self, *signals: int, **kwargs: Any) -> None:
         """
         :param signals: the identification of the handled signal, 'signal.SIG_' is recommended
         :param kwargs: additional properties of the context manager
@@ -255,7 +255,7 @@ class HandledSignals:
             self.old_handlers.append(signal.signal(sig, self.handler))
         return self
 
-    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary):
+    def __exit__(self, exc_type: str, exc_val: Exception, exc_tb: traceback.StackSummary) -> bool:
         """ The CM exit sentinel, perform the callback and reset the signal handlers.
 
         :param type exc_type: the type of the exception
@@ -277,7 +277,7 @@ class HandledSignals:
         return isinstance(exc_val, self.handler_exc)
 
 
-def default_signal_handler(signum: int, frame: traceback.StackSummary):
+def default_signal_handler(signum: int, frame: traceback.StackSummary) -> None:
     """Default signal handler used by the HandledSignals CM.
 
     The function attempts to block any subsequent handler invocation of the same signal by ignoring
@@ -346,7 +346,7 @@ def escape_ansi(line: str) -> str:
     return ansi_escape.sub('', line)
 
 
-def touch_file(touched_filename: str, times: Optional[tuple[int, int]] = None):
+def touch_file(touched_filename: str, times: Optional[tuple[int, int]] = None) -> None:
     """
     Corresponding implementation of touch inside python.
     Courtesy of:
@@ -359,7 +359,7 @@ def touch_file(touched_filename: str, times: Optional[tuple[int, int]] = None):
         os.utime(touched_filename, times)
 
 
-def touch_dir(touched_dir: str):
+def touch_dir(touched_dir: str) -> None:
     """
     Touches directory, i.e. if it exists it does nothing and
     if the directory does not exist, then it creates it.
@@ -428,7 +428,7 @@ def identity(*args: Any) -> Any:
     return args if len(args) > 1 else args[0]
 
 
-def safe_match(pattern: re.Pattern, searched_string: str, default: Optional[Any] = None):
+def safe_match(pattern: re.Pattern, searched_string: str, default: Optional[str] = None) -> Optional[str]:
     """Safely matches groups in searched string; if string not found returns @p default
 
     :param re.Pattern pattern: compiled regular expression pattern

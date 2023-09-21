@@ -52,7 +52,7 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
     :param sklearn.base.RegressorMixin: mixin class for all regression estimators in scikit-learn
     """
 
-    def __init__(self, gamma: NDArray | float = None):
+    def __init__(self, gamma: NDArray | float = None) -> None:
         """
         Initialization method for `KernelRidge` class.
 

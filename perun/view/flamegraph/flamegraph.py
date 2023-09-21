@@ -4,13 +4,14 @@ import os
 import subprocess
 
 import perun.profile.convert as converter
+import perun.profile.factory as profiles
 import perun.utils.helpers as helpers
 
 
 _SCRIPT_FILENAME = './flamegraph.pl'
 
 
-def draw_flame_graph(profile, output_file, height):
+def draw_flame_graph(profile: profiles.Profile, output_file: str, height: int) -> None:
     """ Draw Flame graph from profile.
 
         To create Flame graphs it's uses perl script created by Brendan Gregg.

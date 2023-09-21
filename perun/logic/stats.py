@@ -169,7 +169,7 @@ def add_stats(
 
 def update_stats(
         stats_filename: str, stats_ids: list[str], extensions: list[dict], minor_version: Optional[str] = None
-):
+) -> None:
     """ Updates the stats represented by an ID in the given stats filename under a specific
     minor version. The stats dictionary will be extended by the supplied extensions.
 
@@ -207,7 +207,7 @@ def get_stats_of(
         return {sid: val for sid, val in stats_content.items() if sid in stats_ids}
 
 
-def delete_stats(stats_filename: str, stats_ids: list[str], minor_version: Optional[str] = None):
+def delete_stats(stats_filename: str, stats_ids: list[str], minor_version: Optional[str] = None) -> None:
     """ Deletes the stats represented by an ID in the stats filename under a specific
     minor version. Raises StatsFileNotFoundException if the given file does not exist.
 
@@ -251,7 +251,7 @@ def list_stat_versions(from_minor: Optional[str] = None, top: int = 0) -> list[t
     return _slice_versions(indexed_versions, from_minor, top)
 
 
-def delete_stats_file(stats_filename: str, minor_version: Optional[str] = None, keep_directory: bool = False):
+def delete_stats_file(stats_filename: str, minor_version: Optional[str] = None, keep_directory: bool = False) -> None:
     """ Deletes the stats file in the stats directory of the given minor version.
     Raises StatsFileNotFoundException if the given file does not exist.
 
@@ -288,7 +288,7 @@ def get_latest(stats_filename: str, stats_ids: Optional[list[str]] = None, exclu
     return {}
 
 
-def delete_stats_file_across_versions(stats_filename: str, keep_directory: bool = False):
+def delete_stats_file_across_versions(stats_filename: str, keep_directory: bool = False) -> None:
     """ Deletes the stats file across all the minor version directories in stats.
 
     :param str stats_filename: the name of the stats file to delete
@@ -308,7 +308,7 @@ def delete_stats_file_across_versions(stats_filename: str, keep_directory: bool 
         delete_version_dirs(matches, True)
 
 
-def delete_version_dirs(minor_versions: list[str], only_empty: bool, keep_directories: bool = False):
+def delete_version_dirs(minor_versions: list[str], only_empty: bool, keep_directories: bool = False) -> None:
     """ Deletes the given minor version directories in the stats directory.
 
     Based on the only_empty parameter, it may delete only those which are empty or all of them.
@@ -349,7 +349,7 @@ def delete_version_dirs(minor_versions: list[str], only_empty: bool, keep_direct
     _remove_versions_from_index(removed_versions)
 
 
-def reset_stats(keep_directories: bool = False):
+def reset_stats(keep_directories: bool = False) -> None:
     """ Clears the whole stats directory and attempts to reset it into the initial state.
 
     :param bool keep_directories: the empty version directories are kept in the stats directory
@@ -366,7 +366,7 @@ def reset_stats(keep_directories: bool = False):
         utils_helpers.touch_dir(stats_dir)
 
 
-def clean_stats(keep_custom: bool = False, keep_empty: bool = False):
+def clean_stats(keep_custom: bool = False, keep_empty: bool = False) -> None:
     """ Cleans the stats directory, that is:
     - synchronizes the internal state of the stats directory, i.e. the index file
     - attempts to delete all distinguishable custom files and directories (some manually created or
@@ -390,7 +390,7 @@ def clean_stats(keep_custom: bool = False, keep_empty: bool = False):
         delete_version_dirs([version for version, _ in list_stat_versions()], True)
 
 
-def synchronize_index():
+def synchronize_index() -> None:
     """ Synchronizes the index file with the actual content of the stats directory. Should be
     needed only after some manual tampering with the directories and files in the stats directory.
     """
@@ -403,7 +403,7 @@ def synchronize_index():
     _add_versions_to_index(stats_versions + indexed_versions, [])
 
 
-def _delete_stats_objects(dirs: Iterable[str], files: Iterable[str]):
+def _delete_stats_objects(dirs: Iterable[str], files: Iterable[str]) -> None:
     """ Deletes stats directories and files, should be used only for deleting the content of
     directories or standalone files, not minor version directories.
 
@@ -434,7 +434,7 @@ def _delete_empty_dir(directory_path: str) -> bool:
     return False
 
 
-def _add_to_dict(dictionary: dict, sid: str, content: dict):
+def _add_to_dict(dictionary: dict, sid: str, content: dict) -> None:
     """ A helper function that stores the stats content in the given dict under the ID
 
     :param dict dictionary: the dictionary where the content will be stored
@@ -444,7 +444,7 @@ def _add_to_dict(dictionary: dict, sid: str, content: dict):
     dictionary[sid] = content
 
 
-def _update_or_add_to_dict(dictionary: dict, sid: str, extension: dict):
+def _update_or_add_to_dict(dictionary: dict, sid: str, extension: dict) -> None:
     """ A helper function that updates the stats content in the given dict under the ID or creates
     the new ID with the 'extension' content if it does not exist
 
@@ -494,7 +494,7 @@ def _load_stats_from(stats_handle: BinaryIO) -> dict:
         return {}
 
 
-def _save_stats_to(stats_handle: BinaryIO, stats_records: dict):
+def _save_stats_to(stats_handle: BinaryIO, stats_records: dict) -> None:
     """ Saves and zips the stats contents (records) to the file.
 
     :param file stats_handle: the handle of the stats file
@@ -512,7 +512,7 @@ def _modify_stats_file(
         stats_ids: list[str],
         stats_contents: list[dict],
         modify_function: Callable[[dict, str, dict], None]
-):
+) -> None:
     """ Modifies the contents of the given stats file by the provided modification function
 
     :param str stats_filepath: the path to the stats file
@@ -562,7 +562,7 @@ def _get_version_info(minor_version: Optional[str]) -> tuple[str, str]:
     return minor_version_info.checksum, minor_version_info.date
 
 
-def _add_versions_to_index(minor_versions: list[tuple[str, str]], index_stats: Optional[list[tuple[str, str]]] = None):
+def _add_versions_to_index(minor_versions: list[tuple[str, str]], index_stats: Optional[list[tuple[str, str]]] = None) -> None:
     """ Adds the minor versions records to the stats index file.
 
     :param list minor_versions: list of minor versions (checksum, date) to add
@@ -577,7 +577,7 @@ def _add_versions_to_index(minor_versions: list[tuple[str, str]], index_stats: O
     index.save_custom_index(pcs.get_stats_index(), index_stats)
 
 
-def _remove_versions_from_index(minor_versions: list[str]):
+def _remove_versions_from_index(minor_versions: list[str]) -> None:
     """ Removes minor versions from the index file.
 
     :param list minor_versions: list of minor versions (checksums) to delete

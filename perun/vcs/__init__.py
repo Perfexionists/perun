@@ -193,7 +193,7 @@ def get_head_major_version() -> str:
 
 
 @decorators.singleton_with_args
-def check_minor_version_validity(minor_version: str):
+def check_minor_version_validity(minor_version: str) -> None:
     """Checks whether the given minor version specification corresponds to the
     wrapped version control system, and is not in wrong format.
 
@@ -257,12 +257,12 @@ class CleanState:
     then we use this CleanState to keep those changes, have a clean state (or maybe even checkout
     different version) and then collect correctly the data. The previous state is then restored
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Creates a with wrapper for a corresponding VCS"""
         self.saved_state = False
         self.last_head = None
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         """When entering saves the state of the repository
 
         We save the uncommited/unsaved changes (e.g. to stash) and also we remeber the previous
@@ -270,7 +270,7 @@ class CleanState:
         """
         self.saved_state, self.last_head = save_state()
 
-    def __exit__(self, *_: Any):
+    def __exit__(self, *_: Any) -> None:
         """When exiting, restores the state of the repository
 
         Restores the previous commit and unstashes the changes made to working directory and index.
@@ -297,7 +297,7 @@ def save_state() -> tuple[bool, str]:
     )
 
 
-def restore_state(saved: bool, state: str):
+def restore_state(saved: bool, state: str) -> None:
     """Restores the previous state of the the repository
 
     When restoring the state of the repository one should pop the stored changes from the stash
@@ -313,7 +313,7 @@ def restore_state(saved: bool, state: str):
     )
 
 
-def checkout(minor_version: str):
+def checkout(minor_version: str) -> None:
     """Checks out the new working directory corresponding to the given minor version.
 
     According to the supplied minor version, this command should remake the working directory

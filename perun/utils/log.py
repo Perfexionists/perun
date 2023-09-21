@@ -105,7 +105,7 @@ def paged_function(paging_switch: bool) -> Callable:
     return functools.partial(page_function_if, paging_switch=paging_switch)
 
 
-def _log_msg(stream: Callable[[int, str], None], msg: str, msg_verbosity: int, log_level: int):
+def _log_msg(stream: Callable[[int, str], None], msg: str, msg_verbosity: int, log_level: int) -> None:
     """
     If the @p msg_verbosity is smaller than the set verbosity of the logging
     module, the @p msg is printed to the log with the given @p log_level
@@ -119,7 +119,7 @@ def _log_msg(stream: Callable[[int, str], None], msg: str, msg_verbosity: int, l
         stream(log_level, msg)
 
 
-def msg_to_stdout(message: str, msg_verbosity: int, log_level: int = logging.INFO):
+def msg_to_stdout(message: str, msg_verbosity: int, log_level: int = logging.INFO) -> None:
     """
     Helper function for the log_msg, prints the @p msg to the stdout,
     if the @p msg_verbosity is smaller or equal to actual verbosity.
@@ -127,7 +127,7 @@ def msg_to_stdout(message: str, msg_verbosity: int, log_level: int = logging.INF
     _log_msg(lambda lvl, msg: print("{}".format(msg)), message, msg_verbosity, log_level)
 
 
-def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO):
+def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO) -> None:
     """
     Helper function for the log_msg, prints the @p msg to the log,
     if the @p msg_verbosity is smaller or equal to actual verbosity
@@ -135,7 +135,7 @@ def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO):
     _log_msg(logging.log, msg, msg_verbosity, log_level)
 
 
-def info(msg: str, end: str = '\n'):
+def info(msg: str, end: str = '\n') -> None:
     """
     :param str msg: info message that will be printed only when there is at least lvl1 verbosity
     :param str end:
@@ -143,7 +143,7 @@ def info(msg: str, end: str = '\n'):
     print(f"{msg}", end=end)
 
 
-def quiet_info(msg: str):
+def quiet_info(msg: str) -> None:
     """
     :param str msg: info message to the stream that will be always shown
     """
@@ -161,7 +161,7 @@ def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
     return (frame[0], frame[1]) if isinstance(frame, tuple) else (frame.filename, frame.name)
 
 
-def print_current_stack(colour: str = 'red', raised_exception: Optional[Exception] = None):
+def print_current_stack(colour: str = 'red', raised_exception: Optional[Exception] = None) -> None:
     """Prints the information about stack track leading to an event
 
     Be default this is used in error traces, so the colour of the printed trace is red.
@@ -191,7 +191,7 @@ def print_current_stack(colour: str = 'red', raised_exception: Optional[Exceptio
     ), file=sys.stderr)
 
 
-def error(msg: str, recoverable: bool = False, raised_exception: Optional[Exception] = None):
+def error(msg: str, recoverable: bool = False, raised_exception: Optional[Exception] = None) -> None:
     """
     :param str msg: error message printed to standard output
     :param bool recoverable: whether we can recover from the error
@@ -206,7 +206,7 @@ def error(msg: str, recoverable: bool = False, raised_exception: Optional[Except
         sys.exit(1)
 
 
-def warn(msg: str, end: str = "\n"):
+def warn(msg: str, end: str = "\n") -> None:
     """
     :param str msg: warn message printed to standard output
     :param str end:
@@ -215,7 +215,7 @@ def warn(msg: str, end: str = "\n"):
         print(f"warning: {msg}", end=end)
 
 
-def print_current_phase(phase_msg, phase_unit, phase_colour):
+def print_current_phase(phase_msg, phase_unit, phase_colour) -> None:
     """Print helper coloured message for the current phase
 
     :param str phase_msg: message that will be printed to the output
@@ -228,7 +228,7 @@ def print_current_phase(phase_msg, phase_unit, phase_colour):
 
 
 @static_variables(current_job=1)  # type: ignore
-def print_job_progress(overall_jobs: int):
+def print_job_progress(overall_jobs: int) -> None:
     """Print the tag with the percent of the jobs currently done
 
     :param int overall_jobs: overall number of jobs to be done
@@ -238,7 +238,7 @@ def print_job_progress(overall_jobs: int):
     print_job_progress.current_job += 1
 
 
-def cprint(string: str, colour: str, attrs: str = 'none', flush: bool = True):
+def cprint(string: str, colour: str, attrs: str = 'none', flush: bool = True) -> None:
     """Wrapper over coloured print without adding new line
 
     :param str string: string that is printed with colours
@@ -249,7 +249,7 @@ def cprint(string: str, colour: str, attrs: str = 'none', flush: bool = True):
     print(in_color(string, colour, attrs), end='', flush=flush)
 
 
-def cprintln(string: str, colour: str, attrs: str = 'none'):
+def cprintln(string: str, colour: str, attrs: str = 'none') -> None:
     """Wrapper over coloured print with added new line or other ending
 
     :param str string: string that is printed with colours and newline
@@ -259,7 +259,7 @@ def cprintln(string: str, colour: str, attrs: str = 'none'):
     print(in_color(string, colour, attrs))
 
 
-def done(ending: str = '\n'):
+def done(ending: str = '\n') -> None:
     """Helper function that will print green done to the terminal
 
     :param str ending: end of the string, by default new line
@@ -269,7 +269,7 @@ def done(ending: str = '\n'):
     print(']', end=ending)
 
 
-def failed(ending: str = '\n'):
+def failed(ending: str = '\n') -> None:
     """
     :param str ending: end of the string, by default new line
     """
@@ -278,7 +278,7 @@ def failed(ending: str = '\n'):
     print(']', end=ending)
 
 
-def yes(ending: str = '\n'):
+def yes(ending: str = '\n') -> None:
     """
     :param str ending: end of the string, by default new line
     """
@@ -287,7 +287,7 @@ def yes(ending: str = '\n'):
     print(']', end=ending)
 
 
-def no(ending: str = '\n'):
+def no(ending: str = '\n') -> None:
     """
     :param str ending: end of the string, by default new line
     """
@@ -296,7 +296,7 @@ def no(ending: str = '\n'):
     print(']', end=ending)
 
 
-def newline():
+def newline() -> None:
     """
     Prints blank line
     """
@@ -364,7 +364,7 @@ def get_degradation_change_colours(degradation_result: PerformanceChange) -> tup
     return colour
 
 
-def print_short_summary_of_degradations(degradation_list: list[tuple[DegradationInfo, str, str]]):
+def print_short_summary_of_degradations(degradation_list: list[tuple[DegradationInfo, str, str]]) -> None:
     """Prints a short string representing the summary of the found changes.
 
     This prints a short statistic of found degradations and short summary string.
@@ -405,7 +405,7 @@ def change_counts_to_string(counts: dict[str, int], width: int = 0) -> str:
     return change_str + width*' '
 
 
-def print_short_change_string(counts: dict[str, int]):
+def print_short_change_string(counts: dict[str, int]) -> None:
     """Prints short string representing a summary of the given degradation list.
 
     This prints a short string of form representing a summary of found optimizations (+) and
@@ -424,7 +424,7 @@ def print_short_change_string(counts: dict[str, int]):
     newline()
 
 
-def _print_models_info(deg_info: DegradationInfo, model_strategy: str):
+def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
     """
     The function prints information about both models from detection.
 
@@ -472,7 +472,7 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str):
         print(')', end='')
 
 
-def _print_partial_intervals(partial_intervals: NDArray):
+def _print_partial_intervals(partial_intervals: NDArray) -> None:
     """
     The function prints information about detected changes on the partial intervals.
 
@@ -496,7 +496,7 @@ def _print_partial_intervals(partial_intervals: NDArray):
 
 def print_list_of_degradations(
         degradation_list: list[tuple[DegradationInfo, str, str]], model_strategy: str = "best-model"
-):
+) -> None:
     """Prints list of found degradations grouped by location
 
     Currently, this is hardcoded and prints the list of degradations as follows:
@@ -691,7 +691,7 @@ class History:
         :ivar str colour: colour of the edge (red for deg, yellow for deg+opt, green for opt)
         :ivar str prev: the child of the edge, i.e. the not yet processed sha
         """
-        def __init__(self, n: str, colour: str = 'white', prev: Optional[str] = None):
+        def __init__(self, n: str, colour: str = 'white', prev: Optional[str] = None) -> None:
             """Initiates one edge of the history
 
             :param str n: the next sha that will be processed
@@ -710,7 +710,7 @@ class History:
             """
             return char if self.colour == 'white' else in_color(char, self.colour, 'bold')
 
-    def __init__(self, head: str):
+    def __init__(self, head: str) -> None:
         """Creates a with wrapper, which keeps and prints the context of the current vcs
         starting at head
 
@@ -740,7 +740,7 @@ class History:
             :param History history: history object that takes care of flushing
             :return: decorated flushed print
             """
-            def wrapper(*args: Any, **kwargs: Any):
+            def wrapper(*args: Any, **kwargs: Any) -> None:
                 """Decorator function for flushed print
 
                 :param list args: list of positional arguments for print
@@ -754,7 +754,7 @@ class History:
         builtins.print = flushed_print(builtins.print, self)
         return self
 
-    def __exit__(self, *_: Any):
+    def __exit__(self, *_: Any) -> None:
         """Restores the stdout to the original state
 
         :param list _: list of unused parameters
@@ -777,7 +777,7 @@ class History:
         """
         return " ".join(edge.to_ascii("|") for edge in self.unresolved_edges) + "  "
 
-    def _merge_parents(self, merged_parent: str):
+    def _merge_parents(self, merged_parent: str) -> None:
         """Removes the duplicate instances of the merge parent.
 
         E.g. given the following parents:
@@ -802,7 +802,7 @@ class History:
             filtered_unresolved.append(parent)
         self.unresolved_edges = filtered_unresolved
 
-    def _print_minor_version(self, minor_version_info: MinorVersion):
+    def _print_minor_version(self, minor_version_info: MinorVersion) -> None:
         """Prints the information about minor version.
 
         The minor version is visualized as follows:
@@ -826,7 +826,7 @@ class History:
             minor_version_info.desc.split("\n")[0].strip()
         ), end='')
 
-    def progress_to_next_minor_version(self, minor_version_info: MinorVersion):
+    def progress_to_next_minor_version(self, minor_version_info: MinorVersion) -> None:
         r"""Progresses the history of the VCS to next minor version
 
         This flushes the current caught buffer, resolves the fork points (i.e. when we forked the
@@ -873,7 +873,7 @@ class History:
         self.flush()
         self.auto_flush_with_border = True
 
-    def flush(self, with_border: bool = False):
+    def flush(self, with_border: bool = False) -> None:
         """Flushes the stdout optionally with left border of unresolved parent columns
 
         If the current stdout is not readable, the flushing is skipped
@@ -893,7 +893,7 @@ class History:
             # create new stringio
             sys.stdout = io.StringIO()
 
-    def _taint_parents(self, target: str, degradation_list: list[tuple[DegradationInfo, str, str]]):
+    def _taint_parents(self, target: str, degradation_list: list[tuple[DegradationInfo, str, str]]) -> None:
         """According to the given list of degradation, sets the parents either as tainted
         or fixed.
 
@@ -923,7 +923,7 @@ class History:
                 elif fixed:
                     edge.colour = 'green'
 
-    def _process_merge_point(self, merged_at: int, merged_parents: list[str]):
+    def _process_merge_point(self, merged_at: int, merged_parents: list[str]) -> None:
         r"""Updates the printed tree after we merged list of parents in the given merge_at index.
 
         This prints up to merged_at unresolved parents, and then creates a merge point (|\) that
@@ -964,7 +964,7 @@ class History:
                     [self.unresolved_edges[merged_at].to_ascii('\\'), right_str]
                 ))
 
-    def _process_fork_point(self, fork_point: str):
+    def _process_fork_point(self, fork_point: str) -> None:
         """Updates the printed tree after we forked from the given sha.
 
         Prints the following:
@@ -1004,11 +1004,11 @@ class Logger(TextIO):
     :ivar StringIO log: log saving the stream
     """
 
-    def __init__(self, stream: TextIO):
+    def __init__(self, stream: TextIO) -> None:
         self.original = stream
         self.log = io.StringIO()
 
-    def write(self, message: str):
+    def write(self, message: str) -> None:
         """Writes the message to both streams
 
         :param object message: written message
@@ -1017,7 +1017,7 @@ class Logger(TextIO):
         self.original.flush()
         self.log.write(message)
 
-    def flush(self):
+    def flush(self) -> None:
         """Flushes the original stream"""
         self.original.flush()
 

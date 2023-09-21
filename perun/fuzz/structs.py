@@ -69,7 +69,7 @@ class CoverageConfiguration:
     :ivar list source_files: list of source files
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         """
         :param dict kwargs: set of keyword configurations
         """
@@ -118,7 +118,7 @@ class FuzzingConfiguration:
         or only using perun
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         """
         :param dict kwargs: set of keyword configurations
         """
@@ -141,7 +141,7 @@ class FuzzingConfiguration:
     RATIO_INCR_CONST = 0.05
     RATIO_DECR_CONST = 0.01
 
-    def refine_coverage_rate(self, found_workloads: list[Mutation]):
+    def refine_coverage_rate(self, found_workloads: list[Mutation]) -> None:
         """Refines the coverage rate according to so far founded interesting workloads
 
         :param list found_workloads: list of interesting workloads
@@ -191,6 +191,6 @@ class FuzzingProgress:
             "faults": 0
         }
 
-    def update_max_coverage(self):
+    def update_max_coverage(self) -> None:
         """Updates the maximal achieved coverage according to the parent fitness values"""
         self.stats["max_cov"] = self.parents[-1].cov / self.base_cov

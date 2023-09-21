@@ -64,7 +64,7 @@ def compute_window_width_change(window_width: int, r_square: float) -> int:
     return max(1, window_width - max(1, int(min(.9 * window_width - 1, window_change))))
 
 
-def compute_moving_average(data_gen: data_provider.Data, configuration: dict):
+def compute_moving_average(data_gen: data_provider.Data, configuration: dict) -> list[dict]:
     """
     The moving average wrapper to execute the analysis on the individual chunks of resources.
 

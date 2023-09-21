@@ -78,7 +78,7 @@ def common_sma_options(func_obj: Callable) -> Callable:
                    'For further information about window types see the notes in the documentation.')
 @common_sma_options
 @click.pass_context
-def simple_moving_average(ctx: click.Context, **kwargs: Any):
+def simple_moving_average(ctx: click.Context, **kwargs: Any) -> None:
     """ **Simple Moving Average**
 
         In the most of cases, it is an unweighted Moving Average, this means that the each
@@ -127,7 +127,7 @@ def simple_moving_average(ctx: click.Context, **kwargs: Any):
 @click.command(name='smm')
 @common_sma_options
 @click.pass_context
-def simple_moving_median(ctx: click.Context, **kwargs: Any):
+def simple_moving_median(ctx: click.Context, **kwargs: Any) -> None:
     """ **Simple Moving Median**
 
         The second representative of Simple Moving Average methods is the Simple Moving **Median**.
@@ -149,7 +149,7 @@ def simple_moving_median(ctx: click.Context, **kwargs: Any):
                    'values and relationship between the parameters are specified in the '
                    'documentation (e.g. --decay=com 3).')
 @click.pass_context
-def exponential_moving_average(ctx: click.Context, **kwargs: Any):
+def exponential_moving_average(ctx: click.Context, **kwargs: Any) -> None:
     """ **Exponential Moving Average**
 
         This method is a type of moving average methods, also know as **Exponential** Weighted
@@ -194,7 +194,7 @@ def exponential_moving_average(ctx: click.Context, **kwargs: Any):
                    ' If the number of possible observations smaller then result is NaN.')
 @cli_helpers.resources_key_options
 @click.pass_context
-def moving_average(ctx: click.Context, **_: Any):
+def moving_average(ctx: click.Context, **_: Any) -> None:
     """
     Execution of the interleaving of profiled resources by *moving average* models.
 

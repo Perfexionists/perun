@@ -18,7 +18,7 @@ from typing import Any
 
 
 @click.group('utils')
-def utils_group():
+def utils_group() -> None:
     """Contains set of developer commands, wrappers over helper scripts and other functions that are
     not the part of the main perun suite.
     """
@@ -38,7 +38,7 @@ def utils_group():
                    ':ckey:`general.editor` configuration key.')
 @click.option('--supported-type', '-st', 'supported_types', nargs=1, multiple=True,
               help="Sets the supported types of the unit (i.e. profile types).")
-def create(template_type: str, **kwargs: Any):
+def create(template_type: str, **kwargs: Any) -> None:
     """According to the given <template> constructs a new modules in Perun for <unit>.
 
     Currently, this supports creating new modules for the tool suite (namely ``collect``,
@@ -58,7 +58,7 @@ def create(template_type: str, **kwargs: Any):
 
 
 @utils_group.group('temp')
-def temp_group():
+def temp_group() -> None:
     """Provides a set of operations for maintaining the temporary directory (.perun/tmp/) of perun.
     """
     pass
@@ -77,7 +77,7 @@ def temp_group():
 @click.option('--filter-protection', '-fp', type=click.Choice(temp.PROTECTION_LEVEL),
               default=temp.PROTECTION_LEVEL[0],
               help='List only temporary files with the given protection level.')
-def temp_list(root: click.Path, **kwargs: Any):
+def temp_list(root: click.Path, **kwargs: Any) -> None:
     """Lists the temporary files of the '.perun/tmp/' directory. It is possible to list only
     files in specific subdirectory by supplying the ROOT path.
 
@@ -97,7 +97,7 @@ def temp_list(root: click.Path, **kwargs: Any):
 @click.option('--keep-directories', '-k', flag_value=True, default=False,
               help='If path refers to directory, empty tmp/ directories and subdirectories '
                    'will be kept.')
-def temp_delete(path: click.Path, warn: bool, force: bool, **kwargs: Any):
+def temp_delete(path: click.Path, warn: bool, force: bool, **kwargs: Any) -> None:
     """Deletes the temporary file or directory.
 
     Use the command 'perun utils temp delete .' to safely delete all unprotected files in the
@@ -114,7 +114,7 @@ def temp_delete(path: click.Path, warn: bool, force: bool, **kwargs: Any):
 
 
 @temp_group.command('sync')
-def temp_sync():
+def temp_sync() -> None:
     """Synchronizes the '.perun/tmp/' directory contents with the internal tracking file. This is
     useful when some files or directories were deleted manually and the resulting inconsistency is
     causing troubles - however, this should be a very rare condition.
@@ -125,7 +125,7 @@ def temp_sync():
 
 
 @utils_group.group('stats')
-def stats_group():
+def stats_group() -> None:
     """Provides a set of operations for manipulating the stats directory (.perun/stats/) of perun.
     """
     pass
@@ -146,7 +146,7 @@ def stats_group():
               help='Do not show the total size of all the stat files combined.')
 @click.option('--sort-by-size', '-s', flag_value=True, default=False,
               help='Sort the files by size instead of the minor versions order.')
-def stats_list_files(**kwargs: Any):
+def stats_list_files(**kwargs: Any) -> None:
     """Show stat files stored in the stats directory (.perun/stats/). This command shows only a
     limited number of the most recent files by default. This can be, however, changed by the
     --top and --from-minor options.
@@ -171,7 +171,7 @@ def stats_list_files(**kwargs: Any):
               help='Do not show the total size of all the versions combined.')
 @click.option('--sort-by-size', '-s', flag_value=True, default=False,
               help='Sort the versions by size instead of their VCS order.')
-def stats_list_versions(**kwargs: Any):
+def stats_list_versions(**kwargs: Any) -> None:
     """Show minor versions stored as directories in the stats directory (.perun/stats/).
     This command shows only a limited number of the most recent versions by default. This can be,
     however, changed by the --top and --from-minor options.
@@ -182,7 +182,7 @@ def stats_list_versions(**kwargs: Any):
 
 
 @stats_group.group('delete')
-def stats_delete_group():
+def stats_delete_group() -> None:
     """Allows the deletion of stat files, minor versions or the whole stats directory.
     """
     pass
@@ -196,7 +196,7 @@ def stats_delete_group():
                    'or across all the minor versions if set to ".".')
 @click.option('--keep-directory', '-k', flag_value=True, default=False,
               help='Possibly empty directory of minor version will be kept in the file system.')
-def stats_delete_file(**kwargs: Any):
+def stats_delete_file(**kwargs: Any) -> None:
     """Deletes a stat file in either specific minor version or across all the minor versions in the
     stats directory.
     """
@@ -207,7 +207,7 @@ def stats_delete_file(**kwargs: Any):
 @click.argument('version', callback=cli_helpers.check_stats_minor_callback)
 @click.option('--keep-directory', '-k', flag_value=True, default=False,
               help='Resulting empty directory of minor version will be kept in the file system.')
-def stats_delete_minor(version: str, **kwargs: Any):
+def stats_delete_minor(version: str, **kwargs: Any) -> None:
     """Deletes the specified minor version directory in stats with all its content.
     """
     commands.delete_stats_minor(version, **kwargs)
@@ -216,7 +216,7 @@ def stats_delete_minor(version: str, **kwargs: Any):
 @stats_delete_group.command('.')
 @click.option('--keep-directory', '-k', flag_value=True, default=False,
               help='Resulting empty directories of minor versions will be kept in the file system.')
-def stats_delete_all(**kwargs: Any):
+def stats_delete_all(**kwargs: Any) -> None:
     """Deletes the whole content of the `stats` directory.
     """
     commands.delete_stats_all(**kwargs)
@@ -227,7 +227,7 @@ def stats_delete_all(**kwargs: Any):
               help='The custom stats directories will not be removed.')
 @click.option('--keep-empty', '-e', flag_value=True, default=False,
               help='The empty version directories will not be removed.')
-def stats_clean(**kwargs: Any):
+def stats_clean(**kwargs: Any) -> None:
     """Cleans the stats directory by synchronizing the internal state, deleting distinguishable
     custom files and directories (i.e. not all the custom-made or manually created files /
     directories can be identified as custom, e.g. when they comply the correct format etc.)
@@ -237,7 +237,7 @@ def stats_clean(**kwargs: Any):
 
 
 @stats_group.command('sync')
-def stats_sync():
+def stats_sync() -> None:
     """ Synchronizes the actual contents of the stats directory with the internal 'index' file.
     The synchronization should be needed only rarely - mainly in cases when the stats directory
     has been manually tampered with and some files or directories were created or deleted by a user.

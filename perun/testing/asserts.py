@@ -7,7 +7,7 @@ import traceback
 from typing import Optional
 
 
-def predicate_from_cli(cli_result: click.testing.Result, predicate: bool):
+def predicate_from_cli(cli_result: click.testing.Result, predicate: bool) -> None:
     """Checks the correctness of the @p predicate.
 
     In case the predicate is violated, the function outputs additional helper information for
@@ -37,7 +37,7 @@ def predicate_from_cli(cli_result: click.testing.Result, predicate: bool):
         raise failed_assertion
 
 
-def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None):
+def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None) -> None:
     """Checks, that click correctly ended as invalid choice
 
     :param click.testing.Result cli_result: result of the commandline interface
@@ -50,7 +50,7 @@ def invalid_cli_choice(cli_result: click.testing.Result, choice: str, file: Opti
         assert file not in os.listdir(os.getcwd())
 
 
-def invalid_param_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None):
+def invalid_param_choice(cli_result: click.testing.Result, choice: str, file: Optional[str] = None) -> None:
     """Checks that click correctly ended with invalid choice and 1 return code
     :param click.test.Result cli_result: result of the commandline interface
     :param str choice: choice that we tried

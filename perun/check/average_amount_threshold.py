@@ -38,10 +38,9 @@ confidence at all.
 from typing import Dict, Any, Iterable
 
 import perun.profile.convert as convert
-import perun.check.factory as check
 import perun.postprocess.regression_analysis.tools as tools
 
-from perun.utils.structs import DegradationInfo
+from perun.utils.structs import DegradationInfo, PerformanceChange
 from perun.profile.factory import Profile
 
 
@@ -86,11 +85,11 @@ def average_amount_threshold(
         if baseline_average is not None:
             difference_ratio = tools.safe_division(target_average, baseline_average)
             if difference_ratio >= DEGRADATION_THRESHOLD:
-                change = check.PerformanceChange.Degradation
+                change = PerformanceChange.Degradation
             elif 0.0 < difference_ratio <= OPTIMIZATION_THRESHOLD:
-                change = check.PerformanceChange.Optimization
+                change = PerformanceChange.Optimization
             else:
-                change = check.PerformanceChange.NoChange
+                change = PerformanceChange.NoChange
 
             yield DegradationInfo(
                 res=change,

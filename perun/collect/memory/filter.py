@@ -46,7 +46,7 @@ def trace_filter(profile: dict, function: list[str], source: list[str]) -> dict:
     return profile
 
 
-def set_global_region(profile: dict):
+def set_global_region(profile: dict) -> None:
     """
     :param dict profile: partially computed profile
     """

@@ -98,7 +98,7 @@ def split_object_name(base_dir: str, object_name: str, object_ext: str = "") -> 
     return object_dir_full_path, object_file_full_path + object_ext
 
 
-def add_loose_object_to_dir(base_dir: str, object_name: str, object_content: bytes):
+def add_loose_object_to_dir(base_dir: str, object_name: str, object_content: bytes) -> None:
     """
     :param str base_dir: path to the base directory
     :param str object_name: sha-1 string representing the object (possibly with extension)
@@ -149,7 +149,7 @@ def read_number_of_entries_from_handle(index_handle: BinaryIO) -> int:
     return number_of_entries
 
 
-def write_list_to_handle(file_handle: BinaryIO, list_content: list[str], separator: str = ' '):
+def write_list_to_handle(file_handle: BinaryIO, list_content: list[str], separator: str = ' ') -> None:
     """Writes list to the opened handle
 
     :param File file_handle: opened file handle of the index
@@ -171,7 +171,7 @@ def read_list_from_handle(file_handle: BinaryIO, separator: str = ' ') -> list[s
     return string_list.split(separator)
 
 
-def write_string_to_handle(file_handle: BinaryIO, content: str):
+def write_string_to_handle(file_handle: BinaryIO, content: str) -> None:
     """Writes string to the opened file index handle.
 
     First we write the number of bytes to the index, and then the actual bytes.
@@ -201,7 +201,7 @@ def read_string_from_handle(file_handle: BinaryIO) -> str:
 
 def save_degradation_list_for(
         base_dir: str, minor_version: str, degradation_list: list[tuple[DegradationInfo, str, str]]
-):
+) -> None:
     """Saves the given degradation list to a minor version storage
 
     This converts the list of degradation records to a storage-able format. Moreover,
