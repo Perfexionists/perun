@@ -57,7 +57,7 @@ import os
 import json
 import zlib
 
-from typing import Optional
+from typing import Optional, Any
 
 import perun.logic.pcs as pcs
 import perun.logic.store as store
@@ -213,7 +213,7 @@ def exists_temp_file(file_path: str) -> bool:
 
 def create_new_temp(
         file_path: str,
-        content: str,
+        content: Any,
         json_format: bool = False,
         protect: bool = False,
         compress: bool = False
@@ -239,7 +239,9 @@ def create_new_temp(
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
-def store_temp(file_path: str, content: str, json_format: bool = False, protect: bool = False, compress: bool = False) -> None:
+def store_temp(
+        file_path: str, content: Any, json_format: bool = False, protect: bool = False, compress: bool = False
+) -> None:
     """Writes the 'content' to the temporary file given by the 'file_path'. The temporary file is
     created if it does not exist and overwritten if it does.
 
@@ -257,7 +259,7 @@ def store_temp(file_path: str, content: str, json_format: bool = False, protect:
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
-def read_temp(file_path: str) -> Optional[str]:
+def read_temp(file_path: str) -> Optional[dict[str, Any]]:
     """Reads the content of the temporary file 'file_path'. An exception is raised if the file does
     not exist. None is returned if the file could not have been read, is corrupted, has
     inconsistent or invalid index properties.
@@ -564,7 +566,7 @@ def _delete_empty_directories(root: str) -> None:
             os.rmdir(directory)
 
 
-def _write_to_temp(file_path: str, content: str, json_format: bool, protect: bool, compress: bool) -> None:
+def _write_to_temp(file_path: str, content: Any, json_format: bool, protect: bool, compress: bool) -> None:
     """Writes the 'content' into the temporary file and stores the properties into the index
     if needed.
 

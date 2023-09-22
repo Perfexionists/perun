@@ -16,10 +16,10 @@ from types import TracebackType
 
 import numpy as np
 
-from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, Iterator, AnyStr
+from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, Iterator, cast
 
 if TYPE_CHECKING:
-    from nptyping import NDArray
+    import numpy.typing as npt
 
 import termcolor
 
@@ -54,7 +54,7 @@ def is_verbose_enough(verbosity_peak: int) -> bool:
     return VERBOSITY >= verbosity_peak
 
 
-def page_function_if(func: Callable, paging_switch: bool) -> Callable:
+def page_function_if(func: Callable[..., Any], paging_switch: bool) -> Callable[..., Any]:
     """Adds paging of the output to standard stream
 
     This decorator serves as a pager for long outputs to the standard stream. As a pager currently,
@@ -94,7 +94,7 @@ def page_function_if(func: Callable, paging_switch: bool) -> Callable:
     return wrapper
 
 
-def paged_function(paging_switch: bool) -> Callable:
+def paged_function(paging_switch: bool) -> Callable[..., Any]:
     """The wrapper of the ``page_function_if`` to serve as a decorator, which partially applies the
     paging_switch. This way the function will accept only the function as parameter and can serve as
     decorator.
@@ -215,7 +215,7 @@ def warn(msg: str, end: str = "\n") -> None:
         print(f"warning: {msg}", end=end)
 
 
-def print_current_phase(phase_msg, phase_unit, phase_colour) -> None:
+def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: str) -> None:
     """Print helper coloured message for the current phase
 
     :param str phase_msg: message that will be printed to the output
@@ -227,7 +227,7 @@ def print_current_phase(phase_msg, phase_unit, phase_colour) -> None:
     ))
 
 
-@static_variables(current_job=1)  # type: ignore
+@static_variables(current_job=1)
 def print_job_progress(overall_jobs: int) -> None:
     """Print the tag with the percent of the jobs currently done
 
@@ -312,8 +312,8 @@ def in_color(output: str, color: str = 'white', attribute_style: str = "none") -
 
     :return str: the new colored output (if enabled)
     """
-    attrs = {
-        "none": [],
+    attrs: list[str] = {
+        "none": cast(list[str], []),
         "bold": ["bold"],
         "underline": ["underline"]
     }.get(attribute_style, [])
@@ -441,7 +441,7 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
     """
     def print_models_kinds(
             baseline_str: str, baseline_colour: str, target_str: str, target_colour: str, attrs: str
-    ):
+    ) -> None:
         """
         The function format the given parameters to required format at output.
 
@@ -472,7 +472,7 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
         print(')', end='')
 
 
-def _print_partial_intervals(partial_intervals: NDArray) -> None:
+def _print_partial_intervals(partial_intervals: npt.NDArray[Any]) -> None:
     """
     The function prints information about detected changes on the partial intervals.
 
@@ -507,7 +507,7 @@ def print_list_of_degradations(
     :param list degradation_list: list of found degradations
     :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
-    def keygetter(item: tuple) -> str:
+    def keygetter(item: tuple[DegradationInfo, str, str]) -> str:
         """Returns the location of the degradation from the tuple
 
         :param tuple item: tuple of (degradation result, cmd string, source minor version)
@@ -550,7 +550,7 @@ def print_list_of_degradations(
     newline()
 
 
-def aggregate_intervals(intervals: NDArray) -> list[tuple[Any, Any, Any, Any]]:
+def aggregate_intervals(intervals: npt.NDArray[Any]) -> list[tuple[Any, Any, Any, Any]]:
     """
     Function aggregates the partial intervals according to the types of change.
 
@@ -605,7 +605,7 @@ def aggregate_intervals(intervals: NDArray) -> list[tuple[Any, Any, Any, Any]]:
     return agg_intervals
 
 
-def print_elapsed_time(func: Callable) -> Callable:
+def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
     """Prints elapsed time after the execution of the wrapped function
 
     Takes the timestamp before the execution of the function and after the execution and prints
@@ -635,8 +635,8 @@ def print_elapsed_time(func: Callable) -> Callable:
 
 def scan_formatting_string(
         fmt: str,
-        default_fmt_callback: Callable,
-        callback: Callable = identity,
+        default_fmt_callback: Callable[[str], str],
+        callback: Callable[[str], str] = identity,
         sep: str = "%"
 ) -> list[tuple[str, str]]:
     """Scans the string, parses delimited formatting tokens and transforms them w.r.t callbacks
@@ -719,7 +719,7 @@ class History:
         self.unresolved_edges = [History.Edge(head)]
         self.auto_flush_with_border = False
         self._original_stdout: TextIO = sys.stdout
-        self._saved_print: Callable = builtins.print
+        self._saved_print: Callable[..., Any] = builtins.print
 
     def __enter__(self) -> 'History':
         """When entering, we create a new string io object to catch standard output
@@ -731,7 +731,7 @@ class History:
         sys.stdout = io.StringIO()
         self._saved_print = builtins.print
 
-        def flushed_print(print_function: Callable, history: 'History') -> Callable:
+        def flushed_print(print_function: Callable[..., Any], history: 'History') -> Callable[..., Any]:
             """Decorates the print_function with automatic flushing of the output.
 
             Whenever a newline is included in the output, the stream will be automatically flushed
@@ -851,7 +851,7 @@ class History:
 
     def finish_minor_version(
             self, minor_version_info: MinorVersion, degradation_list: list[tuple[DegradationInfo, str, str]]
-    ):
+    ) -> None:
         """Notifies that we have processed the minor version.
 
         Updates the unresolved parents, taints those where we found degradations and processes
@@ -1008,14 +1008,15 @@ class Logger(TextIO):
         self.original = stream
         self.log = io.StringIO()
 
-    def write(self, message: str) -> None:
+    def write(self, message: str) -> int:
         """Writes the message to both streams
 
         :param object message: written message
         """
-        self.original.write(message)
+        result = self.original.write(message)
         self.original.flush()
         self.log.write(message)
+        return result
 
     def flush(self) -> None:
         """Flushes the original stream"""
@@ -1030,19 +1031,19 @@ class Logger(TextIO):
     def isatty(self) -> bool:
         return self.original.isatty()
 
-    def read(self, __n: int = ...) -> AnyStr:
+    def read(self, __n: int = -1) -> str:
         return self.original.read(__n)
 
     def readable(self) -> bool:
         return self.original.readable()
 
-    def readline(self, __limit: int = ...) -> AnyStr:
+    def readline(self, __limit: int = -1) -> str:
         return self.original.readline(__limit)
 
-    def readlines(self, __hint: int = ...) -> list[AnyStr]:
+    def readlines(self, __hint: int = -1) -> list[str]:
         return self.readlines(__hint)
 
-    def seek(self, __offset: int, __whence: int = ...) -> int:
+    def seek(self, __offset: int, __whence: int = io.SEEK_SET) -> int:
         return self.original.seek(__offset, __whence)
 
     def seekable(self) -> bool:
@@ -1051,19 +1052,19 @@ class Logger(TextIO):
     def tell(self) -> int:
         return self.original.tell()
 
-    def truncate(self, __size: int | None = ...) -> int:
+    def truncate(self, __size: int | None = None) -> int:
         return self.original.truncate(__size)
 
     def writable(self) -> bool:
         return self.original.writable()
 
-    def writelines(self, __lines: Iterable[AnyStr]) -> None:
+    def writelines(self, __lines: Iterable[str]) -> None:
         self.original.writelines(__lines)
 
-    def __next__(self) -> AnyStr:
+    def __next__(self) -> str:
         return self.original.__next__()
 
-    def __iter__(self) -> Iterator[AnyStr]:
+    def __iter__(self) -> Iterator[str]:
         return self.original.__iter__()
 
     def __exit__(

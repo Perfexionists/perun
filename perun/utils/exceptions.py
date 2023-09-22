@@ -207,7 +207,7 @@ class UnsupportedModuleFunctionException(Exception):
 
 class DictionaryKeysValidationFailed(Exception):
     """Raised when validated dictionary is actually not a dictionary or has missing/excess keys"""
-    def __init__(self, dictionary: dict, missing_keys: list[str], excess_keys: list[str]) -> None:
+    def __init__(self, dictionary: dict[str, Any], missing_keys: list[str], excess_keys: list[str]) -> None:
         """
         :param dict dictionary: the validated dictionary
         :param list missing_keys: list of missing keys in the dictionary
@@ -273,7 +273,7 @@ class InvalidSequenceSplitException(GenericRegressionExceptionBase):
 
 class InvalidModelException(GenericRegressionExceptionBase):
     """Raised when invalid or unknown regression model is requested"""
-    def __init__(self, model) -> None:
+    def __init__(self, model: str) -> None:
         super().__init__("")
         self.model = model
         self.msg = f"Invalid or unsupported regression model: {self.model}."

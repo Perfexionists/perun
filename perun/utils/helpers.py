@@ -109,7 +109,7 @@ LINE_PARSING_REGEX = re.compile(
 )
 
 
-def first_index_of_attr(input_list: list, attr: str, value: Any) -> int:
+def first_index_of_attr(input_list: list[Any], attr: str, value: Any) -> int:
     """Helper function for getting the first index of a value in list of objects
 
     :param list input_list: list of object that have attributes
@@ -122,7 +122,7 @@ def first_index_of_attr(input_list: list, attr: str, value: Any) -> int:
     return list_of_attributes.index(value)
 
 
-def uid_getter(uid: tuple) -> int:
+def uid_getter(uid: tuple[str, Any]) -> int:
     """Helper function for getting the order priority of the uid
 
     By default, the highest priority is the executed binary or command,
@@ -299,7 +299,7 @@ def default_signal_handler(signum: int, frame: traceback.StackSummary) -> None:
     raise SignalReceivedException(signum, frame)
 
 
-def is_variable_len_dict(list_value: list[dict]) -> bool:
+def is_variable_len_dict(list_value: list[dict[Any, Any]]) -> bool:
     """This tests for a case when list_value is a list with dictionaries containing name and list_value
     keys only.
 
@@ -313,7 +313,7 @@ def is_variable_len_dict(list_value: list[dict]) -> bool:
     )
 
 
-def get_key_with_aliases(dictionary: dict, key_aliases: Iterable[str], default: Optional[Any] = None) -> Any:
+def get_key_with_aliases(dictionary: dict[str, Any], key_aliases: Iterable[str], default: Optional[Any] = None) -> Any:
     """Safely returns the key in the dictionary that has several aliases.
 
     This function assures the backward compatibility with older profiles, after renaming the keys.
@@ -428,7 +428,7 @@ def identity(*args: Any) -> Any:
     return args if len(args) > 1 else args[0]
 
 
-def safe_match(pattern: re.Pattern, searched_string: str, default: Optional[str] = None) -> Optional[str]:
+def safe_match(pattern: re.Pattern[str], searched_string: str, default: Optional[str] = None) -> Optional[str]:
     """Safely matches groups in searched string; if string not found returns @p default
 
     :param re.Pattern pattern: compiled regular expression pattern

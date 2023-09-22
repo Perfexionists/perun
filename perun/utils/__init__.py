@@ -3,6 +3,7 @@
 Utils contains various helper modules and functions, that can be used in arbitrary projects, and
 are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 """
+from __future__ import annotations
 
 import importlib
 import logging
@@ -18,7 +19,9 @@ import types
 from contextlib import contextmanager
 import magic
 
-from typing import Iterable, Optional, Any, Callable, IO, Iterator, Protocol
+from typing import Iterable, Optional, Any, Callable, IO, Iterator, Protocol, TYPE_CHECKING, overload
+if TYPE_CHECKING:
+    from perun.utils.structs import CollectStatus, PostprocessStatus
 
 
 class Comparable(Protocol):
@@ -48,7 +51,7 @@ from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionExc
 PYTHON_VERSION = re.compile(r'^(?:(\d*)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?')
 
 
-def get_build_directories(root: str = '.', template: Optional[list] = None) -> Iterable[str]:
+def get_build_directories(root: str = '.', template: Optional[list[str]] = None) -> Iterable[str]:
     """Search for build directories in project tree. The build directories can be specified as an
     argument or default templates are used.
 
@@ -183,10 +186,10 @@ def run_external_command(cmd_args: list[str], **subprocess_kwargs: Any) -> int:
 @contextmanager
 def nonblocking_subprocess(
         command: str,
-        subprocess_kwargs: dict,
-        termination: Optional[Callable] = None,
-        termination_kwargs: Optional[dict] = None
-) -> Iterator[subprocess.Popen]:
+        subprocess_kwargs: dict[str, Any],
+        termination: Optional[Callable[..., Any]] = None,
+        termination_kwargs: Optional[dict[str, Any]] = None
+) -> Iterator[subprocess.Popen[bytes]]:
     """ Runs a non-blocking process in the background using subprocess without shell.
 
     The process handle is available by using the context manager approach. It is possible to
@@ -245,7 +248,7 @@ def run_safely_external_command(
     cmd_no = len(unpiped_commands)
 
     # Run the command through pipes
-    objects: list[subprocess.Popen] = []
+    objects: list[subprocess.Popen[bytes]] = []
     for i in range(cmd_no):
         executed_command = shlex.split(unpiped_commands[i])
 
@@ -288,7 +291,7 @@ def run_safely_external_command(
     return cmdout, cmderr
 
 
-def run_safely_list_of_commands(cmd_list: list[str]):
+def run_safely_list_of_commands(cmd_list: list[str]) -> None:
     """Runs safely list of commands
 
     :param list cmd_list: list of external commands
@@ -303,7 +306,7 @@ def run_safely_list_of_commands(cmd_list: list[str]):
             cprint(err.decode('utf-8'), 'red')
 
 
-def get_stdout_from_external_command(command: list[str], stdin: Optional[IO] = None):
+def get_stdout_from_external_command(command: list[str], stdin: Optional[IO[bytes]] = None) -> str:
     """Runs external command with parameters, checks its output and provides its output.
 
     :param list command: list of arguments for command
@@ -402,7 +405,7 @@ def get_supported_module_names(package: str) -> list[str]:
     }[package]
 
 
-def merge_dictionaries(lhs: dict, rhs: dict) -> dict:
+def merge_dictionaries(lhs: dict[Any, Any], rhs: dict[Any, Any]) -> dict[Any, Any]:
     """Helper function for merging two dictionaries to one to be used as oneliner.
 
     :param dict lhs: left operand of the dictionary merge
@@ -414,7 +417,7 @@ def merge_dictionaries(lhs: dict, rhs: dict) -> dict:
     return res
 
 
-def merge_dict_range(*args: dict) -> dict:
+def merge_dict_range(*args: dict[Any, Any]) -> dict[Any, Any]:
     """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
 
     :param list args: list of dictionaries
@@ -426,7 +429,7 @@ def merge_dict_range(*args: dict) -> dict:
     return res
 
 
-def partition_list(input_list: Iterable, condition: Callable[[Any], bool]) -> tuple[list, list]:
+def partition_list(input_list: Iterable[Any], condition: Callable[[Any], bool]) -> tuple[list[Any], list[Any]]:
     """Utility function for list partitioning on a condition so that the list is not iterated
     twice and the condition is evaluated only once.
 
@@ -496,7 +499,7 @@ def format_file_size(size: Optional[float]) -> str:
     return f"{size:.1f} PiB"
 
 
-def chunkify(generator: Iterable, chunk_size: int) -> Iterable:
+def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
     """ Slice generator into multiple generators and each generator yields up to chunk_size items.
 
     Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
@@ -516,7 +519,21 @@ def chunkify(generator: Iterable, chunk_size: int) -> Iterable:
         yield itertools.chain([first], itertools.islice(generator, chunk_size - 1))
 
 
-def create_empty_pass(return_code: Any) -> Callable:
+@overload
+def create_empty_pass(return_code: CollectStatus) -> Callable[[Any], tuple[CollectStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning CollectStatus"""
+    pass
+
+
+@overload
+def create_empty_pass(return_code: PostprocessStatus) -> Callable[[Any], tuple[PostprocessStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning PostpProcessStatus"""
+    pass
+
+
+def create_empty_pass(
+        return_code: CollectStatus | PostprocessStatus
+) -> Callable[..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]]:
     """Returns a function which will do nothing
 
     This is used to handle collectors and postprocessors that do not have before or after phases.
@@ -524,7 +541,7 @@ def create_empty_pass(return_code: Any) -> Callable:
     :param object return_code: either CollectStatus.OK or PostprocessorStatus.OK
     :return: function that does nothing
     """
-    def empty_pass(**kwargs: Any) -> Any:
+    def empty_pass(**kwargs: Any) -> tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]:
         """Empty collection or postprocessing phase, doing nothing
 
         :param dict kwargs: arguments of the phase
@@ -553,7 +570,7 @@ def get_current_interpreter(required_version: Optional[str] = None, fallback: st
     :return str: the absolute path to the currently running python3 interpreter,
                  if not found, returns fallback interpreter instead
     """
-    def _parse_version(python_version: str) -> tuple[list, Callable[[Comparable, Comparable], bool]]:
+    def _parse_version(python_version: str) -> tuple[list[int], Callable[[Comparable, Comparable], bool]]:
         """ Parse the python version represented as a string into the 3 digit version number and
         additional postfixes, such as characters or '+' and '-'.
 

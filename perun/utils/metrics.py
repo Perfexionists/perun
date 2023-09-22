@@ -26,8 +26,8 @@ class MetricsManager:
         self.id_base = None
         self.metrics_id = None
         self.metrics_filename = None
-        self.timers = {}
-        self.records = {}
+        self.timers: dict[str, float] = {}
+        self.records: dict[str, dict[str, Any]] = {}
 
     def configure(self, metrics_filename: str, metrics_id: str) -> None:
         """ Sets the required properties for collecting metrics.
@@ -125,7 +125,7 @@ def save() -> None:
     """ Save the stored metrics into the metrics file.
     """
     if Metrics.enabled:
-        stored_metrics = {}
+        stored_metrics: dict[str, dict[str, Any]] = {}
         # Update the metrics file
         if temp.exists_temp_file(Metrics.metrics_filename):
             stored_metrics = temp.read_temp(Metrics.metrics_filename)

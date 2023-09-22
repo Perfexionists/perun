@@ -11,7 +11,7 @@ from typing import Dict, Callable, Any
 from perun.utils.exceptions import InvalidParameterException
 
 
-def _singleton_core(func: Callable, is_always_singleton: bool) -> Callable:
+def _singleton_core(func: Callable[[], Any], is_always_singleton: bool) -> Callable[[], Any]:
     """
     Wraps the function @p func so it will always return the same result,
     as given by the first call. I.e. the singleton. No params are expected.
@@ -37,7 +37,7 @@ always_singleton = functools.partial(_singleton_core, is_always_singleton=True)
 registered_singletons: list[Callable[[], Any]] = []
 
 
-def arguments_to_key(func: Callable, *args: Any, **kwargs: Any) -> tuple:
+def arguments_to_key(func: Callable[..., Any], *args: Any, **kwargs: Any) -> tuple[Any, ...]:
     """
     Transforms the real parameters of the @p func call, i.e. the combination
     of args and kwargs into unique key. Note that this has to be generic and
@@ -73,7 +73,7 @@ def arguments_to_key(func: Callable, *args: Any, **kwargs: Any) -> tuple:
     return tuple(real_posargs) + tuple(real_kwargs.items())
 
 
-def singleton_with_args(func: Callable) -> Callable:
+def singleton_with_args(func: Callable[..., Any]) -> Callable[..., Any]:
     """
     Wraps the function @p func, so it will always return the same result,
     as givn by the first call with given positional and keyword arguments.
@@ -93,7 +93,7 @@ def singleton_with_args(func: Callable) -> Callable:
     return wrapper
 
 
-func_args_cache: dict[str, dict[tuple, Any]] = {}
+func_args_cache: dict[str, dict[tuple[Any,...], Any]] = {}
 
 
 def remove_from_function_args_cache(funcname: str) -> None:
@@ -105,7 +105,12 @@ def remove_from_function_args_cache(funcname: str) -> None:
         func_args_cache[funcname].clear()
 
 
-def validate_arguments(validated_args: list[str], validate: Callable, *args: Any, **kwargs: Any) -> Callable:
+def validate_arguments(
+        validated_args: list[str],
+        validate: Callable[..., bool],
+        *args: Any,
+        **kwargs: Any
+) -> Callable[..., Any]:
     """
     Validates the arguments stated by validated_args with validate function.
     Note that positional and kwarguments are not supported by this decorator
@@ -116,7 +121,7 @@ def validate_arguments(validated_args: list[str], validate: Callable, *args: Any
     :param dict kwargs: dictionary of additional keyword arguments to validate function
     :returns func: decorated function for which given parameters will be validated
     """
-    def inner_decorator(func: Callable) -> Callable:
+    def inner_decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """Wrapper function of the @p func"""
         f_args, *_ = inspect.getfullargspec(func)
 
@@ -136,12 +141,12 @@ def validate_arguments(validated_args: list[str], validate: Callable, *args: Any
     return inner_decorator
 
 
-def static_variables(**kwargs: Any) -> Callable:
+def static_variables(**kwargs: Any) -> Callable[..., Any]:
     """
     :param dict kwargs: keyword with static variables and their values
     :returns func: decorated function for which static variables are set
     """
-    def inner_wrapper(func: Callable) -> Callable:
+    def inner_wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
         """Inner wrapper of the function"""
         for key, value in kwargs.items():
             setattr(func, key, value)
@@ -149,7 +154,7 @@ def static_variables(**kwargs: Any) -> Callable:
     return inner_wrapper
 
 
-def phase_function(phase_name: str) -> Callable:
+def phase_function(phase_name: str) -> Callable[..., Any]:
     """Sets the phase name for the given function
 
     The phase name is outputed when the elapsed time is printed.
@@ -157,7 +162,7 @@ def phase_function(phase_name: str) -> Callable:
     :param str phase_name: name of the phase to which the given function corresponds
     :return: decorated function with new phase name
     """
-    def inner_wrapper(func: Callable) -> Callable:
+    def inner_wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
         """Inner wrapper of the decorated function
 
         :param function func: function we are decorating with its phase name

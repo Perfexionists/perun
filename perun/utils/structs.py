@@ -2,13 +2,17 @@
 from __future__ import annotations
 
 import collections
+import enum
 import shlex
+import types
 from dataclasses import dataclass
 
 from enum import Enum
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, TYPE_CHECKING, cast
 
-import nptyping as npt
+if TYPE_CHECKING:
+    import numpy.typing as npt
+    import numpy
 
 
 GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
@@ -55,7 +59,7 @@ class RunnerReport:
         'postprocessor': PostprocessStatus.ERROR
     }
 
-    def __init__(self, runner, runner_type, kwargs) -> None:
+    def __init__(self, runner: types.ModuleType, runner_type: str, kwargs: Any) -> None:
         """
         :param module runner: module of the runner
         :param str runner_type: type of the runner (either 'collector' or 'postprocessor'
@@ -67,13 +71,13 @@ class RunnerReport:
         self.runner = runner
         self.runner_type = runner_type
         self.status = self.ok_status
-        self.stat_code = 0
+        self.stat_code: int | Enum = 0
         self.phase = "init"
         self.exception = None
         self.message = "OK"
         self.kwargs = kwargs
 
-    def update_from(self, stat_code, message, params) -> None:
+    def update_from(self, stat_code: int | enum.Enum, message: str, params: dict[str, Any]) -> None:
         """Updates the report according to the successful results of one of the phases
 
         :param int stat_code: returned code of the run
@@ -85,7 +89,7 @@ class RunnerReport:
         self.kwargs.update(params or {})
 
         is_enum = hasattr(self.stat_code, 'value')
-        if not (self.stat_code == 0 or (is_enum and self.stat_code.value == 0)):
+        if not (self.stat_code == 0 or (is_enum and cast(Enum, self.stat_code).value == 0)):
             self.status = self.error_status
 
         # Update the message; delete the assumed OK if error occurred
@@ -111,17 +115,17 @@ class Executable:
         note that this is to differentiate between actually generated workloads from generators and
         names of the generators.
     """
-    def __init__(self, cmd, args="", workload="") -> None:
+    def __init__(self, cmd: str, args: str = "", workload: str = "") -> None:
         """Initializes the executable
 
         :param str cmd: command to be executed
         :param str args: optional arguments of the command
         :param str workload: optional workloads of the command
         """
-        self.cmd = str(cmd)
-        self.args = str(args)
-        self.workload = str(workload)
-        self.origin_workload = str(workload)
+        self.cmd = cmd
+        self.args = args
+        self.workload = workload
+        self.origin_workload = workload
 
     def __str__(self) -> str:
         """Returns nonescaped, nonlexed string representation of the executable
@@ -150,7 +154,7 @@ class Unit:
     :ivar str name: name of the unit
     :ivar dict params: parameters for the unit
     """
-    def __init__(self, name, params) -> None:
+    def __init__(self, name: str, params: dict[str, Any]) -> None:
         """Constructs the unit, with name being sanitized
 
         :param str name: name of the unit
@@ -212,9 +216,9 @@ class DegradationInfo:
             tt: str,
             t: str = "-",
             rd: float = 0,
-            ct: float = 0,
+            ct: str = "no",
             cr: float = 0,
-            pi: Optional[list[float]] = None,
+            pi: Optional[npt.NDArray[numpy.float64]] = None,
             rdr: float = 0.0
     ) -> None:
         """Each degradation consists of its results, the location, where the change has happened
@@ -274,7 +278,7 @@ class Job:
     :ivar list postprocessors: list of postprocessing units applied after the collection
     :ivar Executable executable: System Under Profiling (SUP)
     """
-    def __init__(self, collector, postprocessors, executable) -> None:
+    def __init__(self, collector: Unit, postprocessors: list[Unit], executable: Executable) -> None:
         """
         :param Unit collector: collection unit used to collect the SUP
         :param list postprocessors: list of postprocessing units applied after the collection
@@ -303,7 +307,7 @@ class OrderedEnum(Enum):
     :ivar int order: the order of the new element
     """
 
-    def __init__(self, *args) -> None:
+    def __init__(self, *args: Any) -> None:
         """ Create the new enumeration element and compute its order.
 
         :param args: additional element arguments
@@ -368,7 +372,7 @@ class ProfileListConfig:
         the profile in the list
     :ivar int header_width: overall width of the profile list
     """
-    def __init__(self, list_type, short, profile_list) -> None:
+    def __init__(self, list_type: str, short: bool, profile_list: list[Any]) -> None:
         """Initializes the configuration for the profile list.
 
         :param str list_type: type of the profile list (either untracked or untracked)
@@ -400,7 +404,7 @@ class MinorVersion:
     email: Optional[str]
     checksum: str
     desc: str
-    parents: list
+    parents: list[str]
 
     def to_short(self) -> MinorVersion:
         """Returns corresponding minor version with shorted one-liner description
@@ -450,7 +454,7 @@ class ModelRecord:
     """
     type: str
     r_square: float
-    b0: Union[float, npt.NDArray]
+    b0: float | npt.NDArray[numpy.float64]
     b1: float
     b2: float
     x_start: float
@@ -461,4 +465,4 @@ class ModelRecord:
 
         :return: lenght of the bins if the model is bin-like, else number of non-zero coefficients
         """
-        return len(self.b0) if hasattr(self.b0, '__len__') else 1 + self.b1 != 0.0 + self.b2 != 0.0 # type: ignore
+        return len(self.b0) if hasattr(self.b0, '__len__') else 1 + self.b1 != 0.0 + self.b2 != 0.0

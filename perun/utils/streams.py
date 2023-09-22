@@ -11,12 +11,12 @@ import re
 import io
 from ruamel.yaml import YAML
 
-from typing import TextIO
+from typing import TextIO, Any
 
 import perun.utils.log as log
 
 
-def store_json(profile: dict, file_path: str) -> None:
+def store_json(profile: dict[Any, Any], file_path: str) -> None:
     """Stores profile w.r.t. :ref:`profile-spec` to output file.
 
     :param Profile profile: dictionary with profile w.r.t. :ref:`profile-spec`
@@ -28,7 +28,7 @@ def store_json(profile: dict, file_path: str) -> None:
         profile_handle.write(serialized_profile)
 
 
-def safely_load_yaml_from_file(yaml_file: str) -> dict:
+def safely_load_yaml_from_file(yaml_file: str) -> dict[Any, Any]:
     """
     :param str yaml_file: name of the yaml file
     :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
@@ -41,7 +41,7 @@ def safely_load_yaml_from_file(yaml_file: str) -> dict:
         return safely_load_yaml_from_stream(yaml_handle)
 
 
-def safely_load_yaml_from_stream(yaml_stream: TextIO | str) -> dict:
+def safely_load_yaml_from_stream(yaml_stream: TextIO | str) -> dict[Any, Any]:
     """
     :param str yaml_stream: stream in the yaml format (or not)
     :raises ruamel.yaml.scanner.ScannerError: when the input file contains error
@@ -57,7 +57,7 @@ def safely_load_yaml_from_stream(yaml_stream: TextIO | str) -> dict:
         return {}
 
 
-def safely_load_yaml(yaml_source: str) -> dict:
+def safely_load_yaml(yaml_source: str) -> dict[Any, Any]:
     """Wrapper which takes the yaml source and either load it from the file or from the string
 
     :param str yaml_source: either string or name of the file
@@ -68,7 +68,7 @@ def safely_load_yaml(yaml_source: str) -> dict:
     return safely_load_yaml_from_stream(yaml_source)
 
 
-def yaml_to_string(dictionary: dict) -> str:
+def yaml_to_string(dictionary: dict[Any, Any]) -> str:
     """Converts the dictionary representing the YAML into string
 
     :param dict dictionary: yaml stored as dictionary
@@ -81,7 +81,7 @@ def yaml_to_string(dictionary: dict) -> str:
     return "".join([" "*4 + s for s in string_stream.readlines()])
 
 
-def safely_load_file(filename: str) -> list:
+def safely_load_file(filename: str) -> list[str]:
     """Safely reads filename. In case of Unicode errors, returns empty list.
 
     :param str filename: read filename
