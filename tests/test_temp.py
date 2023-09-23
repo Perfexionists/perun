@@ -133,7 +133,7 @@ def test_temp_file_operations(pcs_with_empty_git):
     with open(temp.temp_path(collect_file), 'w') as tmp_handle:
         # The file is still considered json-formatted and compressed, thus error occurs when reading
         tmp_handle.write('Some uncompressed and not formatted data')
-    assert temp.read_temp(collect_file) is None
+    assert temp.read_temp(collect_file) == {}
 
     # Reset the corrupted file
     temp.reset_temp(collect_file)

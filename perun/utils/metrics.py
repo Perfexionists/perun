@@ -7,6 +7,7 @@ import atexit
 
 from typing import Any, Optional
 
+import perun.utils.log as log
 import perun.logic.temp as temp
 
 
@@ -22,10 +23,10 @@ class MetricsManager:
     def __init__(self) -> None:
         """ Initializes the manager. Unless configure is called, the metrics are not recorded.
         """
-        self.enabled = False
-        self.id_base = None
-        self.metrics_id = None
-        self.metrics_filename = None
+        self.enabled: bool = False
+        self.id_base: str = ''
+        self.metrics_id: str = ''
+        self.metrics_filename: Optional[str] = None
         self.timers: dict[str, float] = {}
         self.records: dict[str, dict[str, Any]] = {}
 
@@ -125,12 +126,15 @@ def save() -> None:
     """ Save the stored metrics into the metrics file.
     """
     if Metrics.enabled:
-        stored_metrics: dict[str, dict[str, Any]] = {}
-        # Update the metrics file
-        if temp.exists_temp_file(Metrics.metrics_filename):
-            stored_metrics = temp.read_temp(Metrics.metrics_filename)
-        stored_metrics.update(Metrics.records)
-        temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
+        if Metrics.metrics_filename is not None:
+            stored_metrics: dict[str, dict[str, Any]] = {}
+            # Update the metrics file
+            if temp.exists_temp_file(Metrics.metrics_filename):
+                stored_metrics = temp.read_temp(Metrics.metrics_filename)
+            stored_metrics.update(Metrics.records)
+            temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
+        else:
+            log.error(f"cannot save metrics: `metrics_filename` was not specified")
 
 
 def save_separate(temp_name: str, data: Any) -> None:

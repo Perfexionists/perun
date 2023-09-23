@@ -114,7 +114,7 @@ def test_complex_detection_methods():
                     assert expected_result.from_baseline == test_deg_info.from_baseline
                     assert expected_result.to_target == test_deg_info.to_target
                     assert expected_result.rate_degradation == test_deg_info.rate_degradation
-                    if test_deg_info.partial_intervals is not None:
+                    if len(test_deg_info.partial_intervals) > 0:
                         assert expected_result.partial_intervals ==\
                                     aggregate_intervals(test_deg_info.partial_intervals)
                     if expected_results['results']:

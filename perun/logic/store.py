@@ -250,7 +250,7 @@ def parse_changelog_line(line: str) -> tuple[DegradationInfo, str, str]:  # type
             loc=tokens.group('location'),
             fb=tokens.group('from'),
             tt=tokens.group('to'),
-            rd=tokens.group('drate'),
+            rd=float(tokens.group('drate')),
             ct=tokens.group('ctype'),
             cr=float(tokens.group('crate')),
             rdr=float(tokens.group('rdrate')),

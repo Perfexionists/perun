@@ -20,7 +20,7 @@ class Mutation:
     :ivar list history: list of predecessors
     :ivar Mutation predecessor: predecessor of the mutation (form which we mutated)
     :ivar int cov: achieved coverage
-    :ivar int deg_ratio: achieved degradation ration
+    :ivar float deg_ratio: achieved degradation ration
     :ivar float fitness: fitness of the mutation
     """
 
@@ -30,7 +30,7 @@ class Mutation:
             history: list[int],
             predecessor: Optional["Mutation"],
             cov: int = 0,
-            deg_ratio: int = 0,
+            deg_ratio: float = 0.0,
             fitness: float = 0.0
     ):
         """
@@ -45,7 +45,7 @@ class Mutation:
         self.history: list[int] = history
         self.predecessor: Optional["Mutation"] = predecessor
         self.cov: int = cov
-        self.deg_ratio: int = deg_ratio
+        self.deg_ratio: float = deg_ratio
         self.fitness: float = fitness
 
 

@@ -472,7 +472,7 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
         print(')', end='')
 
 
-def _print_partial_intervals(partial_intervals: npt.NDArray[Any]) -> None:
+def _print_partial_intervals(partial_intervals: list[PerformanceChange, float, float, float]) -> None:
     """
     The function prints information about detected changes on the partial intervals.
 
@@ -545,7 +545,7 @@ def print_list_of_degradations(
             print(')')
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
-            if deg_info.partial_intervals is not None:
+            if len(deg_info.partial_intervals) > 0:
                 _print_partial_intervals(deg_info.partial_intervals)
     newline()
 

@@ -15,7 +15,7 @@ from uuid import uuid4
 import numpy as np
 import tabulate
 
-from typing import Optional, Any, AnyStr
+from typing import Optional, Any, cast, overload, Literal, AnyStr
 
 import perun.utils.decorators as decorators
 import perun.utils.log as log

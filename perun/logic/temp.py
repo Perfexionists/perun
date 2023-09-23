@@ -259,7 +259,7 @@ def store_temp(
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
-def read_temp(file_path: str) -> Optional[dict[str, Any]]:
+def read_temp(file_path: str) -> dict[str, Any]:
     """Reads the content of the temporary file 'file_path'. An exception is raised if the file does
     not exist. None is returned if the file could not have been read, is corrupted, has
     inconsistent or invalid index properties.
@@ -288,7 +288,7 @@ def read_temp(file_path: str) -> Optional[dict[str, Any]]:
     # Handle possible errors
     except (OSError, ValueError, zlib.error) as exc:
         perun_log.msg_to_file("Error reading temporary file: {}".format(str(exc)), 0)
-        return None
+        return {}
 
 
 def reset_temp(file_path: str) -> None:

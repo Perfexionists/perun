@@ -50,11 +50,11 @@ class RunnerReport:
     :ivar str message: string message describing the result of run
     :ivar dict kwargs: kwargs of the process (should include "profile")
     """
-    ok_statuses = {
+    ok_statuses: dict[str, CollectStatus | PostprocessStatus] = {
         'collector': CollectStatus.OK,
         'postprocessor': PostprocessStatus.OK
     }
-    error_statues = {
+    error_statues: dict[str, CollectStatus | PostprocessStatus] = {
         'collector': CollectStatus.ERROR,
         'postprocessor': PostprocessStatus.ERROR
     }
@@ -68,14 +68,14 @@ class RunnerReport:
         self.ok_status = RunnerReport.ok_statuses[runner_type]
         self.error_status = RunnerReport.error_statues[runner_type]
 
-        self.runner = runner
-        self.runner_type = runner_type
-        self.status = self.ok_status
+        self.runner: types.ModuleType = runner
+        self.runner_type: str = runner_type
+        self.status: CollectStatus | PostprocessStatus = self.ok_status
         self.stat_code: int | Enum = 0
-        self.phase = "init"
-        self.exception = None
-        self.message = "OK"
-        self.kwargs = kwargs
+        self.phase: str = "init"
+        self.exception: Optional[BaseException] = None
+        self.message: str = "OK"
+        self.kwargs: dict[str, Any] = kwargs
 
     def update_from(self, stat_code: int | enum.Enum, message: str, params: dict[str, Any]) -> None:
         """Updates the report according to the successful results of one of the phases
@@ -218,7 +218,7 @@ class DegradationInfo:
             rd: float = 0,
             ct: str = "no",
             cr: float = 0,
-            pi: Optional[npt.NDArray[numpy.float64]] = None,
+            pi: Optional[list[tuple[PerformanceChange, float, float, float]]] = None,
             rdr: float = 0.0
     ) -> None:
         """Each degradation consists of its results, the location, where the change has happened
@@ -242,16 +242,16 @@ class DegradationInfo:
         :param float cr: value of the confidence we have in the detected degradation
         :param float rdr: relative rate of the degradation (i.e. to the entire program run)
         """
-        self.result = res
-        self.type = t
-        self.location = loc
-        self.from_baseline = fb
-        self.to_target = tt
-        self.rate_degradation = float(rd)
-        self.confidence_type = ct
-        self.confidence_rate = float(cr)
-        self.partial_intervals = pi
-        self.rate_degradation_relative = float(rdr)
+        self.result: PerformanceChange = res
+        self.type: str = t
+        self.location: str = loc
+        self.from_baseline: str = fb
+        self.to_target: str = tt
+        self.rate_degradation: float = rd
+        self.confidence_type: str = ct
+        self.confidence_rate: float = cr
+        self.partial_intervals: list[tuple[PerformanceChange, float, float, float]] = pi if pi is not None else []
+        self.rate_degradation_relative: float = rdr
 
     def to_storage_record(self) -> str:
         """Transforms the degradation info to a storage_record

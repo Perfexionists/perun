@@ -1,11 +1,12 @@
 """Collection of functions for running collectors and postprocessors"""
+from __future__ import annotations
 
 import os
 import subprocess
 import signal
 import types
 
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, TYPE_CHECKING
 
 import distutils.util as dutils
 
@@ -25,6 +26,9 @@ import perun.utils.helpers as helpers
 import perun.workload as workloads
 import perun.collect.trace.optimizations.optimization
 
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
+
 from perun.utils import get_module
 from perun.utils.structs import GeneratorSpec, Unit, Executable, RunnerReport, \
     CollectStatus, PostprocessStatus, Job, MinorVersion
@@ -41,7 +45,7 @@ def construct_job_matrix(
         collector: list[str],
         postprocessor: list[str],
         **kwargs: Any
-) -> tuple[dict, int]:
+) -> tuple[dict[dict[str, list[Job]]], int]:
     """Constructs the job matrix represented as dictionary.
 
     Reads the local of the current PCS and constructs the matrix of jobs
@@ -517,8 +521,8 @@ def generate_jobs(
 @log.print_elapsed_time
 @decorators.phase_function('overall profiling')
 def generate_jobs_with_history(
-        minor_version_list: list[MinorVersion], job_matrix: dict, number_of_jobs: int
-) -> Iterable[tuple[CollectStatus, dict, Job]]:
+        minor_version_list: list[MinorVersion], job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
+) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """
     :param list minor_version_list: list of MinorVersion info
     :param dict job_matrix: dictionary with jobs that will be run
@@ -545,7 +549,7 @@ def generate_profiles_for(
         postprocessor: list[str],
         minor_version_list: list[MinorVersion],
         **kwargs: Any
-) -> Iterable[tuple[CollectStatus, dict, Job]]:
+) -> Iterable[tuple[CollectStatus, Profile, str]]:
     """Helper generator, that takes job specification and continuously generates profiles
 
     This is mainly used for fuzzing, which requires to handle the profiles without any storage,
