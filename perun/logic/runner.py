@@ -6,7 +6,7 @@ import subprocess
 import signal
 import types
 
-from typing import Any, Iterable, Optional, TYPE_CHECKING
+from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
 
 import distutils.util as dutils
 
@@ -45,7 +45,7 @@ def construct_job_matrix(
         collector: list[str],
         postprocessor: list[str],
         **kwargs: Any
-) -> tuple[dict[dict[str, list[Job]]], int]:
+) -> tuple[dict[str, dict[str, list[Job]]], int]:
     """Constructs the job matrix represented as dictionary.
 
     Reads the local of the current PCS and constructs the matrix of jobs
@@ -74,7 +74,7 @@ def construct_job_matrix(
     :param dict kwargs: additional parameters issued from the command line
     :returns dict, int: dict of jobs in form of {cmds: {workloads: {Job}}}, number of jobs
     """
-    def construct_unit(unit: str, unit_type: str, ukwargs: dict) -> Unit:
+    def construct_unit(unit: str, unit_type: str, **ukwargs: Any) -> Unit:
         """Helper function for constructing the {'name', 'params'} objects for collectors and posts.
 
         :param str unit: name of the unit (collector/postprocessor)
@@ -89,8 +89,8 @@ def construct_job_matrix(
         return Unit(unit, unit_param_dict)
 
     # Convert the bare lists of collectors and postprocessors to {'name', 'params'} objects
-    collector_pairs = list(map(lambda c: construct_unit(c, 'collector', kwargs), collector))
-    posts = list(map(lambda p: construct_unit(p, 'postprocessor', kwargs), postprocessor))
+    collector_pairs = list(map(lambda c: construct_unit(c, 'collector', **kwargs), collector))
+    posts = list(map(lambda p: construct_unit(p, 'postprocessor', **kwargs), postprocessor))
 
     # Construct the actual job matrix
     matrix = {
@@ -111,7 +111,7 @@ def construct_job_matrix(
     return matrix, number_of_jobs
 
 
-def load_job_info_from_config() -> dict:
+def load_job_info_from_config() -> dict[str, Any]:
     """
     :returns dict: dictionary with cmds, args, workloads, collectors and postprocessors
     """
@@ -160,13 +160,15 @@ def run_phase_function(report: RunnerReport, phase: str) -> None:
     :param RunnerReport report: collective report about the run of the phase
     :param str phase: name of the phase/function that is run
     """
-    phase_function = getattr(report.runner, phase, utils.create_empty_pass(report.ok_status))
+    phase_function: Callable[..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]] = getattr(
+        report.runner, phase, utils.create_empty_pass(report.ok_status)
+    )
     runner_verb = report.runner_type[:-2]
     report.phase = phase
     try:
         phase_result = phase_function(**report.kwargs)
         report.update_from(*phase_result)
-    # We safely catch all of the exceptions
+    # We safely catch all the exceptions
     except Exception as exc:
         report.status = report.error_status
         report.exception = exc
@@ -230,7 +232,9 @@ def runner_signal_handler(signum: int, frame: Any) -> None:
     raise SignalReceivedException(signum, frame)
 
 
-def run_all_phases_for(runner: types.ModuleType, runner_type: str, runner_params: dict) -> tuple[RunnerReport, dict]:
+def run_all_phases_for(
+        runner: types.ModuleType, runner_type: str, runner_params: dict[str, Any]
+) -> tuple[RunnerReport, dict[str, Any]]:
     """Run all the phases (before, runner_type, after) for given params.
 
     Runs three of the phases before, runner_type and after for the given runner params
@@ -273,7 +277,7 @@ def run_all_phases_for(runner: types.ModuleType, runner_type: str, runner_params
 
 @log.print_elapsed_time
 @decorators.phase_function('collect')
-def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict]:
+def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict[str, Any]]:
     """Run the job of collector of the given name.
 
     Tries to look up the module containing the collector specified by the
@@ -288,9 +292,9 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict]:
     )
 
     try:
-        collector_module = get_module('perun.collect.{0}.run'.format(collector.name))
+        collector_module = get_module(f'perun.collect.{collector.name}.run')
     except ImportError:
-        log.error("{} collector does not exist".format(collector.name), recoverable=True)
+        log.error(f"{collector.name} collector does not exist", recoverable=True)
         return CollectStatus.ERROR, {}
 
     # First init the collector by running the before phases (if it has)
@@ -298,16 +302,17 @@ def run_collector(collector: Unit, job: Job) -> tuple[CollectStatus, dict]:
     collection_report, prof = run_all_phases_for(collector_module, 'collector', job_params)
 
     if not collection_report.is_ok():
-        log.error("while collecting by {}: {}".format(
-            collector.name, collection_report.message
-        ), recoverable=True, raised_exception=collection_report.exception)
+        log.error(
+            f"while collecting by {collector.name}: {collection_report.message}",
+            recoverable=True, raised_exception=collection_report.exception
+        )
     else:
-        log.info("Successfully collected data from {}".format(job.executable.cmd))
+        log.info(f"Successfully collected data from {job.executable.cmd}")
 
-    return collection_report.status, prof
+    return cast(CollectStatus, collection_report.status), prof
 
 
-def run_collector_from_cli_context(ctx: click.Context, collector_name: str, collector_params: dict) -> None:
+def run_collector_from_cli_context(ctx: click.Context, collector_name: str, collector_params: dict[str, Any]) -> None:
     """Runs the collector according to the given cli context.
 
     This is used as a wrapper for calls from various collector modules. This was extracted,
@@ -335,7 +340,7 @@ def run_collector_from_cli_context(ctx: click.Context, collector_name: str, coll
 
 @log.print_elapsed_time
 @decorators.phase_function('postprocess')
-def run_postprocessor(postprocessor: Unit, job: Job, prof: dict) -> tuple[PostprocessStatus, dict]:
+def run_postprocessor(postprocessor: Unit, job: Job, prof: dict[str, Any]) -> tuple[PostprocessStatus, dict[str, Any]]:
     """Run the job of postprocess of the given name.
 
     Tries to look up the module containing the postprocessor specified by the
@@ -368,10 +373,10 @@ def run_postprocessor(postprocessor: Unit, job: Job, prof: dict) -> tuple[Postpr
     else:
         log.info("Successfully postprocessed data by {}".format(postprocessor.name))
 
-    return postprocess_report.status, prof
+    return cast(PostprocessStatus, postprocess_report.status), prof
 
 
-def store_generated_profile(prof: dict, job: Job, profile_name: Optional[str] = None) -> None:
+def store_generated_profile(prof: dict[str, Any], job: Job, profile_name: Optional[str] = None) -> None:
     """Stores the generated profile in the pending jobs directory.
 
     :param Profile prof: profile that we are storing in the repository
@@ -395,7 +400,7 @@ def store_generated_profile(prof: dict, job: Job, profile_name: Optional[str] = 
 
 
 def run_postprocessor_on_profile(
-        prof: Profile, postprocessor_name: str, postprocessor_params: dict, skip_store: bool = False
+        prof: Profile, postprocessor_name: str, postprocessor_params: dict[str, Any], skip_store: bool = False
 ) -> tuple[PostprocessStatus, Profile]:
     """Run the job of the postprocessor according to the given profile.
 
@@ -453,8 +458,8 @@ def run_prephase_commands(phase: str, phase_colour: str = 'white') -> None:
 @log.print_elapsed_time
 @decorators.phase_function('batch job run')
 def generate_jobs_on_current_working_dir(
-        job_matrix: dict, number_of_jobs: int
-) -> Iterable[tuple[CollectStatus, dict, Job]]:
+        job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
+) -> Iterable[tuple[CollectStatus, dict[str, Any], Job]]:
     """Runs the batch of jobs on current state of the VCS.
 
     This function expects no changes not commited in the repo, it excepts correct version
@@ -504,8 +509,8 @@ def generate_jobs_on_current_working_dir(
 @log.print_elapsed_time
 @decorators.phase_function('overall profiling')
 def generate_jobs(
-        minor_version_list: list[MinorVersion], job_matrix: dict, number_of_jobs: int
-) -> Iterable[tuple[CollectStatus, dict, Job]]:
+        minor_version_list: list[MinorVersion], job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
+) -> Iterable[tuple[CollectStatus, dict[str, Any], Job]]:
     """
     :param list minor_version_list: list of MinorVersion info
     :param dict job_matrix: dictionary with jobs that will be run

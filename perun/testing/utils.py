@@ -117,7 +117,7 @@ def count_contents_on_path(path: str) -> tuple[int, int]:
     return file_number, dir_number
 
 
-def compare_results(expected: float, actual: float, eps: float = 0.0001) -> float:
+def compare_results(expected: float, actual: float, eps: float = 0.0001) -> None:
     """Compare two float values with eps tolerance.
 
     :param float expected: the expected result value
@@ -129,7 +129,7 @@ def compare_results(expected: float, actual: float, eps: float = 0.0001) -> floa
 
 def generate_models_by_uid(
         profile: Profile, value: str, uid_sequence: list[str], key: str = 'model'
-) -> list[dict[str, Any]]:
+) -> Iterable[list[dict[str, Any]]]:
     """Provides computed models results for each uid in the specified uid sequence.
 
     :param Profile profile: the whole profile with 'models' results

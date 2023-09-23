@@ -191,7 +191,7 @@ def print_current_stack(colour: str = 'red', raised_exception: Optional[Exceptio
     ), file=sys.stderr)
 
 
-def error(msg: str, recoverable: bool = False, raised_exception: Optional[Exception] = None) -> None:
+def error(msg: str, recoverable: bool = False, raised_exception: Optional[BaseException] = None) -> None:
     """
     :param str msg: error message printed to standard output
     :param bool recoverable: whether we can recover from the error

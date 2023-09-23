@@ -8,6 +8,7 @@ import click
 import tabulate
 import pandas
 
+import perun.utils.log as log
 import perun.profile.convert as convert
 import perun.profile.query as query
 import perun.profile.helpers as profiles
@@ -23,6 +24,9 @@ def get_headers(ctx: click.Context) -> list[str]:
     :return: candidate headers for resources or models
     """
     headers = []
+    if ctx.command is None or ctx.parent is None or ctx.parent.parent is None:
+        log.error(f"internal click error: ctx.command, ctx.parent or ctx.parent.parent is None")
+        return []
     if ctx.command.name == 'resources':
         headers = list(ctx.parent.parent.params['profile'].all_resource_fields()) \
                   + ['snapshots']
@@ -100,9 +104,8 @@ def process_filter(ctx: click.Context, option: click.Option, value: list[str]) -
         for val in value:
             if val[0] not in headers:
                 raise click.BadOptionUsage(
-                    option, "invalid key choice for filtering: {} (choose from {})".format(
-                        val[0], ", ".join(headers)
-                    )
+                    option.name or '',
+                    f"invalid key choice for filtering: {val[0]} (choose from {', '.join(headers)})"
                 )
         return list(value)
     return value
@@ -120,9 +123,8 @@ def process_sort_key(ctx: click.Context, option: click.Option, value: str) -> st
 
     if value and value not in headers:
         raise click.BadOptionUsage(
-            option.name, "invalid key choice for sorting the table: {} (choose from {})".format(
-                value, ", ".join(headers)
-            )
+            option.name or '',
+            f"invalid key choice for sorting the table: {value} (choose from {', '.join(headers)})"
         )
     return value
 
@@ -142,9 +144,8 @@ def process_headers(ctx: click.Context, option: click.Option, value: list[str]) 
         for val in value:
             if val not in headers:
                 raise click.BadOptionUsage(
-                    option.name, "invalid choice for table header: {} (choose from {})".format(
-                        val, ", ".join(headers)
-                    )
+                    option.name or '',
+                    f"invalid choice for table header: {val} (choose from {', '.join(headers)})"
                 )
         return list(value)
     # Else we output everything
@@ -152,7 +153,7 @@ def process_headers(ctx: click.Context, option: click.Option, value: list[str]) 
         return sorted(headers)
 
 
-def process_output_file(ctx: click.Context, _, value: str) -> str:
+def process_output_file(ctx: click.Context, _: click.Option, value: str) -> str:
     """Generates the name of the output file, if no value is issued
 
     If no output file is set, then we generate the profile name according to the profile
@@ -163,11 +164,12 @@ def process_output_file(ctx: click.Context, _, value: str) -> str:
     :param str value: output file of the show
     :return: output file of the show
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     if value:
         return value
     else:
         prof_name = profiles.generate_profile_name(ctx.parent.params['profile'])
-        return ctx.command.name + "_of_" + os.path.splitext(prof_name)[0]
+        return (ctx.command.name or '<MISSING_COMMAND_NAME>') + "_of_" + os.path.splitext(prof_name)[0]
 
 
 @click.group()
@@ -236,9 +238,12 @@ def tableof(*_: Any, **__: Any) -> None:
                    " keys; and the rows satisfying some rule will be selected for same key.")
 @click.pass_context
 def resources(
-        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_
+        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_: Any
 ) -> None:
     """Outputs the resources of the profile as a table"""
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
+    assert ctx.parent.parent is not None and f"impossible happened: {ctx.parent} has no parent"
+
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
     profile_as_table = create_table_from(
@@ -264,9 +269,12 @@ def resources(
                    " several times, then rows satisfying all rules will be selected for different"
                    " keys; and the rows satisfying some rule will be sellected for same key.")
 def models(
-        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_
+        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_: Any
 ) -> None:
     """Outputs the models of the profile as a table"""
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
+    assert ctx.parent.parent is not None and f"impossible happened: {ctx.parent} has no parent"
+
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
     profile_as_table = create_table_from(

@@ -259,7 +259,7 @@ def store_temp(
     _write_to_temp(file_path, content, json_format, protect, compress)
 
 
-def read_temp(file_path: str) -> dict[str, Any]:
+def read_temp(file_path: str) -> Any:
     """Reads the content of the temporary file 'file_path'. An exception is raised if the file does
     not exist. None is returned if the file could not have been read, is corrupted, has
     inconsistent or invalid index properties.
@@ -582,7 +582,7 @@ def _write_to_temp(file_path: str, content: Any, json_format: bool, protect: boo
         content = json.dumps(content, indent=2)
     if compress:
         file_mode = 'w+b'
-        content = store.pack_content(content.encode('utf-8'))  # type: ignore
+        content = store.pack_content(content.encode('utf-8'))
     # Write the content to the tmp file
     with open(file_path, file_mode) as tmp_handle:
         tmp_handle.write(content)

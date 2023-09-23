@@ -40,10 +40,10 @@ if TYPE_CHECKING:
     from perun.profile.helpers import ProfileInfo
     from perun.profile.factory import Profile
 
-UNTRACKED_REGEX: re.Pattern = \
+UNTRACKED_REGEX: re.Pattern[str] = \
     re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
 # Regex for parsing the formating tag [<tag>:<size>f<fill_char>]
-FMT_REGEX: re.Pattern = re.compile(r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%")
+FMT_REGEX: re.Pattern[str] = re.compile(r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%")
 
 
 def config_get(store_type: str, key: str) -> None:
@@ -113,11 +113,13 @@ def config_reset(store_type: str, config_template: str) -> None:
         perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
     perun_log.info("{} configuration reset{}".format(
         'global' if store_type in ('shared', 'global') else 'local',
-        " to {}".format(config_template) if store not in ("shared", "global") else ""
+        f" to {config_template}" if store_type not in ("shared", "global") else ""
     ))
 
 
-def init_perun_at(perun_path: str, is_reinit: bool, vcs_config: dict, config_template: str = 'master') -> None:
+def init_perun_at(
+        perun_path: str, is_reinit: bool, vcs_config: dict[str, Any], config_template: str = 'master'
+) -> None:
     """Initialize the .perun directory at given path
 
     Initializes or reinitializes the .perun directory at the given path.
@@ -737,7 +739,7 @@ def print_other_formatting_string(
 
 
 def calculate_maximal_lengths_for_stats(
-        obj_list: list,
+        obj_list: list[Any],
         stat_function: Callable[[Any], dict[str, Any]],
         stat_header: str = ""
 ) -> dict[str, int]:
@@ -756,7 +758,7 @@ def calculate_maximal_lengths_for_stats(
     return maxima
 
 
-def calculate_maximal_lengths_for_object_list(object_list: list, valid_attributes: list[str]) -> dict[str, int]:
+def calculate_maximal_lengths_for_object_list(object_list: list[Any], valid_attributes: list[str]) -> dict[str, int]:
     """For given object list, will calculate the maximal sizes for its values for table view.
 
     :param list object_list: list of objects (e.g. ProfileInfo or MinorVersion) information

@@ -10,6 +10,7 @@ import demandimport
 
 with demandimport.enabled():
     import numpy as np
+    import numpy.typing as npt
     import holoviews as hv
     from bokeh import palettes
 
@@ -225,7 +226,7 @@ def _create_regressogram_model(model: ProfileModel) -> hv.Curve:
     return _render_step_function(x_pts, y_pts, legend=_build_model_legend(model))
 
 
-def _render_step_function(x_pts: np.ndarray, y_pts: np.ndarray, legend: str) -> hv.Curve:
+def _render_step_function(x_pts: npt.NDArray[np.float64], y_pts: npt.NDArray[np.float64], legend: str) -> hv.Curve:
     """Build regressogram's step lines according to given coordinates.
 
     :param x_pts: the x-coordinates for the line.

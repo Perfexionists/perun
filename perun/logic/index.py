@@ -12,7 +12,10 @@ import json
 from zlib import error
 
 from enum import Enum
-from typing import Callable, BinaryIO, Any, Iterable, Collection
+from typing import Callable, BinaryIO, Any, Iterable, Collection, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
@@ -24,11 +27,11 @@ from perun.utils.exceptions import (EntryNotFoundException, MalformedIndexFileEx
 
 
 # List of current versions of format and magic constants
-INDEX_ENTRIES_START_OFFSET = 12
-INDEX_NUMBER_OF_ENTRIES_OFFSET = 8
-INDEX_MAGIC_PREFIX = b'pidx'
+INDEX_ENTRIES_START_OFFSET: int = 12
+INDEX_NUMBER_OF_ENTRIES_OFFSET: int = 8
+INDEX_MAGIC_PREFIX: bytes = b'pidx'
 # Index Version 2.0 FastSloth
-INDEX_VERSION = 2
+INDEX_VERSION: int = 2
 
 
 class IndexVersion(Enum):
@@ -531,7 +534,7 @@ def register_in_pending_index(registered_file: str, profile: dict) -> None:
 
 
 def register_in_minor_index(
-        base_dir: str, minor_version: str, registered_file: str, registered_checksum: str, profile: dict
+        base_dir: str, minor_version: str, registered_file: str, registered_checksum: str, profile: Profile
 ) -> None:
     """Registers file in the index corresponding to the minor_version
 

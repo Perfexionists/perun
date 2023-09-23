@@ -22,6 +22,8 @@ import re
 import operator
 import types
 
+from typing import Any
+
 import perun.logic.pcs as pcs
 import perun.logic.config as config
 import perun.logic.store as store
@@ -33,8 +35,9 @@ import perun.utils.helpers as helpers
 
 from perun.utils import get_module
 from perun.profile.factory import Profile
-from perun.utils.exceptions import InvalidParameterException, MissingConfigSectionException, \
-                                   TagOutOfRangeException
+from perun.utils.exceptions import (
+    InvalidParameterException, MissingConfigSectionException, TagOutOfRangeException
+)
 from perun.utils.structs import Unit, Executable, Job
 
 
@@ -345,7 +348,7 @@ def config_tuple_to_cmdstr(config_tuple: tuple[str, str, str, str, str]) -> str:
     return " ".join(filter(lambda x: x, config_tuple[1:4]))
 
 
-def extract_job_from_profile(profile: dict) -> Job:
+def extract_job_from_profile(profile: Profile) -> Job:
     """Extracts information from profile about job, that was done to generate the profile.
 
     Fixme: Add assert that profile is profile
@@ -502,7 +505,14 @@ class ProfileInfo:
     This is mainly used for formatted output of the profile list using
     the command line interface
     """
-    def __init__(self, path: str, real_path: str, mtime: str, profile_info: dict, is_raw_profile: bool = False) -> None:
+    def __init__(
+            self,
+            path: str,
+            real_path: str,
+            mtime: str,
+            profile_info: Profile | dict[str, Any],
+            is_raw_profile: bool = False
+    ) -> None:
         """
         :param str path: contains the name of the file, which identifies it in the index
         :param str real_path: real path to the profile, i.e. how can it really be accessed
@@ -540,6 +550,6 @@ class ProfileInfo:
         """
         return store.load_profile_from_file(self.realpath, self._is_raw_profile)
 
-    valid_attributes = [
+    valid_attributes: list[str] = [
         "realpath", "type", "time", "cmd", "args", "workload", "collector", "checksum", "source"
     ]

@@ -146,7 +146,7 @@ def find_minor_stats_directory(minor_version: str) -> tuple[bool, str]:
 def add_stats(
         stats_filename: str,
         stats_ids: list[str],
-        stats_contents: list[dict],
+        stats_contents: list[dict[str, Any]],
         minor_version: Optional[str] = None
 ) -> str:
     """ Save some stats represented by an ID into the provided stats filename under a specific
@@ -168,7 +168,7 @@ def add_stats(
 
 
 def update_stats(
-        stats_filename: str, stats_ids: list[str], extensions: list[dict], minor_version: Optional[str] = None
+        stats_filename: str, stats_ids: list[str], extensions: list[dict[str, Any]], minor_version: Optional[str] = None
 ) -> None:
     """ Updates the stats represented by an ID in the given stats filename under a specific
     minor version. The stats dictionary will be extended by the supplied extensions.
@@ -184,7 +184,7 @@ def update_stats(
 
 def get_stats_of(
         stats_filename: str, stats_ids: Optional[list[str]] = None, minor_version: Optional[str] = None
-) -> dict:
+) -> dict[str, dict[str, Any]]:
     """ Gets the stats content represented by an ID (or the whole content if stats_id is None)
     from the stats filename under a specific minor version.
     Raises StatsFileNotFoundException if the given file does not exist.
@@ -268,7 +268,9 @@ def delete_stats_file(stats_filename: str, minor_version: Optional[str] = None, 
         delete_version_dirs([minor_version], True)
 
 
-def get_latest(stats_filename: str, stats_ids: Optional[list[str]] = None, exclude_self: bool = False) -> dict:
+def get_latest(
+        stats_filename: str, stats_ids: Optional[list[str]] = None, exclude_self: bool = False
+) -> dict[str, dict[str, Any]]:
     """ Fetch the content of the latest stats file named 'stats_filename' according to the
     git versions.
 
@@ -434,7 +436,7 @@ def _delete_empty_dir(directory_path: str) -> bool:
     return False
 
 
-def _add_to_dict(dictionary: dict, sid: str, content: dict) -> None:
+def _add_to_dict(dictionary: dict[str, Any], sid: str, content: dict[str, Any]) -> None:
     """ A helper function that stores the stats content in the given dict under the ID
 
     :param dict dictionary: the dictionary where the content will be stored
@@ -444,7 +446,7 @@ def _add_to_dict(dictionary: dict, sid: str, content: dict) -> None:
     dictionary[sid] = content
 
 
-def _update_or_add_to_dict(dictionary: dict, sid: str, extension: dict) -> None:
+def _update_or_add_to_dict(dictionary: dict[str, Any], sid: str, extension: dict[str, Any]) -> None:
     """ A helper function that updates the stats content in the given dict under the ID or creates
     the new ID with the 'extension' content if it does not exist
 
@@ -478,7 +480,7 @@ def _touch_minor_stats_directory(minor_version: str) -> str:
     return lower_level_dir
 
 
-def _load_stats_from(stats_handle: BinaryIO) -> dict:
+def _load_stats_from(stats_handle: BinaryIO) -> dict[str, Any]:
     """ Loads and unzips the contents of the opened stats file.
 
     :param file stats_handle: the handle of the stats file
@@ -494,7 +496,7 @@ def _load_stats_from(stats_handle: BinaryIO) -> dict:
         return {}
 
 
-def _save_stats_to(stats_handle: BinaryIO, stats_records: dict) -> None:
+def _save_stats_to(stats_handle: BinaryIO, stats_records: dict[str, Any]) -> None:
     """ Saves and zips the stats contents (records) to the file.
 
     :param file stats_handle: the handle of the stats file
@@ -510,8 +512,8 @@ def _save_stats_to(stats_handle: BinaryIO, stats_records: dict) -> None:
 def _modify_stats_file(
         stats_filepath: str,
         stats_ids: list[str],
-        stats_contents: list[dict],
-        modify_function: Callable[[dict, str, dict], None]
+        stats_contents: list[dict[str, dict[str, Any]]],
+        modify_function: Callable[[dict[str, Any], str, dict[str, Any]], None]
 ) -> None:
     """ Modifies the contents of the given stats file by the provided modification function
 
