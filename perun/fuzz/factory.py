@@ -1,7 +1,7 @@
 """Collection of global methods for fuzz testing."""
 
 import copy
-import difflib
+import filecmp
 import itertools
 import os
 import os.path as path
@@ -15,7 +15,7 @@ from uuid import uuid4
 import numpy as np
 import tabulate
 
-from typing import Optional, Any, cast, overload, Literal, AnyStr
+from typing import Optional, Any
 
 import perun.utils.decorators as decorators
 import perun.utils.log as log
@@ -26,7 +26,7 @@ import perun.fuzz.randomizer as randomizer
 import perun.fuzz.evaluate.by_perun as evaluate_workloads_by_perun
 import perun.fuzz.evaluate.by_coverage as evaluate_workloads_by_coverage
 
-from perun.utils.structs import Executable
+from perun.utils.structs import Executable, MinorVersion
 from perun.fuzz.structs import FuzzingProgress, Mutation, FuzzingConfiguration, RuleSet, TimeSeries
 
 
@@ -115,28 +115,6 @@ def strategy_to_generation_repeats(strategy: str, rule_set: RuleSet, index: int)
         return 1
 
 
-def contains_same_lines(
-        lines: list[AnyStr],
-        fuzzed_lines: list[AnyStr],
-        is_binary: bool
-) -> bool:
-    """Compares two string list and check if they are equal.
-
-    :param list lines: lines of original file
-    :param list fuzzed_lines: lines fo fuzzed file
-    :param bool is_binary: determines whether a files are binaries or not
-    :return bool: True if lines are the same, False otherwise
-    """
-    if is_binary:
-        delta = difflib.unified_diff(
-            [line.decode('utf-8', errors='ignore') for line in lines],
-            [f_line.decode('utf-8', errors='ignore') for f_line in fuzzed_lines]
-        )
-    else:
-        delta = difflib.unified_diff(lines, fuzzed_lines)
-    return len(list(delta)) == 0
-
-
 def fuzz(
         parent: Mutation, max_bytes: int, rule_set: RuleSet, config: FuzzingConfiguration
 ) -> list[Mutation]:
@@ -177,7 +155,7 @@ def fuzz(
             method[0](fuzzed_lines)
 
             # compare, whether new lines are the same
-            if contains_same_lines(lines, fuzzed_lines, is_binary):
+            if lines == fuzzed_lines:
                 continue
 
             # new mutation filename and fuzz history
@@ -214,7 +192,7 @@ def print_legend(rule_set: RuleSet) -> None:
     ], headers=["id", "Rule Efficiency", "Description"]))
 
 
-def print_results(fuzzing_report: dict, fuzzing_config: FuzzingConfiguration, rule_set: RuleSet) -> None:
+def print_results(fuzzing_report: dict[str, Any], fuzzing_config: FuzzingConfiguration, rule_set: RuleSet) -> None:
     """Prints results of fuzzing.
 
     :param dict fuzzing_report: general information about current fuzzing
@@ -223,31 +201,19 @@ def print_results(fuzzing_report: dict, fuzzing_config: FuzzingConfiguration, ru
     """
     log.info("Fuzzing: ", end="")
     log.done("\n")
-    log.info("Fuzzing time: {:.2f}s".format(
-        fuzzing_report["end_time"] - fuzzing_report["start_time"]
-    ))
-    log.info("Coverage testing: {}".format(fuzzing_config.coverage_testing))
+    log.info(f"Fuzzing time: {fuzzing_report['end_time'] - fuzzing_report['start_time']:.2f}s")
+    log.info(f"Coverage testing: {fuzzing_config.coverage_testing}")
     if fuzzing_config.coverage_testing:
-        log.info("Program executions for coverage testing: {}".format(
-            fuzzing_report["cov_execs"]
-        ))
-        log.info("Program executions for performance testing: {}".format(
-            fuzzing_report["perun_execs"]
-        ))
-        log.info("Total program tests: {}".format(
-            str(fuzzing_report["perun_execs"] + fuzzing_report["cov_execs"])
-        ))
-        log.info("Maximum coverage ratio: {}".format(
-            str(fuzzing_report["max_cov"])
-        ))
+        log.info(f"Program executions for coverage testing: {fuzzing_report['cov_execs']}")
+        log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
+        log.info(f"Total program tests: {fuzzing_report['perun_execs'] + fuzzing_report['cov_execs']}")
+        log.info(f"Maximum coverage ratio: {fuzzing_report['max_cov']}")
     else:
-        log.info("Program executions for performance testing: {}".format(
-            fuzzing_report["perun_execs"]
-        ))
-    log.info("Founded degradation mutations: {}".format(str(fuzzing_report["degradations"])))
-    log.info("Hangs: {}".format(str(fuzzing_report["hangs"])))
-    log.info("Faults: {}".format(str(fuzzing_report["faults"])))
-    log.info("Worst-case mutation: {}".format(str(fuzzing_report["worst_case"])))
+        log.info(f"Program executions for performance testing: {fuzzing_report['perun_execs']}")
+    log.info(f"Founded degradation mutations: {(fuzzing_report['degradations'])}")
+    log.info(f"Hangs: {fuzzing_report['hangs']}")
+    log.info(f"Faults: {fuzzing_report['faults']}")
+    log.info(f"Worst-case mutation: {fuzzing_report['worst_case']}")
     print_legend(rule_set)
 
 
@@ -274,11 +240,7 @@ def rate_parent(fuzz_progress: FuzzingProgress, mutation: Mutation) -> bool:
             # if the same file was generated before
             elif abs(fitness_value - parent.fitness) <= FP_ALLOWED_ERROR:
                 # additional file comparing
-                is_binary_file = filetype.get_filetype(mutation.path)[0]
-                mode = "rb" if is_binary_file else "r"
-                parent_lines = open(parent.path, mode).readlines()
-                mutation_lines = open(mutation.path, mode).readlines()
-                return contains_same_lines(parent_lines, mutation_lines, is_binary_file)
+                return filecmp.cmp(parent.path, mutation.path, shallow=False)
     return False
 
 
@@ -481,7 +443,7 @@ def run_fuzzing_for_command(
         input_sample: list[str],
         collector: str,
         postprocessor: list[str],
-        minor_version_list: list[str],
+        minor_version_list: list[MinorVersion],
         **kwargs: Any
 ) -> None:
     """Runs fuzzing for a command w.r.t initial set of workloads
