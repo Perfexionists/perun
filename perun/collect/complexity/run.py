@@ -49,7 +49,7 @@ _MICRO_TO_SECONDS = 1000000.0
 
 def before(
         executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict]:
+) -> tuple[CollectStatus, str, dict[str, Any]]:
     """ Builds, links and configures the complexity collector executable
     In total, this function creates the so-called configuration executable (used to obtain
     information about the available functions for profiling) and the collector executable
@@ -102,7 +102,7 @@ def before(
 
 def collect(
         executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict]:
+) -> tuple[CollectStatus, str, dict[str, Any]]:
     """ Runs the collector executable and extracts the performance data
 
     :param Executable executable: executable configuration (command, arguments and workloads)
@@ -126,7 +126,7 @@ def collect(
 
 def after(
         executable: Executable, **kwargs: Any
-) -> tuple[CollectStatus, str, dict]:
+) -> tuple[CollectStatus, str, dict[str, Any]]:
     """ Performs the transformation of the raw data output into the profile format
 
     :param Executable executable: full collected command with arguments and workload
@@ -142,7 +142,7 @@ def after(
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
 
-    resources, call_stack = [], []  # type: list[dict], list[_ProfileRecord]
+    resources, call_stack = [], []  # type: list[dict[str, Any]], list[_ProfileRecord]
     profile_start, profile_end = 0, 0
 
     with open(data_path, 'r') as profile:
@@ -168,7 +168,7 @@ def after(
                 profile_start = record.timestamp
 
     # Update the profile dictionary
-    kwargs['profile'] = {  # type: ignore
+    kwargs['profile'] = {
         'global': {
             'time': str((int(profile_end) - int(profile_start)) / _MICRO_TO_SECONDS) + 's',
             'resources': resources
@@ -181,7 +181,7 @@ def after(
 def _process_file_record(
         record: _ProfileRecord,
         call_stack: list[_ProfileRecord],
-        resources: list[dict],
+        resources: list[dict[str, Any]],
         address_map: dict[str, str]
 ) -> int:
     """ Processes the next profile record and tries to pair it with stack record if possible
@@ -253,7 +253,7 @@ def _validate_input(**kwargs: Any) -> None:
 
 def _sampling_to_dictionary(
         _: click.Context, __: click.Option, value: list[tuple[str, int]]
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Sampling cli option converter callback. Transforms each sampling tuple into dictionary.
 
     :param dict _: click context

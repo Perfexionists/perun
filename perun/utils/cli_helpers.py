@@ -528,7 +528,7 @@ def lookup_stats_file_callback(ctx: click.Context, _: click.Argument, value: str
 
 
 def resources_key_options(
-        func: Callable[[click.Context, click.Option, Any], Any]
+        func: Callable[..., Any]
 ) -> Callable[[click.Context, click.Option, Any], Any]:
     """
     This method creates Click decorator for common options for  all non-parametric

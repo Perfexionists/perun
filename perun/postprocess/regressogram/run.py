@@ -10,7 +10,6 @@ import perun.postprocess.regressogram.methods as methods
 import perun.utils.cli_helpers as cli_helpers
 
 from typing import Any
-from typing_extensions import Unpack
 
 from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
@@ -23,7 +22,7 @@ _DEFAULT_STATISTIC = 'mean'
 def postprocess(
         profile: Profile,
         **configuration: Any
-) -> tuple[PostprocessStatus, str, dict]:
+) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     Invoked from perun core, handles the postprocess actions
 
@@ -56,7 +55,7 @@ def postprocess(
                    'for points within each bucket of regressogram.')
 @cli_helpers.resources_key_options
 @pass_profile
-def regressogram(profile: dict, **kwargs: Any) -> None:
+def regressogram(profile: Profile, **kwargs: Any) -> None:
     """
     Execution of the interleaving of profiled resources by **regressogram** models.
 

@@ -19,23 +19,22 @@ if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-
 # set the labels at the center of the window as default
-_DEFAULT_CENTER = True
+_DEFAULT_CENTER: bool = True
 # default computational method - Simple Moving Average
-_DEFAULT_MOVING_METHOD = 'sma'
+_DEFAULT_MOVING_METHOD: str = 'sma'
 # specify decay in terms of Center of Mass (com) as default
-_DEFAULT_DECAY = ('com', 0)
+_DEFAULT_DECAY: tuple[str, int] = ('com', 0)
 # default statistic function to compute - mean/average
-_DEFAULT_STATISTIC = 'mean'
+_DEFAULT_STATISTIC: str = 'mean'
 # recognized window types for Simple Moving Average/Median
-_WINDOW_TYPES = [
+_WINDOW_TYPES: list[str] = [
     'boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen',
     'bohman', 'blackmanharris', 'nuttall', 'barthann'
 ]
 
 
-def postprocess(profile: Profile, **configuration: dict) -> tuple[PostprocessStatus, str, dict]:
+def postprocess(profile: Profile, **configuration: Any) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     Invoked from perun core, handles the postprocess actions
 
@@ -53,7 +52,7 @@ def postprocess(profile: Profile, **configuration: dict) -> tuple[PostprocessSta
     }
 
 
-def common_sma_options(func_obj: Callable) -> Callable:
+def common_sma_options(func_obj: Callable[..., Any]) -> Callable[[click.Context, click.Option, Any], Any]:
     """
     The wrapper of common options for both supported commands represents simple
     moving average methods: Simple Moving Average and Simple Moving Average Median.
@@ -119,6 +118,7 @@ def simple_moving_average(ctx: click.Context, **kwargs: Any) -> None:
             For more details about this window functions or for their visual view you can
             see SciPyWindow_.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     kwargs.update({'moving_method': 'sma'})
     kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
@@ -137,6 +137,7 @@ def simple_moving_median(ctx: click.Context, **kwargs: Any) -> None:
         individual sub-intervals. Simple Moving **Median** is not based on the computation of
         average, but as the name suggests, it based on the **median**.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     kwargs.update({'moving_method': 'smm'})
     kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
@@ -179,10 +180,11 @@ def exponential_moving_average(ctx: click.Context, **kwargs: Any) -> None:
         quite differently from the second mentioned method, because it is the function of weighting
         factor or length of the average.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     kwargs.update({
         'moving_method': 'ema',
-        'window_width': kwargs['decay'][1],  # type: ignore
-        'decay': kwargs['decay'][0]  # type: ignore
+        'window_width': kwargs['decay'][1],
+        'decay': kwargs['decay'][0]
     })
     kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)

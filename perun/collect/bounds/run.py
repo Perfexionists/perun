@@ -26,7 +26,7 @@ _LLVM_EXT = '.bc'
 _LIB_Z3 = "libz3.so"
 
 
-def before(sources: list[str], **kwargs: dict) -> tuple[CollectStatus, str, dict]:
+def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Compiles the sources into LLVM intermediate code
 
         $ clang-3.5 -g -emit-llvm -c ${sources}
@@ -51,7 +51,7 @@ def before(sources: list[str], **kwargs: dict) -> tuple[CollectStatus, str, dict
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
-def collect(sources: list[str], **kwargs: dict) -> tuple[CollectStatus, str, dict]:
+def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Runs the Loopus on compiled LLVM sources
 
         $ export $LD_LIBRARY_PATH="${DIR}/libz3.so"
@@ -98,13 +98,13 @@ def collect(sources: list[str], **kwargs: dict) -> tuple[CollectStatus, str, dic
     }}
 
 
-def lookup_source_files(ctx: click.Context, _: click.Option, value: list[str]) -> list[str]:
+def lookup_source_files(ctx: click.Context, __: click.Option, value: list[str]) -> list[str]:
     """Lookus up sources for the analysis.
 
     The sources can either be single file, or directory which contains .c files.
 
     :param Context ctx: context of the called command
-    :param click.Option _: parameter that is being parsed and read from commandline
+    :param click.Option __: parameter that is being parsed and read from commandline
     :param str value: value that is being read from the commandline
     """
     # Initialize sources if it does not exist

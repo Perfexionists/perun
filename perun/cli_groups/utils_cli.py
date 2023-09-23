@@ -77,7 +77,7 @@ def temp_group() -> None:
 @click.option('--filter-protection', '-fp', type=click.Choice(temp.PROTECTION_LEVEL),
               default=temp.PROTECTION_LEVEL[0],
               help='List only temporary files with the given protection level.')
-def temp_list(root: click.Path, **kwargs: Any) -> None:
+def temp_list(root: str, **kwargs: Any) -> None:
     """Lists the temporary files of the '.perun/tmp/' directory. It is possible to list only
     files in specific subdirectory by supplying the ROOT path.
 
@@ -97,7 +97,7 @@ def temp_list(root: click.Path, **kwargs: Any) -> None:
 @click.option('--keep-directories', '-k', flag_value=True, default=False,
               help='If path refers to directory, empty tmp/ directories and subdirectories '
                    'will be kept.')
-def temp_delete(path: click.Path, warn: bool, force: bool, **kwargs: Any) -> None:
+def temp_delete(path: str, warn: bool, force: bool, **kwargs: Any) -> None:
     """Deletes the temporary file or directory.
 
     Use the command 'perun utils temp delete .' to safely delete all unprotected files in the

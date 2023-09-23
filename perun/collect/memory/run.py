@@ -4,7 +4,7 @@ import os
 
 import click
 
-from typing import TypedDict, Any
+from typing import Any
 from typing_extensions import Unpack
 
 import perun.collect.memory.filter as filters
@@ -15,19 +15,12 @@ import perun.utils.log as log
 from perun.utils.structs import CollectStatus, Executable
 
 
-class Kwargs(TypedDict):
-    all: bool
-    no_func: list[str]
-    no_source: list[str]
+_lib_name: str = "malloc.so"
+_tmp_log_filename: str = "MemoryLog"
+DEFAULT_SAMPLING: float = 0.001
 
 
-
-_lib_name = "malloc.so"
-_tmp_log_filename = "MemoryLog"
-DEFAULT_SAMPLING = 0.001
-
-
-def before(executable: Executable, **_) -> tuple[CollectStatus, str, dict]:
+def before(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """ Phase for initialization the collect module
 
     :param Executable executable: executable profiled command
@@ -59,7 +52,7 @@ def before(executable: Executable, **_) -> tuple[CollectStatus, str, dict]:
     return CollectStatus.OK, '', {}
 
 
-def collect(executable: Executable, **_) -> tuple[CollectStatus, str, dict]:
+def collect(executable: Executable, **_: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """ Phase for collection of the profile data
 
     :param Executable executable: executable profiled command
@@ -81,8 +74,8 @@ def collect(executable: Executable, **_) -> tuple[CollectStatus, str, dict]:
 def after(
         executable: Executable,
         sampling: float = DEFAULT_SAMPLING,
-        **kwargs: Unpack[Kwargs]
-) -> tuple[CollectStatus, str, dict]:
+        **kwargs: Any
+) -> tuple[CollectStatus, str, dict[str, Any]]:
     """ Phase after the collection for minor postprocessing
         that needs to be done after collect
 

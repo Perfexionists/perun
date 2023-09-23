@@ -21,7 +21,7 @@ _DEFAULT_STEPS = 3
 
 def postprocess(
         profile: Profile, **configuration: Any
-) -> tuple[PostprocessStatus, str, dict]:
+) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """Invoked from perun core, handles the postprocess actions
 
     :param dict profile: the profile to analyze
@@ -41,7 +41,7 @@ def postprocess(
     return PostprocessStatus.OK, "", {'profile': new_profile}
 
 
-def store_model_counts(analysis: list[dict]) -> None:
+def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     """ Store the number of best-fit models for each model category as a metric.
 
     :param list analysis: the list of inferred models.
@@ -52,7 +52,7 @@ def store_model_counts(analysis: list[dict]) -> None:
 
     # Get the regression model with the highest R^2 for all functions
     funcs = {}  # type: dict[str, Any]
-    func_summary = {}  # type: dict[str, dict]
+    func_summary = {}  # type: dict[str, dict[str, Any]]
     for record in analysis:
         func_record = funcs.setdefault(
             record['uid'], {'r_square': record['r_square'], 'model': record['model']}
@@ -72,7 +72,7 @@ def store_model_counts(analysis: list[dict]) -> None:
         models['undefined' if (func_record['r_square'] <= 0.5) else func_record['model']] += 1
     # Store the counts in the metrics
     for model, count in models.items():
-        metrics.add_metric('{}_model'.format(model), count)
+        metrics.add_metric(f'{model}_model', count)
 
 
 @click.command()

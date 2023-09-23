@@ -21,8 +21,8 @@ TIME_TYPES = ('real', 'user', 'sys')
 
 
 def collect(
-        executable: Executable, repeat: int = 10, warmup: int = 3, **_
-) -> tuple[CollectStatus, str, dict]:
+        executable: Executable, repeat: int = 10, warmup: int = 3, **_: Any
+) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Times the runtime of the given command, with stated repeats.
 
     :param Executable executable: executed command, with arguments and workloads

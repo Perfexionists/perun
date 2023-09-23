@@ -3,25 +3,27 @@
 import operator
 import click
 
+from typing import Any
+
 import perun.logic.runner as runner
 
 from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 
 
-def get_resource_type(resource: dict) -> str:
+def get_resource_type(resource: dict[str, Any]) -> str:
     """Checks if the resource has defined type and returns empty type otherwise.
 
     Checks if there is 'type' defined inside the resource, and if so then returns
-    the type. Otherwise it returns empty string as a type.
+    the type. Otherwise, it returns empty string as a type.
 
     :param dict resource: dictionary representing the resource
     :returns str: type of the resource ('' if there is none type)
     """
-    return resource['type'] if 'type' in resource.keys() else ''
+    return resource.get('type', '')
 
 
-def normalize_resources(resources: list[dict]) -> None:
+def normalize_resources(resources: list[dict[str, Any]]) -> None:
     """Normalize the global and snapshot resources according to the maximal values.
 
     Computes the maximal values per each type inside the snapshot of the resource,
@@ -46,7 +48,7 @@ def normalize_resources(resources: list[dict]) -> None:
             else 1.0
 
 
-def postprocess(profile: Profile, **_: dict) -> tuple[PostprocessStatus, str, dict]:
+def postprocess(profile: Profile, **_: Any) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     :param Profile profile: json-like profile that will be preprocessed by normalizer
     """
