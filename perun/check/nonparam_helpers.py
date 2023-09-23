@@ -11,8 +11,8 @@ import perun.postprocess.regressogram.methods as rg_methods
 import perun.utils.log as log
 import perun.utils.structs
 
-from perun.check.factory import PerformanceChange
 from perun.profile.factory import Profile
+from perun.utils.structs import PerformanceChange
 
 
 def classify_change(

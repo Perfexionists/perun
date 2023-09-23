@@ -320,7 +320,7 @@ def to_string(profile: Profile) -> str:
     return json.dumps(profile.serialize())
 
 
-def to_config_tuple(profile: dict) -> tuple[str, str, str, str, str]:
+def to_config_tuple(profile: Profile) -> tuple[str, str, str, str, str]:
     """Converts the profile to the tuple representing its configuration
 
     :param Profile profile: profile we are converting to configuration tuple

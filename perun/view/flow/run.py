@@ -71,7 +71,7 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
               " browser (firefox will be used).")
 @pass_profile
 # Fixme: Consider breaking this to two
-def flow(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any):
+def flow(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:
     """Customizable interpretation of resources using the flow format.
 
     .. _Bokeh: https://bokeh.pydata.org/en/latest/

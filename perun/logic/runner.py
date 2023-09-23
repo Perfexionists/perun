@@ -395,8 +395,8 @@ def store_generated_profile(prof: dict, job: Job, profile_name: Optional[str] = 
 
 
 def run_postprocessor_on_profile(
-        prof: dict, postprocessor_name: str, postprocessor_params: dict, skip_store: bool = False
-) -> tuple[PostprocessStatus, dict]:
+        prof: Profile, postprocessor_name: str, postprocessor_params: dict, skip_store: bool = False
+) -> tuple[PostprocessStatus, Profile]:
     """Run the job of the postprocessor according to the given profile.
 
     First extracts the information from the profile in order to construct the job,

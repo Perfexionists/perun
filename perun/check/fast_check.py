@@ -6,7 +6,6 @@ according to computed metrics and models from these profiles, based on the regre
 
 import copy
 import numpy as np
-import nptyping as npt
 
 from typing import Any, Iterable
 
@@ -34,8 +33,8 @@ def fast_check(
 
 
 def exec_fast_check(
-        uid: str, baseline_profile: Profile, baseline_x_pts: npt.NDArray, abs_error: npt.NDArray
-) -> dict:
+        uid: str, baseline_profile: Profile, baseline_x_pts: Iterable[float], abs_error: Iterable[float]
+) -> Profile:
     """For the values specified in the abs_error points, constructs a profile and performs
     a regression analysis inferring set of models.
 
@@ -55,7 +54,7 @@ def exec_fast_check(
         'amount': []
     }
     # executing the regression analysis
-    for _, (x_pts, y_pts) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
+    for x_pts, y_pts in zip(baseline_x_pts, abs_error):
         if not np.isnan(y_pts):
             updated_data['structure-unit-size'].append(float(x_pts))
             updated_data['amount'].append(float(y_pts))

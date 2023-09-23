@@ -8,10 +8,11 @@ import re
 
 import distutils.util as dutils
 
-from typing import Dict, Tuple, List, Any, Iterable, Protocol
+from typing import Any, Iterable, Protocol
 
 from perun.utils.structs import DegradationInfo, PerformanceChange, MinorVersion, ModelRecord
-from perun.profile.helpers import Profile, ProfileInfo
+from perun.profile.helpers import ProfileInfo
+from perun.profile.factory import Profile
 
 import perun.utils.log as log
 import perun.profile.helpers as profiles
@@ -38,11 +39,11 @@ class CallableDetectionMethod(Protocol):
             target_model: ModelRecord,
             target_profile: Profile,
             **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         pass
 
 
-def get_supported_detection_models_strategies() -> List[str]:
+def get_supported_detection_models_strategies() -> list[str]:
     """
     Provides supported detection models strategies to execute
     the degradation check between two profiles with different kinds
@@ -65,7 +66,7 @@ def get_supported_detection_models_strategies() -> List[str]:
     ]
 
 
-def profiles_to_queue(minor_version: str) -> Dict[Tuple[str, str, str, str, str], ProfileInfo]:
+def profiles_to_queue(minor_version: str) -> dict[tuple[str, str, str, str, str], ProfileInfo]:
     """Retrieves the list of profiles corresponding to minor version and transforms them to map.
 
     The map represents both the queue and also provides the mapping of configurations to profiles.
@@ -118,7 +119,7 @@ def pre_collect_profiles(minor_version: MinorVersion) -> None:
 
 def degradation_in_minor(
         minor_version: str, quiet: bool = False
-) -> List[Tuple[DegradationInfo, str, str]]:
+) -> list[tuple[DegradationInfo, str, str]]:
     """Checks for degradation according to the profiles stored for the given minor version.
 
     :param str minor_version: representation of head point of degradation checking
@@ -170,7 +171,7 @@ def degradation_in_minor(
 
 @log.print_elapsed_time
 @decorators.phase_function('check whole repository')
-def degradation_in_history(head: str) -> List[Tuple[DegradationInfo, str, str]]:
+def degradation_in_history(head: str) -> list[tuple[DegradationInfo, str, str]]:
     """Walks through the minor version starting from the given head, checking for degradation.
 
     :param str head: starting point of the checked history for degradation.
@@ -258,7 +259,7 @@ def degradation_between_files(
     log.print_short_summary_of_degradations(detected_changes)
 
 
-def is_rule_applicable_for(rule: Dict[str, Any], configuration: Profile) -> bool:
+def is_rule_applicable_for(rule: dict[str, Any], configuration: Profile) -> bool:
     """Helper function for testing, whether the rule is applicable for the given profile
 
     Profiles are w.r.t specification (:ref:`profile-spec`), the rule is as a dictionary, where
@@ -378,9 +379,9 @@ def run_detection_with_strategy(
 def _run_detection_for_models(
         detection_method: CallableDetectionMethod,
         baseline_profile: profile_factory.Profile,
-        baseline_models: Dict[str, ModelRecord],
+        baseline_models: dict[str, ModelRecord],
         target_profile: profile_factory.Profile,
-        target_models: Dict[str, ModelRecord],
+        target_models: dict[str, ModelRecord],
         **kwargs: Any
 ) -> Iterable[DegradationInfo]:
     """
@@ -412,11 +413,11 @@ def _run_detection_for_models(
             )
 
             yield DegradationInfo(
-                res=change_result.get('change_info'),
+                res=change_result.get('change_info', PerformanceChange.Unknown),
                 loc=re.sub(baseline_model.type + '$', '', uid) if uid_flag else uid,
                 fb=baseline_model.type,
                 tt=target_model.type,
-                rd=change_result.get('rel_error'),
+                rd=change_result.get('rel_error', 0.0),
                 ct='r_square',
                 cr=round(min(baseline_model.r_square, target_model.r_square), 2),
                 pi=change_result.get('partial_intervals'),

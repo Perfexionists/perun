@@ -8,7 +8,7 @@ import types
 from dataclasses import dataclass
 
 from enum import Enum
-from typing import Union, Optional, Any, TYPE_CHECKING, cast
+from typing import Optional, Any, TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -17,12 +17,20 @@ if TYPE_CHECKING:
 
 GeneratorSpec = collections.namedtuple('GeneratorSpec', 'constructor params')
 
-PerformanceChange = Enum(
-    'PerformanceChange',
-    ('NotInBaseline TotalDegradation SevereDegradation Degradation MaybeDegradation '
-     'Unknown NoChange '
-     'MaybeOptimization Optimization SevereOptimization TotalOptimization NotInTarget')
-)
+
+class PerformanceChange(Enum):
+    Unknown = -6
+    NotInBaseline = -5
+    TotalDegradation = -4
+    SevereDegradation = -3
+    Degradation = -2
+    MaybeDegradation = -1
+    NoChange = 0
+    MaybeOptimization = 1
+    Optimization = 2
+    SevereOptimization = 3
+    TotalOptimization = 4
+    NotInTarget = 5
 
 
 class CollectStatus(Enum):

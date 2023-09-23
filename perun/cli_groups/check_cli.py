@@ -180,6 +180,7 @@ def check_profiles(
            is asked for confirmation by user.
 
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     log.newline()
     check.degradation_between_files(
         baseline_profile, target_profile, minor,

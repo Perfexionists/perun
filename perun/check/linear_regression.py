@@ -4,10 +4,14 @@ This module contains method for classification the perfomance change between two
 according to computed metrics and models from these profiles, based on the linear regression.
 
 """
-import scipy.stats as stats
-import nptyping as npt
+from __future__ import annotations
 
-from typing import Any, Iterable
+import scipy.stats as stats
+
+from typing import Any, Iterable, TYPE_CHECKING
+if TYPE_CHECKING:
+    import numpy.typing as npt
+    import numpy
 
 import perun.utils as utils
 import perun.check.general_detection as detect
@@ -37,7 +41,7 @@ def linear_regression(
 
 def exec_linear_regression(
         uid: str,
-        baseline_x_pts: npt.NDArray, lin_abs_error: npt.NDArray,
+        baseline_x_pts: npt.NDArray[numpy.float64], lin_abs_error: npt.NDArray[numpy.float64],
         threshold: int, linear_diff_b1: int,
         baseline_model: perun.utils.structs.ModelRecord, target_model: perun.utils.structs.ModelRecord,
         baseline_profile: Profile
@@ -68,6 +72,7 @@ def exec_linear_regression(
     change_type = ''
     if baseline_model.type == 'linear' or baseline_model.type == 'constant':
         if utils.abs_in_absolute_range(gradient, threshold) \
+                and isinstance(diff_b0, float) \
                 and utils.abs_in_relative_range(diff_b0, intercept, 0.05) \
                 and abs(diff_b0 - intercept) < 0.000000000001:
             change_type = 'constant'
@@ -76,6 +81,7 @@ def exec_linear_regression(
             change_type = 'linear'
     else:
         if utils.abs_in_absolute_range(gradient, threshold) \
+                and isinstance(diff_b0, float) \
                 and utils.abs_in_relative_range(diff_b0, intercept, 0.05):
             change_type = 'constant'
         elif utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3) \
