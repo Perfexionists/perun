@@ -260,7 +260,7 @@ def parse_changelog_line(line: str) -> tuple[DegradationInfo, str, str]:  # type
         log.error(f"could not parse changelog line '{line}'")
 
 
-def load_degradation_list_for(base_dir, minor_version) -> list[tuple[DegradationInfo, str, str]]:
+def load_degradation_list_for(base_dir: str, minor_version: str) -> list[tuple[DegradationInfo, str, str]]:
     """Loads a list of degradations stored for the minor version.
 
     This opens a file in the .perun/objects directory in the minor version subdirectory with the

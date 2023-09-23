@@ -5,9 +5,9 @@ according to computed metrics and models from these profiles, based on the polyn
 """
 
 import numpy as np
+import numpy.typing as npt
 
 from typing import Any, Iterable
-from nptyping import NDArray
 
 import perun.check.general_detection as detect
 
@@ -34,7 +34,7 @@ def polynomial_regression(
     )
 
 
-def exec_polynomial_regression(baseline_x_pts: NDArray, lin_abs_error: NDArray) -> str:
+def exec_polynomial_regression(baseline_x_pts: npt.NDArray[np.float64], lin_abs_error: npt.NDArray[np.float64]) -> str:
     """The function executes the classification of performance change between two profiles with
     using function from numpy module, concretely polyfit. Our effort is well-fit interleaving of
     the data by polynomials of the certain degrees can pretty accurately classify how big change

@@ -45,7 +45,7 @@ PROFILE_COUNTER = 0
 DEFAULT_SORT_KEY = 'time'
 
 
-def lookup_value(container: dict, key: str, missing: str) -> str:
+def lookup_value(container: dict[str, str] | Profile, key: str, missing: str) -> str:
     """Helper function for getting the key from the container. If it is not present in the container
     or it is empty string or empty object, the function should return the missing constant.
 
@@ -68,7 +68,7 @@ def sanitize_filepart(part: str) -> str:
     return "".join('_' if c in invalid_characters else c for c in str(part))
 
 
-def lookup_param(profile: dict, unit: str, param: str) -> str:
+def lookup_param(profile: Profile, unit: str, param: str) -> str:
     """Helper function for looking up the unit in the profile (can be either collector or
     postprocessor and finds the value of the param in it
 
@@ -93,7 +93,7 @@ def lookup_param(profile: dict, unit: str, param: str) -> str:
         return "_"
 
 
-def generate_profile_name(profile: dict) -> str:
+def generate_profile_name(profile: Profile) -> str:
     """Constructs the profile name with the extension .perf from the job.
 
     The profile is identified by its binary, collector, workload and the time
@@ -248,7 +248,7 @@ def find_profile_entry(profile: str, minor_version: str) -> index.BasicIndexEntr
             )
 
 
-def generate_units(collector: types.ModuleType) -> dict:
+def generate_units(collector: types.ModuleType) -> dict[str, str]:
     """Generate information about units used by the collector.
 
     Note that this is mostly placeholder for future extension, how the units will be handled.
@@ -259,7 +259,7 @@ def generate_units(collector: types.ModuleType) -> dict:
     return collector.COLLECTOR_DEFAULT_UNITS
 
 
-def generate_header_for_profile(job: Job) -> dict:
+def generate_header_for_profile(job: Job) -> dict[str, Any]:
     """
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'header': {}} corresponding to the perun specification
@@ -276,7 +276,7 @@ def generate_header_for_profile(job: Job) -> dict:
     }
 
 
-def generate_collector_info(job: Job) -> dict:
+def generate_collector_info(job: Job) -> dict[str, Any]:
     """
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'collector_info': {}} corresponding to the perun
@@ -288,7 +288,7 @@ def generate_collector_info(job: Job) -> dict:
     }
 
 
-def generate_postprocessor_info(job: Job) -> list[dict]:
+def generate_postprocessor_info(job: Job) -> list[dict[str, Any]]:
     """
     :param Job job: job with information about the computed profile
     :returns dict: dictionary in form of {'postprocess_info': []} corresponding to the perun spec
@@ -301,7 +301,7 @@ def generate_postprocessor_info(job: Job) -> list[dict]:
     ]
 
 
-def finalize_profile_for_job(profile: dict, job: Job) -> dict:
+def finalize_profile_for_job(profile: Profile, job: Job) -> Profile:
     """
     :param dict profile: collected profile through some collector
     :param Job job: job with information about the computed profile
@@ -430,7 +430,7 @@ def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = Tr
     profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)
 
 
-def merge_resources_of(lhs: Profile, rhs: Profile | dict) -> Profile:
+def merge_resources_of(lhs: Profile | dict[str, Any], rhs: Profile | dict[str, Any]) -> Profile:
     """Merges the resources of lhs and rhs profiles
 
     :param Profile lhs: left operator of the profile merge
@@ -440,6 +440,8 @@ def merge_resources_of(lhs: Profile, rhs: Profile | dict) -> Profile:
     # Not Good: Temporary solution:
     if not isinstance(rhs, Profile):
         rhs = Profile(rhs)
+    if not isinstance(lhs, Profile):
+        lhs = Profile(rhs)
 
     # Return lhs/rhs if rhs/lhs is empty
     if rhs.resources_size() == 0:

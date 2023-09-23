@@ -428,7 +428,7 @@ def identity(*args: Any) -> Any:
     return args if len(args) > 1 else args[0]
 
 
-def safe_match(pattern: re.Pattern[str], searched_string: str, default: Optional[str] = None) -> Optional[str]:
+def safe_match(pattern: re.Pattern[str], searched_string: str, default: str) -> str:
     """Safely matches groups in searched string; if string not found returns @p default
 
     :param re.Pattern pattern: compiled regular expression pattern

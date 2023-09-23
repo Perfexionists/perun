@@ -9,16 +9,15 @@
 
 import distutils.util as dutils
 
-from typing import Any, Union, Callable, Iterable
+from typing import Any, Callable, Iterable
 
 import perun.logic.config as config
 import perun.utils.log as log
 import perun.profile.helpers as profile
 import perun.profile.factory as factory
 
-from perun.utils.structs import CollectStatus, Job
+from perun.utils.structs import CollectStatus, Job, Unit
 from perun.profile.factory import Profile
-
 
 
 class WorkloadGenerator:
@@ -27,7 +26,7 @@ class WorkloadGenerator:
     :ivar bool profile_for_each_workload: if set to true, then we will generate one profile
         for each workload, otherwise the workload will be merged into one single profile
     """
-    def __init__(self, job: Job, profile_for_each_workload: bool = False, **_) -> None:
+    def __init__(self, job: Job, profile_for_each_workload: bool = False, **_: Any) -> None:
         """Initializes the job of the generator
 
         :param Job job: job for which we will initialize the generator
@@ -39,9 +38,9 @@ class WorkloadGenerator:
         self.generator_name = self.job.executable.origin_workload
         self.for_each = dutils.strtobool(str(profile_for_each_workload))
 
-    def generate(self,
-                 collect_function: Callable[[str, Job], tuple[CollectStatus, Union[dict, Profile]]]
-                 ) -> Iterable[tuple[CollectStatus, Union[dict, Profile]]]:
+    def generate(
+            self, collect_function: Callable[[Unit, Job], tuple[CollectStatus, Profile]]
+    ) -> Iterable[tuple[CollectStatus, Profile]]:
         """Collects the data for the generated workload
 
         :return: tuple of collection status and collected profile

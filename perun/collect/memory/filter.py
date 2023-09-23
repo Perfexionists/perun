@@ -1,8 +1,12 @@
 """This module provides methods for filtering the profile"""
+from __future__ import annotations
+
+from typing import Any
+
 import perun.collect.memory.parsing as parsing
 
 
-def remove_allocators(profile: dict) -> dict:
+def remove_allocators(profile: dict[str, Any]) -> dict[str, Any]:
     """ Remove records in trace with direct allocation function
 
         Allocators are better to remove because they are
@@ -20,7 +24,7 @@ def remove_allocators(profile: dict) -> dict:
     return profile
 
 
-def trace_filter(profile: dict, function: list[str], source: list[str]) -> dict:
+def trace_filter(profile: dict[str, Any], function: list[str], source: list[str]) -> dict[str, Any]:
     """ Remove records in trace section matching source or function
 
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile
@@ -28,7 +32,7 @@ def trace_filter(profile: dict, function: list[str], source: list[str]) -> dict:
     :param list source: list of "source" records to omit
     :returns dict: updated profile
     """
-    def determinate(call: dict) -> bool:
+    def determinate(call: dict[str, Any]) -> bool:
         """ Determinate expression """
         return (call['source'] not in source and
                 call['function'] not in function)
@@ -46,14 +50,14 @@ def trace_filter(profile: dict, function: list[str], source: list[str]) -> dict:
     return profile
 
 
-def set_global_region(profile: dict) -> None:
+def set_global_region(profile: dict[str, Any]) -> None:
     """
     :param dict profile: partially computed profile
     """
     profile['global'] = {}
 
 
-def allocation_filter(profile: dict, function: list[str], source: list[str]) -> dict:
+def allocation_filter(profile: dict[str, Any], function: list[str], source: list[str]) -> dict[str, Any]:
     """ Remove record of specified function or source code out of the profile
 
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile
@@ -61,7 +65,7 @@ def allocation_filter(profile: dict, function: list[str], source: list[str]) -> 
     :param list source: source's name to remove record of
     :returns dict: updated profile
     """
-    def determinate(uid: dict) -> bool:
+    def determinate(uid: dict[str, Any]) -> bool:
         """ Determinate expression """
         if uid:
             if uid['function'] in function:
@@ -78,7 +82,7 @@ def allocation_filter(profile: dict, function: list[str], source: list[str]) -> 
     return profile
 
 
-def remove_uidless_records_from(profile: dict) -> dict:
+def remove_uidless_records_from(profile: dict[str, Any]) -> dict[str, Any]:
     """ Remove record without UID out of the profile
 
     :param dict profile: dictionary including "snapshots" and "global" sections in the profile

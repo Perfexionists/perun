@@ -148,7 +148,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
     """
     version = IndexVersion.FastSloth
 
-    def __init__(self, time: str, checksum: str, path: str, offset: int, profile: dict) -> None:
+    def __init__(self, time: str, checksum: str, path: str, offset: int, profile: dict[str, Any] | Profile) -> None:
         """
         :param str time: modification timestamp of the entry profile
         :param str checksum: checksum of the object, i.e. the path to its real content
@@ -214,7 +214,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         :return:
         """
         basic_entry = BasicIndexEntry.read_from(index_handle, get_older_version(index_version))
-        profile: dict = {'header': {}, 'collector_info': {}, 'postprocessors': []}
+        profile: dict[str, Any] = {'header': {}, 'collector_info': {}, 'postprocessors': []}
 
         profile['header']['type'] = store.read_string_from_handle(index_handle)
         profile['header']['cmd'] = store.read_string_from_handle(index_handle)
@@ -516,7 +516,7 @@ def find_minor_index(minor_version: str) -> str:
     return index_file
 
 
-def register_in_pending_index(registered_file: str, profile: dict) -> None:
+def register_in_pending_index(registered_file: str, profile: Profile) -> None:
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -555,7 +555,9 @@ def register_in_minor_index(
     register_in_index(minor_index_file, registered_file, registered_checksum, profile)
 
 
-def register_in_index(index_filename: str, registered_file: str, registered_file_checksum: str, profile: dict) -> None:
+def register_in_index(
+        index_filename: str, registered_file: str, registered_file_checksum: str, profile: Profile
+) -> None:
     """Registers file in the index corresponding to either minor_version or pending profiles
 
     :param str index_filename: source index filename
@@ -571,7 +573,7 @@ def register_in_index(index_filename: str, registered_file: str, registered_file
     write_entry_to_index(index_filename, entry)
 
     reg_rel_path = os.path.relpath(registered_file)
-    perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
+    perun_log.info(f"'{reg_rel_path}' successfully registered in minor version index")
 
 
 def remove_from_index(base_dir: str, minor_version: str, removed_file_generator: Collection[str]) -> None:
@@ -684,7 +686,7 @@ def get_profile_number_for_minor(base_dir: str, minor_version: str) -> dict[str,
         return {'all': 0}
 
 
-def load_custom_index(index_path: str) -> dict:
+def load_custom_index(index_path: str) -> dict[Any, Any]:
     """Loads the content of a custom index file (e.g. temp or stats) as a dictionary.
 
     The index is json-formatted and compressed. In case the index cannot be read for some reason,
@@ -707,7 +709,7 @@ def load_custom_index(index_path: str) -> dict:
         return {}
 
 
-def save_custom_index(index_path: str, records: list | dict) -> None:
+def save_custom_index(index_path: str, records: list[Any] | dict[Any, Any]) -> None:
     """Saves the index records to the custom index file.
     The index file is created if it does not exist or overwritten if it does.
 

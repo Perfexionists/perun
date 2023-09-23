@@ -6,8 +6,7 @@ import re
 from typing import Dict
 from decimal import Decimal
 
-from typing import TypedDict
-from typing_extensions import Unpack
+from typing import Any
 
 import perun.profile.convert as convert
 import perun.collect.memory.syscalls as syscalls
@@ -16,25 +15,14 @@ import perun.utils.helpers as helpers
 from perun.utils.structs import Executable
 
 
-class Resource(TypedDict):
-    amount: int
-    address: int
-    trace: list[dict]
-    type: str
-    subtype: str
-    uid: dict
-    allocation_order: int
-
-
-
-PATTERN_WORD = re.compile(r"(\w+|[?])")
-PATTERN_TIME = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
-PATTERN_HEXADECIMAL = re.compile(r"0x[0-9a-fA-F]+")
-PATTERN_INT = re.compile(r"\d+")
+PATTERN_WORD: re.Pattern[str] = re.compile(r"(\w+|[?])")
+PATTERN_TIME: re.Pattern[str] = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
+PATTERN_HEXADECIMAL: re.Pattern[str] = re.compile(r"0x[0-9a-fA-F]+")
+PATTERN_INT: re.Pattern[str] = re.compile(r"\d+")
 UID_RESOURCE_MAP: Dict[str, int] = collections.defaultdict(int)
 
 
-def parse_stack(stack: list[str]) -> list[dict]:
+def parse_stack(stack: list[str]) -> list[dict[str, Any]]:
     """ Parse stack information of one allocation
 
     :param list stack: list of raw stack data
@@ -42,7 +30,7 @@ def parse_stack(stack: list[str]) -> list[dict]:
     """
     data = []
     for call in stack:
-        call_data = {}
+        call_data: dict[str, Any] = {}
 
         # parsing name of function,
         # it's the first word in the call record
@@ -73,7 +61,7 @@ def parse_stack(stack: list[str]) -> list[dict]:
     return data
 
 
-def parse_allocation_location(trace: list) -> dict:
+def parse_allocation_location(trace: list[dict[str, Any]]) -> dict[str, Any]:
     """ Parse the location of user's allocation from stack trace
 
     :param list trace: list representing stack call trace
@@ -86,7 +74,7 @@ def parse_allocation_location(trace: list) -> dict:
     return {}
 
 
-def parse_resources(allocation: list[str]) -> Resource:
+def parse_resources(allocation: list[str]) -> dict[str, Any]:
     """ Parse resources of one allocation
 
     :param list allocation: list of raw allocation data
@@ -96,7 +84,7 @@ def parse_resources(allocation: list[str]) -> Resource:
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
-    amount = helpers.safe_match(PATTERN_INT, allocation[1], -1)
+    amount = helpers.safe_match(PATTERN_INT, allocation[1], '-1')
     data['amount'] = int(amount)
 
     # parsing allocate function,
@@ -129,7 +117,7 @@ def parse_resources(allocation: list[str]) -> Resource:
     return data
 
 
-def parse_log(filename: str, executable: Executable, snapshots_interval: float) -> dict:
+def parse_log(filename: str, executable: Executable, snapshots_interval: float) -> dict[str, Any]:
     """ Parse raw data in the log file
 
     :param string filename: name of the log file
@@ -174,7 +162,7 @@ def parse_log(filename: str, executable: Executable, snapshots_interval: float) 
         if time_string.find(',') > 0:
             time_string = time_string.replace(',', '.')
 
-        time = Decimal(helpers.safe_match(PATTERN_TIME, time_string, -1))
+        time = Decimal(helpers.safe_match(PATTERN_TIME, time_string, '-1'))
 
         while time > interval:
             snapshots.append(data)

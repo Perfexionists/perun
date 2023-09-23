@@ -63,6 +63,7 @@ overall slowdown of the program (in this case, the CPython ctypes library). The 
 reported as the IQR multiple of `110.46`.
 
 """
+from __future__ import annotations
 
 from typing import Optional, Iterable, Any
 from difflib import get_close_matches
@@ -147,7 +148,7 @@ class DiffProfile:
         )
         if self.location_filter == "*":
             self.location_filter = None
-        self.cut_off: Optional[float] = float(config.lookup_key_recursively(
+        self.cut_off: float = float(config.lookup_key_recursively(
             "degradation.cutoff", "0.0")
         )
         self.df: pd.DataFrame = self._merge_and_diff(
@@ -217,7 +218,7 @@ class DiffProfile:
             )
 
     @staticmethod
-    def _determine_result_and_confidence(row: pd.Series) -> tuple[PerformanceChange, str, float]:
+    def _determine_result_and_confidence(row: pd.Series[Any]) -> tuple[PerformanceChange, str, float]:
         """Select the severity, confidence type and confidence rate of the exclusive time change.
 
         :param row: DataFrame row of specific 'uid' (i.e., function) record
@@ -363,7 +364,7 @@ class DiffProfile:
 
         :return: the merged and extended DataFrame
         """
-        def _delta_exc(row: pd.Series) -> float:
+        def _delta_exc(row: pd.Series[Any]) -> float:
             """ Helper function for properly computing the absolute exclusive time delta even
             when the function is new / deleted (in those cases, one of the exclusive times is
             nan, which breaks the computation).
