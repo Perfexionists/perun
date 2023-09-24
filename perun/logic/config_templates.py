@@ -57,7 +57,7 @@ from __future__ import annotations
 import os
 import subprocess
 
-from typing import Iterable
+from typing import Iterable, Any
 
 import jinja2
 
@@ -233,7 +233,7 @@ execute:
 CONFIG_FILE_TEMPLATE = None
 
 
-def get_predefined_configuration(name: str, kwargs: dict) -> str:
+def get_predefined_configuration(name: str, kwargs: dict[str, Any]) -> str:
     """Converts the given string to an appropriate predefined configuration.
 
     In case the specified configuration does not exist, then Master configuration is used as
@@ -331,7 +331,7 @@ class UserConfiguration(DeveloperConfiguration):
     EXECUTABLE_FOLDERS = {'build', '_build', 'dist'}
 
     @staticmethod
-    def _all_candidate_files(include_list: set) -> Iterable[str]:
+    def _all_candidate_files(include_list: set[str]) -> Iterable[str]:
         """Helper function that yield the stream of files contained in non-hidden directories
 
         :param set include_list: set of directory names that can contain looked-up files

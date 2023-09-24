@@ -26,6 +26,7 @@ dependencies = [
 
     # VCS integration
     "GitPython>=3.1.30",
+    "gitdb>=4.0.10",
 
     # Lazy imports
     "demandimport>=0.3.4",

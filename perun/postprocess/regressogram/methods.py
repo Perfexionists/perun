@@ -9,10 +9,8 @@ import numpy.lib.histograms as numpy_bucket_selectors
 import scipy.stats
 import sklearn.metrics
 
-from typing import TYPE_CHECKING, Any
+from typing import Iterator, Any
 
-if TYPE_CHECKING:
-    import perun.postprocess.regression_analysis.data_provider as data_provider
 
 import perun.postprocess.regression_analysis.tools as tools
 
@@ -38,7 +36,9 @@ def get_supported_selectors() -> list[str]:
     return list(_BUCKET_SELECTORS.keys())
 
 
-def compute_regressogram(data_gen: data_provider.Data, config: dict[str, Any]) -> list[dict[str, Any]]:
+def compute_regressogram(
+        data_gen: Iterator[tuple[list[float], list[float], str]], config: dict[str, Any]
+) -> list[dict[str, Any]]:
     """
     The regressogram wrapper to execute the analysis on the individual chunks of resources.
 

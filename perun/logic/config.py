@@ -59,7 +59,7 @@ class Config:
     If the path is set, then the config will be saved to the given path, if the config is modified
     during the run.
     """
-    def __init__(self, config_type: str, path: str, config_initial_data: dict) -> None:
+    def __init__(self, config_type: str, path: str, config_initial_data: dict[str, Any]) -> None:
         """
         :param str config_type: type of the configuration (one of 'local', 'global', 'temporary')
         :param str path: path leading to the configuration (if stored internally)
@@ -133,7 +133,7 @@ class Config:
         return section_iterator
 
 
-def write_config_to(path: str, config_data: dict) -> None:
+def write_config_to(path: str, config_data: dict[str, Any]) -> None:
     """Stores the config data on the path
 
     :param str path: path where the config will be stored to
@@ -146,7 +146,7 @@ def write_config_to(path: str, config_data: dict) -> None:
         YAML().dump(config_data, yaml_file)
 
 
-def read_config_from(path: str) -> dict:
+def read_config_from(path: str) -> dict[str, Any]:
     """Reads the config data from the path
 
     :param str path: source path of the config
@@ -210,7 +210,7 @@ generators:
     write_config_to(path, shared_config)
 
 
-def init_local_config_at(path: str, wrapped_vcs: dict, config_template: str = 'master') -> None:
+def init_local_config_at(path: str, wrapped_vcs: dict[str, Any], config_template: str = 'master') -> None:
     """Creates the new local configuration at given path with sane defaults and helper comments
     for use in order to initialize the config matrix.
 
@@ -242,7 +242,7 @@ def init_config_at(path: str, config_type: str) -> bool:
     return getattr(sys.modules[__name__], init_function_name)(path)
 
 
-def _locate_section_from_query(config_data: dict, sections: list) -> dict:
+def _locate_section_from_query(config_data: dict[str, Any], sections: list[str]) -> dict[str, Any]:
     """Iterates through the config dictionary and queries the subsections from the list of the
     sections, returning the last one.
 
@@ -259,7 +259,7 @@ def _locate_section_from_query(config_data: dict, sections: list) -> dict:
     return section_iterator
 
 
-def _ascend_by_section_safely(section_iterator: dict, section_key: str) -> dict:
+def _ascend_by_section_safely(section_iterator: dict[str, Any], section_key: str) -> dict[str, Any]:
     """Ascends by one level in the section_iterator.
 
     In case the section_key is not in the section_iterator, MissingConfigSectionException is raised.
@@ -340,7 +340,7 @@ def shared() -> Config:
 
 
 @decorators.singleton_with_args
-def local(path) -> Config:
+def local(path: str) -> Config:
     """Returns the configuration corresponding to the one local configuration data, located at @p
     path.
 

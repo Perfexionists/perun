@@ -53,7 +53,7 @@ def rand_index(lst_len: int) -> int:
     return rand_from_range(0, lst_len-1)
 
 
-def rand_choice(lst: list) -> Any:
+def rand_choice(lst: list[Any]) -> Any:
     """Return a randomly selected element of a list.
 
     :param list lst: the list from which the element will be selected

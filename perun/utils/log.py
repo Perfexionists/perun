@@ -14,6 +14,7 @@ import traceback
 import time
 from types import TracebackType
 
+import numpy
 import numpy as np
 
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, Iterator, cast
@@ -161,7 +162,7 @@ def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
     return (frame[0], frame[1]) if isinstance(frame, tuple) else (frame.filename, frame.name)
 
 
-def print_current_stack(colour: str = 'red', raised_exception: Optional[Exception] = None) -> None:
+def print_current_stack(colour: str = 'red', raised_exception: Optional[BaseException] = None) -> None:
     """Prints the information about stack track leading to an event
 
     Be default this is used in error traces, so the colour of the printed trace is red.
@@ -472,7 +473,7 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
         print(')', end='')
 
 
-def _print_partial_intervals(partial_intervals: list[PerformanceChange, float, float, float]) -> None:
+def _print_partial_intervals(partial_intervals: list[tuple[PerformanceChange, float, float, float]]) -> None:
     """
     The function prints information about detected changes on the partial intervals.
 
@@ -550,9 +551,13 @@ def print_list_of_degradations(
     newline()
 
 
-def aggregate_intervals(intervals: npt.NDArray[Any]) -> list[tuple[Any, Any, Any, Any]]:
+def aggregate_intervals(
+        input_intervals: list[Any] | npt.NDArray[Any]
+) -> list[tuple[Any, Any, Any, Any]]:
     """
     Function aggregates the partial intervals according to the types of change.
+
+    Fixme: This function is messy, and IMO buggy, needs to be fixed.
 
     The function aggregates the neighbourly partial intervals when they have the
     same detected type of change. Then the individual intervals are joined since
@@ -569,6 +574,11 @@ def aggregate_intervals(intervals: npt.NDArray[Any]) -> list[tuple[Any, Any, Any
     :param np.ndarray intervals: the array of partial intervals with tuples of required information
     :return list: list of the aggregated partial intervals to print
     """
+    # Fixme: This is baaaad. But the partial intervals are somewhat broken (sometimes list, sometimes narray)
+    if isinstance(input_intervals, list):
+        intervals = numpy.array(input_intervals)
+    else:
+        intervals = input_intervals
     def get_indices_of_intervals() -> Iterable[tuple[int, int]]:
         """
         Function computes the indices of the aggregated intervals.
@@ -585,13 +595,13 @@ def aggregate_intervals(intervals: npt.NDArray[Any]) -> list[tuple[Any, Any, Any
             change, _, _, _ = intervals[start_idx]
             for end_idx, (new_change, _, _, _) in enumerate(intervals[1:], 1):
                 if change != new_change:
-                    yield (start_idx, end_idx - 1)
+                    yield start_idx, end_idx - 1
                     if end_idx == len(intervals) - 1:
-                        yield (end_idx, end_idx)
+                        yield end_idx, end_idx
                     change = new_change
                     start_idx = end_idx
             if start_idx != end_idx or len(intervals) == 1:
-                yield (start_idx, end_idx)
+                yield start_idx, end_idx
 
     intervals = intervals[intervals[:, 0] != PerformanceChange.NoChange]
     agg_intervals = []

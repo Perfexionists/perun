@@ -5,7 +5,7 @@ The size of the window can be augmented with type (relative vs absolute), or by 
 and height).
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
 import perun.utils.log as log
 
@@ -54,12 +54,13 @@ def compute_window_height(resource_amount: int, window_height: int, height_measu
 
 
 def clusterize(
-        sorted_resources: List[Dict[str, Any]],
+        sorted_resources: list[dict[str, Any]],
         window_width: float,
         width_measure: str,
         window_height: int,
         height_measure: str,
-        **_: Dict[str, Any]):
+        **_: Any
+) -> None:
     """Clusterize the list of sorted resources w.r.t sliding window
 
     Iterates through sorted resources, and classifies each of the resource to appropriate cluster

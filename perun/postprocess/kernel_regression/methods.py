@@ -16,10 +16,9 @@ import statsmodels.nonparametric.api as nparam
 
 from perun.postprocess.regression_analysis import tools
 import perun.thirdparty.pyqt_fit_port as pyqt_fit
-from typing import Any, TYPE_CHECKING, Callable, Optional
+from typing import Any, TYPE_CHECKING, Callable, Optional, Iterator
 
 if TYPE_CHECKING:
-    from perun.postprocess.regression_analysis.data_provider import Data
     import click
 
 
@@ -121,7 +120,9 @@ class KernelRidge(sklearn.BaseEstimator, sklearn.RegressorMixin):
         return self.gamma
 
 
-def compute_kernel_regression(data_gen: Data, config: dict[str, Any]) -> list[dict[str, Any]]:
+def compute_kernel_regression(
+        data_gen: Iterator[tuple[list[float], list[float], str]], config: dict[str, Any]
+) -> list[dict[str, Any]]:
     """
     This method represents the wrapper for all modes of kernel regression postprocessor.
 

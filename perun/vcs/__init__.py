@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion, MajorVersion
 
 
-def lookup_minor_version(func: Callable) -> Callable:
+def lookup_minor_version(func: Callable[..., Any]) -> Callable[..., Any]:
     """If the minor_version is not given by the caller, it looks up the HEAD in the repo.
 
     If the @p func is called with minor_version parameter set to None,
@@ -34,7 +34,7 @@ def lookup_minor_version(func: Callable) -> Callable:
     f_args, _, _, _, *_ = inspect.getfullargspec(func)
     minor_version_position = f_args.index('minor_version')
 
-    def wrapper(*args: Any, **kwargs: Any) -> Callable:
+    def wrapper(*args: Any, **kwargs: Any) -> Callable[..., Any]:
         """Inner wrapper of the function"""
         # if the minor_version is None, then we obtain the minor head for the wrapped type
         if minor_version_position < len(args) and args[minor_version_position] is None:
@@ -73,7 +73,7 @@ def get_minor_head() -> str:
         return ""
 
 
-def init(vcs_init_params: dict) -> bool:
+def init(vcs_init_params: dict[str, Any]) -> bool:
     """Calls the implementation of initialization of wrapped underlying version
     control system.
 
@@ -259,8 +259,8 @@ class CleanState:
     """
     def __init__(self) -> None:
         """Creates a with wrapper for a corresponding VCS"""
-        self.saved_state = False
-        self.last_head = None
+        self.saved_state: bool = False
+        self.last_head: str = ''
 
     def __enter__(self) -> None:
         """When entering saves the state of the repository

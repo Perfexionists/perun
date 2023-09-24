@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 from operator import itemgetter
-from typing import Iterable, Any, Callable, TYPE_CHECKING
+from typing import Iterator, Any, Callable, TYPE_CHECKING
 import perun.profile.convert as convert
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
 
-def data_provider_mapper(profile: Profile, **kwargs: Any) -> Iterable[tuple[list[float], list[float], str]]:
+def data_provider_mapper(profile: Profile, **kwargs: Any) -> Iterator[tuple[list[float], list[float], str]]:
     """Unified data provider for various profile types.
 
     :param dict profile: the loaded profile dictionary
@@ -32,7 +32,7 @@ def resource_sort_key(resource: dict[str, Any]) -> str:
 
 def generic_profile_provider(
         profile: Profile, of_key: str, per_key: str, **_: Any
-) -> Iterable[tuple[list[float], list[float], str]]:
+) -> Iterator[tuple[list[float], list[float], str]]:
     """Data provider for trace collector profiling output.
 
     :param Profile profile: the trace profile dictionary

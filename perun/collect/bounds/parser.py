@@ -50,7 +50,7 @@ RE_LINE = re.compile(r"line (?P<line>\d+) / (?P<column>\d+)")
 RE_TOTAL = re.compile(r"Total Complexity: (?P<total>.+)")
 
 
-def partition_list(source_list: list, pred: Callable[[str], bool]) -> list[list]:
+def partition_list(source_list: list[str], pred: Callable[[str], bool]) -> list[list[str]]:
     """Helper function that partitions the list to several chunks according to the given predicate.
 
     First we find all the elements of the list that satisfy @p pred, then we break the list into

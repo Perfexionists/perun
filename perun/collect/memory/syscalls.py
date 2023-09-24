@@ -1,8 +1,11 @@
 """This module provides simple wrappers over some linux command line tools"""
+from __future__ import annotations
 
 import os
 import re
 import subprocess
+
+from typing import Any
 
 from perun.utils.helpers import SuppressedExceptions
 from perun.utils.structs import Executable
@@ -59,7 +62,7 @@ def build_address_to_line_cache(addresses: set[tuple[str, str]], binary_name: st
     ))
 
 
-def address_to_line(ip: str) -> list:
+def address_to_line(ip: str) -> list[Any]:
     """
     :param string ip: instruction pointer value
     :returns list: list of two objects, 1st is the name of the source file, 2nd is the line number

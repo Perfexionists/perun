@@ -12,15 +12,15 @@
 import os
 import json
 
-from typing import TextIO, TypedDict
+from typing import TextIO, Any
 
 import perun.collect.complexity.symbols as symbols
 
 
 # Default internal parameters
-DEFAULT_DATA_FILENAME = 'trace.log'
-DEFAULT_STORAGE_SIZE = 20000
-DEFAULT_DIRECT_OUTPUT = False
+DEFAULT_DATA_FILENAME: str = 'trace.log'
+DEFAULT_STORAGE_SIZE: int = 20000
+DEFAULT_DIRECT_OUTPUT: bool = False
 
 _HEX_BASE = 16
 
@@ -29,7 +29,7 @@ def create_runtime_config(
         executable_path: str,
         runtime_filter: list[str],
         include_list: list[symbols.RuleKey],
-        configuration: dict
+        configuration: dict[str, Any]
 ) -> None:
     """ Creates the config.conf configuration
 
@@ -80,7 +80,7 @@ def _write_config_to(
         executable_path: str,
         runtime_filter: list[str],
         include_list: list[symbols.RuleKey],
-        job_settings: dict
+        job_settings: dict[str, Any]
 ) -> None:
     """ Writes the configuration stored in the config dictionary into the file
 
@@ -119,7 +119,7 @@ def _write_config_to(
 
 
 def _create_sample_from(
-        include_list: list[symbols.RuleKey], sample_list: list[dict]
+        include_list: list[symbols.RuleKey], sample_list: list[dict[str, Any]]
 ) -> dict[str, int]:
     """ Creates the sample map as 'sample func mangled name: sample ratio' from the
         include list and sample list
