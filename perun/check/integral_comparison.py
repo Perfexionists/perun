@@ -6,7 +6,7 @@ The module contains the methods, that executes the computational logic of
 import numpy as np
 import scipy.integrate as integrate
 
-from typing import Dict, List, Any, Iterable
+from typing import Any, Iterable
 
 import perun.check.factory as factory
 import perun.check.nonparam_helpers as nparam_helpers
@@ -42,7 +42,7 @@ def compute_param_integral(model: perun.utils.structs.ModelRecord) -> float:
     return integrate.quad(formula, model.x_start, model.x_end, args=coeffs)[0]
 
 
-def compute_nparam_integral(x_pts: List[float], y_pts: List[float]) -> float:
+def compute_nparam_integral(x_pts: list[float], y_pts: list[float]) -> float:
     """
     Computation of integral of non-parametric model.
 
@@ -64,7 +64,7 @@ def execute_analysis(
         target_model: ModelRecord,
         target_profile: Profile,
         **_: Any
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     A method performs the primary analysis for pair of models.
 

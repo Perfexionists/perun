@@ -1,7 +1,7 @@
 """ Module with graphs creation and configuration functions. """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Dict, Tuple, Any
+from typing import TYPE_CHECKING, Any
 from collections.abc import Iterator
 
 from operator import itemgetter
@@ -22,8 +22,8 @@ if TYPE_CHECKING:
     from perun.profile.factory import Profile
     import pandas as pd
 
-ProfileModel = Dict[str, Any]
-ProfileModels = List[ProfileModel]
+ProfileModel = dict[str, Any]
+ProfileModels = list[ProfileModel]
 
 
 def create_from_params(
@@ -33,7 +33,7 @@ def create_from_params(
     x_axis_label: str,
     y_axis_label: str,
     graph_title: str,
-) -> Iterator[Tuple[str, hv.Scatter]]:
+) -> Iterator[tuple[str, hv.Scatter]]:
     """Creates Scatter plot graph according to the given parameters.
 
     The 'of_key' is a data column (Y-axis) that is depending on the values of 'per_key' (X-axis).
@@ -87,7 +87,7 @@ def create_from_params(
         yield f"{data_slice.uid.values[0]}", scatter
 
 
-def _generate_plot_data_slices(profile: Profile) -> Iterator[Tuple[pd.DataFrame, ProfileModels]]:
+def _generate_plot_data_slices(profile: Profile) -> Iterator[tuple[pd.DataFrame, ProfileModels]]:
     """Generates data slices for plotting resources and models.
 
     The resources are split per UID and models are sliced per UID and interval.
@@ -117,7 +117,7 @@ def _slice_resources_by_uid(
     resources: pd.DataFrame,
     models: ProfileModels,
     uids: Iterator[str],
-) -> Iterator[Tuple[pd.DataFrame, ProfileModels]]:
+) -> Iterator[tuple[pd.DataFrame, ProfileModels]]:
     """Splits the resource tables and models into slices by the unique uids found in the resources.
 
     :param resources: the ``resources`` part of a profile, i.e., recorded performance data.
@@ -145,7 +145,7 @@ def _slice_models_by_interval(models: ProfileModels) -> Iterator[ProfileModels]:
     # Sort the models by intervals first to yield them in order
     models = sorted(models, key=itemgetter("x_start", "x_end"))
     # Separate the models into groups according to intervals
-    intervals: Dict[Tuple[int, int], ProfileModels] = {}
+    intervals: dict[tuple[int, int], ProfileModels] = {}
     for model in models:
         intervals.setdefault((model["x_start"], model["x_end"]), []).append(model)
     # Yield the list of models with the same interval

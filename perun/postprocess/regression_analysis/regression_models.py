@@ -5,10 +5,11 @@ The _MODELS dict allows to specify which models should be computed and the mappi
 the sections of _MODELS dictionary representing the model properties.
 
 """
+from __future__ import annotations
 
 import math
 
-from typing import Callable, Iterable, Union, Any
+from typing import Callable, Iterable, Any, cast
 
 import perun.postprocess.regression_analysis.generic as generic
 import perun.postprocess.regression_analysis.specific as specific
@@ -111,19 +112,15 @@ def map_model_to_key(model: str) -> str:
     return ""
 
 
-def filter_derived(regression_models_keys: Union[tuple[str], str]) -> tuple[tuple[str], tuple[str]]:
+def filter_derived(regression_models_keys: tuple[str]) -> tuple[tuple[str], tuple[str]]:
     """Filtering of the selected models to standard and derived models.
 
     :param tuple of str regression_models_keys: the models to be computed
     :returns tuple, tuple: the derived models and standard models in separated tuples
     """
-    # Convert single value to list
-    if not isinstance(regression_models_keys, tuple):
-        regression_models_keys = tuple(regression_models_keys)  # type: ignore
-
     # Get all models
     if not regression_models_keys or 'all' in regression_models_keys:
-        regression_models_keys = tuple(filter(lambda m: m != 'all', _MODELS.keys()))  # type: ignore
+        regression_models_keys = cast(tuple[str], tuple(filter(lambda m: m != 'all', get_supported_models())))
 
     # Split the models into derived and non-derived
     der: list[str] = []
@@ -143,7 +140,7 @@ def filter_derived(regression_models_keys: Union[tuple[str], str]) -> tuple[tupl
             if _MODELS[model]['required'] not in _MODELS.keys():
                 raise exceptions.InvalidModelException(model)
             normal.append(_MODELS[model]['required'])
-    return tuple(der), tuple(normal)  # type: ignore
+    return cast(tuple[str], tuple(der)), cast(tuple[str], tuple(normal))
 
 
 # Supported models properties

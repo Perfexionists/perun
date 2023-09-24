@@ -1,7 +1,7 @@
 """Collection of helper functions for working with bokeh graphs"""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Any, Union
+from typing import TYPE_CHECKING, Any
 from types import ModuleType
 from collections.abc import MutableMapping, Iterable
 
@@ -36,7 +36,7 @@ class ColourSort(Enum):
 
 def _sort_colours(
     colours: bk_palettes.Palette, sort_color_style: ColourSort, keys: Iterable[str]
-) -> List[str]:
+) -> list[str]:
     """Sorts the colours corresponding to the keys according to the given style
 
     Note: For different visualizations and outputs we want the colours in different format,
@@ -57,7 +57,7 @@ def _sort_colours(
 
 def get_unique_colours_for_(
     data_source: pd.DataFrame, key: str, sort_color_style: ColourSort = ColourSort.BY_OCCURRENCE
-) -> List[str]:
+) -> list[str]:
     """Returns list of colours (sorted according to the legend); up to 256 colours.
 
     :param data_source: data frame for which we want to get unique colours
@@ -158,7 +158,7 @@ def add_y_units(profile_header: MutableMapping[str, Any], of_key: str, y_axis_la
 
 
 def save_view_graph(
-    graph: Union[hv.Chart, hv.Layout, hv.Overlay],
+    graph: hv.Chart | hv.Layout | hv.Overlay,
     filename: str,
     view_in_browser: bool = False
 ) -> None:

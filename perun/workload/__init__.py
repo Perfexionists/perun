@@ -13,8 +13,6 @@ You can use some basic generators specified in shared configurations called ``ba
 1000).
 """
 
-from typing import Dict
-
 import perun.logic.config as config
 import perun.utils.log as log
 import perun.utils as utils
@@ -22,7 +20,7 @@ import perun.utils as utils
 from perun.utils.structs import GeneratorSpec
 
 
-def load_generator_specifications() -> Dict[str, GeneratorSpec]:
+def load_generator_specifications() -> dict[str, GeneratorSpec]:
     """Collects from configuration file all of the workload specifications and constructs a mapping
     of 'id' -> GeneratorSpec, which contains the constructor and parameters used for construction.
 

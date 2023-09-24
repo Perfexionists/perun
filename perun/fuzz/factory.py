@@ -15,7 +15,7 @@ from uuid import uuid4
 import numpy as np
 import tabulate
 
-from typing import Optional, Any
+from typing import Optional, Any, cast
 
 import perun.utils.decorators as decorators
 import perun.utils.log as log
@@ -168,13 +168,12 @@ def fuzz(
             mutations.append(Mutation(filename, new_fh, predecessor))
 
             if is_binary:
-                fp_out = open(filename, "wb")
-                fp_out.write((b"".join(fuzzed_lines))[:max_bytes])
+                with open(filename, "wb") as bp_out:
+                    bp_out.write((b"".join(fuzzed_lines))[:max_bytes])
             else:
-                fp_out = open(filename, "w")  # type: ignore
-                fp_out.write("".join(fuzzed_lines)[:max_bytes])  # type: ignore
-
-            fp_out.close()
+                with open(filename, "w") as fp_out:
+                    # Note: At this point, we know, that fuzzed_lines is `list[str]` wrt `is_binary == False`
+                    fp_out.write("".join(cast(list[str], fuzzed_lines))[:max_bytes])
 
     return mutations
 

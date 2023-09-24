@@ -11,7 +11,7 @@ import os
 import re
 
 from operator import itemgetter
-from typing import Any, TYPE_CHECKING, Callable, Optional, Collection
+from typing import Any, TYPE_CHECKING, Callable, Optional, Collection, cast
 
 import perun.logic.pcs as pcs
 import perun.logic.config as perun_config
@@ -1123,7 +1123,8 @@ def print_temp_files(root: str, **kwargs: Any) -> None:
     # Now apply 'sort-by' if it differs from name:
     if kwargs['sort_by'] != 'name':
         sort_map = temp.SORT_ATTR_MAP[kwargs['sort_by']]
-        tmp_files.sort(key=itemgetter(sort_map['pos']), reverse=sort_map['reverse'])  # type: ignore
+        # Note: We know, that `sort_map['reverse']` is bool, so we help type checker; this could be improved
+        tmp_files.sort(key=itemgetter(sort_map['pos']), reverse=cast(bool, sort_map['reverse']))
 
     # Print the total files size if needed
     _print_total_size(sum(size for _, _, size in tmp_files), not kwargs['no_total_size'])

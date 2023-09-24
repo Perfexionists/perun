@@ -18,7 +18,7 @@ def data_provider_mapper(profile: Profile, **kwargs: Any) -> Iterator[tuple[list
     """
     profile_type = profile['header']['type']
     data_provider = _PROFILE_MAPPER.get(profile_type, generic_profile_provider)
-    return data_provider(profile, **kwargs)  # type: ignore
+    return data_provider(profile, **kwargs)
 
 
 def resource_sort_key(resource: dict[str, Any]) -> str:
@@ -72,6 +72,6 @@ def generic_profile_provider(
 # to add new profile type - simply add new keyword and specific provider function with signature:
 #  - return value: generator object that produces required profile data
 #  - parameter: profile dictionary
-_PROFILE_MAPPER: dict[str, Callable[[Profile, Any], tuple[list[float], list[float], str]]] = {
-    'default': generic_profile_provider  # type: ignore
+_PROFILE_MAPPER: dict[str, Callable[..., Iterator[tuple[list[float], list[float], str]]]] = {
+    'default': generic_profile_provider
 }

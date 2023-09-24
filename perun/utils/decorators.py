@@ -7,7 +7,7 @@ the functions. Or various checker function, that checks given parameters of the 
 import inspect
 import functools
 
-from typing import Dict, Callable, Any
+from typing import Callable, Any
 from perun.utils.exceptions import InvalidParameterException
 
 

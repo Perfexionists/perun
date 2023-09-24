@@ -10,7 +10,7 @@ import os.path as path
 import subprocess
 import statistics
 
-from typing import List, Any
+from typing import Any
 
 import perun.utils.log as log
 import perun.utils as utils
@@ -40,7 +40,7 @@ def prepare_workspace(source_path: str) -> None:
             os.remove(path.join(source_path, file))
 
 
-def get_src_files(source_path: str) -> List[str]:
+def get_src_files(source_path: str) -> list[str]:
     """ Gathers all C/C++ source files in the directory specified by `source_path`
 
     C/C++ files are identified with extensions: .c, .cc, .cpp. All these types of files located in
@@ -62,7 +62,7 @@ def get_src_files(source_path: str) -> List[str]:
 
 
 def baseline_testing(
-        executable: Executable, workloads: List[Mutation], config: FuzzingConfiguration
+        executable: Executable, workloads: list[Mutation], config: FuzzingConfiguration
 ) -> int:
     """ Coverage based testing initialization. Wrapper over function `get_initial_coverage`.
 
@@ -82,7 +82,7 @@ def baseline_testing(
 
 
 def get_initial_coverage(
-        executable: Executable, seeds: List[Mutation], timeout: int,
+        executable: Executable, seeds: list[Mutation], timeout: int,
         fuzzing_config: FuzzingConfiguration
 ) -> int:
     """ Provides initial testing with initial samples given by user.
@@ -147,7 +147,7 @@ def target_testing(
     )
 
 
-def get_gcov_files(directory: str) -> List[str]:
+def get_gcov_files(directory: str) -> list[str]:
     """ Searches for gcov files in `directory`.
     :param str directory: path of a directory, where searching will be provided
     :return list: absolute paths of found gcov files

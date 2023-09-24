@@ -262,6 +262,7 @@ def run_safely_external_command(
             shell=False, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr, **kwargs
         )
         if i != 0:
+            # Fixme: we ignore this, as it is tricky to handle
             objects[i-1].stdout.close()  # type: ignore
         objects.append(piped_command)
 

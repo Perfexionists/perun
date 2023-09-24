@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import sklearn.metrics
 
-from typing import Callable, Iterator, Any
+from typing import Callable, Iterator, Any, cast
 from dataclasses import dataclass
 
 import perun.postprocess.regression_analysis.tools as tools
@@ -146,7 +146,8 @@ def moving_average(x_pts: list[float], y_pts: list[float], configuration: dict[s
     :return dict: the output dictionary with result of analysis
     """
     # Sort the points to the right order for computation
-    x_pts, y_pts = map(list, zip(*sorted(zip(x_pts, y_pts))))  # type: ignore
+    # Fixme: this is needed for type checking
+    x_pts, y_pts = cast(tuple[list[float], list[float]], map(list, zip(*sorted(zip(x_pts, y_pts)))))
 
     # If has been specified the window width by user, then will be followed the direct computation
     if configuration.get('window_width'):

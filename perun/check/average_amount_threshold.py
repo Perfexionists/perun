@@ -35,7 +35,7 @@ changed from about six seconds to hundred miliseconds. For these detected change
 confidence at all.
 """
 
-from typing import Dict, Any, Iterable
+from typing import Any, Iterable
 
 import perun.profile.convert as convert
 import perun.postprocess.regression_analysis.tools as tools
@@ -48,7 +48,7 @@ DEGRADATION_THRESHOLD = 2.0
 OPTIMIZATION_THRESHOLD = 0.5
 
 
-def get_averages(profile: Profile) -> Dict[str, float]:
+def get_averages(profile: Profile) -> dict[str, float]:
     """Retrieves the averages of all amounts grouped by the uid
 
     :param profiles.Profile profile: dictionary representation of profile

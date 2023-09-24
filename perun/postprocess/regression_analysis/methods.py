@@ -3,10 +3,11 @@
 This module exposes all currently implemented computational methods for regression analysis.
 
 """
+from __future__ import annotations
 
 import collections
 
-from typing import Union, Any, Optional, Iterator, Protocol
+from typing import Any, Optional, Iterator, Protocol
 
 import perun.postprocess.regression_analysis.regression_models as mod
 import perun.utils.exceptions as exceptions
@@ -28,7 +29,7 @@ def get_supported_param_methods() -> list[str]:
 def compute(
         data_gen: Iterator[tuple[list[float], list[float], str]],
         method: str,
-        models: Union[str, tuple[str]],
+        models: tuple[str],
         **kwargs: Any
 ) -> list[dict[str, Any]]:
     """The regression analysis wrapper for various computation methods.

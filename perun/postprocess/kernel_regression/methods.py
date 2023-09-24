@@ -16,7 +16,7 @@ import statsmodels.nonparametric.api as nparam
 
 from perun.postprocess.regression_analysis import tools
 import perun.thirdparty.pyqt_fit_port as pyqt_fit
-from typing import Any, TYPE_CHECKING, Callable, Optional, Iterator
+from typing import Any, TYPE_CHECKING, Callable, Optional, Iterator, cast
 
 if TYPE_CHECKING:
     import click
@@ -367,7 +367,7 @@ def execute_kernel_regression(x_pts: list[float], y_pts: list[float], config: di
     :return dict: the output dictionary with result of kernel regression
     """
     # Sort the points to the right order for computation
-    x_pts, y_pts = zip(*sorted(zip(x_pts, y_pts)))  # type: ignore
+    x_pts, y_pts = cast(tuple[list[float], list[float]], zip(*sorted(zip(x_pts, y_pts))))
 
     # Create the initial dictionary, that contains the common items for all modes
     kernel_model = {

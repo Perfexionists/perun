@@ -57,7 +57,7 @@ import os
 import json
 import zlib
 
-from typing import Optional, Any
+from typing import Optional, Any, cast, BinaryIO
 
 import perun.logic.pcs as pcs
 import perun.logic.store as store
@@ -278,7 +278,7 @@ def read_temp(file_path: str) -> Any:
         with open(file_path, 'rb' if compressed else 'r') as tmp_handle:
             # Take care of possible compression
             if compressed:
-                content = store.read_and_deflate_chunk(tmp_handle)  # type: ignore
+                content = store.read_and_deflate_chunk(cast(BinaryIO, tmp_handle))
             else:
                 content = tmp_handle.read()
             # Parse the json-formatted files

@@ -3,7 +3,6 @@
 import collections
 import re
 
-from typing import Dict
 from decimal import Decimal
 
 from typing import Any
@@ -19,7 +18,7 @@ PATTERN_WORD: re.Pattern[str] = re.compile(r"(\w+|[?])")
 PATTERN_TIME: re.Pattern[str] = re.compile(r"\d+([,.]\d*)?|[,.]\d+")
 PATTERN_HEXADECIMAL: re.Pattern[str] = re.compile(r"0x[0-9a-fA-F]+")
 PATTERN_INT: re.Pattern[str] = re.compile(r"\d+")
-UID_RESOURCE_MAP: Dict[str, int] = collections.defaultdict(int)
+UID_RESOURCE_MAP: dict[str, int] = collections.defaultdict(int)
 
 
 def parse_stack(stack: list[str]) -> list[dict[str, Any]]:
@@ -80,7 +79,7 @@ def parse_resources(allocation: list[str]) -> dict[str, Any]:
     :param list allocation: list of raw allocation data
     :returns structure: formatted structure representing resources of one allocation
     """
-    data:  Resource = {}  # type: ignore
+    data: dict[str, Any] = {}
 
     # parsing amount of allocated memory,
     # it's the first number on the second line
@@ -153,7 +152,7 @@ def parse_log(filename: str, executable: Executable, snapshots_interval: float) 
     syscalls.build_address_to_line_cache(ips, executable.cmd)
 
     snapshots = []
-    data = {'time': f'{interval:f}', 'resources': []}
+    data: dict[str, Any] = {'time': f'{interval:f}', 'resources': []}
     for allocation in allocations:
         # parsing timestamp,
         # it's the only one number on the 1st line
@@ -173,7 +172,7 @@ def parse_log(filename: str, executable: Executable, snapshots_interval: float) 
 
         # using parse_resources()
         # parsing resources,
-        data['resources'].append(parse_resources(allocation))  # type: ignore
+        data['resources'].append(parse_resources(allocation))
 
     if data:
         snapshots.append(data)

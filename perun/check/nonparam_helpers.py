@@ -2,8 +2,6 @@ import re
 
 import numpy as np
 
-from typing import Tuple, List
-
 import perun.check.factory
 import perun.check.general_detection as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
@@ -113,7 +111,7 @@ def preprocess_nonparam_models(
         baseline_model: perun.utils.structs.ModelRecord,
         target_profile: Profile,
         target_model: perun.utils.structs.ModelRecord
-) -> Tuple[List[float], List[float], List[float]]:
+) -> tuple[list[float], list[float], list[float]]:
     """
     Function prepare models to execute the computation of statistics between them.
 
@@ -130,7 +128,7 @@ def preprocess_nonparam_models(
     :param ModelRecord target_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """
-    def get_model_coordinates(model: perun.utils.structs.ModelRecord) -> Tuple[List[float], List[float]]:
+    def get_model_coordinates(model: perun.utils.structs.ModelRecord) -> tuple[list[float], list[float]]:
         """
         Function obtains the coordinates of given model.
 
@@ -149,7 +147,7 @@ def preprocess_nonparam_models(
             y_pts = model.b0
         return x_pts, y_pts
 
-    def check_model_coordinates() -> Tuple[List[float], List[float], List[float], List[float]]:
+    def check_model_coordinates() -> tuple[list[float], list[float], list[float], list[float]]:
         """
         Function check the lengths of the coordinates from both models.
 

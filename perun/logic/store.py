@@ -13,7 +13,7 @@ import struct
 import zlib
 import demandimport
 
-from typing import BinaryIO, TextIO, Optional
+from typing import BinaryIO, TextIO, Optional, cast
 
 import perun.utils.log as log
 
@@ -237,7 +237,7 @@ def save_degradation_list_for(
         write_handle.write("\n".join(to_be_stored_changes))
 
 
-def parse_changelog_line(line: str) -> tuple[DegradationInfo, str, str]:  # type: ignore
+def parse_changelog_line(line: str) -> tuple[DegradationInfo, str, str]:
     """Parses one changelog record into the triple of degradation info, command string and minor.
 
     :param str line: input line from one change log
@@ -258,6 +258,8 @@ def parse_changelog_line(line: str) -> tuple[DegradationInfo, str, str]:  # type
         return deg_info, tokens.group('cmdstr'), tokens.group('minor')
     else:
         log.error(f"could not parse changelog line '{line}'")
+        # Note: this is never executed and is only for typechecking
+        return DegradationInfo(PerformanceChange.Unknown, '', '', ''), '', ''
 
 
 def load_degradation_list_for(base_dir: str, minor_version: str) -> list[tuple[DegradationInfo, str, str]]:
@@ -309,7 +311,7 @@ def load_profile_from_file(file_name: str, is_raw_profile: bool) -> Profile:
         return load_profile_from_handle(file_name, file_handle, is_raw_profile)
 
 
-def load_profile_from_handle(file_name: str, file_handle: BinaryIO | TextIO, is_raw_profile: bool) -> Profile:
+def load_profile_from_handle(file_name: str, file_handle: BinaryIO, is_raw_profile: bool) -> Profile:
     """
     Fixme: Add check that the loaded profile is in valid format!!!
     TODO: This should be broken into two parts
@@ -322,10 +324,10 @@ def load_profile_from_handle(file_name: str, file_handle: BinaryIO | TextIO, is_
         or when the profile is not in correct supported format or when the profile is malformed
     """
     if is_raw_profile:
-        body = file_handle.read().decode('utf-8')  # type: ignore
+        body = file_handle.read().decode('utf-8')
     else:
         # Read deflated contents and split to header and body
-        contents = read_and_deflate_chunk(file_handle)  # type: ignore
+        contents = read_and_deflate_chunk(file_handle)
         header, body = contents.split('\0')
         prefix, profile_type, profile_size = header.split(' ')
 

@@ -417,6 +417,7 @@ def _delete_stats_objects(dirs: Iterable[str], files: Iterable[str]) -> None:
         delete_func = shutil.rmtree if idx == 1 else os.remove
         for item in group:
             try:
+                # Note: We, ignore this, as MyPy seems to have problem inferring and coping with delete_func type
                 delete_func(item)  # type: ignore
             except OSError as exc:
                 # Possibly already deleted files or restricted permission etc., log and skip
@@ -704,7 +705,7 @@ def _get_versions_in_stats_directory() -> tuple[list[tuple[str, str]], list[str]
     return versions, custom
 
 
-def _load_stats_index() -> list[tuple[str, str]]:
+def _load_stats_index() -> Any:
     """ Wraps the loader of custom index files so that it would return the expected default value.
 
     TODO: There should be validation that stats is in right format
@@ -712,4 +713,4 @@ def _load_stats_index() -> list[tuple[str, str]]:
     :return list: list of records in the index file or empty list for empty index file
     """
     stats_index = index.load_custom_index(pcs.get_stats_index())
-    return stats_index if stats_index else []  # type: ignore
+    return stats_index if stats_index else []

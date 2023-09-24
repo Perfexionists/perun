@@ -275,7 +275,7 @@ def _ascend_by_section_safely(section_iterator: dict[str, Any], section_key: str
     return section_iterator[section_key]
 
 
-def load_config(config_dir: str, config_type: str) -> Config:  # type: ignore
+def load_config(config_dir: str, config_type: str) -> Config:
     """Loads the configuration of given type from the appropriate file (either local.yml or
     global.yml).
 
@@ -291,9 +291,9 @@ def load_config(config_dir: str, config_type: str) -> Config:  # type: ignore
 
         return Config(config_type, config_file, read_config_from(config_file))
     except IOError as io_error:
-        perun_log.error("error initializing {} config: {}".format(
-            config_type, str(io_error)
-        ))
+        perun_log.error(f"error initializing {config_type} config: {str(io_error)}")
+        # Note: This does not happen
+        return Config(config_type, config_file, {})
 
 
 def lookup_shared_config_dir() -> str:

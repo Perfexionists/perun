@@ -32,8 +32,8 @@ def predicate_from_cli(cli_result: click.testing.Result, predicate: bool) -> Non
         print("=== Inner traceback ===")
         if hasattr(cli_result, 'exception') and cli_result.exception:
             print(cli_result.exception)
-        if hasattr(cli_result, 'exc_info'):
-            traceback.print_tb(cli_result.exc_info[2])  # type: ignore # nested list
+        if hasattr(cli_result, 'exc_info') and cli_result.exc_info is not None:
+            traceback.print_tb(cli_result.exc_info[2])
         raise failed_assertion
 
 
