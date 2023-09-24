@@ -6,16 +6,15 @@ This module exposes all currently implemented computational methods for regressi
 
 import collections
 
-from typing import Union, Any, Optional, Generator, Protocol
+from typing import Union, Any, Optional, Iterator, Protocol
 
 import perun.postprocess.regression_analysis.regression_models as mod
 import perun.utils.exceptions as exceptions
 import perun.postprocess.regression_analysis.tools as tools
 
 
-DictGenerator = Generator[dict, None, None]
 class ComputationMethod(Protocol):
-    def __call__(self, *args: Any, **kwargs: Any) -> DictGenerator: ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Iterator[dict[str, Any]]: ...
 
 
 def get_supported_param_methods() -> list[str]:
@@ -27,11 +26,11 @@ def get_supported_param_methods() -> list[str]:
 
 
 def compute(
-        data_gen: Generator[tuple[list, list, str], None, None],
+        data_gen: Iterator[tuple[list[float], list[float], str]],
         method: str,
         models: Union[str, tuple[str]],
         **kwargs: Any
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """The regression analysis wrapper for various computation methods.
 
     :param iter data_gen: the generator object with collected data (data provider generators)
@@ -65,8 +64,8 @@ def compute(
 
 
 def compute_derived(
-        derived_models: tuple[str], analysis: list[dict], **kwargs: Any
-) -> DictGenerator:
+        derived_models: tuple[str], analysis: list[dict[str, Any]], **kwargs: Any
+) -> Iterator[dict[str, Any]]:
     """The computation wrapper for derived models.
 
     :param tuple of str derived_models: collection of derived models to compute
@@ -85,7 +84,7 @@ def full_computation(
         y_pts: list[float],
         computation_models: tuple[str],
         **_: Any
-) -> DictGenerator:
+) -> Iterator[dict[str, Any]]:
     """The full computation method which fully computes every specified regression model.
 
     The method might have performance issues in case of too many models or data points.
@@ -116,7 +115,7 @@ def iterative_computation(
         computation_models: tuple[str],
         steps: int,
         **_: Any
-) -> DictGenerator:
+) -> Iterator[dict[str, Any]]:
     """The iterative computation method.
 
     This method splits the regression data evenly into random parts, which are incrementally
@@ -158,7 +157,7 @@ def interval_computation(
         computation_models: tuple[str],
         steps: int,
         **_: Any
-) -> DictGenerator:
+) -> Iterator[dict[str, Any]]:
     """The interval computation method.
 
     This method splits the regression data into evenly distributed sorted parts (i.e. intervals)
@@ -200,7 +199,7 @@ def initial_guess_computation(
         computation_models: tuple[str],
         steps: int,
         **_: Any
-) -> DictGenerator:
+) -> Iterator[dict[str, Any]]:
     """The initial guess computation method.
 
     This method does initial computation of a data sample and then computes the rest of the model
@@ -241,7 +240,7 @@ def bisection_computation(
         y_pts: list[float],
         computation_models: tuple[str],
         **_: Any
-) -> DictGenerator:
+) -> Iterator[dict[str, Any]]:
     """The bisection computation method.
 
     This method computes the best fitting model for the whole profiling data and then perform
@@ -272,7 +271,7 @@ def _compute_bisection_model(
         y_pts: list[float],
         computation_models: tuple[str],
         **kwargs: Any
-) -> dict:
+) -> dict[str, Any]:
     """Compute specified models on a given data set and find the best fitting model.
 
     Currently, uses the full computation method.
@@ -301,8 +300,8 @@ def _bisection_step(
         x_pts: list[float],
         y_pts: list[float],
         computation_models: tuple[str],
-        last_model: dict
-) -> DictGenerator:
+        last_model: dict[str, Any]
+) -> Iterator[dict[str, Any]]:
     """The bisection step computation.
 
     Performs one computation step for bisection. Splits the interval set by x_pts, y_pts and
@@ -334,7 +333,7 @@ def _bisection_step(
         yield last_model
         return
 
-    def _model_bisection(i: int) -> DictGenerator:
+    def _model_bisection(i: int) -> Iterator[dict[str, Any]]:
         """Wrapper that iterates over half of the model
 
         :param int i: either 0 or 1 for iteration of left or right model
@@ -351,7 +350,13 @@ def _bisection_step(
     yield from _model_bisection(1)
 
 
-def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, last_model):
+def _bisection_solve_half_model(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        half_model: dict[str, Any],
+        last_model: dict[str, Any]
+) -> Iterator[dict[str, Any]]:
     """Helper function for solving half intervals and producing their results.
 
     The functions check if the model has changed for the given half and if yes, then continues
@@ -381,7 +386,7 @@ def _models_initial_step(
         y_pts: list[float],
         computation_models: tuple[str],
         steps: int
-) -> tuple[list[DictGenerator], list[dict]]:
+) -> tuple[list[Iterator[dict[str, Any]]], list[dict[str, Any]]]:
     """Performs initial step with specified models in multistep methods.
 
     :param list x_pts: the list of x points coordinates
@@ -407,7 +412,7 @@ def _models_initial_step(
     return model_generators, results
 
 
-def _find_best_fitting_model(model_results: list[dict]) -> int:
+def _find_best_fitting_model(model_results: list[dict[str, Any]]) -> int:
     """Finds the model which is currently the best fitting one.
 
     This function operates on a (intermediate) result dictionaries,
@@ -425,7 +430,7 @@ def _find_best_fitting_model(model_results: list[dict]) -> int:
     return best_fit
 
 
-def _transform_to_output_data(data: dict, extra_keys: Optional[list[str]] = None) -> dict:
+def _transform_to_output_data(data: dict[str, Any], extra_keys: Optional[list[str]] = None) -> dict[str, Any]:
     """Transforms the data dictionary into their output format - omitting computational details
     and keys that are not important for the result and its further manipulation.
 
@@ -458,8 +463,8 @@ def _transform_to_output_data(data: dict, extra_keys: Optional[list[str]] = None
 
 
 def _build_uniform_regression_data_format(
-        x_pts: list[float], y_pts: list[float], model: dict
-) -> dict:
+        x_pts: list[float], y_pts: list[float], model: dict[str, Any]
+) -> dict[str, Any]:
     """Creates the uniform regression data dictionary from the model properties and regression
     data points.
 

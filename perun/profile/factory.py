@@ -27,7 +27,7 @@ from perun.postprocess.regression_analysis.regression_models import get_supporte
 from perun.postprocess.regressogram.methods import get_supported_nparam_methods
 
 
-class Profile(MutableMapping):
+class Profile(MutableMapping[str, Any]):
     """
     :ivar dict _storage: internal storage of the profile
     :ivar dict _tuple_to_resource_type_map: map of tuple of persistent records of resources to
@@ -60,8 +60,8 @@ class Profile(MutableMapping):
             'models': global_data.get('models', []) if isinstance(global_data, dict) else []
         }
         self._tuple_to_resource_type_map: dict[str, str] = {}
-        self._resource_type_to_flattened_resources_map: dict[str, dict] = {}
-        self._uid_counter: collections.Counter = collections.Counter()
+        self._resource_type_to_flattened_resources_map: dict[str, dict[str, Any]] = {}
+        self._uid_counter: collections.Counter[str] = collections.Counter()
 
         for key, value in initialization_data.items():
             if key in ('resources', 'snapshots', 'global'):
@@ -75,7 +75,7 @@ class Profile(MutableMapping):
             resource_list: Any,
             resource_type: str = 'list',
             clear_existing_resources: bool = False
-    ):
+    ) -> None:
         """Given by @p resource_type updates the storage with new flattened resources
 
         This calls appropriate functions to translate older formats of resources to the
@@ -107,7 +107,7 @@ class Profile(MutableMapping):
         else:
             self._translate_resources(resource_list, {})
 
-    def _translate_resources(self, resource_list: list[dict], additional_params: dict) -> None:
+    def _translate_resources(self, resource_list: list[dict[str, Any]], additional_params: dict[str, Any]) -> None:
         """Translate the list of resources to efficient format
 
         Given a list of resources, this is all flattened into a new format: a dictionary that
@@ -148,7 +148,7 @@ class Profile(MutableMapping):
             for (key, value) in collectable_properties:
                 self._storage['resources'][resource_type][key].append(value)
 
-    def register_resource_type(self, uid: str, persistent_properties: tuple) -> None:
+    def register_resource_type(self, uid: str, persistent_properties: tuple[Any, ...]) -> str:
         """Registers tuple of persistent properties under new key or return existing one
 
         :param str uid: uid of the resource that will be used to describe the resource type
@@ -197,7 +197,7 @@ class Profile(MutableMapping):
         """
         del self._storage[key]
 
-    def __iter__(self) -> Iterator:
+    def __iter__(self) -> Iterator[str]:
         """Iterates through all of the stuff in storage.
 
         :return: storage iterator
@@ -211,14 +211,14 @@ class Profile(MutableMapping):
         """
         return len(self._storage)
 
-    def serialize(self) -> dict:
+    def serialize(self) -> dict[str, Any]:
         """Returns serializable representation of the profile
 
         :return: serializable representation (i.e. the actual storage)
         """
         return self._storage
 
-    def _get_flattened_persistent_values_for(self, resource_type: str) -> dict:
+    def _get_flattened_persistent_values_for(self, resource_type: str) -> dict[str, Any]:
         """Flattens the nested values of the resources to single level
 
         E.g. the following resource:
@@ -255,7 +255,7 @@ class Profile(MutableMapping):
             self._resource_type_to_flattened_resources_map[resource_type] = flattened_resources
         return self._resource_type_to_flattened_resources_map[resource_type]
 
-    def all_resources(self, flatten_values: bool = False) -> Iterable[tuple[int, dict]]:
+    def all_resources(self, flatten_values: bool = False) -> Iterable[tuple[int, dict[str, Any]]]:
         """Generator for iterating through all the resources contained in the
         performance profile.
 
@@ -341,7 +341,7 @@ class Profile(MutableMapping):
         else:
             return {}
 
-    def all_models(self, group: str = 'model') -> Iterable[tuple[int, dict]]:
+    def all_models(self, group: str = 'model') -> Iterable[tuple[int, dict[str, Any]]]:
         """Generator of all 'models' records from the performance profile w.r.t.
         :ref:`profile-spec`.
 
@@ -377,7 +377,7 @@ class Profile(MutableMapping):
                (group == 'nonparam' and model.get('model') in get_supported_nparam_methods()):
                 yield model_idx, model
 
-    def get_model_of(self, model_type: str, uid: str) -> dict:
+    def get_model_of(self, model_type: str, uid: str) -> dict[str, Any]:
         """
         Finds specific model from profile according to the
         given kind of model and specific unique identification.
@@ -392,7 +392,7 @@ class Profile(MutableMapping):
         log.error(f"missing {model_type} model for uid '{uid}'")
         return {}  # this is only for type checking, in reality it is dead code
 
-    def all_snapshots(self) -> Iterable[tuple[int, list[dict]]]:
+    def all_snapshots(self) -> Iterable[tuple[int, list[dict[str, Any]]]]:
         """Iterates through all the snapshots in resources
 
         Note this is required e.g. for heap map, which needs to group the resources by

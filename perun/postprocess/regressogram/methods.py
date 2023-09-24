@@ -38,7 +38,7 @@ def get_supported_selectors() -> list[str]:
     return list(_BUCKET_SELECTORS.keys())
 
 
-def compute_regressogram(data_gen: data_provider.Data, config: dict) -> list[dict]:
+def compute_regressogram(data_gen: data_provider.Data, config: dict[str, Any]) -> list[dict[str, Any]]:
     """
     The regressogram wrapper to execute the analysis on the individual chunks of resources.
 
@@ -67,7 +67,7 @@ def compute_regressogram(data_gen: data_provider.Data, config: dict) -> list[dic
     return analysis
 
 
-def regressogram(x_pts: list[float], y_pts: list[float], statistic_function: str, buckets: str | int) -> dict:
+def regressogram(x_pts: list[float], y_pts: list[float], statistic_function: str, buckets: str | int) -> dict[str, Any]:
     """
     Compute the regressogram (binning approach) of a set of data.
 
@@ -124,14 +124,16 @@ def regressogram(x_pts: list[float], y_pts: list[float], statistic_function: str
 # https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
 
 # supported methods to choose bucket sizes for regressogram
+# Note: Here, we ignore the type, as these are private/protected internal functions, yet we wish to use them ourselves
+# without the need to call their main wrapper (histogram)
 _BUCKET_SELECTORS = {
-    'auto': numpy_bucket_selectors._hist_bin_auto,
-    'doane': numpy_bucket_selectors._hist_bin_doane,
-    'fd': numpy_bucket_selectors._hist_bin_fd,
-    'rice': numpy_bucket_selectors._hist_bin_rice,
-    'scott': numpy_bucket_selectors._hist_bin_scott,
-    'sqrt': numpy_bucket_selectors._hist_bin_sqrt,
-    'sturges': numpy_bucket_selectors._hist_bin_sturges,
+    'auto': numpy_bucket_selectors._hist_bin_auto,  # type: ignore
+    'doane': numpy_bucket_selectors._hist_bin_doane,  # type: ignore
+    'fd': numpy_bucket_selectors._hist_bin_fd,  # type: ignore
+    'rice': numpy_bucket_selectors._hist_bin_rice,  # type: ignore
+    'scott': numpy_bucket_selectors._hist_bin_scott,  # type: ignore
+    'sqrt': numpy_bucket_selectors._hist_bin_sqrt,  # type: ignore
+    'sturges': numpy_bucket_selectors._hist_bin_sturges,  # type: ignore
 }
 
 # supported non-parametric methods

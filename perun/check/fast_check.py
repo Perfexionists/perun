@@ -3,17 +3,19 @@
 This module contains method for classification the perfomance change between two profiles
 according to computed metrics and models from these profiles, based on the regression analysis.
 """
+from __future__ import annotations
 
 import copy
 import numpy as np
 
-from typing import Any, Iterable
+from typing import Any, Iterable, TYPE_CHECKING
 
 import perun.logic.runner as runner
 import perun.check.general_detection as detect
 
-from perun.profile.factory import Profile
 from perun.utils.structs import DegradationInfo
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 def fast_check(

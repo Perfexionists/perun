@@ -7,15 +7,13 @@ from random import shuffle
 from operator import itemgetter
 import numpy as np
 
-from typing import Any, Generator, TYPE_CHECKING
+from typing import Any, Iterable, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import nptyping as npt
+    import numpy.typing as npt
     import perun.profile.factory as profiles
 
 import perun.utils.exceptions as exceptions
-
-SequenceGenerator = Generator[tuple[int, int], None, None]
 
 
 # Minimum points count to perform the regression
@@ -27,7 +25,7 @@ APPROX_ZERO: float = 0.000001
 
 
 def validate_dictionary_keys(
-        dictionary: dict[str, Any], required_keys: list, forbidden_keys: list
+        dictionary: dict[str, Any], required_keys: list[str], forbidden_keys: list[str]
 ) -> None:
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
@@ -65,7 +63,7 @@ def check_points(x_len: int, y_len: int, threshold: int) -> None:
         raise exceptions.InvalidPointsException(x_len, y_len, MIN_POINTS_COUNT)
 
 
-def split_sequence(length: int, parts: int) -> SequenceGenerator:
+def split_sequence(length: int, parts: int) -> Iterable[tuple[int, int]]:
     """Generator. Splits the given (collection) length into roughly equal parts and yields the part
        start and end indices pair one by one.
 
@@ -120,7 +118,7 @@ def sort_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float], li
     return list(res_x_pts), list(res_y_pts)
 
 
-def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray:
+def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray[np.float64]:
     """ Splits the interval defined by its edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
 
@@ -159,16 +157,16 @@ def as_plot_x_dict(plot_x: Any) -> dict[str, Any]:
     return dict(plot_x=plot_x)
 
 
-def as_plot_y_dict(plot_y) -> dict[str, Any]:
+def as_plot_y_dict(plot_y: Any) -> dict[str, Any]:
     """Returns the argument as dictionary with given key
 
     :param object plot_y: object that contains plot_y data
     :return: dictionary with key 'plot_y' set to plot_y
     """
-    return dict(plot_y=plot_y)
+    return {'plot_y': plot_y}
 
 
-def add_models_to_profile(profile: profiles.Profile, models: list[dict]) -> profiles.Profile:
+def add_models_to_profile(profile: profiles.Profile, models: list[dict[str, Any]]) -> profiles.Profile:
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 

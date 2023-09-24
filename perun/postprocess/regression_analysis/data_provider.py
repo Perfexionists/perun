@@ -1,17 +1,15 @@
 """Module for various means of regression data acquisition. """
+from __future__ import annotations
 
 from operator import itemgetter
-from typing import Generator, Any, Callable
-
-from perun.profile.factory import Profile
-
+from typing import Iterable, Any, Callable, TYPE_CHECKING
 import perun.profile.convert as convert
 
-Data = Generator[tuple[list[float], list[float], str], None, None]
-DataProvider = Callable[[Profile, Any], Data]
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
-def data_provider_mapper(profile: Profile, **kwargs: Any) -> Data:
+def data_provider_mapper(profile: Profile, **kwargs: Any) -> Iterable[tuple[list[float], list[float], str]]:
     """Unified data provider for various profile types.
 
     :param dict profile: the loaded profile dictionary
@@ -23,7 +21,7 @@ def data_provider_mapper(profile: Profile, **kwargs: Any) -> Data:
     return data_provider(profile, **kwargs)  # type: ignore
 
 
-def resource_sort_key(resource: dict) -> str:
+def resource_sort_key(resource: dict[str, Any]) -> str:
     """Extracts the key from resource used for sorting
 
     :param dict resource: profiling resource
@@ -32,7 +30,9 @@ def resource_sort_key(resource: dict) -> str:
     return convert.flatten(resource['uid'])
 
 
-def generic_profile_provider(profile: Profile, of_key: str, per_key: str, **_: Any) -> Data:
+def generic_profile_provider(
+        profile: Profile, of_key: str, per_key: str, **_: Any
+) -> Iterable[tuple[list[float], list[float], str]]:
     """Data provider for trace collector profiling output.
 
     :param Profile profile: the trace profile dictionary
@@ -72,6 +72,6 @@ def generic_profile_provider(profile: Profile, of_key: str, per_key: str, **_: A
 # to add new profile type - simply add new keyword and specific provider function with signature:
 #  - return value: generator object that produces required profile data
 #  - parameter: profile dictionary
-_PROFILE_MAPPER: dict[str, DataProvider] = {
+_PROFILE_MAPPER: dict[str, Callable[[Profile, Any], tuple[list[float], list[float], str]]] = {
     'default': generic_profile_provider  # type: ignore
 }

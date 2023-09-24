@@ -33,8 +33,8 @@ import perun.profile.query as query
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
 
+import perun.profile.factory as profiles
 from perun.utils import get_module
-from perun.profile.factory import Profile
 from perun.utils.exceptions import (
     InvalidParameterException, MissingConfigSectionException, TagOutOfRangeException
 )
@@ -45,7 +45,7 @@ PROFILE_COUNTER = 0
 DEFAULT_SORT_KEY = 'time'
 
 
-def lookup_value(container: dict[str, str] | Profile, key: str, missing: str) -> str:
+def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing: str) -> str:
     """Helper function for getting the key from the container. If it is not present in the container
     or it is empty string or empty object, the function should return the missing constant.
 
@@ -68,7 +68,7 @@ def sanitize_filepart(part: str) -> str:
     return "".join('_' if c in invalid_characters else c for c in str(part))
 
 
-def lookup_param(profile: Profile, unit: str, param: str) -> str:
+def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:
     """Helper function for looking up the unit in the profile (can be either collector or
     postprocessor and finds the value of the param in it
 
@@ -93,7 +93,7 @@ def lookup_param(profile: Profile, unit: str, param: str) -> str:
         return "_"
 
 
-def generate_profile_name(profile: Profile) -> str:
+def generate_profile_name(profile: profiles.Profile) -> str:
     """Constructs the profile name with the extension .perf from the job.
 
     The profile is identified by its binary, collector, workload and the time
@@ -301,7 +301,7 @@ def generate_postprocessor_info(job: Job) -> list[dict[str, Any]]:
     ]
 
 
-def finalize_profile_for_job(profile: Profile, job: Job) -> Profile:
+def finalize_profile_for_job(profile: profiles.Profile, job: Job) -> profiles.Profile:
     """
     :param dict profile: collected profile through some collector
     :param Job job: job with information about the computed profile
@@ -314,7 +314,7 @@ def finalize_profile_for_job(profile: Profile, job: Job) -> Profile:
     return profile
 
 
-def to_string(profile: Profile) -> str:
+def to_string(profile: profiles.Profile) -> str:
     """Converts profile from dictionary to string
 
     :param Profile profile: profile we are converting to string
@@ -323,7 +323,7 @@ def to_string(profile: Profile) -> str:
     return json.dumps(profile.serialize())
 
 
-def to_config_tuple(profile: Profile) -> tuple[str, str, str, str, str]:
+def to_config_tuple(profile: profiles.Profile) -> tuple[str, str, str, str, str]:
     """Converts the profile to the tuple representing its configuration
 
     :param Profile profile: profile we are converting to configuration tuple
@@ -348,7 +348,7 @@ def config_tuple_to_cmdstr(config_tuple: tuple[str, str, str, str, str]) -> str:
     return " ".join(filter(lambda x: x, config_tuple[1:4]))
 
 
-def extract_job_from_profile(profile: Profile) -> Job:
+def extract_job_from_profile(profile: profiles.Profile) -> Job:
     """Extracts information from profile about job, that was done to generate the profile.
 
     Fixme: Add assert that profile is profile
@@ -371,7 +371,7 @@ def extract_job_from_profile(profile: Profile) -> Job:
     return Job(collector, posts, executable)
 
 
-def is_key_aggregatable_by(profile: Profile, func: str, key: str, keyname: str) -> bool:
+def is_key_aggregatable_by(profile: profiles.Profile, func: str, key: str, keyname: str) -> bool:
     """Check if the key can be aggregated by the function.
 
     Everything is countable and hence 'count' and 'nunique' (number of unique values) are
@@ -430,7 +430,7 @@ def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = Tr
     profile_list.sort(key=operator.attrgetter(sort_order), reverse=reverse_profiles)
 
 
-def merge_resources_of(lhs: Profile | dict[str, Any], rhs: Profile | dict[str, Any]) -> Profile:
+def merge_resources_of(lhs: profiles.Profile | dict[str, Any], rhs: profiles.Profile | dict[str, Any]) -> profiles.Profile:
     """Merges the resources of lhs and rhs profiles
 
     :param Profile lhs: left operator of the profile merge
@@ -438,10 +438,10 @@ def merge_resources_of(lhs: Profile | dict[str, Any], rhs: Profile | dict[str, A
     :return: profile with merged resources
     """
     # Not Good: Temporary solution:
-    if not isinstance(rhs, Profile):
-        rhs = Profile(rhs)
-    if not isinstance(lhs, Profile):
-        lhs = Profile(rhs)
+    if not isinstance(rhs, profiles.Profile):
+        rhs = profiles.Profile(rhs)
+    if not isinstance(lhs, profiles.Profile):
+        lhs = profiles.Profile(rhs)
 
     # Return lhs/rhs if rhs/lhs is empty
     if rhs.resources_size() == 0:
@@ -457,7 +457,7 @@ def merge_resources_of(lhs: Profile | dict[str, Any], rhs: Profile | dict[str, A
     return lhs
 
 
-def _get_default_variable(profile: Profile, supported_variables: list[str]) -> str:
+def _get_default_variable(profile: profiles.Profile, supported_variables: list[str]) -> str:
     """Helper function that determines default variable for profile based on list of supported
     variables.
 
@@ -483,22 +483,22 @@ def _get_default_variable(profile: Profile, supported_variables: list[str]) -> s
         return ""
 
 
-def get_default_independent_variable(profile: Profile) -> str:
+def get_default_independent_variable(profile: profiles.Profile) -> str:
     """Returns default independent variable for the given profile
 
     :param Profile profile: input profile
     :return: default independent variable
     """
-    return _get_default_variable(profile, Profile.independent)
+    return _get_default_variable(profile, profiles.Profile.independent)
 
 
-def get_default_dependent_variable(profile: Profile) -> str:
+def get_default_dependent_variable(profile: profiles.Profile) -> str:
     """Returns default dependent variable for the given profile
 
-    :param Profile profile: input profile
+    :param profiles.Profile profile: input profile
     :return: default dependent variable
     """
-    return _get_default_variable(profile, Profile.dependent)
+    return _get_default_variable(profile, profiles.Profile.dependent)
 
 
 class ProfileInfo:
@@ -512,7 +512,7 @@ class ProfileInfo:
             path: str,
             real_path: str,
             mtime: str,
-            profile_info: Profile | dict[str, Any],
+            profile_info: profiles.Profile | dict[str, Any],
             is_raw_profile: bool = False
     ) -> None:
         """
@@ -542,7 +542,7 @@ class ProfileInfo:
             ",".join(self.postprocessors)
         )
 
-    def load(self) -> Profile:
+    def load(self) -> profiles.Profile:
         """Loads the profile from given file
 
         This is basically a wrapper that loads the profile, whether it is raw (i.e. in pending)

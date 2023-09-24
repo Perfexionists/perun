@@ -6,10 +6,11 @@
     generate profile for each of the generated workload.
 
 """
+from __future__ import annotations
 
 import distutils.util as dutils
 
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, TYPE_CHECKING
 
 import perun.logic.config as config
 import perun.utils.log as log
@@ -17,7 +18,8 @@ import perun.profile.helpers as profile
 import perun.profile.factory as factory
 
 from perun.utils.structs import CollectStatus, Job, Unit
-from perun.profile.factory import Profile
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 class WorkloadGenerator:

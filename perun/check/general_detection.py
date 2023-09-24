@@ -7,29 +7,39 @@ metrics to check performance change between two profiles and obtaining required 
 these profiles. Module contains two other temporary methods, which are using by mentioned
 general methods.
 """
+from __future__ import annotations
 
 from enum import Enum
+from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 import numpy as np
 
-import perun.check as check
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.profile.query as query
 import perun.utils.helpers
+import perun.check.polynomial_regression as polynomial_regression
+import perun.check.fast_check as fast_check
+import perun.check.linear_regression as linear_regression
 
 from perun.utils.structs import PerformanceChange, DegradationInfo, ModelRecord
 
 
-SAMPLES = 1000
+SAMPLES: int = 1000
 
-ClassificationMethod = Enum(
-    'ClassificationMethod', 'FastCheck LinearRegression PolynomialRegression'
-)
+
+class ClassificationMethod(Enum):
+    FastCheck = 1
+    LinearRegression = 2
+    PolynomialRegression = 3
+
 
 np.seterr(divide='ignore', invalid='ignore')
 
 
-def create_filter_by_model(model_name):
+def create_filter_by_model(model_name: str) -> Callable[[dict[str, Any], dict[str, Any]], bool]:
     """Creates a filter w.r.t to given model_name
 
     Note this is to be used in get_filtered_best_models_of
@@ -37,7 +47,7 @@ def create_filter_by_model(model_name):
     :param str model_name: name of the model, that will be filtered out
     :return: filter function that retrieves only models of given type
     """
-    def filter_by_model(_, model):
+    def filter_by_model(_: dict[str, Any], model: dict[str, Any]) -> bool:
         """Filters the models according to the model name
 
         :param dict _: dictionary with already found models
@@ -48,7 +58,7 @@ def create_filter_by_model(model_name):
     return filter_by_model
 
 
-def filter_by_r_square(model_map, model):
+def filter_by_r_square(model_map: dict[str, Any], model: dict[str, Any]) -> bool:
     """Filters the models according to the value of the r_square
 
     :param dict model_map: dictionary with already found models
@@ -58,7 +68,7 @@ def filter_by_r_square(model_map, model):
     return model_map[model['uid']].r_square < model['r_square']
 
 
-def create_model_record(model):
+def create_model_record(model: dict[str, Any]) -> ModelRecord:
     """
     Function transform model to ModelRecord.
 
@@ -74,7 +84,11 @@ def create_model_record(model):
     )
 
 
-def get_filtered_best_models_of(profile, group, model_filter=filter_by_r_square):
+def get_filtered_best_models_of(
+        profile: Profile,
+        group: str,
+        model_filter: Optional[Callable[[dict[str, Any], dict[str, Any]], bool]] = filter_by_r_square
+) -> dict[str, ModelRecord]:
     """
     This function filters the models from the given profiles according to the given specification.
 
@@ -92,7 +106,7 @@ def get_filtered_best_models_of(profile, group, model_filter=filter_by_r_square)
     :param function/None model_filter: filter function for models
     :returns: map of unique identifier of computed models to their best models
     """
-    if model_filter:
+    if model_filter is not None:
         best_model_map = {
             uid: ModelRecord("", 0.0, 0.0, 0.0, 0, 0, 0.0)
             for uid in query.unique_model_values_of(profile, 'uid')
@@ -108,7 +122,7 @@ def get_filtered_best_models_of(profile, group, model_filter=filter_by_r_square)
     return best_model_map
 
 
-def get_function_values(model):
+def get_function_values(model: ModelRecord) -> tuple[list[float], list[float]]:
     """Obtains the relevant values of dependent and independent variables according to
     the given profile, respectively its coefficients. On the base of the count of samples
     is interval divide into several parts and to them is computed relevant values of
@@ -139,9 +153,10 @@ def get_function_values(model):
 
 
 def general_detection(
-        baseline_profile, target_profile,
-        classification_method=ClassificationMethod.PolynomialRegression
-):
+        baseline_profile: Profile,
+        target_profile: Profile,
+        classification_method: ClassificationMethod = ClassificationMethod.PolynomialRegression
+) -> Iterable[DegradationInfo]:
     """The general method, which covers all detection logic. At the begin obtains the pairs
     of the best models from the given profiles and the pairs of the linears models. Subsequently
     are computed the needed statistics metrics, concretely relative and absolute error. According
@@ -191,31 +206,31 @@ def general_detection(
         lin_abs_error = np.subtract(linear_target_y_pts, linear_baseline_y_pts)
         abs_error = np.subtract(target_y_pts, baseline_y_pts)
         sum_abs_err = np.sum(abs_error)
-        rel_error = np.nan_to_num(np.divide(abs_error, baseline_y_pts))
-        rel_error = np.sum(rel_error) / len(rel_error) * 100
+        rel_error_arr = np.nan_to_num(np.divide(abs_error, baseline_y_pts))
+        rel_error = np.sum(rel_error_arr) / len(rel_error_arr) * 100
 
         # check state, when no change has occurred
         change = PerformanceChange.Unknown
         change_type = ''
-        threshold_b0 = abs(0.05 * baseline_model.b0)
-        threshold_b1 = abs(0.05 * baseline_model.b1)
-        diff_b0 = target_model.b0 - baseline_model.b0
-        diff_b1 = target_model.b1 - baseline_model.b1
+        threshold_b0: float = abs(0.05 * float(baseline_model.b0))
+        threshold_b1: float = abs(0.05 * float(baseline_model.b1))
+        diff_b0 = float(target_model.b0 - baseline_model.b0)
+        diff_b1 = float(target_model.b1 - baseline_model.b1)
         if abs(diff_b0) <= threshold_b0 and abs(diff_b1) <= threshold_b1:
             change = PerformanceChange.NoChange
         else:  # some change between profile was occurred
             if classification_method == ClassificationMethod.PolynomialRegression:
-                change_type = check.polynomial_regression.exec_polynomial_regression(
+                change_type = polynomial_regression.exec_polynomial_regression(
                     baseline_x_pts, lin_abs_error
                 )
             elif classification_method == ClassificationMethod.LinearRegression:
-                change_type = check.linear_regression.exec_linear_regression(
+                change_type = linear_regression.exec_linear_regression(
                     uid, baseline_x_pts, lin_abs_error, 0.05 * np.amax(abs_error),
                     target_linear_model.b1 - baseline_linear_model.b1,
                     baseline_model, target_model, baseline_profile
                 )
             elif classification_method == ClassificationMethod.FastCheck:
-                err_profile = check.fast_check.exec_fast_check(
+                err_profile = fast_check.exec_fast_check(
                     uid, baseline_profile, baseline_x_pts, abs_error
                 )
                 std_err_model = get_filtered_best_models_of(err_profile, group='param')

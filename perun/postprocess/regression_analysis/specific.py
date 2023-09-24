@@ -12,7 +12,7 @@ import perun.postprocess.regression_analysis.tools as tools
 
 def specific_quad_data(
         x_pts: list[float], y_pts: list[float], steps: int, **_: Any
-) -> Iterable[dict]:
+) -> Iterable[dict[str, Any]]:
     """The quadratic data generator.
 
     Produces the sums of x, y, square x, x^3, x^4, square y, x * y and x^2 * y values.
@@ -77,7 +77,7 @@ def specific_quad_coefficients(
         x_sq_y_sum: float,
         pts_num: int,
         **_: Any
-) -> dict:
+) -> dict[str, list[float]]:
     """The quadratic specific function for coefficients computation.
 
     The function uses the specific coefficient computation formula, which produces three
@@ -137,7 +137,7 @@ def specific_quad_error(
         x_sq_y_sum: float,
         pts_num: int,
         **_: Any
-) -> dict:
+) -> dict[str, float]:
     """The quadratic specific function for error (r^2) computation.
 
     Returns data dictionary with 'r_square' value representing the model error.

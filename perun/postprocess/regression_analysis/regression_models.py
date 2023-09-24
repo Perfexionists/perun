@@ -8,7 +8,7 @@ the sections of _MODELS dictionary representing the model properties.
 
 import math
 
-from typing import Callable, Generator, Union
+from typing import Callable, Iterable, Union, Any
 
 import perun.postprocess.regression_analysis.generic as generic
 import perun.postprocess.regression_analysis.specific as specific
@@ -16,10 +16,8 @@ import perun.postprocess.regression_analysis.derived as derived
 import perun.postprocess.regression_analysis.extensions.plot_models as plot
 import perun.utils.exceptions as exceptions
 
-ModelGenerator = Generator[dict, None, None]
 
-
-def get_formula_of(model: str) -> Callable:
+def get_formula_of(model: str) -> Callable[..., float]:
     """
     Method returns the formula for y coordinates computation according
     to the given model type (e.g. linear, constant, etc.).
@@ -27,7 +25,7 @@ def get_formula_of(model: str) -> Callable:
     :param str model: the type of model which formula is required
     :return lambda: formula for y coordinates computation
     """
-    return _MODELS[model]['transformations']['plot_model']['formula']  # type: ignore
+    return _MODELS[model]['transformations']['plot_model']['formula']
 
 
 def get_supported_models() -> list[str]:
@@ -50,7 +48,7 @@ def get_supported_transformations(model_key: str) -> list[str]:
     return [t for t in _MODELS.get(model_key, {}).get('transformations', {}).keys()]
 
 
-def get_transformation_data_for(regression_model: str, transformation: str) -> dict:
+def get_transformation_data_for(regression_model: str, transformation: str) -> dict[str, Any]:
     """Provides transformation dictionary from _MODELS for specific transformation and model.
 
     :param str regression_model: the regression model in which to search for transformation
@@ -60,7 +58,7 @@ def get_transformation_data_for(regression_model: str, transformation: str) -> d
     """
     # Get the model key first
     key = map_model_to_key(regression_model)
-    if key is "":
+    if key not in _MODELS.keys():
         # Model does not exist
         raise exceptions.InvalidModelException(regression_model)
 
@@ -71,7 +69,7 @@ def get_transformation_data_for(regression_model: str, transformation: str) -> d
     return _MODELS[key]['transformations'][transformation]
 
 
-def map_keys_to_models(regression_models_keys: tuple[str]) -> ModelGenerator:
+def map_keys_to_models(regression_models_keys: tuple[str]) -> Iterable[dict[str, Any]]:
     """The mapping generator which provides the sections of _MODELS dictionary according to
     specified model keys list.
 
@@ -169,7 +167,7 @@ def filter_derived(regression_models_keys: Union[tuple[str], str]) -> tuple[tupl
 # -- model_y: function that produces y coordinates of points
 # -- m_fx: function that modifies x coordinates according to formulae
 # -- formula: function with formula for y coordinates computation
-_MODELS: dict[str, dict] = {
+_MODELS: dict[str, dict[str, Any]] = {
     'all': {},  # key representing all models
     'constant': {
         'model': 'constant',

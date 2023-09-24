@@ -12,6 +12,7 @@ This allows to extend and modify the computation process as long as all the func
 the given argument and return value conventions.
 
 """
+from __future__ import annotations
 
 from math import sqrt
 from typing import Any, Iterable, Callable
@@ -20,8 +21,10 @@ import perun.postprocess.regression_analysis.tools as tools
 
 
 def generic_compute_regression(
-        data_gen: Iterable[dict], func_list: list[Callable], **model: Any
-) -> Iterable[dict]:
+        data_gen: Iterable[dict[str, Any]],
+        func_list: list[Callable[..., dict[str, Any]]],
+        **model: Any
+) -> Iterable[dict[str, Any]]:
     """The core of the computation process.
 
     Computes the regression model according to the provided sequence of generator ('data_gen')
@@ -55,7 +58,7 @@ def generic_regression_data(
         f_y: Callable[[float], float],
         steps: int,
         **_: Any
-) -> Iterable[dict]:
+) -> Iterable[dict[str, float]]:
     """The generic data generator.
 
     Produces the sums of x, y, square x, square y and x * y values. Also provides the x min/max
@@ -131,7 +134,7 @@ def generic_regression_coefficients(
         pts_num: int,
         num_sqrt: float,
         **_: Any
-) -> dict:
+) -> dict[str, list[float] | float]:
     """The generic function for coefficients computation.
 
     The function uses the general coefficient computation formula, which produces two coefficients
@@ -187,13 +190,12 @@ def generic_regression_coefficients(
     b_0 = tools.safe_division(y_sum - b_1 * x_sum, pts_num)
 
     # Apply the modification functions on the coefficients and save them
-    data = dict(coeffs=[f_a(b_0), f_b(b_1)], s_xy=s_xy, s_xx=s_xx)
-    return data
+    return {'coeffs': [f_a(b_0), f_b(b_1)], 's_xy': s_xy, 's_xx': s_xx}
 
 
 def generic_regression_error(
         s_xy: float, s_xx: float, y_sum: float, y_sq_sum: float, num_sqrt: float, **_: Any
-) -> dict:
+) -> dict[str, float]:
     """The generic function for error (r^2) computation.
 
     Returns data dictionary with 'r_square' value representing the model error.

@@ -11,11 +11,11 @@ import perun.postprocess.regression_analysis.regression_models as regression_mod
 
 def coefficients_to_points(
         model: str,
-        coeffs: list[dict],
+        coeffs: list[dict[str, Any]],
         x_start: int,
         x_end: int,
         **_: Any
-) -> dict:
+) -> dict[str, Any]:
     """ Transform computed coefficients from regression analysis into points, which can be
         plotted as a function / curve.
 
@@ -36,8 +36,7 @@ def coefficients_to_points(
     # Add the coefficients and interval values safely to the data dictionary
     for coefficient in coeffs:
         data.update({
-            coefficient.get('name', 'invalid_coeff'): coefficient.get('value', 0)
-        })
+            coefficient.get('name', 'invalid_coeff'): coefficient.get('value', 0)})
     data.update({
         'x_start': x_start,
         'x_end': x_end

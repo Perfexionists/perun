@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import sklearn.metrics
 
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING, Any
 from dataclasses import dataclass
 
 import perun.postprocess.regression_analysis.tools as tools
@@ -64,7 +64,7 @@ def compute_window_width_change(window_width: int, r_square: float) -> int:
     return max(1, window_width - max(1, int(min(.9 * window_width - 1, window_change))))
 
 
-def compute_moving_average(data_gen: data_provider.Data, configuration: dict) -> list[dict]:
+def compute_moving_average(data_gen: data_provider.Data, configuration: dict[str, Any]) -> list[dict[str, Any]]:
     """
     The moving average wrapper to execute the analysis on the individual chunks of resources.
 
@@ -88,7 +88,7 @@ def compute_moving_average(data_gen: data_provider.Data, configuration: dict) ->
     return moving_average_models
 
 
-def execute_computation(y_pts: list[float], config: dict) -> tuple[pd.Series, float]:
+def execute_computation(y_pts: list[float], config: dict[str, Any]) -> tuple[Any, float]:
     """
     The computation wrapper of supported methods of moving average approach.
 
@@ -109,7 +109,7 @@ def execute_computation(y_pts: list[float], config: dict) -> tuple[pd.Series, fl
     """
     # computation of Simple Moving Average and Simple Moving Median
     if config['moving_method'] in ('sma', 'smm'):
-        bucket_stats = pd.Series(data=y_pts).rolling(
+        bucket_stats: Any = pd.Series(data=y_pts).rolling(
             window=config['window_width'], min_periods=config['min_periods'],
             center=config['center'], win_type=config.get('window_type')
         )
@@ -131,7 +131,7 @@ def execute_computation(y_pts: list[float], config: dict) -> tuple[pd.Series, fl
     return bucket_stats, r_square
 
 
-def moving_average(x_pts: list[float], y_pts: list[float], configuration: dict) -> dict:
+def moving_average(x_pts: list[float], y_pts: list[float], configuration: dict[str, Any]) -> dict[str, Any]:
     """
     Compute the moving average of a set of data.
 
@@ -170,7 +170,9 @@ def moving_average(x_pts: list[float], y_pts: list[float], configuration: dict) 
     }
 
 
-def iterative_analysis(x_pts: list[float], y_pts: list[float], config: dict) -> tuple[pd.Series, float, int]:
+def iterative_analysis(
+        x_pts: list[float], y_pts: list[float], config: dict[str, Any]
+) -> tuple[pd.Series[Any], float, int]:
     """
     Compute the iterative analysis of a set of data by moving average methods.
 
@@ -193,7 +195,7 @@ def iterative_analysis(x_pts: list[float], y_pts: list[float], config: dict) -> 
     config['window_width'] = max(1, int(_INTERVAL_LENGTH * (max(x_pts) - min(x_pts))))
     r_square, window_new_change = 0.0, 1
     # executing the iterative analysis until the value of R^2 will not reach the required level
-    bucket_stats = pd.Series()
+    bucket_stats: pd.Series[Any] = pd.Series()
     while r_square < _MIN_R_SQUARE and window_new_change:
         # obtaining new results from moving average analysis
         bucket_stats, r_square = execute_computation(y_pts, config)
@@ -230,7 +232,7 @@ def validate_decay_param(_: click.Context, param: click.Option, value: tuple[str
         # obtaining the error message according to name of `decay` method
         err_msg = _DECAY_PARAMS_INFO[value[0]].err_msg
         raise click.BadOptionUsage(
-            param.name, 'Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg)
+            param.name or '', 'Invalid value for %s: %d (must be %s)' % (value[0], value[1], err_msg)
         )
 
 

@@ -12,7 +12,7 @@ from typing import Any, Iterable
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def derived_const(analysis: list[dict], const_ref: dict, **_: Any) -> Iterable[dict]:
+def derived_const(analysis: list[dict[str, Any]], const_ref: dict[str, Any], **_: Any) -> Iterable[dict[str, Any]]:
     """The computation of a constant model based on a linear regression model.
 
     Current implementation is based on an assumption that linear model with
@@ -74,7 +74,7 @@ def derived_const(analysis: list[dict], const_ref: dict, **_: Any) -> Iterable[d
         yield const
 
 
-def _filter_by_models(analysis: list[dict], models: list[str]) -> list[dict]:
+def _filter_by_models(analysis: list[dict[str, Any]], models: list[str]) -> list[dict[str, Any]]:
     """Filters regression results by computed models.
 
     :param list of dict analysis: the computed regression models

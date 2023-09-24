@@ -66,7 +66,7 @@ def resources_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     """
     # Since some keys may be missing in the resources, we consider all of the possible fields
     resource_keys = list(profile.all_resource_fields())
-    values: dict[str, list | array.array] = {key: [] for key in resource_keys}
+    values: dict[str, list[Any] | array.array[float] | array.array[int]] = {key: [] for key in resource_keys}
     values['snapshots'] = array.array('I')
 
     # All resources at this point should be flat
@@ -91,7 +91,7 @@ def models_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     """
     # Note that we need to to this inefficiently, because some keys can be missing in resources
     model_keys = list(query.all_model_fields_of(profile))
-    values: dict[str, list] = {key: [] for key in model_keys}
+    values: dict[str, list[Any]] = {key: [] for key in model_keys}
 
     for _, model in profile.all_models():
         flattened_resources = dict(list(query.all_items_of(model)))
@@ -144,7 +144,7 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     return stacks
 
 
-def to_string_line(frame: dict) -> str:
+def to_string_line(frame: dict[str, Any]) -> str:
     """ Create string representing call stack's frame
 
     :param dict frame: call stack's frame

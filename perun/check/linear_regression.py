@@ -12,14 +12,14 @@ from typing import Any, Iterable, TYPE_CHECKING
 if TYPE_CHECKING:
     import numpy.typing as npt
     import numpy
+    from perun.profile.factory import Profile
+    from perun.utils.structs import DegradationInfo
 
 import perun.utils as utils
 import perun.check.general_detection as detect
 import perun.check.fast_check as fast_check
 import perun.utils.structs
 
-from perun.profile.factory import Profile
-from perun.utils.structs import DegradationInfo
 
 
 def linear_regression(
@@ -41,8 +41,10 @@ def linear_regression(
 
 def exec_linear_regression(
         uid: str,
-        baseline_x_pts: npt.NDArray[numpy.float64], lin_abs_error: npt.NDArray[numpy.float64],
-        threshold: int, linear_diff_b1: int,
+        baseline_x_pts: npt.NDArray[numpy.float64] | list[float],
+        lin_abs_error: npt.NDArray[numpy.float64] | list[float],
+        threshold: int,
+        linear_diff_b1: float,
         baseline_model: perun.utils.structs.ModelRecord, target_model: perun.utils.structs.ModelRecord,
         baseline_profile: Profile
 ) -> str:
