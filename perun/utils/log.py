@@ -14,7 +14,6 @@ import traceback
 import time
 from types import TracebackType
 
-import numpy
 import numpy as np
 
 from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, Iterator, cast
