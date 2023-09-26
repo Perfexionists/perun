@@ -13,7 +13,7 @@ import struct
 import zlib
 import demandimport
 
-from typing import BinaryIO, TextIO, Optional, cast
+from typing import BinaryIO, Optional
 
 import perun.utils.log as log
 

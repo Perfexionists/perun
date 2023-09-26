@@ -5,7 +5,6 @@ import os
 import click
 
 from typing import Any
-from typing_extensions import Unpack
 
 import perun.collect.memory.filter as filters
 import perun.collect.memory.parsing as parser

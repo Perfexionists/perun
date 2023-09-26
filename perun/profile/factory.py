@@ -13,7 +13,7 @@ import operator
 import itertools
 import click
 
-from typing import Any, Iterator, Iterable, TYPE_CHECKING, Optional
+from typing import Any, Iterator, Iterable, TYPE_CHECKING
 if TYPE_CHECKING:
     from perun.utils.structs import ModelRecord
 

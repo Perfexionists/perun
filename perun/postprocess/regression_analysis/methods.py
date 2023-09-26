@@ -15,7 +15,8 @@ import perun.postprocess.regression_analysis.tools as tools
 
 
 class ComputationMethod(Protocol):
-    def __call__(self, *args: Any, **kwargs: Any) -> Iterator[dict[str, Any]]: ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Iterator[dict[str, Any]]:
+        pass
 
 
 def get_supported_param_methods() -> list[str]:

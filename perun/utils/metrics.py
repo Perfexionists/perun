@@ -134,7 +134,7 @@ def save() -> None:
             stored_metrics.update(Metrics.records)
             temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
         else:
-            log.error(f"cannot save metrics: `metrics_filename` was not specified")
+            log.error("cannot save metrics: `metrics_filename` was not specified")
 
 
 def save_separate(temp_name: str, data: Any) -> None:

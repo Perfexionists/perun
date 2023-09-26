@@ -416,8 +416,8 @@ def valid_range_values(_: click.Context, param: click.Option, value: tuple[float
         return value
     else:
         raise click_exp.BadOptionUsage(
-            param.name or '', f'Invalid values: 1.value must be < then the 2.value (%g >= %g)'
-            % (value[0], value[1])
+            param.name or '',
+            f'Invalid values: 1.value must be < then the 2.value ({value[0]:.2f} >= {value[1]:.2f})'
         )
 
 
@@ -440,7 +440,7 @@ def valid_step_size(step: float, range_length: float) -> bool:
     else:
         raise click_exp.BadOptionUsage(
             "--gamma-step/-gs",
-            'Invalid values: step must be < then the length of the range (%g >= %g)' % (step, range_length)
+            f'Invalid values: step must be < then the length of the range ({step:.2f} >= {range_length:.2f})'
         )
 
 

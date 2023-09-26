@@ -413,7 +413,7 @@ def log(head: Optional[str], **kwargs: Any) -> None:
 @click.option('--sort-by', '-sb', 'format__sort_profiles_by', nargs=1,
               type=click.Choice(profiles.ProfileInfo.valid_attributes),
               callback=cli_helpers.set_config_option_from_flag(
-                  pcs.local_config, 'format.sort_profiles_by', lambda x: str(x)
+                  pcs.local_config, 'format.sort_profiles_by', str
               ),
               help="Sets the <key> in the local configuration for sorting profiles. "
                    "Note that after setting the <key> it will be used for sorting which is "
@@ -512,7 +512,7 @@ def show(ctx: click.Context, profile: Profile, **_: Any) -> None:
                 callback=cli_helpers.lookup_any_profile_callback)
 @click.option('--output-filename-template', '-ot', default=None,
               callback=cli_helpers.set_config_option_from_flag(
-                  perun_config.runtime, 'format.output_profile_template', lambda x: str(x)
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the postprocessed file will have a resulting filename w.r.t to this'
               ' parameter. Refer to :ckey:`format.output_profile_template` for more'
@@ -600,7 +600,7 @@ def postprocessby(ctx: click.Context, profile: Profile, **_: Any) -> None:
               'file in YAML format.')
 @click.option('--output-filename-template', '-ot', default=None,
               callback=cli_helpers.set_config_option_from_flag(
-                  perun_config.runtime, 'format.output_profile_template', lambda x: str(x)
+                  perun_config.runtime, 'format.output_profile_template', str
               ), help='Specifies the template for automatic generation of output filename'
               ' This way the file with collected data will have a resulting filename w.r.t '
               ' to this parameter. Refer to :ckey:`format.output_profile_template` for more'

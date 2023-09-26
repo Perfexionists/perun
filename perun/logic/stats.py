@@ -40,7 +40,7 @@ import json
 import re
 import shutil
 from zlib import error
-from typing import Optional, Iterable, BinaryIO, Callable, Any, Collection
+from typing import Optional, Iterable, BinaryIO, Callable, Any
 
 import perun.logic.store as store
 import perun.logic.index as index

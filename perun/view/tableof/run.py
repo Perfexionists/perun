@@ -25,7 +25,7 @@ def get_headers(ctx: click.Context) -> list[str]:
     """
     headers = []
     if ctx.command is None or ctx.parent is None or ctx.parent.parent is None:
-        log.error(f"internal click error: ctx.command, ctx.parent or ctx.parent.parent is None")
+        log.error("internal click error: ctx.command, ctx.parent or ctx.parent.parent is None")
         return []
     if ctx.command.name == 'resources':
         headers = list(ctx.parent.parent.params['profile'].all_resource_fields()) \

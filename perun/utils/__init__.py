@@ -38,7 +38,7 @@ class Comparable(Protocol):
         pass
 
 
-from .log import error, cprint, cprintln, warn
+from .log import error, cprint, cprintln
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 
