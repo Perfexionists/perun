@@ -1,6 +1,7 @@
 """
 Collection of global methods for detection of performance changes
 """
+from __future__ import annotations
 
 import contextlib
 import os

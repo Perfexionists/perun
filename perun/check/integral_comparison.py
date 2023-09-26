@@ -2,6 +2,7 @@
 The module contains the methods, that executes the computational logic of
 `integral_comparison` detection method.
 """
+from __future__ import annotations
 
 import numpy as np
 import scipy.integrate as integrate

@@ -1,4 +1,5 @@
 """Flow graphs visualization of the profiles."""
+from __future__ import annotations
 
 import click
 

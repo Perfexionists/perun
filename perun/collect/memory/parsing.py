@@ -1,4 +1,5 @@
 """This module provides methods for parsing raw memory data"""
+from __future__ import annotations
 
 import collections
 import re

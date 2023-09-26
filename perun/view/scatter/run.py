@@ -1,4 +1,5 @@
 """Scatter plot interpretation of the profile"""
+from __future__ import annotations
 
 import click
 

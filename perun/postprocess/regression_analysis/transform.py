@@ -2,6 +2,7 @@
     modules (e.g. profile/converters).
 
 """
+from __future__ import annotations
 
 from typing import Any
 

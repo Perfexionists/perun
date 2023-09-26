@@ -1,4 +1,5 @@
 """Flame graph visualization of the profiles."""
+from __future__ import annotations
 
 import click
 from typing import Any

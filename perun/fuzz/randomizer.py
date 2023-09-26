@@ -1,5 +1,6 @@
 """Module that simply encapsulate all the random functions that are used in fuzzing,
 with only one call of function from random package."""
+from __future__ import annotations
 
 import random
 

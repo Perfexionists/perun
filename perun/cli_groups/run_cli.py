@@ -1,4 +1,5 @@
 """Group of CLI commands for running the Perun process."""
+from __future__ import annotations
 
 import click
 

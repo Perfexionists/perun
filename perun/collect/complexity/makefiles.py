@@ -18,6 +18,7 @@
               - add global error log
               - enable the users to also specify their own compiler flags and settings?
 """
+from __future__ import annotations
 
 import os
 from subprocess import DEVNULL, CalledProcessError

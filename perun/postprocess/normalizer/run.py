@@ -1,4 +1,5 @@
 """Normalizer is a simple postprocessor that normalizes the values."""
+from __future__ import annotations
 
 import operator
 import click

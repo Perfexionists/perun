@@ -9,6 +9,7 @@ Currently we will try to issue the following clusterization techniques:
 All of the windows can be further augmented by taking into account how many percent of values are
 actually taken.
 """
+from __future__ import annotations
 
 import operator
 import itertools

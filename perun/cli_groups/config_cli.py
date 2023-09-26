@@ -1,4 +1,5 @@
 """Group of CLI commands used for manipulation with config"""
+from __future__ import annotations
 
 import click
 

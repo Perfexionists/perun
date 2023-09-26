@@ -3,6 +3,7 @@
 Contains helper functions for working with file timestamps, for efficient
 writing of the timestamp to file, converting to string format, etc.
 """
+from __future__ import annotations
 
 import datetime
 import struct

@@ -40,6 +40,8 @@ file func-queue.bc
 Total Complexity: FAILED
 
 """
+from __future__ import annotations
+
 import re
 
 from typing import Callable, Any

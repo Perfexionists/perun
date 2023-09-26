@@ -1,5 +1,5 @@
 """A simple clusterization technique, which classifies resources according to sorted values."""
-
+from __future__ import annotations
 
 from typing import Any
 

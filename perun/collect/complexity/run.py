@@ -4,6 +4,7 @@ running times and sizes of structures.
 Specifies before, collect and after functions to perform the initialization,
 collection and postprocessing of collection data.
 """
+from __future__ import annotations
 
 import collections
 import os

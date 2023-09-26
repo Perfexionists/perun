@@ -1,4 +1,5 @@
 """Collects fuzzing rules specific for text files."""
+from __future__ import annotations
 
 import perun.fuzz.randomizer as randomizer
 import perun.fuzz.helpers as helpers

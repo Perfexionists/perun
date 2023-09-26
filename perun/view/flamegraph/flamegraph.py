@@ -1,4 +1,5 @@
 """This module provides wrapper for the Flame graph visualization"""
+from __future__ import annotations
 
 import os
 import subprocess

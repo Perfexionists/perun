@@ -5,6 +5,8 @@ standard regression analysis. Derived computations are more of a heuristics used
 for special cases.
 
 """
+from __future__ import annotations
+
 import math
 
 from typing import Any, Iterable

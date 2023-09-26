@@ -3,6 +3,7 @@
 Time collects the runtime of given commands with repetition of the measurements. First we do a
 several warm-up executions, followed by the actual timing.
 """
+from __future__ import annotations
 
 import sys
 import time as systime

@@ -31,6 +31,7 @@ The TextFile Generator can be configured by following options:
     be of maximal length (``max_chars``).
 
 """
+from __future__ import annotations
 
 import distutils.util as dutils
 import os

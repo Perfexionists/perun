@@ -3,6 +3,7 @@
 Raw printing is the simplest printing of the given profiles, i.e. without any
 formatting and visualization techniques at all.
 """
+from __future__ import annotations
 
 import click
 import perun.utils.log as log

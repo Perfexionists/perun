@@ -7,7 +7,7 @@
     This module handles all the necessary operations to create correct circ.conf file.
 
 """
-
+from __future__ import annotations
 
 import os
 import json

@@ -30,6 +30,7 @@ The External Generator can be configured by following options:
   * ``output_dir``: target directory, where generated workloads are stored
 
 """
+from __future__ import annotations
 
 import os
 import subprocess

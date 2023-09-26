@@ -3,6 +3,7 @@
 Contains decorators for enforcing certain conditions, like e.g. singleton-like return value of
 the functions. Or various checker function, that checks given parameters of the functions.
 """
+from __future__ import annotations
 
 import inspect
 import functools

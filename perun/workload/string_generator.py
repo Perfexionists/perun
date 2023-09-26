@@ -24,6 +24,7 @@ The String Generator can be configured by following options:
   * ``step_len``: the step (or increment) of the lengths.
 
 """
+from __future__ import annotations
 
 import random
 import string

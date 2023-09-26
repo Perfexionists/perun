@@ -34,6 +34,7 @@ identify the data that should be manipulated by the functions.
 The contents of the stats file are stored in a compressed form to reduce the memory requirements.
 
 """
+from __future__ import annotations
 
 import os
 import json

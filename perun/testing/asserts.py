@@ -1,4 +1,5 @@
 """Helper assertion function to be used in tests"""
+from __future__ import annotations
 
 import click.testing
 import os

@@ -23,6 +23,7 @@ The Integer Generator can be configured by following options:
   * ``step``: the step (or increment) of the range.
 
 """
+from __future__ import annotations
 
 from typing import Any, Iterable
 

@@ -10,6 +10,7 @@ The Singleton Generator can be configured by following options:
   * ``value``: singleton value that is passed as workload.
 
 """
+from __future__ import annotations
 
 from typing import Any, Iterable
 

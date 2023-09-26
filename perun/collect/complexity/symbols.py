@@ -8,6 +8,7 @@
     runtime configuration of collector executable (ccicc, see configurator.py).
 
 """
+from __future__ import annotations
 
 import collections
 

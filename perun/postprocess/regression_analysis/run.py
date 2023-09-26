@@ -1,4 +1,5 @@
 """Regression analysis postprocessor module."""
+from __future__ import annotations
 
 import click
 

@@ -20,6 +20,7 @@ to the corresponding perun instance and does not cover the whole system, i.e. tw
 processes originating from different perun instances will not be able to successfully lock
 their resources against each other.
 """
+from __future__ import annotations
 
 import os
 from enum import Enum

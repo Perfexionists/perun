@@ -1,5 +1,5 @@
 """Collection of helper functions used in fuzzing"""
-
+from __future__ import annotations
 
 from typing import Any, AnyStr
 

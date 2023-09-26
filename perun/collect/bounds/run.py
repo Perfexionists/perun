@@ -4,6 +4,7 @@ First compiles the given sources using clang into LLVM IR representation,
 each compiled file is then analysed by loopus. The output of loopus is finally
 parsed by internal scanner resulting into profile.
 """
+from __future__ import annotations
 
 import os
 import shutil

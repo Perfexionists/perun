@@ -4,6 +4,7 @@ PCS is structure, that contains the basic information about one unit of performa
 contains a wrapper over configurations and other storages. The main representation of the pcs is
 by its path.
 """
+from __future__ import annotations
 
 import os
 

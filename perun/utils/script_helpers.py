@@ -1,4 +1,5 @@
 """Contains helper scripts for creating units from templates."""
+from __future__ import annotations
 
 import os
 import jinja2

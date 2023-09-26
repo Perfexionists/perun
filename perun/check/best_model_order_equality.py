@@ -39,6 +39,7 @@ baseline model as a confidence for this detected change. Since :math:`r^2` is al
 value `1.0` (which would mean, that the model precisely fits the measured values), this signifies
 that the best model fit the data tightly and hence the detected optimization is **not spurious**.
 """
+from __future__ import annotations
 
 from typing import Any, Iterable
 

@@ -34,6 +34,7 @@ In the output above, we detected the ``Optimization`` between commits ``1eb3d6``
 changed from about six seconds to hundred miliseconds. For these detected changes we report no
 confidence at all.
 """
+from __future__ import annotations
 
 from typing import Any, Iterable
 

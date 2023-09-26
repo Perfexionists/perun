@@ -1,4 +1,5 @@
 """Bar's graphs interpretation of the profiles."""
+from __future__ import annotations
 
 import click
 

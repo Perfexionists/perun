@@ -38,6 +38,7 @@ the flexibility of Perun's usage.
 
 .. _Click: http://click.pocoo.org/5/
 """
+from __future__ import annotations
 
 import os
 import pkgutil

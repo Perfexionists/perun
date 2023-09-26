@@ -2,6 +2,7 @@
 In case of binary files we cannot apply specific domain knowledge nor can we be inspired by
 existing performance issues. Instead, we mostly adapt the classical fuzzing rules.
 """
+from __future__ import annotations
 
 import os
 

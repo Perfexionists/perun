@@ -4,6 +4,7 @@ Collects functions for preparing the workspace before testing (so it removes rem
 collecting source files, initial and common testing and gathering coverage information by
 executing gcov tool and parsing its output.
 """
+from __future__ import annotations
 
 import os
 import os.path as path

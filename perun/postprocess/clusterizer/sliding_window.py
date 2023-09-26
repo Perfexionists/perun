@@ -4,6 +4,7 @@ sliding window.
 The size of the window can be augmented with type (relative vs absolute), or by its size (width
 and height).
 """
+from __future__ import annotations
 
 from typing import Any
 

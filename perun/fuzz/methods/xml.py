@@ -8,6 +8,7 @@ which will increase the nesting. Then a recursively implemented parser
 will fail to find one or more of closing brackets (representing recursion
 stop condition) and may hit a stack overflow error.
 """
+from __future__ import annotations
 
 import re
 
