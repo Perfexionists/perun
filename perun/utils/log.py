@@ -575,7 +575,7 @@ def aggregate_intervals(
     """
     # Fixme: This is baaaad. But the partial intervals are somewhat broken (sometimes list, sometimes narray)
     if isinstance(input_intervals, list):
-        intervals = numpy.array(input_intervals)
+        intervals = np.array(input_intervals)
     else:
         intervals = input_intervals
     def get_indices_of_intervals() -> Iterable[tuple[int, int]]:
