@@ -8,11 +8,7 @@ regions and flatten the format.
 from __future__ import annotations
 
 import collections
-import sys
-if sys.version_info.major == 3 and sys.version_info.minor == 8:
-    from collections import MutableMapping
-else:
-    from collections.abc import MutableMapping
+from collections.abc import MutableMapping
 import operator
 import itertools
 import click
