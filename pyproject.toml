@@ -36,6 +36,7 @@ dependencies = [
     # File analysis
     "python-magic>=0.4",
     "angr>=9.2",
+    "pyelftools==0.29",
 
     # Science / math / statistics / ML
     "numpy>=1.24",
@@ -51,6 +52,8 @@ dependencies = [
     "termcolor>=2.3",
     "tabulate>=0.9",
     "holoviews>=1.17",
+    "plotly>=5.14.1",
+    "seaborn>=0.11.2",
 
     # Transitive dependencies that we need to limit for some reason
     "kiwisolver!=1.4.5", # matplotlib dep, 1.4.5 does not work when lazy-importing matplotlib
@@ -100,6 +103,7 @@ perun = [
     "collect/complexity/lib/*",
     "templates/*",
     "../requirements_*.txt",
+    "collect/trace/pin/templates/*.jinja2"
 ]
 
 
