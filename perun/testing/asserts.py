@@ -8,7 +8,7 @@ import traceback
 from typing import Optional
 
 
-def predicate_from_cli(cli_result: click.testing.Result, predicate: bool) -> None:
+def predicate_from_cli(cli_result: click.testing.Result | list[str] | str, predicate: bool) -> None:
     """Checks the correctness of the @p predicate.
 
     In case the predicate is violated, the function outputs additional helper information for

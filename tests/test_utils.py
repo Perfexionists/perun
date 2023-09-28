@@ -16,6 +16,7 @@ import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.view as view
 import perun.utils.helpers as helpers
+import perun.testing.asserts as asserts
 from perun.utils.exceptions import SystemTapScriptCompilationException, SystemTapStartupException, \
     ResourceLockedException, UnsupportedModuleFunctionException
 from perun.collect.trace.optimizations.structs import Complexity
@@ -286,3 +287,16 @@ def test_common(capsys):
         utils.run_safely_external_command("ls -3", quiet=False, check_results=True)
     out, _ = capsys.readouterr()
     assert 'captured stdout' in out
+
+
+def test_predicates(capsys):
+    """Test predicates used for testing"""
+    with pytest.raises(AssertionError):
+        asserts.predicate_from_cli(["hello"], False)
+    out, _ = capsys.readouterr()
+    assert "=== Captured output ===" in out
+    assert "hello\n" in out
+    with pytest.raises(AssertionError):
+        asserts.predicate_from_cli("hello", False)
+    assert "=== Captured output ===" in out
+    assert "hello\n" in out

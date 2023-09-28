@@ -6,7 +6,6 @@ and profiles assigned to minor versions.
 
 import binascii
 import os
-import tempfile
 
 import git
 import pytest
