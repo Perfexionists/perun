@@ -187,9 +187,7 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
     """
     log.info("Computing deltas")
     for mutations in [fuzz_progress.final_results, fuzz_progress.faults, fuzz_progress.hangs]:
-        for res in mutations:
-            if res.predecessor is None:
-                continue
+        for res in [mut for mut in mutations if mut.predecessor is not None]:
             pred = streams.safely_load_file(res.predecessor.path)
             result = streams.safely_load_file(res.path)
 

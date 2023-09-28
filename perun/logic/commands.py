@@ -536,7 +536,7 @@ def print_shortlog_token(
 
     :param dict max_lengths: dictionary mapping the maximal lengths of each value corresponding to
         column of the formatting token
-    :param str fmt_string: formating string
+    :param str fmt_string: formatting string
     :param MinorVersionInfo minor_version: MinorVersionInfo objects
     :param int stat_len: the whole length of the formatting header
     :param string token: one given token of formatting string
@@ -866,7 +866,7 @@ def print_status_profiles(
         perun_log.info(" ", end='')
         for (token_type, token) in fmt_tokens:
             if token_type == 'fmt_string':
-                if m:= FMT_REGEX.match(token):
+                if m := FMT_REGEX.match(token):
                     attr_type, limit, fill = m.groups()
                     limit = adjust_limit(limit, attr_type, max_lengths)
                     print_other_formatting_string(
