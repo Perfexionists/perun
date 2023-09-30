@@ -178,6 +178,10 @@ exclude_also = [
     # Exclude type checking specific lines, that are never executed
     "if TYPE_CHECKING:",
 
-    # Exclude protocols, that are used fro type checking
-    "class CallableDetectionMethod(Protocol):"
+    # Exclude protocols, that are used for type checking
+    "class CallableDetectionMethod(Protocol):",
+    "class Comparable(Protocol):",
+
+    # Exclude overloads, that are used for type checking
+    "@overload"
 ]
