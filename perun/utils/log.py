@@ -16,7 +16,7 @@ from types import TracebackType
 
 import numpy as np
 
-from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, Iterator, cast
+from typing import Any, Callable, TYPE_CHECKING, Iterable, Optional, TextIO, Type, cast
 
 if TYPE_CHECKING:
     import numpy.typing as npt
