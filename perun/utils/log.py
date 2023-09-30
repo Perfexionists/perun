@@ -1032,25 +1032,25 @@ class Logger(TextIO):
         self.original.flush()
 
     def close(self) -> None:
-        self.original.close()
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def fileno(self) -> int:
-        return self.original.fileno()
+    def fileno(self) -> None:
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
     def isatty(self) -> bool:
         return self.original.isatty()
 
-    def read(self, __n: int = -1) -> str:
-        return self.original.read(__n)
+    def read(self, __n: int = -1) -> None:
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
     def readable(self) -> bool:
-        return self.original.readable()
+        return False
 
-    def readline(self, __limit: int = -1) -> str:
-        return self.original.readline(__limit)
+    def readline(self, __limit: int = -1) -> None:
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def readlines(self, __hint: int = -1) -> list[str]:
-        return self.readlines(__hint)
+    def readlines(self, __hint: int = -1) -> None:
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
     def seek(self, __offset: int, __whence: int = io.SEEK_SET) -> int:
         return self.original.seek(__offset, __whence)
@@ -1070,17 +1070,16 @@ class Logger(TextIO):
     def writelines(self, __lines: Iterable[str]) -> None:
         self.original.writelines(__lines)
 
-    def __next__(self) -> str:
-        return self.original.__next__()
+    def __next__(self) -> None:
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def __iter__(self) -> Iterator[str]:
-        return self.original.__iter__()
+    def __iter__(self) -> None:
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
     def __exit__(
             self, __t: Type[BaseException] | None, __value: BaseException | None, __traceback: TracebackType | None
     ) -> None:
-        self.__exit__(__t, __value, __traceback)
+        assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def __enter__(self) -> TextIO:
-        self.original.__enter__()
-        return self
+    def __enter__(self) -> None:
+        assert NotImplementedError("Function not supported in wrapper Logger")

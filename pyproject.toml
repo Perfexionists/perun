@@ -183,5 +183,8 @@ exclude_also = [
     "class Comparable(Protocol):",
 
     # Exclude overloads, that are used for type checking
-    "@overload"
+    "@overload",
+
+    # Not implemented asserst are omitted
+    "assert NotImplementedError(.*)",
 ]
