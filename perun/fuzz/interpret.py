@@ -187,31 +187,32 @@ def files_diff(fuzz_progress: FuzzingProgress, diffs_dir: str) -> None:
     """
     log.info("Computing deltas")
     for mutations in [fuzz_progress.final_results, fuzz_progress.faults, fuzz_progress.hangs]:
-        for res in [mut for mut in mutations if mut.predecessor is not None]:
-            pred = streams.safely_load_file(res.predecessor.path)
-            result = streams.safely_load_file(res.path)
+        for res in mutations:
+            if res.predecessor is not None:
+                pred = streams.safely_load_file(res.predecessor.path)
+                result = streams.safely_load_file(res.path)
 
-            delta = difflib.unified_diff(pred, result, lineterm='')
+                delta = difflib.unified_diff(pred, result, lineterm='')
 
-            # split the file to name and extension
-            _, file = path.split(res.path)
-            file, _ = path.splitext(file)
+                # split the file to name and extension
+                _, file = path.split(res.path)
+                file, _ = path.splitext(file)
 
-            diff_file_name = file + "-diff.html"
+                diff_file_name = file + "-diff.html"
 
-            diff = "<table>"
-            for line in delta:
-                diff += "<tr><td>"
-                if line[0] == '-':
-                    diff += "<xmp style='color: red; display: inline'>" + line + "</xmp>"
-                elif line[0] == '+':
-                    diff += "<xmp style='color: green; display: inline'>" + line + "</xmp>"
-                else:
-                    diff += "<xmp style='display: inline'>" + line + "</xmp>"
-                diff += "</td></tr>\n"
-            diff += "</table>"
+                diff = "<table>"
+                for line in delta:
+                    diff += "<tr><td>"
+                    if line[0] == '-':
+                        diff += "<xmp style='color: red; display: inline'>" + line + "</xmp>"
+                    elif line[0] == '+':
+                        diff += "<xmp style='color: green; display: inline'>" + line + "</xmp>"
+                    else:
+                        diff += "<xmp style='display: inline'>" + line + "</xmp>"
+                    diff += "</td></tr>\n"
+                diff += "</table>"
 
-            open(diff_file_name, "w").writelines(diff)
-            filesystem.move_file_to(diff_file_name, diffs_dir)
-            log.info('.')
+                open(diff_file_name, "w").writelines(diff)
+                filesystem.move_file_to(diff_file_name, diffs_dir)
+                log.info('.')
     log.done()

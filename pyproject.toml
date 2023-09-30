@@ -152,6 +152,13 @@ addopts = "-p no:warnings -p no:logging"
 norecursedirs = [
     "case-studies",
     "venv",
+    "docs",
+    "*.egg-info",
+    ".git",
+    ".tox",
+    "build",
+    ".mypy_cache",
+    "perun/thirdparty"
 ]
 
 # Coverage configuration
@@ -164,4 +171,8 @@ omit = [
     "tests/*",
     "perun/collect/trace/*",
     "perun/thirdparty/*"
+]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+    "class CallableDetectionMethod(Protocol):"
 ]

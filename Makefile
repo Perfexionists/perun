@@ -1,5 +1,5 @@
 test:
-	python3 -m pytest --cov=./ --cov-report term-missing:skip-covered tests/
+	python3 -m pytest --durations=10 --cov=./ --cov-report term-missing:skip-covered tests/
 
 check:
 	mypy --disallow-untyped-defs --ignore-missing-imports --show-error-codes --enable-incomplete-feature=Unpack perun/
