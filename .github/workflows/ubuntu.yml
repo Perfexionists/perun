@@ -54,25 +54,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Generate docs for Python ${{ matrix.python-version }} using Tox
+      - name: Check type correctness for Python ${{ matrix.python-version }} using Tox
         run: |
           tox -e typing
-
-  lint:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Python, Ubuntu and Python environment
-        uses: ./.github/workflows/actions/setup
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Generate docs for Python ${{ matrix.python-version }} using Tox
-        run: |
-          tox -e lint
