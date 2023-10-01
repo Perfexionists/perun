@@ -112,7 +112,7 @@ def add_metric(name: str, value: Any) -> None:
         Metrics.records[Metrics.metrics_id][name] = value
 
 
-def read_metric(name: str, default: Optional[Any] = None) -> Any:
+def read_metric(name: str, default: Optional[Any] = None) -> Optional[Any]:
     """ Read the current value of a metric specified by its ID
 
     :param str name: the ID of the metric to fetch
@@ -121,6 +121,7 @@ def read_metric(name: str, default: Optional[Any] = None) -> Any:
     """
     if Metrics.enabled:
         return Metrics.records[Metrics.metrics_id].get(name, default)
+    return None
 
 
 def save() -> None:
