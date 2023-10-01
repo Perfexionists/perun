@@ -36,7 +36,8 @@ import perun.utils.log as log
 import perun.vcs as vcs
 import perun.utils.metrics as metrics
 
-from perun.collect.trace.optimizations.optimization import Optimization, CallGraphTypes
+from perun.collect.trace.optimizations.optimization import Optimization
+from perun.collect.trace.optimizations.structs import CallGraphTypes
 from perun.profile.factory import Profile
 from perun.utils.exceptions import VersionControlSystemException, TagOutOfRangeException, \
     StatsFileNotFoundException, NotPerunRepositoryException

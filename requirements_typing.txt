@@ -2,5 +2,6 @@ mypy>=1.5
 mypy-extensions>=1.0
 typing-extensions>=4.7
 types-tabulate>=0.9
+types-setuptools>=68.1.0.0
 pandas-stubs>=2.0
 nptyping>=2.5.0

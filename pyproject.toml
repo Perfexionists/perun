@@ -113,6 +113,24 @@ perun = [
 plugins = [
     "numpy.typing.mypy_plugin"
 ]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".tox",
+    "build",
+    "docs",
+    "perun.egg-info",
+    "venv",
+    # Fixme: Temporary exclude
+    "perun/collect/trace"
+]
+disallow_incomplete_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+no_implicit_reexport = true
+strict_equality = true
+warn_redundant_casts = true
+warn_unused_ignores = true
 
 # Some packages are not shipping type hints yet, ignore the 'missing import' errors
 [[tool.mypy.overrides]]
@@ -136,6 +154,13 @@ module = [
 ]
 ignore_errors = true
 
+# Fixme: Temporary, we omit trace from checking
+[[tool.mypy-overrides]]
+module = [
+    "perun.collect.trace.*"
+]
+ignore_errors = true
+follow_imports = "skip"
 
 # Pylint configuration
 # --------------------

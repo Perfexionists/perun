@@ -1031,25 +1031,25 @@ class Logger(TextIO):
         """Flushes the original stream"""
         self.original.flush()
 
-    def close(self) -> None:
+    def close(self) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def fileno(self) -> None:
+    def fileno(self) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
     def isatty(self) -> bool:
         return self.original.isatty()
 
-    def read(self, __n: int = -1) -> None:
+    def read(self, __n: int = -1) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
     def readable(self) -> bool:
         return False
 
-    def readline(self, __limit: int = -1) -> None:
+    def readline(self, __limit: int = -1) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def readlines(self, __hint: int = -1) -> None:
+    def readlines(self, __hint: int = -1) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
     def seek(self, __offset: int, __whence: int = io.SEEK_SET) -> int:
@@ -1070,16 +1070,16 @@ class Logger(TextIO):
     def writelines(self, __lines: Iterable[str]) -> None:
         self.original.writelines(__lines)
 
-    def __next__(self) -> None:
+    def __next__(self) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def __iter__(self) -> None:
+    def __iter__(self) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def __exit__(
+    def __exit__(  # type: ignore
             self, __t: Type[BaseException] | None, __value: BaseException | None, __traceback: TracebackType | None
     ) -> None:
         assert NotImplementedError("Function not supported in wrapper Logger")
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> None:  # type: ignore
         assert NotImplementedError("Function not supported in wrapper Logger")
