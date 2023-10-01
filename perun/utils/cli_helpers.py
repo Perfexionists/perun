@@ -700,7 +700,7 @@ def generate_cli_dump(reported_error: str, catched_exception: Exception, stdout:
                     'packages': [
                         f"{req.name} ({req.version})"
                         for req in metadata.distributions()
-                        if req.name in reqs and req.name != ''
+                        if hasattr(req, 'name') and req.name in reqs and req.name != ''
                     ]
                 }
             },
