@@ -610,6 +610,5 @@ def get_current_interpreter(required_version: Optional[str] = None, fallback: st
             if cmp_operator(interpreter_v, required_v):
                 interpreter = fallback
                 break
-
     # If no interpreter was found, use fallback
     return interpreter or fallback

@@ -33,7 +33,7 @@ def normalize_resources(resources: list[dict[str, Any]]) -> None:
     :param list resources: list of resources
     """
     # First compute maximas per each type
-    maximum_per_type = {}  # type: dict[str, int]
+    maximum_per_type: dict[str, int] = {}
     for resource in resources:
         resource_type = get_resource_type(resource)
         type_maximum = maximum_per_type.get(resource_type, None)

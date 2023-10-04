@@ -18,8 +18,7 @@ if TYPE_CHECKING:
 import perun.utils as utils
 import perun.check.general_detection as detect
 import perun.check.fast_check as fast_check
-import perun.utils.structs
-
+from perun.utils.structs import ModelRecord
 
 
 def linear_regression(
@@ -45,7 +44,8 @@ def exec_linear_regression(
         lin_abs_error: npt.NDArray[numpy.float64] | list[float],
         threshold: int,
         linear_diff_b1: float,
-        baseline_model: perun.utils.structs.ModelRecord, target_model: perun.utils.structs.ModelRecord,
+        baseline_model: ModelRecord,
+        target_model: ModelRecord,
         baseline_profile: Profile
 ) -> str:
     """Function executes the classification of performance change between two profiles with using

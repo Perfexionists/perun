@@ -143,7 +143,8 @@ def after(
     data_path = os.path.join(os.path.dirname(executable.cmd), internal_filename)
     address_map = symbols.extract_symbol_address_map(executable.cmd)
 
-    resources, call_stack = [], []  # type: list[dict[str, Any]], list[_ProfileRecord]
+    resources: list[dict[str, Any]] = []
+    call_stack: list[_ProfileRecord] = []
     profile_start, profile_end = 0, 0
 
     with open(data_path, 'r') as profile:

@@ -52,8 +52,8 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
         return
 
     # Get the regression model with the highest R^2 for all functions
-    funcs = {}  # type: dict[str, Any]
-    func_summary = {}  # type: dict[str, dict[str, Any]]
+    funcs: dict[str, Any] = {}
+    func_summary: dict[str, dict[str, Any]] = {}
     for record in analysis:
         func_record = funcs.setdefault(
             record['uid'], {'r_square': record['r_square'], 'model': record['model']}

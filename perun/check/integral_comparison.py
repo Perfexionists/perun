@@ -13,7 +13,6 @@ import perun.check.factory as factory
 import perun.check.nonparam_helpers as nparam_helpers
 import perun.postprocess.regression_analysis.regression_models as regression_models
 import perun.postprocess.regression_analysis.tools as tools
-import perun.utils.structs
 
 from perun.profile.factory import Profile
 from perun.utils.structs import DegradationInfo, ModelRecord
@@ -26,7 +25,7 @@ _INTEGRATE_DIFF_NO_CHANGE = .10
 _INTEGRATE_DIFF_CHANGE = .25
 
 
-def compute_param_integral(model: perun.utils.structs.ModelRecord) -> float:
+def compute_param_integral(model: ModelRecord) -> float:
     """
     Computation of definite integral of parametric model.
 

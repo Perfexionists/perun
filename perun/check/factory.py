@@ -317,7 +317,7 @@ def parse_strategy(strategy: str) -> str:
 def get_strategies_for(profile: Profile) -> Iterable[str]:
     """Retrieves the best strategy for the given profile configuration
 
-    :param Profileprofile: Profile information with configuration tuple
+    :param Profile profile: Profile information with configuration tuple
     :return: method to be used for checking degradation between profiles of
         the same configuration type
     """

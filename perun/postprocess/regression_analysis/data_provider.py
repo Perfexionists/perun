@@ -47,8 +47,8 @@ def generic_profile_provider(
 
     # Sort the dictionaries by function name for easier traversing
     resources = sorted(resources, key=resource_sort_key)
-    x_points_list = []  # type: list[float]
-    y_points_list = []  # type: list[float]
+    x_points_list: list[float] = []
+    y_points_list: list[float] = []
     function_name = convert.flatten(resources[0]['uid'])
     # Store all the points until the function name changes
     for resource in resources:

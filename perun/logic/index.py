@@ -72,7 +72,7 @@ class BasicIndexEntry:
         self.collector = '??'
         self.postprocessors: list[str] = []
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Compares two IndexEntries simply by checking the equality of its internal dictionaries
 
         :param other: other object to be compared
@@ -166,7 +166,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
             postprocessor['name'] for postprocessor in profile['postprocessors']
         ]
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Compares two IndexEntries simply by checking the equality of its internal dictionaries
 
         :param other: other object to be compared

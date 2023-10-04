@@ -329,43 +329,43 @@ class OrderedEnum(Enum):
         ordered = len(self.__class__.__members__) + 1
         self.order = ordered
 
-    def __ge__(self, other: Any) -> bool:
+    def __ge__(self, other: object) -> bool:
         """ Comparison operator >=.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
         """
-        if self.__class__ is other.__class__:
+        if isinstance(other, self.__class__):
             return self.order >= other.order
         return NotImplemented
 
-    def __gt__(self, other: Any) -> bool:
+    def __gt__(self, other: object) -> bool:
         """ Comparison operator >.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
         """
-        if self.__class__ is other.__class__:
+        if isinstance(other, self.__class__):
             return self.order > other.order
         return NotImplemented
 
-    def __le__(self, other: Any) -> bool:
+    def __le__(self, other: object) -> bool:
         """ Comparison operator <=.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
         """
-        if self.__class__ is other.__class__:
+        if isinstance(other, self.__class__):
             return self.order <= other.order
         return NotImplemented
 
-    def __lt__(self, other: Any) -> bool:
+    def __lt__(self, other: object) -> bool:
         """ Comparison operator <.
 
         :param OrderedEnum other: the other enumeration element
         :return bool: the comparison result
         """
-        if self.__class__ is other.__class__:
+        if isinstance(other, self.__class__):
             return self.order < other.order
         return NotImplemented
 

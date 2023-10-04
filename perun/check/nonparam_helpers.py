@@ -4,15 +4,13 @@ import re
 
 import numpy as np
 
-import perun.check.factory
 import perun.check.general_detection as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regressogram.methods as rg_methods
 import perun.utils.log as log
-import perun.utils.structs
 
 from perun.profile.factory import Profile
-from perun.utils.structs import PerformanceChange
+from perun.utils.structs import PerformanceChange, ModelRecord
 
 
 def classify_change(
@@ -57,10 +55,10 @@ def classify_change(
 
 def unify_buckets_in_regressogram(
         uid: str,
-        baseline_model_record: perun.utils.structs.ModelRecord,
-        target_model_record: perun.utils.structs.ModelRecord,
+        baseline_model_record: ModelRecord,
+        target_model_record: ModelRecord,
         target_profile: Profile
-) -> perun.utils.structs.ModelRecord:
+) -> ModelRecord:
     """
     The method unifies the regressograms into the same count of buckets.
 
@@ -110,9 +108,9 @@ def unify_buckets_in_regressogram(
 
 def preprocess_nonparam_models(
         uid: str,
-        baseline_model: perun.utils.structs.ModelRecord,
+        baseline_model: ModelRecord,
         target_profile: Profile,
-        target_model: perun.utils.structs.ModelRecord
+        target_model: ModelRecord
 ) -> tuple[list[float], list[float], list[float]]:
     """
     Function prepare models to execute the computation of statistics between them.
@@ -130,7 +128,7 @@ def preprocess_nonparam_models(
     :param ModelRecord target_model: target model with all its parameters for processing
     :return: tuple with values of both models and their relevant x-interval
     """
-    def get_model_coordinates(model: perun.utils.structs.ModelRecord) -> tuple[list[float], list[float]]:
+    def get_model_coordinates(model: ModelRecord) -> tuple[list[float], list[float]]:
         """
         Function obtains the coordinates of given model.
 
