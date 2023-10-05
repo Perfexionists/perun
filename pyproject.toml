@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "perun"
 description = "Perun: Lightweight Performance Version System"
 version = "0.20.4"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
@@ -26,6 +26,7 @@ dependencies = [
 
     # VCS integration
     "GitPython>=3.1.30",
+    "gitdb>=4.0.10",
 
     # Lazy imports
     "demandimport>=0.3.4",
@@ -112,6 +113,24 @@ perun = [
 plugins = [
     "numpy.typing.mypy_plugin"
 ]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".tox",
+    "build",
+    "docs",
+    "perun.egg-info",
+    "venv",
+    # Fixme: Temporary exclude
+    "perun/collect/trace"
+]
+disallow_incomplete_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+no_implicit_reexport = true
+strict_equality = true
+warn_redundant_casts = true
+warn_unused_ignores = true
 
 # Some packages are not shipping type hints yet, ignore the 'missing import' errors
 [[tool.mypy.overrides]]
@@ -135,6 +154,13 @@ module = [
 ]
 ignore_errors = true
 
+# Fixme: Temporary, we omit trace from checking
+[[tool.mypy-overrides]]
+module = [
+    "perun.collect.trace.*"
+]
+ignore_errors = true
+follow_imports = "skip"
 
 # Pylint configuration
 # --------------------
@@ -151,6 +177,13 @@ addopts = "-p no:warnings -p no:logging"
 norecursedirs = [
     "case-studies",
     "venv",
+    "docs",
+    "*.egg-info",
+    ".git",
+    ".tox",
+    "build",
+    ".mypy_cache",
+    "perun/thirdparty"
 ]
 
 # Coverage configuration
@@ -163,4 +196,20 @@ omit = [
     "tests/*",
     "perun/collect/trace/*",
     "perun/thirdparty/*"
+]
+
+[tool.coverage.report]
+exclude_also = [
+    # Exclude type checking specific lines, that are never executed
+    "if TYPE_CHECKING:",
+
+    # Exclude protocols, that are used for type checking
+    "class CallableDetectionMethod(Protocol):",
+    "class Comparable(Protocol):",
+
+    # Exclude overloads, that are used for type checking
+    "@overload",
+
+    # Not implemented asserst are omitted
+    "assert NotImplementedError(.*)",
 ]

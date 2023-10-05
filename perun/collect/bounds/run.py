@@ -4,12 +4,14 @@ First compiles the given sources using clang into LLVM IR representation,
 each compiled file is then analysed by loopus. The output of loopus is finally
 parsed by internal scanner resulting into profile.
 """
+from __future__ import annotations
 
 import os
 import shutil
 import time as systime
 
 from subprocess import SubprocessError
+from typing import Any
 
 import click
 
@@ -25,7 +27,7 @@ _LLVM_EXT = '.bc'
 _LIB_Z3 = "libz3.so"
 
 
-def before(sources, **kwargs):
+def before(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Compiles the sources into LLVM intermediate code
 
         $ clang-3.5 -g -emit-llvm -c ${sources}
@@ -50,7 +52,7 @@ def before(sources, **kwargs):
     return CollectStatus.OK, "status_message", dict(kwargs)
 
 
-def collect(sources, **kwargs):
+def collect(sources: list[str], **kwargs: Any) -> tuple[CollectStatus, str, dict[str, Any]]:
     """Runs the Loopus on compiled LLVM sources
 
         $ export $LD_LIBRARY_PATH="${DIR}/libz3.so"
@@ -73,8 +75,8 @@ def collect(sources, **kwargs):
         cmd = loopus_bin \
               + " -zPrintComplexity -zEnableOptimisticAssumptionsOnPointerAliasAndShapes " \
               + " ".join(source_filenames)
-        out, _ = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
-        out = out.decode('utf-8')
+        returned_out, _ = utils.run_safely_external_command(cmd, check_results=True, env=my_env)
+        out = returned_out.decode('utf-8')
     except SubprocessError as sub_err:
         log.failed()
         return CollectStatus.ERROR, str(sub_err), dict(kwargs)
@@ -97,13 +99,13 @@ def collect(sources, **kwargs):
     }}
 
 
-def lookup_source_files(ctx, _, value):
+def lookup_source_files(ctx: click.Context, __: click.Option, value: list[str]) -> list[str]:
     """Lookus up sources for the analysis.
 
     The sources can either be single file, or directory which contains .c files.
 
     :param Context ctx: context of the called command
-    :param click.Option _: parameter that is being parsed and read from commandline
+    :param click.Option __: parameter that is being parsed and read from commandline
     :param str value: value that is being read from the commandline
     """
     # Initialize sources if it does not exist
@@ -131,7 +133,7 @@ def lookup_source_files(ctx, _, value):
               metavar='<dir>', callback=lookup_source_files,
               help='Directory, where source C files are stored. All of the existing files with '
                    'valid extensions (.c).')
-def bounds(ctx, **kwargs):
+def bounds(ctx: click.Context, **kwargs: Any) -> None:
     """Generates `memory` performance profile, capturing memory allocations of
     different types along with target address and full call trace.
 

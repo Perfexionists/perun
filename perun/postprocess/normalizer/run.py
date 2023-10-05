@@ -1,27 +1,30 @@
 """Normalizer is a simple postprocessor that normalizes the values."""
+from __future__ import annotations
 
 import operator
 import click
 
+from typing import Any
+
 import perun.logic.runner as runner
 
-from perun.profile.factory import pass_profile
+from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 
 
-def get_resource_type(resource):
+def get_resource_type(resource: dict[str, Any]) -> str:
     """Checks if the resource has defined type and returns empty type otherwise.
 
     Checks if there is 'type' defined inside the resource, and if so then returns
-    the type. Otherwise it returns empty string as a type.
+    the type. Otherwise, it returns empty string as a type.
 
     :param dict resource: dictionary representing the resource
     :returns str: type of the resource ('' if there is none type)
     """
-    return resource['type'] if 'type' in resource.keys() else ''
+    return resource.get('type', '')
 
 
-def normalize_resources(resources):
+def normalize_resources(resources: list[dict[str, Any]]) -> None:
     """Normalize the global and snapshot resources according to the maximal values.
 
     Computes the maximal values per each type inside the snapshot of the resource,
@@ -30,7 +33,7 @@ def normalize_resources(resources):
     :param list resources: list of resources
     """
     # First compute maximas per each type
-    maximum_per_type = {}
+    maximum_per_type: dict[str, int] = {}
     for resource in resources:
         resource_type = get_resource_type(resource)
         type_maximum = maximum_per_type.get(resource_type, None)
@@ -46,7 +49,7 @@ def normalize_resources(resources):
             else 1.0
 
 
-def postprocess(profile, **_):
+def postprocess(profile: Profile, **_: Any) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     :param Profile profile: json-like profile that will be preprocessed by normalizer
     """
@@ -59,7 +62,7 @@ def postprocess(profile, **_):
 
 @click.command()
 @pass_profile
-def normalizer(profile):
+def normalizer(profile: Profile) -> None:
     """Normalizes performance profile into flat interval.
 
     \b

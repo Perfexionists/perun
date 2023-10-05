@@ -1,7 +1,7 @@
 """This module contains the Flow usage graph creating functions"""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Hashable
+from typing import TYPE_CHECKING, Hashable, cast, Protocol
 
 import demandimport
 
@@ -15,6 +15,11 @@ from perun.utils import view_helpers
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
     import pandas as pd
+
+
+class IntTableLike(Protocol):
+    def get(self, key: int, default: int) -> int:
+        pass
 
 
 def create_from_params(
@@ -88,7 +93,7 @@ def construct_data_source_from(
     by_key: str,
     through_key: str,
     accumulate: bool,
-) -> Dict[Hashable, List[int]]:
+) -> dict[Hashable, list[int]]:
     """Transforms the data frame using the aggregating functions, breaking it into groups.
 
     Takes the original data frame, groups it by the 'by_key' and then for each group, groups values
@@ -104,23 +109,25 @@ def construct_data_source_from(
     """
     # Compute extremes for X axis
     #  -> this is needed for offsetting of the values for the area chart
-    minimal_x_value = data_frame[through_key].min()
-    maximal_x_value = data_frame[through_key].max()
+    minimal_x_value: int = data_frame[through_key].min()
+    maximal_x_value: int = data_frame[through_key].max()
 
     # Construct the data source (first we group the values by 'by_key' (one graph per each key).
     #   And then we compute the aggregations of the data grouped again, but by through key
     #   (i.e. for each value on X axis), the values are either accumulated or not
-    data_source: Dict[Hashable, List[int]] = {}
+    data_source: dict[Hashable, list[int]] = {}
     for group_name, by_key_group_data_frame in data_frame.groupby(by_key):
         data_source[group_name] = [0] * (maximal_x_value + 1)
         source_data_frame = group_and_aggregate(by_key_group_data_frame, through_key, func)
         if accumulate:
             accumulated_value = 0
             for index in range(minimal_x_value, maximal_x_value):
-                accumulated_value += source_data_frame[of_key].get(index + minimal_x_value, 0)
+                # FIXME: This should be handled better, since, we simply assume it is [int, int]
+                accumulated_value += cast(IntTableLike, source_data_frame[of_key]).get(index + minimal_x_value, 0)
                 data_source[group_name][index] = accumulated_value
         else:
-            for through_key_value, of_key_value in source_data_frame[of_key].items():
+            # FIXME: This should be handled better, since, we simply assume it is [int, int]
+            for through_key_value, of_key_value in cast(list[tuple[int, int]], source_data_frame[of_key].items()):
                 data_source[group_name][through_key_value - minimal_x_value] = of_key_value
     return data_source
 

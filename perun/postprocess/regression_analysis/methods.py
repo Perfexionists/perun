@@ -3,15 +3,23 @@
 This module exposes all currently implemented computational methods for regression analysis.
 
 """
+from __future__ import annotations
 
 import collections
+
+from typing import Any, Optional, Iterator, Protocol
 
 import perun.postprocess.regression_analysis.regression_models as mod
 import perun.utils.exceptions as exceptions
 import perun.postprocess.regression_analysis.tools as tools
 
 
-def get_supported_param_methods():
+class ComputationMethod(Protocol):
+    def __call__(self, *args: Any, **kwargs: Any) -> Iterator[dict[str, Any]]:
+        pass
+
+
+def get_supported_param_methods() -> list[str]:
     """Provides all currently supported computational methods as a list of their names.
 
     :returns list of str: the names of all supported methods
@@ -19,7 +27,12 @@ def get_supported_param_methods():
     return list(_METHODS.keys())
 
 
-def compute(data_gen, method, models, **kwargs):
+def compute(
+        data_gen: Iterator[tuple[list[float], list[float], str]],
+        method: str,
+        models: tuple[str],
+        **kwargs: Any
+) -> list[dict[str, Any]]:
     """The regression analysis wrapper for various computation methods.
 
     :param iter data_gen: the generator object with collected data (data provider generators)
@@ -52,7 +65,9 @@ def compute(data_gen, method, models, **kwargs):
     return list(map(_transform_to_output_data, analysis))
 
 
-def compute_derived(derived_models, analysis, **kwargs):
+def compute_derived(
+        derived_models: tuple[str], analysis: list[dict[str, Any]], **kwargs: Any
+) -> Iterator[dict[str, Any]]:
     """The computation wrapper for derived models.
 
     :param tuple of str derived_models: collection of derived models to compute
@@ -66,7 +81,12 @@ def compute_derived(derived_models, analysis, **kwargs):
                 yield result
 
 
-def full_computation(x_pts, y_pts, computation_models, **_):
+def full_computation(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        **_: Any
+) -> Iterator[dict[str, Any]]:
     """The full computation method which fully computes every specified regression model.
 
     The method might have performance issues in case of too many models or data points.
@@ -91,7 +111,13 @@ def full_computation(x_pts, y_pts, computation_models, **_):
             yield result
 
 
-def iterative_computation(x_pts, y_pts, computation_models, steps, **_):
+def iterative_computation(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        steps: int,
+        **_: Any
+) -> Iterator[dict[str, Any]]:
     """The iterative computation method.
 
     This method splits the regression data evenly into random parts, which are incrementally
@@ -127,7 +153,13 @@ def iterative_computation(x_pts, y_pts, computation_models, steps, **_):
             break
 
 
-def interval_computation(x_pts, y_pts, computation_models, steps, **_):
+def interval_computation(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        steps: int,
+        **_: Any
+) -> Iterator[dict[str, Any]]:
     """The interval computation method.
 
     This method splits the regression data into evenly distributed sorted parts (i.e. intervals)
@@ -163,7 +195,13 @@ def interval_computation(x_pts, y_pts, computation_models, steps, **_):
         yield results[best_fit]
 
 
-def initial_guess_computation(x_pts, y_pts, computation_models, steps, **_):
+def initial_guess_computation(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        steps: int,
+        **_: Any
+) -> Iterator[dict[str, Any]]:
     """The initial guess computation method.
 
     This method does initial computation of a data sample and then computes the rest of the model
@@ -171,7 +209,6 @@ def initial_guess_computation(x_pts, y_pts, computation_models, steps, **_):
 
     This method might produce only local result (local extrema), but it's generally faster than the
     full computation method.
-
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
@@ -200,7 +237,12 @@ def initial_guess_computation(x_pts, y_pts, computation_models, steps, **_):
             break
 
 
-def bisection_computation(x_pts, y_pts, computation_models, **_):
+def bisection_computation(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        **_: Any
+) -> Iterator[dict[str, Any]]:
     """The bisection computation method.
 
     This method computes the best fitting model for the whole profiling data and then perform
@@ -226,10 +268,15 @@ def bisection_computation(x_pts, y_pts, computation_models, **_):
         yield sub_model
 
 
-def _compute_bisection_model(x_pts, y_pts, computation_models, **kwargs):
+def _compute_bisection_model(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        **kwargs: Any
+) -> dict[str, Any]:
     """Compute specified models on a given data set and find the best fitting model.
 
-    Currently uses the full computation method.
+    Currently, uses the full computation method.
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
@@ -251,12 +298,17 @@ def _compute_bisection_model(x_pts, y_pts, computation_models, **kwargs):
     return results[_find_best_fitting_model(results)]
 
 
-def _bisection_step(x_pts, y_pts, computation_models, last_model):
+def _bisection_step(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        last_model: dict[str, Any]
+) -> Iterator[dict[str, Any]]:
     """The bisection step computation.
 
     Performs one computation step for bisection. Splits the interval set by x_pts, y_pts and
     tries to compute each half. In case of model change, the interval is split again and the
-    process repeats. Otherwise the last model is used as a final model.
+    process repeats. Otherwise, the last model is used as a final model.
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
@@ -283,7 +335,7 @@ def _bisection_step(x_pts, y_pts, computation_models, last_model):
         yield last_model
         return
 
-    def _model_bisection(i):
+    def _model_bisection(i: int) -> Iterator[dict[str, Any]]:
         """Wrapper that iterates over half of the model
 
         :param int i: either 0 or 1 for iteration of left or right model
@@ -300,10 +352,16 @@ def _bisection_step(x_pts, y_pts, computation_models, last_model):
     yield from _model_bisection(1)
 
 
-def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, last_model):
+def _bisection_solve_half_model(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        half_model: dict[str, Any],
+        last_model: dict[str, Any]
+) -> Iterator[dict[str, Any]]:
     """Helper function for solving half intervals and producing their results.
 
-    The functions checks if the model has changed for the given half and if yes, then continues
+    The functions check if the model has changed for the given half and if yes, then continues
     with bisection - otherwise the half model is used as the final one for the interval.
 
     :param list x_pts: the list of x points coordinates
@@ -325,8 +383,13 @@ def _bisection_solve_half_model(x_pts, y_pts, computation_models, half_model, la
         yield half_model
 
 
-def _models_initial_step(x_pts, y_pts, computation_models, steps):
-    """Performs initial step with specified models in multi-step methods.
+def _models_initial_step(
+        x_pts: list[float],
+        y_pts: list[float],
+        computation_models: tuple[str],
+        steps: int
+) -> tuple[list[Iterator[dict[str, Any]]], list[dict[str, Any]]]:
+    """Performs initial step with specified models in multistep methods.
 
     :param list x_pts: the list of x points coordinates
     :param list y_pts: the list of y points coordinates
@@ -351,7 +414,7 @@ def _models_initial_step(x_pts, y_pts, computation_models, steps):
     return model_generators, results
 
 
-def _find_best_fitting_model(model_results):
+def _find_best_fitting_model(model_results: list[dict[str, Any]]) -> int:
     """Finds the model which is currently the best fitting one.
 
     This function operates on a (intermediate) result dictionaries,
@@ -369,7 +432,7 @@ def _find_best_fitting_model(model_results):
     return best_fit
 
 
-def _transform_to_output_data(data, extra_keys=None):
+def _transform_to_output_data(data: dict[str, Any], extra_keys: Optional[list[str]] = None) -> dict[str, Any]:
     """Transforms the data dictionary into their output format - omitting computational details
     and keys that are not important for the result and its further manipulation.
 
@@ -401,7 +464,9 @@ def _transform_to_output_data(data, extra_keys=None):
     return transformed
 
 
-def _build_uniform_regression_data_format(x_pts, y_pts, model):
+def _build_uniform_regression_data_format(
+        x_pts: list[float], y_pts: list[float], model: dict[str, Any]
+) -> dict[str, Any]:
     """Creates the uniform regression data dictionary from the model properties and regression
     data points.
 
@@ -430,7 +495,9 @@ def _build_uniform_regression_data_format(x_pts, y_pts, model):
 # supported methods mapping
 # - every method must be called with proper argument signature in 'compute' function
 # -- the signature: x, y, models, **kwargs
-_METHODS = collections.OrderedDict([
+_METHODS: collections.OrderedDict[
+    str, ComputationMethod
+] = collections.OrderedDict([
     ('full', full_computation),
     ('iterative', iterative_computation),
     ('interval', interval_computation),

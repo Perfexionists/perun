@@ -1,8 +1,9 @@
 """Collection of methods for manipulation with Index.
 
-This contains both helper constants, enums, and function, and most of all all definitions
+This contains both helper constants, enums, and function, and most of all definitions
 of various version of index entries.
 """
+from __future__ import annotations
 
 import os
 import binascii
@@ -11,6 +12,10 @@ import json
 from zlib import error
 
 from enum import Enum
+from typing import Callable, BinaryIO, Any, Iterable, Collection, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 import perun.utils.timestamps as timestamps
 import perun.utils.log as perun_log
@@ -18,21 +23,20 @@ import perun.utils.helpers as helpers
 import perun.logic.store as store
 import perun.logic.pcs as pcs
 
-from perun.utils.exceptions import (EntryNotFoundException, MalformedIndexFileException,
-                                    IndexNotFoundException)
+from perun.utils.exceptions import (EntryNotFoundException, MalformedIndexFileException, IndexNotFoundException)
 
 
 # List of current versions of format and magic constants
-INDEX_ENTRIES_START_OFFSET = 12
-INDEX_NUMBER_OF_ENTRIES_OFFSET = 8
-INDEX_MAGIC_PREFIX = b'pidx'
+INDEX_ENTRIES_START_OFFSET: int = 12
+INDEX_NUMBER_OF_ENTRIES_OFFSET: int = 8
+INDEX_MAGIC_PREFIX: bytes = b'pidx'
 # Index Version 2.0 FastSloth
-INDEX_VERSION = 2
+INDEX_VERSION: int = 2
 
-IndexVersion = Enum(
-    'IndexVersion',
-    'SlowLorris FastSloth'
-)
+
+class IndexVersion(Enum):
+    SlowLorris = 1
+    FastSloth = 2
 
 
 class BasicIndexEntry:
@@ -49,7 +53,7 @@ class BasicIndexEntry:
     """
     version = IndexVersion.SlowLorris
 
-    def __init__(self, time, checksum, path, offset, *_):
+    def __init__(self, time: str, checksum: str, path: str, offset: int, *_: Any) -> None:
         """
         :param str time: modification timestamp of the entry profile
         :param str checksum: checksum of the object, i.e. the path to its real content
@@ -60,8 +64,15 @@ class BasicIndexEntry:
         self.checksum = checksum
         self.path = path
         self.offset = offset
+        # For backward compatibility, we set everything to 'unknown', but it is not stored in the index
+        self.type = '??'
+        self.cmd = '??'
+        self.args = '??'
+        self.workload = '??'
+        self.collector = '??'
+        self.postprocessors: list[str] = []
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Compares two IndexEntries simply by checking the equality of its internal dictionaries
 
         :param other: other object to be compared
@@ -70,7 +81,7 @@ class BasicIndexEntry:
         return self.__dict__ == other.__dict__
 
     @classmethod
-    def read_from(cls, index_handle, index_version):
+    def read_from(cls, index_handle: BinaryIO, index_version: IndexVersion) -> 'BasicIndexEntry':
         """Reads the entry from the index handle
 
         This is basic version, which stores only the information of timestamp, sha and path of the
@@ -95,7 +106,7 @@ class BasicIndexEntry:
             byte = store.read_char_from_handle(index_handle)
         return BasicIndexEntry(file_time, file_sha, file_path, file_offset)
 
-    def write_to(self, index_handle):
+    def write_to(self, index_handle: BinaryIO) -> None:
         """Writes entry at current location in the index_handle
 
         :param file index_handle: file handle of the index
@@ -105,7 +116,7 @@ class BasicIndexEntry:
         index_handle.write(bytes(self.path, 'utf-8'))
         index_handle.write(struct.pack('B', 0))
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Converts the entry to one string representation
 
         :return:  string representation of the entry
@@ -122,7 +133,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
     """Class representation of one extended index entry
 
     This corresponds to the extended version of the index called the Fast Sloth.
-    It contains additional informations about profile, so one do not have to load
+    It contains additional information about profile, so one do not have to load
     the profiles everytime it wants to print some basic information.
 
     :ivar str time: modification timestamp of the entry profile
@@ -137,7 +148,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
     """
     version = IndexVersion.FastSloth
 
-    def __init__(self, time, checksum, path, offset, profile):
+    def __init__(self, time: str, checksum: str, path: str, offset: int, profile: dict[str, Any] | Profile) -> None:
         """
         :param str time: modification timestamp of the entry profile
         :param str checksum: checksum of the object, i.e. the path to its real content
@@ -155,7 +166,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
             postprocessor['name'] for postprocessor in profile['postprocessors']
         ]
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Compares two IndexEntries simply by checking the equality of its internal dictionaries
 
         :param other: other object to be compared
@@ -164,7 +175,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         return self.__dict__ == other.__dict__
 
     @classmethod
-    def read_from(cls, index_handle, index_version):
+    def read_from(cls, index_handle: BinaryIO, index_version: IndexVersion) -> 'ExtendedIndexEntry':
         """Reads the entry from the index handle
 
         :param File index_handle: opened index handle
@@ -177,7 +188,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         return ExtendedIndexEntry._read_from_same_index(index_handle, index_version)
 
     @classmethod
-    def _read_from_older_index(cls, index_handle, index_version):
+    def _read_from_older_index(cls, index_handle: BinaryIO, index_version: IndexVersion) -> 'ExtendedIndexEntry':
         """Reads the ExtendedIndexEntry from older version of index.
 
         This means, that not everything was stored in the index, and the profile itself has to be
@@ -196,14 +207,14 @@ class ExtendedIndexEntry(BasicIndexEntry):
 
 
     @classmethod
-    def _read_from_same_index(cls, index_handle, index_version):
+    def _read_from_same_index(cls, index_handle: BinaryIO, index_version: IndexVersion) -> 'ExtendedIndexEntry':
         """
 
         :param index_handle:
         :return:
         """
         basic_entry = BasicIndexEntry.read_from(index_handle, get_older_version(index_version))
-        profile = {'header': {}, 'collector_info': {}, 'postprocessors': []}
+        profile: dict[str, Any] = {'header': {}, 'collector_info': {}, 'postprocessors': []}
 
         profile['header']['type'] = store.read_string_from_handle(index_handle)
         profile['header']['cmd'] = store.read_string_from_handle(index_handle)
@@ -219,7 +230,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
             basic_entry.time, basic_entry.checksum, basic_entry.path, basic_entry.offset, profile
         )
 
-    def write_to(self, index_handle):
+    def write_to(self, index_handle: BinaryIO) -> None:
         """Writes entry at current location in the index_handle
 
         :param file index_handle: file handle of the index
@@ -232,7 +243,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         store.write_string_to_handle(index_handle, self.collector)
         store.write_list_to_handle(index_handle, self.postprocessors)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Converts the entry to one string representation
 
         :return:  string representation of the entry
@@ -249,7 +260,7 @@ class ExtendedIndexEntry(BasicIndexEntry):
         )
 
 
-def get_older_version(index_version):
+def get_older_version(index_version: IndexVersion) -> IndexVersion:
     """Returns older version of the index
 
     :param IndexVersion index_version:
@@ -258,7 +269,7 @@ def get_older_version(index_version):
     return IndexVersion(index_version.value-1)
 
 
-def walk_index(index_handle):
+def walk_index(index_handle: BinaryIO) -> Iterable[BasicIndexEntry]:
     """Iterator through index entries
 
     Reads the beginning of the file, verifying the version and type of the index. Then it iterates
@@ -280,16 +291,18 @@ def walk_index(index_handle):
 
     index_version = store.read_int_from_handle(index_handle)
     if index_version > INDEX_VERSION:
-        raise MalformedIndexFileException("read index file is in format of different index version"
-                                          " (read index file = {}".format(index_version) +
-                                          ", supported = {})".format(INDEX_VERSION))
+        raise MalformedIndexFileException(
+            f"read index file is in format of different index version "
+            f"(read index file = {index_version}, supported = {INDEX_VERSION})"
+        )
 
     number_of_objects = store.read_int_from_handle(index_handle)
     loaded_objects = 0
     entry_constructor = INDEX_ENTRY_CONSTRUCTORS[INDEX_VERSION - 1]
 
     while index_handle.tell() + 24 < last_position and loaded_objects < number_of_objects:
-        entry = entry_constructor.read_from(index_handle, IndexVersion(index_version))
+        entry = entry_constructor.read_from(index_handle, IndexVersion(index_version))  # type: ignore
+        # Fixme: ^--- there is an issue with mypy, that type has no attribute read_from, but it is syntactically correct
         loaded_objects += 1
         yield entry
 
@@ -299,7 +312,7 @@ def walk_index(index_handle):
         )
 
 
-def print_index(index_file):
+def print_index(index_file: str) -> None:
     """Helper function for printing the contents of the index
 
     :param str index_file: path to the index file
@@ -308,7 +321,7 @@ def print_index(index_file):
         print_index_from_handle(index_handle)
 
 
-def print_index_from_handle(index_handle):
+def print_index_from_handle(index_handle: BinaryIO) -> None:
     """Helper funciton for printing the contents of index inside the handle.
 
     :param file index_handle: opened file handle
@@ -317,15 +330,13 @@ def print_index_from_handle(index_handle):
     index_version = store.read_int_from_handle(index_handle)
     number_of_entries = store.read_int_from_handle(index_handle)
 
-    print("{}, index version {} with {} entries\n".format(
-        index_prefix, index_version, number_of_entries
-    ))
+    print(f"{index_prefix.decode('utf-8')}, index version {index_version} with {number_of_entries} entries\n")
 
     for entry in walk_index(index_handle):
         print(str(entry))
 
 
-def touch_index(index_path):
+def touch_index(index_path: str) -> None:
     """Initializes and creates the index if it does not exists
 
     The Version 1 index is of following form:
@@ -349,7 +360,7 @@ def touch_index(index_path):
             initialize_index_in_handle(index_handle)
 
 
-def initialize_index_in_handle(index_handle):
+def initialize_index_in_handle(index_handle: BinaryIO) -> None:
     """Initialize the index prefix in the handle.
 
     First the magic bytes are written, then the version of the index and at last the
@@ -363,7 +374,7 @@ def initialize_index_in_handle(index_handle):
     index_handle.write(struct.pack('i', 0))
 
 
-def update_index_version(index_handle):
+def update_index_version(index_handle: BinaryIO) -> None:
     """Updates the index handle to newer version
 
     :param File index_handle: opened index handle
@@ -374,7 +385,7 @@ def update_index_version(index_handle):
     index_handle.seek(previous_position)
 
 
-def modify_number_of_entries_in_index(index_handle, modify):
+def modify_number_of_entries_in_index(index_handle: BinaryIO, modify: Callable[[int], int]) -> None:
     """Helper function of inplace modification of number of entries in index
 
     :param file index_handle: handle of the opened index
@@ -386,7 +397,7 @@ def modify_number_of_entries_in_index(index_handle, modify):
     index_handle.write(struct.pack('i', modify(number_of_entries)))
 
 
-def write_entry_to_index(index_file, file_entry):
+def write_entry_to_index(index_file: str, file_entry: BasicIndexEntry) -> None:
     """Writes the file_entry to its appropriate position within the index.
 
     Given the file entry, writes the entry within the file, moving everything by the given offset
@@ -441,7 +452,7 @@ def write_entry_to_index(index_file, file_entry):
         update_index_version(index_handle)
 
 
-def write_list_of_entries(index_file, entry_list):
+def write_list_of_entries(index_file: str, entry_list: list[BasicIndexEntry]) -> None:
     """Rewrites the index file to contain the list of entries only
 
     Clears the index and writes list of entries into the index
@@ -459,7 +470,11 @@ def write_list_of_entries(index_file, entry_list):
             entry.write_to(index_handle)
 
 
-def lookup_entry_within_index(index_handle, predicate, looked_up_entry_name):
+def lookup_entry_within_index(
+        index_handle: BinaryIO,
+        predicate: Callable[[BasicIndexEntry], bool],
+        looked_up_entry_name: str
+) -> BasicIndexEntry:
     """Looks up the first entry within index that satisfies the predicate
 
     :param file index_handle: file handle of the index
@@ -474,7 +489,9 @@ def lookup_entry_within_index(index_handle, predicate, looked_up_entry_name):
     raise EntryNotFoundException(looked_up_entry_name)
 
 
-def lookup_all_entries_within_index(index_handle, predicate):
+def lookup_all_entries_within_index(
+        index_handle: BinaryIO, predicate: Callable[[BasicIndexEntry], bool]
+) -> list[BasicIndexEntry]:
     """
     :param file index_handle: file handle of the index
     :param function predicate: predicate that tests given entry in index BasicIndexEntry -> bool
@@ -484,7 +501,7 @@ def lookup_all_entries_within_index(index_handle, predicate):
     return [entry for entry in walk_index(index_handle) if predicate(entry)]
 
 
-def find_minor_index(minor_version):
+def find_minor_index(minor_version: str) -> str:
     """ Finds the corresponding index for the minor version or raises EntryNotFoundException if
     the index was not found.
 
@@ -499,7 +516,7 @@ def find_minor_index(minor_version):
     return index_file
 
 
-def register_in_pending_index(registered_file, profile):
+def register_in_pending_index(registered_file: str, profile: Profile) -> None:
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -516,7 +533,9 @@ def register_in_pending_index(registered_file, profile):
     register_in_index(index_filename, registered_file, registered_checksum, profile)
 
 
-def register_in_minor_index(base_dir, minor_version, registered_file, registered_checksum, profile):
+def register_in_minor_index(
+        base_dir: str, minor_version: str, registered_file: str, registered_checksum: str, profile: Profile
+) -> None:
     """Registers file in the index corresponding to the minor_version
 
     If the index for the minor_version does not exist, then it is touched and initialized
@@ -536,7 +555,9 @@ def register_in_minor_index(base_dir, minor_version, registered_file, registered
     register_in_index(minor_index_file, registered_file, registered_checksum, profile)
 
 
-def register_in_index(index_filename, registered_file, registered_file_checksum, profile):
+def register_in_index(
+        index_filename: str, registered_file: str, registered_file_checksum: str, profile: Profile
+) -> None:
     """Registers file in the index corresponding to either minor_version or pending profiles
 
     :param str index_filename: source index filename
@@ -552,13 +573,13 @@ def register_in_index(index_filename, registered_file, registered_file_checksum,
     write_entry_to_index(index_filename, entry)
 
     reg_rel_path = os.path.relpath(registered_file)
-    perun_log.info("'{}' successfully registered in minor version index".format(reg_rel_path))
+    perun_log.info(f"'{reg_rel_path}' successfully registered in minor version index")
 
 
-def remove_from_index(base_dir, minor_version, removed_file_generator):
+def remove_from_index(base_dir: str, minor_version: str, removed_file_generator: Collection[str]) -> None:
     """Removes stream of removed files from the index.
 
-    Iterates through all of the removed files, and removes their partial/full occurence from the
+    Iterates through all the removed files, and removes their partial/full occurence from the
     index. The index is walked just once.
 
     :param str base_dir: base directory of the minor version
@@ -581,7 +602,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
         removed_entries = []
 
         for i, removed_file in enumerate(removed_file_generator):
-            def lookup_function(entry):
+            def lookup_function(entry: BasicIndexEntry) -> bool:
                 """Helper lookup function according to the type of the removed file"""
                 if store.is_sha1(removed_file):
                     return entry.checksum == removed_file
@@ -617,7 +638,7 @@ def remove_from_index(base_dir, minor_version, removed_file_generator):
         ))
 
 
-def get_profile_list_for_minor(base_dir, minor_version):
+def get_profile_list_for_minor(base_dir: str, minor_version: str) -> list[BasicIndexEntry]:
     """Read the list of entries corresponding to the minor version from its index.
 
     :param str base_dir: base directory of the models
@@ -638,7 +659,7 @@ def get_profile_list_for_minor(base_dir, minor_version):
     return result
 
 
-def get_profile_number_for_minor(base_dir, minor_version):
+def get_profile_number_for_minor(base_dir: str, minor_version: str) -> dict[str, int]:
     """
     :param str base_dir: base directory of the profiles
     :param str minor_version: representation of minor version
@@ -665,7 +686,7 @@ def get_profile_number_for_minor(base_dir, minor_version):
         return {'all': 0}
 
 
-def load_custom_index(index_path):
+def load_custom_index(index_path: str) -> dict[Any, Any]:
     """Loads the content of a custom index file (e.g. temp or stats) as a dictionary.
 
     The index is json-formatted and compressed. In case the index cannot be read for some reason,
@@ -688,7 +709,7 @@ def load_custom_index(index_path):
         return {}
 
 
-def save_custom_index(index_path, records):
+def save_custom_index(index_path: str, records: list[Any] | dict[Any, Any]) -> None:
     """Saves the index records to the custom index file.
     The index file is created if it does not exist or overwritten if it does.
 

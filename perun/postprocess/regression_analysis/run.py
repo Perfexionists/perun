@@ -1,6 +1,9 @@
 """Regression analysis postprocessor module."""
+from __future__ import annotations
 
 import click
+
+from typing import Any
 
 import perun.logic.runner as runner
 import perun.postprocess.regression_analysis.data_provider as data_provider
@@ -9,7 +12,7 @@ import perun.utils.cli_helpers as cli_helpers
 import perun.postprocess.regression_analysis.methods as methods
 import perun.postprocess.regression_analysis.regression_models as reg_models
 
-from perun.profile.factory import pass_profile
+from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 import perun.utils.metrics as metrics
 
@@ -17,7 +20,9 @@ import perun.utils.metrics as metrics
 _DEFAULT_STEPS = 3
 
 
-def postprocess(profile, **configuration):
+def postprocess(
+        profile: Profile, **configuration: Any
+) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """Invoked from perun core, handles the postprocess actions
 
     :param dict profile: the profile to analyze
@@ -32,12 +37,12 @@ def postprocess(profile, **configuration):
                                steps=configuration['steps'])
     store_model_counts(analysis)
     # Store the results
-    profile = tools.add_models_to_profile(profile, analysis)
+    new_profile = tools.add_models_to_profile(profile, analysis)
 
-    return PostprocessStatus.OK, "", {'profile': profile}
+    return PostprocessStatus.OK, "", {'profile': new_profile}
 
 
-def store_model_counts(analysis):
+def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     """ Store the number of best-fit models for each model category as a metric.
 
     :param list analysis: the list of inferred models.
@@ -47,8 +52,8 @@ def store_model_counts(analysis):
         return
 
     # Get the regression model with the highest R^2 for all functions
-    funcs = {}
-    func_summary = {}
+    funcs: dict[str, Any] = {}
+    func_summary: dict[str, dict[str, Any]] = {}
     for record in analysis:
         func_record = funcs.setdefault(
             record['uid'], {'r_square': record['r_square'], 'model': record['model']}
@@ -68,7 +73,7 @@ def store_model_counts(analysis):
         models['undefined' if (func_record['r_square'] <= 0.5) else func_record['model']] += 1
     # Store the counts in the metrics
     for model, count in models.items():
-        metrics.add_metric('{}_model'.format(model), count)
+        metrics.add_metric(f'{model}_model', count)
 
 
 @click.command()
@@ -93,7 +98,7 @@ def store_model_counts(analysis):
               default='amount', callback=cli_helpers.process_resource_key_param,
               help="Sets key for which we are finding the model.")
 @pass_profile
-def regression_analysis(profile, **kwargs):
+def regression_analysis(profile: Profile, **kwargs: Any) -> None:
     """Finds fitting regression models to estimate models of profiled resources.
 
     \b

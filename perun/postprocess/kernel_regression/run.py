@@ -1,51 +1,58 @@
 """
 Postprocessor module with non-parametric analysis using the kernel regression methods.
 """
+from __future__ import annotations
 
 import click
+
+from typing import Any, TYPE_CHECKING
 
 import perun.logic.runner as runner
 import perun.postprocess.kernel_regression.methods as methods
 import perun.postprocess.regression_analysis.data_provider as data_provider
 import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
+
 from perun.utils.structs import PostprocessStatus
+
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 
 # Supported types of regression estimator:
 # - 'lc': local-constant (Nadaraya-Watson kernel regression), 'll': local-linear
 # -- First estimator is set as default: 'll'
-_REGRESSION_ESTIMATORS = ['ll', 'lc']
+_REGRESSION_ESTIMATORS: list[str] = ['ll', 'lc']
 # Supported methods for bandwidth estimation:
 # - 'cv_ls': least-squares cross validation, 'aic': AIC Hurvich bandwidth estimation
 # -- First estimate method is set as default: 'cv_ls'
-_BANDWIDTH_METHODS = ['cv_ls', 'aic']
+_BANDWIDTH_METHODS: list[str] = ['cv_ls', 'aic']
 # Efficient execution of the bandwidth estimation
-_DEFAULT_EFFICIENT = False
+_DEFAULT_EFFICIENT: bool = False
 # The way of performing of the bandwidth estimation: randomize or routine
-_DEFAULT_RANDOMIZE = False
+_DEFAULT_RANDOMIZE: bool = False
 # Default size of the sub-samples
-_DEFAULT_N_SUB = 50
+_DEFAULT_N_SUB: int = 50
 # Default number of random re-samples used to bandwidth estimation
-_DEFAULT_N_RES = 25
+_DEFAULT_N_RES: int = 25
 # Using the median of all scaling factors for each sub-sample
 # - Default is computed the mean of all scaling factors
-_DEFAULT_RETURN_MEDIAN = False
+_DEFAULT_RETURN_MEDIAN: bool = False
 # Set of kernels for use with `kernel-smoothing` mode of kernel-regression
 # - Epanechnikov kernel by default at computation
-_KERNEL_TYPES = ['epanechnikov', 'tricube', 'normal', 'epanechnikov4', 'normal4']
+_KERNEL_TYPES: list[str] = ['epanechnikov', 'tricube', 'normal', 'epanechnikov4', 'normal4']
 # Supported method for non-parametric regression using kernel methods
 # - Default non-parametric regression method: spatial-average
-_SMOOTHING_METHODS = ['spatial-average', 'local-linear', 'local-polynomial']
+_SMOOTHING_METHODS: list[str] = ['spatial-average', 'local-linear', 'local-polynomial']
 # Default value for order of the polynomial to fit with `local-polynomial` kernel smoothing method
-_DEFAULT_POLYNOMIAL_ORDER = 3
+_DEFAULT_POLYNOMIAL_ORDER: int = 3
 # Default range (minimal and maximal values) for automatic bandwidth selection at `kernel-ridge`
-_DEFAULT_GAMMA_RANGE = (1e-5, 2e-1)
+_DEFAULT_GAMMA_RANGE: tuple[float, float] = (1e-5, 2e-1)
 # Default size of step for iteration over given range in gamma parameter at `kernel-ridge`
-_DEFAULT_GAMMA_STEP = 1e-5
+_DEFAULT_GAMMA_STEP: float = 1e-5
 
 
-def postprocess(profile, **configuration):
+def postprocess(profile: Profile, **configuration: Any) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     Invoked from perun core, handles the postprocess actions
 
@@ -96,7 +103,7 @@ def postprocess(profile, **configuration):
                     'sub-sample to estimate bandwidth of the full sample. If False (default), the '
                     'estimator used the mean.'))
 @click.pass_context
-def estimator_settings(ctx, **kwargs):
+def estimator_settings(ctx: click.Context, **kwargs: Any) -> None:
     r"""
     Nadaraya-Watson kernel regression with specific settings for estimate.
 
@@ -211,6 +218,7 @@ def estimator_settings(ctx, **kwargs):
 
     In the case of confusion about this approach of kernel regression, you can visit StatsModels_.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     # update the current set of params with the selected mode of kernel regression
     kwargs.update({'kernel_mode': 'estimator-settings'})
     # update the current set of params with the params entered at `kernel regression` command
@@ -229,7 +237,7 @@ def estimator_settings(ctx, **kwargs):
               help='The float value of <bandwidth> defined by user, which '
                    'will be used at kernel regression.')
 @click.pass_context
-def user_selection(ctx, **kwargs):
+def user_selection(ctx: click.Context, **kwargs: Any) -> None:
     """
     Nadaraya-Watson kernel regression with user bandwidth.
 
@@ -244,6 +252,7 @@ def user_selection(ctx, **kwargs):
     is too low to execute the kernel regression. Then will be a bandwidth value approximated to the
     closest appropriate value, so that is not decreased the accuracy of the resulting estimate.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     # update the current set of params with the selected mode of kernel regression
     kwargs.update({'kernel_mode': 'user-selection'})
     # update the current set of params with the params entered at `kernel regression` command
@@ -264,7 +273,7 @@ def user_selection(ctx, **kwargs):
                    '<method_name> will be used to compute the bandwidth, which will be '
                    'used at kernel regression.')
 @click.pass_context
-def method_selection(ctx, **kwargs):
+def method_selection(ctx: click.Context, **kwargs: Any) -> None:
     r"""
     Nadaraya-Watson kernel regression with supporting bandwidth selection method.
 
@@ -320,6 +329,7 @@ def method_selection(ctx, **kwargs):
 
             where :math:`\sigma` marks the StandardDeviation_ and IQR marks the InterquartileRange_.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     # update the current set of params with the selected mode of kernel regression
     kwargs.update({'kernel_mode': 'method-selection'})
     # update the current set of params with the params entered at `kernel regression` command
@@ -357,7 +367,7 @@ def method_selection(ctx, **kwargs):
                     'to 3. Is accepted only by `local-polynomial` <smoothing-method>, another '
                     'methods ignoring it.'))
 @click.pass_context
-def kernel_smoothing(ctx, **kwargs):
+def kernel_smoothing(ctx: click.Context, **kwargs: Any) -> None:
     r"""
     Kernel regression with different types of kernel and regression methods.
 
@@ -469,6 +479,7 @@ def kernel_smoothing(ctx, **kwargs):
     combination with <bandwidth-value>, then will be ignored and will be accepted value from
     <bandwidth-value>.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     # update the current set of params with the selected mode of kernel regression
     kwargs.update({'kernel_mode': 'kernel-smoothing'})
     # update the current set of params with the params entered at `kernel regression` command
@@ -490,7 +501,7 @@ def kernel_smoothing(ctx, **kwargs):
                    'the given <gamma-range>. Cannot be greater than length of <gamma-range>, else '
                    'will be set to value of the lower bound of the <gamma_range>.')
 @click.pass_context
-def kernel_ridge(ctx, **kwargs):
+def kernel_ridge(ctx: click.Context, **kwargs: Any) -> None:
     """
     Nadaraya-Watson kernel regression with automatic bandwidth selection.
 
@@ -511,6 +522,7 @@ def kernel_ridge(ctx, **kwargs):
     *leave-one-out cross-validation*. The selected *bandwidth-value* will serves for *gaussian*
     kernel in resulting estimate: :math:`K(x, y) = exp(-gamma * ||x-y||^2)`.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     # validation of the step size - must be smaller than the length of the given range
     methods.valid_step_size(
         kwargs['gamma_step'], kwargs['gamma_range'][1] - kwargs['gamma_range'][0]
@@ -525,7 +537,7 @@ def kernel_ridge(ctx, **kwargs):
 @click.group(invoke_without_command=True)
 @cli_helpers.resources_key_options
 @click.pass_context
-def kernel_regression(ctx, **_):
+def kernel_regression(ctx: click.Context, **_: Any) -> None:
     """
     Execution of the interleaving of profiles resources by *kernel* models.
 

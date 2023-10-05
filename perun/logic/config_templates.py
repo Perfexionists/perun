@@ -52,9 +52,12 @@ compatible file is then registered as workload.
 Currently the templates are set by ``-t`` option of ``perun init`` command (see :ref:`cli-main-ref`
 for details on ``perun init``). By default **master** configuration is used.
 """
+from __future__ import annotations
 
 import os
 import subprocess
+
+from typing import Iterable, Any
 
 import jinja2
 
@@ -230,7 +233,7 @@ execute:
 CONFIG_FILE_TEMPLATE = None
 
 
-def get_predefined_configuration(name, kwargs):
+def get_predefined_configuration(name: str, kwargs: dict[str, Any]) -> str:
     """Converts the given string to an appropriate predefined configuration.
 
     In case the specified configuration does not exist, then Master configuration is used as
@@ -255,7 +258,7 @@ def get_predefined_configuration(name, kwargs):
         'MasterConfiguration': MasterConfiguration,
         'DeveloperConfiguration': DeveloperConfiguration,
         'UserConfiguration': UserConfiguration
-    }.get("{}Configuration".format(name.title()), "MasterConfiguration")()
+    }.get(f"{name.title()}Configuration", MasterConfiguration)()
     return CONFIG_FILE_TEMPLATE.render(dict(vars(options), **kwargs))
 
 
@@ -264,7 +267,7 @@ class MasterConfiguration:
 
     Moreover, Master is sane default for most of the functions, except for CLI calling.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
 
 
@@ -286,7 +289,7 @@ class DeveloperConfiguration(MasterConfiguration):
     | :ckey:`execute.pre_run`                   | make                          |
     +-------------------------------------------+-------------------------------+
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
         super().__init__()
         self.execute = {
@@ -328,14 +331,14 @@ class UserConfiguration(DeveloperConfiguration):
     EXECUTABLE_FOLDERS = {'build', '_build', 'dist'}
 
     @staticmethod
-    def _all_candidate_files(include_list):
+    def _all_candidate_files(include_list: set[str]) -> Iterable[str]:
         """Helper function that yield the stream of files contained in non-hidden directories
 
         :param set include_list: set of directory names that can contain looked-up files
         :return: iterable stream of files
         """
         for root, dirs, files in os.walk(os.getcwd(), topdown=True):
-            # Skip all of the directories starting with .
+            # Skip all the directories starting with .
             # i.e. this will skip .git or .perun, etc.
             dirs[:] = [d for d in dirs if not d.startswith('.')]
             if os.path.split(root)[1] in include_list:
@@ -343,7 +346,7 @@ class UserConfiguration(DeveloperConfiguration):
                     yield os.path.relpath(os.path.join(root, file), os.getcwd())
 
     @staticmethod
-    def _locate_workload_candidates():
+    def _locate_workload_candidates() -> list[str]:
         """Iterates through the filesystem tree under the current directory and tries to locate
         candidate workloads.
 
@@ -358,7 +361,7 @@ class UserConfiguration(DeveloperConfiguration):
         return workload_candidates
 
     @staticmethod
-    def _locate_executable_candidates():
+    def _locate_executable_candidates() -> list[str]:
         """Iterates through the filesystem tree under the current directory and tries to locate
         candidate executables.
 
@@ -379,7 +382,7 @@ class UserConfiguration(DeveloperConfiguration):
                 executable_candidates.append(file)
         return executable_candidates
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
         super().__init__()
         self.collectors = [

@@ -3,15 +3,24 @@
 This module contains method for classification the perfomance change between two profiles
 according to computed metrics and models from these profiles, based on the regression analysis.
 """
+from __future__ import annotations
 
 import copy
 import numpy as np
 
+from typing import Any, Iterable, TYPE_CHECKING
+
 import perun.logic.runner as runner
 import perun.check.general_detection as detect
 
+from perun.utils.structs import DegradationInfo
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
-def fast_check(baseline_profile, target_profile, **_):
+
+def fast_check(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
@@ -25,11 +34,11 @@ def fast_check(baseline_profile, target_profile, **_):
     )
 
 
-def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
-    """The function executes the classification of performance change between two profiles with
-    using regression analysis. The type of the best model from the regressed profile, which
-    contains the value absolute error, computed from the best models of both profile, is returned
-    such as the degree of the changes.
+def exec_fast_check(
+        uid: str, baseline_profile: Profile, baseline_x_pts: Iterable[float], abs_error: Iterable[float]
+) -> Profile:
+    """For the values specified in the abs_error points, constructs a profile and performs
+    a regression analysis inferring set of models.
 
     :param string uid: unique identifier of function for which we are creating the model
     :param Profile baseline_profile: baseline against which we are checking the degradation
@@ -42,12 +51,12 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
     std_err_profile = copy.deepcopy(baseline_profile)
     std_err_profile['models'].clear()
 
-    updated_data = {
+    updated_data: dict[str, list[float]] = {
         'structure-unit-size': [],
         'amount': []
     }
     # executing the regression analysis
-    for _, (x_pts, y_pts) in enumerate(zip(np.nditer(baseline_x_pts), np.nditer(abs_error))):
+    for x_pts, y_pts in zip(baseline_x_pts, abs_error):
         if not np.isnan(y_pts):
             updated_data['structure-unit-size'].append(float(x_pts))
             updated_data['amount'].append(float(y_pts))
@@ -68,8 +77,8 @@ def exec_fast_check(uid, baseline_profile, baseline_x_pts, abs_error):
         "of_key": "amount",
         "per_key": "structure-unit-size"
     }
-    _, std_err_profile = runner.run_postprocessor_on_profile(
+    _, result_std_err_profile = runner.run_postprocessor_on_profile(
         std_err_profile, 'regression_analysis', regression_analysis_params, skip_store=True
     )
 
-    return std_err_profile
+    return result_std_err_profile

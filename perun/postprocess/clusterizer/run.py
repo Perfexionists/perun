@@ -9,10 +9,13 @@ Currently we will try to issue the following clusterization techniques:
 All of the windows can be further augmented by taking into account how many percent of values are
 actually taken.
 """
+from __future__ import annotations
 
 import operator
 import itertools
 import click
+
+from typing import Any
 
 import perun.postprocess.clusterizer as clustering
 import perun.profile.convert as convert
@@ -22,9 +25,10 @@ import perun.logic.runner as runner
 
 from perun.profile.factory import pass_profile
 from perun.utils.structs import PostprocessStatus
+from perun.profile.factory import Profile
 
 
-def resource_sort_key(resource):
+def resource_sort_key(resource: dict[str, Any]) -> Any:
     """Extracts the key from resource used for sorting
 
     :param dict resource: profiling resource
@@ -33,7 +37,7 @@ def resource_sort_key(resource):
     return convert.flatten(resource['uid']), resource['amount']
 
 
-def resource_group_key(resource):
+def resource_group_key(resource: dict[str, Any]) -> tuple[str, str, str]:
     """Extracts the key from resource used for grouping
 
     :param dict resource: profiling resource
@@ -42,7 +46,7 @@ def resource_group_key(resource):
     return resource['type'], resource.get('subtype', ''), convert.flatten(resource['uid'])
 
 
-def print_groups(resources):
+def print_groups(resources: list[dict[str, Any]]) -> None:
     """Helper function for printing groups of resources
 
     :param list resources: list of resources
@@ -55,7 +59,8 @@ def print_groups(resources):
         log.newline()
 
 
-def postprocess(profile, strategy, **kwargs):
+def postprocess(profile: Profile, strategy: str, **kwargs: Any) \
+        -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """Takes the given profile and according to the set strategy computes clusters of resources
 
     All of the resources are first sorted according to their uid and amounts. Then they are group
@@ -64,8 +69,6 @@ def postprocess(profile, strategy, **kwargs):
     :param Profile profile: performance profile that will be clusterized
     :param str strategy: name of the used strategy
         (one of clustering.SUPPORTED_STRATEGIES
-    :param kwargs:
-    :return:
     """
     # Flatten the resources to sorted list of resources
     resources = list(map(operator.itemgetter(1), profile.all_resources()))
@@ -121,7 +124,7 @@ def postprocess(profile, strategy, **kwargs):
               required=False, flag_value='weighted',
               help="Specifies whether the width of the window is weighted or fixed")
 @pass_profile
-def clusterizer(profile, **kwargs):
+def clusterizer(profile: Profile, **kwargs: Any) -> None:
     """Clusters each resource to an appropriate cluster in order to be postprocessable
     by regression analysis.
 

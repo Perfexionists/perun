@@ -34,19 +34,22 @@ In the output above, we detected the ``Optimization`` between commits ``1eb3d6``
 changed from about six seconds to hundred miliseconds. For these detected changes we report no
 confidence at all.
 """
+from __future__ import annotations
+
+from typing import Any, Iterable
 
 import perun.profile.convert as convert
-import perun.check.factory as check
 import perun.postprocess.regression_analysis.tools as tools
 
-from perun.utils.structs import DegradationInfo
+from perun.utils.structs import DegradationInfo, PerformanceChange
+from perun.profile.factory import Profile
 
 
 DEGRADATION_THRESHOLD = 2.0
 OPTIMIZATION_THRESHOLD = 0.5
 
 
-def get_averages(profile):
+def get_averages(profile: Profile) -> dict[str, float]:
     """Retrieves the averages of all amounts grouped by the uid
 
     :param profiles.Profile profile: dictionary representation of profile
@@ -59,7 +62,9 @@ def get_averages(profile):
     return data_frame.groupby('uid').mean(numeric_only=True).to_dict()['amount']
 
 
-def average_amount_threshold(baseline_profile, target_profile, **_):
+def average_amount_threshold(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     This is based on simple heuristic, where for the same function models, we only check the order
@@ -81,11 +86,11 @@ def average_amount_threshold(baseline_profile, target_profile, **_):
         if baseline_average is not None:
             difference_ratio = tools.safe_division(target_average, baseline_average)
             if difference_ratio >= DEGRADATION_THRESHOLD:
-                change = check.PerformanceChange.Degradation
+                change = PerformanceChange.Degradation
             elif 0.0 < difference_ratio <= OPTIMIZATION_THRESHOLD:
-                change = check.PerformanceChange.Optimization
+                change = PerformanceChange.Optimization
             else:
-                change = check.PerformanceChange.NoChange
+                change = PerformanceChange.NoChange
 
             yield DegradationInfo(
                 res=change,

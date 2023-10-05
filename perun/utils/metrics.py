@@ -1,10 +1,14 @@
 """ Gathers various user defined metrics and stores them in the specified temporary file under
 the specified ID.
 """
+from __future__ import annotations
 
 import time
 import atexit
 
+from typing import Any, Optional
+
+import perun.utils.log as log
 import perun.logic.temp as temp
 
 
@@ -17,17 +21,17 @@ class MetricsManager:
     :ivar dict timers: keeps track of running timers
     :ivar dict records: stores the metrics
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """ Initializes the manager. Unless configure is called, the metrics are not recorded.
         """
-        self.enabled = False
-        self.id_base = None
-        self.metrics_id = None
-        self.metrics_filename = None
-        self.timers = {}
-        self.records = {}
+        self.enabled: bool = False
+        self.id_base: str = ''
+        self.metrics_id: str = ''
+        self.metrics_filename: Optional[str] = None
+        self.timers: dict[str, float] = {}
+        self.records: dict[str, dict[str, Any]] = {}
 
-    def configure(self, metrics_filename, metrics_id):
+    def configure(self, metrics_filename: str, metrics_id: str) -> None:
         """ Sets the required properties for collecting metrics.
 
         :param str metrics_filename: the name of the temp file that stores the metrics
@@ -43,7 +47,7 @@ class MetricsManager:
             }
         }
 
-    def switch_id(self, new_id):
+    def switch_id(self, new_id: str) -> None:
         """ Assigns new active ID.
 
         :param str new_id: the name under which the metrics are stored
@@ -55,12 +59,12 @@ class MetricsManager:
             'id': new_id
         }
 
-    def add_sub_id(self, sub_id):
+    def add_sub_id(self, sub_id: str) -> None:
         """ Creates a new ID in the metrics file in format <base_id>.<sub_id>
 
         :param str sub_id: a suffix to the current base ID.
         """
-        new_id = "{}.{}".format(self.id_base, sub_id)
+        new_id = f"{self.id_base}.{sub_id}"
         self.records[new_id] = self.records.pop(self.id_base, {})
         self.records[new_id]['id'] = new_id
         self.metrics_id = new_id
@@ -69,7 +73,7 @@ class MetricsManager:
 Metrics = MetricsManager()
 
 
-def is_enabled():
+def is_enabled() -> bool:
     """ Checks if metrics collection is enabled.
 
     :return bool: True if metrics are being collected, False otherwise
@@ -77,7 +81,7 @@ def is_enabled():
     return Metrics.enabled
 
 
-def start_timer(name):
+def start_timer(name: str) -> None:
     """ Starts a new timer.
 
     :param str name: the name of the timer (and also the metric)
@@ -86,7 +90,7 @@ def start_timer(name):
         Metrics.timers[name] = time.time()
 
 
-def end_timer(name):
+def end_timer(name: str) -> None:
     """ Stops the specified running timer and stores the resulting time into metrics
 
     :param str name: the name of the timer
@@ -98,7 +102,7 @@ def end_timer(name):
 
 
 # TODO: change to getitem / setitem?
-def add_metric(name, value):
+def add_metric(name: str, value: Any) -> None:
     """ Add new metric and its value.
 
     :param str name: name of the metric
@@ -108,7 +112,7 @@ def add_metric(name, value):
         Metrics.records[Metrics.metrics_id][name] = value
 
 
-def read_metric(name, default=None):
+def read_metric(name: str, default: Optional[Any] = None) -> Optional[Any]:
     """ Read the current value of a metric specified by its ID
 
     :param str name: the ID of the metric to fetch
@@ -117,21 +121,25 @@ def read_metric(name, default=None):
     """
     if Metrics.enabled:
         return Metrics.records[Metrics.metrics_id].get(name, default)
+    return None
 
 
-def save():
+def save() -> None:
     """ Save the stored metrics into the metrics file.
     """
     if Metrics.enabled:
-        stored_metrics = {}
-        # Update the metrics file
-        if temp.exists_temp_file(Metrics.metrics_filename):
-            stored_metrics = temp.read_temp(Metrics.metrics_filename)
-        stored_metrics.update(Metrics.records)
-        temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
+        if Metrics.metrics_filename is not None:
+            stored_metrics: dict[str, dict[str, Any]] = {}
+            # Update the metrics file
+            if temp.exists_temp_file(Metrics.metrics_filename):
+                stored_metrics = temp.read_temp(Metrics.metrics_filename)
+            stored_metrics.update(Metrics.records)
+            temp.store_temp(Metrics.metrics_filename, stored_metrics, json_format=True)
+        else:
+            log.error("cannot save metrics: `metrics_filename` was not specified")
 
 
-def save_separate(temp_name, data):
+def save_separate(temp_name: str, data: Any) -> None:
     temp.store_temp(temp_name, data, json_format=True)
 
 

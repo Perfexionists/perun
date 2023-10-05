@@ -3,21 +3,36 @@
 In general, this testing is trying to find performance degradation in newly generated target
 profile comparing with baseline profile.
 """
+from __future__ import annotations
 
 import perun.check.factory as check
 import perun.logic.runner as run
 from perun.utils.structs import PerformanceChange
 
+from typing import TYPE_CHECKING, Iterable, Any
 
-DEGRADATION_RATIO_TRESHOLD = 0
+if TYPE_CHECKING:
+    from perun.utils.structs import Executable, MinorVersion, CollectStatus
+    from perun.fuzz.structs import Mutation
+    from perun.profile.factory import Profile
 
 
-def baseline_testing(executable, seeds, collector, postprocessor, minor_version_list, **kwargs):
+DEGRADATION_RATIO_TRESHOLD = 0.0
+
+
+def baseline_testing(
+        executable: Executable,
+        seeds: list[Mutation],
+        collector: str,
+        postprocessor: list[str],
+        minor_version_list: list[MinorVersion],
+        **kwargs: Any
+) -> Iterable[tuple[CollectStatus, Profile, str]]:
     """ Generates a profile for specified command with init seeds, compares each other.
 
     :param Executable executable: called command with arguments
     :param list seeds: list of workloads
-    :param list collector: list of collectors
+    :param str collector: list of collectors
     :param list postprocessor: list of postprocessors
     :param list minor_version_list: list of MinorVersion info
     :param dict kwargs: dictionary of additional params for postprocessor and collector
@@ -43,21 +58,27 @@ def baseline_testing(executable, seeds, collector, postprocessor, minor_version_
     return base_pg
 
 
-def target_testing(executable, workload, collector, postprocessor, minor_version_list, **kwargs):
+def target_testing(
+        executable: Executable,
+        workload: Mutation,
+        collector: str,
+        postprocessor: list[str],
+        minor_version_list: list[MinorVersion],
+        base_result: Iterable[tuple[CollectStatus, Profile, str]],
+        **kwargs: Any
+) -> bool:
     """ Generates a profile for specified command with fuzzed workload, compares with
     baseline profile.
 
     :param Executable executable: called command with arguments
-    :param list workload: list of workloads
-    :param list collector: list of collectors
+    :param Mutation workload: list of workloads
+    :param str collector: list of collectors
     :param list postprocessor: list of postprocessors
     :param list minor_version_list: list of MinorVersion info
+    :param iterable base_result: list of results for baseline
     :param dict kwargs: dictionary of additional params for postprocessor and collector
     :return bool: True if performance degradation was detected, False otherwise.
     """
-    # baseline profile
-    base_result = kwargs["base_result"]
-
     # target profile with a new workload
     target_pg = list(run.generate_profiles_for(
         [executable.cmd], [executable.args], [workload.path], [collector], postprocessor,
@@ -69,7 +90,11 @@ def target_testing(executable, workload, collector, postprocessor, minor_version
     return workload.deg_ratio > DEGRADATION_RATIO_TRESHOLD
 
 
-def check_for_change(base_pg, target_pg, method='best-model'):
+def check_for_change(
+        base_pg: Iterable[tuple[CollectStatus, Profile, str]],
+        target_pg: Iterable[tuple[CollectStatus, Profile, str]],
+        method: str = 'best-model'
+) -> float:
     """Function that randomly choose an index from list.
 
     :param generator base_pg: base performance profile generator
@@ -84,5 +109,5 @@ def check_for_change(base_pg, target_pg, method='best-model'):
         for perf_change in check.degradation_between_profiles(base_prof[1], target_prof[1], method):
             checks += 1
             degs += perf_change.result == PerformanceChange.Degradation
-        return degs / checks if checks else 0
-    return 0
+        return degs / checks if checks else 0.0
+    return 0.0

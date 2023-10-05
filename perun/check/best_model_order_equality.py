@@ -39,11 +39,14 @@ baseline model as a confidence for this detected change. Since :math:`r^2` is al
 value `1.0` (which would mean, that the model precisely fits the measured values), this signifies
 that the best model fit the data tightly and hence the detected optimization is **not spurious**.
 """
+from __future__ import annotations
 
-import perun.check.factory as check
+from typing import Any, Iterable
+
 import perun.check.general_detection as detection
 
-from perun.utils.structs import DegradationInfo
+from perun.utils.structs import DegradationInfo, PerformanceChange
+from perun.profile.factory import Profile
 
 
 CONFIDENCE_THRESHOLD = 0.9
@@ -57,7 +60,9 @@ MODEL_ORDERING = [
 ]
 
 
-def best_model_order_equality(baseline_profile, target_profile, **_):
+def best_model_order_equality(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Checks between pair of (baseline, target) profiles, whether the can be degradation detected
 
     This is based on simple heuristic, where for the same function models, we only check the order
@@ -80,12 +85,12 @@ def best_model_order_equality(baseline_profile, target_profile, **_):
                 baseline_ordering = MODEL_ORDERING.index(best_baseline_model.type)
                 target_ordering = MODEL_ORDERING.index(best_model.type)
                 if baseline_ordering > target_ordering:
-                    change = check.PerformanceChange.Optimization
+                    change = PerformanceChange.Optimization
                 else:
-                    change = check.PerformanceChange.Degradation
+                    change = PerformanceChange.Degradation
                 degradation_rate = target_ordering - baseline_ordering
             else:
-                change = check.PerformanceChange.NoChange
+                change = PerformanceChange.NoChange
                 degradation_rate = 0
 
             yield DegradationInfo(

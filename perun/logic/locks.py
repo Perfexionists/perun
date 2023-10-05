@@ -20,9 +20,11 @@ to the corresponding perun instance and does not cover the whole system, i.e. tw
 processes originating from different perun instances will not be able to successfully lock
 their resources against each other.
 """
+from __future__ import annotations
 
 import os
 from enum import Enum
+from typing import Optional
 
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.values import LOCK_SUFFIX_LEN, PS_FORMAT
@@ -44,7 +46,7 @@ class LockType(Enum):
     SystemTap = '.s_lock'
 
     @classmethod
-    def suffix_to_type(cls, suffix):
+    def suffix_to_type(cls, suffix: str) -> Optional['LockType']:
         """ Transforms the given suffix into the corresponding LockType item.
 
         :param str suffix: the suffix to transform
@@ -53,6 +55,7 @@ class LockType(Enum):
         for resource in cls:
             if resource.value == suffix:
                 return resource
+        return None
 
 
 class ResourceLock:
@@ -65,7 +68,7 @@ class ResourceLock:
     :ivar str locks_dir: the path to the .perun directory where lock files are stored
     :ivar str file: the full path of the resulting lock file
     """
-    def __init__(self, resource_type, resource_name, pid, locks_dir):
+    def __init__(self, resource_type: LockType, resource_name: str, pid: int, locks_dir: str) -> None:
         """ Construct lock object
 
         :param LockType resource_type: the type of the resource to lock
@@ -82,7 +85,7 @@ class ResourceLock:
         )
 
     @classmethod
-    def fromfile(cls, lock_file):
+    def fromfile(cls, lock_file: str) -> Optional['ResourceLock']:
         """ Construct ResourceLock object from a lock file
 
         :param str lock_file: the path of the lock file
@@ -96,8 +99,9 @@ class ResourceLock:
             resource_type = LockType.suffix_to_type(rest[-LOCK_SUFFIX_LEN:])
             if resource_type:
                 return cls(resource_type, name, pid, os.path.dirname(lock_file))
+        return None
 
-    def lock(self):
+    def lock(self) -> None:
         """ Actually locks the resource represented by the lock object.
         """
         WATCH_DOG.debug(
@@ -113,13 +117,13 @@ class ResourceLock:
 
         WATCH_DOG.debug("Resource locked: '{}'".format(self.file))
 
-    def unlock(self):
+    def unlock(self) -> None:
         """ Unlocks the resource represented by the lock object.
         """
         # Attempt to delete the lock file if it was not deleted before
         self.delete_file()
 
-    def check_validity(self):
+    def check_validity(self) -> None:
         """ Checks the validity of the lock, i.e. if there are no other lock files representing the
         same resource (e.g. the profiled binary). If a collision is encountered, an exception
         is raised.
@@ -148,7 +152,7 @@ class ResourceLock:
 
         WATCH_DOG.debug("Lock for '{}:{}' is valid".format(self.name, self.pid))
 
-    def delete_file(self):
+    def delete_file(self) -> None:
         """ Attempts to remove the lock file from the file system.
         """
         try:
@@ -162,7 +166,12 @@ class ResourceLock:
                 WATCH_DOG.warn("Failed to delete resource lock file '{}'".format(str(exc)))
 
 
-def get_active_locks_for(locks_dir, names=None, resource_types=None, pids=None):
+def get_active_locks_for(
+        locks_dir: str,
+        names: Optional[list[str]] = None,
+        resource_types: Optional[list[LockType]] = None,
+        pids: Optional[list[int]] = None
+) -> list[ResourceLock]:
     """ Lists the active locks, i.e. the lock files in the locks_dir that match the supplied
     constraints in terms of resource name, type and PIDs. If the constraint is set to None, then
     it is simply ignored.
@@ -175,7 +184,7 @@ def get_active_locks_for(locks_dir, names=None, resource_types=None, pids=None):
     :return list: the list of ResourceLock objects
     """
 
-    def is_matching(name, r_type, lock_pid):
+    def is_matching(name: Optional[str], r_type: Optional[LockType], lock_pid: Optional[int]) -> bool:
         """ Checks the given parameters and compares them with the filtering constraints.
 
         :param str name: the resource name to check
@@ -198,7 +207,7 @@ def get_active_locks_for(locks_dir, names=None, resource_types=None, pids=None):
     return locks
 
 
-def _is_running_perun_process(pid):
+def _is_running_perun_process(pid: int) -> bool:
     """ Checks if the given PID represents a currently running perun process,
 
     :param int pid: the PID of the process

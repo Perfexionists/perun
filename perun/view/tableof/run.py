@@ -1,17 +1,23 @@
 """Table interpretation of the profile"""
+from __future__ import annotations
 
 import os
 import operator
 from itertools import groupby
+from typing import Callable, Any
 import click
 import tabulate
+import pandas
 
+import perun.utils.log as log
 import perun.profile.convert as convert
 import perun.profile.query as query
 import perun.profile.helpers as profiles
 
+from perun.profile.factory import Profile
 
-def get_headers(ctx):
+
+def get_headers(ctx: click.Context) -> list[str]:
     """According to the loaded profile, checks the list of possible keys that can be used for
     filtering, sorting, etc.
 
@@ -19,6 +25,9 @@ def get_headers(ctx):
     :return: candidate headers for resources or models
     """
     headers = []
+    if ctx.command is None or ctx.parent is None or ctx.parent.parent is None:
+        log.error("internal click error: ctx.command, ctx.parent or ctx.parent.parent is None")
+        return []
     if ctx.command.name == 'resources':
         headers = list(ctx.parent.parent.params['profile'].all_resource_fields()) \
                   + ['snapshots']
@@ -27,7 +36,7 @@ def get_headers(ctx):
     return headers
 
 
-def output_table_to(table, target, target_file):
+def output_table_to(table: str, target: str, target_file: str) -> None:
     """Outputs the table either to stdout or file
 
     :param str table: outputted table
@@ -41,7 +50,14 @@ def output_table_to(table, target, target_file):
         print(table)
 
 
-def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, filter_by):
+def create_table_from(
+        profile: Profile,
+        conversion_function: Callable[[Profile], pandas.DataFrame],
+        headers: list[str],
+        tablefmt: str,
+        sort_by: str,
+        filter_by: list[tuple[str, str]]
+) -> str:
     """Using the tabulate package, transforms the profile into table.
 
     Currently, the representation contains all of the possible keys.
@@ -52,6 +68,7 @@ def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, 
     :param str sort_by: key for which we will sort
     :param list filter_by list of keys that will be potentially filtered
     :param str tablefmt: format of the table
+    :param str filter_by: key by which we filter
     :return: tabular representation of the profile in string
     """
     dataframe = conversion_function(profile)
@@ -74,7 +91,7 @@ def create_table_from(profile, conversion_function, headers, tablefmt, sort_by, 
     return tabulate.tabulate(resource_table, headers=headers, tablefmt=tablefmt)
 
 
-def process_filter(ctx, option, value):
+def process_filter(ctx: click.Context, option: click.Option, value: list[str]) -> list[str]:
     """Processes option for filtering of the table, according to the profile keys
 
     :param click.Context ctx: context of the called command
@@ -88,15 +105,14 @@ def process_filter(ctx, option, value):
         for val in value:
             if val[0] not in headers:
                 raise click.BadOptionUsage(
-                    option, "invalid key choice for filtering: {} (choose from {})".format(
-                        val[0], ", ".join(headers)
-                    )
+                    option.name or '',
+                    f"invalid key choice for filtering: {val[0]} (choose from {', '.join(headers)})"
                 )
         return list(value)
     return value
 
 
-def process_sort_key(ctx, option, value):
+def process_sort_key(ctx: click.Context, option: click.Option, value: str) -> str:
     """Processes the key for sorting the table
 
     :param click.Context ctx: context of the called command
@@ -108,14 +124,13 @@ def process_sort_key(ctx, option, value):
 
     if value and value not in headers:
         raise click.BadOptionUsage(
-            option, "invalid key choice for sorting the table: {} (choose from {})".format(
-                value, ", ".join(headers)
-            )
+            option.name or '',
+            f"invalid key choice for sorting the table: {value} (choose from {', '.join(headers)})"
         )
     return value
 
 
-def process_headers(ctx, option, value):
+def process_headers(ctx: click.Context, option: click.Option, value: list[str]) -> list[str]:
     """Processes list of headers of the outputted table
 
     :param click.Context ctx: context of the called command
@@ -130,9 +145,8 @@ def process_headers(ctx, option, value):
         for val in value:
             if val not in headers:
                 raise click.BadOptionUsage(
-                    option, "invalid choice for table header: {} (choose from {})".format(
-                        val, ", ".join(headers)
-                    )
+                    option.name or '',
+                    f"invalid choice for table header: {val} (choose from {', '.join(headers)})"
                 )
         return list(value)
     # Else we output everything
@@ -140,7 +154,7 @@ def process_headers(ctx, option, value):
         return sorted(headers)
 
 
-def process_output_file(ctx, _, value):
+def process_output_file(ctx: click.Context, _: click.Option, value: str) -> str:
     """Generates the name of the output file, if no value is issued
 
     If no output file is set, then we generate the profile name according to the profile
@@ -151,11 +165,12 @@ def process_output_file(ctx, _, value):
     :param str value: output file of the show
     :return: output file of the show
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     if value:
         return value
     else:
         prof_name = profiles.generate_profile_name(ctx.parent.params['profile'])
-        return ctx.command.name + "_of_" + os.path.splitext(prof_name)[0]
+        return (ctx.command.name or '<MISSING_COMMAND_NAME>') + "_of_" + os.path.splitext(prof_name)[0]
 
 
 @click.group()
@@ -171,7 +186,7 @@ def process_output_file(ctx, _, value):
               type=click.Choice(tabulate.tabulate_formats),
               help='Format of the outputted table')
 @click.pass_context
-def tableof(*_, **__):
+def tableof(*_: Any, **__: Any) -> None:
     """Textual representation of the profile as a table.
 
     .. _tabulate: https://pypi.org/project/tabulate/
@@ -190,18 +205,18 @@ def tableof(*_, **__):
 
             uid                          model           r_square
             ---------------------------  -----------  -----------
-            SLList_insert(SLList*, int)  logarithmic  0.000870412
-            SLList_insert(SLList*, int)  linear       0.001756
-            SLList_insert(SLList*, int)  quadratic    0.00199925
-            SLList_insert(SLList*, int)  power        0.00348063
-            SLList_insert(SLList*, int)  exponential  0.00707644
-            SLList_search(SLList*, int)  constant     0.0114714
-            SLList_search(SLList*, int)  logarithmic  0.728343
-            SLList_search(SLList*, int)  exponential  0.839136
-            SLList_search(SLList*, int)  power        0.970912
-            SLList_search(SLList*, int)  linear       0.98401
-            SLList_search(SLList*, int)  quadratic    0.984263
-            SLList_insert(SLList*, int)  constant     1
+            SLlist_insert(SLlist*, int)  logarithmic  0.000870412
+            SLlist_insert(SLlist*, int)  linear       0.001756
+            SLlist_insert(SLlist*, int)  quadratic    0.00199925
+            SLlist_insert(SLlist*, int)  power        0.00348063
+            SLlist_insert(SLlist*, int)  exponential  0.00707644
+            SLlist_search(SLlist*, int)  constant     0.0114714
+            SLlist_search(SLlist*, int)  logarithmic  0.728343
+            SLlist_search(SLlist*, int)  exponential  0.839136
+            SLlist_search(SLlist*, int)  power        0.970912
+            SLlist_search(SLlist*, int)  linear       0.98401
+            SLlist_search(SLlist*, int)  quadratic    0.984263
+            SLlist_insert(SLlist*, int)  constant     1
 
     Refer to :ref:`views-tableof` for more thorough description and example of
     `table` interpretation possibilities.
@@ -221,10 +236,15 @@ def tableof(*_, **__):
               nargs=2, metavar='<key> <value>', callback=process_filter, multiple=True,
               help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
                    " several times, then rows satisfying all rules will be selected for different"
-                   " keys; and the rows satisfying some rule will be sellected for same key.")
+                   " keys; and the rows satisfying some rule will be selected for same key.")
 @click.pass_context
-def resources(ctx, headers, sort_by, filter_by, **_):
+def resources(
+        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_: Any
+) -> None:
     """Outputs the resources of the profile as a table"""
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
+    assert ctx.parent.parent is not None and f"impossible happened: {ctx.parent} has no parent"
+
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
     profile_as_table = create_table_from(
@@ -249,8 +269,13 @@ def resources(ctx, headers, sort_by, filter_by, **_):
               help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
                    " several times, then rows satisfying all rules will be selected for different"
                    " keys; and the rows satisfying some rule will be sellected for same key.")
-def models(ctx, headers, sort_by, filter_by, **_):
+def models(
+        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_: Any
+) -> None:
     """Outputs the models of the profile as a table"""
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
+    assert ctx.parent.parent is not None and f"impossible happened: {ctx.parent} has no parent"
+
     tablefmt = ctx.parent.params['tablefmt']
     profile = ctx.parent.parent.params['profile']
     profile_as_table = create_table_from(

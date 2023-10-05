@@ -148,7 +148,7 @@ def check(dependencies):
 
 # The trace record template
 TraceRecord = collections.namedtuple(
-    'record', ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence']
+    'TraceRecord', ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence']
 )
 
 # The list of required dependencies

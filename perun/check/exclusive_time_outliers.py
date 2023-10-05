@@ -63,8 +63,9 @@ overall slowdown of the program (in this case, the CPython ctypes library). The 
 reported as the IQR multiple of `110.46`.
 
 """
+from __future__ import annotations
 
-from typing import Optional, Generator, Dict, List, Tuple
+from typing import Optional, Iterable, Any
 from difflib import get_close_matches
 
 import pandas as pd
@@ -72,15 +73,15 @@ import numpy as np
 from scipy import stats
 
 from perun.utils.structs import DegradationInfo
-from perun.check.factory import PerformanceChange
 from perun.profile import convert
 from perun.logic import config
 
+from perun.utils.structs import PerformanceChange
 from perun.profile.factory import Profile
 
 
-OldLocMap = Dict[str, str]
-NewLocMap = Dict[str, str]
+OldLocMap = dict[str, str]
+NewLocMap = dict[str, str]
 
 
 MZS_CORRECTION = 0.6745
@@ -91,8 +92,8 @@ NS_TO_MS = 1000000
 
 
 def exclusive_time_outliers(
-        baseline_profile: Profile, target_profile: Profile, **_
-) -> Generator[DegradationInfo, None, None]:
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Checks the pair of (baseline, target) profiles for changes in function exclusive times.
 
     The method works by detecting 'exclusive time delta' outliers and classifying their severity
@@ -147,14 +148,14 @@ class DiffProfile:
         )
         if self.location_filter == "*":
             self.location_filter = None
-        self.cut_off: Optional[float] = float(config.lookup_key_recursively(
+        self.cut_off: float = float(config.lookup_key_recursively(
             "degradation.cutoff", "0.0")
         )
         self.df: pd.DataFrame = self._merge_and_diff(
             self._prepare_profile(baseline_profile), self._prepare_profile(target_profile)
         )
 
-    def detect_changes(self) -> Generator[DegradationInfo, None, None]:
+    def detect_changes(self) -> Iterable[DegradationInfo]:
         """Detect and report the exclusive time changes and the overall degradation / optimization.
 
         The method runs three outlier detection methods, where z-score flags the most significant
@@ -217,7 +218,7 @@ class DiffProfile:
             )
 
     @staticmethod
-    def _determine_result_and_confidence(row: pd.Series) -> Tuple[PerformanceChange, str, float]:
+    def _determine_result_and_confidence(row: pd.Series[Any]) -> tuple[PerformanceChange, str, float]:
         """Select the severity, confidence type and confidence rate of the exclusive time change.
 
         :param row: DataFrame row of specific 'uid' (i.e., function) record
@@ -363,7 +364,7 @@ class DiffProfile:
 
         :return: the merged and extended DataFrame
         """
-        def _delta_exc(row: pd.Series) -> float:
+        def _delta_exc(row: pd.Series[Any]) -> float:
             """ Helper function for properly computing the absolute exclusive time delta even
             when the function is new / deleted (in those cases, one of the exclusive times is
             nan, which breaks the computation).
@@ -416,8 +417,8 @@ class DiffProfile:
 
 
 def _map_similar_names(
-        strings_old: List[str], strings_new: List[str]
-) -> Tuple[OldLocMap, NewLocMap]:
+        strings_old: list[str], strings_new: list[str]
+) -> tuple[OldLocMap, NewLocMap]:
     """Map profile location names that might have slightly changed in different versions.
 
     E.g., due to the names containing the version number (mylib-3.4 vs mylib-3.5).

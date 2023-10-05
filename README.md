@@ -52,6 +52,9 @@ makes it a good store of profiles along with the context.
 Installation
 ------------
 
+Note that we are no longer maintaining support for Python 3.8. Perun may work, but we strongly 
+advise to upgrade your Python to newer version.
+
 You can install Perun as follows:
 
     git clone https://github.com/tfiedor/perun.git

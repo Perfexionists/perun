@@ -3,15 +3,25 @@
 This module contains method for classification the perfomance change between two profiles
 according to computed metrics and models from these profiles, based on the polynomial regression.
 """
+from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
+
+from typing import Any, Iterable, TYPE_CHECKING
 
 import perun.check.general_detection as detect
+
+from perun.utils.structs import DegradationInfo
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
 
 THRESHOLD = 100000000
 
 
-def polynomial_regression(baseline_profile, target_profile, **_):
+def polynomial_regression(
+        baseline_profile: Profile, target_profile: Profile, **_: Any
+) -> Iterable[DegradationInfo]:
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
 
@@ -26,7 +36,10 @@ def polynomial_regression(baseline_profile, target_profile, **_):
     )
 
 
-def exec_polynomial_regression(baseline_x_pts, lin_abs_error):
+def exec_polynomial_regression(
+        baseline_x_pts: npt.NDArray[np.float64] | list[float],
+        lin_abs_error: npt.NDArray[np.float64] | list[float]
+) -> str:
     """The function executes the classification of performance change between two profiles with
     using function from numpy module, concretely polyfit. Our effort is well-fit interleaving of
     the data by polynomials of the certain degrees can pretty accurately classify how big change

@@ -1,14 +1,17 @@
 """Bar's graphs interpretation of the profiles."""
+from __future__ import annotations
 
 import click
 
+from typing import Any
+
 import perun.view.bars.factory as bars_factory
 from perun.utils import cli_helpers, view_helpers, log, helpers
-from perun.profile.factory import pass_profile
+from perun.profile.factory import pass_profile, Profile
 from perun.utils.exceptions import InvalidParameterException
 
 
-def process_title(ctx, _, value):
+def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
     """Processes default value for the title.
 
     If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
@@ -68,7 +71,7 @@ def process_title(ctx, _, value):
               help="The generated graph will be immediately opened in the"
               " browser (firefox will be used).")
 @pass_profile
-def bars(profile, filename, view_in_browser, **kwargs):
+def bars(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:
     """Customizable interpretation of resources using the bar format.
 
     .. _Bokeh: https://bokeh.pydata.org/en/latest/

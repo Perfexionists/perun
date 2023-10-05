@@ -31,6 +31,7 @@ The TextFile Generator can be configured by following options:
     be of maximal length (``max_chars``).
 
 """
+from __future__ import annotations
 
 import distutils.util as dutils
 import os
@@ -38,11 +39,13 @@ import tempfile
 import random
 import faker
 
-from perun.workload.generator import Generator
+from typing import Any, Iterable
+
+from perun.workload.generator import WorkloadGenerator
+from perun.utils.structs import Job
 
 
-
-class TextfileGenerator(Generator):
+class TextfileGenerator(WorkloadGenerator):
     """Generator of random text files
 
     :ivar int min_lines: minimal number of lines in generated text file
@@ -53,8 +56,9 @@ class TextfileGenerator(Generator):
     :ivar bool randomize_rows: if set to true, then the lines in the file will be
         randomized. Otherwise they will always be maximal.
     """
-    def __init__(self, job, min_lines, max_lines, step=1, min_rows=5, max_rows=80,
-                 randomize_rows=True, **kwargs):
+    def __init__(self, job: Job, min_lines: int, max_lines: int,
+                 step: int = 1, min_rows: int = 5, max_rows: int = 80,
+                 randomize_rows: bool = True, **kwargs: Any):
         """Initializes the generator of random text files
 
         :param Job job: job for which we are generating workloads
@@ -82,7 +86,7 @@ class TextfileGenerator(Generator):
 
         self.faker = faker.Faker()
 
-    def _get_line(self):
+    def _get_line(self) -> str:
         """Generates text of given length
 
         :return: one random line of lorem ipsum dolor text
@@ -91,7 +95,7 @@ class TextfileGenerator(Generator):
             if self.randomize_rows else self.max_chars
         return self.faker.text(max_nb_chars=line_len).replace('\n', ' ')
 
-    def _get_file_content(self, file_len):
+    def _get_file_content(self, file_len: int) -> str:
         """Generates text file content for the file of given length
 
         :param int file_len: length of the generated file contents
@@ -101,7 +105,7 @@ class TextfileGenerator(Generator):
             self._get_line() for _ in range(file_len)
         )
 
-    def _generate_next_workload(self):
+    def _generate_next_workload(self) -> Iterable[tuple[str, dict[str, Any]]]:
         """Generates next file workload
 
         :return: path to a file
@@ -109,7 +113,6 @@ class TextfileGenerator(Generator):
         for file_len in range(self.min_lines, self.max_lines + 1, self.step):
             fd, path = tempfile.mkstemp()
             try:
-                print("Generating {}".format(path))
                 with os.fdopen(fd, 'w') as tmpfile:
                     tmpfile.write(self._get_file_content(file_len))
                 yield path, {}

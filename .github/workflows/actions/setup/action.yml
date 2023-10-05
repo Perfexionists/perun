@@ -1,0 +1,38 @@
+name: Setup Environment
+description: Performs setup of Perun, Python and its dependencies
+inputs:
+  python-version:
+    description: 'Python version to run'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+
+    - name: Install Unix dependencies
+      shell: sh
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get install time libunwind8-dev g++-9 gcc-9 git
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9
+
+    - name: Initialize Git
+      shell: sh
+      run: |
+        git config --global user.email "perun-allmighty@gmail.com"
+        git config --global user.name "Perun Allmighty"
+
+    - name: Upgrade pip and setuptools dependencies
+      shell: sh
+      run: |
+        python -m pip install --upgrade pip setuptools
+
+    - name: Install Tox
+      shell: sh
+      run: |
+        pip install tox

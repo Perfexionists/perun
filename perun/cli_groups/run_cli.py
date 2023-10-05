@@ -1,4 +1,5 @@
 """Group of CLI commands for running the Perun process."""
+from __future__ import annotations
 
 import click
 
@@ -7,6 +8,8 @@ import perun.logic.config as perun_config
 import perun.utils as utils
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
+
+from typing import Any
 
 from perun.utils.structs import CollectStatus
 
@@ -30,7 +33,7 @@ from perun.utils.structs import CollectStatus
               help='If set to true, then even if the repository is dirty, '
                    'the changes will not be stashed')
 @click.pass_context
-def run(ctx, **kwargs):
+def run(ctx: click.Context, **kwargs: Any) -> None:
     """Generates batch of profiles w.r.t. specification of list of jobs.
 
     Either runs the job matrix stored in local.yml configuration or lets the
@@ -43,7 +46,7 @@ def run(ctx, **kwargs):
 @click.pass_context
 @click.option('--without-vcs-history', '-q', 'quiet', is_flag=True, default=False,
               help="Will not print the VCS history tree during the collection of the data.")
-def matrix(ctx, quiet, **kwargs):
+def matrix(ctx: click.Context, quiet: bool, **kwargs: Any) -> None:
     """Runs the jobs matrix specified in the local.yml configuration.
 
     This commands loads the jobs configuration from local configuration, builds
@@ -94,17 +97,17 @@ def matrix(ctx, quiet, **kwargs):
               help='Additional parameters for the <postprocessor> read from the'
                    ' file in YAML format')
 @click.pass_context
-def job(ctx, **kwargs):
+def job(ctx: click.Context, **kwargs: Any) -> None:
     """Run specified batch of perun jobs to generate profiles.
 
     This command correspond to running one isolated batch of profiling jobs,
-    outside of regular profilings. Run ``perun run matrix``, after specifying
-    job matrix in local configuration to automate regular profilings of your
-    project. After the batch is generated, each profile is taged with
-    :preg:`origin` set to current ``HEAD``. This serves as check to not assing
+    outside of regular profiling. Run ``perun run matrix``, after specifying
+    job matrix in local configuration to automate regular profiling of your
+    project. After the batch is generated, each profile is tagged with
+    :preg:`origin` set to current ``HEAD``. This serves as check to not assign
     such profiles to different minor versions.
 
-    By default the profiles computed by this batch job are stored inside the
+    By default, the profiles computed by this batch job are stored inside the
     ``.perun/jobs/`` directory as a files in form of::
 
         bin-collector-workload-timestamp.perf
@@ -121,7 +124,7 @@ def job(ctx, **kwargs):
 
     This command profiles two commands ``./mybin file.in`` and ``./mybin
     file2.in`` and collects the profiling data using the
-    :ref:`collectors-time`. The profiles are afterwards normalized with the
+    :ref:`collectors-time`. The profiles are then normalized with the
     :ref:`postprocessors-normalizer`.
 
     .. code-block:: bash
@@ -138,7 +141,7 @@ def job(ctx, **kwargs):
 
     This commands runs two jobs ``./mybin input.txt`` and ``./otherbin
     input.txt`` and collects the profiles using the :ref:`collectors-memory`.
-    The profiles are afterwards postprocessed, first using the
+    The profiles are then postprocessed, first using the
     :ref:`postprocessors-normalizer` and then with
     :ref:`postprocessors-regression-analysis`.
 

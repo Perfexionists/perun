@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import perun.check.integral_comparison as int_cmp
 import perun.check.linear_regression as lreg
 import perun.check.local_statistics as loc_stat

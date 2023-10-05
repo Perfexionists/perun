@@ -15,6 +15,8 @@ import perun.logic.config as config
 import perun.logic.commands as commands
 import perun.utils.helpers as helpers
 from perun.utils.exceptions import NotPerunRepositoryException, UnsupportedModuleException
+from perun.utils.structs import MinorVersion, ProfileListConfig
+from perun.profile.helpers import ProfileInfo
 
 
 @pytest.mark.usefixtures('cleandir')
@@ -128,3 +130,51 @@ def test_log(pcs_full, capsys):
 
         for parent in commit.parents:
             assert str(parent) in out
+
+
+def test_internals(capsys, monkeypatch):
+    """Test internal functions used in log and short logs"""
+    # Testing incorrect token
+    with pytest.raises(SystemExit):
+        commands.print_shortlog_token(
+            "%short:9", {}, MinorVersion('', '', '', '', '', []), 0, "%short:9"
+        )
+    _, err = capsys.readouterr()
+    assert 'incorrect formatting token %short:9' in err
+
+    with pytest.raises(SystemExit):
+        commands.print_shortlog_profile_list_header(
+            [('fmt_string', "%short:9")], {}
+        )
+    _, err = capsys.readouterr()
+    assert 'incorrect formatting token %short:9' in err
+
+    def patched_cwd():
+        return '.'
+    # This test could be better
+    monkeypatch.setattr("os.getcwd", patched_cwd)
+    test_profile = {
+        'header': {
+            'type': 'memory', 'cmd': 'cmd', 'args': 'args', 'workload': 'w'
+        },
+        'collector_info': {
+            'name': "n"
+        },
+        'postprocessors': []
+    }
+    pi = ProfileInfo("path", '..', "time", test_profile)
+    with pytest.raises(SystemExit):
+        commands.print_status_profiles(
+            [('fmt_string', "%short:9")],
+            ProfileListConfig("pending", True, []),
+            {},
+            "%short:9",
+            [pi]
+        )
+
+    with pytest.raises(SystemExit):
+        commands.adjust_header_length(
+            [('fmt_string', "%short:9")],
+            {},
+            ProfileListConfig("pending", True, []),
+        )

@@ -1,9 +1,12 @@
 """
 Postprocessor module with non-parametric analysis using the moving average methods.
 """
+from __future__ import annotations
 
 import functools
 import click
+
+from typing import Callable, TYPE_CHECKING, Any
 
 import perun.logic.runner as runner
 import perun.postprocess.moving_average.methods as methods
@@ -12,23 +15,26 @@ import perun.postprocess.regression_analysis.tools as tools
 import perun.utils.cli_helpers as cli_helpers
 from perun.utils.structs import PostprocessStatus
 
+if TYPE_CHECKING:
+    from perun.profile.factory import Profile
+
 
 # set the labels at the center of the window as default
-_DEFAULT_CENTER = True
+_DEFAULT_CENTER: bool = True
 # default computational method - Simple Moving Average
-_DEFAULT_MOVING_METHOD = 'sma'
+_DEFAULT_MOVING_METHOD: str = 'sma'
 # specify decay in terms of Center of Mass (com) as default
-_DEFAULT_DECAY = ('com', 0)
+_DEFAULT_DECAY: tuple[str, int] = ('com', 0)
 # default statistic function to compute - mean/average
-_DEFAULT_STATISTIC = 'mean'
+_DEFAULT_STATISTIC: str = 'mean'
 # recognized window types for Simple Moving Average/Median
-_WINDOW_TYPES = [
+_WINDOW_TYPES: list[str] = [
     'boxcar', 'triang', 'blackman', 'hamming', 'bartlett', 'parzen',
     'bohman', 'blackmanharris', 'nuttall', 'barthann'
 ]
 
 
-def postprocess(profile, **configuration):
+def postprocess(profile: Profile, **configuration: Any) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     Invoked from perun core, handles the postprocess actions
 
@@ -46,7 +52,7 @@ def postprocess(profile, **configuration):
     }
 
 
-def common_sma_options(func_obj):
+def common_sma_options(func_obj: Callable[..., Any]) -> Callable[[click.Context, click.Option, Any], Any]:
     """
     The wrapper of common options for both supported commands represents simple
     moving average methods: Simple Moving Average and Simple Moving Average Median.
@@ -71,7 +77,7 @@ def common_sma_options(func_obj):
                    'For further information about window types see the notes in the documentation.')
 @common_sma_options
 @click.pass_context
-def simple_moving_average(ctx, **kwargs):
+def simple_moving_average(ctx: click.Context, **kwargs: Any) -> None:
     """ **Simple Moving Average**
 
         In the most of cases, it is an unweighted Moving Average, this means that the each
@@ -112,6 +118,7 @@ def simple_moving_average(ctx, **kwargs):
             For more details about this window functions or for their visual view you can
             see SciPyWindow_.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     kwargs.update({'moving_method': 'sma'})
     kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
@@ -120,7 +127,7 @@ def simple_moving_average(ctx, **kwargs):
 @click.command(name='smm')
 @common_sma_options
 @click.pass_context
-def simple_moving_median(ctx, **kwargs):
+def simple_moving_median(ctx: click.Context, **kwargs: Any) -> None:
     """ **Simple Moving Median**
 
         The second representative of Simple Moving Average methods is the Simple Moving **Median**.
@@ -130,6 +137,7 @@ def simple_moving_median(ctx, **kwargs):
         individual sub-intervals. Simple Moving **Median** is not based on the computation of
         average, but as the name suggests, it based on the **median**.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     kwargs.update({'moving_method': 'smm'})
     kwargs.update(ctx.parent.params)
     runner.run_postprocessor_on_profile(ctx.obj, 'moving_average', kwargs)
@@ -142,7 +150,7 @@ def simple_moving_median(ctx, **kwargs):
                    'values and relationship between the parameters are specified in the '
                    'documentation (e.g. --decay=com 3).')
 @click.pass_context
-def exponential_moving_average(ctx, **kwargs):
+def exponential_moving_average(ctx: click.Context, **kwargs: Any) -> None:
     """ **Exponential Moving Average**
 
         This method is a type of moving average methods, also know as **Exponential** Weighted
@@ -172,6 +180,7 @@ def exponential_moving_average(ctx, **kwargs):
         quite differently from the second mentioned method, because it is the function of weighting
         factor or length of the average.
     """
+    assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     kwargs.update({
         'moving_method': 'ema',
         'window_width': kwargs['decay'][1],
@@ -187,7 +196,7 @@ def exponential_moving_average(ctx, **kwargs):
                    ' If the number of possible observations smaller then result is NaN.')
 @cli_helpers.resources_key_options
 @click.pass_context
-def moving_average(ctx, **_):
+def moving_average(ctx: click.Context, **_: Any) -> None:
     """
     Execution of the interleaving of profiled resources by *moving average* models.
 

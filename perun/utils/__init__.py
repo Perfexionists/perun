@@ -3,8 +3,10 @@
 Utils contains various helper modules and functions, that can be used in arbitrary projects, and
 are not specific for perun pcs, like e.g. helper decorators, logs, etc.
 """
+from __future__ import annotations
 
 import importlib
+import logging
 import shlex
 import shutil
 import subprocess
@@ -13,10 +15,30 @@ import sys
 import re
 import operator
 import itertools
+import types
 from contextlib import contextmanager
 import magic
 
-from .log import error, cprint, warn
+from typing import Iterable, Optional, Any, Callable, IO, Iterator, Protocol, TYPE_CHECKING, overload
+if TYPE_CHECKING:
+    from perun.utils.structs import CollectStatus, PostprocessStatus
+
+
+class Comparable(Protocol):
+    def __le__(self, other: Any) -> bool:
+        pass
+
+    def __lt__(self, other: Any) -> bool:
+        pass
+
+    def __ge__(self, other: Any) -> bool:
+        pass
+
+    def __gt__(self, other: Any) -> bool:
+        pass
+
+
+from .log import error, cprint, cprintln
 from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionException
 
 
@@ -29,7 +51,7 @@ from .exceptions import UnsupportedModuleException, UnsupportedModuleFunctionExc
 PYTHON_VERSION = re.compile(r'^(?:(\d*)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?(?:\.(\d+)([^0-9.]*))?')
 
 
-def get_build_directories(root='.', template=None):
+def get_build_directories(root: str = '.', template: Optional[list[str]] = None) -> Iterable[str]:
     """Search for build directories in project tree. The build directories can be specified as an
     argument or default templates are used.
 
@@ -53,7 +75,7 @@ def get_build_directories(root='.', template=None):
                 yield current + build_dir
 
 
-def _is_nested(path, templates):
+def _is_nested(path: str, templates: Iterable[str]) -> bool:
     """Check if any element from template is contained within the path - resolve nested template
     directories
 
@@ -67,7 +89,7 @@ def _is_nested(path, templates):
     return False
 
 
-def get_directory_elf_executables(root='.', only_not_stripped=False):
+def get_directory_elf_executables(root: str = '.', only_not_stripped: bool = False) -> Iterable[str]:
     """Get all ELF executable (stripped or not) from directory tree recursively.
 
     :param str root: directory tree root
@@ -86,7 +108,7 @@ def get_directory_elf_executables(root='.', only_not_stripped=False):
                 yield filepath
 
 
-def is_executable_elf(file, only_not_stripped=False):
+def is_executable_elf(file: str, only_not_stripped: bool = False) -> bool:
     """Check if file is executable ELF binary.
 
     :param str file: the file path
@@ -101,7 +123,7 @@ def is_executable_elf(file, only_not_stripped=False):
     return is_elf
 
 
-def get_project_elf_executables(root='.', only_not_stripped=False):
+def get_project_elf_executables(root: str = '.', only_not_stripped: bool = False) -> list[str]:
     """Get all ELF executable files stripped or not from project specified by root
     The function searches for executable files in build directories - if there are any, otherwise
     the whole project directory tree is traversed.
@@ -126,7 +148,7 @@ def get_project_elf_executables(root='.', only_not_stripped=False):
     return binaries
 
 
-def find_executable(cmd):
+def find_executable(cmd: Optional[str]) -> Optional[str]:
     """ Check if the supplied cmd is executable and find its real path
     (i.e. absolute path with resolved symlinks)
 
@@ -149,7 +171,7 @@ def find_executable(cmd):
     return os.path.realpath(cmd)
 
 
-def run_external_command(cmd_args, **subprocess_kwargs):
+def run_external_command(cmd_args: list[str], **subprocess_kwargs: Any) -> int:
     """Runs external command with parameters.
 
     :param list cmd_args: list of external command and its arguments to be run
@@ -162,7 +184,12 @@ def run_external_command(cmd_args, **subprocess_kwargs):
 
 
 @contextmanager
-def nonblocking_subprocess(command, subprocess_kwargs, termination=None, termination_kwargs=None):
+def nonblocking_subprocess(
+        command: str,
+        subprocess_kwargs: dict[str, Any],
+        termination: Optional[Callable[..., Any]] = None,
+        termination_kwargs: Optional[dict[str, Any]] = None
+) -> Iterator[subprocess.Popen[bytes]]:
     """ Runs a non-blocking process in the background using subprocess without shell.
 
     The process handle is available by using the context manager approach. It is possible to
@@ -201,7 +228,9 @@ def nonblocking_subprocess(command, subprocess_kwargs, termination=None, termina
                     termination(**termination_kwargs)
 
 
-def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeout=None, **kwargs):
+def run_safely_external_command(
+        cmd: str, check_results: bool = True, quiet: bool = True, timeout: Optional[int] = None, **kwargs: Any
+) -> tuple[bytes, bytes]:
     """Safely runs the piped command, without executing of the shell
 
     Courtesy of: https://blog.avinetworks.com/tech/python-best-practices
@@ -219,7 +248,7 @@ def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeou
     cmd_no = len(unpiped_commands)
 
     # Run the command through pipes
-    objects = []
+    objects: list[subprocess.Popen[bytes]] = []
     for i in range(cmd_no):
         executed_command = shlex.split(unpiped_commands[i])
 
@@ -233,7 +262,8 @@ def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeou
             shell=False, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr, **kwargs
         )
         if i != 0:
-            objects[i-1].stdout.close()
+            # Fixme: we ignore this, as it is tricky to handle
+            objects[i-1].stdout.close()  # type: ignore
         objects.append(piped_command)
 
     try:
@@ -253,8 +283,8 @@ def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeou
         for i in range(cmd_no):
             if objects[i].returncode:
                 if not quiet and (cmdout or cmderr):
-                    log.cprintln("captured stdout: {}".format(cmdout.decode('utf-8')), 'red')
-                    log.cprintln("captured stderr: {}".format(cmderr.decode('utf-8')), 'red')
+                    cprintln(f"captured stdout: {cmdout.decode('utf-8')}", 'red')
+                    cprintln(f"captured stderr: {cmderr.decode('utf-8')}", 'red')
                 raise subprocess.CalledProcessError(
                     objects[i].returncode, unpiped_commands[i]
                 )
@@ -262,7 +292,7 @@ def run_safely_external_command(cmd: str, check_results=True, quiet=True, timeou
     return cmdout, cmderr
 
 
-def run_safely_list_of_commands(cmd_list):
+def run_safely_list_of_commands(cmd_list: list[str]) -> None:
     """Runs safely list of commands
 
     :param list cmd_list: list of external commands
@@ -277,7 +307,7 @@ def run_safely_list_of_commands(cmd_list):
             cprint(err.decode('utf-8'), 'red')
 
 
-def get_stdout_from_external_command(command, stdin=None):
+def get_stdout_from_external_command(command: list[str], stdin: Optional[IO[bytes]] = None) -> str:
     """Runs external command with parameters, checks its output and provides its output.
 
     :param list command: list of arguments for command
@@ -290,7 +320,9 @@ def get_stdout_from_external_command(command, stdin=None):
     return output.decode('utf-8')
 
 
-def dynamic_module_function_call(package_name, module_name, fun_name, *args, **kwargs):
+def dynamic_module_function_call(
+        package_name: str, module_name: str, fun_name: str, *args: Any, **kwargs: Any
+) -> Any:
     """Dynamically calls the function from other package with given arguments
 
     Looks up dynamically the module of the @p module_name inside the @p package_name
@@ -329,19 +361,21 @@ def dynamic_module_function_call(package_name, module_name, fun_name, *args, **k
         raise UnsupportedModuleFunctionException(fun_name, function_location_path)
 
 
-def get_module(module_name):
+def get_module(module_name: str) -> types.ModuleType:
     """Finds module by its name.
 
     :param str module_name: dynamically load a module (but first check the cache)
     :return: loaded module
     """
-    if module_name not in get_module.cache.keys():
-        get_module.cache[module_name] = importlib.import_module(module_name)
-    return get_module.cache[module_name]
-get_module.cache = {}
+    if module_name not in MODULE_CACHE.keys():
+        MODULE_CACHE[module_name] = importlib.import_module(module_name)
+    return MODULE_CACHE[module_name]
 
 
-def get_supported_module_names(package):
+MODULE_CACHE: dict[str, types.ModuleType] = {}
+
+
+def get_supported_module_names(package: str) -> list[str]:
     """Obtains list of supported modules supported by the package.
 
     Contains the hard-coded dictionary of packages and their supported values. This simply does
@@ -372,7 +406,7 @@ def get_supported_module_names(package):
     }[package]
 
 
-def merge_dictionaries(lhs, rhs):
+def merge_dictionaries(lhs: dict[Any, Any], rhs: dict[Any, Any]) -> dict[Any, Any]:
     """Helper function for merging two dictionaries to one to be used as oneliner.
 
     :param dict lhs: left operand of the dictionary merge
@@ -384,7 +418,7 @@ def merge_dictionaries(lhs, rhs):
     return res
 
 
-def merge_dict_range(*args):
+def merge_dict_range(*args: dict[Any, Any]) -> dict[Any, Any]:
     """Helper function for merging range (list, ...) of dictionaries to one to be used as oneliner.
 
     :param list args: list of dictionaries
@@ -396,7 +430,7 @@ def merge_dict_range(*args):
     return res
 
 
-def partition_list(input_list, condition):
+def partition_list(input_list: Iterable[Any], condition: Callable[[Any], bool]) -> tuple[list[Any], list[Any]]:
     """Utility function for list partitioning on a condition so that the list is not iterated
     twice and the condition is evaluated only once.
 
@@ -416,7 +450,7 @@ def partition_list(input_list, condition):
     return good, bad
 
 
-def abs_in_relative_range(value, range_val, range_rate):
+def abs_in_relative_range(value: float, range_val: float, range_rate: float) -> bool:
     """Tests if value is in relative range as follows:
 
     (1 - range_rate) * range_val <= value <= (1 + range_rate) * range_val
@@ -430,7 +464,7 @@ def abs_in_relative_range(value, range_val, range_rate):
     return abs((1.0 - range_rate) * range_val) <= abs(value) <= abs((1.0 + range_rate) * range_val)
 
 
-def abs_in_absolute_range(value, border):
+def abs_in_absolute_range(value: float, border: float) -> bool:
     """Tests if value is in absolute range as follows:
 
     -border <= value <= border
@@ -442,7 +476,7 @@ def abs_in_absolute_range(value, border):
     return -abs(border) <= value <= abs(border)
 
 
-def format_file_size(size):
+def format_file_size(size: Optional[float]) -> str:
     """Format file size in Bytes into a fixed-length output so that it can be easily printed.
 
     If size is set to 'None' then the function returns number of whitespace characters of the
@@ -460,13 +494,13 @@ def format_file_size(size):
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti']:
         if abs(size) < 1024.0:
             if unit == '':
-                return "{:6.0f} B  ".format(size)
-            return "{:6.1f} {}B".format(size, unit)
+                return f"{size:6.0f} B  "
+            return f"{size:6.1f} {unit}B"
         size /= 1024.0
-    return "{:.1f} PiB".format(size)
+    return f"{size:.1f} PiB"
 
 
-def chunkify(generator, chunk_size):
+def chunkify(generator: Iterable[Any], chunk_size: int) -> Iterable[Any]:
     """ Slice generator into multiple generators and each generator yields up to chunk_size items.
 
     Source: https://stackoverflow.com/questions/24527006/split-a-generator-into-chunks-without-pre-walking-it
@@ -486,7 +520,21 @@ def chunkify(generator, chunk_size):
         yield itertools.chain([first], itertools.islice(generator, chunk_size - 1))
 
 
-def create_empty_pass(return_code):
+@overload
+def create_empty_pass(return_code: CollectStatus) -> Callable[[Any], tuple[CollectStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning CollectStatus"""
+    pass
+
+
+@overload
+def create_empty_pass(return_code: PostprocessStatus) -> Callable[[Any], tuple[PostprocessStatus, str, dict[str, Any]]]:
+    """Typing signature for creating empty pass returning PostpProcessStatus"""
+    pass
+
+
+def create_empty_pass(
+        return_code: CollectStatus | PostprocessStatus
+) -> Callable[..., tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]]:
     """Returns a function which will do nothing
 
     This is used to handle collectors and postprocessors that do not have before or after phases.
@@ -494,7 +542,7 @@ def create_empty_pass(return_code):
     :param object return_code: either CollectStatus.OK or PostprocessorStatus.OK
     :return: function that does nothing
     """
-    def empty_pass(**kwargs):
+    def empty_pass(**kwargs: Any) -> tuple[CollectStatus | PostprocessStatus, str, dict[str, Any]]:
         """Empty collection or postprocessing phase, doing nothing
 
         :param dict kwargs: arguments of the phase
@@ -504,7 +552,7 @@ def create_empty_pass(return_code):
     return empty_pass
 
 
-def get_current_interpreter(required_version=None, fallback='python3'):
+def get_current_interpreter(required_version: Optional[str] = None, fallback: str = 'python3') -> str:
     """ Obtains the currently running python interpreter path. Typical use-case for this utility
     is running 'sudo python' as a subprocess which unfortunately ignores any active virtualenv,
     thus possibly running the command in an incompatible python version with missing packages etc.
@@ -523,7 +571,7 @@ def get_current_interpreter(required_version=None, fallback='python3'):
     :return str: the absolute path to the currently running python3 interpreter,
                  if not found, returns fallback interpreter instead
     """
-    def _parse_version(python_version):
+    def _parse_version(python_version: str) -> tuple[list[int], Callable[[Comparable, Comparable], bool]]:
         """ Parse the python version represented as a string into the 3 digit version number and
         additional postfixes, such as characters or '+' and '-'.
 
@@ -531,34 +579,36 @@ def get_current_interpreter(required_version=None, fallback='python3'):
         :return tuple (list, func): list of version digits and function used to compare two
                                     versions based on the +- specifier
         """
-        version_parts = PYTHON_VERSION.match(python_version).groups()
-        version_digits = [int(digit) for digit in version_parts[::2] if digit]
-        # Obtain the last valid postfix (i.e., accompanying last parsed digit)
-        min_max = version_parts[(2 * len(version_digits)) - 1]
-        # Check for interval specifiers, i.e., + or - and use them to infer the comparison operator
-        cmp_op = operator.ne
-        for char in reversed(min_max):
-            if char in ('+', '-'):
-                cmp_op = operator.lt if char == '+' else operator.gt
-                break
-        # Add default version digits if missing, we expect 3 version digits
-        while len(version_digits) != 3:
-            version_digits.append(0)
-        return version_digits, cmp_op
+        if version_match := PYTHON_VERSION.match(python_version):
+            version_parts = version_match.groups()
+            version_digits = [int(digit) for digit in version_parts[::2] if digit]
+            # Obtain the last valid postfix (i.e., accompanying last parsed digit)
+            min_max = version_parts[(2 * len(version_digits)) - 1]
+            # Check for interval specifiers, i.e., + or - and use them to infer the comparison operator
+            cmp_op: Callable[[Comparable, Comparable], bool] = operator.ne
+            for char in reversed(min_max):
+                if char in ('+', '-'):
+                    cmp_op = operator.lt if char == '+' else operator.gt
+                    break
+            # Add default version digits if missing, we expect 3 version digits
+            while len(version_digits) != 3:
+                version_digits.append(0)
+            return version_digits, cmp_op
+        logging.error(f"Unparsable Python version {python_version}")
+        return [], operator.eq
 
     interpreter = sys.executable
     # Ensure that the found interpreter satisfies the required version
     if interpreter and required_version is not None:
         # The format of --version should be 'Python x.y.z'
-        version = run_safely_external_command('{} --version'.format(interpreter))[0].decode('utf-8')
+        version = run_safely_external_command(f'{interpreter} --version')[0].decode('utf-8')
         version = version.split()[1]
         interpreter_version = _parse_version(version)[0]
-        required_version, cmp_operator = _parse_version(required_version)
+        parsed_required_version, cmp_operator = _parse_version(required_version)
         # Compare the versions using the obtained operator
-        for interpreter_v, required_v in zip(interpreter_version, required_version):
+        for interpreter_v, required_v in zip(interpreter_version, parsed_required_version):
             if cmp_operator(interpreter_v, required_v):
                 interpreter = fallback
                 break
-
     # If no interpreter was found, use fallback
     return interpreter or fallback

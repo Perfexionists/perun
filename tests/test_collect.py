@@ -186,11 +186,11 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     monkeypatch.setattr(utils, 'run_external_command', old_run)
 
     # Simulate that the flag is supported, which leads to failure in build process for older g++
-    old_flag = makefiles._is_flag_support
-    monkeypatch.setattr(makefiles, '_is_flag_support', _mocked_flag_support)
+    old_flag = makefiles._is_flag_supported
+    monkeypatch.setattr(makefiles, '_is_flag_supported', _mocked_flag_support)
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'stored profile' in result.output or 'Command \'make\' returned non-zero exit status 2' in result.output)
-    monkeypatch.setattr(makefiles, '_is_flag_support', old_flag)
+    monkeypatch.setattr(makefiles, '_is_flag_supported', old_flag)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
@@ -214,10 +214,8 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     # Simulate the failure of output processing
     old_find_braces = symbols._find_all_braces
     def mock_find_all_braces(s, b, e):
-        if b == '(' and e == ')':
-            return [1]
-        else:
-            return old_find_braces(s, b, e)
+        return [1] if b == '(' and e == ')' else old_find_braces(s, b, e)
+
     monkeypatch.setattr(symbols, '_find_all_braces', mock_find_all_braces)
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'wrong prototype of function' in result.output)
@@ -335,19 +333,13 @@ def test_collect_memory_incorrect(monkeypatch, capsys, pcs_full, memory_collect_
     assert "Build of the library failed" in err
 
     return_code_for_make = 0
-    fail_parse = True
-    original_parse = parsing.parse_log
     # Try error while parsing logs
     def patched_parse(*args):
-        if fail_parse:
-            raise IndexError
-        else:
-            return original_parse(*args)
+        raise IndexError
     monkeypatch.setattr("perun.collect.memory.parsing.parse_log", patched_parse)
     run.run_single_job(*memory_collect_job)
     _, err = capsys.readouterr()
     assert "Problems while parsing log file: " in err
-    fail_parse = False
 
     def patched_run(_):
         return 42, "dummy"
@@ -390,10 +382,7 @@ def test_collect_bounds(monkeypatch, pcs_full):
     original_function = utils.run_safely_external_command
 
     def before_returning_error(cmd, **kwargs):
-        if 'clang' in cmd:
-            raise SubprocessError("something happened")
-        else:
-            original_function(cmd, **kwargs)
+        raise SubprocessError("something happened")
     monkeypatch.setattr("perun.utils.run_safely_external_command", before_returning_error)
     status, prof = run.run_collector(job.collector, job)
     assert status == CollectStatus.ERROR

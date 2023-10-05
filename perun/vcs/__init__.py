@@ -7,15 +7,21 @@ the wrapper.
 Inside the wrapper are defined function that are used for lookup of the concrete implementations
 depending of the chosen type/module, like e.g. git, svn, etc.
 """
+from __future__ import annotations
 import inspect
+
+from typing import Callable, Any, Iterator, TYPE_CHECKING, Optional
 
 import perun.utils.log as perun_log
 import perun.logic.pcs as pcs
 import perun.utils.decorators as decorators
 from perun.utils import dynamic_module_function_call
 
+if TYPE_CHECKING:
+    from perun.utils.structs import MinorVersion, MajorVersion
 
-def lookup_minor_version(func):
+
+def lookup_minor_version(func: Callable[..., Any]) -> Callable[..., Any]:
     """If the minor_version is not given by the caller, it looks up the HEAD in the repo.
 
     If the @p func is called with minor_version parameter set to None,
@@ -28,7 +34,7 @@ def lookup_minor_version(func):
     f_args, _, _, _, *_ = inspect.getfullargspec(func)
     minor_version_position = f_args.index('minor_version')
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Callable[..., Any]:
         """Inner wrapper of the function"""
         # if the minor_version is None, then we obtain the minor head for the wrapped type
         if minor_version_position < len(args) and args[minor_version_position] is None:
@@ -43,7 +49,7 @@ def lookup_minor_version(func):
     return wrapper
 
 
-def get_minor_head():
+def get_minor_head() -> str:
     """Returns the string representation of head of current major version, i.e.
     for git this returns the massaged HEAD reference.
 
@@ -64,9 +70,10 @@ def get_minor_head():
         perun_log.error(
             "while fetching head minor version: {}".format(value_error)
         )
+        return ""
 
 
-def init(vcs_init_params):
+def init(vcs_init_params: dict[str, Any]) -> bool:
     """Calls the implementation of initialization of wrapped underlying version
     control system.
 
@@ -87,7 +94,7 @@ def init(vcs_init_params):
     )
 
 
-def walk_minor_versions(head_minor_version):
+def walk_minor_versions(head_minor_version: str) -> Iterator[MinorVersion]:
     """Generator of minor versions for the given major version, which yields
     the ``MinorVersion`` named tuples containing the following information:
     ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation
@@ -110,7 +117,7 @@ def walk_minor_versions(head_minor_version):
     )
 
 
-def walk_major_versions():
+def walk_major_versions() -> Iterator[MajorVersion]:
     """Generator of major versions for the current wrapped repository.
 
     This function is currently unused, but will be needed in the future.
@@ -127,7 +134,7 @@ def walk_major_versions():
 
 
 @decorators.singleton_with_args
-def get_minor_version_info(minor_version):
+def get_minor_version_info(minor_version: str) -> MinorVersion:
     """Yields the specification of concrete minor version in form of
     the ``MinorVersion`` named tuples containing the following information:
     ``date``, ``author``, ``email``, ``checksum`` (i.e. the hash representation
@@ -151,7 +158,7 @@ def get_minor_version_info(minor_version):
     )
 
 
-def minor_versions_diff(baseline_minor_version, target_minor_version):
+def minor_versions_diff(baseline_minor_version: str, target_minor_version: str) -> str:
     """ Returns the git diff of two specified minor versions.
 
     :param str baseline_minor_version: the specification of the first minor version (in form of sha e.g.)
@@ -167,7 +174,7 @@ def minor_versions_diff(baseline_minor_version, target_minor_version):
     )
 
 
-def get_head_major_version():
+def get_head_major_version() -> str:
     """Returns the string representation of current major version of the
     wrapped repository.
 
@@ -186,7 +193,7 @@ def get_head_major_version():
 
 
 @decorators.singleton_with_args
-def check_minor_version_validity(minor_version):
+def check_minor_version_validity(minor_version: str) -> None:
     """Checks whether the given minor version specification corresponds to the
     wrapped version control system, and is not in wrong format.
 
@@ -204,7 +211,7 @@ def check_minor_version_validity(minor_version):
     )
 
 
-def massage_parameter(parameter, parameter_type=None):
+def massage_parameter(parameter: str, parameter_type: Optional[str] = None) -> str:
     """Conversion function for massaging (or unifying different representations
     of objects) the parameters for version control systems.
 
@@ -224,7 +231,7 @@ def massage_parameter(parameter, parameter_type=None):
     )
 
 
-def is_dirty():
+def is_dirty() -> bool:
     """Tests whether the wrapped repository is dirty.
 
     By dirty repository we mean a repository that has either a submitted changes to its index (i.e.
@@ -250,12 +257,12 @@ class CleanState:
     then we use this CleanState to keep those changes, have a clean state (or maybe even checkout
     different version) and then collect correctly the data. The previous state is then restored
     """
-    def __init__(self):
+    def __init__(self) -> None:
         """Creates a with wrapper for a corresponding VCS"""
-        self.saved_state = False
-        self.last_head = None
+        self.saved_state: bool = False
+        self.last_head: str = ''
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         """When entering saves the state of the repository
 
         We save the uncommited/unsaved changes (e.g. to stash) and also we remeber the previous
@@ -263,7 +270,7 @@ class CleanState:
         """
         self.saved_state, self.last_head = save_state()
 
-    def __exit__(self, *_):
+    def __exit__(self, *_: Any) -> None:
         """When exiting, restores the state of the repository
 
         Restores the previous commit and unstashes the changes made to working directory and index.
@@ -273,14 +280,15 @@ class CleanState:
         restore_state(self.saved_state, self.last_head)
 
 
-def save_state():
+def save_state() -> tuple[bool, str]:
     """Saves the state of the repository in case it is dirty.
 
     When saving the state of the repository one should store all of the uncommited changes to
     the working directory and index. Any issues while this process happens should be handled by
     user itself, hence no workarounds and mending should take place in this function.
 
-    :return:
+    :returns: (bool, str) the tuple of indication that some changes were stashed and the state of
+        previous head.
     """
     # Todo: Check the vcs.fail_when_dirty and log error in the case
     vcs_type, vcs_path = pcs.get_vcs_type(), pcs.get_vcs_path()
@@ -289,7 +297,7 @@ def save_state():
     )
 
 
-def restore_state(saved, state):
+def restore_state(saved: bool, state: str) -> None:
     """Restores the previous state of the the repository
 
     When restoring the state of the repository one should pop the stored changes from the stash
@@ -305,7 +313,7 @@ def restore_state(saved, state):
     )
 
 
-def checkout(minor_version):
+def checkout(minor_version: str) -> None:
     """Checks out the new working directory corresponding to the given minor version.
 
     According to the supplied minor version, this command should remake the working directory

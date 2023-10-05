@@ -1,23 +1,32 @@
 """Regression tools module. Contains utility functions used by the other regression modules.
 
 """
+from __future__ import annotations
 
 from random import shuffle
 from operator import itemgetter
 import numpy as np
 
+from typing import Any, Iterable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
+    import perun.profile.factory as profiles
+
 import perun.utils.exceptions as exceptions
 
 
 # Minimum points count to perform the regression
-MIN_POINTS_COUNT = 3
+MIN_POINTS_COUNT: int = 3
 # R^2 value if computation failed
-R_SQUARE_DEFAULT = 0.0
+R_SQUARE_DEFAULT: float = 0.0
 # Zero approximation to avoid zero division etc.
-APPROX_ZERO = 0.000001
+APPROX_ZERO: float = 0.000001
 
 
-def validate_dictionary_keys(dictionary: dict, required_keys: list, forbidden_keys: list):
+def validate_dictionary_keys(
+        dictionary: dict[str, Any], required_keys: list[str], forbidden_keys: list[str]
+) -> None:
     """Checks the dictionary for missing required keys and excess forbidden keys.
 
     :param dict dictionary: validated dictionary
@@ -41,7 +50,7 @@ def validate_dictionary_keys(dictionary: dict, required_keys: list, forbidden_ke
         raise exceptions.DictionaryKeysValidationFailed(dictionary, missing_keys, excess_keys)
 
 
-def check_points(x_len, y_len, threshold):
+def check_points(x_len: int, y_len: int, threshold: int) -> None:
     """Checks the regression points for possible problems
 
     :param int x_len: the count of x coordinates
@@ -54,7 +63,7 @@ def check_points(x_len, y_len, threshold):
         raise exceptions.InvalidPointsException(x_len, y_len, MIN_POINTS_COUNT)
 
 
-def split_sequence(length, parts):
+def split_sequence(length: int, parts: int) -> Iterable[tuple[int, int]]:
     """Generator. Splits the given (collection) length into roughly equal parts and yields the part
        start and end indices pair one by one.
 
@@ -75,7 +84,7 @@ def split_sequence(length, parts):
         yield start, end
 
 
-def shuffle_points(x_pts, y_pts):
+def shuffle_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float], list[float]]:
     """Shuffles the x and y coordinates sequence to produce random points sequence.
 
     :param list x_pts: the x coordinates list
@@ -88,11 +97,11 @@ def shuffle_points(x_pts, y_pts):
     check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
     points = list(zip(x_pts, y_pts))
     shuffle(points)
-    x_pts, y_pts = zip(*points)
-    return x_pts, y_pts
+    res_x_pts, res_y_pts = zip(*points)
+    return list(res_x_pts), list(res_y_pts)
 
 
-def sort_points(x_pts, y_pts):
+def sort_points(x_pts: list[float], y_pts: list[float]) -> tuple[list[float], list[float]]:
     """Sorts the x and y_pts coordinates sequence by x values in the ascending order.
 
     :param list x_pts: the x coordinates list
@@ -105,12 +114,12 @@ def sort_points(x_pts, y_pts):
     check_points(len(x_pts), len(y_pts), MIN_POINTS_COUNT)
     points = list(zip(x_pts, y_pts))
     points.sort(key=itemgetter(0))
-    x_pts, y_pts = zip(*points)
-    return x_pts, y_pts
+    res_x_pts, res_y_pts = zip(*points)
+    return list(res_x_pts), list(res_y_pts)
 
 
-def split_model_interval(start, end, steps):
-    """ Splits the interval defined by it's edges to #steps points in a safe manner, i.e. no zero
+def split_model_interval(start: int, end: int, steps: int) -> npt.NDArray[np.float64]:
+    """ Splits the interval defined by its edges to #steps points in a safe manner, i.e. no zero
         points in the array, which prevents zero division errors.
 
     :param int or float start: the start of interval
@@ -126,7 +135,7 @@ def split_model_interval(start, end, steps):
     return x_pts
 
 
-def safe_division(dividend, divisor):
+def safe_division(dividend: float, divisor: float) -> float:
     """Safe division of divident by operand
 
     :param number dividend: upper operand of the division
@@ -139,7 +148,7 @@ def safe_division(dividend, divisor):
         return dividend / APPROX_ZERO
 
 
-def as_plot_x_dict(plot_x):
+def as_plot_x_dict(plot_x: Any) -> dict[str, Any]:
     """Returns the argument as dictionary with given key
 
     :param object plot_x: object that contains plot_x data
@@ -148,16 +157,16 @@ def as_plot_x_dict(plot_x):
     return dict(plot_x=plot_x)
 
 
-def as_plot_y_dict(plot_y):
+def as_plot_y_dict(plot_y: Any) -> dict[str, Any]:
     """Returns the argument as dictionary with given key
 
     :param object plot_y: object that contains plot_y data
     :return: dictionary with key 'plot_y' set to plot_y
     """
-    return dict(plot_y=plot_y)
+    return {'plot_y': plot_y}
 
 
-def add_models_to_profile(profile, models):
+def add_models_to_profile(profile: profiles.Profile, models: list[dict[str, Any]]) -> profiles.Profile:
     """
     Add newly generated models from analysis by postprocessor to relevant profile.
 
