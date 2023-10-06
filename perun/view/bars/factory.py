@@ -3,10 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import demandimport
-
-with demandimport.enabled():
-    import holoviews as hv
+import holoviews as hv
 
 from perun.profile import convert
 from perun.utils import view_helpers

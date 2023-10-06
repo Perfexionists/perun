@@ -3,7 +3,6 @@
 
 import os
 import time
-import demandimport
 
 from perun.collect.trace.collect_engine import CollectEngine
 from perun.collect.trace.systemtap.engine import SystemTapEngine
@@ -15,8 +14,7 @@ from perun.utils import find_executable
 import perun.logic.temp as temp
 
 # Import on demand since eBPF support is optional
-with demandimport.enabled():
-    import perun.collect.trace.ebpf.engine as bpf
+import perun.collect.trace.ebpf.engine as bpf
 
 
 class Configuration:

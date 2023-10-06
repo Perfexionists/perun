@@ -1,12 +1,10 @@
 """ Module contains a set of functions for fuzzing results interpretation."""
 from __future__ import annotations
 
-import demandimport
 import os.path as path
 import difflib
 import scipy.stats.mstats as stats
-with demandimport.enabled():
-    import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 from typing import TextIO, Optional
 
