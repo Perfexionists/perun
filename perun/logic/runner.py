@@ -469,7 +469,7 @@ def generate_jobs_on_current_working_dir(
     :param int number_of_jobs: number of jobs that will be run
     :return: status, generated profile, and associated job
     """
-    workload_generators_specs = workloads.load_generator_specifications()
+    workload_generators_specs: dict[str, GeneratorSpec] = workloads.load_generator_specifications()
 
     log.print_job_progress.current_job = 1
     collective_status = CollectStatus.OK
