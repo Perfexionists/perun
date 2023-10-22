@@ -6,7 +6,7 @@ import subprocess
 import signal
 import types
 
-from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable
+from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, Type
 
 import distutils.util as dutils
 
@@ -28,6 +28,7 @@ import perun.collect.trace.optimizations.optimization
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
+    from perun.workload.generator import WorkloadGenerator
 
 from perun.utils import get_module
 from perun.utils.structs import GeneratorSpec, Unit, Executable, RunnerReport, \
@@ -459,7 +460,7 @@ def run_prephase_commands(phase: str, phase_colour: str = 'white') -> None:
 @decorators.phase_function('batch job run')
 def generate_jobs_on_current_working_dir(
         job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
-) -> Iterable[tuple[CollectStatus, dict[str, Any], Job]]:
+) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """Runs the batch of jobs on current state of the VCS.
 
     This function expects no changes not commited in the repo, it excepts correct version
@@ -479,6 +480,8 @@ def generate_jobs_on_current_working_dir(
         for workload, jobs_per_workload in workloads_per_cmd.items():
             log.print_current_phase(" = processing generator {}", workload, COLLECT_PHASE_WORKLOAD)
             # Prepare the specification
+            generator: Type[WorkloadGenerator]
+            params: dict[str, Any]
             generator, params = workload_generators_specs.get(
                 workload, GeneratorSpec(SingletonGenerator, {'value': workload})
             )
@@ -510,7 +513,7 @@ def generate_jobs_on_current_working_dir(
 @decorators.phase_function('overall profiling')
 def generate_jobs(
         minor_version_list: list[MinorVersion], job_matrix: dict[str, dict[str, list[Job]]], number_of_jobs: int
-) -> Iterable[tuple[CollectStatus, dict[str, Any], Job]]:
+) -> Iterable[tuple[CollectStatus, Profile, Job]]:
     """
     :param list minor_version_list: list of MinorVersion info
     :param dict job_matrix: dictionary with jobs that will be run
