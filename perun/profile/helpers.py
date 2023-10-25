@@ -38,6 +38,7 @@ from perun.utils import get_module
 from perun.utils.exceptions import (
     InvalidParameterException, MissingConfigSectionException, TagOutOfRangeException
 )
+from perun.utils.helpers import sanitize_filepart
 from perun.utils.structs import Unit, Executable, Job
 
 
@@ -56,16 +57,6 @@ def lookup_value(container: dict[str, str] | profiles.Profile, key: str, missing
     :return:
     """
     return str(container.get(key, missing)) or missing
-
-
-def sanitize_filepart(part: str) -> str:
-    """Helper function for sanitization of part of the filenames
-
-    :param part: part of the filename, that needs to be sanitized, i.e. we are removing invalid characters
-    :return: sanitized string representation of the part
-    """
-    invalid_characters = r"# %&{}\<>*?/ $!'\":@"
-    return "".join('_' if c in invalid_characters else c for c in str(part))
 
 
 def lookup_param(profile: profiles.Profile, unit: str, param: str) -> str:

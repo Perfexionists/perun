@@ -3,8 +3,7 @@
 
 import collections
 
-from perun.profile.helpers import sanitize_filepart
-from perun.utils.helpers import SuppressedExceptions
+from perun.utils.helpers import (SuppressedExceptions, sanitize_filepart)
 from perun.collect.trace.optimizations.structs import Optimizations, Pipeline, Parameters, \
     CallGraphTypes, ParametersManager, CGShapingMode
 import perun.collect.trace.optimizations.resources.manager as resources

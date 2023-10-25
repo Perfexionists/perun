@@ -5,7 +5,7 @@ import click
 
 from typing import Any
 
-import perun.profile.helpers as profiles
+from perun.utils.helpers import sanitize_filepart
 import perun.view.scatter.factory as scatter_factory
 from perun.profile.factory import pass_profile, Profile
 from perun.utils import cli_helpers, view_helpers
@@ -105,5 +105,5 @@ def scatter(profile: Profile, filename: str, view_in_browser: bool, **kwargs: An
     # Temporary solution for plotting multiple graphs from one command
     graphs = scatter_factory.create_from_params(profile, **kwargs)
     for uid, graph in graphs:
-        filename_uid = f"{filename}_{profiles.sanitize_filepart(uid)}.html"
+        filename_uid = f"{filename}_{sanitize_filepart(uid)}.html"
         view_helpers.save_view_graph(graph, filename_uid, view_in_browser)
