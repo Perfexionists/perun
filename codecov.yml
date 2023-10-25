@@ -2,4 +2,5 @@ ignore:
   - "perun/collect/trace"
   - "perun/thirdparty"
   - "tests/test_tracer"
+  - "tests/sources"
 
