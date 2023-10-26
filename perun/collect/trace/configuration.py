@@ -11,10 +11,7 @@ from perun.collect.trace.values import OutputHandling
 
 from perun.utils.exceptions import InvalidBinaryException
 from perun.utils import find_executable
-import perun.logic.temp as temp
-
-# Import on demand since eBPF support is optional
-import perun.collect.trace.ebpf.engine as bpf
+from perun.logic import temp
 
 
 class Configuration:
@@ -113,6 +110,8 @@ class Configuration:
         if self.engine == 'stap':
             self.engine = SystemTapEngine(self)
         else:
+            # Import on demand since eBPF support is optional
+            import perun.collect.trace.ebpf.engine as bpf
             self.engine = bpf.BpfEngine(self)
 
     def get_functions(self):
