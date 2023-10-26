@@ -7,8 +7,6 @@ import contextlib
 import os
 import re
 
-import distutils.util as dutils
-
 from typing import Any, Iterable, Protocol
 
 from perun.utils.structs import DegradationInfo, PerformanceChange, MinorVersion, ModelRecord
@@ -25,6 +23,7 @@ import perun.logic.store as store
 import perun.utils as utils
 import perun.utils.decorators as decorators
 import perun.vcs as vcs
+from perun.utils import helpers
 
 
 # Minimal confidence rate from both models to perform the detection
@@ -92,14 +91,14 @@ def pre_collect_profiles(minor_version: MinorVersion) -> None:
 
     :param MinorVersion minor_version: minor version for which we are collecting the data
     """
-    should_precollect = dutils.strtobool(str(
+    should_precollect = helpers.strtobool(str(
         config.lookup_key_recursively('degradation.collect_before_check', 'false')
     ))
     if should_precollect and minor_version.checksum not in pre_collect_profiles.minor_version_cache:
         # Set the registering after run to true for this run
         config.runtime().set('profiles.register_after_run', 'true')
         # Actually collect the resources
-        collect_to_log = dutils.strtobool(str(
+        collect_to_log = helpers.strtobool(str(
             config.lookup_key_recursively('degradation.log_collect', 'false')
         ))
         log_file = os.path.join(

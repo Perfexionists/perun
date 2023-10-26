@@ -8,12 +8,11 @@
 """
 from __future__ import annotations
 
-import distutils.util as dutils
-
 from typing import Any, Callable, Iterable, TYPE_CHECKING
 
 import perun.logic.config as config
 import perun.utils.log as log
+from perun.utils import helpers
 import perun.profile.helpers as profile
 import perun.profile.factory as factory
 
@@ -38,7 +37,7 @@ class WorkloadGenerator:
         """
         self.job = job
         self.generator_name = self.job.executable.origin_workload
-        self.for_each = dutils.strtobool(str(profile_for_each_workload))
+        self.for_each = helpers.strtobool(str(profile_for_each_workload))
 
     def generate(
             self, collect_function: Callable[[Unit, Job], tuple[CollectStatus, Profile]]

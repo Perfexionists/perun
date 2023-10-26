@@ -6,9 +6,9 @@ when working within wrong scopes, how does perun copes with existing perun direc
 
 import os
 
-import distutils.spawn as spawn
 import git
 import pytest
+import shutil
 
 import perun.logic.commands as commands
 import perun.utils.helpers as helpers
@@ -346,7 +346,7 @@ def test_user_config():
     main_workload = os.path.join(pcs_path, 'workload')
     helpers.touch_dir(main_build)
     helpers.touch_dir(main_workload)
-    os.symlink(spawn.find_executable('cat'), os.path.join(main_build, 'lecat'))
+    os.symlink(shutil.which('cat'), os.path.join(main_build, 'lecat'))
     helpers.touch_file(os.path.join(main_workload, 'file1'))
 
     subproject_path = os.path.join(pcs_path, 'subproject')
@@ -357,7 +357,7 @@ def test_user_config():
     helpers.touch_dir(sub_build)
     helpers.touch_dir(sub_workload)
     helpers.touch_dir(bogus_workload)
-    os.symlink(spawn.find_executable('wc'), os.path.join(sub_build, 'lewc'))
+    os.symlink(shutil.which('wc'), os.path.join(sub_build, 'lewc'))
     helpers.touch_file(os.path.join(sub_workload, 'file2'))
     helpers.touch_file(os.path.join(bogus_workload, 'file3'))
 

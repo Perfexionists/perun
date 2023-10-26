@@ -33,7 +33,6 @@ The TextFile Generator can be configured by following options:
 """
 from __future__ import annotations
 
-import distutils.util as dutils
 import os
 import tempfile
 import random
@@ -43,6 +42,7 @@ from typing import Any, Iterable
 
 from perun.workload.generator import WorkloadGenerator
 from perun.utils.structs import Job
+from perun.utils import helpers
 
 
 class TextfileGenerator(WorkloadGenerator):
@@ -82,7 +82,7 @@ class TextfileGenerator(WorkloadGenerator):
         # Note that faker has a lower limit on generated text.
         self.min_chars = max(int(min_rows), 5)
         self.max_chars = int(max_rows)
-        self.randomize_rows = dutils.strtobool(str(randomize_rows))
+        self.randomize_rows = helpers.strtobool(str(randomize_rows))
 
         self.faker = faker.Faker()
 

@@ -8,8 +8,6 @@ import types
 
 from typing import Any, Iterable, Optional, TYPE_CHECKING, cast, Callable, Type
 
-import distutils.util as dutils
-
 import click
 
 import perun.vcs as vcs
@@ -391,7 +389,7 @@ def store_generated_profile(prof: Profile, job: Job, profile_name: Optional[str]
     streams.store_json(full_profile.serialize(), full_profile_path)
     # FIXME: there is an inconsistency in dict/Profile types, needs to be investigated more thoroughly
     log.info("stored profile at: {}".format(os.path.relpath(full_profile_path)))
-    if dutils.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
+    if helpers.strtobool(str(config.lookup_key_recursively("profiles.register_after_run", "false"))):
         # We either store the profile according to the origin, or we use the current head
         dst = prof.get('origin', vcs.get_minor_head())
         commands.add([full_profile_path], dst, keep_profile=False)
