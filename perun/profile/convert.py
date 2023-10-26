@@ -25,10 +25,8 @@ import perun.utils.helpers as helpers
 import perun.profile.query as query
 import perun.postprocess.regression_analysis.transform as transform
 
-import demandimport
-with demandimport.enabled():
-    import numpy
-    import pandas
+import numpy
+import pandas
 
 
 

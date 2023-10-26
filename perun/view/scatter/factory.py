@@ -6,13 +6,10 @@ from collections.abc import Iterator
 
 from operator import itemgetter
 
-import demandimport
-
-with demandimport.enabled():
-    import numpy as np
-    import numpy.typing as npt
-    import holoviews as hv
-    from bokeh import palettes
+import numpy as np
+import numpy.typing as npt
+import holoviews as hv
+from bokeh import palettes
 
 from perun.utils import view_helpers
 from perun.profile import query, convert

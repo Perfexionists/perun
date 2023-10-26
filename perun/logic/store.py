@@ -11,7 +11,6 @@ import os
 import string
 import struct
 import zlib
-import demandimport
 
 from typing import BinaryIO, Optional
 
@@ -22,8 +21,7 @@ from perun.utils.structs import PerformanceChange, DegradationInfo
 from perun.utils.exceptions import IncorrectProfileFormatException
 from perun.profile.factory import Profile
 
-with demandimport.enabled():
-    import hashlib
+import hashlib
 
 
 INDEX_TAG_REGEX = re.compile(r"^(\d+)@i$")

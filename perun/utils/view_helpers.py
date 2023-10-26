@@ -6,13 +6,11 @@ from types import ModuleType
 from collections.abc import MutableMapping, Iterable
 
 from enum import Enum
-import demandimport
 
-with demandimport.enabled():
-    from bokeh.plotting import show, output_file
-    import bokeh.palettes as bk_palettes
-    import bokeh.themes.theme as bk_theme
-    import holoviews as hv
+from bokeh.plotting import show, output_file
+import bokeh.palettes as bk_palettes
+import bokeh.themes.theme as bk_theme
+import holoviews as hv
 
 import perun.profile.helpers as profiles
 from perun.utils import log
