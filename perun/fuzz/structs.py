@@ -123,8 +123,8 @@ class FuzzingConfiguration:
         """
         :param dict kwargs: set of keyword configurations
         """
-        self.timeout: int = kwargs.get('timeout', 0)
-        self.hang_timeout: int = kwargs.get('hang_timeout', 0)
+        self.timeout: float = kwargs.get('timeout', 0.0)
+        self.hang_timeout: float = kwargs.get('hang_timeout', 0.0)
         self.output_dir: str = os.path.abspath(kwargs['output_dir'])
         self.workloads_filter: str = kwargs.get('workloads_filter', '')
         self.regex_rules: dict[str, str] = kwargs.get('regex_rules', {})

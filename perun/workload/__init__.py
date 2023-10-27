@@ -17,12 +17,14 @@ from __future__ import annotations
 import perun.logic.config as config
 import perun.utils.log as log
 import perun.utils as utils
+import perun.utils.decorators as decorators
 
 from perun.utils.structs import GeneratorSpec
 
 
+@decorators.singleton
 def load_generator_specifications() -> dict[str, GeneratorSpec]:
-    """Collects from configuration file all of the workload specifications and constructs a mapping
+    """Collects from configuration file all the workload specifications and constructs a mapping
     of 'id' -> GeneratorSpec, which contains the constructor and parameters used for construction.
 
     The specifications are specified by :ckey:`generators.workload` as follows:
