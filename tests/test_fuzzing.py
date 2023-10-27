@@ -75,11 +75,12 @@ def test_fuzzing_correct(pcs_full):
         '--output-dir', '.',
         '--input-sample', bin_workload,
         '--timeout', '1',
-        '--max', '10',
+        '--max-size', '10',
         '--no-plotting',
         '--skip-coverage-testing',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -93,13 +94,14 @@ def test_fuzzing_correct(pcs_full):
         '--timeout', '1',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
-        '--max-size-gain', '35000',
+        '--max-size-increase', '35000',
         '--coverage-increase-rate', '1.05',
         '--interesting-files-limit', '2',
         '--workloads-filter', '(?notvalidregex?)',
         '--no-plotting',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -119,6 +121,7 @@ def test_fuzzing_correct(pcs_full):
         '--skip-coverage-testing',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -134,6 +137,7 @@ def test_fuzzing_correct(pcs_full):
         '--skip-coverage-testing',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -151,6 +155,7 @@ def test_fuzzing_correct(pcs_full):
         '--no-plotting',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -178,6 +183,7 @@ def test_fuzzing_sigabort(pcs_full):
         '--gcno-path', os.path.dirname(sigabrt_init),
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'SIGABRT' in result.output)
@@ -227,7 +233,7 @@ def test_fuzzing_hangs(pcs_full):
         '--input-sample', num_workload,
         '--source-path', os.path.dirname(hang_init),
         '--gcno-path', os.path.dirname(hang_init),
-        '--hang-timeout', '0.05',
+        '--hang-timeout', '0.01',
         '--no-plotting',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
@@ -281,6 +287,7 @@ def test_fuzzing_degradation(pcs_full):
         '--interesting-files-limit', '1',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Founded degradation mutations: 0' not in result.output)
@@ -368,21 +375,21 @@ def test_fuzzing_incorrect(pcs_full):
         '--args', '-al',
         '--input-sample', '.',
         '--output-dir', '.',
-        '--max', '1.5'
+        '--max-size', '1.5'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '--max' in result.output)
+    asserts.predicate_from_cli(result, '--max-size' in result.output)
 
-    # Wrong value for option --max-size-gain
+    # Wrong value for option --max-size-increase
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
         '--input-sample', '.',
         '--output-dir', '.',
-        '--max-size-gain', 'ola'
+        '--max-size-increase', 'ola'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '--max-size-gain' in result.output)
+    asserts.predicate_from_cli(result, '--max-size-increase' in result.output)
 
     # Wrong value for option --max-size-ratio
     result = runner.invoke(cli.fuzz_cmd, [
@@ -470,7 +477,7 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
         '--timeout', '1',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
-        '--max-size-gain', '35000',
+        '--max-size-increase', '35000',
         '--coverage-increase-rate', '1.05',
         '--interesting-files-limit', '2',
         '--no-plotting',
@@ -493,7 +500,7 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
         '--timeout', '1',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
-        '--max-size-gain', '35000',
+        '--max-size-increase', '35000',
         '--coverage-increase-rate', '1.05',
         '--interesting-files-limit', '2',
         '--no-plotting',
