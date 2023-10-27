@@ -701,11 +701,11 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
 @click.option('--output-dir', '-o', nargs=1, required=True,
               type=click.Path(exists=True, writable=True), metavar='<path>',
               help='The path to the directory where generated outputs will be stored.')
-@click.option('--timeout', '-t', nargs=1, required=False, default=1800,
-              type=click.IntRange(1, None, False), metavar='<int>',
+@click.option('--timeout', '-t', nargs=1, required=False, default=1800.0,
+              type=click.FloatRange(0.001, None, False), metavar='<float>',
               help='Time limit for fuzzing (in seconds).  Default value is 1800s.')
 @click.option('--hang-timeout', '-h', nargs=1, required=False, default=10,
-              type=click.FloatRange(0.001, None, False), metavar='<int>',
+              type=click.FloatRange(0.001, None, False), metavar='<float>',
               help='The time limit before the input is classified as a hang/timeout (in seconds).'
               ' Default value is 10s.')
 @click.option('--max-size', '-N', nargs=1, required=False,
@@ -733,11 +733,15 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
                    'severe performance degradation.')
 @click.option('--interesting-files-limit', '-l', nargs=1, required=False,
               type=click.IntRange(1, None, False), metavar='<int>', default=20,
-              help='Defines minimum number of gathered interesting inputs before perun testing.')
+              help='The minimum number of gathered mutations, that are so called interesting, '
+                   'before perun testing is performed. '
+                   'By interesting inputs we mean files that might potentially lead to timeouts, hang or severe '
+                   'severe performance degradation.')
 @click.option('--coverage-increase-rate', '-cr', nargs=1, required=False, default=1.5,
               type=click.FloatRange(0, None, False), metavar='<int>',
-              help='Represents threshold of coverage increase against base coverage.'
-              '  E.g 1.5, base coverage = 100 000, so threshold = 150 000.')
+              help='The threshold of coverage increase against base coverage, which is used to evaluate, '
+                   'whether the generated mutation is interesting for further evaluation by performance testing. '
+                   'E.g 1.5, base coverage = 100 000, so threshold = 150 000.')
 @click.option('--mutations-per-rule', '-mpr', nargs=1, required=False, default='mixed',
               type=click.Choice(['unitary', 'proportional', 'probabilistic', 'mixed']),
               metavar='<str>',
@@ -745,10 +749,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
               ' fuzzing rule in one iteration: unitary, proportional, probabilistic, mixed')
 @click.option('--regex-rules', '-r', nargs=1, required=False, multiple=True,
               callback=cli_helpers.single_yaml_param_callback, metavar='<file>',
-              help='Option for adding custom rules specified by regular expressions,'
+              help='Option for adding custom fuzzing rules specified by regular expressions,'
               ' written in YAML format file.')
 @click.option('--no-plotting', '-np', is_flag=True, required=False,
-              help='Avoiding sometimes lengthy plotting of graphs.')
+              help='Will not plot the interpretation of the ruzzing in form of graphs.')
 def fuzz_cmd(cmd: str, args: str, **kwargs: Any) -> None:
     """Performs fuzzing for the specified command according to the initial sample of workload."""
     kwargs['executable'] = Executable(cmd, args)

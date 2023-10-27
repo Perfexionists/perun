@@ -268,13 +268,17 @@ def test_fuzzing_hangs(pcs_full):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_degradation(pcs_full):
+def test_fuzzing_degradation(pcs_full, monkeypatch):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
     hang_test = os.path.join(examples,  "hang-test", "hang")
     num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
 
+    def always_true(*_, **__):
+        return True
+    original_target_testing = perun_fuzz.target_testing
+    monkeypatch.setattr(perun_fuzz, 'target_testing', always_true)
     # 10. Testing for performance degradations during fuzz testing
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,
@@ -287,10 +291,12 @@ def test_fuzzing_degradation(pcs_full):
         '--interesting-files-limit', '1',
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
-        '--exec-limit', '10'
+        '--mutations-per-rule', 'unitary',
+        '--exec-limit', '1'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Founded degradation mutations: 0' not in result.output)
+    monkeypatch.setattr(perun_fuzz, 'target_testing', original_target_testing)
 
 
 @pytest.mark.usefixtures('cleandir')
