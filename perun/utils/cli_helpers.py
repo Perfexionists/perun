@@ -161,7 +161,7 @@ def yaml_param_callback(_: click.Context, __: click.Option, value: list[tuple[st
     :param str value: value that is being read from the commandline
     :returns dict: parsed yaml file
     """
-    unit_to_params = defaultdict(dict)
+    unit_to_params: dict[str, dict[Any, Any]] = defaultdict(dict)
     for (unit, yaml_file) in value:
         unit_to_params[unit].update(streams.safely_load_yaml(yaml_file))
     return unit_to_params
