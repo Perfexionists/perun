@@ -77,7 +77,9 @@ def test_fuzzing_correct(pcs_full):
         '--timeout', '1',
         '--max', '10',
         '--no-plotting',
-        '--skip-coverage-testing'
+        '--skip-coverage-testing',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -96,6 +98,8 @@ def test_fuzzing_correct(pcs_full):
         '--interesting-files-limit', '2',
         '--workloads-filter', '(?notvalidregex?)',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -112,7 +116,9 @@ def test_fuzzing_correct(pcs_full):
         '--mutations-per-rule', 'probabilistic',
         '--regex-rules', regex_file,
         '--no-plotting',
-        '--skip-coverage-testing'
+        '--skip-coverage-testing',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -125,7 +131,9 @@ def test_fuzzing_correct(pcs_full):
         '--input-sample', xml_workload,
         '--timeout', '1',
         '--no-plotting',
-        '--skip-coverage-testing'
+        '--skip-coverage-testing',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -141,6 +149,8 @@ def test_fuzzing_correct(pcs_full):
         '--source-path', '.',
         '--gcno-path', '.',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -166,6 +176,8 @@ def test_fuzzing_sigabort(pcs_full):
         '--input-sample', num_workload,
         '--source-path', os.path.dirname(sigabrt_init),
         '--gcno-path', os.path.dirname(sigabrt_init),
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'SIGABRT' in result.output)
@@ -187,6 +199,8 @@ def test_fuzzing_sigabort(pcs_full):
         '--gcno-path', os.path.dirname(sigabrt_test),
         '--mutations-per-rule', 'unitary',
         '--exec-limit', '1',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'exit status 134' in result.output)
@@ -215,6 +229,8 @@ def test_fuzzing_hangs(pcs_full):
         '--gcno-path', os.path.dirname(hang_init),
         '--hang-timeout', '0.05',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'Timeout' in result.output)
@@ -238,6 +254,8 @@ def test_fuzzing_hangs(pcs_full):
         '--hang-timeout', '0.05',
         '--exec-limit', '1',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Timeout' in result.output)
@@ -260,7 +278,9 @@ def test_fuzzing_degradation(pcs_full):
         '--source-path', os.path.dirname(hang_test),
         '--gcno-path', os.path.dirname(hang_test),
         '--no-plotting',
-        '--interesting-files-limit', '1'
+        '--interesting-files-limit', '1',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Founded degradation mutations: 0' not in result.output)
@@ -424,7 +444,7 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
     """Test various error states"""
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
-    txt_workload = os.path.join(examples, 'samples', 'txt')
+    txt_workload = os.path.join(examples, 'samples', 'txt', 'simple.txt')
     tail = os.path.join(examples, "tail", "tail")
 
     # Test when target testing returns error
@@ -437,7 +457,12 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
             raise subprocess.CalledProcessError(1, "")
         else:
             return old_run_process(*_, **__)
+
+    old_check_output = utils.get_stdout_from_external_command
+    def patched_check_output(*_, **__):
+        return "real 0.01\nuser 0.00\nsys 0.00"
     monkeypatch.setattr(utils, 'run_safely_external_command', patched_run_process)
+    monkeypatch.setattr(utils, 'get_stdout_from_external_command', patched_check_output)
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
@@ -449,6 +474,8 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
         '--coverage-increase-rate', '1.05',
         '--interesting-files-limit', '2',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Faults: 0" not in result.output)
@@ -470,7 +497,10 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
         '--coverage-increase-rate', '1.05',
         '--interesting-files-limit', '2',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Executing binary raised an exception" in result.output)
     monkeypatch.setattr(coverage_fuzz, 'target_testing', old_target_perun_testing)
+    monkeypatch.setattr(utils, 'get_stdout_from_external_command', old_check_output)
