@@ -28,7 +28,7 @@ import perun.utils.log as log
 import perun.utils as utils
 
 # Cmake constants that may be changed
-CMAKE_VERSION = '2.8'
+CMAKE_VERSION = '3.15.0'
 CMAKE_BIN_TARGET = 'bin'
 CMAKE_CONFIG_TARGET = 'WorkloadCfg'
 CMAKE_COLLECT_TARGET = 'Workload'
@@ -140,6 +140,7 @@ def _init_cmake(cmake_file: TextIO) -> None:
         cc_flags += ' -no-pie'
     # Sets the cmake version, paths and compiler config
     cmake_file.write('cmake_minimum_required(VERSION {0})\n\n'
+                     'project(complexity)\n'
                      '# set the paths\n'
                      'set(CMAKE_BINARY_DIR ${{CMAKE_SOURCE_DIR}}/{1})\n'
                      'set(EXECUTABLE_OUTPUT_PATH ${{CMAKE_BINARY_DIR}})\n\n'

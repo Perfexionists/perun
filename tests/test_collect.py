@@ -13,7 +13,6 @@ import perun.utils as utils
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
-import perun.collect.memory.parsing as parsing
 import perun.utils.log as log
 
 from subprocess import SubprocessError
