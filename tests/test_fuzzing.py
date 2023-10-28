@@ -503,7 +503,7 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
         '--cmd', tail,
         '--output-dir', '.',
         '--input-sample', txt_workload,
-        '--timeout', '0.25',
+        '--timeout', '1',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
         '--max-size-increase', '35000',
