@@ -83,7 +83,7 @@ def baseline_testing(
 
 
 def get_initial_coverage(
-        executable: Executable, seeds: list[Mutation], timeout: int,
+        executable: Executable, seeds: list[Mutation], timeout: int | float,
         fuzzing_config: FuzzingConfiguration
 ) -> int:
     """ Provides initial testing with initial samples given by user.
