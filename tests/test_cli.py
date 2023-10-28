@@ -774,9 +774,9 @@ def test_kernel_regression_correct(pcs_full):
         # 36. Test the default values of whole set of options
         {'params': []},
         # 37. Test valid range values for gamma-range argument
-        {'params': ['--gamma-range', 1e-5, 1e-1]},
+        {'params': ['--gamma-range', 1e-5, 1e-4]},
         # 38. Test valid value for gamma-step argument
-        {'params': ['--gamma-step', 3e-2]},
+        {'params': ['--gamma-step', 5e-6]},
         # 39. Test complex combination of options - no.1
         {'params': ['--gamma-range', 1e-4, 1e-2, '--gamma-step', 1e-5]},
         # 40. Test complex combination of options - no.2

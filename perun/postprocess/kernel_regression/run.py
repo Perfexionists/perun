@@ -47,7 +47,7 @@ _SMOOTHING_METHODS: list[str] = ['spatial-average', 'local-linear', 'local-polyn
 # Default value for order of the polynomial to fit with `local-polynomial` kernel smoothing method
 _DEFAULT_POLYNOMIAL_ORDER: int = 3
 # Default range (minimal and maximal values) for automatic bandwidth selection at `kernel-ridge`
-_DEFAULT_GAMMA_RANGE: tuple[float, float] = (1e-5, 2e-1)
+_DEFAULT_GAMMA_RANGE: tuple[float, float] = (1e-5, 1e-4)
 # Default size of step for iteration over given range in gamma parameter at `kernel-ridge`
 _DEFAULT_GAMMA_STEP: float = 1e-5
 
@@ -525,7 +525,7 @@ def kernel_ridge(ctx: click.Context, **kwargs: Any) -> None:
     assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
     # validation of the step size - must be smaller than the length of the given range
     methods.valid_step_size(
-        kwargs['gamma_step'], kwargs['gamma_range'][1] - kwargs['gamma_range'][0]
+        kwargs['gamma_step'], kwargs['gamma_range']
     )
     # update the current set of params with the selected mode of kernel regression
     kwargs.update({'kernel_mode': 'kernel-ridge'})
