@@ -43,7 +43,7 @@ def test_stats_filenames(pcs_full):
     assert generated_name == profile_sha
 
 
-def test_stats_filename_on_missing_index(pcs_with_git_root_commit):
+def test_stats_filename_on_missing_index(pcs_with_root):
     """ Test the file name generator when profile index is missing.
 
     This should not work as the profile index is required to find the profile.
@@ -204,7 +204,7 @@ def test_stats_lists(pcs_full):
     assert len(stats.list_stat_versions()) == 0
 
 
-def test_stats_files_delete(pcs_with_more_commits):
+def test_stats_files_delete(pcs_full_no_prof):
     """ Tests the stats file deletion either in a specific minor version or across all the indexed
     versions while.
     """
@@ -283,7 +283,7 @@ def test_stats_files_delete(pcs_with_more_commits):
                    [custom_dir], [])
 
 
-def test_stats_directories_delete(pcs_with_more_commits):
+def test_stats_directories_delete(pcs_full_no_prof):
     """ Tests the version directories deletion.
 
     The deletion function parameters allow to delete only contents of the directory and keep the
@@ -390,7 +390,7 @@ def test_stats_directories_delete(pcs_with_more_commits):
     _check_objects([(minor_middle, [])], [custom_root_dir, custom_dir], [custom_root_file])
 
 
-def test_stats_sync(pcs_with_more_commits):
+def test_stats_sync(pcs_full_no_prof):
     """ Tests the stats synchronization, i.e. the synchronization of the internal state represented
     by the '.index' file.
 
@@ -431,7 +431,7 @@ def test_stats_sync(pcs_with_more_commits):
                     (minor_root, ['custom_file_2'])], [stats_custom_dir], [])
 
 
-def test_stats_clean(pcs_with_more_commits):
+def test_stats_clean(pcs_full_no_prof):
     """ Tests the stats cleaning functions. The function should synchronize the internal state and
     remove all the distinguishable custom files and directories, as well as empty version
     directories, within the stats directory (based on the supplied parameters).
@@ -491,7 +491,7 @@ def test_stats_clean(pcs_with_more_commits):
                    [], [])
 
 
-def test_stats_clear(pcs_with_more_commits):
+def test_stats_clear(pcs_full_no_prof):
     """ Tests the stats clear function that attempts to completely clear the contents of the
     stats directory (while either keeping the empty version directories or not).
     """

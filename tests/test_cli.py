@@ -2110,7 +2110,7 @@ def test_temp(pcs_with_empty_git):
     assert len(tmp_content) == 1 and tmp_content[0] == '.index'
 
 
-def test_stats(pcs_with_more_commits):
+def test_stats(pcs_full_no_prof):
     """ Test the CLI for stats module, mainly that all the options are working correctly.
     """
     runner = CliRunner()

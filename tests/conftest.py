@@ -353,7 +353,7 @@ def pcs_full(stored_profile_pool):
 
 
 @pytest.fixture(scope="function")
-def pcs_with_more_commits():
+def pcs_full_no_prof():
     """
     """
     # Change working dir into the temporary directory
@@ -410,7 +410,7 @@ def pcs_with_empty_git():
 
 
 @pytest.fixture(scope="function")
-def pcs_with_git_root_commit():
+def pcs_with_root():
     """
     """
     # Change working dir into the temporary directory

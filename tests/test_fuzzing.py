@@ -3,6 +3,7 @@ Basic tests for fuzz-testing mode of perun
 """
 
 import os
+import sys
 import subprocess
 import pytest
 import inspect
@@ -463,9 +464,7 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
     # Test when target testing returns error
     old_run_process = utils.run_safely_external_command
     def patched_run_process(*_, **__):
-        curframe = inspect.currentframe()
-        calframe = inspect.getouterframes(curframe, 2)
-        caller = calframe[1][3]
+        caller = sys._getframe().f_back.f_code.co_name
         if caller == 'target_testing':
             raise subprocess.CalledProcessError(1, "")
         else:
