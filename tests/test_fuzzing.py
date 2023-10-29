@@ -250,6 +250,8 @@ def test_fuzzing_hangs(pcs_full_no_prof):
 
     hang_test = os.path.join(examples,  "hang-test", "hang")
 
+    # Fixme: This test is shaky, and should be implemented in different way; it can sometimes fail with error
+    # during the initial testing
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,
         '--output-dir', '.',

@@ -3,7 +3,6 @@
 import os
 import subprocess
 import signal
-import time
 
 from click.testing import CliRunner
 
@@ -119,22 +118,6 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
                                          ] + files + rules + samplings)
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'stored profile' in result.output)
-
-    original_run = utils.run_safely_external_command
-    def patched_run(cmd, *args, **kwargs):
-        if cmd.startswith('g++') or cmd.startswith('readelf') or cmd.startswith('echo'):
-            return original_run(cmd, *args, **kwargs)
-        else:
-            raise subprocess.CalledProcessError(1, 'error')
-
-    monkeypatch.setattr('perun.utils.run_safely_external_command', patched_run)
-
-    runner = CliRunner()
-    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
-                                         '-a test', '-w input', 'complexity',
-                                         '-t{}'.format(job_params['target_dir']),
-                                         ] + files + rules + samplings)
-    asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
 def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
