@@ -43,3 +43,22 @@ for easy specification of visualized profiles.
 .. _ncurses: https://www.gnu.org/software/ncurses/ncurses.html
 .. _pandas: https://pandas.pydata.org/
 """
+from __future__ import annotations
+from typing import Callable, Any
+
+
+def lazy_get_cli_commands() -> list[Callable[..., Any]]:
+    """
+    Lazily imports CLI commands
+    """
+    import perun.view.bars.run as bars_run
+    import perun.view.flamegraph.run as flamegraph_run
+    import perun.view.flow.run as flow_run
+    import perun.view.raw.run as raw_run
+    import perun.view.scatter.run as scatter_run
+    import perun.view.tableof.run as tableof_run
+
+    return [
+        bars_run.bars, flamegraph_run.flamegraph, flow_run.flow,
+        raw_run.raw, scatter_run.scatter, tableof_run.tableof
+    ]

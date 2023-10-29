@@ -770,22 +770,8 @@ def init_unit_commands(lazy_init: bool = True) -> None:
                                      (perun.collect, collect, 'collect')]:
         if lazy_init and cli_arg not in sys.argv:
             continue
-        for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
-            # Skip modules, only packages can be used for show
-            if not module[2]:
-                continue
-            unit_package = perun.utils.get_module(module[1])
-
-            # Skip packages that are not for viewing, postprocessing, or collection of profiles
-            if not hasattr(unit_package, 'SUPPORTED_PROFILES') and \
-                    not hasattr(unit_package, 'COLLECTOR_TYPE'):
-                continue
-
-            # Skip those packages that do not contain the appropriate cli wrapper
-            unit_module = perun.utils.get_module(module[1] + '.' + 'run')
-            cli_function_name = module[1].split('.')[-1]
-            if hasattr(unit_module, cli_function_name):
-                cli_cmd.add_command(getattr(unit_module, cli_function_name))
+        for cmd in unit.lazy_get_cli_commands():
+            cli_cmd.add_command(cmd)
 
 
 # Initialization of other stuff
