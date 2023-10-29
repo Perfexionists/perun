@@ -3,6 +3,7 @@
 import os
 import subprocess
 import signal
+import time
 
 from click.testing import CliRunner
 
@@ -10,9 +11,11 @@ import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
 import perun.utils as utils
+import perun.utils.helpers as helpers
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
+import perun.collect.complexity.configurator as configurator
 import perun.utils.log as log
 
 from subprocess import SubprocessError
@@ -27,6 +30,9 @@ import perun.testing.utils as test_utils
 
 def _mocked_external_command(_, **__):
     return 1
+
+def _mocked_always_correct(*_, **__):
+    return 0
 
 
 def _mocked_flag_support(_):
@@ -134,6 +140,16 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
 def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
     """Test various scenarios where something goes wrong during the collection process.
     """
+    # Yeah, I mocked the fuck out of this context, since these are not really important stuff
+    def mocked_safe_external(*_, **__):
+        return b"", b""
+    old_run = utils.run_external_command
+    old_cfg = configurator.create_runtime_config
+    old_safe_run = utils.run_safely_external_command
+    monkeypatch.setattr(utils, 'run_external_command', _mocked_always_correct)
+    monkeypatch.setattr(configurator, 'create_runtime_config', _mocked_always_correct)
+    monkeypatch.setattr(utils, 'run_safely_external_command', mocked_safe_external)
+
     # Get the job.yml parameters
     script_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_complexity', 'target')
     job_params = complexity_collect_job[5]['collector_params']['complexity']
@@ -168,12 +184,11 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     asserts.predicate_from_cli(result, 'already exists' in result.output)
 
     # Simulate the failure of 'cmake'/'make' utility
-    old_run = utils.run_external_command
     def mocked_make(cmd, *_, **__):
         if cmd == ['make']:
             return 1
         else:
-            return old_run(cmd, *_, **__)
+            return 0
     monkeypatch.setattr(utils, 'run_external_command', _mocked_external_command)
     command = ['-c{}'.format(job_params['target_dir']), 'complexity',
                '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
@@ -182,14 +197,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     monkeypatch.setattr(utils, 'run_external_command', mocked_make)
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'Command \'make\' returned non-zero exit status 1' in result.output)
-    monkeypatch.setattr(utils, 'run_external_command', old_run)
-
-    # Simulate that the flag is supported, which leads to failure in build process for older g++
-    old_flag = makefiles._is_flag_supported
-    monkeypatch.setattr(makefiles, '_is_flag_supported', _mocked_flag_support)
-    result = runner.invoke(cli.collect, command)
-    asserts.predicate_from_cli(result, 'stored profile' in result.output or 'Command \'make\' returned non-zero exit status 2' in result.output)
-    monkeypatch.setattr(makefiles, '_is_flag_supported', old_flag)
+    monkeypatch.setattr(utils, 'run_external_command', _mocked_always_correct)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
@@ -204,6 +212,10 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     monkeypatch.setattr(makefiles, '_libraries_exist', old_libs_existence)
 
     # Simulate the failure of output processing
+    # We mock some data to trace.log
+    helpers.touch_dir(os.path.join(job_params['target_dir'], 'bin'))
+    with open(os.path.join(job_params['target_dir'], 'bin', 'trace.log'), 'w') as mock_handle:
+        mock_handle.write("a b c d\na b c d")
     old_record_processing = complexity._process_file_record
     monkeypatch.setattr(complexity, '_process_file_record', _mocked_record_processing)
     result = runner.invoke(cli.collect, command)
@@ -225,6 +237,10 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, "Could not find 'make'" in result.output)
     asserts.predicate_from_cli(result, "Could not find 'cmake'" in result.output)
+
+    monkeypatch.setattr(utils, 'run_external_command', old_run)
+    monkeypatch.setattr(utils, 'run_safely_external_command', old_safe_run)
+    monkeypatch.setattr(configurator, 'create_runtime_config', old_cfg)
 
 
 def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_debug_job):

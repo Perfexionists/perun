@@ -134,10 +134,9 @@ def _init_cmake(cmake_file: TextIO) -> None:
 
     :param file cmake_file: file handle to the opened cmake file
     """
-    # Check if -no-pie is supported by the compiler
+    # Note: We assume that the compiler is fresh enough to support `-no-pie`
     cc_flags = '-std=c++11 -g -fno-pic'
-    if _is_flag_supported('-no-pie'):
-        cc_flags += ' -no-pie'
+    cc_flags += ' -no-pie'
     # Sets the cmake version, paths and compiler config
     cmake_file.write('cmake_minimum_required(VERSION {0})\n\n'
                      'project(complexity)\n'
@@ -251,14 +250,3 @@ def _libraries_exist(libs_dir: str) -> bool:
      """
     return (os.path.exists(os.path.join(libs_dir, 'libprofapi.so')) and
             os.path.exists(os.path.join(libs_dir, 'libprofile.so')))
-
-
-def _is_flag_supported(flag: str) -> bool:
-    """Checks if the specified flag is supported by the default g++ version
-
-    :param str flag: the flag to be tested
-
-    :return bool: true if flag is supported, false otherwise
-    """
-    out, err = utils.run_safely_external_command('g++ {}'.format(flag), False)
-    return flag not in out.decode('utf-8') and flag not in err.decode('utf-8')
