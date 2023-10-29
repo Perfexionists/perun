@@ -12,6 +12,7 @@ import bokeh.palettes as bk_palettes
 import bokeh.themes.theme as bk_theme
 import holoviews as hv
 
+import perun.utils.decorators as decorators
 import perun.profile.helpers as profiles
 from perun.utils import log
 
@@ -201,3 +202,14 @@ def process_profile_to_graphs(
     profiles.is_key_aggregatable_by(profile, func, of_key, "of_key")
     graph = factory_module.create_from_params(profile, func, of_key, **kwargs)
     save_view_graph(graph, filename, view_in_browser)
+
+
+@decorators.always_singleton
+def lazy_init_holoviews() -> bool:
+    """
+    Lazily inits bokeh extension and sets theme for the renderer
+    """
+    hv.extension("bokeh")
+    hv.renderer("bokeh").theme = build_bokeh_theme()
+    # This is mostly done, so this function can be singleton
+    return True
