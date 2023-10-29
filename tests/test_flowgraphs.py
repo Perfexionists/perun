@@ -10,7 +10,7 @@ from perun.utils import view_helpers
 from perun.testing import asserts
 
 
-def test_flow_cli(pcs_full, valid_profile_pool):
+def test_flow_cli(pcs_full_no_prof, valid_profile_pool):
     """Test runing and creating bokeh flow from the cli
 
     Expecting no errors and created flow file
@@ -37,7 +37,7 @@ def test_flow_cli(pcs_full, valid_profile_pool):
         assert 'flow2.html' in os.listdir(os.getcwd())
 
 
-def test_flow_cli_errors(pcs_full, valid_profile_pool):
+def test_flow_cli_errors(pcs_full_no_prof, valid_profile_pool):
     """Test running and creating bokeh flow from the cli with error simulations
 
     Expecting errors, but nothing destructive

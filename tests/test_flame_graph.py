@@ -11,7 +11,7 @@ import perun.view.flamegraph.flamegraph as flamegraphs
 import perun.testing.asserts as asserts
 
 
-def test_flame_graph(pcs_full, valid_profile_pool):
+def test_flame_graph(pcs_full_no_prof, valid_profile_pool):
     """Test creating flame graph out of the memory profile
 
     Expecting no errors, and created flame.svg graph

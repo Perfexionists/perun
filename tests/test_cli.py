@@ -38,7 +38,7 @@ import perun.testing.utils as test_utils
 SIZE_REGEX = re.compile(r"([0-9]+ (Ki|Mi){0,1}B)")
 
 
-def test_cli(monkeypatch, pcs_full):
+def test_cli(monkeypatch, pcs_full_no_prof):
     """Generic tests for cli, such as testing verbosity setting etc."""
     runner = CliRunner()
 
@@ -129,7 +129,7 @@ def test_regressogram_incorrect(pcs_full):
         )
 
 
-def test_regressogram_correct(pcs_full):
+def test_regressogram_correct(pcs_single_prof):
     """
     Test correct usages of the regressogram cli.
 
@@ -205,7 +205,7 @@ def moving_average_runner_test(runner, tests_set, tests_edge, exit_code, cprof_i
         method_idx += 1 if idx + 1 == tests_edge[method_idx] else 0
 
 
-def test_moving_average_incorrect(pcs_full):
+def test_moving_average_incorrect(pcs_single_prof):
     """
     Test various failure scenarios for moving average cli.
 
@@ -318,7 +318,7 @@ def test_moving_average_incorrect(pcs_full):
         runner, incorrect_tests, tests_edge, 2, cprof_idx)
 
 
-def test_moving_average_correct(pcs_full):
+def test_moving_average_correct(pcs_single_prof):
     """
     Test correct usages of the moving average cli.
 
@@ -442,7 +442,7 @@ def kernel_regression_runner_test(runner, tests_set, tests_edge, exit_code, cpro
         mode_idx += 1 if idx + 1 == tests_edge[mode_idx] else 0
 
 
-def test_kernel_regression_incorrect(pcs_full):
+def test_kernel_regression_incorrect(pcs_single_prof):
     """
     Test various failure scenarios for kernel regression cli.
 
@@ -676,7 +676,7 @@ def test_kernel_regression_incorrect(pcs_full):
         runner, incorrect_tests, tests_edge, 2, cprof_idx)
 
 
-def test_kernel_regression_correct(pcs_full):
+def test_kernel_regression_correct(pcs_full_no_prof):
     """
     Test correct usages of the kernel regression cli.
 
@@ -1259,7 +1259,7 @@ def test_log_correct(pcs_full):
                                len(result.output.split('\n')) > len( short_result.output.split('\n')))
 
 
-def test_collect_correct(pcs_full):
+def test_collect_correct(pcs_full_no_prof):
     """Test running collector from cli, without any problems
 
     Expecting no exceptions, no errors, zero status
@@ -1284,7 +1284,7 @@ def test_collect_correct(pcs_full):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_show_help(pcs_full):
+def test_show_help(pcs_full_no_prof):
     """Test running show to see if there are registered modules for showing
 
     Expecting no error and help outputed, where the currently supported modules will be shown
@@ -1296,18 +1296,18 @@ def test_show_help(pcs_full):
     asserts.predicate_from_cli(result, 'raw' in result.output)
 
 
-def test_add_massaged_head(pcs_full, valid_profile_pool):
+def test_add_massaged_head(pcs_full_no_prof, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should, or errors for incorrect revs
     """
-    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
+    git_repo = git.Repo(os.path.split(pcs_full_no_prof.get_path())[0])
     head = str(git_repo.head.commit)
     test_utils.populate_repo_with_untracked_profiles(
-        pcs_full.get_path(), valid_profile_pool)
+        pcs_full_no_prof.get_path(), valid_profile_pool)
     first_tagged = os.path.relpath(
         test_utils.prepare_profile(
-            pcs_full.get_job_directory(), valid_profile_pool[0], head
+            pcs_full_no_prof.get_job_directory(), valid_profile_pool[0], head
         )
     )
 
@@ -1331,21 +1331,21 @@ def test_add_massaged_head(pcs_full, valid_profile_pool):
     asserts.predicate_from_cli(result, "Ref 'tag2' did not resolve to an object" in result.output)
 
 
-def test_add_tag(monkeypatch, pcs_full, valid_profile_pool):
+def test_add_tag(monkeypatch, pcs_full_no_prof, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should
     """
-    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
+    git_repo = git.Repo(os.path.split(pcs_full_no_prof.get_path())[0])
     head = str(git_repo.head.commit)
     parent = str(git_repo.head.commit.parents[0])
     test_utils.populate_repo_with_untracked_profiles(
-        pcs_full.get_path(), valid_profile_pool)
+        pcs_full_no_prof.get_path(), valid_profile_pool)
     first_sha = os.path.relpath(test_utils.prepare_profile(
-        pcs_full.get_job_directory(), valid_profile_pool[0], head)
+        pcs_full_no_prof.get_job_directory(), valid_profile_pool[0], head)
     )
     second_sha = os.path.relpath(test_utils.prepare_profile(
-        pcs_full.get_job_directory(), valid_profile_pool[1], parent)
+        pcs_full_no_prof.get_job_directory(), valid_profile_pool[1], parent)
     )
 
     runner = CliRunner()
@@ -1370,20 +1370,20 @@ def test_add_tag(monkeypatch, pcs_full, valid_profile_pool):
     asserts.predicate_from_cli(result, '0@p' in result.output)
 
 
-def test_add_tag_range(pcs_full, valid_profile_pool):
+def test_add_tag_range(pcs_full_no_prof, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should
     """
-    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
+    git_repo = git.Repo(os.path.split(pcs_full_no_prof.get_path())[0])
     head = str(git_repo.head.commit)
     test_utils.populate_repo_with_untracked_profiles(
-        pcs_full.get_path(), valid_profile_pool)
+        pcs_full_no_prof.get_path(), valid_profile_pool)
     os.path.relpath(test_utils.prepare_profile(
-        pcs_full.get_job_directory(), valid_profile_pool[0], head)
+        pcs_full_no_prof.get_job_directory(), valid_profile_pool[0], head)
     )
     os.path.relpath(test_utils.prepare_profile(
-        pcs_full.get_job_directory(), valid_profile_pool[1], head)
+        pcs_full_no_prof.get_job_directory(), valid_profile_pool[1], head)
     )
 
     runner = CliRunner()
@@ -1562,7 +1562,7 @@ def test_show_tag(pcs_full, valid_profile_pool, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_config(pcs_full, monkeypatch):
+def test_config(pcs_full_no_prof, monkeypatch):
     """Test running config
 
     Expecting no errors, everything shown as it should be
@@ -1625,7 +1625,7 @@ def test_reset_outside_pcs(monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_reset(pcs_full):
+def test_reset(pcs_full_no_prof):
     """Tests resetting of configuration within the perun scope
 
     Excepts no error at all
@@ -1848,7 +1848,7 @@ def test_utils_create(monkeypatch, tmpdir):
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
-def test_run(pcs_full, monkeypatch):
+def test_run(pcs_full_no_prof, monkeypatch):
     matrix = config.Config('local', '', {
         'vcs': {'type': 'git', 'url': '../'},
         'cmds': ['ls'],
@@ -1877,7 +1877,7 @@ def test_run(pcs_full, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "is unsupported" in result.output)
 
-    job_dir = pcs_full.get_job_directory()
+    job_dir = pcs_full_no_prof.get_job_directory()
     job_profiles = os.listdir(job_dir)
     assert len(job_profiles) >= 2
 
@@ -1923,7 +1923,7 @@ def test_run(pcs_full, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
-def test_error_runs(pcs_full, monkeypatch):
+def test_error_runs(pcs_full_no_prof, monkeypatch):
     """Try various error states induced by job matrix"""
     matrix = config.Config('local', '', {
         'vcs': {'type': 'git', 'url': '../'},

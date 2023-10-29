@@ -306,6 +306,50 @@ def pcs_with_degradations():
 
 
 @pytest.fixture(scope="function")
+def pcs_single_prof(stored_profile_pool):
+    # Change working dir into the temporary directory
+    profiles = stored_profile_pool
+    pcs_path = tempfile.mkdtemp()
+    os.chdir(pcs_path)
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
+
+    # Initialize git
+    vcs.init({})
+
+    # Populate repo with commits
+    repo = git.Repo(pcs_path)
+
+    # Create first commit
+    file1 = os.path.join(pcs_path, "file1")
+    helpers.touch_file(file1)
+    repo.index.add([file1])
+    root = repo.index.commit("root")
+
+    # Create second commit
+    file2 = os.path.join(pcs_path, "file2")
+    helpers.touch_file(file2)
+    repo.index.add([file2])
+    current_head = repo.index.commit("second commit")
+
+    # Populate PCS with profiles
+    jobs_dir = pcs.get_job_directory()
+    chead_profile1 = test_utils.prepare_profile(jobs_dir, profiles[1], str(current_head))
+    commands.add([chead_profile1], str(current_head))
+
+    # Assert that we have five blobs: 2 for commits and 3 for profiles
+    pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
+    number_of_perun_objects = sum(
+        len(os.listdir(os.path.join(pcs_object_dir, sub))) for sub in os.listdir(pcs_object_dir)
+    )
+    assert number_of_perun_objects == 2
+
+    yield pcs
+
+    # clean up the directory
+    shutil.rmtree(pcs_path)
+
+
+@pytest.fixture(scope="function")
 def pcs_full(stored_profile_pool):
     # Change working dir into the temporary directory
     profiles = stored_profile_pool

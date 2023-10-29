@@ -49,7 +49,7 @@ def test_fuzzing_coverage(capsys):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_correct(pcs_full):
+def test_fuzzing_correct(pcs_full_no_prof):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -162,7 +162,7 @@ def test_fuzzing_correct(pcs_full):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_sigabort(pcs_full):
+def test_fuzzing_sigabort(pcs_full_no_prof):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -214,7 +214,7 @@ def test_fuzzing_sigabort(pcs_full):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_hangs(pcs_full):
+def test_fuzzing_hangs(pcs_full_no_prof):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -269,7 +269,7 @@ def test_fuzzing_hangs(pcs_full):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_degradation(pcs_full, monkeypatch):
+def test_fuzzing_degradation(pcs_full_no_prof, monkeypatch):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -301,7 +301,7 @@ def test_fuzzing_degradation(pcs_full, monkeypatch):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_incorrect(pcs_full):
+def test_fuzzing_incorrect(pcs_full_no_prof):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
 
@@ -454,7 +454,7 @@ def test_fuzzing_incorrect(pcs_full):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_errors(pcs_full, monkeypatch):
+def test_fuzzing_errors(pcs_full_no_prof, monkeypatch):
     """Test various error states"""
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')

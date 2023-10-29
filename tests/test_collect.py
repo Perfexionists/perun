@@ -348,7 +348,7 @@ def test_collect_memory_incorrect(monkeypatch, capsys, pcs_full, memory_collect_
     assert "Execution of binary failed with error code: 42" in err
 
 
-def test_collect_memory_with_generator(pcs_full, memory_collect_job):
+def test_collect_memory_with_generator(pcs_full_no_prof, memory_collect_job):
     """Tries to collect the memory with integer generators"""
     executable = Executable(memory_collect_job[0][0])
     collector = Unit('memory', {})
@@ -447,7 +447,7 @@ def test_integrity_tests(capsys):
     assert "" == err
 
 
-def test_teardown(pcs_full, monkeypatch, capsys):
+def test_teardown(pcs_full_no_prof, monkeypatch, capsys):
     """Basic tests for integrity of the teardown phase"""
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     original_phase_f = run.run_phase_function

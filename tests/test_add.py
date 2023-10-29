@@ -206,23 +206,23 @@ def test_add_no_minor(pcs_full, valid_profile_pool):
     assert after_expected in (before_count[0], before_count[0]+1)
 
 
-def test_add_wrong_minor(pcs_full, valid_profile_pool):
+def test_add_wrong_minor(pcs_full_no_prof, valid_profile_pool):
     """Test calling 'perun add profile hash' with hash not occuring in wrapped VCS
 
     Expecting raising an exception, that the specified minor version is wrong.
     """
-    git_repo = git.Repo(os.path.split(pcs_full.get_path())[0])
+    git_repo = git.Repo(os.path.split(pcs_full_no_prof.get_path())[0])
     commits = [binascii.hexlify(c.binsha).decode('utf-8') for c in git_repo.iter_commits()]
     wrong_commit = commits[0][:20] + commits[1][20:]
     assert len(wrong_commit) == 40
     assert wrong_commit != commits[0] and wrong_commit != commits[1]
-    before_count = test_utils.count_contents_on_path(pcs_full.get_path())
+    before_count = test_utils.count_contents_on_path(pcs_full_no_prof.get_path())
 
     with pytest.raises(VersionControlSystemException):
         commands.add([valid_profile_pool[0]], wrong_commit, keep_profile=True)
 
     # Assert that nothing was added (rather weak, but should be enough)
-    after_count = test_utils.count_contents_on_path(pcs_full.get_path())
+    after_count = test_utils.count_contents_on_path(pcs_full_no_prof.get_path())
     assert before_count == after_count
 
 

@@ -53,7 +53,7 @@ def test_stats_filename_on_missing_index(pcs_with_root):
     assert "was not found" in str(exc.value)
 
 
-def test_basic_stats_operations(pcs_full):
+def test_basic_stats_operations(pcs_full_no_prof):
     """ Test some basic operations for manipulating the stats file.
 
     Tested operations are: adding new stat records to a file (and creating it if necessary),
@@ -141,7 +141,7 @@ def test_basic_stats_operations(pcs_full):
     _check_objects([(minor_head, ['custom_stats'])], [], [])
 
 
-def test_stats_lists(pcs_full):
+def test_stats_lists(pcs_full_no_prof):
     """ Tests the list functions (lists of stat versions or stat files).
 
     The files list is tested first, mainly valid and invalid inputs for the minor version parameter.
@@ -150,7 +150,7 @@ def test_stats_lists(pcs_full):
     to be filtered or sliced based on the starting point and the number of records.
     """
     # Prepare the git-related values
-    minor_head, minor_root = _get_vcs_versions()
+    minor_head, minor_root, _ = _get_vcs_versions()
 
     # Create stats files in the root version
     stats.add_stats('root_stats', ['id_1'], [{'value': 10}], minor_root)

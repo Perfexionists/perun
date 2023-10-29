@@ -17,7 +17,7 @@ def test_on_empty_git(pcs_with_empty_git):
     assert len(list(vcs.walk_minor_versions(""))) == 0
 
 
-def test_major_versions(pcs_full):
+def test_major_versions(pcs_full_no_prof):
     """Test whether getting the major version for given VCS is correct
 
     Expecting correct behaviour and no error
@@ -37,14 +37,14 @@ def test_major_versions(pcs_full):
     assert str(head_major) == git_default_branch_name
 
     prev_commit = vcs.get_minor_version_info(vcs.get_minor_head()).parents[0]
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_full_no_prof.get_vcs_path())
     git_repo.git.checkout(prev_commit)
     # Try to detach head
     head_major = vcs.get_head_major_version()
     assert store.is_sha1(head_major)
 
 
-def test_saved_states(pcs_full):
+def test_saved_states(pcs_full_no_prof):
     """Tests saving states of the repository and check outs
 
     Expecting correct behaviour, without any raised exceptions
@@ -80,7 +80,7 @@ def test_saved_states(pcs_full):
         # Now try checkout for all of the stuff
         vcs.checkout(minor_versions[1])
         tracked_files = os.listdir(os.getcwd())
-        assert set(tracked_files) == {'.perun', '.git', 'file1'}
+        assert set(tracked_files) == {'.perun', '.git', 'file1', 'file2'}
 
     # Test that the head was not changed and kept unchanged by CleanState
     assert vcs.get_minor_head() == head
@@ -93,7 +93,7 @@ def test_saved_states(pcs_full):
     assert not saved
 
 
-def test_diffs(pcs_full):
+def test_diffs(pcs_full_no_prof):
     """Test getting diff of two versions
 
     Expecting correct behaviour and no error

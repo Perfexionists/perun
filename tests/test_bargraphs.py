@@ -34,7 +34,7 @@ def test_bokeh_bars(memory_profiles):
         assert 'bars.html' in os.listdir(os.getcwd())
 
 
-def test_bars_cli(pcs_full, valid_profile_pool):
+def test_bars_cli(pcs_full_no_prof, valid_profile_pool):
     """Test running and creating bokeh bar from the cli
 
     Expecting no errors and created bars.html file
@@ -58,7 +58,7 @@ def test_bars_cli(pcs_full, valid_profile_pool):
         assert 'bars.html' in os.listdir(os.getcwd())
 
 
-def test_bars_cli_errors(pcs_full, valid_profile_pool):
+def test_bars_cli_errors(pcs_full_no_prof, valid_profile_pool):
     """Test running and creating bokeh bars from the cli with error simulations
 
     Expecting errors, but nothing destructive

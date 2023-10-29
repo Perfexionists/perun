@@ -8,7 +8,7 @@ import perun.utils.metrics as metrics
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_metrics(pcs_full, capsys):
+def test_metrics(pcs_full_no_prof, capsys):
     prev_enabled = metrics.Metrics.enabled
     metrics.Metrics.enabled = True
     assert metrics.is_enabled()
