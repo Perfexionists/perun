@@ -141,6 +141,11 @@ def test_inits(capsys, tmpdir):
     assert local_config.data['vcs']['type'] == 'git'
     assert local_config.data['vcs']['url'] == str(temp_dir)
 
+    # Try bulk get
+    vurl, vtype = local_config.get_bulk(['vcs.url', 'vcs.type'])
+    assert vurl == str(temp_dir)
+    assert vtype == 'git'
+
     # Try local, when the local was not initialized at all
     other_dir = tmpdir.mkdir('.perun2')
     other_config = other_dir.join('local.yml')

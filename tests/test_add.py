@@ -130,7 +130,8 @@ def test_add_on_no_vcs(pcs_without_vcs, valid_profile_pool):
     is not supported, but is simply a sane default.
     """
     before_count = test_utils.count_contents_on_path(pcs_without_vcs.get_path())
-    assert pcs_without_vcs.get_vcs_type() == 'pvcs'
+    vtype, _ = pcs_without_vcs.get_vcs_type_and_url()
+    assert vtype == 'pvcs'
     with pytest.raises(UnsupportedModuleException) as exc:
         commands.add([valid_profile_pool[0]], None, keep_profile=True)
     assert "'pvcs' is not supported" in str(exc.value)

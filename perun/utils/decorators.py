@@ -12,17 +12,21 @@ from typing import Callable, Any
 from perun.utils.exceptions import InvalidParameterException
 
 
-def _singleton_core(func: Callable[[], Any], is_always_singleton: bool) -> Callable[[], Any]:
+def _singleton_core(
+        func: Callable[[], Any], is_always_singleton: bool, allow_manual_reset: bool = False
+) -> Callable[[], Any]:
     """
     Wraps the function @p func so it will always return the same result,
     as given by the first call. I.e. the singleton. No params are expected.
 
-    :param function func: function that will be decorated
-    :returns func: decorated function that will be run only once
+    :param func: function that will be decorated
+    :returns: decorated function that will be run only once
     """
     func.instance = None  # type: ignore
     if not is_always_singleton:
         registered_singletons.append(func)
+    if is_always_singleton and allow_manual_reset:
+        manual_registered_singletons[func.__name__] = func
 
     def wrapper() -> Any:
         """Wrapper function of the @p func"""
@@ -35,7 +39,9 @@ def _singleton_core(func: Callable[[], Any], is_always_singleton: bool) -> Calla
 
 singleton = functools.partial(_singleton_core, is_always_singleton=False)
 always_singleton = functools.partial(_singleton_core, is_always_singleton=True)
+resetable_always_singleton = functools.partial(_singleton_core, is_always_singleton=True, allow_manual_reset=True)
 registered_singletons: list[Callable[[], Any]] = []
+manual_registered_singletons: dict[str, Callable[[], Any]] = {}
 
 
 def arguments_to_key(func: Callable[..., Any], *args: Any, **kwargs: Any) -> tuple[Any, ...]:

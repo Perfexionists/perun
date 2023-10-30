@@ -185,6 +185,7 @@ def test_fuzzing_sigabort(pcs_full_no_prof):
         '--collector-params', 'time', 'repeat: 1',
         '--collector-params', 'time', 'warmup: 0',
         '--exec-limit', '10',
+        '--no-plotting'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'SIGABRT' in result.output)

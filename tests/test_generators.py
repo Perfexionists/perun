@@ -7,6 +7,7 @@ import perun.logic.config as config
 import perun.workload as workload
 import perun.logic.runner as runner
 import perun.logic.store as store
+import perun.utils.decorators as decorators
 
 from perun.utils.structs import Unit, Executable, CollectStatus, Job
 from perun.workload.integer_generator import IntegerGenerator
@@ -100,6 +101,8 @@ def test_loading_generators_from_config(monkeypatch, pcs_full):
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: temp_local)
     monkeypatch.setattr("perun.logic.config.shared", lambda: temp_global)
+    # Manually reset the singleton
+    decorators.manual_registered_singletons['load_generator_specifications'].instance = None
 
     spec_map = workload.load_generator_specifications()
     assert len(spec_map.keys()) == 2
@@ -114,6 +117,8 @@ def test_loading_generators_from_config(monkeypatch, pcs_full):
         assert c_status == CollectStatus.OK
         assert profile
         assert len(profile['resources'])
+    # Restore the singleton
+    decorators.manual_registered_singletons['load_generator_specifications'].instance = None
 
 
 def test_singleton():

@@ -22,7 +22,7 @@ import perun.utils.decorators as decorators
 from perun.utils.structs import GeneratorSpec
 
 
-@decorators.singleton
+@decorators.resetable_always_singleton
 def load_generator_specifications() -> dict[str, GeneratorSpec]:
     """Collects from configuration file all the workload specifications and constructs a mapping
     of 'id' -> GeneratorSpec, which contains the constructor and parameters used for construction.

@@ -104,10 +104,11 @@ def config_reset(store_type: str, config_template: str) -> None:
         shared_location = perun_config.lookup_shared_config_dir()
         perun_config.init_shared_config_at(shared_location)
     else:
+        vcs_url, vcs_type = pcs.get_vcs_type_and_url()
         vcs_config = {
             'vcs': {
-                'url': pcs.get_vcs_path(),
-                'type': pcs.get_vcs_type()
+                'url': vcs_url,
+                'type': vcs_type
             }
         }
         perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
