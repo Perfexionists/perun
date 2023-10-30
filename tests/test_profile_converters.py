@@ -12,7 +12,7 @@ import perun.testing.utils as test_utils
 def test_convert_models_to_dataframe(postprocess_profiles):
     """Test conversion of models"""
     # Acquire the models query profile
-    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf')
+    models_profile = test_utils.load_profile('postprocess_profiles', 'complexity-models.perf')
     assert models_profile is not None
 
     df = convert.models_to_pandas_dataframe(models_profile)
@@ -47,7 +47,7 @@ def test_coefficients_to_points_correct(postprocess_profiles):
     Expecting no errors and updated dictionary
     """
     # Acquire the models query profile
-    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf')
+    models_profile = test_utils.load_profile('postprocess_profiles', 'complexity-models.perf')
     assert models_profile is not None
 
     # Get all models and perform the conversion on all of them
@@ -65,7 +65,7 @@ def test_coefficients_to_points_corrupted_model(postprocess_profiles):
     Expecting to catch InvalidModelException exception.
     """
     # Acquire the corrupted models query profile with invalid model
-    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models-corrupted-model.perf')
+    models_profile = test_utils.load_profile('postprocess_profiles', 'complexity-models-corrupted-model.perf')
     assert models_profile is not None
 
     # Get all models and perform the conversion on all of them

@@ -19,7 +19,7 @@ import perun.utils.metrics as metrics
 def test_incorrect_calls(postprocess_profiles):
     """Test various incorrect calls and exceptions"""
     # Get any profile, in following we will try to
-    const_model = test_utils.profile_filter(postprocess_profiles, 'const_model')
+    const_model = test_utils.load_profile('postprocess_profiles', 'const_model_datapoints.perf')
     assert const_model is not None
 
     # Try calling postprocess, while missing keys
@@ -43,7 +43,7 @@ def test_const_model(pcs_full_no_prof, postprocess_profiles):
     metrics.Metrics.configure("test_const_model", "HEAD")
     metrics.Metrics.enabled = True
     # Get the profile with exponential model testing data
-    const_model = test_utils.profile_filter(postprocess_profiles, 'const_model')
+    const_model = test_utils.load_profile('postprocess_profiles', 'const_model_datapoints.perf')
     assert const_model is not None
 
     # Perform the analysis
@@ -86,7 +86,7 @@ def test_linear_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    linear_model = test_utils.profile_filter(postprocess_profiles, 'linear_model')
+    linear_model = test_utils.load_profile('postprocess_profiles', 'linear_model_datapoints.perf')
     assert linear_model is not None
 
     # Perform the analysis
@@ -127,7 +127,7 @@ def test_quad_model_using_power(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with quadratic model testing data
-    quad_model = test_utils.profile_filter(postprocess_profiles, 'quad_model')
+    quad_model = test_utils.load_profile('postprocess_profiles', 'quad_model_datapoints.perf')
     assert quad_model is not None
 
     # Perform the analysis of quadratic-expected models
@@ -158,7 +158,7 @@ def test_log_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with logarithmic model testing data
-    pow_model = test_utils.profile_filter(postprocess_profiles, 'log_model')
+    pow_model = test_utils.load_profile('postprocess_profiles', 'log_model_datapoints.perf')
     assert pow_model is not None
 
     # Perform the analysis
@@ -198,7 +198,7 @@ def test_power_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with power model testing data
-    pow_model = test_utils.profile_filter(postprocess_profiles, 'pow_model')
+    pow_model = test_utils.load_profile('postprocess_profiles', 'pow_model_datapoints.perf')
     assert pow_model is not None
 
     # Perform the analysis
@@ -249,7 +249,7 @@ def test_exp_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    exp_model = test_utils.profile_filter(postprocess_profiles, 'exp_model')
+    exp_model = test_utils.load_profile('postprocess_profiles', 'exp_model_datapoints.perf')
     assert exp_model is not None
 
     # Perform the analysis

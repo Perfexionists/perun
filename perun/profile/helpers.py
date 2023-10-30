@@ -32,6 +32,7 @@ import perun.vcs as vcs
 import perun.profile.query as query
 import perun.utils.log as perun_log
 import perun.utils.helpers as helpers
+import perun.utils.decorators as decorators
 
 import perun.profile.factory as profiles
 from perun.utils import get_module
@@ -391,6 +392,16 @@ def is_key_aggregatable_by(profile: profiles.Profile, func: str, key: str, keyna
     return True
 
 
+@decorators.singleton
+def get_sort_order():
+    """Helper cachable retrieval of the sort order from the config
+
+    :return: sorting order
+    """
+    sort_order = config.lookup_key_recursively('format.sort_profiles_by')
+    return sort_order
+
+
 def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = True) -> None:
     """Sorts the profiles according to the key set in either configuration.
 
@@ -404,7 +415,7 @@ def sort_profiles(profile_list: list['ProfileInfo'], reverse_profiles: bool = Tr
     """
     sort_order = DEFAULT_SORT_KEY
     try:
-        sort_order = config.lookup_key_recursively('format.sort_profiles_by')
+        sort_order = get_sort_order()
         # If the stored key is invalid, we use the default time as well
         if sort_order not in ProfileInfo.valid_attributes:
             perun_log.warn("invalid sort key '{}'".format(sort_order) +

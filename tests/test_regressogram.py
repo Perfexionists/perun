@@ -9,7 +9,8 @@ always.
 The postprocessby CLI is tested in test_cli module.
 """
 from perun.postprocess.regressogram.run import postprocess
-from perun.testing.utils import profile_filter, compare_results, generate_models_by_uid
+from perun.testing.utils import compare_results, generate_models_by_uid
+import perun.testing.utils as test_utils
 
 
 def test_regressogram_method(postprocess_profiles):
@@ -19,7 +20,7 @@ def test_regressogram_method(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with testing data
-    test_model = profile_filter(postprocess_profiles, 'exp_model')
+    test_model = test_utils.load_profile('postprocess_profiles', 'exp_model_datapoints.perf')
     assert test_model is not None
 
     for current_method in _EXPECTED_RESULTS.keys():
