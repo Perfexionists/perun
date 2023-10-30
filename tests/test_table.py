@@ -38,7 +38,7 @@ def assert_files_match_output(result, rhs):
     assert output_to_list(result.output.split('\n')) == output_to_list(rhs.readlines())
 
 
-def test_table_cli(pcs_full, postprocess_profiles):
+def test_table_cli(pcs_full):
     """Test outputing profiles as tables"""
     runner = CliRunner()
     result = runner.invoke(cli.show, [

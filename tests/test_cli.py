@@ -1462,7 +1462,7 @@ def test_remove_pending(pcs_full, stored_profile_pool):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
-    assert len(os.listdir(jobs_dir)) == 4 # 3 profiles and .index
+    assert len(os.listdir(jobs_dir)) == 4  # 3 profiles and .index
     result = runner.invoke(cli.remove, ['0@p-10@p'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(os.listdir(jobs_dir)) == 1

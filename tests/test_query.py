@@ -73,7 +73,7 @@ def sort_flattened_structure(structure):
     return ','.join(new_values)
 
 
-def test_memory_prof_resources(query_profiles):
+def test_memory_prof_resources():
     """Test 'all_resources' on memory profile that has some.
 
     Expected _MEMORY_RESOURCES_COUNT resources.
@@ -87,7 +87,7 @@ def test_memory_prof_resources(query_profiles):
     assert len(resources) == _MEMORY_RESOURCES_COUNT
 
 
-def test_memory_prof_resources_empty(query_profiles):
+def test_memory_prof_resources_empty():
     """Test 'all_resources' on memory profile that has none.
 
     Expected 0 resources.
@@ -101,7 +101,7 @@ def test_memory_prof_resources_empty(query_profiles):
     assert not resources
 
 
-def test_complexity_prof_resources(query_profiles):
+def test_complexity_prof_resources():
     """Test 'all_resources' on complexity profile that has some.
 
     Expected _COMPLEXITY_RESOURCES_COUNT resources.
@@ -115,7 +115,7 @@ def test_complexity_prof_resources(query_profiles):
     assert len(resources) == _COMPLEXITY_RESOURCES_COUNT
 
 
-def test_complexity_prof_resources_empty(query_profiles):
+def test_complexity_prof_resources_empty():
     """Test 'all_resources' on complexity profile that has none.
 
     Expected 0 resources.
@@ -129,7 +129,7 @@ def test_complexity_prof_resources_empty(query_profiles):
     assert not resources
 
 
-def test_all_models(query_profiles):
+def test_all_models():
     """Test 'all_models_of' on profile with models.
 
     Expected _MODELS_COUNT models.
@@ -143,7 +143,7 @@ def test_all_models(query_profiles):
     assert len(models) == _MODELS_COUNT
 
 
-def test_all_models_empty(query_profiles):
+def test_all_models_empty():
     """Test 'all_models_of' on profile without models.
 
     Expected 0 models.
@@ -157,7 +157,7 @@ def test_all_models_empty(query_profiles):
     assert not models
 
 
-def test_all_items_of_memory_resources(query_profiles):
+def test_all_items_of_memory_resources():
     """Test 'all_items_of' on profile with resources.
 
     Expected _MEMORY_RESOURCE_ITEMS_COUNT items and content match.
@@ -183,7 +183,7 @@ def test_all_items_of_memory_resources(query_profiles):
     assert set(resources) == _MEMORY_RESOURCE_FIELDS
 
 
-def test_unique_resource_values(query_profiles):
+def test_unique_resource_values():
     """Test 'unique_resource_values_of' on resource.
 
     Expected no exception, all assertions passed.
@@ -215,7 +215,7 @@ def test_unique_resource_values(query_profiles):
     assert not unique_values
 
 
-def test_unique_model_values(query_profiles):
+def test_unique_model_values():
     """Test 'unique_model_values_of' on model.
 
     Expected no exception, all assertions passed.
@@ -241,7 +241,7 @@ def test_unique_model_values(query_profiles):
     assert not unique_values
 
 
-def test_default_variables(query_profiles):
+def test_default_variables():
     profile = test_utils.load_profile('query_profiles', 'complexity-empty-resources.perf')
     assert profile is not None
 

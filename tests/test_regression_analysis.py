@@ -16,7 +16,7 @@ from perun.testing.utils import compare_results, generate_models_by_uid
 import perun.utils.metrics as metrics
 
 
-def test_incorrect_calls(postprocess_profiles):
+def test_incorrect_calls():
     """Test various incorrect calls and exceptions"""
     # Get any profile, in following we will try to
     const_model = test_utils.load_profile('postprocess_profiles', 'const_model_datapoints.perf')
@@ -30,7 +30,7 @@ def test_incorrect_calls(postprocess_profiles):
     assert 'Invalid dictionary' in str(exc.value)
 
 
-def test_const_model(pcs_full_no_prof, postprocess_profiles):
+def test_const_model(pcs_full_no_prof):
     """Test the constant model computation.
 
     The r^2 coefficient computation is currently not supported
@@ -78,7 +78,7 @@ def test_const_model(pcs_full_no_prof, postprocess_profiles):
     metrics.Metrics.enabled = prev_enabled
 
 
-def test_linear_model(postprocess_profiles):
+def test_linear_model():
     """Test the linear model computation.
 
     Contains one sourced and one created example.
@@ -119,7 +119,7 @@ def test_linear_model(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 2.5)
 
 
-def test_quad_model_using_power(postprocess_profiles):
+def test_quad_model_using_power():
     """Test the quadratic model computation.
 
     Contains only one sourced example.
@@ -150,7 +150,7 @@ def test_quad_model_using_power(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b2'][0], -0.173714)
 
 
-def test_log_model(postprocess_profiles):
+def test_log_model():
     """Test the logarithmic model computation.
 
     Contains one sourced and one created example.
@@ -190,7 +190,7 @@ def test_log_model(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 0.434294482)
 
 
-def test_power_model(postprocess_profiles):
+def test_power_model():
     """Test the power model computation.
 
     Contains two sourced and one created example.
@@ -241,7 +241,7 @@ def test_power_model(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 3.0)
 
 
-def test_exp_model(postprocess_profiles):
+def test_exp_model():
     """Test the exponential model computation.
 
     Contains two sourced and one created example.

@@ -9,7 +9,7 @@ import perun.profile.convert as convert
 import perun.testing.utils as test_utils
 
 
-def test_convert_models_to_dataframe(postprocess_profiles):
+def test_convert_models_to_dataframe():
     """Test conversion of models"""
     # Acquire the models query profile
     models_profile = test_utils.load_profile('postprocess_profiles', 'complexity-models.perf')
@@ -41,7 +41,7 @@ def test_flame_graph(memory_profiles):
         assert line_no == len(flame_graph)
 
 
-def test_coefficients_to_points_correct(postprocess_profiles):
+def test_coefficients_to_points_correct():
     """ Test correct conversion from models coefficients to points that can be used for plotting.
 
     Expecting no errors and updated dictionary
@@ -59,7 +59,7 @@ def test_coefficients_to_points_correct(postprocess_profiles):
         assert 'plot_y' in data
 
 
-def test_coefficients_to_points_corrupted_model(postprocess_profiles):
+def test_coefficients_to_points_corrupted_model():
     """ Test conversion from models coefficients to points on a profile with invalid model.
 
     Expecting to catch InvalidModelException exception.

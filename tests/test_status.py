@@ -244,39 +244,26 @@ def test_status_short_no_pending(pcs_full, capsys, stored_profile_pool):
     assert_short_info(out, git_repo, stored_profile_pool[1:], [])
 
 
-def test_status_no_profiles(pcs_full, capsys):
+def test_status_no_profiles(pcs_full_no_prof, capsys):
     """Test calling 'perun status', without any assigned profiles
 
     Expecting no error and long display of the current status of the perun, without any pending.
     """
+    import sys
     # First we will do a new commit, with no profiles
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_full_no_prof.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')
     helpers.touch_file(file)
     git_repo.index.add([file])
     git_repo.index.commit("new commit")
 
     commands.status()
-
     out = capsys.readouterr()[0].split('\n')
     assert_info(out, git_repo, [], [])
+    capsys.readouterr()
 
-
-def test_status_short_no_profiles(pcs_full, capsys):
-    """Test calling 'perun status --short', without any asigned profiles
-
-    Expecting no errors and short display of status of the profiles
-    """
-    # First we will do a new commit, with no profiles
-    git_repo = git.Repo(pcs_full.get_vcs_path())
-    file = os.path.join(os.getcwd(), 'file3')
-    helpers.touch_file(file)
-    git_repo.index.add([file])
-    git_repo.index.commit("new commit")
-
+    # Test short command
     commands.status(**{'short': True})
-
-    # Assert the repo
     out = capsys.readouterr()[0].split('\n')
     assert_short_info(out, git_repo, [], [])
 
@@ -287,40 +274,29 @@ def test_status(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
     test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    git_repo = git.Repo(pcs_full.get_vcs_path())
 
     commands.status()
-
-    git_repo = git.Repo(pcs_full.get_vcs_path())
     raw_out, _ = capsys.readouterr()
     out = raw_out.split('\n')
-
     assert_info(out, git_repo, stored_profile_pool[1:], valid_profile_pool)
+    capsys.readouterr()
 
-
-def test_status_short(pcs_full, capsys, stored_profile_pool, valid_profile_pool):
-    """Test calling 'perun status --short' with expected behaviour
-
-    Expecting no errors and short display of the current status of the perun.
-    """
-    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
-
+    # Test short command
     commands.status(**{'short': True})
-
-    # Assert the repo
-    git_repo = git.Repo(pcs_full.get_vcs_path())
     raw_out, _ = capsys.readouterr()
     out = raw_out.split('\n')
     assert_short_info(out, git_repo, stored_profile_pool[1:], valid_profile_pool)
 
 
-def test_status_sort(monkeypatch, pcs_full, capsys, valid_profile_pool):
+def test_status_sort(monkeypatch, pcs_single_prof, capsys, valid_profile_pool):
     """Test calling 'perun status' with expected behaviour
 
     TODO: Testing that the profiles are really sorted
 
     Expecting no errors and long display of the current status of the perun, with all profiles.
     """
-    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_single_prof.get_path(), valid_profile_pool)
     decorators.remove_from_function_args_cache("lookup_key_recursively")
 
     # Try what happens if we screw the stored profile keys ;)
