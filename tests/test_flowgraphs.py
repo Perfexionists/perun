@@ -6,12 +6,14 @@ from click.testing import CliRunner
 import perun.view.flow.factory as flow_factory
 import perun.testing.utils as test_utils
 from perun import cli
-from perun.logic import store
 from perun.utils import view_helpers
 from perun.testing import asserts
 
+import bokeh.plotting as bk_plot
+import holoviews as hv
 
-def test_flow_cli(pcs_with_root):
+
+def test_flow_cli(pcs_with_root, monkeypatch):
     """Test runing and creating bokeh flow from the cli
 
     Expecting no errors and created flow file
@@ -27,19 +29,28 @@ def test_flow_cli(pcs_with_root):
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert 'flow.html' in os.listdir(os.getcwd())
 
+    # We monkeypatch outputting and omit generation of html files
+    monkeypatch.setattr(bk_plot, 'output_file', lambda x: x)
+    monkeypatch.setattr(bk_plot, 'show', lambda x: x)
+    monkeypatch.setattr(hv, 'render', lambda x: x)
+
     # Run without accumulation
     result = runner.invoke(cli.show, [valid_profile, 'flow', '--of=amount', '--by=uid',
                                       '--stacked', '--no-accumulate', '--filename=flow2.html',
-                                      '--graph-title=Test'])
+                                      '--graph-title=Test', '--view-in-browser'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    assert 'flow2.html' in os.listdir(os.getcwd())
 
 
-def test_flow_cli_errors(pcs_with_root):
+def test_flow_cli_errors(pcs_with_root, monkeypatch):
     """Test running and creating bokeh flow from the cli with error simulations
 
     Expecting errors, but nothing destructive
     """
+    # We monkeypatch outputting and omit generation of html files
+    monkeypatch.setattr(bk_plot, 'output_file', lambda x: x)
+    monkeypatch.setattr(bk_plot, 'show', lambda x: x)
+    monkeypatch.setattr(hv, 'render', lambda x: x)
+
     runner = CliRunner()
     valid_profile = test_utils.load_profilename('to_add_profiles', 'new-prof-2-memory-basic.perf')
 
@@ -65,9 +76,8 @@ def test_flow_cli_errors(pcs_with_root):
     # Try some of key, that is not summable, but is countable
     for valid_func in ('count', 'nunique'):
         result = runner.invoke(cli.show, [valid_profile, 'flow', valid_func, '--of=subtype',
-                                          '--by=uid', '--through=snapshots'])
+                                          '--by=uid', '--through=snapshots', '--view-in-browser'])
         asserts.predicate_from_cli(result, result.exit_code == 0)
-        assert 'flow.html' in os.listdir(os.getcwd())
 
 
 @pytest.mark.usefixtures('cleandir')

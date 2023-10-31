@@ -7,7 +7,7 @@ from collections.abc import MutableMapping, Iterable
 
 from enum import Enum
 
-from bokeh.plotting import show, output_file
+import bokeh.plotting as bk_plot
 import bokeh.palettes as bk_palettes
 import bokeh.themes.theme as bk_theme
 import holoviews as hv
@@ -168,8 +168,8 @@ def save_view_graph(
     :param view_in_browser: ``True`` if the graph should be displayed straight in the browser.
     """
     if view_in_browser:
-        output_file(filename)
-        show(hv.render(graph))
+        bk_plot.output_file(filename)
+        bk_plot.show(hv.render(graph))
     else:
         hv.save(graph, filename)
 
