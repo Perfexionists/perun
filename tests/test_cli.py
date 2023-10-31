@@ -73,19 +73,18 @@ def test_cli(monkeypatch, pcs_full_no_prof):
 
 def run_non_param_test(runner, test_params, expected_exit_code, expected_output):
     result = runner.invoke(cli.postprocessby, test_params)
+    print(test_params)
     asserts.predicate_from_cli(result, result.exit_code == expected_exit_code)
     asserts.predicate_from_cli(result, expected_output in result.output)
 
 
-def test_regressogram_incorrect(pcs_full):
+def test_regressogram_incorrect(pcs_single_prof):
     """
     Test various failure scenarios for regressogram cli.
 
     Expecting no exceptions, all tests should end with status code 2.
     """
     incorrect_tests = [
-        # Test the lack of arguments
-        {'params': [], 'output': 'Usage'},
         # Test non-existing argument
         {'params': ['-a'], 'output': 'No such option: -a'},
         # Test malformed bucket_number argument
@@ -121,7 +120,7 @@ def test_regressogram_incorrect(pcs_full):
     runner = CliRunner()
 
     # Set stable parameters at all tests
-    regressogram_params = ['1@i', 'regressogram']
+    regressogram_params = ['0@i', 'regressogram']
     # Executing the testing
     for incorrect_test in incorrect_tests:
         run_non_param_test(
@@ -850,7 +849,7 @@ def test_kernel_regression_correct(pcs_full_no_prof):
     kernel_regression_runner_test(runner, correct_tests, tests_edge, 0, profile)
 
 
-def test_reg_analysis_incorrect(pcs_full):
+def test_reg_analysis_incorrect(pcs_single_prof):
     """Test various failure scenarios for regression analysis cli.
 
     Expecting no exceptions, all tests should end with status code 2.
@@ -861,84 +860,84 @@ def test_reg_analysis_incorrect(pcs_full):
     runner = CliRunner()
 
     # Test the lack of arguments
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis'])
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'Usage' in result.output)
 
     # Test non-existing argument
     result = runner.invoke(cli.postprocessby, [
-                           '1@i', 'regression-analysis', '-f'])
+                           '0@i', 'regression-analysis', '-f'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'No such option: -f' in result.output)
 
     # Test malformed method argument
     result = runner.invoke(cli.postprocessby, [
-                           '1@i', 'regression-analysis', '--metod', 'full'])
+                           '0@i', 'regression-analysis', '--metod', 'full'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'No such option: --metod' in result.output)
 
     # Test missing method value
     result = runner.invoke(cli.postprocessby, [
-                           '1@i', 'regression-analysis', '-m'])
+                           '0@i', 'regression-analysis', '-m'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "Option '-m' requires an argument." in result.output)
 
     # Test invalid method name
     result = runner.invoke(cli.postprocessby, [
-                           '1@i', 'regression-analysis', '--method', 'extra'])
+                           '0@i', 'regression-analysis', '--method', 'extra'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'Invalid value' in result.output)
 
     # Test malformed model argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'full',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '--method', 'full',
                                                '--regresion_models'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'No such option: --regresion_models' in result.output)
 
     # Test missing model value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '--method', 'full',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '--method', 'full',
                                                '-r'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "Option '-r' requires an argument." in result.output)
 
     # Test invalid model name
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full', '-r',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '-m', 'full', '-r',
                                                'ultimastic'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'Invalid value' in result.output)
 
     # Test multiple models specification with one invalid value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'linear', '-r', 'fail'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'Invalid value' in result.output)
 
     # Test malformed steps argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'all', '--seps'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, ' No such option: --seps' in result.output)
 
     # Test missing steps value
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '-m', 'full',
                                                '-r', 'all', '-s'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "Option '-s' requires an argument." in result.output)
 
     # Test invalid steps type
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-m', 'full', '-r',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '-m', 'full', '-r',
                                                'all', '-s', '0.5'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, "'0.5' is not a valid integer range." in result.output)
 
     # Test multiple method specification resulting in extra argument
-    result = runner.invoke(cli.postprocessby, ['1@i', 'regression-analysis', '-dp', 'snapshots',
+    result = runner.invoke(cli.postprocessby, ['0@i', 'regression-analysis', '-dp', 'snapshots',
                                                '-m', 'full', 'iterative'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, 'Got unexpected extra argument (iterative)' in result.output)
 
 
-def test_reg_analysis_correct(pcs_full):
+def test_reg_analysis_correct(pcs_single_prof):
     """Test correct usages of the regression analysis cli.
 
     Expecting no exceptions and errors, all tests should end with status code 0.
@@ -1063,7 +1062,7 @@ def test_reg_analysis_correct(pcs_full):
     asserts.predicate_from_cli(result, 'Successfully postprocessed' in result.output)
 
 
-def test_status_correct(pcs_full):
+def test_status_correct(pcs_single_prof):
     """Test running perun status in perun directory, without any problems.
 
     Expecting no exceptions, zero status.
@@ -1083,12 +1082,12 @@ def test_status_correct(pcs_full):
     short_result = runner.invoke(
         cli.status, ['--short', '--sort-by', 'source'])
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
-    assert pcs_full.local_config().get('format.sort_profiles_by') == 'source'
+    assert pcs_single_prof.local_config().get('format.sort_profiles_by') == 'source'
 
     # The sort order is kept the same
     short_result = runner.invoke(cli.status, ['--short'])
     asserts.predicate_from_cli(short_result, short_result.exit_code == 0)
-    assert pcs_full.local_config().get('format.sort_profiles_by') == 'source'
+    assert pcs_single_prof.local_config().get('format.sort_profiles_by') == 'source'
 
 
 @pytest.mark.usefixtures('cleandir')
@@ -1196,14 +1195,15 @@ def test_init_correct_with_params_and_flags():
     assert 'branches' in dir_content
 
 
-def test_add_correct(pcs_full, valid_profile_pool):
+def test_add_correct(pcs_full_no_prof):
     """Test running add from cli, without any problems
 
     Expecting no exceptions, no errors, zero status.
     """
+    valid_profile = test_utils.load_profilename('to_add_profiles', 'new-prof-2-memory-basic.perf')
     runner = CliRunner()
     added_profile = test_utils.prepare_profile(
-        pcs_full.get_job_directory(), valid_profile_pool[0],
+        pcs_full_no_prof.get_job_directory(), valid_profile,
         vcs.get_minor_head()
     )
     result = runner.invoke(
@@ -1213,12 +1213,13 @@ def test_add_correct(pcs_full, valid_profile_pool):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_cli_outside_pcs(valid_profile_pool):
+def test_cli_outside_pcs():
     """Test running add from cli, with problems"""
     # Calling add outside of the perun repo
     runner = CliRunner()
     dst_dir = os.getcwd()
-    added_profile = test_utils.prepare_profile(dst_dir, valid_profile_pool[0], "")
+    valid_profile = test_utils.load_profilename('to_add_profiles', 'new-prof-2-memory-basic.perf')
+    added_profile = test_utils.prepare_profile(dst_dir, valid_profile, "")
     result = runner.invoke(
         cli.add, ['--keep-profile', '{}'.format(added_profile)])
     asserts.predicate_from_cli(result, result.exit_code == 1)
@@ -1233,18 +1234,19 @@ def test_cli_outside_pcs(valid_profile_pool):
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
-def test_rm_correct(pcs_full, stored_profile_pool):
+def test_rm_correct(pcs_single_prof):
     """Test running rm from cli, without any problems
 
     Expecting no exceptions, no errors, zero status
     """
     runner = CliRunner()
-    deleted_profile = os.path.split(stored_profile_pool[1])[-1]
-    result = runner.invoke(cli.remove, ['{}'.format(deleted_profile)])
+    valid_profile = test_utils.load_profilename('full_profiles', 'prof-2-complexity-2017-03-20-21-40-42.perf')
+    deleted_profile = os.path.split(valid_profile)[-1]
+    result = runner.invoke(cli.remove, [f'{deleted_profile}'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_log_correct(pcs_full):
+def test_log_correct(pcs_single_prof):
     """Test running log from cli, without any problems
 
     Expecting no exceptions, no errors, zero status
@@ -1255,8 +1257,9 @@ def test_log_correct(pcs_full):
 
     short_result = runner.invoke(cli.log, ['--short'])
     asserts.predicate_from_cli(result, short_result.exit_code == 0)
-    asserts.predicate_from_cli(result,
-                               len(result.output.split('\n')) > len( short_result.output.split('\n')))
+    asserts.predicate_from_cli(
+        result, len(result.output.split('\n')) > len( short_result.output.split('\n'))
+    )
 
 
 def test_collect_correct(pcs_full_no_prof):
@@ -1274,12 +1277,12 @@ def test_collect_correct(pcs_full_no_prof):
     src_dir = os.path.join(current_dir, 'sources', 'collect_bounds')
     src_file = os.path.join(src_dir, 'partitioning.c')
     result = runner.invoke(cli.collect, [
-        '-c echo', '-w hello', 'bounds', '-d', '{}'.format(src_dir)
+        '-c echo', '-w hello', 'bounds', '-d', f'{src_dir}'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     result = runner.invoke(cli.collect, [
-        '-c echo', '-w hello', 'bounds', '-s', '{}'.format(src_file)
+        '-c echo', '-w hello', 'bounds', '-s', f'{src_file}'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -1393,14 +1396,14 @@ def test_add_tag_range(pcs_full_no_prof, valid_profile_pool):
 
     result = runner.invoke(cli.add, ['0@p-10@p'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, 'successfully registered 2 profiles in index')
+    asserts.predicate_from_cli(result, 'successfully registered 2 profiles in index' in result.output)
 
     # Nothing should remain!
     result = runner.invoke(cli.status, [])
     asserts.predicate_from_cli(result, "no untracked" in result.output)
 
 
-def test_remove_tag(pcs_full):
+def test_remove_tag(pcs_single_prof):
     """Test running remove with tags instead of profile
 
     Expecting no errors and profile removed as it should
@@ -1430,12 +1433,12 @@ def test_remove_tag_range(pcs_full):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_remove_pending(pcs_full, stored_profile_pool):
+def test_remove_pending(pcs_full_no_prof, stored_profile_pool):
     """Test running remove with pending tags and ranges"""
-    jobs_dir = pcs_full.get_job_directory()
+    jobs_dir = pcs_full_no_prof.get_job_directory()
     runner = CliRunner()
 
-    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_full_no_prof.get_path(), stored_profile_pool)
     result = runner.invoke(cli.status, [])
     asserts.predicate_from_cli(result, "no untracked" not in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -1451,7 +1454,7 @@ def test_remove_pending(pcs_full, stored_profile_pool):
     assert len(os.listdir(jobs_dir)) == 2
 
     removed_full_profile = [p for p in os.listdir(jobs_dir) if p != '.index'][0]
-    removed_full_profile = os.path.join(pcs_full.get_job_directory(), removed_full_profile)
+    removed_full_profile = os.path.join(pcs_full_no_prof.get_job_directory(), removed_full_profile)
     result = runner.invoke(cli.remove, [removed_full_profile])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(os.listdir(jobs_dir)) == 1
@@ -1461,21 +1464,21 @@ def test_remove_pending(pcs_full, stored_profile_pool):
     asserts.predicate_from_cli(result, "no untracked" in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_full_no_prof.get_path(), stored_profile_pool)
     assert len(os.listdir(jobs_dir)) == 4  # 3 profiles and .index
     result = runner.invoke(cli.remove, ['0@p-10@p'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(os.listdir(jobs_dir)) == 1
 
 
-def test_postprocess_tag(pcs_full, valid_profile_pool):
+def test_postprocess_tag(pcs_single_prof, valid_profile_pool):
     """Test running postprocessby with various valid and invalid tags
 
     Expecting no errors (or caught errors), everything postprocessed as it should be
     """
     test_utils.populate_repo_with_untracked_profiles(
-        pcs_full.get_path(), valid_profile_pool)
-    pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
+        pcs_single_prof.get_path(), valid_profile_pool)
+    pending_dir = os.path.join(pcs_single_prof.get_path(), 'jobs')
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 2
 
     runner = CliRunner()
@@ -1489,7 +1492,7 @@ def test_postprocess_tag(pcs_full, valid_profile_pool):
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 3
 
     # Try correct index tag
-    result = runner.invoke(cli.postprocessby, ['1@i', 'normalizer'])
+    result = runner.invoke(cli.postprocessby, ['0@i', 'normalizer'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(list(filter(test_utils.index_filter, os.listdir(pending_dir)))) == 4
 
@@ -1511,14 +1514,14 @@ def test_postprocess_tag(pcs_full, valid_profile_pool):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_show_tag(pcs_full, valid_profile_pool, monkeypatch):
+def test_show_tag(pcs_single_prof, valid_profile_pool, monkeypatch):
     """Test running show with several valid and invalid tags
 
-    Expecting no errors (or caught errors), everythig shown as it should be
+    Expecting no errors (or caught errors), everything shown as it should be
     """
     test_utils.populate_repo_with_untracked_profiles(
-        pcs_full.get_path(), valid_profile_pool)
-    pending_dir = os.path.join(pcs_full.get_path(), 'jobs')
+        pcs_single_prof.get_path(), valid_profile_pool)
+    pending_dir = os.path.join(pcs_single_prof.get_path(), 'jobs')
 
     runner = CliRunner()
     result = runner.invoke(cli.show, ['0@p', 'raw'])

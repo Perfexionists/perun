@@ -14,7 +14,7 @@ import perun.check.fast_check as fast
 import perun.check.exclusive_time_outliers as eto
 
 
-def test_degradation_precollect(monkeypatch, pcs_full, capsys):
+def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
     """Set of basic tests for testing degradation in concrete minor version point
 
     Expects correct behaviour
@@ -45,7 +45,7 @@ def test_degradation_precollect(monkeypatch, pcs_full, capsys):
         }
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_with_degradations.get_vcs_path())
     head = str(git_repo.head.commit)
 
     check.degradation_in_minor(head)
@@ -88,7 +88,7 @@ def test_degradation_in_history(pcs_with_degradations):
     assert check.PerformanceChange.Degradation in [r[0].result for r in result]
 
 
-def test_degradation_between_profiles(pcs_with_degradations, capsys):
+def test_degradation_between_profiles(pcs_full_no_prof, capsys):
     """Set of basic tests for testing degradation between profiles
 
     Expects correct behaviour

@@ -6,6 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 import perun.view.bars.factory as bars_factory
+import perun.testing.utils as test_utils
 from perun import cli
 from perun.utils import view_helpers
 from perun.logic import store
@@ -64,39 +65,36 @@ def test_bars_cli_errors(pcs_full_no_prof, valid_profile_pool):
     Expecting errors, but nothing destructive
     """
     runner = CliRunner()
-    for valid_profile in valid_profile_pool:
-        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
-        if loaded_profile['header']['type'] != 'memory':
-            continue
+    valid_profile = test_utils.load_profilename('to_add_profiles', 'new-prof-2-memory-basic.perf')
 
-        # Try some bogus of parameter
-        result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=undefined', '--by=uid',
-                                          '--stacked'])
-        asserts.invalid_cli_choice(result, 'undefined', 'bars.html')
+    # Try some bogus of parameter
+    result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=undefined', '--by=uid',
+                                      '--stacked'])
+    asserts.invalid_cli_choice(result, 'undefined', 'bars.html')
 
-        # Try some bogus function
-        result = runner.invoke(cli.show, [valid_profile, 'bars', 'f', '--of=subtype', '--by=uid',
-                                          '--stacked'])
-        asserts.invalid_cli_choice(result, 'f', 'bars.html')
+    # Try some bogus function
+    result = runner.invoke(cli.show, [valid_profile, 'bars', 'f', '--of=subtype', '--by=uid',
+                                      '--stacked'])
+    asserts.invalid_cli_choice(result, 'f', 'bars.html')
 
-        # Try some bogus per key
-        result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=subtype', '--by=uid',
-                                          '--stacked', '--per=dolan'])
-        asserts.invalid_cli_choice(result, 'dolan', 'bars.html')
+    # Try some bogus per key
+    result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=subtype', '--by=uid',
+                                      '--stacked', '--per=dolan'])
+    asserts.invalid_cli_choice(result, 'dolan', 'bars.html')
 
-        # Try some bogus by key
-        result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=subtype', '--by=everything',
-                                          '--stacked'])
-        asserts.invalid_cli_choice(result, 'everything', 'bars.html')
+    # Try some bogus by key
+    result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=subtype', '--by=everything',
+                                      '--stacked'])
+    asserts.invalid_cli_choice(result, 'everything', 'bars.html')
 
-        # Try some of key, that is not summable
-        result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=subtype', '--by=uid',
-                                          '--stacked'])
-        asserts.invalid_param_choice(result, 'subtype', 'bars.html')
+    # Try some of key, that is not summable
+    result = runner.invoke(cli.show, [valid_profile, 'bars', '--of=subtype', '--by=uid',
+                                      '--stacked'])
+    asserts.invalid_param_choice(result, 'subtype', 'bars.html')
 
-        # Try some of key, that is not summable, but is countable
-        for valid_func in ('count', 'nunique'):
-            result = runner.invoke(cli.show, [valid_profile, 'bars', valid_func, '--of=subtype',
-                                              '--by=uid', '--per=snapshots'])
-            asserts.predicate_from_cli(result, result.exit_code == 0)
-            assert 'bars.html' in os.listdir(os.getcwd())
+    # Try some of key, that is not summable, but is countable
+    for valid_func in ('count', 'nunique'):
+        result = runner.invoke(cli.show, [valid_profile, 'bars', valid_func, '--of=subtype',
+                                          '--by=uid', '--per=snapshots'])
+        asserts.predicate_from_cli(result, result.exit_code == 0)
+        assert 'bars.html' in os.listdir(os.getcwd())

@@ -587,9 +587,13 @@ def remove_from_index(base_dir: str, minor_version: str, removed_file_generator:
     :param generator removed_file_generator: generator of filenames, that will be removed from the
         tracking
     """
+    # Nothing to remove
+    removed_profile_number = len(removed_file_generator)
+    if removed_profile_number == 0:
+        return
+
     # Get directory and index
     _, minor_version_index = store.split_object_name(base_dir, minor_version)
-    removed_profile_number = len(removed_file_generator)
 
     if not os.path.exists(minor_version_index):
         raise EntryNotFoundException("", "empty index")

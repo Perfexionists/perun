@@ -49,7 +49,7 @@ def test_log_on_no_vcs(pcs_without_vcs):
     assert "'pvcs' is not supported" in str(exc.value)
 
 
-def test_log_short_error(pcs_full, capsys, monkeypatch):
+def test_log_short_error(pcs_full_no_prof, capsys, monkeypatch):
     cfg = config.Config('shared', '', {'format': {'shortlog': '%checksum:6% -> %notexist%'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     decorators.remove_from_function_args_cache("lookup_key_recursively")
@@ -63,13 +63,13 @@ def test_log_short_error(pcs_full, capsys, monkeypatch):
     assert "object does not contain 'notexist' attribute" in err
 
 
-def test_log_short(pcs_full, capsys):
+def test_log_short(pcs_single_prof, capsys):
     """Test calling 'perun log --short', which outputs shorter info
 
     Expecting no error, everything on standard output, and list of commits with number of profiles
     for each of them starting from the head.
     """
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_single_prof.get_vcs_path())
     commits = list(git_repo.iter_commits())
 
     commands.log(None, short=True)
@@ -102,13 +102,13 @@ def test_log_short(pcs_full, capsys):
     assert len(out.split('\n')) - 1 == len(commits) + 2
 
 
-def test_log(pcs_full, capsys):
+def test_log(pcs_single_prof, capsys):
     """Test calling 'perun log' with working stuff
 
     Expecting no error, everything on standard output, and list of commits, with full messages
     and number of profiles for each of the starting from the head.
     """
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_single_prof.get_vcs_path())
     commits = list(git_repo.iter_commits())
 
     commands.log(None)

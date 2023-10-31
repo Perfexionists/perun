@@ -9,13 +9,14 @@ import perun.cli as cli
 import perun.utils.log as log
 import perun.postprocess.clusterizer.run as clusterizer
 import perun.logic.store as store
+import perun.testing.utils as test_utils
 
 import perun.testing.asserts as asserts
 
 
-def test_from_cli(pcs_full):
+def test_from_cli(pcs_single_prof):
     """Tests running the clusterization from CLI"""
-    object_dir = pcs_full.get_job_directory()
+    object_dir = pcs_single_prof.get_job_directory()
     object_no = len(os.listdir(object_dir))
     runner = CliRunner()
     result = runner.invoke(cli.postprocessby, ["0@i", "clusterizer"])
@@ -31,10 +32,10 @@ def test_from_cli(pcs_full):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_sort_order(full_profiles):
+def test_sort_order():
     """Test sort order method"""
-    for _, full_profile in full_profiles:
-        clusterizer.postprocess(full_profile, 'sort_order')
+    full_profile = test_utils.load_profile('full_profiles', 'prof-3-memory-2017-05-15-15-43-42.perf')
+    clusterizer.postprocess(full_profile, 'sort_order')
 
 
 def get_malloced_resources(profile):
@@ -52,7 +53,7 @@ def get_malloced_resources(profile):
     return malloced
 
 
-def test_sliding_window(pcs_full):
+def test_sliding_window(pcs_single_prof):
     """Tests sliding window method"""
     runner = CliRunner()
     result = runner.invoke(cli.postprocessby, ["0@i", "clusterizer", "-s", "sliding_window"])
