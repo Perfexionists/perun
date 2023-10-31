@@ -38,7 +38,7 @@ import perun.testing.utils as test_utils
 SIZE_REGEX = re.compile(r"([0-9]+ (Ki|Mi){0,1}B)")
 
 
-def test_cli(monkeypatch, pcs_full_no_prof):
+def test_cli(monkeypatch, pcs_with_root):
     """Generic tests for cli, such as testing verbosity setting etc."""
     runner = CliRunner()
 
@@ -675,7 +675,7 @@ def test_kernel_regression_incorrect(pcs_single_prof):
         runner, incorrect_tests, tests_edge, 2, cprof_idx)
 
 
-def test_kernel_regression_correct(pcs_full_no_prof):
+def test_kernel_regression_correct(pcs_with_root):
     """
     Test correct usages of the kernel regression cli.
 
@@ -1195,7 +1195,7 @@ def test_init_correct_with_params_and_flags():
     assert 'branches' in dir_content
 
 
-def test_add_correct(pcs_full_no_prof):
+def test_add_correct(pcs_with_root):
     """Test running add from cli, without any problems
 
     Expecting no exceptions, no errors, zero status.
@@ -1203,11 +1203,11 @@ def test_add_correct(pcs_full_no_prof):
     valid_profile = test_utils.load_profilename('to_add_profiles', 'new-prof-2-memory-basic.perf')
     runner = CliRunner()
     added_profile = test_utils.prepare_profile(
-        pcs_full_no_prof.get_job_directory(), valid_profile,
+        pcs_with_root.get_job_directory(), valid_profile,
         vcs.get_minor_head()
     )
     result = runner.invoke(
-        cli.add, ['--keep-profile', '{}'.format(added_profile)])
+        cli.add, ['--keep-profile', f'{added_profile}'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert os.path.exists(added_profile)
 
@@ -1262,7 +1262,7 @@ def test_log_correct(pcs_single_prof):
     )
 
 
-def test_collect_correct(pcs_full_no_prof):
+def test_collect_correct(pcs_with_root):
     """Test running collector from cli, without any problems
 
     Expecting no exceptions, no errors, zero status
@@ -1287,7 +1287,7 @@ def test_collect_correct(pcs_full_no_prof):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_show_help(pcs_full_no_prof):
+def test_show_help(pcs_with_root):
     """Test running show to see if there are registered modules for showing
 
     Expecting no error and help outputed, where the currently supported modules will be shown
@@ -1317,12 +1317,12 @@ def test_add_massaged_head(pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ['0@p', '--minor=HEAD'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "'{}' successfully registered".format(first_tagged) in result.output)
+    asserts.predicate_from_cli(result, f"'{first_tagged}' successfully registered" in result.output)
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ['0@p', r"--minor=HEAD^{d"])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, "Missing closing brace")
+    asserts.predicate_from_cli(result, "Missing closing brace" in result.output)
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ['0@p', r"--minor=HEAD^}"])
@@ -1354,39 +1354,39 @@ def test_add_tag(monkeypatch, pcs_full_no_prof, valid_profile_pool):
     runner = CliRunner()
     result = runner.invoke(cli.add, ['0@p'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "'{}' successfully registered".format(first_sha) in result.output)
+    asserts.predicate_from_cli(result, f"'{first_sha}' successfully registered" in result.output)
 
     runner = CliRunner()
     result = runner.invoke(cli.add, ['0@p'])
     asserts.predicate_from_cli(result, result.exit_code == 1)
-    asserts.predicate_from_cli(result, "originates from minor version '{}'".format(parent) in result.output)
+    asserts.predicate_from_cli(result, f"originates from minor version '{parent}'" in result.output)
 
     # Check that force work as intented
     monkeypatch.setattr('click.confirm', lambda _: True)
     runner = CliRunner()
     result = runner.invoke(cli.add, ['--force', '0@p'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
-    asserts.predicate_from_cli(result, "'{}' successfully registered".format(second_sha) in result.output)
+    asserts.predicate_from_cli(result, f"'{second_sha}' successfully registered" in result.output)
 
     result = runner.invoke(cli.add, ['10@p'])
     asserts.predicate_from_cli(result, result.exit_code == 2)
     asserts.predicate_from_cli(result, '0@p' in result.output)
 
 
-def test_add_tag_range(pcs_full_no_prof, valid_profile_pool):
+def test_add_tag_range(pcs_with_root, valid_profile_pool):
     """Test running add with tags instead of profile
 
     Expecting no errors and profile added as it should
     """
-    git_repo = git.Repo(os.path.split(pcs_full_no_prof.get_path())[0])
+    git_repo = git.Repo(os.path.split(pcs_with_root.get_path())[0])
     head = str(git_repo.head.commit)
     test_utils.populate_repo_with_untracked_profiles(
-        pcs_full_no_prof.get_path(), valid_profile_pool)
+        pcs_with_root.get_path(), valid_profile_pool)
     os.path.relpath(test_utils.prepare_profile(
-        pcs_full_no_prof.get_job_directory(), valid_profile_pool[0], head)
+        pcs_with_root.get_job_directory(), valid_profile_pool[0], head)
     )
     os.path.relpath(test_utils.prepare_profile(
-        pcs_full_no_prof.get_job_directory(), valid_profile_pool[1], head)
+        pcs_with_root.get_job_directory(), valid_profile_pool[1], head)
     )
 
     runner = CliRunner()
@@ -1433,12 +1433,12 @@ def test_remove_tag_range(pcs_full):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_remove_pending(pcs_full_no_prof, stored_profile_pool):
+def test_remove_pending(pcs_with_root, stored_profile_pool):
     """Test running remove with pending tags and ranges"""
-    jobs_dir = pcs_full_no_prof.get_job_directory()
+    jobs_dir = pcs_with_root.get_job_directory()
     runner = CliRunner()
 
-    test_utils.populate_repo_with_untracked_profiles(pcs_full_no_prof.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_root.get_path(), stored_profile_pool)
     result = runner.invoke(cli.status, [])
     asserts.predicate_from_cli(result, "no untracked" not in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -1454,7 +1454,7 @@ def test_remove_pending(pcs_full_no_prof, stored_profile_pool):
     assert len(os.listdir(jobs_dir)) == 2
 
     removed_full_profile = [p for p in os.listdir(jobs_dir) if p != '.index'][0]
-    removed_full_profile = os.path.join(pcs_full_no_prof.get_job_directory(), removed_full_profile)
+    removed_full_profile = os.path.join(pcs_with_root.get_job_directory(), removed_full_profile)
     result = runner.invoke(cli.remove, [removed_full_profile])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     assert len(os.listdir(jobs_dir)) == 1
@@ -1464,7 +1464,7 @@ def test_remove_pending(pcs_full_no_prof, stored_profile_pool):
     asserts.predicate_from_cli(result, "no untracked" in result.output)
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
-    test_utils.populate_repo_with_untracked_profiles(pcs_full_no_prof.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_root.get_path(), stored_profile_pool)
     assert len(os.listdir(jobs_dir)) == 4  # 3 profiles and .index
     result = runner.invoke(cli.remove, ['0@p-10@p'])
     asserts.predicate_from_cli(result, result.exit_code == 0)
@@ -1565,7 +1565,7 @@ def test_show_tag(pcs_single_prof, valid_profile_pool, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_config(pcs_full_no_prof, monkeypatch):
+def test_config(pcs_with_root, monkeypatch):
     """Test running config
 
     Expecting no errors, everything shown as it should be
@@ -1628,7 +1628,7 @@ def test_reset_outside_pcs(monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
-def test_reset(pcs_full_no_prof):
+def test_reset(pcs_with_root):
     """Tests resetting of configuration within the perun scope
 
     Excepts no error at all
@@ -1851,7 +1851,7 @@ def test_utils_create(monkeypatch, tmpdir):
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
-def test_run(pcs_full_no_prof, monkeypatch):
+def test_run(pcs_with_root, monkeypatch):
     matrix = config.Config('local', '', {
         'vcs': {'type': 'git', 'url': '../'},
         'cmds': ['ls'],
@@ -1880,7 +1880,7 @@ def test_run(pcs_full_no_prof, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "is unsupported" in result.output)
 
-    job_dir = pcs_full_no_prof.get_job_directory()
+    job_dir = pcs_with_root.get_job_directory()
     job_profiles = os.listdir(job_dir)
     assert len(job_profiles) >= 2
 
@@ -1926,7 +1926,7 @@ def test_run(pcs_full_no_prof, monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 1)
 
 
-def test_error_runs(pcs_full_no_prof, monkeypatch):
+def test_error_runs(pcs_with_root, monkeypatch):
     """Try various error states induced by job matrix"""
     matrix = config.Config('local', '', {
         'vcs': {'type': 'git', 'url': '../'},

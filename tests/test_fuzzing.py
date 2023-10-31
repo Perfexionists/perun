@@ -49,7 +49,7 @@ def test_fuzzing_coverage(capsys):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_correct(pcs_full_no_prof):
+def test_fuzzing_correct(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -162,7 +162,7 @@ def test_fuzzing_correct(pcs_full_no_prof):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_sigabort(pcs_full_no_prof):
+def test_fuzzing_sigabort(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -215,7 +215,7 @@ def test_fuzzing_sigabort(pcs_full_no_prof):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_hangs(pcs_full_no_prof):
+def test_fuzzing_hangs(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -272,7 +272,7 @@ def test_fuzzing_hangs(pcs_full_no_prof):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_degradation(pcs_full_no_prof, monkeypatch):
+def test_fuzzing_degradation(pcs_with_root, monkeypatch):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -304,7 +304,7 @@ def test_fuzzing_degradation(pcs_full_no_prof, monkeypatch):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_incorrect(pcs_full_no_prof):
+def test_fuzzing_incorrect(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
 
@@ -457,7 +457,7 @@ def test_fuzzing_incorrect(pcs_full_no_prof):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_errors(pcs_full_no_prof, monkeypatch):
+def test_fuzzing_errors(pcs_with_root, monkeypatch):
     """Test various error states"""
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')

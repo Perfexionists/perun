@@ -249,7 +249,6 @@ def test_status_no_profiles(pcs_full_no_prof, capsys):
 
     Expecting no error and long display of the current status of the perun, without any pending.
     """
-    import sys
     # First we will do a new commit, with no profiles
     git_repo = git.Repo(pcs_full_no_prof.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')

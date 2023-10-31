@@ -23,7 +23,7 @@ def test_get_outside_of_pcs():
         commands.config_edit('local')
 
 
-def test_get_exists(pcs_full_no_prof, capsys):
+def test_get_exists(pcs_with_root, capsys):
     """Test calling 'perun --get KEY', such that the key exists"""
     # Get valid thing from local
     commands.config_get('local', 'vcs.type')
@@ -56,7 +56,7 @@ def test_get_exists(pcs_full_no_prof, capsys):
         commands.config_get('local', 'general,editor')
 
 
-def test_set_exists(pcs_full_no_prof, capsys):
+def test_set_exists(pcs_with_root, capsys):
     """Test calling 'perun --set KEY', such that the key was in config and is reset"""
     # Set valid thing in local
     commands.config_set('local', 'bogus.key', 'true')
@@ -86,7 +86,7 @@ def test_set_exists(pcs_full_no_prof, capsys):
     assert err == ''
 
 
-def test_edit(pcs_full_no_prof, capsys):
+def test_edit(pcs_with_root, capsys):
     """Test 'editing' the configuration file
 
     Expecting no errors or exceptions

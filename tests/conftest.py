@@ -8,7 +8,7 @@ import tempfile
 
 import git
 
-from typing import Iterable, Optional, Callable
+from typing import Iterable, Callable
 
 import perun.utils.helpers as helpers
 import perun.utils.log as log
@@ -20,6 +20,7 @@ import pytest
 import perun.logic.commands as commands
 import perun.utils.decorators as decorators
 import perun.utils.streams as streams
+import perun.utils.metrics as metrics
 import perun.vcs as vcs
 
 import perun.testing.utils as test_utils
@@ -194,7 +195,7 @@ def load_all_profiles_in(directory: str, prof_filter: Callable[[str], bool] = No
     """
     for profile in all_profiles_in(directory):
         if prof_filter is None or prof_filter(profile):
-            yield profile, store.load_profile_from_file(profile, True)
+            yield profile, store.load_profile_from_file(profile, True, unsafe_load=True)
 
 
 @pytest.fixture(scope="function")
@@ -530,4 +531,6 @@ def setup():
 
     # Reset the verbosity to release
     log.VERBOSITY = 0
+    # We disable the metrics by default, since they might slow down tests
+    metrics.Metrics.enabled = False
     yield

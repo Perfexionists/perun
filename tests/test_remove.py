@@ -120,12 +120,12 @@ def test_rm(pcs_full, stored_profile_pool, capsys):
     assert before_count == after_count
 
 
-def test_rm_pending(pcs_full_no_prof, stored_profile_pool):
+def test_rm_pending(pcs_with_root, stored_profile_pool):
     """Basic test of removing pending from the perun
     """
-    jobs_dir = pcs_full_no_prof.get_job_directory()
+    jobs_dir = pcs_with_root.get_job_directory()
 
-    test_utils.populate_repo_with_untracked_profiles(pcs_full_no_prof.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_root.get_path(), stored_profile_pool)
     number_of_pending = len(os.listdir(jobs_dir))
     assert number_of_pending == 3
 

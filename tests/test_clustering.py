@@ -60,7 +60,7 @@ def test_sliding_window(pcs_single_prof):
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
     pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'clustering_profiles')
-    clustered_profile = store.load_profile_from_file(os.path.join(pool_path, 'clustering-workload.perf'), True)
+    clustered_profile = store.load_profile_from_file(os.path.join(pool_path, 'clustering-workload.perf'), True, unsafe_load=True)
 
     postprocessed_profile = copy.deepcopy(clustered_profile)
     params = {

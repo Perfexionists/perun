@@ -213,12 +213,13 @@ def add(profile_names: Collection[str], minor_version: str, keep_profile: bool =
     for profile_name in profile_names:
         # Test if the given profile exists (This should hold always, or not?)
         if not os.path.exists(profile_name):
-            perun_log.error("profile {} does not exists".format(profile_name), recoverable=True)
+            perun_log.error(f"profile {profile_name} does not exists", recoverable=True)
             continue
 
         # Load profile content
         # Unpack to JSON representation
-        unpacked_profile = store.load_profile_from_file(profile_name, True)
+        # We now know that @profile_name exist so we can load it without checks
+        unpacked_profile = store.load_profile_from_file(profile_name, True, unsafe_load=True)
 
         if not force and unpacked_profile['origin'] != minor_version:
             error_msg = "cannot add profile '{}' to minor index of '{}':".format(
@@ -992,7 +993,8 @@ def get_untracked_profiles() -> list[ProfileInfo]:
         time = timestamp.timestamp_to_str(os.stat(real_path).st_mtime)
 
         # Load the data from JSON, which contains additional information about profile
-        loaded_profile = store.load_profile_from_file(real_path, is_raw_profile=True)
+        # We know, that the real_path exists, since we obtained it above from listdir
+        loaded_profile = store.load_profile_from_file(real_path, is_raw_profile=True, unsafe_load=True)
         registered_checksum = store.compute_checksum(real_path.encode('utf-8'))
 
         # Update the list of profiles and counters of types

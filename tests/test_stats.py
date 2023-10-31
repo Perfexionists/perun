@@ -53,7 +53,7 @@ def test_stats_filename_on_missing_index(pcs_with_root):
     assert "was not found" in str(exc.value)
 
 
-def test_basic_stats_operations(pcs_full_no_prof):
+def test_basic_stats_operations(pcs_with_root):
     """ Test some basic operations for manipulating the stats file.
 
     Tested operations are: adding new stat records to a file (and creating it if necessary),

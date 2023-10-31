@@ -77,7 +77,7 @@ def test_scatter_plot_no_models():
     assert len(list(graphs)) == 2
 
 
-def test_scatter_plot_cli(pcs_full_no_prof):
+def test_scatter_plot_cli(pcs_with_root):
     """ Test creating bokeh scatter plot from the cli
 
     Expecting no errors and created scatter_plot_result0.html, scatter_plot_result1.html files
@@ -96,7 +96,7 @@ def test_scatter_plot_cli(pcs_full_no_prof):
     assert 'scatter_SLListcls__Insert(int).html' in os.listdir(os.getcwd())
 
 
-def test_scatter_plot_cli_errors(pcs_full_no_prof):
+def test_scatter_plot_cli_errors(pcs_with_root):
     """ Test creating bokeh scatter plot from the cli with invalid inputs
 
     Expecting to fail all commands and not create any graph files.

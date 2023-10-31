@@ -31,7 +31,10 @@ def load_profile(prof_directory: str, prof_filename: str) -> Profile:
     :param prof_directory: directory, where profile is
     :param prof_filename: name of the profile
     """
-    return store.load_profile_from_file(load_profilename(prof_directory, prof_filename), is_raw_profile=True)
+    # We fuck the check here
+    return store.load_profile_from_file(
+        load_profilename(prof_directory, prof_filename), is_raw_profile=True, unsafe_load=True
+    )
 
 
 def index_filter(file: str) -> bool:
@@ -66,7 +69,8 @@ def prepare_profile(dest_dir: str, profile: str, origin: str) -> str:
 
     # Prepare origin for the current version
     copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
-    copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
+    # We skip the check if copied_filename exists, it will fuck the tests if it somehow does not
+    copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True, unsafe_load=True)
     copied_profile['origin'] = origin
     streams.store_json(copied_profile.serialize(), copied_filename)
     shutil.copystat(profile, copied_filename)

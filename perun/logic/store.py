@@ -290,19 +290,20 @@ def load_degradation_list_for(base_dir: str, minor_version: str) -> list[tuple[D
     return degradation_list
 
 
-def load_profile_from_file(file_name: str, is_raw_profile: bool) -> Profile:
+def load_profile_from_file(file_name: str, is_raw_profile: bool, unsafe_load: bool = False) -> Profile:
     """Loads profile w.r.t :ref:`profile-spec` from file.
 
-    :param str file_name: file path, where the profile is stored
-    :param bool is_raw_profile: if set to true, then the profile was loaded
+    :param file_name: file path, where the profile is stored
+    :param is_raw_profile: if set to true, then the profile was loaded
         from the file system and is thus in the JSON already and does not have
         to be decompressed and unpacked to JSON format.
+    :param unsafe_load: if set to True, then we assume that the @p file_name exists and skip the check for existence
     :returns: JSON dictionary w.r.t. :ref:`profile-spec`
     :raises IncorrectProfileFormatException: raised, when **filename** contains
         data, which cannot be converted to valid :ref:`profile-spec`
     Fixme: Add cache! Really badly!
     """
-    if not os.path.exists(file_name):
+    if not unsafe_load and not os.path.exists(file_name):
         raise IncorrectProfileFormatException(file_name, "file '{}' not found")
 
     with open(file_name, 'rb') as file_handle:

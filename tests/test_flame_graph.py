@@ -11,7 +11,7 @@ import perun.testing.asserts as asserts
 import perun.testing.utils as test_utils
 
 
-def test_flame_graph(pcs_full_no_prof, valid_profile_pool):
+def test_flame_graph(pcs_with_root, valid_profile_pool):
     """Test creating flame graph out of the memory profile
 
     Expecting no errors, and created flame.svg graph

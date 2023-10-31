@@ -30,7 +30,7 @@ def test_incorrect_calls():
     assert 'Invalid dictionary' in str(exc.value)
 
 
-def test_const_model(pcs_full_no_prof):
+def test_const_model(pcs_with_root):
     """Test the constant model computation.
 
     The r^2 coefficient computation is currently not supported

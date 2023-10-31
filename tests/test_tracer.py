@@ -218,7 +218,7 @@ def test_collect_trace_cli_no_stap(monkeypatch, pcs_full):
     assert 'Supplied binary' in result.output
 
 
-def test_collect_trace_utils(pcs_full_no_prof):
+def test_collect_trace_utils(pcs_with_root):
     """ Test some utility function cases that are hard to reproduce in the usual collector runs.
     """
     # Skip this test if stap is not present
@@ -249,7 +249,7 @@ def test_collect_trace_utils(pcs_full_no_prof):
     assert result.exit_code == 0
 
 
-def test_collect_trace(pcs_full_no_prof, trace_collect_job):
+def test_collect_trace(pcs_with_root, trace_collect_job):
     """Test running the trace collector from the CLI with parameter handling
 
     Expecting no errors

@@ -49,7 +49,7 @@ def test_log_on_no_vcs(pcs_without_vcs):
     assert "'pvcs' is not supported" in str(exc.value)
 
 
-def test_log_short_error(pcs_full_no_prof, capsys, monkeypatch):
+def test_log_short_error(pcs_with_root, capsys, monkeypatch):
     cfg = config.Config('shared', '', {'format': {'shortlog': '%checksum:6% -> %notexist%'}})
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     decorators.remove_from_function_args_cache("lookup_key_recursively")

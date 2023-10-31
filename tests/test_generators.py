@@ -59,7 +59,7 @@ def test_integer_generator_for_each():
     assert len(collection_pairs) == 1
 
 
-def test_loading_generators_from_config(monkeypatch, pcs_full_no_prof):
+def test_loading_generators_from_config(monkeypatch, pcs_with_root):
     """Tests loading generator specification from config"""
     # Initialize the testing configurations
     collector = Unit('time', {'warmup': 1, 'repeat': 1})
