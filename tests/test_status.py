@@ -305,6 +305,15 @@ def test_status_sort(monkeypatch, pcs_single_prof, capsys, valid_profile_pool):
             'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503'
         }
     })
+    ldata = config.local(pcs_single_prof.get_path()).data.copy()
+    ldata.update({
+        'general': {'paging': 'never'},
+        'format': {
+            'status': '\u2503 %type% \u2503 %collector%  \u2503 (%time%) \u2503 %source% \u2503',
+        }
+    })
+    lcfg = config.Config('local', pcs_single_prof.get_path(), ldata)
+    monkeypatch.setattr("perun.logic.config.local", lambda _: lcfg)
     monkeypatch.setattr("perun.logic.config.shared", lambda: cfg)
     commands.status()
 
