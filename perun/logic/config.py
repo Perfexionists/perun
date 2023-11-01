@@ -141,7 +141,7 @@ class Config:
         """
         return self._get(key)
 
-    def _get(self, key):
+    def _get(self, key: str) -> Any:
         """Core function that returns the value of the key stored in the config
 
         :param str key: list of section separated by dots

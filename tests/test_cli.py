@@ -73,7 +73,6 @@ def test_cli(monkeypatch, pcs_with_root):
 
 def run_non_param_test(runner, test_params, expected_exit_code, expected_output):
     result = runner.invoke(cli.postprocessby, test_params)
-    print(test_params)
     asserts.predicate_from_cli(result, result.exit_code == expected_exit_code)
     asserts.predicate_from_cli(result, expected_output in result.output)
 

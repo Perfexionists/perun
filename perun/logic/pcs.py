@@ -44,7 +44,7 @@ def get_path() -> str:
 def get_vcs_type_and_url() -> tuple[str, str]:
     """Returns the type and url of the wrapped version control system
 
-    :return: type of the wrapped version control system
+    :return: type and url of the wrapped version control system
     :raises MissingConfigSectionException: when vcs.type or vcs.url is not set in local config
     """
     vcs_type, vcs_url = config.local(get_path()).get_bulk(['vcs.type', 'vcs.url'])

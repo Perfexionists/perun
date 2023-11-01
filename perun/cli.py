@@ -752,7 +752,7 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
               help='Option for adding custom fuzzing rules specified by regular expressions,'
               ' written in YAML format file.')
 @click.option('--no-plotting', '-np', is_flag=True, required=False,
-              help='Will not plot the interpretation of the ruzzing in form of graphs.')
+              help='Will not plot the interpretation of the fuzzing in form of graphs.')
 def fuzz_cmd(cmd: str, args: str, **kwargs: Any) -> None:
     """Performs fuzzing for the specified command according to the initial sample of workload."""
     kwargs['executable'] = Executable(cmd, args)
