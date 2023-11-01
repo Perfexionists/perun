@@ -22,6 +22,7 @@ from subprocess import SubprocessError
 from perun.profile.factory import Profile
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
 from perun.workload.integer_generator import IntegerGenerator
+from subprocess import CalledProcessError
 
 import perun.testing.asserts as asserts
 import perun.testing.utils as test_utils
@@ -220,6 +221,13 @@ def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collec
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, "Could not find 'make'" in result.output)
     asserts.predicate_from_cli(result, "Could not find 'cmake'" in result.output)
+
+    def mock_raised_exception(*_, **__):
+        raise CalledProcessError(-1, "failed")
+    monkeypatch.setattr(utils, 'run_safely_external_command', mock_raised_exception)
+    status, msg, _ = complexity.collect(Executable("pikachu"))
+    assert status == CollectStatus.ERROR
+    assert msg == "Err: command could not be run.: Command 'failed' died with <Signals.SIGHUP: 1>."
 
     monkeypatch.setattr(utils, 'run_external_command', old_run)
     monkeypatch.setattr(utils, 'run_safely_external_command', old_safe_run)
