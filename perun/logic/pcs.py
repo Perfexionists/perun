@@ -11,7 +11,7 @@ import os
 import perun.logic.config as config
 import perun.utils.helpers as helpers
 
-from perun.utils.decorators import singleton, singleton_with_args
+from perun.utils.decorators import singleton_with_args, singleton
 from perun.utils.exceptions import NotPerunRepositoryException
 
 
@@ -41,13 +41,14 @@ def get_path() -> str:
 
 
 @singleton
-def get_vcs_type() -> str:
-    """Returns the type of the wrapped version control system
+def get_vcs_type_and_url() -> tuple[str, str]:
+    """Returns the type and url of the wrapped version control system
 
-    :return: type of the wrapped version control system
-    :raises MissingConfigSectionException: when vcs.type is not set in local config
+    :return: type and url of the wrapped version control system
+    :raises MissingConfigSectionException: when vcs.type or vcs.url is not set in local config
     """
-    return config.local(get_path()).get('vcs.type')
+    vcs_type, vcs_url = config.local(get_path()).get_bulk(['vcs.type', 'vcs.url'])
+    return vcs_type, os.path.abspath(os.path.join(get_path(), vcs_url))
 
 
 @singleton

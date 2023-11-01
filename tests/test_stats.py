@@ -43,7 +43,7 @@ def test_stats_filenames(pcs_full):
     assert generated_name == profile_sha
 
 
-def test_stats_filename_on_missing_index(pcs_with_git_root_commit):
+def test_stats_filename_on_missing_index(pcs_with_root):
     """ Test the file name generator when profile index is missing.
 
     This should not work as the profile index is required to find the profile.
@@ -53,7 +53,7 @@ def test_stats_filename_on_missing_index(pcs_with_git_root_commit):
     assert "was not found" in str(exc.value)
 
 
-def test_basic_stats_operations(pcs_full):
+def test_basic_stats_operations(pcs_with_root):
     """ Test some basic operations for manipulating the stats file.
 
     Tested operations are: adding new stat records to a file (and creating it if necessary),
@@ -141,7 +141,7 @@ def test_basic_stats_operations(pcs_full):
     _check_objects([(minor_head, ['custom_stats'])], [], [])
 
 
-def test_stats_lists(pcs_full):
+def test_stats_lists(pcs_full_no_prof):
     """ Tests the list functions (lists of stat versions or stat files).
 
     The files list is tested first, mainly valid and invalid inputs for the minor version parameter.
@@ -150,7 +150,7 @@ def test_stats_lists(pcs_full):
     to be filtered or sliced based on the starting point and the number of records.
     """
     # Prepare the git-related values
-    minor_head, minor_root = _get_vcs_versions()
+    minor_head, minor_root, _ = _get_vcs_versions()
 
     # Create stats files in the root version
     stats.add_stats('root_stats', ['id_1'], [{'value': 10}], minor_root)
@@ -204,7 +204,7 @@ def test_stats_lists(pcs_full):
     assert len(stats.list_stat_versions()) == 0
 
 
-def test_stats_files_delete(pcs_with_more_commits):
+def test_stats_files_delete(pcs_full_no_prof):
     """ Tests the stats file deletion either in a specific minor version or across all the indexed
     versions while.
     """
@@ -283,7 +283,7 @@ def test_stats_files_delete(pcs_with_more_commits):
                    [custom_dir], [])
 
 
-def test_stats_directories_delete(pcs_with_more_commits):
+def test_stats_directories_delete(pcs_full_no_prof):
     """ Tests the version directories deletion.
 
     The deletion function parameters allow to delete only contents of the directory and keep the
@@ -390,7 +390,7 @@ def test_stats_directories_delete(pcs_with_more_commits):
     _check_objects([(minor_middle, [])], [custom_root_dir, custom_dir], [custom_root_file])
 
 
-def test_stats_sync(pcs_with_more_commits):
+def test_stats_sync(pcs_full_no_prof):
     """ Tests the stats synchronization, i.e. the synchronization of the internal state represented
     by the '.index' file.
 
@@ -431,7 +431,7 @@ def test_stats_sync(pcs_with_more_commits):
                     (minor_root, ['custom_file_2'])], [stats_custom_dir], [])
 
 
-def test_stats_clean(pcs_with_more_commits):
+def test_stats_clean(pcs_full_no_prof):
     """ Tests the stats cleaning functions. The function should synchronize the internal state and
     remove all the distinguishable custom files and directories, as well as empty version
     directories, within the stats directory (based on the supplied parameters).
@@ -491,7 +491,7 @@ def test_stats_clean(pcs_with_more_commits):
                    [], [])
 
 
-def test_stats_clear(pcs_with_more_commits):
+def test_stats_clear(pcs_full_no_prof):
     """ Tests the stats clear function that attempts to completely clear the contents of the
     stats directory (while either keeping the empty version directories or not).
     """

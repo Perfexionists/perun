@@ -658,30 +658,40 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
 @click.option('--args', '-a', nargs=1, required=False, default='',
               help='Arguments for the fuzzed command.')
 @click.option('--input-sample', '-w', nargs=1, required=True, multiple=True,
-              help='Initial sample of workloads, that will be source of the fuzzing.')
+              help='Initial sample of workloads (the so called corpus).'
+                   'These will serve as initial workloads to evaluate the baseline for performance testing.'
+                   'The parameter expects either paths to files (which will be directly added), or '
+                   'paths to directories (which will be recursively searched).')
 @click.option('--collector', '-c', nargs=1, default='time',
               type=click.Choice(utils.get_supported_module_names('collect')),
-              help='Collector that will be used to collect performance data.')
+              help='Collector that will be used to collect performance data and used to infer '
+                   'baseline or target performance profiles. '
+                   'The profiles are further used for performance testing.')
 @click.option('--collector-params', '-cp', nargs=2, required=False, multiple=True,
               callback=cli_helpers.yaml_param_callback,
-              help='Additional parameters for the <collector> read from the'
-                   ' file in YAML format')
+              help='Additional parameters for the <collector>: '
+                   'can be specified as a file in YAML format or as YAML string')
 @click.option('--postprocessor', '-p', nargs=1, required=False, multiple=True,
               type=click.Choice(utils.get_supported_module_names('postprocess')),
-              help='After each collection of data will run <postprocessor> to '
-                   'postprocess the collected resources.')
+              help='After each collection of performance data, the fuzzer can run <postprocessor> to '
+                   'postprocess the collected resources (e.g. to create models of resources). '
+                   'This can be used for more thorough performance analysis.')
 @click.option('--postprocessor-params', '-pp', nargs=2, required=False, multiple=True,
               callback=cli_helpers.yaml_param_callback,
-              help='Additional parameters for the <postprocessor> read from the'
-                   ' file in YAML format')
+              help='Additional parameters for the <postprocessor>: '
+                   'can be specified as a file in YAML format or as YAML string')
 @click.option('--minor-version', '-m', 'minor_version_list', nargs=1, multiple=True,
               callback=cli_helpers.minor_version_list_callback, default=['HEAD'],
-              help='Specifies the head minor version, for which the fuzzing will be performed.')
+              help='Specifies the head minor version in the wrapped repository. '
+                   'The fuzzing will be performed for this particular version of the project.')
 @click.option('--workloads-filter', '-wf', nargs=1, required=False,
               type=str, metavar='<regexp>', default="",
-              help='Regular expression for filtering the workloads.')
+              help='Regular expression that will the filter input workloads/corpus. '
+                   'E.g. to restrict to certain filetypes, filenames or subdirectories.')
 @click.option('--skip-coverage-testing', is_flag=True, required=False,
-              help="If set to true, then the coverage testing will not be performed.")
+              help="If set to true, then the evaluation of mutations based on coverage testing will not be performed. "
+                   "The coverage testing is a fast heuristic to filter out mutations that will probably not lead "
+                   "to severe real degradation. The testing through perun is costly, though very precise.")
 @click.option('--source-path', '-s', nargs=1, required=False, default='.',
               type=click.Path(exists=True, readable=True), metavar='<path>',
               help='The path to the directory of the project source files.')
@@ -691,38 +701,47 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
 @click.option('--output-dir', '-o', nargs=1, required=True,
               type=click.Path(exists=True, writable=True), metavar='<path>',
               help='The path to the directory where generated outputs will be stored.')
-@click.option('--timeout', '-t', nargs=1, required=False, default=1800,
-              type=click.IntRange(1, None, False), metavar='<int>',
+@click.option('--timeout', '-t', nargs=1, required=False, default=1800.0,
+              type=click.FloatRange(0.001, None, False), metavar='<float>',
               help='Time limit for fuzzing (in seconds).  Default value is 1800s.')
 @click.option('--hang-timeout', '-h', nargs=1, required=False, default=10,
-              type=click.FloatRange(0.001, None, False), metavar='<int>',
-              help='The time limit before input is classified as a hang (in seconds).'
-              ' Default value is 30s.')
-@click.option('--max', '-N', nargs=1, required=False,
+              type=click.FloatRange(0.001, None, False), metavar='<float>',
+              help='The time limit before the input is classified as a hang/timeout (in seconds).'
+              ' Default value is 10s.')
+@click.option('--max-size', '-N', nargs=1, required=False,
               type=click.IntRange(1, None, False), metavar='<int>',
-              help='The maximum size limit of the generated input file.'
-              ' Value should be larger than any of the initial workload,'
-              ' otherwise it will be adjusted')
-@click.option('--max-size-gain', '-mg', nargs=1, required=False, default=1000000,
+              help='Absolute value of the maximum size of the generated mutation wrt parent corpus. '
+                   'The value will be adjusted wrt to the maximal size of the workloads in corpus. '
+                   'Using this option, the maximal size of the generated mutation will be set to '
+                   'max(size of the largest workload in corpus, <int>). ')
+@click.option('--max-size-increase', '-mi', nargs=1, required=False, default=1000000,
               type=click.IntRange(0, None, False), metavar='<int>',
-              help='Max size expressed by gain. Using this option, max size of generated input'
-              ' file will be set to (size of the largest workload + value).'
-              'Default value is 1 000 000 B = 1MB.')
+              help='Absolute value of the maximal increase in the size of the generated mutation wrt parent corpus. '
+                   'Using this option, the maximal size of generated mutation will be set to '
+                   '(size of the largest corpus in workload + <INT>). '
+                   'Default value is 1 000 000 B = 1MB.')
 @click.option('--max-size-ratio', '-mp', nargs=1, required=False,
               type=click.FloatRange(0.1, None, False), metavar='<float>',
-              help='Max size expressed by percentage. Using this option, max size of generated'
-              ' input file will be set to (size of the largest workload * value).'
-              ' E.g. 1.5, max size=largest workload size * 1.5')
+              help='Relative value of the maximal increase in the size of the generated mutation wrt parent corpus. '
+                   'Using this option, the maximal size of generated mutation will be set to '
+                   '(size of the largest corpus in workload * <INT>). '
+                   ' E.g. 1.5, max size=largest workload size * 1.5')
 @click.option('--exec-limit', '-e', nargs=1, required=False, default=100,
               type=click.IntRange(1, None, False), metavar='<int>',
-              help='Defines maximum number executions while gathering interesting inputs.')
+              help='The maximum number of fuzzing iteration while gathering interesting inputs. '
+                   'By interesting inputs we mean files that might potentially lead to timeouts, hang or severe '
+                   'severe performance degradation.')
 @click.option('--interesting-files-limit', '-l', nargs=1, required=False,
               type=click.IntRange(1, None, False), metavar='<int>', default=20,
-              help='Defines minimum number of gathered interesting inputs before perun testing.')
+              help='The minimum number of gathered mutations, that are so called interesting, '
+                   'before perun testing is performed. '
+                   'By interesting inputs we mean files that might potentially lead to timeouts, hang or severe '
+                   'severe performance degradation.')
 @click.option('--coverage-increase-rate', '-cr', nargs=1, required=False, default=1.5,
               type=click.FloatRange(0, None, False), metavar='<int>',
-              help='Represents threshold of coverage increase against base coverage.'
-              '  E.g 1.5, base coverage = 100 000, so threshold = 150 000.')
+              help='The threshold of coverage increase against base coverage, which is used to evaluate, '
+                   'whether the generated mutation is interesting for further evaluation by performance testing. '
+                   'E.g 1.5, base coverage = 100 000, so threshold = 150 000.')
 @click.option('--mutations-per-rule', '-mpr', nargs=1, required=False, default='mixed',
               type=click.Choice(['unitary', 'proportional', 'probabilistic', 'mixed']),
               metavar='<str>',
@@ -730,10 +749,10 @@ def collect(ctx: click.Context, **kwargs: Any) -> None:
               ' fuzzing rule in one iteration: unitary, proportional, probabilistic, mixed')
 @click.option('--regex-rules', '-r', nargs=1, required=False, multiple=True,
               callback=cli_helpers.single_yaml_param_callback, metavar='<file>',
-              help='Option for adding custom rules specified by regular expressions,'
+              help='Option for adding custom fuzzing rules specified by regular expressions,'
               ' written in YAML format file.')
 @click.option('--no-plotting', '-np', is_flag=True, required=False,
-              help='Avoiding sometimes lengthy plotting of graphs.')
+              help='Will not plot the interpretation of the fuzzing in form of graphs.')
 def fuzz_cmd(cmd: str, args: str, **kwargs: Any) -> None:
     """Performs fuzzing for the specified command according to the initial sample of workload."""
     kwargs['executable'] = Executable(cmd, args)
@@ -751,22 +770,8 @@ def init_unit_commands(lazy_init: bool = True) -> None:
                                      (perun.collect, collect, 'collect')]:
         if lazy_init and cli_arg not in sys.argv:
             continue
-        for module in pkgutil.walk_packages(unit.__path__, unit.__name__ + '.'):
-            # Skip modules, only packages can be used for show
-            if not module[2]:
-                continue
-            unit_package = perun.utils.get_module(module[1])
-
-            # Skip packages that are not for viewing, postprocessing, or collection of profiles
-            if not hasattr(unit_package, 'SUPPORTED_PROFILES') and \
-                    not hasattr(unit_package, 'COLLECTOR_TYPE'):
-                continue
-
-            # Skip those packages that do not contain the appropriate cli wrapper
-            unit_module = perun.utils.get_module(module[1] + '.' + 'run')
-            cli_function_name = module[1].split('.')[-1]
-            if hasattr(unit_module, cli_function_name):
-                cli_cmd.add_command(getattr(unit_module, cli_function_name))
+        for cmd in unit.lazy_get_cli_commands():
+            cli_cmd.add_command(cmd)
 
 
 # Initialization of other stuff

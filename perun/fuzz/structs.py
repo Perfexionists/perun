@@ -123,12 +123,12 @@ class FuzzingConfiguration:
         """
         :param dict kwargs: set of keyword configurations
         """
-        self.timeout: int = kwargs.get('timeout', 0)
-        self.hang_timeout: int = kwargs.get('hang_timeout', 0)
+        self.timeout: float = kwargs.get('timeout', 0.0)
+        self.hang_timeout: float = kwargs.get('hang_timeout', 0.0)
         self.output_dir: str = os.path.abspath(kwargs['output_dir'])
         self.workloads_filter: str = kwargs.get('workloads_filter', '')
         self.regex_rules: dict[str, str] = kwargs.get('regex_rules', {})
-        self.max_size: Optional[int] = kwargs.get('max', None)
+        self.max_size: Optional[int] = kwargs.get('max_size', None)
         self.max_size_ratio: Optional[int] = kwargs.get("max_size_ratio", None)
         self.max_size_gain: int = kwargs.get("max_size_gain", 0)
         self.exec_limit: int = kwargs.get('exec_limit', 0)

@@ -35,7 +35,6 @@ dependencies = [
 
     # File analysis
     "python-magic>=0.4",
-    "binaryornot>=0.4.4",
     "angr>=9.2",
 
     # Science / math / statistics / ML
@@ -139,7 +138,6 @@ module = [
     "statsmodels.*",
     "holoviews.*",
     "bcc.*",
-    "binaryornot.*",
 ]
 ignore_missing_imports = true
 

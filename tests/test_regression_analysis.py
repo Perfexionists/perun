@@ -16,10 +16,10 @@ from perun.testing.utils import compare_results, generate_models_by_uid
 import perun.utils.metrics as metrics
 
 
-def test_incorrect_calls(postprocess_profiles):
+def test_incorrect_calls():
     """Test various incorrect calls and exceptions"""
     # Get any profile, in following we will try to
-    const_model = test_utils.profile_filter(postprocess_profiles, 'const_model')
+    const_model = test_utils.load_profile('postprocess_profiles', 'const_model_datapoints.perf')
     assert const_model is not None
 
     # Try calling postprocess, while missing keys
@@ -30,7 +30,7 @@ def test_incorrect_calls(postprocess_profiles):
     assert 'Invalid dictionary' in str(exc.value)
 
 
-def test_const_model(pcs_full, postprocess_profiles):
+def test_const_model(pcs_with_root):
     """Test the constant model computation.
 
     The r^2 coefficient computation is currently not supported
@@ -43,7 +43,7 @@ def test_const_model(pcs_full, postprocess_profiles):
     metrics.Metrics.configure("test_const_model", "HEAD")
     metrics.Metrics.enabled = True
     # Get the profile with exponential model testing data
-    const_model = test_utils.profile_filter(postprocess_profiles, 'const_model')
+    const_model = test_utils.load_profile('postprocess_profiles', 'const_model_datapoints.perf')
     assert const_model is not None
 
     # Perform the analysis
@@ -78,7 +78,7 @@ def test_const_model(pcs_full, postprocess_profiles):
     metrics.Metrics.enabled = prev_enabled
 
 
-def test_linear_model(postprocess_profiles):
+def test_linear_model():
     """Test the linear model computation.
 
     Contains one sourced and one created example.
@@ -86,7 +86,7 @@ def test_linear_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    linear_model = test_utils.profile_filter(postprocess_profiles, 'linear_model')
+    linear_model = test_utils.load_profile('postprocess_profiles', 'linear_model_datapoints.perf')
     assert linear_model is not None
 
     # Perform the analysis
@@ -119,7 +119,7 @@ def test_linear_model(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 2.5)
 
 
-def test_quad_model_using_power(postprocess_profiles):
+def test_quad_model_using_power():
     """Test the quadratic model computation.
 
     Contains only one sourced example.
@@ -127,7 +127,7 @@ def test_quad_model_using_power(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with quadratic model testing data
-    quad_model = test_utils.profile_filter(postprocess_profiles, 'quad_model')
+    quad_model = test_utils.load_profile('postprocess_profiles', 'quad_model_datapoints.perf')
     assert quad_model is not None
 
     # Perform the analysis of quadratic-expected models
@@ -150,7 +150,7 @@ def test_quad_model_using_power(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b2'][0], -0.173714)
 
 
-def test_log_model(postprocess_profiles):
+def test_log_model():
     """Test the logarithmic model computation.
 
     Contains one sourced and one created example.
@@ -158,7 +158,7 @@ def test_log_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with logarithmic model testing data
-    pow_model = test_utils.profile_filter(postprocess_profiles, 'log_model')
+    pow_model = test_utils.load_profile('postprocess_profiles', 'log_model_datapoints.perf')
     assert pow_model is not None
 
     # Perform the analysis
@@ -190,7 +190,7 @@ def test_log_model(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 0.434294482)
 
 
-def test_power_model(postprocess_profiles):
+def test_power_model():
     """Test the power model computation.
 
     Contains two sourced and one created example.
@@ -198,7 +198,7 @@ def test_power_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with power model testing data
-    pow_model = test_utils.profile_filter(postprocess_profiles, 'pow_model')
+    pow_model = test_utils.load_profile('postprocess_profiles', 'pow_model_datapoints.perf')
     assert pow_model is not None
 
     # Perform the analysis
@@ -241,7 +241,7 @@ def test_power_model(postprocess_profiles):
     compare_results([c['value'] for c in model['coeffs'] if c['name'] == 'b1'][0], 3.0)
 
 
-def test_exp_model(postprocess_profiles):
+def test_exp_model():
     """Test the exponential model computation.
 
     Contains two sourced and one created example.
@@ -249,7 +249,7 @@ def test_exp_model(postprocess_profiles):
     Expects to pass all assertions.
     """
     # Get the profile with exponential model testing data
-    exp_model = test_utils.profile_filter(postprocess_profiles, 'exp_model')
+    exp_model = test_utils.load_profile('postprocess_profiles', 'exp_model_datapoints.perf')
     assert exp_model is not None
 
     # Perform the analysis

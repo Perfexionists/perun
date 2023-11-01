@@ -44,8 +44,7 @@ def create_from_params(
     :param graph_title: title of the graph.
     :returns: UID and a Scatter plot with models, if there are any.
     """
-    hv.extension("bokeh")
-    hv.renderer("bokeh").theme = view_helpers.build_bokeh_theme()
+    view_helpers.lazy_init_holoviews()
 
     y_axis_label = view_helpers.add_y_units(profile["header"], of_key, y_axis_label)
     for data_slice, models_slice in _generate_plot_data_slices(profile):

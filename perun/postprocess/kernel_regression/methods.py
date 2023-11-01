@@ -421,7 +421,7 @@ def valid_range_values(_: click.Context, param: click.Option, value: tuple[float
         )
 
 
-def valid_step_size(step: float, range_length: float) -> bool:
+def valid_step_size(step: float, step_range: tuple[float, float]) -> bool:
     """
     This method represents click callback option method.
 
@@ -430,17 +430,19 @@ def valid_step_size(step: float, range_length: float) -> bool:
     given range.
 
     :param step: value of the entered step to move around the gamma range
-    :param range_length: length of the entered gamma range
+    :param step_range: tuple of length of the entered gamma range
     :raises click.BadOptionsUsage: in the case when the step is not smaller than the length of
                 the given range
     :return bool: return True if the control was successful
     """
+    range_length = step_range[1] - step_range[0]
     if step < range_length:
         return True
     else:
         raise click_exp.BadOptionUsage(
             "--gamma-step/-gs",
-            f'Invalid values: step must be < then the length of the range ({step:.2f} >= {range_length:.2f})'
+            f'Invalid values: step must be < then the length of the range '
+            f'({step:.5f} >= {range_length:.5f}) for range {step_range[0]}:{step_range[1]}'
         )
 
 

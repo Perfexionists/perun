@@ -40,6 +40,19 @@ def is_valid_key(key: str) -> bool:
     return valid_key_pattern.match(key) is not None
 
 
+def are_valid_keys(keys: Iterable[str]) -> bool:
+    """Validation function for key representing one option in config section.
+
+    Validates that the given string key is in form of dot separated (.) strings. Each delimited
+    string represents one subsection, with last string representing the option.
+
+    :param keys: string we are validating
+    :returns: true if the given key is in correct key format
+    """
+    valid_key_pattern = re.compile(r"^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$")
+    return all(valid_key_pattern.match(key) is not None for key in keys)
+
+
 class Config:
     """Config represents one instance of configuration of given type.
 
@@ -126,12 +139,31 @@ class Config:
         :returns value: retrieved value of the key at config
         :raises exceptions.MissingConfigSectionException: if the key is not present in the config
         """
+        return self._get(key)
+
+    def _get(self, key: str) -> Any:
+        """Core function that returns the value of the key stored in the config
+
+        :param str key: list of section separated by dots
+        :returns value: retrieved value of the key at config
+        :raises exceptions.MissingConfigSectionException: if the key is not present in the config
+        """
         sections = key.split('.')
 
         section_iterator = self.data
         for section in sections:
             section_iterator = _ascend_by_section_safely(section_iterator, section)
         return section_iterator
+
+    @decorators.validate_arguments(['keys'], are_valid_keys)
+    def get_bulk(self, keys: Iterable[str]) -> Any:
+        """Core functiont hat returns the value of the multiple keys in config
+
+        :param keys: list of section separated by dots
+        :returns value: retrieved values of the keys at config
+        :raises exceptions.MissingConfigSectionException: if the key is not present in the config
+        """
+        return [self._get(key) for key in keys]
 
 
 def write_config_to(path: str, config_data: dict[str, Any]) -> None:

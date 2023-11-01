@@ -226,28 +226,19 @@ INTEGRAL_COMPARISON_RESULTS = [
         res=pc.Degradation, loc='skipwhite', fb='constant', tt='constant', rd=0.30
     ),
     DegradationInfo(
-        res=pc.Degradation, loc='skipwhite', fb='moving_average', tt='moving_average', rd=0.30
-    ),
-    DegradationInfo(
-        res=pc.Degradation, loc='skipwhite', fb='regressogram', tt='regressogram', rd=0.30
-    ),
-    DegradationInfo(
         res=pc.Degradation, loc='test_for_current', fb='constant', tt='constant', rd=0.34
     ),
     DegradationInfo(
-        res=pc.Degradation, loc='test_for_current',
-        fb='moving_average', tt='moving_average', rd=0.35
+        res=pc.Degradation, loc='test_for_static', fb='moving_average', tt='moving_average', rd=0.91
+    ),
+    DegradationInfo(
+        res=pc.MaybeDegradation, loc='test_for_static', fb='regressogram', tt='regressogram', rd=0.16
     ),
     DegradationInfo(
         res=pc.MaybeDegradation, loc='vim_isblankline', fb='constant', tt='constant', rd=0.22
     ),
     DegradationInfo(
-        res=pc.MaybeDegradation, loc='vim_isblankline',
-        fb='moving_average', tt='moving_average', rd=0.22
-    ),
-    DegradationInfo(
-        res=pc.MaybeDegradation, loc='vim_isblankline',
-        fb='regressogram', tt='regressogram', rd=0.22
+        res=pc.Degradation, loc='vim_regexec', fb='regressogram', tt='regressogram', rd=0.42
     ),
 ]
 
@@ -269,72 +260,25 @@ LOCAL_STATISTICS_RESULTS = [
         pi=[(pc.Degradation, 2.27, 2.71, 2.12)]
     ),
     DegradationInfo(
-        res=pc.MaybeDegradation, loc='parse_tag_line', fb='moving_average', tt='moving_average',
-        rd=0.14, pi=[(pc.MaybeDegradation, 0.12, 235062.0, 391764.0)]
-    ),
-    DegradationInfo(
-        res=pc.MaybeDegradation, loc='parse_tag_line', fb='regressogram', tt='regressogram',
-        rd=0.1, pi=[(pc.MaybeDegradation, 0.13, 235044.16, 391722.86)]
-    ),
-    DegradationInfo(
-        res=pc.Degradation, loc='skipwhite', fb='moving_average', tt='moving_average', rd=0.29,
-        pi=[
-            (pc.MaybeDegradation, 0.14, 116904.0, 233804.0),
-            (pc.Degradation, 0.86, 233808.0, 253288.0),
-            (pc.MaybeDegradation, 0.36, 253292.0, 272772.0),
-            (pc.Degradation, 0.59, 272776.0, 389720.0),
+        res=pc.Degradation, loc='test_for_static', fb='moving_average', tt='moving_average',
+        rd=0.82, pi=[
+            (pc.Degradation, 20.46, 152293.71, 157732.78),
         ]
     ),
     DegradationInfo(
-        res=pc.Degradation, loc='skipwhite', fb='regressogram', tt='regressogram', rd=0.3,
-        pi=[
-            (pc.MaybeDegradation, 0.12, 116826.38, 136279.87),
-            (pc.Degradation, 0.2, 175239.57, 214164.12),
-            (pc.MaybeDegradation, 0.18, 214181.69, 233635.18),
-            (pc.Degradation, 0.62, 233652.75, 389720.0),
+        res=pc.MaybeDegradation, loc='test_for_static', fb='regressogram', tt='regressogram',
+        rd=0.15, pi=[
+            (pc.Degradation, 3.52, 21756.24, 27195.31),
         ]
     ),
     DegradationInfo(
-        res=pc.Degradation, loc='test_for_current', fb='moving_average', tt='moving_average',
-        rd=0.34, pi=[
-            (pc.MaybeDegradation, 0.12, 26648.0, 33308.0),
-            (pc.Degradation, 0.24, 33310.0, 39970.0),
-            (pc.MaybeDegradation, 0.17, 39972.0, 46632.0),
-            (pc.Degradation, 0.46, 46634.0, 133256.0),
+        res=pc.Degradation, loc='vim_regexec', fb='regressogram', tt='regressogram',
+        rd=0.41, pi=[
+            (pc.MaybeDegradation,  0.22, 238226.94, 246167.84),
+            (pc.Degradation,  10.13, 301754.12, 309695.02),
+            (pc.MaybeOptimization, -0.16, 365281.31, 373222.2),
+            (pc.MaybeDegradation, 0.18, 381163.1, 389104.0),
         ]
-    ),
-    DegradationInfo(
-        res=pc.MaybeDegradation, loc='test_for_static', fb='moving_average', tt='moving_average',
-        rd=0.1, pi=[
-            (pc.MaybeDegradation, 0.12, 53292.0, 133227.0),
-            (pc.MaybeOptimization, -0.12, 173199.0, 186519.0),
-            (pc.MaybeDegradation, 0.29, 266460.0, 266514.0),
-        ]
-    ),
-    DegradationInfo(
-        res=pc.MaybeDegradation, loc='vim_isblankline', fb='moving_average', tt='moving_average',
-        rd=0.2, pi=[
-            (pc.MaybeDegradation, 0.12, 175104.0, 214012.0),
-            (pc.Degradation, 0.37, 214016.0, 389140.0),
-        ]
-    ),
-    DegradationInfo(
-        res=pc.MaybeDegradation, loc='vim_isblankline', fb='regressogram', tt='regressogram',
-        rd=0.21, pi=[
-            (pc.MaybeDegradation, 0.15, 175057.65, 233392.63),
-            (pc.Degradation, 0.43, 233410.2, 389140.0),
-        ]
-    ),
-    DegradationInfo(
-        res=pc.Degradation, loc='vim_regexec', fb='moving_average', tt='moving_average',
-        rd=0.27, pi=[
-            (pc.MaybeDegradation, 0.1, 233424.0, 369584.0),
-            (pc.Degradation, 0.22, 389040.0, 389104.0)
-        ]
-    ),
-    DegradationInfo(
-        res=pc.MaybeDegradation, loc='vim_regexec', fb='regressogram', tt='regressogram',
-        rd=0.14, pi=[(pc.MaybeDegradation, 0.12, 233409.69, 389104.0)]
     ),
 ]
 

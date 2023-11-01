@@ -11,12 +11,12 @@ from perun.profile.factory import Profile
 import perun.testing.utils as test_utils
 
 
-def test_loading(pcs_full, valid_profile_pool):
+def test_loading(pcs_single_prof, valid_profile_pool):
     """Test new feature of loading the profile straight out of profile info
 
     Expecting correct behaviour
     """
-    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), valid_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_single_prof.get_path(), valid_profile_pool)
     untracked = commands.get_untracked_profiles()
     assert len(untracked) != 0
 
@@ -24,7 +24,7 @@ def test_loading(pcs_full, valid_profile_pool):
     assert isinstance(first_untracked, Profile)
     assert 'header' in first_untracked.keys()
 
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_single_prof.get_vcs_path())
     head = str(git_repo.head.commit)
 
     minor_version_profiles = profiles.load_list_for_minor_version(head)

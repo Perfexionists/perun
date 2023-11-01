@@ -14,7 +14,7 @@ import perun.check.fast_check as fast
 import perun.check.exclusive_time_outliers as eto
 
 
-def test_degradation_precollect(monkeypatch, pcs_full, capsys):
+def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
     """Set of basic tests for testing degradation in concrete minor version point
 
     Expects correct behaviour
@@ -45,7 +45,7 @@ def test_degradation_precollect(monkeypatch, pcs_full, capsys):
         }
     })
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_with_degradations.get_vcs_path())
     head = str(git_repo.head.commit)
 
     check.degradation_in_minor(head)
@@ -88,21 +88,21 @@ def test_degradation_in_history(pcs_with_degradations):
     assert check.PerformanceChange.Degradation in [r[0].result for r in result]
 
 
-def test_degradation_between_profiles(pcs_with_degradations, capsys):
+def test_degradation_between_profiles(pcs_with_root, capsys):
     """Set of basic tests for testing degradation between profiles
 
     Expects correct behaviour
     """
     pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profiles = [
-        store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True),
-        store.load_profile_from_file(os.path.join(pool_path, 'linear_base_degradated.perf'), True),
-        store.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True),
-        store.load_profile_from_file(os.path.join(pool_path, 'zero.perf'), True)
+        store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True, True),
+        store.load_profile_from_file(os.path.join(pool_path, 'linear_base_degradated.perf'), True, True),
+        store.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True, True),
+        store.load_profile_from_file(os.path.join(pool_path, 'zero.perf'), True, True)
     ]
     tracer_profiles = [
-        store.load_profile_from_file(os.path.join(pool_path, 'tracer_baseline.perf'), True),
-        store.load_profile_from_file(os.path.join(pool_path, 'tracer_target.perf'), True)
+        store.load_profile_from_file(os.path.join(pool_path, 'tracer_baseline.perf'), True, True),
+        store.load_profile_from_file(os.path.join(pool_path, 'tracer_target.perf'), True, True)
     ]
 
     # Test degradation detection using ETO
@@ -160,8 +160,8 @@ def test_degradation_between_profiles(pcs_with_degradations, capsys):
 
     # Test incompatible profiles
     pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'full_profiles')
-    lhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-1-time-2017-03-19-19-17-36.perf'), True)
-    rhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-3-memory-2017-05-15-15-43-42.perf'), True)
+    lhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-1-time-2017-03-19-19-17-36.perf'), True, True)
+    rhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-3-memory-2017-05-15-15-43-42.perf'), True, True)
     with pytest.raises(SystemExit):
         check.degradation_between_files(lhs, rhs, "HEAD", 'all')
     _, err = capsys.readouterr()
@@ -174,7 +174,7 @@ def test_strategies():
     Expects correct behaviour
     """
     pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
-    profile = store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True)
+    profile = store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True, True)
     rule = {
         'method': 'average_amount_threshold',
         'collector': 'complexity',

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import mimetypes
 import re
-import binaryornot.check as binaryornot
 
 from typing import Callable, Optional
 
@@ -40,15 +39,18 @@ def custom_rules(
 def get_filetype(file: str) -> tuple[bool, Optional[str]]:
     """ Recognizes whether file is binary or text and its type using `mimetypes`
 
+    Fixme: this might need refactoring to handle some edge cases
+
     :param str file: file name
     :return tuple: is_file_binary, file_type
     """
     try:
         guessed_type = (mimetypes.guess_type(file))[0]
-        filetype = guessed_type.split("/")[-1] if guessed_type is not None else None
+        subfiletype = guessed_type.split("/")[-1] if guessed_type is not None else None
+        filetype = guessed_type.split("/")[0] if guessed_type is not None else None
+        return subfiletype is None or (filetype != 'text' and subfiletype != 'xml'), subfiletype
     except AttributeError:
-        filetype = None
-    return binaryornot.is_binary(file), filetype
+        return True, None
 
 
 def choose_ruleset(file: str, regex_rules: dict[str, str]) -> RuleSet:

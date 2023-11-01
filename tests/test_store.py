@@ -56,7 +56,7 @@ def test_versions(tmpdir, monkeypatch):
     monkeypatch.setattr('perun.logic.index.INDEX_VERSION', index.IndexVersion.SlowLorris.value)
     pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
     profile_name = os.path.join(pool_path, 'linear_base.perf')
-    profile = store.load_profile_from_file(profile_name, True)
+    profile = store.load_profile_from_file(profile_name, True, True)
 
     index_file = os.path.join(str(tmpdir), "index")
     index.touch_index(index_file)

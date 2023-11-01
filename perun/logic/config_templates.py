@@ -165,9 +165,11 @@ profiles:
 #   register_after_run: true
 {% endif %}
 
+## Be default, we sort the profiles by time
+format:
+  sort_profiles_by: time
 {% if format is defined and format.output_profile_template is defined %}
 ## The following changes the automatically generated name of the profiles
-format:
   output_profile_template: "{{ format.output_profile_template }}"
 {% endif %}
 

@@ -21,46 +21,46 @@ def load_profiles(param):
     if param:
         profiles = [
             [
-                store.load_profile_from_file(os.path.join(pool_path, 'const1.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'const2.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'const3.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'const4.perf'), True)
+                store.load_profile_from_file(os.path.join(pool_path, 'const1.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'const2.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'const3.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'const4.perf'), True, True)
             ],
             [
-                store.load_profile_from_file(os.path.join(pool_path, 'lin1.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'lin2.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'lin3.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'lin4.perf'), True)
+                store.load_profile_from_file(os.path.join(pool_path, 'lin1.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'lin2.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'lin3.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'lin4.perf'), True, True)
             ],
             [
-                store.load_profile_from_file(os.path.join(pool_path, 'log1.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'log2.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'log3.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'log4.perf'), True)
+                store.load_profile_from_file(os.path.join(pool_path, 'log1.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'log2.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'log3.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'log4.perf'), True, True)
             ],
             [
-                store.load_profile_from_file(os.path.join(pool_path, 'quad1.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'quad2.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'quad3.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'quad4.perf'), True)
+                store.load_profile_from_file(os.path.join(pool_path, 'quad1.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'quad2.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'quad3.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'quad4.perf'), True, True)
             ],
             [
-                store.load_profile_from_file(os.path.join(pool_path, 'pow1.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'pow2.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'pow3.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'pow4.perf'), True)
+                store.load_profile_from_file(os.path.join(pool_path, 'pow1.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'pow2.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'pow3.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'pow4.perf'), True, True)
             ],
             [
-                store.load_profile_from_file(os.path.join(pool_path, 'exp1.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'exp2.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'exp3.perf'), True),
-                store.load_profile_from_file(os.path.join(pool_path, 'exp4.perf'), True)
+                store.load_profile_from_file(os.path.join(pool_path, 'exp1.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'exp2.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'exp3.perf'), True, True),
+                store.load_profile_from_file(os.path.join(pool_path, 'exp4.perf'), True, True)
             ]
         ]
     else:
         profiles = [
-            store.load_profile_from_file(os.path.join(pool_path, 'baseline_all_models.perf'), True),
-            store.load_profile_from_file(os.path.join(pool_path, 'target_all_models.perf'), True)
+            store.load_profile_from_file(os.path.join(pool_path, 'baseline_all_models.perf'), True, True),
+            store.load_profile_from_file(os.path.join(pool_path, 'target_all_models.perf'), True, True)
         ]
     return profiles
 

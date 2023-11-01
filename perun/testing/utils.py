@@ -3,34 +3,38 @@ from __future__ import annotations
 import os
 import shutil
 
-from typing import Iterable, Optional, Callable, BinaryIO, Any
+from typing import Iterable, Callable, BinaryIO, Any
 
 import perun.logic.store as store
-import perun.utils.streams as streams
 import perun.logic.index as index
+import perun.utils.streams as streams
+import perun.utils.decorators as decorators
 
 from perun.profile.factory import Profile
 from perun.logic.index import BasicIndexEntry
 
 
-def profile_filter(
-        generator: Iterable[tuple[str, Profile]], rule: str, return_type: str = 'prof'
-) -> Optional[str | Profile]:
-    """Finds concrete profile by the rule in profile generator.
+def load_profilename(prof_directory: str, prof_filename: str) -> str:
+    """Helper function for getting name of profile
 
-    :param generator generator: stream of profiles as tuple: (name, dict)
-    :param str rule: string to search in the name
-    :param str return_type: return type of the profile filter (either prof or name)
-    :returns Profile: first profile with name containing the rule
+    :param prof_directory: directory, where profile is
+    :param prof_filename: name of the profile
     """
-    # Loop the generator and test the rule
-    for profile in generator:
-        if rule in profile[0]:
-            if return_type == 'prof':
-                return profile[1]
-            elif return_type == 'name':
-                return profile[0]
-    return None
+    pool_path = os.path.join(os.path.split(__file__)[0], '..', '..', 'tests', 'profiles', prof_directory)
+    return os.path.join(pool_path, prof_filename)
+
+
+@decorators.singleton_with_args
+def load_profile(prof_directory: str, prof_filename: str) -> Profile:
+    """Helper function for loading raw profile from test pool
+
+    :param prof_directory: directory, where profile is
+    :param prof_filename: name of the profile
+    """
+    # We fuck the check here
+    return store.load_profile_from_file(
+        load_profilename(prof_directory, prof_filename), is_raw_profile=True, unsafe_load=True
+    )
 
 
 def index_filter(file: str) -> bool:
@@ -65,7 +69,8 @@ def prepare_profile(dest_dir: str, profile: str, origin: str) -> str:
 
     # Prepare origin for the current version
     copied_filename = os.path.join(dest_dir, os.path.split(profile)[-1])
-    copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True)
+    # We skip the check if copied_filename exists, it will fuck the tests if it somehow does not
+    copied_profile = store.load_profile_from_file(copied_filename, is_raw_profile=True, unsafe_load=True)
     copied_profile['origin'] = origin
     streams.store_json(copied_profile.serialize(), copied_filename)
     shutil.copystat(profile, copied_filename)

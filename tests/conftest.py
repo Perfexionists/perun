@@ -8,6 +8,8 @@ import tempfile
 
 import git
 
+from typing import Iterable, Callable
+
 import perun.utils.helpers as helpers
 import perun.utils.log as log
 import perun.logic.pcs as pcs
@@ -18,6 +20,7 @@ import pytest
 import perun.logic.commands as commands
 import perun.utils.decorators as decorators
 import perun.utils.streams as streams
+import perun.utils.metrics as metrics
 import perun.vcs as vcs
 
 import perun.testing.utils as test_utils
@@ -82,10 +85,7 @@ def memory_collect_no_debug_job():
 @pytest.fixture(scope="session")
 def complexity_collect_job():
     """
-
-
-    Returns:
-        tuple: 'bin', '', [''], 'memory', [], {}
+    :returns: 'bin', '', [''], 'memory', [], {}
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
@@ -109,10 +109,7 @@ def complexity_collect_job():
 @pytest.fixture(scope="session")
 def trace_collect_job():
     """
-
-
-    Returns:
-        tuple: 'bin', '', [''], 'trace', [], {}
+    :returns: 'bin', '', [''], 'trace', [], {}
     """
     # Load the configuration from the job file
     script_dir = os.path.split(__file__)[0]
@@ -129,6 +126,7 @@ def trace_collect_job():
     [os.remove(filename) for filename in glob.glob(source_dir + "/*.stp")]
 
 
+@decorators.singleton_with_args
 def all_profiles_in(directory, sort=False):
     """Helper function that generates stream of (sorted) profile paths in specified directory
 
@@ -179,49 +177,25 @@ def stored_profile_pool():
     return profiles
 
 
-def get_loaded_profiles(profile_type):
-    """
-    Arguments:
-        profile_type(str): type of the profile we are looking for
-
-    Returns:
-        generator: stream of profiles of the given type
-    """
-    for valid_profile in filter(lambda p: 'err' not in p, all_profiles_in("to_add_profiles", True)):
-        loaded_profile = store.load_profile_from_file(valid_profile, is_raw_profile=True)
-        if loaded_profile['header']['type'] == profile_type:
-            yield loaded_profile
-
-
 @pytest.fixture(scope="function")
 def memory_profiles():
     """
     Returns:
         generator: generator of fully loaded memory profiles as dictionaries
     """
-    yield get_loaded_profiles('memory')
+    yield [test_utils.load_profile('to_add_profiles', 'new-prof-2-memory-basic.perf')]
 
 
-def load_all_profiles_in(directory):
+def load_all_profiles_in(directory: str, prof_filter: Callable[[str], bool] = None) -> Iterable[tuple[str, 'Profile']]:
     """Generates stream of loaded (i.e. dictionaries) profiles in the specified directory.
 
-    Arguments:
-        directory(str): the name (not path!) of the profile directory
-
-    Returns:
-        generator: stream of loaded profiles as tuple (profile_name, dictionary)
+    :param directory: the name (not path!) of the profile directory
+    :param prof_filter: filtering string for filenames
+    :return: stream of loaded profiles as tuple (profile_name, dictionary)
     """
-    for profile in list(all_profiles_in(directory)):
-        yield (profile, store.load_profile_from_file(profile, True))
-
-
-@pytest.fixture(scope="function")
-def query_profiles():
-    """
-    Returns:
-        generator: generator of fully loaded query profiles as tuple (profile_name, dictionary)
-    """
-    yield list(load_all_profiles_in("query_profiles"))
+    for profile in all_profiles_in(directory):
+        if prof_filter is None or prof_filter(profile):
+            yield profile, store.load_profile_from_file(profile, True, unsafe_load=True)
 
 
 @pytest.fixture(scope="function")
@@ -232,6 +206,26 @@ def postprocess_profiles():
                    (profile_name, dictionary)
     """
     yield load_all_profiles_in("postprocess_profiles")
+
+
+@pytest.fixture(scope="function")
+def postprocess_profiles_advanced():
+    """
+    Returns:
+        generator: generator of fully loaded postprocess profiles as tuple
+                   (profile_name, dictionary)
+    """
+    yield load_all_profiles_in("postprocess_profiles", lambda x: "rg_ma_kr" in x)
+
+
+@pytest.fixture(scope="function")
+def postprocess_profiles_regression_analysis():
+    """
+    Returns:
+        generator: generator of fully loaded postprocess profiles as tuple
+                   (profile_name, dictionary)
+    """
+    yield load_all_profiles_in("postprocess_profiles", lambda x: "computation" in x)
 
 
 @pytest.fixture(scope="function")
@@ -247,6 +241,12 @@ def full_profiles():
 @pytest.fixture(scope="function")
 def pcs_with_degradations():
     """
+    * root [file1] p1
+    |\
+    | * second commit [file2] p2
+    * | paralel commit [file3]
+    |/
+    * merge commit [] p3
     """
     git_config_parser = git.config.GitConfigParser()
     git_default_branch_name = git_config_parser.get_value('init', 'defaultBranch', 'master')
@@ -306,7 +306,60 @@ def pcs_with_degradations():
 
 
 @pytest.fixture(scope="function")
+def pcs_single_prof(stored_profile_pool):
+    """
+    * root [file1]
+    |
+    * second commit [file2] p1
+    """
+    # Change working dir into the temporary directory
+    profiles = stored_profile_pool
+    pcs_path = tempfile.mkdtemp()
+    os.chdir(pcs_path)
+    commands.init_perun_at(pcs_path, False, {'vcs': {'url': '../', 'type': 'git'}})
+
+    # Initialize git
+    vcs.init({})
+
+    # Populate repo with commits
+    repo = git.Repo(pcs_path)
+
+    # Create first commit
+    file1 = os.path.join(pcs_path, "file1")
+    helpers.touch_file(file1)
+    repo.index.add([file1])
+
+    # Create second commit
+    file2 = os.path.join(pcs_path, "file2")
+    helpers.touch_file(file2)
+    repo.index.add([file2])
+    current_head = repo.index.commit("second commit")
+
+    # Populate PCS with profiles
+    jobs_dir = pcs.get_job_directory()
+    chead_profile1 = test_utils.prepare_profile(jobs_dir, profiles[1], str(current_head))
+    commands.add([chead_profile1], str(current_head))
+
+    # Assert that we have five blobs: 2 for commits and 3 for profiles
+    pcs_object_dir = os.path.join(pcs_path, ".perun", "objects")
+    number_of_perun_objects = sum(
+        len(os.listdir(os.path.join(pcs_object_dir, sub))) for sub in os.listdir(pcs_object_dir)
+    )
+    assert number_of_perun_objects == 2
+
+    yield pcs
+
+    # clean up the directory
+    shutil.rmtree(pcs_path)
+
+
+@pytest.fixture(scope="function")
 def pcs_full(stored_profile_pool):
+    """
+    * root [file1] p1
+    |
+    * second commit [file2] p2 p3
+    """
     # Change working dir into the temporary directory
     profiles = stored_profile_pool
     pcs_path = tempfile.mkdtemp()
@@ -353,8 +406,13 @@ def pcs_full(stored_profile_pool):
 
 
 @pytest.fixture(scope="function")
-def pcs_with_more_commits():
+def pcs_full_no_prof():
     """
+    * root [file1]
+    |
+    * second commit [file2]
+    |
+    * third commit [file3]
     """
     # Change working dir into the temporary directory
     pcs_path = tempfile.mkdtemp()
@@ -394,6 +452,7 @@ def pcs_with_more_commits():
 @pytest.fixture(scope="function")
 def pcs_with_empty_git():
     """
+    *
     """
     # Change working dir into the temporary directory
     pcs_path = tempfile.mkdtemp()
@@ -410,8 +469,9 @@ def pcs_with_empty_git():
 
 
 @pytest.fixture(scope="function")
-def pcs_with_git_root_commit():
+def pcs_with_root():
     """
+    * root [file1]
     """
     # Change working dir into the temporary directory
     pcs_path = tempfile.mkdtemp()
@@ -471,4 +531,6 @@ def setup():
 
     # Reset the verbosity to release
     log.VERBOSITY = 0
+    # We disable the metrics by default, since they might slow down tests
+    metrics.Metrics.enabled = False
     yield

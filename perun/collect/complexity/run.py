@@ -90,8 +90,10 @@ def before(
         log.done()
 
         # Create the internal configuration file
+        log.cprint('Creating runtime config...', 'white')
         configurator.create_runtime_config(exec_path, runtime_filter, include_list, kwargs)
         executable.cmd = exec_path
+        log.done()
         return CollectStatus.OK, _COLLECTOR_STATUS_MSG[0], dict(kwargs)
 
     # The "expected" exception types

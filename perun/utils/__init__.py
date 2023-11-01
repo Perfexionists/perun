@@ -229,7 +229,7 @@ def nonblocking_subprocess(
 
 
 def run_safely_external_command(
-        cmd: str, check_results: bool = True, quiet: bool = True, timeout: Optional[int] = None, **kwargs: Any
+        cmd: str, check_results: bool = True, quiet: bool = True, timeout: Optional[float | int] = None, **kwargs: Any
 ) -> tuple[bytes, bytes]:
     """Safely runs the piped command, without executing of the shell
 

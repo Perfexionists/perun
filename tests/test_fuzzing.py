@@ -3,6 +3,7 @@ Basic tests for fuzz-testing mode of perun
 """
 
 import os
+import sys
 import subprocess
 import pytest
 import inspect
@@ -48,7 +49,7 @@ def test_fuzzing_coverage(capsys):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_correct(pcs_full):
+def test_fuzzing_correct(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -74,10 +75,13 @@ def test_fuzzing_correct(pcs_full):
         '--cmd', tail,
         '--output-dir', '.',
         '--input-sample', bin_workload,
-        '--timeout', '1',
-        '--max', '10',
+        '--timeout', '0.25',
+        '--max-size', '10',
         '--no-plotting',
-        '--skip-coverage-testing'
+        '--skip-coverage-testing',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -88,14 +92,17 @@ def test_fuzzing_correct(pcs_full):
         '--cmd', tail,
         '--output-dir', '.',
         '--input-sample', txt_workload,
-        '--timeout', '1',
+        '--timeout', '0.25',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
-        '--max-size-gain', '35000',
+        '--max-size-increase', '35000',
         '--coverage-increase-rate', '1.05',
         '--interesting-files-limit', '2',
         '--workloads-filter', '(?notvalidregex?)',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -107,12 +114,15 @@ def test_fuzzing_correct(pcs_full):
         '--cmd', tail,
         '--output-dir', '.',
         '--input-sample', xml_workload,
-        '--timeout', '1',
+        '--timeout', '0.25',
         '--max-size-ratio', '3.5',
         '--mutations-per-rule', 'probabilistic',
         '--regex-rules', regex_file,
         '--no-plotting',
-        '--skip-coverage-testing'
+        '--skip-coverage-testing',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -123,9 +133,12 @@ def test_fuzzing_correct(pcs_full):
         '--cmd', tail,
         '--output-dir', '.',
         '--input-sample', xml_workload,
-        '--timeout', '1',
+        '--timeout', '0.25',
         '--no-plotting',
-        '--skip-coverage-testing'
+        '--skip-coverage-testing',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
@@ -136,17 +149,20 @@ def test_fuzzing_correct(pcs_full):
         '--cmd', tail,
         '--output-dir', '.',
         '--input-sample', wierd_workload,
-        '--timeout', '1',
+        '--timeout', '0.25',
         '--max-size-ratio', '3.5',
         '--source-path', '.',
         '--gcno-path', '.',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_sigabort(pcs_full):
+def test_fuzzing_sigabort(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -166,6 +182,10 @@ def test_fuzzing_sigabort(pcs_full):
         '--input-sample', num_workload,
         '--source-path', os.path.dirname(sigabrt_init),
         '--gcno-path', os.path.dirname(sigabrt_init),
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
+        '--exec-limit', '10',
+        '--no-plotting'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'SIGABRT' in result.output)
@@ -187,13 +207,15 @@ def test_fuzzing_sigabort(pcs_full):
         '--gcno-path', os.path.dirname(sigabrt_test),
         '--mutations-per-rule', 'unitary',
         '--exec-limit', '1',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'exit status 134' in result.output)
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_hangs(pcs_full):
+def test_fuzzing_hangs(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
@@ -213,8 +235,10 @@ def test_fuzzing_hangs(pcs_full):
         '--input-sample', num_workload,
         '--source-path', os.path.dirname(hang_init),
         '--gcno-path', os.path.dirname(hang_init),
-        '--hang-timeout', '0.05',
+        '--hang-timeout', '0.01',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, 'Timeout' in result.output)
@@ -227,6 +251,8 @@ def test_fuzzing_hangs(pcs_full):
 
     hang_test = os.path.join(examples,  "hang-test", "hang")
 
+    # Fixme: This test is shaky, and should be implemented in different way; it can sometimes fail with error
+    # during the initial testing
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,
         '--output-dir', '.',
@@ -238,19 +264,25 @@ def test_fuzzing_hangs(pcs_full):
         '--hang-timeout', '0.05',
         '--exec-limit', '1',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Timeout' in result.output)
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_degradation(pcs_full):
+def test_fuzzing_degradation(pcs_with_root, monkeypatch):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
     hang_test = os.path.join(examples,  "hang-test", "hang")
     num_workload = os.path.join(examples, 'samples', 'txt', 'number.txt')
 
+    def always_true(*_, **__):
+        return True
+    original_target_testing = perun_fuzz.target_testing
+    monkeypatch.setattr(perun_fuzz, 'target_testing', always_true)
     # 10. Testing for performance degradations during fuzz testing
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', hang_test,
@@ -260,14 +292,19 @@ def test_fuzzing_degradation(pcs_full):
         '--source-path', os.path.dirname(hang_test),
         '--gcno-path', os.path.dirname(hang_test),
         '--no-plotting',
-        '--interesting-files-limit', '1'
+        '--interesting-files-limit', '1',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
+        '--mutations-per-rule', 'unitary',
+        '--exec-limit', '1'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'Founded degradation mutations: 0' not in result.output)
+    monkeypatch.setattr(perun_fuzz, 'target_testing', original_target_testing)
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_incorrect(pcs_full):
+def test_fuzzing_incorrect(pcs_with_root):
     """Runs basic tests for fuzzing CLI """
     runner = CliRunner()
 
@@ -348,21 +385,21 @@ def test_fuzzing_incorrect(pcs_full):
         '--args', '-al',
         '--input-sample', '.',
         '--output-dir', '.',
-        '--max', '1.5'
+        '--max-size', '1.5'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '--max' in result.output)
+    asserts.predicate_from_cli(result, '--max-size' in result.output)
 
-    # Wrong value for option --max-size-gain
+    # Wrong value for option --max-size-increase
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', 'ls',
         '--args', '-al',
         '--input-sample', '.',
         '--output-dir', '.',
-        '--max-size-gain', 'ola'
+        '--max-size-increase', 'ola'
     ])
     asserts.predicate_from_cli(result, result.exit_code == 2)
-    asserts.predicate_from_cli(result, '--max-size-gain' in result.output)
+    asserts.predicate_from_cli(result, '--max-size-increase' in result.output)
 
     # Wrong value for option --max-size-ratio
     result = runner.invoke(cli.fuzz_cmd, [
@@ -420,35 +457,40 @@ def test_fuzzing_incorrect(pcs_full):
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_fuzzing_errors(pcs_full, monkeypatch):
+def test_fuzzing_errors(pcs_with_root, monkeypatch):
     """Test various error states"""
     runner = CliRunner()
     examples = os.path.join(os.path.dirname(__file__), 'sources', 'fuzz_examples')
-    txt_workload = os.path.join(examples, 'samples', 'txt')
+    txt_workload = os.path.join(examples, 'samples', 'txt', 'simple.txt')
     tail = os.path.join(examples, "tail", "tail")
 
     # Test when target testing returns error
     old_run_process = utils.run_safely_external_command
     def patched_run_process(*_, **__):
-        curframe = inspect.currentframe()
-        calframe = inspect.getouterframes(curframe, 2)
-        caller = calframe[1][3]
+        caller = sys._getframe().f_back.f_code.co_name
         if caller == 'target_testing':
             raise subprocess.CalledProcessError(1, "")
         else:
             return old_run_process(*_, **__)
+
+    old_check_output = utils.get_stdout_from_external_command
+    def patched_check_output(*_, **__):
+        return "real 0.01\nuser 0.00\nsys 0.00"
     monkeypatch.setattr(utils, 'run_safely_external_command', patched_run_process)
+    monkeypatch.setattr(utils, 'get_stdout_from_external_command', patched_check_output)
     result = runner.invoke(cli.fuzz_cmd, [
         '--cmd', tail,
         '--output-dir', '.',
         '--input-sample', txt_workload,
-        '--timeout', '1',
+        '--timeout', '0.25',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
-        '--max-size-gain', '35000',
+        '--max-size-increase', '35000',
         '--coverage-increase-rate', '1.05',
-        '--interesting-files-limit', '2',
+        '--interesting-files-limit', '1',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Faults: 0" not in result.output)
@@ -466,11 +508,14 @@ def test_fuzzing_errors(pcs_full, monkeypatch):
         '--timeout', '1',
         '--source-path', os.path.dirname(tail),
         '--gcno-path', os.path.dirname(tail),
-        '--max-size-gain', '35000',
+        '--max-size-increase', '35000',
         '--coverage-increase-rate', '1.05',
-        '--interesting-files-limit', '2',
+        '--interesting-files-limit', '1',
         '--no-plotting',
+        '--collector-params', 'time', 'repeat: 1',
+        '--collector-params', 'time', 'warmup: 0',
     ])
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, "Executing binary raised an exception" in result.output)
     monkeypatch.setattr(coverage_fuzz, 'target_testing', old_target_perun_testing)
+    monkeypatch.setattr(utils, 'get_stdout_from_external_command', old_check_output)

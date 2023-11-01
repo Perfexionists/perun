@@ -40,8 +40,7 @@ def create_from_params(
     :param graph_title: title of the graph.
     :returns: a constructed and configured Bar graph object.
     """
-    hv.extension("bokeh")
-    hv.renderer("bokeh").theme = view_helpers.build_bokeh_theme()
+    view_helpers.lazy_init_holoviews()
 
     # Convert profile to pandas data grid
     data_frame = convert.resources_to_pandas_dataframe(profile)

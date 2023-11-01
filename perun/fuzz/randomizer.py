@@ -42,7 +42,7 @@ def rand_from_range(start: int, stop: int) -> int:
     :param int stop: upper limit of the interval
     :return int: random integer from given range
     """
-    return random.randint(start, stop)
+    return random.randint(start, stop) if start != stop else start
 
 
 def rand_index(lst_len: int) -> int:

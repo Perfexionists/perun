@@ -154,8 +154,8 @@ def degradation_in_minor(
                 # Print information about configuration
                 # and extend the list of the detected changes including the configuration
                 # and source minor version.
-                baseline_prof = store.load_profile_from_file(baseline_profile_info.realpath, False)
-                target_prof = store.load_profile_from_file(target_profile_info.realpath, False)
+                baseline_prof = store.load_profile_from_file(baseline_profile_info.realpath, False, True)
+                target_prof = store.load_profile_from_file(target_profile_info.realpath, False, True)
                 detected_changes.extend([
                     (deg, cmdstr, baseline_info.checksum) for deg in
                     degradation_between_profiles(baseline_prof, target_prof, 'best-model')

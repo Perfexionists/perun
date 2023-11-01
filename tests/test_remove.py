@@ -17,21 +17,25 @@ import perun.testing.utils as test_utils
 
 
 @pytest.mark.usefixtures('cleandir')
-def test_rm_outside_pcs(stored_profile_pool):
+def test_rm_outside_pcs():
     """Test calling 'perun rm', when outside of the scope of the perun repository
 
     Expecting an exception NotPerunRepositoryExpcetion, as we are outside of the perun scope,
     and thus should not do anything, should be caught on the CLI/UI level
     """
+    # Any profile will do
+    profile = test_utils.load_profilename('postprocess_profiles', 'full_computation.perf')
     with pytest.raises(NotPerunRepositoryException):
         # Remove first profile from the head
-        commands.remove_from_index([stored_profile_pool[0]], None)
+        commands.remove_from_index([profile], None)
 
 
-def test_rm_on_empty_repo(pcs_with_empty_git, stored_profile_pool, capsys):
+def test_rm_on_empty_repo(pcs_with_empty_git, capsys):
     """Test calling 'perun rm', when the wrapped VCS is empty"""
+    # Any profile will do
+    profile = test_utils.load_profilename('postprocess_profiles', 'full_computation.perf')
     with pytest.raises(SystemExit):
-        commands.remove_from_index([stored_profile_pool[0]], None)
+        commands.remove_from_index([profile], None)
 
     # Test that nothing is printed on out and something is printed on err
     out, err = capsys.readouterr()
@@ -39,14 +43,14 @@ def test_rm_on_empty_repo(pcs_with_empty_git, stored_profile_pool, capsys):
     assert err != '' and 'fatal' in err
 
 
-def test_rm_no_profiles(pcs_full, capsys):
+def test_rm_no_profiles(pcs_full_no_prof, capsys):
     """Test calling 'perun rm', when there are no profiles to be removed
 
     Expecting error message and nothing removed at all
     """
-    before_count = test_utils.count_contents_on_path(pcs_full.get_path())
+    before_count = test_utils.count_contents_on_path(pcs_full_no_prof.get_path())
 
-    git_repo = git.Repo(pcs_full.get_vcs_path())
+    git_repo = git.Repo(pcs_full_no_prof.get_vcs_path())
     file = os.path.join(os.getcwd(), 'file3')
     helpers.touch_file(file)
     git_repo.index.add([file])
@@ -60,16 +64,16 @@ def test_rm_no_profiles(pcs_full, capsys):
     assert out == ''
 
     # Assert that nothing was removed
-    after_count = test_utils.count_contents_on_path(pcs_full.get_path())
+    after_count = test_utils.count_contents_on_path(pcs_full_no_prof.get_path())
     assert before_count == after_count
 
 
-def test_rm_nonexistent(pcs_full, capsys):
+def test_rm_nonexistent(pcs_single_prof, capsys):
     """Test calling 'perun rm', trying to remove nonexistent profile
 
     Expecting error message and nothing removed at all
     """
-    before_count = test_utils.count_contents_on_path(pcs_full.get_path())
+    before_count = test_utils.count_contents_on_path(pcs_single_prof.get_path())
     with pytest.raises(EntryNotFoundException) as exc:
         commands.remove_from_index(['nonexistent.perf'], None)
     assert "'nonexistent.perf' not found in the index" in str(exc.value)
@@ -78,7 +82,7 @@ def test_rm_nonexistent(pcs_full, capsys):
     assert out == ''
 
     # Assert that nothing was removed
-    after_count = test_utils.count_contents_on_path(pcs_full.get_path())
+    after_count = test_utils.count_contents_on_path(pcs_single_prof.get_path())
     assert before_count == after_count
 
 
@@ -116,12 +120,12 @@ def test_rm(pcs_full, stored_profile_pool, capsys):
     assert before_count == after_count
 
 
-def test_rm_pending(pcs_full, stored_profile_pool):
+def test_rm_pending(pcs_with_root, stored_profile_pool):
     """Basic test of removing pending from the perun
     """
-    jobs_dir = pcs_full.get_job_directory()
+    jobs_dir = pcs_with_root.get_job_directory()
 
-    test_utils.populate_repo_with_untracked_profiles(pcs_full.get_path(), stored_profile_pool)
+    test_utils.populate_repo_with_untracked_profiles(pcs_with_root.get_path(), stored_profile_pool)
     number_of_pending = len(os.listdir(jobs_dir))
     assert number_of_pending == 3
 

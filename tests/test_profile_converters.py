@@ -9,10 +9,10 @@ import perun.profile.convert as convert
 import perun.testing.utils as test_utils
 
 
-def test_convert_models_to_dataframe(postprocess_profiles):
+def test_convert_models_to_dataframe():
     """Test conversion of models"""
     # Acquire the models query profile
-    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf')
+    models_profile = test_utils.load_profile('postprocess_profiles', 'complexity-models.perf')
     assert models_profile is not None
 
     df = convert.models_to_pandas_dataframe(models_profile)
@@ -41,13 +41,13 @@ def test_flame_graph(memory_profiles):
         assert line_no == len(flame_graph)
 
 
-def test_coefficients_to_points_correct(postprocess_profiles):
+def test_coefficients_to_points_correct():
     """ Test correct conversion from models coefficients to points that can be used for plotting.
 
     Expecting no errors and updated dictionary
     """
     # Acquire the models query profile
-    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models.perf')
+    models_profile = test_utils.load_profile('postprocess_profiles', 'complexity-models.perf')
     assert models_profile is not None
 
     # Get all models and perform the conversion on all of them
@@ -59,13 +59,13 @@ def test_coefficients_to_points_correct(postprocess_profiles):
         assert 'plot_y' in data
 
 
-def test_coefficients_to_points_corrupted_model(postprocess_profiles):
+def test_coefficients_to_points_corrupted_model():
     """ Test conversion from models coefficients to points on a profile with invalid model.
 
     Expecting to catch InvalidModelException exception.
     """
     # Acquire the corrupted models query profile with invalid model
-    models_profile = test_utils.profile_filter(postprocess_profiles, 'complexity-models-corrupted-model.perf')
+    models_profile = test_utils.load_profile('postprocess_profiles', 'complexity-models-corrupted-model.perf')
     assert models_profile is not None
 
     # Get all models and perform the conversion on all of them

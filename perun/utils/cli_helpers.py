@@ -17,6 +17,7 @@ import click
 import jinja2
 import importlib.metadata as metadata
 
+from collections import defaultdict
 from typing import Optional, Callable, Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from perun.utils.structs import MinorVersion
@@ -160,9 +161,9 @@ def yaml_param_callback(_: click.Context, __: click.Option, value: list[tuple[st
     :param str value: value that is being read from the commandline
     :returns dict: parsed yaml file
     """
-    unit_to_params = {}
+    unit_to_params: dict[str, dict[Any, Any]] = defaultdict(dict)
     for (unit, yaml_file) in value:
-        unit_to_params[unit] = streams.safely_load_yaml(yaml_file)
+        unit_to_params[unit].update(streams.safely_load_yaml(yaml_file))
     return unit_to_params
 
 
@@ -428,16 +429,16 @@ def lookup_minor_version_callback(_: click.Context, __: click.Option, value: str
     return value
 
 
-def lookup_any_profile_callback(ctx: click.Context, _: click.Argument, value: str) -> Profile:
+def lookup_any_profile_callback(_: click.Context, __: click.Argument, value: str) -> Profile:
     """Callback for looking up any profile, i.e. anywhere (in index, in pending, etc.)
 
-    :param click.core.Context ctx: context
-    :param click.core.Argument _: param
-    :param str value: value of the profile parameter
+    :param _: context
+    :param __): param
+    :param value: value of the profile parameter
     """
     # TODO: only temporary
     profile_path = os.path.join(pcs.get_job_directory(), value)
-    if os.path.exists(profile_path):
+    if metrics.is_enabled() and os.path.exists(profile_path):
         metrics.add_metric('profile size', os.stat(profile_path).st_size)
     parts = value.split('^')
     rev = None
@@ -458,20 +459,22 @@ def lookup_any_profile_callback(ctx: click.Context, _: click.Argument, value: st
     pending_tag_match = store.PENDING_TAG_REGEX.match(value)
     if pending_tag_match:
         pending_profile = lookup_nth_pending_filename(int(pending_tag_match.group(1)))
-        return store.load_profile_from_file(pending_profile, is_raw_profile=True)
+        # We know it should exist, so we can load it unsafe without check for existence
+        return store.load_profile_from_file(pending_profile, is_raw_profile=True, unsafe_load=True)
 
     # 1) Check the index, if this is registered
     profile_from_index = commands.load_profile_from_args(value, rev)
     if profile_from_index:
         return profile_from_index
 
-    log.info("file '{}' not found in index. Checking filesystem...".format(value))
+    log.info(f"file '{value}' not found in index. Checking filesystem...")
     # 2) Else lookup filenames and load the profile
     abs_path = lookup_profile_in_filesystem(value)
     if not os.path.exists(abs_path):
-        log.error("could not lookup the profile '{}'".format(abs_path))
+        log.error(f"could not lookup the profile '{abs_path}'")
 
-    return store.load_profile_from_file(abs_path, is_raw_profile=True)
+    # We checked for existence of the path above, we omit the check
+    return store.load_profile_from_file(abs_path, is_raw_profile=True, unsafe_load=True)
 
 
 def check_stats_minor_callback(_: click.Context, param: click.Argument, value: str) -> str:

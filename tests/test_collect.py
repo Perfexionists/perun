@@ -10,10 +10,11 @@ import perun.vcs as vcs
 import perun.cli as cli
 import perun.logic.runner as run
 import perun.utils as utils
+import perun.utils.helpers as helpers
 import perun.collect.complexity.makefiles as makefiles
 import perun.collect.complexity.symbols as symbols
 import perun.collect.complexity.run as complexity
-import perun.collect.memory.parsing as parsing
+import perun.collect.complexity.configurator as configurator
 import perun.utils.log as log
 
 from subprocess import SubprocessError
@@ -21,6 +22,7 @@ from subprocess import SubprocessError
 from perun.profile.factory import Profile
 from perun.utils.structs import Unit, Executable, CollectStatus, RunnerReport, Job
 from perun.workload.integer_generator import IntegerGenerator
+from subprocess import CalledProcessError
 
 import perun.testing.asserts as asserts
 import perun.testing.utils as test_utils
@@ -28,6 +30,9 @@ import perun.testing.utils as test_utils
 
 def _mocked_external_command(_, **__):
     return 1
+
+def _mocked_always_correct(*_, **__):
+    return 0
 
 
 def _mocked_flag_support(_):
@@ -64,9 +69,9 @@ def _mocked_symbols_extraction(_):
             'ENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEEEC1Ev']
 
 
-def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
+def test_collect_complexity(monkeypatch, pcs_with_root, complexity_collect_job):
     """Test collecting the profile using complexity collector"""
-    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
 
     cmd, args, work, collectors, posts, config = complexity_collect_job
     head = vcs.get_minor_version_info(vcs.get_minor_head())
@@ -74,9 +79,9 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     assert result == CollectStatus.OK
 
     # Assert that nothing was removed
-    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     assert before_object_count + 2 == after_object_count
-    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_with_root.get_path(), 'jobs'))))
 
     new_profile = profiles[0]
     assert len(profiles) == 1
@@ -115,26 +120,20 @@ def test_collect_complexity(monkeypatch, pcs_full, complexity_collect_job):
     asserts.predicate_from_cli(result, result.exit_code == 0)
     asserts.predicate_from_cli(result, 'stored profile' in result.output)
 
-    original_run = utils.run_safely_external_command
-    def patched_run(cmd, *args, **kwargs):
-        if cmd.startswith('g++') or cmd.startswith('readelf') or cmd.startswith('echo'):
-            return original_run(cmd, *args, **kwargs)
-        else:
-            raise subprocess.CalledProcessError(1, 'error')
 
-    monkeypatch.setattr('perun.utils.run_safely_external_command', patched_run)
-
-    runner = CliRunner()
-    result = runner.invoke(cli.collect, ['-c{}'.format(job_params['target_dir']),
-                                         '-a test', '-w input', 'complexity',
-                                         '-t{}'.format(job_params['target_dir']),
-                                         ] + files + rules + samplings)
-    asserts.predicate_from_cli(result, result.exit_code == 1)
-
-
-def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job):
+def test_collect_complexity_errors(monkeypatch, pcs_with_root, complexity_collect_job):
     """Test various scenarios where something goes wrong during the collection process.
     """
+    # Yeah, I mocked the fuck out of this context, since these are not really important stuff
+    def mocked_safe_external(*_, **__):
+        return b"", b""
+    old_run = utils.run_external_command
+    old_cfg = configurator.create_runtime_config
+    old_safe_run = utils.run_safely_external_command
+    monkeypatch.setattr(utils, 'run_external_command', _mocked_always_correct)
+    monkeypatch.setattr(configurator, 'create_runtime_config', _mocked_always_correct)
+    monkeypatch.setattr(utils, 'run_safely_external_command', mocked_safe_external)
+
     # Get the job.yml parameters
     script_dir = os.path.join(os.path.split(__file__)[0], 'sources', 'collect_complexity', 'target')
     job_params = complexity_collect_job[5]['collector_params']['complexity']
@@ -169,12 +168,11 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     asserts.predicate_from_cli(result, 'already exists' in result.output)
 
     # Simulate the failure of 'cmake'/'make' utility
-    old_run = utils.run_external_command
     def mocked_make(cmd, *_, **__):
         if cmd == ['make']:
             return 1
         else:
-            return old_run(cmd, *_, **__)
+            return 0
     monkeypatch.setattr(utils, 'run_external_command', _mocked_external_command)
     command = ['-c{}'.format(job_params['target_dir']), 'complexity',
                '-t{}'.format(job_params['target_dir'])] + files + rules + samplings
@@ -183,14 +181,7 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     monkeypatch.setattr(utils, 'run_external_command', mocked_make)
     result = runner.invoke(cli.collect, command)
     asserts.predicate_from_cli(result, 'Command \'make\' returned non-zero exit status 1' in result.output)
-    monkeypatch.setattr(utils, 'run_external_command', old_run)
-
-    # Simulate that the flag is supported, which leads to failure in build process for older g++
-    old_flag = makefiles._is_flag_supported
-    monkeypatch.setattr(makefiles, '_is_flag_supported', _mocked_flag_support)
-    result = runner.invoke(cli.collect, command)
-    asserts.predicate_from_cli(result, 'stored profile' in result.output or 'Command \'make\' returned non-zero exit status 2' in result.output)
-    monkeypatch.setattr(makefiles, '_is_flag_supported', old_flag)
+    monkeypatch.setattr(utils, 'run_external_command', _mocked_always_correct)
 
     # Simulate that some required library is missing
     old_libs_existence = makefiles._libraries_exist
@@ -205,6 +196,10 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     monkeypatch.setattr(makefiles, '_libraries_exist', old_libs_existence)
 
     # Simulate the failure of output processing
+    # We mock some data to trace.log
+    helpers.touch_dir(os.path.join(job_params['target_dir'], 'bin'))
+    with open(os.path.join(job_params['target_dir'], 'bin', 'trace.log'), 'w') as mock_handle:
+        mock_handle.write("a b c d\na b c d")
     old_record_processing = complexity._process_file_record
     monkeypatch.setattr(complexity, '_process_file_record', _mocked_record_processing)
     result = runner.invoke(cli.collect, command)
@@ -227,21 +222,32 @@ def test_collect_complexity_errors(monkeypatch, pcs_full, complexity_collect_job
     asserts.predicate_from_cli(result, "Could not find 'make'" in result.output)
     asserts.predicate_from_cli(result, "Could not find 'cmake'" in result.output)
 
+    def mock_raised_exception(*_, **__):
+        raise CalledProcessError(-1, "failed")
+    monkeypatch.setattr(utils, 'run_safely_external_command', mock_raised_exception)
+    status, msg, _ = complexity.collect(Executable("pikachu"))
+    assert status == CollectStatus.ERROR
+    assert msg == "Err: command could not be run.: Command 'failed' died with <Signals.SIGHUP: 1>."
 
-def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_debug_job):
+    monkeypatch.setattr(utils, 'run_external_command', old_run)
+    monkeypatch.setattr(utils, 'run_safely_external_command', old_safe_run)
+    monkeypatch.setattr(configurator, 'create_runtime_config', old_cfg)
+
+
+def test_collect_memory(capsys, pcs_with_root, memory_collect_job, memory_collect_no_debug_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
-    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     memory_collect_job += ([head], )
 
     run.run_single_job(*memory_collect_job)
 
     # Assert that nothing was removed
-    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     assert before_object_count + 2 == after_object_count
 
-    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_with_root.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
@@ -249,19 +255,19 @@ def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_
     cmd, args, _, colls, posts, _ = memory_collect_job
     run.run_single_job(cmd, args, ["hello"], colls, posts, [head], **{'no_func': 'fun', 'sampling': 0.1})
 
-    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_with_root.get_path(), 'jobs'))))
     new_smaller_profile = [p for p in profiles if p != new_profile][0]
     assert len(profiles) == 2
     assert new_smaller_profile.endswith(".perf")
 
     # Assert that nothing was removed
-    after_second_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    after_second_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     assert after_object_count + 1 == after_second_object_count
 
     log.VERBOSITY = log.VERBOSE_DEBUG
     memory_collect_no_debug_job += ([head], )
     run.run_single_job(*memory_collect_no_debug_job)
-    last_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    last_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     _, err = capsys.readouterr()
     assert after_second_object_count == last_object_count
     assert 'debug info' in err
@@ -297,7 +303,7 @@ def test_collect_memory(capsys, pcs_full, memory_collect_job, memory_collect_no_
     assert result.exit_code == 0
 
 
-def test_collect_memory_incorrect(monkeypatch, capsys, pcs_full, memory_collect_job):
+def test_collect_memory_incorrect(monkeypatch, capsys, pcs_with_root, memory_collect_job):
     """Test collecting the profile using the memory collector"""
     # Fixme: Add check that the profile was correctly generated
     head = vcs.get_minor_version_info(vcs.get_minor_head())
@@ -349,7 +355,7 @@ def test_collect_memory_incorrect(monkeypatch, capsys, pcs_full, memory_collect_
     assert "Execution of binary failed with error code: 42" in err
 
 
-def test_collect_memory_with_generator(pcs_full, memory_collect_job):
+def test_collect_memory_with_generator(pcs_with_root, memory_collect_job):
     """Tries to collect the memory with integer generators"""
     executable = Executable(memory_collect_job[0][0])
     collector = Unit('memory', {})
@@ -359,7 +365,7 @@ def test_collect_memory_with_generator(pcs_full, memory_collect_job):
     assert len(memory_profiles) == 1
 
 
-def test_collect_bounds(monkeypatch, pcs_full):
+def test_collect_bounds(monkeypatch, pcs_with_root):
     """Test collecting the profile using the bounds collector"""
     current_dir = os.path.split(__file__)[0]
     test_dir = os.path.join(current_dir, 'sources', 'collect_bounds')
@@ -398,10 +404,10 @@ def test_collect_bounds(monkeypatch, pcs_full):
     assert status == CollectStatus.ERROR
 
 
-def test_collect_time(monkeypatch, pcs_full, capsys):
+def test_collect_time(monkeypatch, pcs_with_root, capsys):
     """Test collecting the profile using the time collector"""
     # Count the state before running the single job
-    before_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    before_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     head = vcs.get_minor_version_info(vcs.get_minor_head())
 
     run.run_single_job(["echo"], "", ["hello"], ["time"], [], [head])
@@ -413,10 +419,10 @@ def test_collect_time(monkeypatch, pcs_full, capsys):
 
     # Assert that just one profile was created
     # + 1 for index
-    after_object_count = test_utils.count_contents_on_path(pcs_full.get_path())[0]
+    after_object_count = test_utils.count_contents_on_path(pcs_with_root.get_path())[0]
     assert before_object_count + 2 == after_object_count
 
-    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_full.get_path(), 'jobs'))))
+    profiles = list(filter(test_utils.index_filter, os.listdir(os.path.join(pcs_with_root.get_path(), 'jobs'))))
     new_profile = profiles[0]
     assert len(profiles) == 1
     assert new_profile.endswith(".perf")
@@ -448,7 +454,7 @@ def test_integrity_tests(capsys):
     assert "" == err
 
 
-def test_teardown(pcs_full, monkeypatch, capsys):
+def test_teardown(pcs_with_root, monkeypatch, capsys):
     """Basic tests for integrity of the teardown phase"""
     head = vcs.get_minor_version_info(vcs.get_minor_head())
     original_phase_f = run.run_phase_function

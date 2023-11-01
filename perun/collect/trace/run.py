@@ -10,11 +10,11 @@ import os
 
 import click
 
-from perun.collect.trace.strategy import Strategy, extract_configuration
+from perun.collect.trace.strategy import extract_configuration
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.collect_engine import CollectEngine
 from perun.collect.trace.configuration import Configuration
-from perun.collect.trace.values import OutputHandling, check, GLOBAL_DEPENDENCIES
+from perun.collect.trace.values import OutputHandling, check, GLOBAL_DEPENDENCIES, Strategy
 
 import perun.logic.runner as runner
 import perun.utils.log as stdout

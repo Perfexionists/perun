@@ -24,7 +24,7 @@ import perun.utils.log as log
 import perun.utils.decorators as decorators
 import perun.utils.helpers as helpers
 import perun.workload as workloads
-import perun.collect.trace.optimizations.optimization
+import perun.collect.trace.optimizations.optimization as optimizations
 
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
@@ -267,7 +267,7 @@ def run_all_phases_for(
                 break
 
             # Run the optimizations
-            perun.collect.trace.optimizations.optimization.optimize(
+            optimizations.optimize(
                 runner_type, phase, **report.kwargs
             )
 
