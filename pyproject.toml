@@ -1,11 +1,10 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=60", "setuptools-scm>=8.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "perun"
 description = "Perun: Lightweight Performance Version System"
-version = "0.20.4"
 requires-python = ">=3.9"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -55,9 +54,10 @@ dependencies = [
     # Transitive dependencies that we need to limit for some reason
     "kiwisolver!=1.4.5", # matplotlib dep, 1.4.5 does not work when lazy-importing matplotlib
 ]
-# Optional dependencies are made dynamic so that we can reuse them in tox. The goal is to have each
+# (1) Optional dependencies are made dynamic so that we can reuse them in tox. The goal is to have each
 # dependency and its version constraints specified only once to avoid inconsistencies.
-dynamic = ["optional-dependencies"]
+# (2) Version is made dynamic, so it can be used to automatically infer and tag the version of Perun
+dynamic = ["optional-dependencies", "version"]
 
 
 [project.urls]
