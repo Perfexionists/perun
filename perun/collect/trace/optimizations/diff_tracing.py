@@ -17,18 +17,48 @@ from perun.collect.trace.optimizations.structs import DiffCfgMode
 
 # The set of ASM JUMP instruction that are omitted during the operands check
 JUMP_INSTRUCTIONS = {
-    'call', 'jmp', 'je', 'jne', 'jz', 'jnz', 'jg', 'jge', 'jnle', 'jnl', 'jl', 'jle', 'jnge',
-    'jng', 'ja', 'jae', 'jnbe', 'jnb', 'jb', 'jbe', 'jnae', 'jna', 'jxcz', 'jc', 'jnc', 'jo',
-    'jno', 'jp', 'jpe', 'jnp', 'jpo', 'js', 'jns'
+    "call",
+    "jmp",
+    "je",
+    "jne",
+    "jz",
+    "jnz",
+    "jg",
+    "jge",
+    "jnle",
+    "jnl",
+    "jl",
+    "jle",
+    "jnge",
+    "jng",
+    "ja",
+    "jae",
+    "jnbe",
+    "jnb",
+    "jb",
+    "jbe",
+    "jnae",
+    "jna",
+    "jxcz",
+    "jc",
+    "jnc",
+    "jo",
+    "jno",
+    "jp",
+    "jpe",
+    "jnp",
+    "jpo",
+    "js",
+    "jns",
 }
 
 
 # Delimiters used in the disassembly operands specification
-OPERANDS_SPLIT = re.compile(r'([\s,:+*\-\[\]]+)')
+OPERANDS_SPLIT = re.compile(r"([\s,:+*\-\[\]]+)")
 
 
 def _build_registers_set():
-    """ In order to correctly color and map registers, we need the set of all registers used
+    """In order to correctly color and map registers, we need the set of all registers used
     in the assembly - currently, we restrict ourselves only to the x86-64 architecture.
 
     Since the set of registers is rather large, we construct the set (instead of simple
@@ -40,52 +70,56 @@ def _build_registers_set():
     registers = set()
 
     reg_classes = {
-        'full': ['ax', 'cx', 'dx', 'bx'],
-        'partial': ['sp', 'bp', 'si', 'di'],
-        'segment': ['ss', 'cs', 'ds', 'es', 'fs', 'gs'],
-        'ip': 'ip',
-        '64b': 'r',
-        'sse': 'xmm',
-        'avx': 'ymm',
-        'prefix': ['r', 'e', ''],
-        'postfix': ['l', 'h'],
-        '64b-cnt': (8, 15),
-        '64b-post': ['', 'd', 'w', 'b'],
-        'sse-cnt': (0, 7)
+        "full": ["ax", "cx", "dx", "bx"],
+        "partial": ["sp", "bp", "si", "di"],
+        "segment": ["ss", "cs", "ds", "es", "fs", "gs"],
+        "ip": "ip",
+        "64b": "r",
+        "sse": "xmm",
+        "avx": "ymm",
+        "prefix": ["r", "e", ""],
+        "postfix": ["l", "h"],
+        "64b-cnt": (8, 15),
+        "64b-post": ["", "d", "w", "b"],
+        "sse-cnt": (0, 7),
     }
 
     # Create Rrr, Err, rr, rL, rH variants
-    for reg in reg_classes['full']:
-        registers |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
-        registers |= {'{}{}'.format(reg[:1], post) for post in reg_classes['postfix']}
+    for reg in reg_classes["full"]:
+        registers |= {"{}{}".format(pre, reg) for pre in reg_classes["prefix"]}
+        registers |= {"{}{}".format(reg[:1], post) for post in reg_classes["postfix"]}
 
     # Create Rrr, Err, rr, rrL variants
-    for reg in reg_classes['partial']:
-        registers |= {'{}{}'.format(pre, reg) for pre in reg_classes['prefix']}
-        registers.add('{}{}'.format(reg, reg_classes['postfix'][0]))
+    for reg in reg_classes["partial"]:
+        registers |= {"{}{}".format(pre, reg) for pre in reg_classes["prefix"]}
+        registers.add("{}{}".format(reg, reg_classes["postfix"][0]))
 
     # Add segment registers as-is
-    registers |= set(reg_classes['segment'])
+    registers |= set(reg_classes["segment"])
     # Create RIP, EIP, IP registers
-    registers |= {'{}{}'.format(pre, reg_classes['ip']) for pre in reg_classes['prefix']}
+    registers |= {
+        "{}{}".format(pre, reg_classes["ip"]) for pre in reg_classes["prefix"]
+    }
     # Create 64b register variants R8-R15
-    start64, end64 = reg_classes['64b-cnt']
+    start64, end64 = reg_classes["64b-cnt"]
     for idx in range(start64, end64 + 1):
         registers |= {
-            '{}{}{}'.format(reg_classes['64b'], str(idx), post) for post in reg_classes['64b-post']
+            "{}{}{}".format(reg_classes["64b"], str(idx), post)
+            for post in reg_classes["64b-post"]
         }
     # Create sse and avx register variants XMM0-XMM7 / YMM0 - YMM7
-    start_sse, end_sse = reg_classes['sse-cnt']
+    start_sse, end_sse = reg_classes["sse-cnt"]
     for idx in range(start_sse, end_sse + 1):
         registers |= {
-            '{}{}'.format(reg, str(idx)) for reg in [reg_classes['sse'], reg_classes['avx']]
+            "{}{}".format(reg, str(idx))
+            for reg in [reg_classes["sse"], reg_classes["avx"]]
         }
 
     return registers
 
 
 def diff_tracing(call_graph, call_graph_old, keep_leaf, inspect_all, cfg_mode):
-    """ The Diff Tracing method.
+    """The Diff Tracing method.
 
     :param CallGraphResource call_graph: the CGR of the current project version
     :param CallGraphResource call_graph_old: the CGR of the previous project version
@@ -111,12 +145,14 @@ def diff_tracing(call_graph, call_graph_old, keep_leaf, inspect_all, cfg_mode):
         diff_funcs = set(_filter_leaves(diff_funcs, call_graph))
     # Do not compare the cfg if function is new or already identified as modified
     cfg_candidates = (diff_funcs - new) - modified
-    changes = _compare_cfgs(cfg_candidates, renamed, call_graph.cfg, call_graph_old.cfg, cfg_mode)
+    changes = _compare_cfgs(
+        cfg_candidates, renamed, call_graph.cfg, call_graph_old.cfg, cfg_mode
+    )
     call_graph.set_diff(list(new | modified | changes))
 
 
 def _compare_cg(call_graph, call_graph_old, inspect_all):
-    """ The call graph comparison routine
+    """The call graph comparison routine
 
     :param CallGraphResource call_graph: the CGR of the current project version
     :param CallGraphResource call_graph_old: the CGR of the previous project version
@@ -124,7 +160,9 @@ def _compare_cg(call_graph, call_graph_old, inspect_all):
 
     :return tuple: sets of new, modified and renamed function according to the CG analysis
     """
-    cg_funcs, cg_old_funcs = set(call_graph.cg_map.keys()), set(call_graph_old.cg_map.keys())
+    cg_funcs, cg_old_funcs = set(call_graph.cg_map.keys()), set(
+        call_graph_old.cg_map.keys()
+    )
     new_funcs = list(cg_funcs - cg_old_funcs)
     deleted_funcs = list(cg_old_funcs - cg_funcs)
     # Find functions that have been only renamed - compare the callers / callees sets
@@ -146,7 +184,7 @@ def _compare_cg(call_graph, call_graph_old, inspect_all):
 
 
 def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
-    """ The CFG comparison routine
+    """The CFG comparison routine
 
     :param set funcs: the set of functions that we compare CFG for
     :param dict renames: the renames mapping
@@ -162,8 +200,11 @@ def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
         # Some functions may not have CFG counterpart
         if func not in cfg or old_func not in cfg_old:
             continue
-        f_blocks, f_edges = cfg[func]['blocks'], cfg[func]['edges']
-        f_blocks_old, f_edges_old = cfg_old[old_func]['blocks'], cfg_old[old_func]['edges']
+        f_blocks, f_edges = cfg[func]["blocks"], cfg[func]["edges"]
+        f_blocks_old, f_edges_old = (
+            cfg_old[old_func]["blocks"],
+            cfg_old[old_func]["edges"],
+        )
         # Quick check that the number of blocks and edges is equal
         if len(f_blocks) != len(f_blocks_old) or len(f_edges) != len(f_edges_old):
             changes.append(func)
@@ -173,14 +214,16 @@ def _compare_cfgs(funcs, renames, cfg, cfg_old, mode):
             changes.append(func)
             continue
         # Compare the CFG blocks according to the mode
-        if not _compare_cfg_blocks(f_blocks, f_blocks_old, renames, _DIFFMODE_MAP[mode]):
+        if not _compare_cfg_blocks(
+            f_blocks, f_blocks_old, renames, _DIFFMODE_MAP[mode]
+        ):
             changes.append(func)
             continue
     return set(changes)
 
 
 def _compare_cfg_edges(edges, edges_old):
-    """ Compare the edges of new and old CFG
+    """Compare the edges of new and old CFG
 
     :param list edges: the list of edges from the current CFG
     :param list edges_old: the list of edges from the previous CFG
@@ -194,7 +237,7 @@ def _compare_cfg_edges(edges, edges_old):
 
 
 def _compare_cfg_blocks(blocks, blocks_old, renames, eq_criterion):
-    """ Compare the blocks of new and old CFG based on the selected equivalence criterion.
+    """Compare the blocks of new and old CFG based on the selected equivalence criterion.
 
     :param list blocks: the list of blocks from the current CFG
     :param list blocks_old: the list of blocks from the previous CFG
@@ -218,7 +261,7 @@ def _compare_cfg_blocks(blocks, blocks_old, renames, eq_criterion):
 
 
 def _cfg_soft(block, block_old):
-    """ Soft mode only compares the number of instructions.
+    """Soft mode only compares the number of instructions.
 
     :param list block: list of (instruction, operands) tuples representing the basic block
     :param list block_old: list of (instruction, operands) tuples representing the old basic block
@@ -231,7 +274,7 @@ def _cfg_soft(block, block_old):
 
 
 def _cfg_semistrict(block, block_old):
-    """ Semi-strict mode checks only that the instructions are the same.
+    """Semi-strict mode checks only that the instructions are the same.
 
     :param list block: list of (instruction, operands) tuples representing the basic block
     :param list block_old: list of (instruction, operands) tuples representing the old basic block
@@ -249,7 +292,7 @@ def _cfg_semistrict(block, block_old):
 
 
 def _cfg_strict(block, block_old):
-    """ Strict mode also checks the operands unless they are calls or jumps
+    """Strict mode also checks the operands unless they are calls or jumps
     (both conditional and unconditional) since the address can be different
     but refer to the same CFG block - this jump / call destinations is however
     already covered by the CFG edges.
@@ -264,13 +307,15 @@ def _cfg_strict(block, block_old):
         return False
     # Also check that the op-codes and operands match
     for (instr, operands), (instr_old, operands_old) in zip(block, block_old):
-        if instr != instr_old or (instr not in JUMP_INSTRUCTIONS and operands != operands_old):
+        if instr != instr_old or (
+            instr not in JUMP_INSTRUCTIONS and operands != operands_old
+        ):
             return False
     return True
 
 
 def _cfg_coloring(block, block_old):
-    """ The Coloring mode performs a register coloring and subsequently compares the instructions
+    """The Coloring mode performs a register coloring and subsequently compares the instructions
     by searching for possible bijection. This ensures that simple reordering of instructions or
     change of used registers is not regarded as a semantic change.
 
@@ -279,8 +324,9 @@ def _cfg_coloring(block, block_old):
 
     :return bool: True if the block match, False otherwise
     """
+
     def _color_registers(operand_parts):
-        """ Identify registers within a parsed operand and color them.
+        """Identify registers within a parsed operand and color them.
         Colored registers are represented simply by the '<r>' expression.
 
         :param list operand_parts: list of tokens from parsed operand
@@ -290,8 +336,10 @@ def _cfg_coloring(block, block_old):
         for expr in operand_parts:
             if expr in _cfg_coloring.registers:
                 # Fetch the register's color, or assign it a new one
-                instr_colors.append(color_map.setdefault(expr, str(next(color_counter))))
-                yield '<r>'
+                instr_colors.append(
+                    color_map.setdefault(expr, str(next(color_counter)))
+                )
+                yield "<r>"
             else:
                 yield expr
 
@@ -305,10 +353,12 @@ def _cfg_coloring(block, block_old):
         color_counter = itertools.count()
         color_map = {}
         # Parse the instructions and operands, substitute and color registers
-        for (instr, oper) in [instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS]:
+        for instr, oper in [
+            instr for instr in instr_set if instr[0] not in JUMP_INSTRUCTIONS
+        ]:
             instr_colors = []
             op_parts = re.split(OPERANDS_SPLIT, oper)
-            instr_full = '{} '.format(instr) + ''.join(_color_registers(op_parts))
+            instr_full = "{} ".format(instr) + "".join(_color_registers(op_parts))
             stack.append((instr_full, instr_colors))
         # Sort the instruction stack to invalidate instruction reordering
         stack.sort(key=lambda inst: inst[0])
@@ -329,18 +379,18 @@ def _cfg_coloring(block, block_old):
 
 
 def _filter_leaves(funcs, call_graph):
-    """ Filter leaf functions
+    """Filter leaf functions
 
     :param set funcs: the set of functions to filter
     :param CallGraphResource call_graph: the corresponding CGR
 
     :return list: list of non-leaf functions
     """
-    return [func for func in funcs if not call_graph[func]['leaf']]
+    return [func for func in funcs if not call_graph[func]["leaf"]]
 
 
 def _inspect_all(call_graph, call_graph_old, new_funcs, renamed):
-    """ Performs deep analysis of the CG structure in order to find differences
+    """Performs deep analysis of the CG structure in order to find differences
 
     :param CallGraphResource call_graph: the CGR of the current project version
     :param CallGraphResource call_graph_old: the CGR of the previous project version
@@ -353,19 +403,19 @@ def _inspect_all(call_graph, call_graph_old, new_funcs, renamed):
     for func in call_graph.cg_map.values():
         # Skip functions that are new (since they will be profiled anyway)
         # or renamed (no need to check twice)
-        if func['name'] in new_funcs or func['name'] in renamed:
+        if func["name"] in new_funcs or func["name"] in renamed:
             continue
         # Obtain the new and old callees with respect to the renames
-        _, callees = _get_callers_and_callees(func['name'], call_graph, renamed)
-        _, old_callees = _get_callers_and_callees(func['name'], call_graph_old)
+        _, callees = _get_callers_and_callees(func["name"], call_graph, renamed)
+        _, old_callees = _get_callers_and_callees(func["name"], call_graph_old)
         # If the callees are not identical, the function should be profiled
         if callees != old_callees:
-            changed.append(func['name'])
+            changed.append(func["name"])
     return changed
 
 
 def _find_renames(new_funcs, del_funcs, call_graph, call_graph_old):
-    """ Creates the renames mapping
+    """Creates the renames mapping
 
     :param list new_funcs: a collection of new functions
     :param list del_funcs: a collection of deleted functions
@@ -380,7 +430,9 @@ def _find_renames(new_funcs, del_funcs, call_graph, call_graph_old):
     # Get the deleted functions sorted by level and also obtain their callers / callees
     deleted_funcs = []
     for del_name, _ in call_graph_old.sort_by_level(del_funcs):
-        deleted_funcs.append((del_name, _get_callers_and_callees(del_name, call_graph_old)))
+        deleted_funcs.append(
+            (del_name, _get_callers_and_callees(del_name, call_graph_old))
+        )
 
     # Iterate the new functions and compare the callers / callees
     for new_name, _ in new_funcs:
@@ -396,7 +448,7 @@ def _find_renames(new_funcs, del_funcs, call_graph, call_graph_old):
 
 
 def _get_callers_and_callees(func_name, call_graph, rename_map=None):
-    """ Obtain callers and callees for a specified function
+    """Obtain callers and callees for a specified function
 
     :param str func_name: the function name
     :param CallGraphResource call_graph: the CGR of the current project version
@@ -405,12 +457,14 @@ def _get_callers_and_callees(func_name, call_graph, rename_map=None):
     :return tuple: (callers, callees)
     """
     func = call_graph[func_name]
-    callers, callees = func['callers'], func['callees']
-    return set(_rename_funcs(callers, rename_map)), set(_rename_funcs(callees, rename_map))
+    callers, callees = func["callers"], func["callees"]
+    return set(_rename_funcs(callers, rename_map)), set(
+        _rename_funcs(callees, rename_map)
+    )
 
 
 def _rename_funcs(collection, rename_map=None):
-    """ Rename functions in the collection according to the rename mapping.
+    """Rename functions in the collection according to the rename mapping.
 
     :param iterable collection: the collection of function names
     :param dict rename_map: the rename mapping
@@ -427,7 +481,7 @@ def _rename_funcs(collection, rename_map=None):
 
 
 def _parse_git_diff(funcs, version_1, version_2):
-    """ Parse the output of Git diff applied to two different project versions.
+    """Parse the output of Git diff applied to two different project versions.
 
     :param list funcs: a collection of all functions
     :param str version_1: identification of the first project version
@@ -440,16 +494,16 @@ def _parse_git_diff(funcs, version_1, version_2):
     # Iterate the lines and search for hunk headers
     for line in diff_output.splitlines():
         # Identify the hunk header
-        if not line.startswith('@@'):
+        if not line.startswith("@@"):
             continue
         # Remove the hunk
-        hunk_end = line.find('@@', 2)
+        hunk_end = line.find("@@", 2)
         if hunk_end == -1:
             continue
         # The rest of the line may contain the git function context
-        context_func = line[hunk_end + 2:]
+        context_func = line[hunk_end + 2 :]
         # Find the possible starts of a parameter list
-        args_candidates = [idx for idx, char in enumerate(context_func) if char == '(']
+        args_candidates = [idx for idx, char in enumerate(context_func) if char == "("]
         # Test the identifier before the potential parameter list
         for func_args in args_candidates:
             func_name_candidate = context_func[:func_args].split()[-1]
@@ -467,5 +521,5 @@ _DIFFMODE_MAP = {
     DiffCfgMode.SOFT: _cfg_soft,
     DiffCfgMode.SEMISTRICT: _cfg_semistrict,
     DiffCfgMode.STRICT: _cfg_strict,
-    DiffCfgMode.COLORING: _cfg_coloring
+    DiffCfgMode.COLORING: _cfg_coloring,
 }

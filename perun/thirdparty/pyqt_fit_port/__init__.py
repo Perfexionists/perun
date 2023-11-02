@@ -7,12 +7,21 @@ The port removes Cython and Python2 support and fixes various linter warnings.
 """
 from perun.thirdparty.pyqt_fit_port.nonparam_regression import NonParamRegression
 from perun.thirdparty.pyqt_fit_port.npr_methods import (
-    LocalPolynomialKernel, SpatialAverage, LocalLinearKernel1D
+    LocalPolynomialKernel,
+    SpatialAverage,
+    LocalLinearKernel1D,
 )
 from perun.thirdparty.pyqt_fit_port.kernels import (
-    NormalKernel, Tricube, Epanechnikov, EpanechnikovOrder4, NormalOrder4
+    NormalKernel,
+    Tricube,
+    Epanechnikov,
+    EpanechnikovOrder4,
+    NormalOrder4,
 )
-from perun.thirdparty.pyqt_fit_port.kde_bandwidth import scotts_covariance, silverman_covariance
+from perun.thirdparty.pyqt_fit_port.kde_bandwidth import (
+    scotts_covariance,
+    silverman_covariance,
+)
 
 __all__ = [
     "NonParamRegression",

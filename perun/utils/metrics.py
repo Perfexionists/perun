@@ -13,7 +13,7 @@ import perun.logic.temp as temp
 
 
 class MetricsManager:
-    """ The metrics structure that keeps the records and all related properties.
+    """The metrics structure that keeps the records and all related properties.
 
     :ivar bool enabled: specifies if metrics are to be collected or not
     :ivar str metrics_id: the name under which the metrics are stored
@@ -21,18 +21,18 @@ class MetricsManager:
     :ivar dict timers: keeps track of running timers
     :ivar dict records: stores the metrics
     """
+
     def __init__(self) -> None:
-        """ Initializes the manager. Unless configure is called, the metrics are not recorded.
-        """
+        """Initializes the manager. Unless configure is called, the metrics are not recorded."""
         self.enabled: bool = False
-        self.id_base: str = ''
-        self.metrics_id: str = ''
+        self.id_base: str = ""
+        self.metrics_id: str = ""
         self.metrics_filename: Optional[str] = None
         self.timers: dict[str, float] = {}
         self.records: dict[str, dict[str, Any]] = {}
 
     def configure(self, metrics_filename: str, metrics_id: str) -> None:
-        """ Sets the required properties for collecting metrics.
+        """Sets the required properties for collecting metrics.
 
         :param str metrics_filename: the name of the temp file that stores the metrics
         :param str metrics_id: the name under which the metrics are stored
@@ -41,32 +41,26 @@ class MetricsManager:
         self.id_base = metrics_id
         self.metrics_id = metrics_id
         self.metrics_filename = temp.temp_path(metrics_filename)
-        self.records = {
-            metrics_id: {
-                'id': metrics_id
-            }
-        }
+        self.records = {metrics_id: {"id": metrics_id}}
 
     def switch_id(self, new_id: str) -> None:
-        """ Assigns new active ID.
+        """Assigns new active ID.
 
         :param str new_id: the name under which the metrics are stored
         """
         self.timers = {}
         self.id_base = new_id
         self.metrics_id = new_id
-        self.records[new_id] = {
-            'id': new_id
-        }
+        self.records[new_id] = {"id": new_id}
 
     def add_sub_id(self, sub_id: str) -> None:
-        """ Creates a new ID in the metrics file in format <base_id>.<sub_id>
+        """Creates a new ID in the metrics file in format <base_id>.<sub_id>
 
         :param str sub_id: a suffix to the current base ID.
         """
         new_id = f"{self.id_base}.{sub_id}"
         self.records[new_id] = self.records.pop(self.id_base, {})
-        self.records[new_id]['id'] = new_id
+        self.records[new_id]["id"] = new_id
         self.metrics_id = new_id
 
 
@@ -74,7 +68,7 @@ Metrics = MetricsManager()
 
 
 def is_enabled() -> bool:
-    """ Checks if metrics collection is enabled.
+    """Checks if metrics collection is enabled.
 
     :return bool: True if metrics are being collected, False otherwise
     """
@@ -82,7 +76,7 @@ def is_enabled() -> bool:
 
 
 def start_timer(name: str) -> None:
-    """ Starts a new timer.
+    """Starts a new timer.
 
     :param str name: the name of the timer (and also the metric)
     """
@@ -91,19 +85,21 @@ def start_timer(name: str) -> None:
 
 
 def end_timer(name: str) -> None:
-    """ Stops the specified running timer and stores the resulting time into metrics
+    """Stops the specified running timer and stores the resulting time into metrics
 
     :param str name: the name of the timer
     """
     if Metrics.enabled:
         if name in Metrics.timers:
-            Metrics.records[Metrics.metrics_id][name] = time.time() - Metrics.timers[name]
+            Metrics.records[Metrics.metrics_id][name] = (
+                time.time() - Metrics.timers[name]
+            )
             del Metrics.timers[name]
 
 
 # TODO: change to getitem / setitem?
 def add_metric(name: str, value: Any) -> None:
-    """ Add new metric and its value.
+    """Add new metric and its value.
 
     :param str name: name of the metric
     :param object value: the value of the metric
@@ -113,7 +109,7 @@ def add_metric(name: str, value: Any) -> None:
 
 
 def read_metric(name: str, default: Optional[Any] = None) -> Optional[Any]:
-    """ Read the current value of a metric specified by its ID
+    """Read the current value of a metric specified by its ID
 
     :param str name: the ID of the metric to fetch
     :param object default: the default value in case no metric is recorded under the given ID
@@ -125,8 +121,7 @@ def read_metric(name: str, default: Optional[Any] = None) -> Optional[Any]:
 
 
 def save() -> None:
-    """ Save the stored metrics into the metrics file.
-    """
+    """Save the stored metrics into the metrics file."""
     if Metrics.enabled:
         if Metrics.metrics_filename is not None:
             stored_metrics: dict[str, dict[str, Any]] = {}

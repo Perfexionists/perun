@@ -1,4 +1,3 @@
 """..."""
 
-SUPPORTED_PROFILES = ['mixed|memory|mixed']
-
+SUPPORTED_PROFILES = ["mixed|memory|mixed"]

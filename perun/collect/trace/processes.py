@@ -8,7 +8,7 @@ from perun.collect.trace.values import QUEUE_TIMEOUT
 
 
 class SafeQueue:
-    """ A wrapper over the multiprocessing Queue. The wrapper implements
+    """A wrapper over the multiprocessing Queue. The wrapper implements
     blocking read / write operations, end-of-input signalling and cleanup
     procedures.
 
@@ -18,6 +18,7 @@ class SafeQueue:
     :ivar Queue _queue: a multiprocessing queue
     :ivar bool _is_closed: a flag indicating whether the queue has already been closed
     """
+
     def __init__(self, maxsize=-1):
         """
         :param int maxsize: the queue capacity
@@ -27,20 +28,17 @@ class SafeQueue:
         self._is_closed = False
 
     def end_of_input(self):
-        """ Signal to the consumer(s) that no more data will be written by the producer.
-        """
+        """Signal to the consumer(s) that no more data will be written by the producer."""
         if not self._eoi_event.is_set():
             self._eoi_event.set()
 
     def close_reader(self):
-        """ Remove all remaining elements from the queue.
-        """
+        """Remove all remaining elements from the queue."""
         while self.read() is not None:
             continue
 
     def close_writer(self):
-        """ Close the producer's end of queue.
-        """
+        """Close the producer's end of queue."""
         # Multiple close() calls are not allowed
         if not self._is_closed:
             self.end_of_input()
@@ -49,7 +47,7 @@ class SafeQueue:
             self._is_closed = True
 
     def write(self, data):
-        """ Send data through the queue.
+        """Send data through the queue.
 
         :param object data: the data to send
         """
@@ -62,7 +60,7 @@ class SafeQueue:
                 continue
 
     def read(self, timeout=QUEUE_TIMEOUT, retries=1):
-        """ Read data from the queue.
+        """Read data from the queue.
 
         :return object: the obtained data.
         """
@@ -85,7 +83,7 @@ class SafeQueue:
 
     # TODO: temporary hack, maybe sent/recv object counting would be better?
     def read_large(self):
-        """ Read large data from the queue (i.e., Profile object)
+        """Read large data from the queue (i.e., Profile object)
 
         :return object: the obtained data.
         """

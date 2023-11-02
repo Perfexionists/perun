@@ -18,6 +18,7 @@ import operator
 import array
 
 from typing import TYPE_CHECKING, Any
+
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
@@ -27,8 +28,6 @@ import perun.postprocess.regression_analysis.transform as transform
 
 import numpy
 import pandas
-
-
 
 
 def resources_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
@@ -64,12 +63,14 @@ def resources_to_pandas_dataframe(profile: Profile) -> pandas.DataFrame:
     """
     # Since some keys may be missing in the resources, we consider all of the possible fields
     resource_keys = list(profile.all_resource_fields())
-    values: dict[str, list[Any] | array.array[float] | array.array[int]] = {key: [] for key in resource_keys}
-    values['snapshots'] = array.array('I')
+    values: dict[str, list[Any] | array.array[float] | array.array[int]] = {
+        key: [] for key in resource_keys
+    }
+    values["snapshots"] = array.array("I")
 
     # All resources at this point should be flat
-    for (snapshot, resource) in profile.all_resources(True):
-        values['snapshots'].append(snapshot)
+    for snapshot, resource in profile.all_resources(True):
+        values["snapshots"].append(snapshot)
         for resource_key in resource_keys:
             values[resource_key].append(resource.get(resource_key, numpy.nan))
 
@@ -129,21 +130,21 @@ def to_flame_graph_format(profile: Profile) -> list[str]:
     stacks = []
     for _, snapshot in profile.all_snapshots():
         for alloc in snapshot:
-            if alloc['subtype'] != 'free':
+            if alloc["subtype"] != "free":
                 stack_str = ""
-                for frame in alloc['trace']:
+                for frame in alloc["trace"]:
                     line = to_string_line(frame)
-                    stack_str += line + ';'
-                if stack_str and stack_str.endswith(';'):
+                    stack_str += line + ";"
+                if stack_str and stack_str.endswith(";"):
                     final = stack_str[:-1]
-                    final += " " + str(alloc['amount']) + '\n'
+                    final += " " + str(alloc["amount"]) + "\n"
                     stacks.append(final)
 
     return stacks
 
 
 def to_string_line(frame: dict[str, Any]) -> str:
-    """ Create string representing call stack's frame
+    """Create string representing call stack's frame
 
     :param dict frame: call stack's frame
     :returns str: line representing call stack's frame
@@ -188,8 +189,10 @@ def flatten(flattened_value: Any) -> Any:
         return ":".join(map(str, map(operator.itemgetter(1), nested_values)))
     # Lists are merged as comma separated keys
     elif isinstance(flattened_value, list):
-        return ','.join(
-            ":".join(str(nested_value[1]) for nested_value in query.flattened_values(i, lv))
+        return ",".join(
+            ":".join(
+                str(nested_value[1]) for nested_value in query.flattened_values(i, lv)
+            )
             for (i, lv) in enumerate(flattened_value)
         )
     # Rest of the values are left as they are

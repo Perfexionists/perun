@@ -17,11 +17,11 @@ DEFAULT_SMOOTHNESS = 51
 
 
 def model_plot_computation(
-        model_x: Callable[..., dict[str, Any]],
-        model_y: Callable[..., dict[str, Any]],
-        **data: Any
+    model_x: Callable[..., dict[str, Any]],
+    model_y: Callable[..., dict[str, Any]],
+    **data: Any,
 ) -> dict[str, Any]:
-    """ The model plotting computation wrapper.
+    """The model plotting computation wrapper.
 
     Handles required operations for all models, such as creating x and y plot points.
     The model specifics are handled by the 'model_x' and 'model_y' functions and other parameters.
@@ -49,11 +49,11 @@ def model_plot_computation(
 
 
 def generic_plot_x_pts(
-        x_start: int,
-        x_end: int,
-        smoothness: int = DEFAULT_SMOOTHNESS,
-        transform_by: Callable[[Any], dict[str, Any]] = tools.as_plot_x_dict,
-        **_: Any
+    x_start: int,
+    x_end: int,
+    smoothness: int = DEFAULT_SMOOTHNESS,
+    transform_by: Callable[[Any], dict[str, Any]] = tools.as_plot_x_dict,
+    **_: Any,
 ) -> dict[str, Any]:
     """Generic version of model x points computation.
 
@@ -71,15 +71,15 @@ def generic_plot_x_pts(
 
 
 def generic_plot_y_pts(
-        plot_x: npt.NDArray[np.float64],
-        b0: float,
-        b1: float,
-        formula: Callable[[npt.NDArray[np.float64], float, float], list[float]],
-        m_fx: Optional[Callable[[float], float]] = None,
-        transform_by: Callable[[Any], dict[str, Any]] = tools.as_plot_y_dict,
-        **_: Any
+    plot_x: npt.NDArray[np.float64],
+    b0: float,
+    b1: float,
+    formula: Callable[[npt.NDArray[np.float64], float, float], list[float]],
+    m_fx: Optional[Callable[[float], float]] = None,
+    transform_by: Callable[[Any], dict[str, Any]] = tools.as_plot_y_dict,
+    **_: Any,
 ) -> dict[str, Any]:
-    """ The generic function for y points computation.
+    """The generic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.
 
@@ -106,15 +106,15 @@ def generic_plot_y_pts(
 
 
 def quad_plot_y_pts(
-        plot_x: npt.NDArray[np.float64],
-        b0: float,
-        b1: float,
-        b2: float,
-        formula: Callable[[npt.NDArray[np.float64], float, float, float], list[float]],
-        transform_by: Callable[[Any], dict[str, Any]] = tools.as_plot_y_dict,
-        **_: Any
+    plot_x: npt.NDArray[np.float64],
+    b0: float,
+    b1: float,
+    b2: float,
+    formula: Callable[[npt.NDArray[np.float64], float, float, float], list[float]],
+    transform_by: Callable[[Any], dict[str, Any]] = tools.as_plot_y_dict,
+    **_: Any,
 ) -> dict[str, Any]:
-    """ The quadratic function for y points computation.
+    """The quadratic function for y points computation.
 
     This function computes the y points for model plotting using the 'fp' formula.
 

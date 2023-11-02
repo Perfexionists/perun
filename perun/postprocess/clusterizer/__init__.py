@@ -8,8 +8,5 @@ with parametric width and height.
 
 SUPPORTED_PROFILES = ["memory", "mixed", "time"]
 
-SUPPORTED_STRATEGIES = [
-    'sort_order',
-    'sliding_window'
-]
+SUPPORTED_STRATEGIES = ["sort_order", "sliding_window"]
 DEFAULT_STRATEGY = SUPPORTED_STRATEGIES[0]

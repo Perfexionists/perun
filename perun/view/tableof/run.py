@@ -26,13 +26,16 @@ def get_headers(ctx: click.Context) -> list[str]:
     """
     headers = []
     if ctx.command is None or ctx.parent is None or ctx.parent.parent is None:
-        log.error("internal click error: ctx.command, ctx.parent or ctx.parent.parent is None")
+        log.error(
+            "internal click error: ctx.command, ctx.parent or ctx.parent.parent is None"
+        )
         return []
-    if ctx.command.name == 'resources':
-        headers = list(ctx.parent.parent.params['profile'].all_resource_fields()) \
-                  + ['snapshots']
-    elif ctx.command.name == 'models':
-        headers = list(query.all_model_fields_of(ctx.parent.parent.params['profile']))
+    if ctx.command.name == "resources":
+        headers = list(ctx.parent.parent.params["profile"].all_resource_fields()) + [
+            "snapshots"
+        ]
+    elif ctx.command.name == "models":
+        headers = list(query.all_model_fields_of(ctx.parent.parent.params["profile"]))
     return headers
 
 
@@ -43,20 +46,20 @@ def output_table_to(table: str, target: str, target_file: str) -> None:
     :param str target: either file or stdout
     :param str target_file: name of the output file
     """
-    if target == 'file':
-        with open(target_file, 'w') as wtf:
+    if target == "file":
+        with open(target_file, "w") as wtf:
             wtf.write(table)
     else:
         print(table)
 
 
 def create_table_from(
-        profile: Profile,
-        conversion_function: Callable[[Profile], pandas.DataFrame],
-        headers: list[str],
-        tablefmt: str,
-        sort_by: str,
-        filter_by: list[tuple[str, str]]
+    profile: Profile,
+    conversion_function: Callable[[Profile], pandas.DataFrame],
+    headers: list[str],
+    tablefmt: str,
+    sort_by: str,
+    filter_by: list[tuple[str, str]],
 ) -> str:
     """Using the tabulate package, transforms the profile into table.
 
@@ -82,8 +85,9 @@ def create_table_from(
         groups = [(k, list(v)) for (k, v) in groupby(filter_by, operator.itemgetter(0))]
         filter_query = " & ".join(
             '@dataframe.get("{0}") in [{1}]'.format(
-                key, ', '.join('"{}"'.format(v[1]) for v in list(value))
-            ) for (key, value) in groups
+                key, ", ".join('"{}"'.format(v[1]) for v in list(value))
+            )
+            for (key, value) in groups
         )
         dataframe.query(filter_query, inplace=True)
 
@@ -91,7 +95,9 @@ def create_table_from(
     return tabulate.tabulate(resource_table, headers=headers, tablefmt=tablefmt)
 
 
-def process_filter(ctx: click.Context, option: click.Option, value: list[str]) -> list[str]:
+def process_filter(
+    ctx: click.Context, option: click.Option, value: list[str]
+) -> list[str]:
     """Processes option for filtering of the table, according to the profile keys
 
     :param click.Context ctx: context of the called command
@@ -105,8 +111,8 @@ def process_filter(ctx: click.Context, option: click.Option, value: list[str]) -
         for val in value:
             if val[0] not in headers:
                 raise click.BadOptionUsage(
-                    option.name or '',
-                    f"invalid key choice for filtering: {val[0]} (choose from {', '.join(headers)})"
+                    option.name or "",
+                    f"invalid key choice for filtering: {val[0]} (choose from {', '.join(headers)})",
                 )
         return list(value)
     return value
@@ -124,13 +130,15 @@ def process_sort_key(ctx: click.Context, option: click.Option, value: str) -> st
 
     if value and value not in headers:
         raise click.BadOptionUsage(
-            option.name or '',
-            f"invalid key choice for sorting the table: {value} (choose from {', '.join(headers)})"
+            option.name or "",
+            f"invalid key choice for sorting the table: {value} (choose from {', '.join(headers)})",
         )
     return value
 
 
-def process_headers(ctx: click.Context, option: click.Option, value: list[str]) -> list[str]:
+def process_headers(
+    ctx: click.Context, option: click.Option, value: list[str]
+) -> list[str]:
     """Processes list of headers of the outputted table
 
     :param click.Context ctx: context of the called command
@@ -145,8 +153,8 @@ def process_headers(ctx: click.Context, option: click.Option, value: list[str]) 
         for val in value:
             if val not in headers:
                 raise click.BadOptionUsage(
-                    option.name or '',
-                    f"invalid choice for table header: {val} (choose from {', '.join(headers)})"
+                    option.name or "",
+                    f"invalid choice for table header: {val} (choose from {', '.join(headers)})",
                 )
         return list(value)
     # Else we output everything
@@ -169,22 +177,47 @@ def process_output_file(ctx: click.Context, _: click.Option, value: str) -> str:
     if value:
         return value
     else:
-        prof_name = profiles.generate_profile_name(ctx.parent.params['profile'])
-        return (ctx.command.name or '<MISSING_COMMAND_NAME>') + "_of_" + os.path.splitext(prof_name)[0]
+        prof_name = profiles.generate_profile_name(ctx.parent.params["profile"])
+        return (
+            (ctx.command.name or "<MISSING_COMMAND_NAME>")
+            + "_of_"
+            + os.path.splitext(prof_name)[0]
+        )
 
 
 @click.group()
-@click.option('--to-file', '-tf', 'output_to', flag_value='file',
-              help='The table will be saved into a file. By default, the name of the output file'
-                   ' is automatically generated, unless `--output-file` option does not specify'
-                   ' the name of the output file.', default=True)
-@click.option('--to-stdout', '-ts', 'output_to', flag_value='stdout',
-              help='The table will be output to standard output.')
-@click.option('--output-file', '-of', default=None, callback=process_output_file,
-              help='Target output file, where the transformed table will be saved.')
-@click.option('--format', '-f', 'tablefmt', default='simple',
-              type=click.Choice(tabulate.tabulate_formats),
-              help='Format of the outputted table')
+@click.option(
+    "--to-file",
+    "-tf",
+    "output_to",
+    flag_value="file",
+    help="The table will be saved into a file. By default, the name of the output file"
+    " is automatically generated, unless `--output-file` option does not specify"
+    " the name of the output file.",
+    default=True,
+)
+@click.option(
+    "--to-stdout",
+    "-ts",
+    "output_to",
+    flag_value="stdout",
+    help="The table will be output to standard output.",
+)
+@click.option(
+    "--output-file",
+    "-of",
+    default=None,
+    callback=process_output_file,
+    help="Target output file, where the transformed table will be saved.",
+)
+@click.option(
+    "--format",
+    "-f",
+    "tablefmt",
+    default="simple",
+    type=click.Choice(tabulate.tabulate_formats),
+    help="Format of the outputted table",
+)
 @click.pass_context
 def tableof(*_: Any, **__: Any) -> None:
     """Textual representation of the profile as a table.
@@ -225,62 +258,126 @@ def tableof(*_: Any, **__: Any) -> None:
 
 
 @tableof.command()
-@click.option('--headers', '-h', default=None, multiple=True,
-              metavar="<key>", callback=process_headers,
-              help="Sets the headers that will be displayed in the table. If none are stated "
-                   "then all of the headers will be outputed")
-@click.option('--sort-by', '-s', default=None,
-              metavar="<key>", callback=process_sort_key,
-              help="Sorts the table by <key>.")
-@click.option('--filter-by', '-f', 'filter_by',
-              nargs=2, metavar='<key> <value>', callback=process_filter, multiple=True,
-              help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
-                   " several times, then rows satisfying all rules will be selected for different"
-                   " keys; and the rows satisfying some rule will be selected for same key.")
+@click.option(
+    "--headers",
+    "-h",
+    default=None,
+    multiple=True,
+    metavar="<key>",
+    callback=process_headers,
+    help="Sets the headers that will be displayed in the table. If none are stated "
+    "then all of the headers will be outputed",
+)
+@click.option(
+    "--sort-by",
+    "-s",
+    default=None,
+    metavar="<key>",
+    callback=process_sort_key,
+    help="Sorts the table by <key>.",
+)
+@click.option(
+    "--filter-by",
+    "-f",
+    "filter_by",
+    nargs=2,
+    metavar="<key> <value>",
+    callback=process_filter,
+    multiple=True,
+    help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
+    " several times, then rows satisfying all rules will be selected for different"
+    " keys; and the rows satisfying some rule will be selected for same key.",
+)
 @click.pass_context
 def resources(
-        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_: Any
+    ctx: click.Context,
+    headers: list[str],
+    sort_by: str,
+    filter_by: list[tuple[str, str]],
+    **_: Any,
 ) -> None:
     """Outputs the resources of the profile as a table"""
     assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
-    assert ctx.parent.parent is not None and f"impossible happened: {ctx.parent} has no parent"
+    assert (
+        ctx.parent.parent is not None
+        and f"impossible happened: {ctx.parent} has no parent"
+    )
 
-    tablefmt = ctx.parent.params['tablefmt']
-    profile = ctx.parent.parent.params['profile']
+    tablefmt = ctx.parent.params["tablefmt"]
+    profile = ctx.parent.parent.params["profile"]
     profile_as_table = create_table_from(
-        profile, convert.resources_to_pandas_dataframe, headers, tablefmt, sort_by, filter_by
+        profile,
+        convert.resources_to_pandas_dataframe,
+        headers,
+        tablefmt,
+        sort_by,
+        filter_by,
     )
     output_table_to(
-        profile_as_table, ctx.parent.params['output_to'], ctx.parent.params['output_file']
+        profile_as_table,
+        ctx.parent.params["output_to"],
+        ctx.parent.params["output_file"],
     )
 
 
 @tableof.command()
 @click.pass_context
-@click.option('--headers', '-h', default=None, multiple=True,
-              metavar="<key>", callback=process_headers,
-              help="Sets the headers that will be displayed in the table. If none are stated "
-                   "then all of the headers will be outputed")
-@click.option('--sort-by', '-s', default=None,
-              metavar="<key>", callback=process_sort_key,
-              help="Sorts the table by <key>.")
-@click.option('--filter-by', '-f', 'filter_by',
-              nargs=2, metavar='<key> <value>', callback=process_filter, multiple=True,
-              help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
-                   " several times, then rows satisfying all rules will be selected for different"
-                   " keys; and the rows satisfying some rule will be sellected for same key.")
+@click.option(
+    "--headers",
+    "-h",
+    default=None,
+    multiple=True,
+    metavar="<key>",
+    callback=process_headers,
+    help="Sets the headers that will be displayed in the table. If none are stated "
+    "then all of the headers will be outputed",
+)
+@click.option(
+    "--sort-by",
+    "-s",
+    default=None,
+    metavar="<key>",
+    callback=process_sort_key,
+    help="Sorts the table by <key>.",
+)
+@click.option(
+    "--filter-by",
+    "-f",
+    "filter_by",
+    nargs=2,
+    metavar="<key> <value>",
+    callback=process_filter,
+    multiple=True,
+    help="Filters the table to rows, where <key> == <value>. If the `--filter` is set"
+    " several times, then rows satisfying all rules will be selected for different"
+    " keys; and the rows satisfying some rule will be sellected for same key.",
+)
 def models(
-        ctx: click.Context, headers: list[str], sort_by: str, filter_by: list[tuple[str, str]], **_: Any
+    ctx: click.Context,
+    headers: list[str],
+    sort_by: str,
+    filter_by: list[tuple[str, str]],
+    **_: Any,
 ) -> None:
     """Outputs the models of the profile as a table"""
     assert ctx.parent is not None and f"impossible happened: {ctx} has no parent"
-    assert ctx.parent.parent is not None and f"impossible happened: {ctx.parent} has no parent"
+    assert (
+        ctx.parent.parent is not None
+        and f"impossible happened: {ctx.parent} has no parent"
+    )
 
-    tablefmt = ctx.parent.params['tablefmt']
-    profile = ctx.parent.parent.params['profile']
+    tablefmt = ctx.parent.params["tablefmt"]
+    profile = ctx.parent.parent.params["profile"]
     profile_as_table = create_table_from(
-        profile, convert.models_to_pandas_dataframe, headers, tablefmt, sort_by, filter_by
+        profile,
+        convert.models_to_pandas_dataframe,
+        headers,
+        tablefmt,
+        sort_by,
+        filter_by,
     )
     output_table_to(
-        profile_as_table, ctx.parent.params['output_to'], ctx.parent.params['output_file']
+        profile_as_table,
+        ctx.parent.params["output_to"],
+        ctx.parent.params["output_file"],
     )

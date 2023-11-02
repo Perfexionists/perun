@@ -12,7 +12,6 @@ from perun.utils import cli_helpers, view_helpers
 
 
 def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
-
     """Creates default title for scatter plot graph, if not provided by the user.
 
     If the value supplied from CLI is non-None, it is returned as it is. Otherwise, we try to
@@ -33,29 +32,73 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
 
 
 @click.command()
-@click.option('--of', '-o', 'of_key', default='amount', nargs=1,
-              show_default=True, type=str,
-              is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Data source for the scatter plot, i.e. what will be displayed on Y axis.")
-@click.option('--per', '-p', 'per_key', default='structure-unit-size', nargs=1,
-              show_default=True, type=str,
-              is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Keys that will be displayed on X axis of the scatter plot.")
+@click.option(
+    "--of",
+    "-o",
+    "of_key",
+    default="amount",
+    nargs=1,
+    show_default=True,
+    type=str,
+    is_eager=True,
+    callback=cli_helpers.process_resource_key_param,
+    help="Data source for the scatter plot, i.e. what will be displayed on Y axis.",
+)
+@click.option(
+    "--per",
+    "-p",
+    "per_key",
+    default="structure-unit-size",
+    nargs=1,
+    show_default=True,
+    type=str,
+    is_eager=True,
+    callback=cli_helpers.process_resource_key_param,
+    help="Keys that will be displayed on X axis of the scatter plot.",
+)
 # Bokeh graph specific
-@click.option('--filename', '-f', default="scatter", metavar="<html>",
-              help="Outputs the graph to the file specified by filename.")
-@click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
-              callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the X axis of the scatter plot.")
-@click.option('--y-axis-label', '-yl', metavar="<text>", default=None,
-              callback=cli_helpers.process_bokeh_axis_title,
-              help="Label on the Y axis of the scatter plot.")
-@click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
-              help="Title of the scatter plot.")
-@click.option('--view-in-browser', '-v', default=False, is_flag=True,
-              help="Will show the graph in browser.")
+@click.option(
+    "--filename",
+    "-f",
+    default="scatter",
+    metavar="<html>",
+    help="Outputs the graph to the file specified by filename.",
+)
+@click.option(
+    "--x-axis-label",
+    "-xl",
+    metavar="<text>",
+    default=None,
+    callback=cli_helpers.process_bokeh_axis_title,
+    help="Label on the X axis of the scatter plot.",
+)
+@click.option(
+    "--y-axis-label",
+    "-yl",
+    metavar="<text>",
+    default=None,
+    callback=cli_helpers.process_bokeh_axis_title,
+    help="Label on the Y axis of the scatter plot.",
+)
+@click.option(
+    "--graph-title",
+    "-gt",
+    metavar="<text>",
+    default=None,
+    callback=process_title,
+    help="Title of the scatter plot.",
+)
+@click.option(
+    "--view-in-browser",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="Will show the graph in browser.",
+)
 @pass_profile
-def scatter(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:
+def scatter(
+    profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any
+) -> None:
     """Interactive visualization of resources and models in scatter plot format.
 
     Scatter plot shows resources as points according to the given parameters.

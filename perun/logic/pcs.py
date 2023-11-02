@@ -37,7 +37,7 @@ def get_path() -> str:
     :return: string path where the perun instance is located
     :raises NotPerunRepositoryException: when we cannot locate perun on the current directory tree
     """
-    return os.path.join(helpers.locate_perun_dir_on(os.getcwd()), '.perun')
+    return os.path.join(helpers.locate_perun_dir_on(os.getcwd()), ".perun")
 
 
 @singleton
@@ -47,7 +47,7 @@ def get_vcs_type_and_url() -> tuple[str, str]:
     :return: type and url of the wrapped version control system
     :raises MissingConfigSectionException: when vcs.type or vcs.url is not set in local config
     """
-    vcs_type, vcs_url = config.local(get_path()).get_bulk(['vcs.type', 'vcs.url'])
+    vcs_type, vcs_url = config.local(get_path()).get_bulk(["vcs.type", "vcs.url"])
     return vcs_type, os.path.abspath(os.path.join(get_path(), vcs_url))
 
 
@@ -58,9 +58,9 @@ def get_vcs_path() -> str:
     :return: url to the wrapped version control system
     :raises MissingConfigSectionException: when vcs.url is not set in local config
     """
-    return os.path.abspath(os.path.join(
-        get_path(), config.local(get_path()).get('vcs.url')
-    ))
+    return os.path.abspath(
+        os.path.join(get_path(), config.local(get_path()).get("vcs.url"))
+    )
 
 
 @singleton
@@ -130,7 +130,7 @@ def get_stats_directory() -> str:
 
     :return str: path to the statistics directory
     """
-    stats_directory = os.path.join(get_path(), 'stats')
+    stats_directory = os.path.join(get_path(), "stats")
     helpers.touch_dir(stats_directory)
     return stats_directory
 
@@ -142,7 +142,7 @@ def get_stats_index() -> str:
 
     :return str: path to the index file of the statistics directory
     """
-    return os.path.join(get_stats_directory(), '.index')
+    return os.path.join(get_stats_directory(), ".index")
 
 
 @singleton
@@ -151,7 +151,7 @@ def get_tmp_directory() -> str:
 
     :return str: path to the tmp directory
     """
-    tmp_directory = os.path.join(get_path(), 'tmp')
+    tmp_directory = os.path.join(get_path(), "tmp")
     helpers.touch_dir(tmp_directory)
     return tmp_directory
 
@@ -164,7 +164,7 @@ def get_tmp_index() -> str:
     :return str: path to the tmp index file
     """
     tmp_directory = get_tmp_directory()
-    return os.path.join(tmp_directory, '.index')
+    return os.path.join(tmp_directory, ".index")
 
 
 @singleton_with_args
@@ -173,6 +173,6 @@ def get_config_file(config_type: str) -> str:
 
     :returns str: path of the config of the given type
     """
-    if config_type in ('shared', 'global'):
-        return os.path.join(config.lookup_shared_config_dir(), 'shared.yml')
-    return os.path.join(get_path(), 'local.yml')
+    if config_type in ("shared", "global"):
+        return os.path.join(config.lookup_shared_config_dir(), "shared.yml")
+    return os.path.join(get_path(), "local.yml")

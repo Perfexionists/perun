@@ -13,16 +13,17 @@ import perun.collect.trace.optimizations.resources.perun_dynamic_stats as perun_
 
 
 class Resources(Enum):
-    """ An enumeration for all currently used optimization resources and their corresponding
+    """An enumeration for all currently used optimization resources and their corresponding
     extraction / storage methods, if any.
     """
+
     CALL_GRAPH_ANGR = (angr_provider.extract,)
     PERUN_CALL_GRAPH = perun_cg.extract, perun_cg.store
     PERUN_STATS = perun_stats.extract, perun_stats.store
 
 
 def extract(resource, **kwargs):
-    """ Extract the selected resource.
+    """Extract the selected resource.
 
     :param Resources resource: the requested optimization resource
     :param kwargs: additional extraction parameters
@@ -35,7 +36,7 @@ def extract(resource, **kwargs):
 
 
 def store(resource, **kwargs):
-    """ Store the selected resource.
+    """Store the selected resource.
 
     :param Resource resource: the stored optimization resource
     :param kwargs: additional parameters for the specific methods

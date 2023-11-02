@@ -23,7 +23,9 @@ def test_major_versions(pcs_full_no_prof):
     Expecting correct behaviour and no error
     """
     git_config_parser = git.config.GitConfigParser()
-    git_default_branch_name = git_config_parser.get_value('init', 'defaultBranch', 'master')
+    git_default_branch_name = git_config_parser.get_value(
+        "init", "defaultBranch", "master"
+    )
 
     major_versions = list(vcs.walk_major_versions())
 
@@ -70,7 +72,7 @@ def test_saved_states(pcs_full_no_prof):
 
     head = vcs.get_minor_head()
     minor_versions = list(
-        map(operator.attrgetter('checksum'), vcs.walk_minor_versions(head))
+        map(operator.attrgetter("checksum"), vcs.walk_minor_versions(head))
     )
 
     with open("file2", "w") as write_handle:
@@ -80,7 +82,7 @@ def test_saved_states(pcs_full_no_prof):
         # Now try checkout for all of the stuff
         vcs.checkout(minor_versions[1])
         tracked_files = os.listdir(os.getcwd())
-        assert set(tracked_files) == {'.perun', '.git', 'file1', 'file2'}
+        assert set(tracked_files) == {".perun", ".git", "file1", "file2"}
 
     # Test that the head was not changed and kept unchanged by CleanState
     assert vcs.get_minor_head() == head

@@ -26,13 +26,25 @@ import perun.vcs as vcs
 import perun.logic.temp as temp
 import perun.logic.stats as stats
 
-from perun.utils.exceptions import NotPerunRepositoryException, \
-    ExternalEditorErrorException, MissingConfigSectionException, InvalidTempPathException, \
-    ProtectedTempException
-from perun.utils.helpers import \
-    TEXT_EMPH_COLOUR, TEXT_ATTRS, TEXT_WARN_COLOUR, \
-    PROFILE_TYPE_COLOURS, SUPPORTED_PROFILE_TYPES, HEADER_ATTRS, HEADER_COMMIT_COLOUR, \
-    HEADER_INFO_COLOUR, HEADER_SLASH_COLOUR, PROFILE_DELIMITER
+from perun.utils.exceptions import (
+    NotPerunRepositoryException,
+    ExternalEditorErrorException,
+    MissingConfigSectionException,
+    InvalidTempPathException,
+    ProtectedTempException,
+)
+from perun.utils.helpers import (
+    TEXT_EMPH_COLOUR,
+    TEXT_ATTRS,
+    TEXT_WARN_COLOUR,
+    PROFILE_TYPE_COLOURS,
+    SUPPORTED_PROFILE_TYPES,
+    HEADER_ATTRS,
+    HEADER_COMMIT_COLOUR,
+    HEADER_INFO_COLOUR,
+    HEADER_SLASH_COLOUR,
+    PROFILE_DELIMITER,
+)
 from perun.utils.log import cprint, cprintln
 from perun.utils.structs import ProfileListConfig, MinorVersion
 
@@ -40,8 +52,9 @@ if TYPE_CHECKING:
     from perun.profile.helpers import ProfileInfo
     from perun.profile.factory import Profile
 
-UNTRACKED_REGEX: re.Pattern[str] = \
-    re.compile(r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf")
+UNTRACKED_REGEX: re.Pattern[str] = re.compile(
+    r"([^\\]+)-([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}).perf"
+)
 # Regex for parsing the formating tag [<tag>:<size>f<fill_char>]
 FMT_REGEX: re.Pattern[str] = re.compile(r"%([a-zA-Z]+)(:[0-9]+)?(f.)?%")
 
@@ -52,9 +65,13 @@ def config_get(store_type: str, key: str) -> None:
     :param str store_type: type of the store lookup (local, shared of recursive)
     :param str key: list of section delimited by dot (.)
     """
-    config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
+    config_store = (
+        pcs.global_config()
+        if store_type in ("shared", "global")
+        else pcs.local_config()
+    )
 
-    if store_type == 'recursive':
+    if store_type == "recursive":
         value = perun_config.lookup_key_recursively(key)
     else:
         value = config_store.get(key)
@@ -68,7 +85,11 @@ def config_set(store_type: str, key: str, value: Any) -> None:
     :param str key: list of section delimited by dot (.)
     :param object value: arbitrary value that will be set in the configuration
     """
-    config_store = pcs.global_config() if store_type in ('shared', 'global') else pcs.local_config()
+    config_store = (
+        pcs.global_config()
+        if store_type in ("shared", "global")
+        else pcs.local_config()
+    )
 
     config_store.set(key, value)
     perun_log.info("Value '{1}' set for key '{0}'".format(key, value))
@@ -83,7 +104,7 @@ def config_edit(store_type: str) -> None:
         external editor during the 'edit' operation
     """
     # Lookup the editor in the config and run it as external command
-    editor = perun_config.lookup_key_recursively('general.editor')
+    editor = perun_config.lookup_key_recursively("general.editor")
     config_file = pcs.get_config_file(store_type)
     try:
         utils.run_external_command([editor, config_file])
@@ -100,26 +121,26 @@ def config_reset(store_type: str, config_template: str) -> None:
     :param str config_template: name of the template that we are resetting to
     :raises NotPerunRepositoryException: raised when we are outside of any perun scope
     """
-    if store_type in ('shared', 'global'):
+    if store_type in ("shared", "global"):
         shared_location = perun_config.lookup_shared_config_dir()
         perun_config.init_shared_config_at(shared_location)
     else:
         vcs_url, vcs_type = pcs.get_vcs_type_and_url()
-        vcs_config = {
-            'vcs': {
-                'url': vcs_url,
-                'type': vcs_type
-            }
-        }
+        vcs_config = {"vcs": {"url": vcs_url, "type": vcs_type}}
         perun_config.init_local_config_at(pcs.get_path(), vcs_config, config_template)
-    perun_log.info("{} configuration reset{}".format(
-        'global' if store_type in ('shared', 'global') else 'local',
-        f" to {config_template}" if store_type not in ("shared", "global") else ""
-    ))
+    perun_log.info(
+        "{} configuration reset{}".format(
+            "global" if store_type in ("shared", "global") else "local",
+            f" to {config_template}" if store_type not in ("shared", "global") else "",
+        )
+    )
 
 
 def init_perun_at(
-        perun_path: str, is_reinit: bool, vcs_config: dict[str, Any], config_template: str = 'master'
+    perun_path: str,
+    is_reinit: bool,
+    vcs_config: dict[str, Any],
+    config_template: str = "master",
 ) -> None:
     """Initialize the .perun directory at given path
 
@@ -131,27 +152,31 @@ def init_perun_at(
     :param str config_template: name of the configuration template
     """
     # Initialize the basic structure of the .perun directory
-    perun_full_path = os.path.join(perun_path, '.perun')
+    perun_full_path = os.path.join(perun_path, ".perun")
     helpers.touch_dir(perun_full_path)
-    helpers.touch_dir(os.path.join(perun_full_path, 'objects'))
-    helpers.touch_dir(os.path.join(perun_full_path, 'jobs'))
-    helpers.touch_dir(os.path.join(perun_full_path, 'logs'))
-    helpers.touch_dir(os.path.join(perun_full_path, 'cache'))
-    helpers.touch_dir(os.path.join(perun_full_path, 'stats'))
-    helpers.touch_dir(os.path.join(perun_full_path, 'tmp'))
+    helpers.touch_dir(os.path.join(perun_full_path, "objects"))
+    helpers.touch_dir(os.path.join(perun_full_path, "jobs"))
+    helpers.touch_dir(os.path.join(perun_full_path, "logs"))
+    helpers.touch_dir(os.path.join(perun_full_path, "cache"))
+    helpers.touch_dir(os.path.join(perun_full_path, "stats"))
+    helpers.touch_dir(os.path.join(perun_full_path, "tmp"))
     # If the config does not exist, we initialize the new version
-    if not os.path.exists(os.path.join(perun_full_path, 'local.yml')):
+    if not os.path.exists(os.path.join(perun_full_path, "local.yml")):
         perun_config.init_local_config_at(perun_full_path, vcs_config, config_template)
     else:
-        perun_log.info('configuration file already exists. Run ``perun config reset`` to reset'
-                       ' configuration to default state.')
+        perun_log.info(
+            "configuration file already exists. Run ``perun config reset`` to reset"
+            " configuration to default state."
+        )
 
     # Perun successfully created
     msg_prefix = "Reinitialized existing" if is_reinit else "Initialized empty"
-    perun_log.msg_to_stdout(msg_prefix + " Perun repository in {}".format(perun_path), 0)
+    perun_log.msg_to_stdout(
+        msg_prefix + " Perun repository in {}".format(perun_path), 0
+    )
 
 
-def init(dst: str, configuration_template: str = 'master', **kwargs: Any) -> None:
+def init(dst: str, configuration_template: str = "master", **kwargs: Any) -> None:
     """Initializes the performance and version control systems
 
     Inits the performance control system at a given directory. Optionally inits the
@@ -165,24 +190,21 @@ def init(dst: str, configuration_template: str = 'master', **kwargs: Any) -> Non
     perun_log.msg_to_stdout("call init({}, {})".format(dst, kwargs), 2)
 
     # First init the wrapping repository well
-    vcs_type = kwargs['vcs_type']
-    vcs_path = kwargs['vcs_path'] or dst
-    vcs_params = kwargs['vcs_params']
+    vcs_type = kwargs["vcs_type"]
+    vcs_path = kwargs["vcs_path"] or dst
+    vcs_params = kwargs["vcs_params"]
 
     # Construct local config
-    vcs_config = {
-        'vcs': {
-            'url': vcs_path,
-            'type': vcs_type
-        }
-    }
+    vcs_config = {"vcs": {"url": vcs_path, "type": vcs_type}}
 
     # Check if there exists perun directory above and initialize the new pcs
     try:
         super_perun_dir = helpers.locate_perun_dir_on(dst)
-        is_pcs_reinitialized = (super_perun_dir == dst)
+        is_pcs_reinitialized = super_perun_dir == dst
         if not is_pcs_reinitialized:
-            perun_log.warn("There exists super perun directory at {}".format(super_perun_dir))
+            perun_log.warn(
+                "There exists super perun directory at {}".format(super_perun_dir)
+            )
     except NotPerunRepositoryException:
         is_pcs_reinitialized = False
 
@@ -192,14 +214,23 @@ def init(dst: str, configuration_template: str = 'master', **kwargs: Any) -> Non
     # himself and fix it in the config. Note that this decision was made after tagit design,
     # where one needs to further adjust some options in initialized directory.
     if vcs_type and not vcs.init(vcs_params):
-        err_msg = "Could not initialize empty {0} repository at {1}.\n".format(vcs_type, vcs_path)
-        err_msg += "Either reinitialize perun with 'perun init' or initialize {0} repository"
+        err_msg = "Could not initialize empty {0} repository at {1}.\n".format(
+            vcs_type, vcs_path
+        )
+        err_msg += (
+            "Either reinitialize perun with 'perun init' or initialize {0} repository"
+        )
         err_msg += "manually and fix the path to vcs in 'perun config --edit'"
         perun_log.error(err_msg)
 
 
 @vcs.lookup_minor_version
-def add(profile_names: Collection[str], minor_version: str, keep_profile: bool = False, force: bool = False) -> None:
+def add(
+    profile_names: Collection[str],
+    minor_version: str,
+    keep_profile: bool = False,
+    force: bool = False,
+) -> None:
     """Appends @p profile to the @p minor_version inside the @p pcs
 
     :param generator profile_names: generator of profiles that will be stored for the minor version
@@ -219,25 +250,29 @@ def add(profile_names: Collection[str], minor_version: str, keep_profile: bool =
         # Load profile content
         # Unpack to JSON representation
         # We now know that @profile_name exist so we can load it without checks
-        unpacked_profile = store.load_profile_from_file(profile_name, True, unsafe_load=True)
+        unpacked_profile = store.load_profile_from_file(
+            profile_name, True, unsafe_load=True
+        )
 
-        if not force and unpacked_profile['origin'] != minor_version:
+        if not force and unpacked_profile["origin"] != minor_version:
             error_msg = "cannot add profile '{}' to minor index of '{}':".format(
                 profile_name, minor_version
             )
             error_msg += "profile originates from minor version '{}'".format(
-                unpacked_profile['origin']
+                unpacked_profile["origin"]
             )
             perun_log.error(error_msg, recoverable=True)
             continue
 
         # Remove origin from file
-        unpacked_profile.pop('origin')
+        unpacked_profile.pop("origin")
         str_profile_content = profile.to_string(unpacked_profile)
 
         # Append header to the content of the file
-        header = "profile {} {}\0".format(unpacked_profile['header']['type'], len(str_profile_content))
-        profile_content = (header + str_profile_content).encode('utf-8')
+        header = "profile {} {}\0".format(
+            unpacked_profile["header"]["type"], len(str_profile_content)
+        )
+        profile_content = (header + str_profile_content).encode("utf-8")
 
         # Transform to internal representation - file as sha1 checksum and content packed with zlib
         profile_sum = store.compute_checksum(profile_content)
@@ -260,11 +295,15 @@ def add(profile_names: Collection[str], minor_version: str, keep_profile: bool =
 
     profile_names_len = len(profile_names)
     if added_profile_count != profile_names_len:
-        perun_log.error("could not register {} in index: {} failed".format(
-            helpers.str_to_plural(added_profile_count, "profile"),
-            added_profile_count - profile_names_len
-        ))
-    perun_log.info("successfully registered {} profiles in index".format(added_profile_count))
+        perun_log.error(
+            "could not register {} in index: {} failed".format(
+                helpers.str_to_plural(added_profile_count, "profile"),
+                added_profile_count - profile_names_len,
+            )
+        )
+    perun_log.info(
+        "successfully registered {} profiles in index".format(added_profile_count)
+    )
 
 
 @vcs.lookup_minor_version
@@ -287,22 +326,28 @@ def remove_from_pending(profile_generator: Collection[str]) -> None:
     removed_profile_number = len(profile_generator)
     for i, pending_file in enumerate(profile_generator):
         os.remove(pending_file)
-        perun_log.info("{}/{} deleted {} from pending jobs".format(
-            helpers.format_counter_number(i+1, removed_profile_number),
-            removed_profile_number,
-            perun_log.in_color(os.path.split(pending_file)[1], 'grey'),
-        ))
+        perun_log.info(
+            "{}/{} deleted {} from pending jobs".format(
+                helpers.format_counter_number(i + 1, removed_profile_number),
+                removed_profile_number,
+                perun_log.in_color(os.path.split(pending_file)[1], "grey"),
+            )
+        )
 
     if removed_profile_number:
-        result_string = perun_log.in_color("{}".format(
-            helpers.str_to_plural(removed_profile_number, "profile")
-        ), 'white', 'bold')
-        perun_log.info("successfully removed {} from pending jobs".format(
-            result_string
-        ))
+        result_string = perun_log.in_color(
+            "{}".format(helpers.str_to_plural(removed_profile_number, "profile")),
+            "white",
+            "bold",
+        )
+        perun_log.info(
+            "successfully removed {} from pending jobs".format(result_string)
+        )
 
 
-def calculate_profile_numbers_per_type(profile_list: list[ProfileInfo]) -> dict[str, int]:
+def calculate_profile_numbers_per_type(
+    profile_list: list[ProfileInfo],
+) -> dict[str, int]:
     """Calculates how many profiles of given type are in the profile type.
 
     Returns dictionary mapping types of profiles (i.e. memory, time, ...) to the
@@ -315,30 +360,37 @@ def calculate_profile_numbers_per_type(profile_list: list[ProfileInfo]) -> dict[
     profile_numbers: dict[str, int] = collections.defaultdict(int)
     for profile_info in profile_list:
         profile_numbers[profile_info.type] += 1
-    profile_numbers['all'] = len(profile_list)
+    profile_numbers["all"] = len(profile_list)
     return profile_numbers
 
 
-def print_profile_numbers(profile_numbers: dict[str, int], profile_types: str, line_ending: str = '\n') -> None:
+def print_profile_numbers(
+    profile_numbers: dict[str, int], profile_types: str, line_ending: str = "\n"
+) -> None:
     """Helper function for printing the numbers of profile to output.
 
     :param dict profile_numbers: dictionary of number of profiles grouped by type
     :param str profile_types: type of the profiles (tracked, untracked, etc.)
     :param str line_ending: ending of the print (for different outputs of log and status)
     """
-    if profile_numbers['all']:
-        print("{0[all]} {1} profiles (".format(profile_numbers, profile_types), end='')
+    if profile_numbers["all"]:
+        print("{0[all]} {1} profiles (".format(profile_numbers, profile_types), end="")
         first_printed = False
         for profile_type in SUPPORTED_PROFILE_TYPES:
             if not profile_numbers[profile_type]:
                 continue
-            print(', ' if first_printed else '', end='')
+            print(", " if first_printed else "", end="")
             first_printed = True
             type_colour = PROFILE_TYPE_COLOURS[profile_type]
-            cprint("{0} {1}".format(profile_numbers[profile_type], profile_type), type_colour)
-        print(')', end=line_ending)
+            cprint(
+                "{0} {1}".format(profile_numbers[profile_type], profile_type),
+                type_colour,
+            )
+        print(")", end=line_ending)
     else:
-        cprintln('(no {} profiles)'.format(profile_types), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS)
+        cprintln(
+            "(no {} profiles)".format(profile_types), TEXT_WARN_COLOUR, attrs=TEXT_ATTRS
+        )
 
 
 def turn_off_paging_wrt_config(paged_function: str) -> bool:
@@ -352,23 +404,26 @@ def turn_off_paging_wrt_config(paged_function: str) -> bool:
     :return: true if the function should be paged (unless --no-pager is set)
     """
     try:
-        paging_option = perun_config.shared().get('general.paging')
+        paging_option = perun_config.shared().get("general.paging")
     # Test for backward compatibility with old instances of Perun and possible issues
     except MissingConfigSectionException:
-        perun_log.warn("""corrupted shared configuration file: missing ``general.paging`` option.
+        perun_log.warn(
+            """corrupted shared configuration file: missing ``general.paging`` option.
 
 Run ``perun config --shared --edit`` and set the ``general.paging`` to one of following:
     always, only-log, only-status, never
 
 Consult the documentation (Configuration and Logs) for more information about paging of
 output of status, log and others.
-        """)
+        """
+        )
         return True
-    return paging_option == 'always' or \
-        (paging_option.startswith('only-') and paging_option.endswith(paged_function))
+    return paging_option == "always" or (
+        paging_option.startswith("only-") and paging_option.endswith(paged_function)
+    )
 
 
-@perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('log'))
+@perun_log.paged_function(paging_switch=turn_off_paging_wrt_config("log"))
 @vcs.lookup_minor_version
 def log(minor_version: str, short: bool = False, **_: Any) -> None:
     """Prints the log of the performance control system
@@ -412,28 +467,43 @@ def log(minor_version: str, short: bool = False, **_: Any) -> None:
             :return: dictionary with stats for minor version
             """
             counts = perun_log.count_degradations_per_group(
-                store.load_degradation_list_for(pcs.get_object_directory(), minor_v.checksum)
+                store.load_degradation_list_for(
+                    pcs.get_object_directory(), minor_v.checksum
+                )
             )
-            return {'changes': counts.get('Optimization', 0)*'+' + counts.get('Degradation', 0)*'-'}
+            return {
+                "changes": counts.get("Optimization", 0) * "+"
+                + counts.get("Degradation", 0) * "-"
+            }
 
         minor_version_maxima.update(
             calculate_maximal_lengths_for_stats(minor_versions, minor_stat_retriever)
         )
         minor_version_maxima.update(
-            calculate_maximal_lengths_for_stats(minor_versions, deg_count_retriever, " changes ")
+            calculate_maximal_lengths_for_stats(
+                minor_versions, deg_count_retriever, " changes "
+            )
         )
         print_shortlog_minor_version_info_list(minor_versions, minor_version_maxima)
     else:
         # Walk the minor versions and print them
         for minor in vcs.walk_minor_versions(minor_version):
-            cprintln("Minor Version {}".format(minor.checksum), TEXT_EMPH_COLOUR, attrs=TEXT_ATTRS)
+            cprintln(
+                "Minor Version {}".format(minor.checksum),
+                TEXT_EMPH_COLOUR,
+                attrs=TEXT_ATTRS,
+            )
             base_dir = pcs.get_object_directory()
-            tracked_profiles = index.get_profile_number_for_minor(base_dir, minor.checksum)
-            print_profile_numbers(tracked_profiles, 'tracked')
+            tracked_profiles = index.get_profile_number_for_minor(
+                base_dir, minor.checksum
+            )
+            print_profile_numbers(tracked_profiles, "tracked")
             print_minor_version_info(minor, indent=1)
 
 
-def adjust_limit(limit: str, attr_type: str, maxima: dict[str, int], padding: int = 0) -> int:
+def adjust_limit(
+    limit: str, attr_type: str, maxima: dict[str, int], padding: int = 0
+) -> int:
     """Returns the adjusted value of the limit for the given field output in status or log
 
     Takes into the account the limit, which is specified in the field (e.g. as checksum:6),
@@ -449,7 +519,9 @@ def adjust_limit(limit: str, attr_type: str, maxima: dict[str, int], padding: in
     return max(int(limit[1:]), len(attr_type)) if limit else maxima[attr_type] + padding
 
 
-def print_shortlog_minor_version_info_list(minor_version_list: list[MinorVersion], max_lengths: dict[str, int]) -> None:
+def print_shortlog_minor_version_info_list(
+    minor_version_list: list[MinorVersion], max_lengths: dict[str, int]
+) -> None:
     """Prints list of profiles and counts per type of tracked/untracked profiles.
 
     Prints the list of profiles, trims the sizes of each information according to the
@@ -467,7 +539,7 @@ def print_shortlog_minor_version_info_list(minor_version_list: list[MinorVersion
     """
 
     # Load formating string for profile
-    minor_version_info_fmt = perun_config.lookup_key_recursively('format.shortlog')
+    minor_version_info_fmt = perun_config.lookup_key_recursively("format.shortlog")
     fmt_tokens = perun_log.scan_formatting_string(
         minor_version_info_fmt, lambda token: "%" + token + "%"
     )
@@ -479,14 +551,16 @@ def print_shortlog_minor_version_info_list(minor_version_list: list[MinorVersion
     # Print profiles, e.g.:
     # aac4d21a (24|0|0|0 profiles) Bump version and changelog to 0.17.2
     # 91373c43 ( 2|0|0|2 profiles) Bump version and changelog to 0.16.8
-    print_shortlog_profile_list(fmt_tokens, max_lengths, minor_version_info_fmt, minor_version_list)
+    print_shortlog_profile_list(
+        fmt_tokens, max_lengths, minor_version_info_fmt, minor_version_list
+    )
 
 
 def print_shortlog_profile_list(
-        tokens: list[tuple[str, str]],
-        max_lengths: dict[str, int],
-        fmt_string: str,
-        minor_versions: list[MinorVersion]
+    tokens: list[tuple[str, str]],
+    max_lengths: dict[str, int],
+    fmt_string: str,
+    minor_versions: list[MinorVersion],
 ) -> None:
     """For each minor versions, prints the stats w.r.t to the formatting tokens specified in
     @p tokens.
@@ -507,26 +581,37 @@ def print_shortlog_profile_list(
     :param str fmt_string: formatting string
     :param list minor_versions: list of profiles of MinorVersionInfo objects
     """
-    stat_length = sum([
-        max_lengths['all'], max_lengths['time'], max_lengths['mixed'], max_lengths['memory']
-    ]) + 3 + len(" profiles")
+    stat_length = (
+        sum(
+            [
+                max_lengths["all"],
+                max_lengths["time"],
+                max_lengths["mixed"],
+                max_lengths["memory"],
+            ]
+        )
+        + 3
+        + len(" profiles")
+    )
 
     for minor_version in minor_versions:
-        for (token_type, token) in tokens:
-            if token_type == 'fmt_string':
-                print_shortlog_token(fmt_string, max_lengths, minor_version, stat_length, token)
+        for token_type, token in tokens:
+            if token_type == "fmt_string":
+                print_shortlog_token(
+                    fmt_string, max_lengths, minor_version, stat_length, token
+                )
             # Non-token parts of the formatting string are printed as they are
             else:
-                cprint(token, 'white')
+                cprint(token, "white")
         perun_log.info("")
 
 
 def print_shortlog_token(
-        fmt_string: str,
-        max_lengths: dict[str, int],
-        minor_version: MinorVersion,
-        stat_len: int,
-        token: str
+    fmt_string: str,
+    max_lengths: dict[str, int],
+    minor_version: MinorVersion,
+    stat_len: int,
+    token: str,
 ) -> None:
     """Prints token of the formatting string.
 
@@ -546,22 +631,24 @@ def print_shortlog_token(
     if m := FMT_REGEX.match(token):
         attr_type, limit, fill = m.groups()
         limit = max(int(limit[1:]), len(attr_type)) if limit else max_lengths[attr_type]
-        if attr_type == 'stats':
+        if attr_type == "stats":
             # (24|0|0|0 profiles)
             print_stats_token(max_lengths, minor_version, stat_len)
-        elif attr_type == 'changes':
+        elif attr_type == "changes":
             # +++---
             print_changes_token(max_lengths, minor_version)
         else:
             # "91373c43",  "Bump version and changelog to 0.16.8"
             print_other_formatting_string(
-                fmt_string, minor_version, attr_type, limit, value_fill=fill or ' '
+                fmt_string, minor_version, attr_type, limit, value_fill=fill or " "
             )
     else:
         perun_log.error(f"incorrect formatting token {token}")
 
 
-def print_changes_token(max_lengths: dict[str, int], minor_version: MinorVersion) -> None:
+def print_changes_token(
+    max_lengths: dict[str, int], minor_version: MinorVersion
+) -> None:
     """Prints information about changes in the minor version, i.e. optimizations and degradations.
 
     The example of changes token is: "+++---"
@@ -575,12 +662,14 @@ def print_changes_token(max_lengths: dict[str, int], minor_version: MinorVersion
     )
     change_string = perun_log.change_counts_to_string(
         perun_log.count_degradations_per_group(degradations),
-        width=max_lengths['changes']
+        width=max_lengths["changes"],
     )
-    perun_log.info(change_string, end='')
+    perun_log.info(change_string, end="")
 
 
-def print_stats_token(max_lengths: dict[str, int], minor_version: MinorVersion, stat_length: int) -> None:
+def print_stats_token(
+    max_lengths: dict[str, int], minor_version: MinorVersion, stat_length: int
+) -> None:
     """Prints the statistic of profiles for the given minor versions.
 
     The example of stats token is: "(24|0|0|0 profiles)"
@@ -593,34 +682,46 @@ def print_stats_token(max_lengths: dict[str, int], minor_version: MinorVersion, 
     tracked_profiles = index.get_profile_number_for_minor(
         pcs.get_object_directory(), minor_version.checksum
     )
-    if tracked_profiles['all']:
-        perun_log.info(perun_log.in_color("{:{}}".format(
-            tracked_profiles['all'], max_lengths['all']
-        ), TEXT_EMPH_COLOUR, TEXT_ATTRS), end='')
+    if tracked_profiles["all"]:
+        perun_log.info(
+            perun_log.in_color(
+                "{:{}}".format(tracked_profiles["all"], max_lengths["all"]),
+                TEXT_EMPH_COLOUR,
+                TEXT_ATTRS,
+            ),
+            end="",
+        )
 
         # Print the coloured numbers
         for profile_type in SUPPORTED_PROFILE_TYPES:
-            perun_log.info("{}{}".format(
-                perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
-                perun_log.in_color("{:{}}".format(
-                    tracked_profiles[profile_type], max_lengths[profile_type]
-                ), PROFILE_TYPE_COLOURS[profile_type])
-            ), end='')
+            perun_log.info(
+                "{}{}".format(
+                    perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR),
+                    perun_log.in_color(
+                        "{:{}}".format(
+                            tracked_profiles[profile_type], max_lengths[profile_type]
+                        ),
+                        PROFILE_TYPE_COLOURS[profile_type],
+                    ),
+                ),
+                end="",
+            )
 
         perun_log.info(
-            perun_log.in_color(
-                " profiles", HEADER_INFO_COLOUR, TEXT_ATTRS
-            ), end=''
+            perun_log.in_color(" profiles", HEADER_INFO_COLOUR, TEXT_ATTRS), end=""
         )
     else:
         perun_log.info(
             perun_log.in_color(
-                '--no--profiles--'.center(stat_length), TEXT_WARN_COLOUR, TEXT_ATTRS
-            ), end=''
+                "--no--profiles--".center(stat_length), TEXT_WARN_COLOUR, TEXT_ATTRS
+            ),
+            end="",
         )
 
 
-def print_shortlog_profile_list_header(fmt_tokens: list[tuple[str, str]], max_lengths: dict[str, int]) -> None:
+def print_shortlog_profile_list_header(
+    fmt_tokens: list[tuple[str, str]], max_lengths: dict[str, int]
+) -> None:
     """Prints the header of the output of the minor version information
 
     The example of shortlog header is:
@@ -630,21 +731,21 @@ def print_shortlog_profile_list_header(fmt_tokens: list[tuple[str, str]], max_le
     :param list fmt_tokens: list of formatting tokens
     :param dict max_lengths: dictionary of maximal values of columns corresponding to the tokens
     """
-    for (token_type, token) in fmt_tokens:
-        if token_type == 'fmt_string':
+    for token_type, token in fmt_tokens:
+        if token_type == "fmt_string":
             if m := FMT_REGEX.match(token):
                 attr_type, limit, _ = m.groups()
-                if attr_type == 'stats':
+                if attr_type == "stats":
                     print_shortlog_stats_header(max_lengths)
                 else:
                     limit = adjust_limit(limit, attr_type, max_lengths)
-                    token_string = attr_type.center(limit, ' ')
-                    cprint(token_string, 'white', HEADER_ATTRS)
+                    token_string = attr_type.center(limit, " ")
+                    cprint(token_string, "white", HEADER_ATTRS)
             else:
                 perun_log.error(f"incorrect formatting token {token}")
         else:
             # Print the rest (non-token stuff)
-            cprint(token, 'white', HEADER_ATTRS)
+            cprint(token, "white", HEADER_ATTRS)
     perun_log.info("")
 
 
@@ -656,24 +757,36 @@ def print_shortlog_stats_header(max_lengths: dict[str, int]) -> None:
     :param dict max_lengths: dictionary that computes the maximal lengths of each column
     """
     slash = perun_log.in_color(PROFILE_DELIMITER, HEADER_SLASH_COLOUR, HEADER_ATTRS)
-    end_msg = perun_log.in_color(' profiles', HEADER_SLASH_COLOUR, HEADER_ATTRS)
-    perun_log.info(perun_log.in_color("{0}{4}{1}{4}{2}{4}{3}{5}".format(
+    end_msg = perun_log.in_color(" profiles", HEADER_SLASH_COLOUR, HEADER_ATTRS)
+    perun_log.info(
         perun_log.in_color(
-            'a'.rjust(max_lengths['all']), HEADER_COMMIT_COLOUR, HEADER_ATTRS
+            "{0}{4}{1}{4}{2}{4}{3}{5}".format(
+                perun_log.in_color(
+                    "a".rjust(max_lengths["all"]), HEADER_COMMIT_COLOUR, HEADER_ATTRS
+                ),
+                perun_log.in_color(
+                    "m".rjust(max_lengths["memory"]),
+                    PROFILE_TYPE_COLOURS["memory"],
+                    HEADER_ATTRS,
+                ),
+                perun_log.in_color(
+                    "x".rjust(max_lengths["mixed"]),
+                    PROFILE_TYPE_COLOURS["mixed"],
+                    HEADER_ATTRS,
+                ),
+                perun_log.in_color(
+                    "t".rjust(max_lengths["time"]),
+                    PROFILE_TYPE_COLOURS["time"],
+                    HEADER_ATTRS,
+                ),
+                slash,
+                end_msg,
+            ),
+            HEADER_SLASH_COLOUR,
+            HEADER_ATTRS,
         ),
-        perun_log.in_color(
-            'm'.rjust(max_lengths['memory']),
-            PROFILE_TYPE_COLOURS['memory'], HEADER_ATTRS
-        ),
-        perun_log.in_color(
-            'x'.rjust(max_lengths['mixed']),
-            PROFILE_TYPE_COLOURS['mixed'], HEADER_ATTRS),
-        perun_log.in_color(
-            't'.rjust(max_lengths['time']),
-            PROFILE_TYPE_COLOURS['time'], HEADER_ATTRS),
-        slash,
-        end_msg
-    ), HEADER_SLASH_COLOUR, HEADER_ATTRS), end='')
+        end="",
+    )
 
 
 def print_minor_version_info(head_minor_version: MinorVersion, indent: int = 0) -> None:
@@ -694,19 +807,19 @@ def print_minor_version_info(head_minor_version: MinorVersion, indent: int = 0) 
     for parent in head_minor_version.parents:
         perun_log.info("Parent: {}".format(parent))
     perun_log.info("")
-    indented_desc = '\n'.join(map(
-        lambda line: ' '*(indent*4) + line, head_minor_version.desc.split('\n')
-    ))
+    indented_desc = "\n".join(
+        map(lambda line: " " * (indent * 4) + line, head_minor_version.desc.split("\n"))
+    )
     perun_log.info(indented_desc)
 
 
 def print_other_formatting_string(
-        fmt_string: str,
-        info_object: ProfileInfo | MinorVersion,
-        info_attr: str,
-        size_limit: int,
-        colour: str = 'white',
-        value_fill: str = ' '
+    fmt_string: str,
+    info_object: ProfileInfo | MinorVersion,
+    info_attr: str,
+    size_limit: int,
+    colour: str = "white",
+    value_fill: str = " ",
 ) -> None:
     """Prints the token from the fmt_string, according to the values stored in info_object
 
@@ -734,16 +847,16 @@ def print_other_formatting_string(
     info_value = raw_value[:size_limit].ljust(size_limit, value_fill)
 
     # Print the actual token
-    if info_attr == 'type':
+    if info_attr == "type":
         cprint("[{}]".format(info_value), PROFILE_TYPE_COLOURS[raw_value])
     else:
         cprint(info_value, colour)
 
 
 def calculate_maximal_lengths_for_stats(
-        obj_list: list[Any],
-        stat_function: Callable[[Any], dict[str, Any]],
-        stat_header: str = ""
+    obj_list: list[Any],
+    stat_function: Callable[[Any], dict[str, Any]],
+    stat_header: str = "",
 ) -> dict[str, int]:
     """For given object lists and stat_function compute maximal lengths of the stats
 
@@ -756,11 +869,15 @@ def calculate_maximal_lengths_for_stats(
     for obj in obj_list:
         object_stats = stat_function(obj)
         for key in object_stats.keys():
-            maxima[key] = max(len(stat_header), maxima[key], len(str(object_stats[key])))
+            maxima[key] = max(
+                len(stat_header), maxima[key], len(str(object_stats[key]))
+            )
     return maxima
 
 
-def calculate_maximal_lengths_for_object_list(object_list: list[Any], valid_attributes: list[str]) -> dict[str, int]:
+def calculate_maximal_lengths_for_object_list(
+    object_list: list[Any], valid_attributes: list[str]
+) -> dict[str, int]:
     """For given object list, will calculate the maximal sizes for its values for table view.
 
     :param list object_list: list of objects (e.g. ProfileInfo or MinorVersion) information
@@ -772,16 +889,17 @@ def calculate_maximal_lengths_for_object_list(object_list: list[Any], valid_attr
     for object_info in object_list:
         for attr in valid_attributes:
             if hasattr(object_info, attr):
-                max_lengths[attr] \
-                    = max(len(attr), max_lengths[attr], len(str(getattr(object_info, attr))))
+                max_lengths[attr] = max(
+                    len(attr), max_lengths[attr], len(str(getattr(object_info, attr)))
+                )
     return max_lengths
 
 
 def print_status_profile_list(
-        profiles: list[ProfileInfo],
-        max_lengths: dict[str, int],
-        short: bool,
-        list_type: str = 'tracked'
+    profiles: list[ProfileInfo],
+    max_lengths: dict[str, int],
+    short: bool,
+    list_type: str = "tracked",
 ) -> None:
     """Prints list of profiles and counts per type of tracked/untracked profiles.
 
@@ -822,7 +940,7 @@ def print_status_profile_list(
         return
 
     # Load formating string for profile
-    fmt_string = perun_config.lookup_key_recursively('format.status')
+    fmt_string = perun_config.lookup_key_recursively("format.status")
     fmt_tokens = perun_log.scan_formatting_string(
         fmt_string, lambda token: "%" + token + "%"
     )
@@ -836,11 +954,11 @@ def print_status_profile_list(
 
 
 def print_status_profiles(
-        fmt_tokens: list[tuple[str, str]],
-        list_config: ProfileListConfig,
-        max_lengths: dict[str, int],
-        fmt_string: str,
-        profiles: list[ProfileInfo]
+    fmt_tokens: list[tuple[str, str]],
+    list_config: ProfileListConfig,
+    max_lengths: dict[str, int],
+    fmt_string: str,
+    profiles: list[ProfileInfo],
 ) -> None:
     """Prints each of the profiles, formatted according to the formatting string
 
@@ -862,18 +980,26 @@ def print_status_profiles(
     :param list profiles: list of profiles
     """
     for profile_no, profile_info in enumerate(profiles):
-        perun_log.info(" ", end='')
-        cprint("{}@{}".format(profile_no, list_config.id_char).rjust(list_config.id_width + 2, ' '),
-               list_config.colour)
-        perun_log.info(" ", end='')
-        for (token_type, token) in fmt_tokens:
-            if token_type == 'fmt_string':
+        perun_log.info(" ", end="")
+        cprint(
+            "{}@{}".format(profile_no, list_config.id_char).rjust(
+                list_config.id_width + 2, " "
+            ),
+            list_config.colour,
+        )
+        perun_log.info(" ", end="")
+        for token_type, token in fmt_tokens:
+            if token_type == "fmt_string":
                 if m := FMT_REGEX.match(token):
                     attr_type, limit, fill = m.groups()
                     limit = adjust_limit(limit, attr_type, max_lengths)
                     print_other_formatting_string(
-                        fmt_string, profile_info, attr_type, limit,
-                        colour=list_config.colour, value_fill=fill or ' '
+                        fmt_string,
+                        profile_info,
+                        attr_type,
+                        limit,
+                        colour=list_config.colour,
+                        value_fill=fill or " ",
                     )
                 else:
                     perun_log.error(f"incorrect formatting token {token}")
@@ -885,9 +1011,9 @@ def print_status_profiles(
 
 
 def print_status_profile_list_header(
-        fmt_tokens: list[tuple[str, str]],
-        list_config: ProfileListConfig,
-        max_lengths: dict[str, int]
+    fmt_tokens: list[tuple[str, str]],
+    list_config: ProfileListConfig,
+    max_lengths: dict[str, int],
 ) -> None:
     """Prints the header of the profile list, printing each token aligned by maximal lengths.
 
@@ -902,15 +1028,17 @@ def print_status_profile_list_header(
     :param dict max_lengths: mapping of token types ot their maximal lengths for alignment
     """
     cprintln("\u2550" * list_config.header_width + "\u25A3", list_config.colour)
-    perun_log.info(" ", end='')
-    cprint("id".center(list_config.id_width + 2, ' '), list_config.colour)
-    perun_log.info(" ", end='')
-    for (token_type, token) in fmt_tokens:
-        if token_type == 'fmt_string':
+    perun_log.info(" ", end="")
+    cprint("id".center(list_config.id_width + 2, " "), list_config.colour)
+    perun_log.info(" ", end="")
+    for token_type, token in fmt_tokens:
+        if token_type == "fmt_string":
             if m := FMT_REGEX.match(token):
                 attr_type, limit, _ = m.groups()
-                limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
-                token_string = attr_type.center(limit, ' ')
+                limit = adjust_limit(
+                    limit, attr_type, max_lengths, (2 if attr_type == "type" else 0)
+                )
+                token_string = attr_type.center(limit, " ")
                 cprint(token_string, list_config.colour)
             else:
                 perun_log.error(f"incorrect formatting token {token}")
@@ -922,7 +1050,9 @@ def print_status_profile_list_header(
 
 
 def adjust_header_length(
-        fmt_tokens: list[tuple[str, str]], max_lengths: dict[str, int], list_config: ProfileListConfig
+    fmt_tokens: list[tuple[str, str]],
+    max_lengths: dict[str, int],
+    list_config: ProfileListConfig,
 ) -> None:
     """Adjust the length of the header stored in configuration
 
@@ -931,11 +1061,13 @@ def adjust_header_length(
     :param ProfileListConfig list_config: configuration of the printed list
     """
     # the magic constant three is for 3 border columns
-    for (token_type, token) in fmt_tokens:
-        if token_type == 'fmt_string':
+    for token_type, token in fmt_tokens:
+        if token_type == "fmt_string":
             if m := FMT_REGEX.match(token):
                 attr_type, limit, _ = m.groups()
-                limit = adjust_limit(limit, attr_type, max_lengths, (2 if attr_type == 'type' else 0))
+                limit = adjust_limit(
+                    limit, attr_type, max_lengths, (2 if attr_type == "type" else 0)
+                )
                 list_config.header_width += limit
             else:
                 perun_log.error(f"incorrect formatting token {token}")
@@ -952,13 +1084,13 @@ def get_untracked_profiles() -> list[ProfileInfo]:
     profile_list = []
     # First load untracked files from the ./jobs/ directory
     untracked_list = sorted(
-        list(filter(lambda f: f.endswith('perf'), os.listdir(pcs.get_job_directory())))
+        list(filter(lambda f: f.endswith("perf"), os.listdir(pcs.get_job_directory())))
     )
 
     # Second load registered files in job index
     job_index = pcs.get_job_index()
     index.touch_index(job_index)
-    with open(job_index, 'rb+') as index_handle:
+    with open(job_index, "rb+") as index_handle:
         pending_index_entries = list(index.walk_index(index_handle))
 
     # Iterate through the index and check if it is still in the ./jobs directory
@@ -968,19 +1100,21 @@ def get_untracked_profiles() -> list[ProfileInfo]:
         if index_entry.path in untracked_list:
             real_path = os.path.join(pcs.get_job_directory(), index_entry.path)
             index_info = {
-                'header': {
-                    'type': index_entry.type,
-                    'cmd': index_entry.cmd,
-                    'args': index_entry.args,
-                    'workload': index_entry.workload
+                "header": {
+                    "type": index_entry.type,
+                    "cmd": index_entry.cmd,
+                    "args": index_entry.args,
+                    "workload": index_entry.workload,
                 },
-                'collector_info': {'name': index_entry.collector},
-                'postprocessors': [
-                    {'name': p} for p in index_entry.postprocessors
-                    ]
+                "collector_info": {"name": index_entry.collector},
+                "postprocessors": [{"name": p} for p in index_entry.postprocessors],
             }
             profile_info = profile.ProfileInfo(
-                index_entry.path, real_path, index_entry.time, index_info, is_raw_profile=True
+                index_entry.path,
+                real_path,
+                index_entry.time,
+                index_info,
+                is_raw_profile=True,
             )
             profile_list.append(profile_info)
             saved_entries.append(index_entry)
@@ -994,8 +1128,10 @@ def get_untracked_profiles() -> list[ProfileInfo]:
 
         # Load the data from JSON, which contains additional information about profile
         # We know, that the real_path exists, since we obtained it above from listdir
-        loaded_profile = store.load_profile_from_file(real_path, is_raw_profile=True, unsafe_load=True)
-        registered_checksum = store.compute_checksum(real_path.encode('utf-8'))
+        loaded_profile = store.load_profile_from_file(
+            real_path, is_raw_profile=True, unsafe_load=True
+        )
+        registered_checksum = store.compute_checksum(real_path.encode("utf-8"))
 
         # Update the list of profiles and counters of types
         profile_info = profile.ProfileInfo(
@@ -1014,7 +1150,7 @@ def get_untracked_profiles() -> list[ProfileInfo]:
     return profile_list
 
 
-@perun_log.paged_function(paging_switch=turn_off_paging_wrt_config('status'))
+@perun_log.paged_function(paging_switch=turn_off_paging_wrt_config("status"))
 def status(short: bool = False, **_: Any) -> None:
     """Prints the status of performance control system
 
@@ -1025,14 +1161,19 @@ def status(short: bool = False, **_: Any) -> None:
     minor_head = vcs.get_minor_head()
 
     # Print the status of major head.
-    perun_log.info("On major version {} ".format(
-        perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
-    ), end='')
+    perun_log.info(
+        "On major version {} ".format(
+            perun_log.in_color(major_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
+        ),
+        end="",
+    )
 
     # Print the index of the current head
-    perun_log.info("(minor version: {})".format(
-        perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
-    ))
+    perun_log.info(
+        "(minor version: {})".format(
+            perun_log.in_color(minor_head, TEXT_EMPH_COLOUR, TEXT_ATTRS)
+        )
+    )
 
     # Print in long format, the additional information about head commit, by default print
     if not short:
@@ -1044,12 +1185,13 @@ def status(short: bool = False, **_: Any) -> None:
     minor_version_profiles = profile.load_list_for_minor_version(minor_head)
     untracked_profiles = get_untracked_profiles()
     maxs = calculate_maximal_lengths_for_object_list(
-        minor_version_profiles + untracked_profiles, profile.ProfileInfo.valid_attributes
+        minor_version_profiles + untracked_profiles,
+        profile.ProfileInfo.valid_attributes,
     )
     print_status_profile_list(minor_version_profiles, maxs, short)
     if not short:
         perun_log.info("")
-    print_status_profile_list(untracked_profiles, maxs, short, 'untracked')
+    print_status_profile_list(untracked_profiles, maxs, short, "untracked")
 
     # Print degradation info
     degradation_list = store.load_degradation_list_for(
@@ -1073,16 +1215,22 @@ def load_profile_from_args(profile_name: str, minor_version: str) -> Optional[Pr
     :returns dict: loaded profile represented as dictionary
     """
     profiled_looked_up_already = store.is_sha1(profile_name)
-    profiles: list[str | index.BasicIndexEntry] = [profile_name] if profiled_looked_up_already else []
+    profiles: list[str | index.BasicIndexEntry] = (
+        [profile_name] if profiled_looked_up_already else []
+    )
     # If the profile is defined by its path, we have to first look up it in the index
     if not profiled_looked_up_already:
-        _, minor_index_file = store.split_object_name(pcs.get_object_directory(), minor_version)
+        _, minor_index_file = store.split_object_name(
+            pcs.get_object_directory(), minor_version
+        )
         # If there is nothing at all in the index, since it is not even created ;)
         #   we return nothing otherwise we look up entries in index
         if os.path.exists(minor_index_file):
-            with open(minor_index_file, 'rb') as minor_handle:
+            with open(minor_index_file, "rb") as minor_handle:
                 lookup_pred = lambda entry: entry.path == profile_name
-                profiles.extend(index.lookup_all_entries_within_index(minor_handle, lookup_pred))
+                profiles.extend(
+                    index.lookup_all_entries_within_index(minor_handle, lookup_pred)
+                )
 
     # If there are more profiles we should choose
     if not profiles:
@@ -1092,7 +1240,9 @@ def load_profile_from_args(profile_name: str, minor_version: str) -> Optional[Pr
     # Peek the type if the profile is correct and load the json
     _, profile_name = store.split_object_name(
         pcs.get_object_directory(),
-        chosen_profile.checksum if isinstance(chosen_profile, index.BasicIndexEntry) else chosen_profile
+        chosen_profile.checksum
+        if isinstance(chosen_profile, index.BasicIndexEntry)
+        else chosen_profile,
     )
     loaded_profile = store.load_profile_from_file(profile_name, False)
 
@@ -1113,31 +1263,42 @@ def print_temp_files(root: str, **kwargs: Any) -> None:
         perun_log.error(str(exc))
 
     # Filter the files by protection level if it is set to show only certain group
-    if kwargs['filter_protection'] != 'all':
-        tmp_files = [(name, level, size) for name, level, size in tmp_files
-                     if level == kwargs['filter_protection']]
+    if kwargs["filter_protection"] != "all":
+        tmp_files = [
+            (name, level, size)
+            for name, level, size in tmp_files
+            if level == kwargs["filter_protection"]
+        ]
     # If there are no files then abort the output
     if not tmp_files:
-        perun_log.info('== No results for the given parameters in the .perun/tmp/ directory ==')
+        perun_log.info(
+            "== No results for the given parameters in the .perun/tmp/ directory =="
+        )
         return
 
     # First sort by the name
     tmp_files.sort(key=itemgetter(0))
     # Now apply 'sort-by' if it differs from name:
-    if kwargs['sort_by'] != 'name':
-        sort_map = temp.SORT_ATTR_MAP[kwargs['sort_by']]
+    if kwargs["sort_by"] != "name":
+        sort_map = temp.SORT_ATTR_MAP[kwargs["sort_by"]]
         # Note: We know, that `sort_map['reverse']` is bool, so we help type checker; this could be improved
-        tmp_files.sort(key=itemgetter(sort_map['pos']), reverse=cast(bool, sort_map['reverse']))
+        tmp_files.sort(
+            key=itemgetter(sort_map["pos"]), reverse=cast(bool, sort_map["reverse"])
+        )
 
     # Print the total files size if needed
-    _print_total_size(sum(size for _, _, size in tmp_files), not kwargs['no_total_size'])
+    _print_total_size(
+        sum(size for _, _, size in tmp_files), not kwargs["no_total_size"]
+    )
     # Print the file records
     print_formatted_temp_files(
-        tmp_files, not kwargs['no_file_size'], not kwargs['no_protection_level']
+        tmp_files, not kwargs["no_file_size"], not kwargs["no_protection_level"]
     )
 
 
-def print_formatted_temp_files(records: list[tuple[str, str, int]], show_size: bool, show_protection: bool) -> None:
+def print_formatted_temp_files(
+    records: list[tuple[str, str, int]], show_size: bool, show_protection: bool
+) -> None:
     """Format and print temporary file records as:
     size | protection level | path from tmp/ directory
 
@@ -1150,25 +1311,34 @@ def print_formatted_temp_files(records: list[tuple[str, str, int]], show_size: b
     for file_name, protection, size in records:
         # Print the size of each file
         if show_size:
-            perun_log.info('{}'.format(
-                perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)
-            ), end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
+            perun_log.info(
+                "{}".format(
+                    perun_log.in_color(utils.format_file_size(size), TEXT_EMPH_COLOUR)
+                ),
+                end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
+            )
         # Print the protection level of each file
         if show_protection:
             if protection == temp.UNPROTECTED:
-                perun_log.info('{}'.format(temp.UNPROTECTED),
-                      end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
+                perun_log.info(
+                    "{}".format(temp.UNPROTECTED),
+                    end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
+                )
             else:
-                perun_log.info('{}  '.format(perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)),
-                      end=perun_log.in_color(' | ', TEXT_WARN_COLOUR))
+                perun_log.info(
+                    "{}  ".format(perun_log.in_color(temp.PROTECTED, TEXT_WARN_COLOUR)),
+                    end=perun_log.in_color(" | ", TEXT_WARN_COLOUR),
+                )
 
         # Print the file path, emphasize the directory to make it a bit more readable
         file_name = file_name[prefix:]
         file_dir = os.path.dirname(file_name)
         if file_dir:
             file_dir += os.sep
-            perun_log.info('{}'.format(perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)), end='')
-        perun_log.info('{}'.format(os.path.basename(file_name)))
+            perun_log.info(
+                "{}".format(perun_log.in_color(file_dir, TEXT_EMPH_COLOUR)), end=""
+            )
+        perun_log.info("{}".format(os.path.basename(file_name)))
 
 
 def delete_temps(path: str, ignore_protected: bool, force: bool, **kwargs: Any) -> None:
@@ -1187,21 +1357,24 @@ def delete_temps(path: str, ignore_protected: bool, force: bool, **kwargs: Any) 
             temp.delete_temp_file(path, ignore_protected, force)
         elif temp.exists_temp_dir(path):
             # We might delete only files or files + empty directories
-            if kwargs['keep_directories']:
+            if kwargs["keep_directories"]:
                 temp.delete_all_temps(path, ignore_protected, force)
             else:
                 temp.delete_temp_dir(path, ignore_protected, force)
         # The supplied path does not exist, inform the user so they can correct the path
         else:
-            perun_log.warn("The supplied path '{}' does not exist, no files deleted"
-                           .format(temp.temp_path(path)))
+            perun_log.warn(
+                "The supplied path '{}' does not exist, no files deleted".format(
+                    temp.temp_path(path)
+                )
+            )
     except (InvalidTempPathException, ProtectedTempException) as exc:
         # Invalid path or protected files encountered
         perun_log.error(str(exc))
 
 
 def list_stat_objects(mode: str, **kwargs: Any) -> None:
-    """ Prints the stat files or versions (based on the mode) in the '.perun/stats' directory.
+    """Prints the stat files or versions (based on the mode) in the '.perun/stats' directory.
 
     The default output formats are:
     'file size | minor version | file name' for files
@@ -1211,23 +1384,29 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
     :param str mode: the requested list mode: 'versions' or 'files'
     :param kwargs: additional parameters from the CLI such as coloring the output, sorting etc.
     """
-    stat_versions = stats.list_stat_versions(kwargs['from_minor'], kwargs['top'])
-    versions = [(version, stats.list_stats_for_minor(version)) for version, _ in stat_versions]
+    stat_versions = stats.list_stat_versions(kwargs["from_minor"], kwargs["top"])
+    versions = [
+        (version, stats.list_stats_for_minor(version)) for version, _ in stat_versions
+    ]
 
     # Abort the whole output if we have no versions
     if not versions:
-        perun_log.info('== No results for the given parameters in the .perun/stats/ directory ==')
+        perun_log.info(
+            "== No results for the given parameters in the .perun/stats/ directory =="
+        )
         return
 
     results: list[tuple[Optional[float], str, str | int]] = []
-    if mode == 'versions':
+    if mode == "versions":
         # We need to print the versions, aggregate the files and their sizes
-        results = [(sum(size for _, size in files), version, len(files))
-                   for version, files in versions]
+        results = [
+            (sum(size for _, size in files), version, len(files))
+            for version, files in versions
+        ]
         properties = [
-            (not kwargs['no_dir_size'], True),
+            (not kwargs["no_dir_size"], True),
             (True, False),
-            (not kwargs['no_file_count'], False)
+            (not kwargs["no_file_count"], False),
         ]
     else:
         # We need to print the files, create separate record for each file
@@ -1236,12 +1415,12 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
             if files:
                 results.extend([(size, version, file) for file, size in files])
             else:
-                results.append((None, version, '-= No stats file =-'))
+                results.append((None, version, "-= No stats file =-"))
         # results = [(size, version, file) for version, files in versions for file, size in files]
         properties = [
-            (not kwargs['no_file_size'], True),
-            (not kwargs['no_minor'], False),
-            (True, False)
+            (not kwargs["no_file_size"], True),
+            (not kwargs["no_minor"], False),
+            (True, False),
         ]
 
     # Separate the results with no files since they cannot be properly sorted but still need
@@ -1253,11 +1432,12 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
 
     # Print the total size if needed
     _print_total_size(
-        sum(record_size(record) for record in valid_results), not kwargs['no_total_size']
+        sum(record_size(record) for record in valid_results),
+        not kwargs["no_total_size"],
     )
     # Sort by size if needed
-    if kwargs['sort_by_size']:
-        if mode == 'versions':
+    if kwargs["sort_by_size"]:
+        if mode == "versions":
             results.sort(key=record_size, reverse=True)
         else:
             valid_results.sort(key=record_size, reverse=True)
@@ -1272,20 +1452,24 @@ def list_stat_objects(mode: str, **kwargs: Any) -> None:
 
 
 def _print_total_size(total_size: int, enabled: bool) -> None:
-    """ Prints the formatted total size of all displayed results.
+    """Prints the formatted total size of all displayed results.
 
     :param int total_size: the total size in bytes
     :param bool enabled: a flag describing if the total size should be displayed at all
     """
     if enabled:
         formated_total_size = utils.format_file_size(total_size)
-        perun_log.info('Total size of all the displayed files / directories: {}'.format(
-            perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR))
+        perun_log.info(
+            "Total size of all the displayed files / directories: {}".format(
+                perun_log.in_color(formated_total_size, TEXT_EMPH_COLOUR)
+            )
         )
 
 
-def _print_stat_objects(stats_objects: list[tuple[str, str, str | int]], properties: list[tuple[bool, bool]]) -> None:
-    """ Prints stats objects (files, versions, other iterable etc.) in a general way.
+def _print_stat_objects(
+    stats_objects: list[tuple[str, str, str | int]], properties: list[tuple[bool, bool]]
+) -> None:
+    """Prints stats objects (files, versions, other iterable etc.) in a general way.
 
     The stats object should be a list of items to print, where each item consists of some
     properties that may or may not be printed / colored, as set by the 'properties'.
@@ -1298,20 +1482,24 @@ def _print_stat_objects(stats_objects: list[tuple[str, str, str | int]], propert
     """
     # Iterate all the stats objects and parts of each object
     for item in stats_objects:
-        record = ''
+        record = ""
         for pos, prop in enumerate(item):
             # Check if we should print the property and if it should be colored
             show_property, colored = properties[pos]
             if show_property:
                 # Add the delimiter if the record already has some properties to print
                 if record:
-                    record += perun_log.in_color(' | ', TEXT_WARN_COLOUR)
-                record += perun_log.in_color(str(prop), TEXT_EMPH_COLOUR) if colored else str(prop)
+                    record += perun_log.in_color(" | ", TEXT_WARN_COLOUR)
+                record += (
+                    perun_log.in_color(str(prop), TEXT_EMPH_COLOUR)
+                    if colored
+                    else str(prop)
+                )
         perun_log.info(record)
 
 
 def delete_stats_file(name: str, in_minor: str, keep_directory: bool) -> None:
-    """ Deletes stats file in either a specific minor version or across all the versions in the
+    """Deletes stats file in either a specific minor version or across all the versions in the
     stats directory.
 
     :param str name: the file name
@@ -1319,14 +1507,14 @@ def delete_stats_file(name: str, in_minor: str, keep_directory: bool) -> None:
     :param bool keep_directory: possibly empty version directory after the deletion will be kept
                                 in the stats directory if set to True.
     """
-    if in_minor == '.':
+    if in_minor == ".":
         stats.delete_stats_file_across_versions(name, keep_directory)
     else:
         stats.delete_stats_file(name, in_minor, keep_directory)
 
 
 def delete_stats_minor(minor: str, keep_directory: bool) -> None:
-    """ Deletes the minor version directory in the stats directory.
+    """Deletes the minor version directory in the stats directory.
 
     :param str minor: the minor version identification
     :param bool keep_directory: the empty version directory will be kept
@@ -1336,7 +1524,7 @@ def delete_stats_minor(minor: str, keep_directory: bool) -> None:
 
 
 def delete_stats_all(keep_directory: bool) -> None:
-    """ Deletes all items in the stats directory.
+    """Deletes all items in the stats directory.
 
     :param bool keep_directory: the empty version directories will be kept
                                 in the stats directory if True
@@ -1345,7 +1533,7 @@ def delete_stats_all(keep_directory: bool) -> None:
 
 
 def clean_stats(keep_custom: bool, keep_empty: bool) -> None:
-    """ Cleans the stats directory, that is:
+    """Cleans the stats directory, that is:
     - synchronizes the internal state of the stats directory, i.e. the index file
     - attempts to delete all distinguishable custom files and directories (some manually created or
       custom objects may not be identified if they have the correct format, e.g. version directory
@@ -1360,7 +1548,7 @@ def clean_stats(keep_custom: bool, keep_empty: bool) -> None:
 
 
 def sync_stats() -> None:
-    """ Synchronize the stats directory contents with the index file - delete minor version records
+    """Synchronize the stats directory contents with the index file - delete minor version records
     for deleted versions and add missing records for existing versions.
     """
     stats.synchronize_index()

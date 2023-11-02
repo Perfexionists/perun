@@ -23,17 +23,20 @@ def assemble_ebpf_program(src_file, probes, config, **_):
     timed_sampling_on = Optimizations.TIMED_SAMPLING.value in config.run_optimizations
 
     # Open the eBPF program file
-    with open(src_file, 'w') as prog_handle:
+    with open(src_file, "w") as prog_handle:
         # Initialize the program
         sampled_count = len(probes.sampled_func) + len(probes.sampled_usdt)
         _add_structs_and_init(
-            prog_handle, len(probes.func) + len(probes.usdt), sampled_count, timed_sampling_on
+            prog_handle,
+            len(probes.func) + len(probes.usdt),
+            sampled_count,
+            timed_sampling_on,
         )
         if timed_sampling_on:
             _add_timed_event(prog_handle, max_id + 1)
 
         # Add entry and exit probe handlers for every traced function
-        for func_probe in sorted(probes.func.values(), key=lambda value: value['name']):
+        for func_probe in sorted(probes.func.values(), key=lambda value: value["name"]):
             _add_entry_probe(prog_handle, func_probe, timed_sampling_on)
             _add_exit_probe(prog_handle, func_probe, timed_sampling_on)
         # TODO: add USDT and cache tracing after BPF properly supports it
@@ -43,7 +46,7 @@ def assemble_ebpf_program(src_file, probes, config, **_):
 
 
 def _add_structs_and_init(handle, probe_count, sampled_count, timed_sampling):
-    """ Add include statements, perf_event struct and the required BPF data structures.
+    """Add include statements, perf_event struct and the required BPF data structures.
 
     :param TextIO handle: the program file handle
     :param int probe_count: the number of traced function and USDT locations
@@ -51,14 +54,16 @@ def _add_structs_and_init(handle, probe_count, sampled_count, timed_sampling):
     """
     # Create the sampling BPF array if there are any sampled probes
     if sampled_count > 0:
-        sampling_array = 'BPF_ARRAY(sampling, u32, {sampled});'.format(sampled=sampled_count)
+        sampling_array = "BPF_ARRAY(sampling, u32, {sampled});".format(
+            sampled=sampled_count
+        )
     else:
-        sampling_array = '// sampling array omitted'
+        sampling_array = "// sampling array omitted"
     # Create the timed sampling array to dynamically enable or disable records gathering
     if timed_sampling:
-        timed_switch = 'BPF_ARRAY(enabled, u32, 1);'
+        timed_switch = "BPF_ARRAY(enabled, u32, 1);"
     else:
-        timed_switch = '// timed sampling switch omitted'
+        timed_switch = "// timed sampling switch omitted"
     # The initial program code
     prog_init = """
 #include <linux/sched.h>     // for TASK_COMM_LEN
@@ -77,7 +82,9 @@ BPF_ARRAY(timestamps, u64, {probes});
 {timed_sampling}
 {sampling_array}
 BPF_PERF_OUTPUT(records);
-""".format(probes=probe_count, sampling_array=sampling_array, timed_sampling=timed_switch)
+""".format(
+        probes=probe_count, sampling_array=sampling_array, timed_sampling=timed_switch
+    )
     handle.write(prog_init)
 
 
@@ -107,12 +114,14 @@ int set_enabled(struct bpf_perf_event_data *ctx)
     records.perf_submit(ctx, &data, sizeof(data));
     return 0;
 }}
-""".format(probe_id=probe_id)
+""".format(
+        probe_id=probe_id
+    )
     handle.write(event_template)
 
 
 def _add_entry_probe(handle, probe, timed_sampling=False):
-    """ Add entry code for the given probe.
+    """Add entry code for the given probe.
 
     :param TextIO handle: the program file handle
     :param dict probe: the traced probe
@@ -129,17 +138,19 @@ int entry_{name}(struct pt_regs *ctx)
     
     return 0;
 }}
-""".format(name=probe['name'], probe_id=probe['id'],
-           sampling_before=_create_sampling_before(probe['sample']),
-           entry_body=_create_entry_body(),
-           sampling_after=_create_sampling_after(probe['sample']),
-           timed_sampling=_add_enabled_check(timed_sampling, probe['name'])
-           )
+""".format(
+        name=probe["name"],
+        probe_id=probe["id"],
+        sampling_before=_create_sampling_before(probe["sample"]),
+        entry_body=_create_entry_body(),
+        sampling_after=_create_sampling_after(probe["sample"]),
+        timed_sampling=_add_enabled_check(timed_sampling, probe["name"]),
+    )
     handle.write(probe_template)
 
 
 def _add_exit_probe(handle, probe, timed_sampling=False):
-    """ Add exit code for the given probe.
+    """Add exit code for the given probe.
 
     :param TextIO handle: the program file handle
     :param dict probe: the traced probe
@@ -171,14 +182,15 @@ int exit_{name}(struct pt_regs *ctx)
     return 0;
 }}
 """.format(
-        name=probe['name'], probe_id=probe['id'],
-        timed_sampling=_add_enabled_check(timed_sampling, probe['name'])
+        name=probe["name"],
+        probe_id=probe["id"],
+        timed_sampling=_add_enabled_check(timed_sampling, probe["name"]),
     )
     handle.write(probe_template)
 
 
 def _add_single_probe(handle, probe):
-    """ Add code for probe that has no paired probe, e.g. single USDT locations with no pairing.
+    """Add code for probe that has no paired probe, e.g. single USDT locations with no pairing.
 
     :param TextIO handle: the program file handle
     :param dict probe: the traced probe
@@ -199,12 +211,14 @@ def _add_single_probe(handle, probe):
 
         return 0;
     }}
-""".format(name=probe['name'], probe_id=probe['id'])
+""".format(
+        name=probe["name"], probe_id=probe["id"]
+    )
     handle.write(probe_template)
 
 
 def _add_cache_probes(handle):
-    """ Add code for cache probes that simply counts the HW cache events.
+    """Add code for cache probes that simply counts the HW cache events.
     Inspired by: https://github.com/iovisor/bcc/blob/master/tools/llcstat.py
 
     :param TextIO handle: the program file handle
@@ -224,7 +238,7 @@ int on_cache_miss(struct bpf_perf_event_data *ctx) {
 
 
 def _create_sampling_before(sample_value):
-    """ Generate code that goes before the body for sampled probes.
+    """Generate code that goes before the body for sampled probes.
 
     :param int sample_value: the sample value of the probe
     :return str: the generated code chunk
@@ -241,7 +255,7 @@ def _create_sampling_before(sample_value):
 
 
 def _create_sampling_after(sample_value):
-    """ Generate code that goes after the body for sampled probes.
+    """Generate code that goes after the body for sampled probes.
 
     :param int sample_value: the sample value of the probe
     :return str: the generated code chunk
@@ -254,11 +268,13 @@ def _create_sampling_after(sample_value):
     (*sample)++;
     if (*sample == {sample_value}) {{
         (*sample) = 0;
-    }}""".format(sample_value=sample_value)
+    }}""".format(
+        sample_value=sample_value
+    )
 
 
 def _create_entry_body():
-    """ Generate the generic body for all entry probes.
+    """Generate the generic body for all entry probes.
 
     :return str: the generated code chunk
     """
@@ -268,7 +284,7 @@ def _create_entry_body():
 
 
 def _add_enabled_check(enabled, name):
-    if not enabled or name == 'main':
+    if not enabled or name == "main":
         return "    // timed sampling code omitted"
     return """    u32 enabled_idx = 0;
     u32 *is_disabled = enabled.lookup(&enabled_idx);

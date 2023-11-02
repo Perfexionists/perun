@@ -8,7 +8,7 @@ from perun.collect.trace.watchdog import WATCH_DOG
 
 
 class NonBlockingTee(Thread):
-    """ The NonBlockingTee imitates the 'tee' utility and routes the stream output to
+    """The NonBlockingTee imitates the 'tee' utility and routes the stream output to
     a terminal and file.
 
     However, the interactivity of the output (i.e. if the terminal output as well as the file
@@ -18,8 +18,9 @@ class NonBlockingTee(Thread):
     :ivar Stream _stream: stream object that is being read
     :ivar str file: the name of the file to store the stream output to
     """
+
     def __init__(self, stream, file):
-        """ Construct the NonBlockingTee object
+        """Construct the NonBlockingTee object
 
         :param Stream stream: stream object that can be read
         :param str file: the name of the file to store the stream output to
@@ -31,10 +32,11 @@ class NonBlockingTee(Thread):
         self.start()
 
     def run(self):
-        """ The thread loop which blocks until new output from the stream is available.
-        """
-        WATCH_DOG.debug("NonBlockingTee thread starting, output stored in '{}'".format(self._file))
-        with open(self._file, 'wb') as tee_file:
+        """The thread loop which blocks until new output from the stream is available."""
+        WATCH_DOG.debug(
+            "NonBlockingTee thread starting, output stored in '{}'".format(self._file)
+        )
+        with open(self._file, "wb") as tee_file:
             try:
                 # Wait for a next line from the stream
                 for line in self._stream:
@@ -55,7 +57,7 @@ class NonBlockingTee(Thread):
 
 
 class PeriodicThread(Thread):
-    """ The PeriodicThread allows to periodically perform given action as long as the timer
+    """The PeriodicThread allows to periodically perform given action as long as the timer
     is not disabled. This is used to e.g. inform the user about the progress of time-intensive
     operations.
 
@@ -66,8 +68,9 @@ class PeriodicThread(Thread):
     :ivar function _callback: the action to perform periodically
     :ivar list callback_args: the arguments of the action function
     """
+
     def __init__(self, timer, callback, callback_args):
-        """ Creates the PeriodicThread object
+        """Creates the PeriodicThread object
 
         :param float timer: the interval of the periodical action
         :param function callback: the action to perform periodically
@@ -80,11 +83,13 @@ class PeriodicThread(Thread):
         self._callback_args = callback_args
 
     def run(self):
-        """ The thread loop that waits for a stop event to happen. After each _timer amount
+        """The thread loop that waits for a stop event to happen. After each _timer amount
         of time, the waiting is interrupted and the action is invoked.
         """
         WATCH_DOG.debug(
-            "PeriodicThread starting, action will be performed every {}s".format(self._timer)
+            "PeriodicThread starting, action will be performed every {}s".format(
+                self._timer
+            )
         )
         # Repeat the wait as long as the stop event is not set
         while not self._stop_event.is_set():
@@ -97,7 +102,7 @@ class PeriodicThread(Thread):
         WATCH_DOG.debug("PeriodicThread stop_event detected, terminating the thread")
 
     def __enter__(self):
-        """ The context manager entry sentinel, starts the thread loop.
+        """The context manager entry sentinel, starts the thread loop.
 
         :return PeriodicThread: the thread object
         """
@@ -105,7 +110,7 @@ class PeriodicThread(Thread):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """ The context manager exit sentinel, sets the stop_event flag so that the thread loop
+        """The context manager exit sentinel, sets the stop_event flag so that the thread loop
         terminates.
 
         :param type exc_type: the type of the exception
@@ -116,7 +121,7 @@ class PeriodicThread(Thread):
 
 
 class TimeoutThread(Thread):
-    """ The TimeoutThread starts a timer that waits for a specified amount of time, after which
+    """The TimeoutThread starts a timer that waits for a specified amount of time, after which
     a flag that indicates the reached timeout is set.
 
     The thread is intended to be used as a context manager.
@@ -124,8 +129,9 @@ class TimeoutThread(Thread):
     :ivar Event timeout_event: the threading.Event that represents the timer
     :ivar float _timer: the time to wait until a timeout is reached
     """
+
     def __init__(self, timer):
-        """ Creates the TimeoutThread object
+        """Creates the TimeoutThread object
 
         :param float timer: the time to wait until a timeout is reached
         """
@@ -134,8 +140,7 @@ class TimeoutThread(Thread):
         self._timer = timer
 
     def run(self):
-        """ The thread loop that waits for the timeout to be reached.
-        """
+        """The thread loop that waits for the timeout to be reached."""
         WATCH_DOG.debug("TimeoutThread started, waiting for {}s".format(self._timer))
         if self.timeout_event.wait(self._timer):
             WATCH_DOG.debug("TimeoutThread interrupted before reaching the timeout")
@@ -145,14 +150,14 @@ class TimeoutThread(Thread):
         WATCH_DOG.debug("Timeout reached")
 
     def reached(self):
-        """ Checks if the timeout has already been reached.
+        """Checks if the timeout has already been reached.
 
         :return bool: true if the timeout has been reached
         """
         return self.timeout_event.is_set()
 
     def __enter__(self):
-        """ The context manager entry sentinel, starts the thread loop.
+        """The context manager entry sentinel, starts the thread loop.
 
         :return TimeoutThread: the thread object
         """
@@ -160,7 +165,7 @@ class TimeoutThread(Thread):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """ The context manager exit sentinel, stops the timer if it is still running.
+        """The context manager exit sentinel, stops the timer if it is still running.
 
         :param type exc_type: the type of the exception
         :param exception exc_val: the value of the exception

@@ -17,13 +17,12 @@ from perun.profile.factory import pass_profile, Profile
 from perun.utils.structs import PostprocessStatus
 
 
-_DEFAULT_BUCKETS_METHOD = 'doane'
-_DEFAULT_STATISTIC = 'mean'
+_DEFAULT_BUCKETS_METHOD = "doane"
+_DEFAULT_STATISTIC = "mean"
 
 
 def postprocess(
-        profile: Profile,
-        **configuration: Any
+    profile: Profile, **configuration: Any
 ) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     Invoked from perun core, handles the postprocess actions
@@ -37,24 +36,44 @@ def postprocess(
     )
 
     # Return the profile after the execution of regressogram method
-    return PostprocessStatus.OK, '', {
-        'profile': tools.add_models_to_profile(profile, regressogram_models)
-    }
+    return (
+        PostprocessStatus.OK,
+        "",
+        {"profile": tools.add_models_to_profile(profile, regressogram_models)},
+    )
 
 
 @click.command()
-@click.option('--bucket_number', '-bn', required=False, multiple=False,
-              type=click.IntRange(min=1, max=None),
-              help=('Restricts the number of buckets to which will be '
-                    'placed the values of the selected statistics.'))
-@click.option('--bucket_method', '-bm', required=False,
-              type=click.Choice(methods.get_supported_selectors()),
-              default=_DEFAULT_BUCKETS_METHOD, multiple=False,
-              help='Specifies the method to estimate the optimal number of buckets.')
-@click.option('--statistic_function', '-sf', type=click.Choice(['mean', 'median']),
-              required=False, default=_DEFAULT_STATISTIC, multiple=False,
-              help='Will use the <statistic_function> to compute the values '
-                   'for points within each bucket of regressogram.')
+@click.option(
+    "--bucket_number",
+    "-bn",
+    required=False,
+    multiple=False,
+    type=click.IntRange(min=1, max=None),
+    help=(
+        "Restricts the number of buckets to which will be "
+        "placed the values of the selected statistics."
+    ),
+)
+@click.option(
+    "--bucket_method",
+    "-bm",
+    required=False,
+    type=click.Choice(methods.get_supported_selectors()),
+    default=_DEFAULT_BUCKETS_METHOD,
+    multiple=False,
+    help="Specifies the method to estimate the optimal number of buckets.",
+)
+@click.option(
+    "--statistic_function",
+    "-sf",
+    type=click.Choice(["mean", "median"]),
+    required=False,
+    default=_DEFAULT_STATISTIC,
+    multiple=False,
+    help="Will use the <statistic_function> to compute the values "
+    "for points within each bucket of regressogram.",
+)
 @cli_helpers.resources_key_options
 @pass_profile
 def regressogram(profile: Profile, **kwargs: Any) -> None:
@@ -101,4 +120,4 @@ def regressogram(profile: Profile, **kwargs: Any) -> None:
     For more details about this approach of non-parametric analysis refer to
     :ref:`postprocessors-regressogram`.
     """
-    runner.run_postprocessor_on_profile(profile, 'regressogram', kwargs)
+    runner.run_postprocessor_on_profile(profile, "regressogram", kwargs)

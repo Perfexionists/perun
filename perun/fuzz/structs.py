@@ -26,13 +26,13 @@ class Mutation:
     """
 
     def __init__(
-            self,
-            path: str,
-            history: list[int],
-            predecessor: Optional["Mutation"],
-            cov: int = 0,
-            deg_ratio: float = 0.0,
-            fitness: float = 0.0
+        self,
+        path: str,
+        history: list[int],
+        predecessor: Optional["Mutation"],
+        cov: int = 0,
+        deg_ratio: float = 0.0,
+        fitness: float = 0.0,
     ):
         """
         :param str path: path to the workload
@@ -57,7 +57,7 @@ def get_gcov_version() -> int:
     :return: version of the gcov
     """
     gcov_output, _ = utils.run_safely_external_command("gcov --version")
-    return int((gcov_output.decode('utf-8').split("\n")[0]).split()[-1][0])
+    return int((gcov_output.decode("utf-8").split("\n")[0]).split()[-1][0])
 
 
 class CoverageConfiguration:
@@ -74,8 +74,8 @@ class CoverageConfiguration:
         """
         :param dict kwargs: set of keyword configurations
         """
-        self.gcno_path: str = kwargs.get('gcno_path', '.')
-        self.source_path: str = kwargs.get('source_path', '.')
+        self.gcno_path: str = kwargs.get("gcno_path", ".")
+        self.source_path: str = kwargs.get("source_path", ".")
         self.gcov_version: int = get_gcov_version()
         self.gcov_files: list[str] = []
         self.source_files: list[str] = []
@@ -84,14 +84,20 @@ class CoverageConfiguration:
         """
         :return: true if the version of the gcov supports intermediate format
         """
-        return GCOV_VERSION_W_INTER_FORMAT <= self.gcov_version < GCOV_VERSION_W_JSON_FORMAT
+        return (
+            GCOV_VERSION_W_INTER_FORMAT
+            <= self.gcov_version
+            < GCOV_VERSION_W_JSON_FORMAT
+        )
 
     def has_common_format(self) -> bool:
         """
         :return: true if the version of the gcov supports old format
         """
-        return self.gcov_version >= GCOV_VERSION_W_JSON_FORMAT \
+        return (
+            self.gcov_version >= GCOV_VERSION_W_JSON_FORMAT
             or self.gcov_version < GCOV_VERSION_W_INTER_FORMAT
+        )
 
 
 class FuzzingConfiguration:
@@ -123,20 +129,20 @@ class FuzzingConfiguration:
         """
         :param dict kwargs: set of keyword configurations
         """
-        self.timeout: float = kwargs.get('timeout', 0.0)
-        self.hang_timeout: float = kwargs.get('hang_timeout', 0.0)
-        self.output_dir: str = os.path.abspath(kwargs['output_dir'])
-        self.workloads_filter: str = kwargs.get('workloads_filter', '')
-        self.regex_rules: dict[str, str] = kwargs.get('regex_rules', {})
-        self.max_size: Optional[int] = kwargs.get('max_size', None)
+        self.timeout: float = kwargs.get("timeout", 0.0)
+        self.hang_timeout: float = kwargs.get("hang_timeout", 0.0)
+        self.output_dir: str = os.path.abspath(kwargs["output_dir"])
+        self.workloads_filter: str = kwargs.get("workloads_filter", "")
+        self.regex_rules: dict[str, str] = kwargs.get("regex_rules", {})
+        self.max_size: Optional[int] = kwargs.get("max_size", None)
         self.max_size_ratio: Optional[int] = kwargs.get("max_size_ratio", None)
         self.max_size_gain: int = kwargs.get("max_size_gain", 0)
-        self.exec_limit: int = kwargs.get('exec_limit', 0)
+        self.exec_limit: int = kwargs.get("exec_limit", 0)
         self.precollect_limit: int = kwargs.get("interesting_files_limit", 0)
-        self.mutations_per_rule: str = kwargs.get("mutations_per_rule", 'mixed')
-        self.no_plotting: bool = kwargs.get('no_plotting', False)
-        self.cov_rate: float = kwargs.get('coverage_increase_rate', 1.5)
-        self.coverage_testing: bool = not kwargs.get('skip_coverage_testing', False)
+        self.mutations_per_rule: str = kwargs.get("mutations_per_rule", "mixed")
+        self.no_plotting: bool = kwargs.get("no_plotting", False)
+        self.cov_rate: float = kwargs.get("coverage_increase_rate", 1.5)
+        self.coverage_testing: bool = not kwargs.get("skip_coverage_testing", False)
         self.coverage: CoverageConfiguration = CoverageConfiguration(**kwargs)
 
     RATIO_INCR_CONST = 0.05
@@ -166,8 +172,7 @@ class FuzzingProgress:
     """
 
     def __init__(self) -> None:
-        """
-        """
+        """ """
         self.faults: list[Mutation] = []
         self.hangs: list[Mutation] = []
         self.interesting_workloads: list[Mutation] = []
@@ -189,7 +194,7 @@ class FuzzingProgress:
             "max_cov": 1.0,
             "worst_case": None,
             "hangs": 0,
-            "faults": 0
+            "faults": 0,
         }
 
     def update_max_coverage(self) -> None:

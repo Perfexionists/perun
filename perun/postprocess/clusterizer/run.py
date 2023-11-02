@@ -34,7 +34,7 @@ def resource_sort_key(resource: dict[str, Any]) -> Any:
     :param dict resource: profiling resource
     :return: key used for sorting
     """
-    return convert.flatten(resource['uid']), resource['amount']
+    return convert.flatten(resource["uid"]), resource["amount"]
 
 
 def resource_group_key(resource: dict[str, Any]) -> tuple[str, str, str]:
@@ -43,7 +43,11 @@ def resource_group_key(resource: dict[str, Any]) -> tuple[str, str, str]:
     :param dict resource: profiling resource
     :return: key used for grouping
     """
-    return resource['type'], resource.get('subtype', ''), convert.flatten(resource['uid'])
+    return (
+        resource["type"],
+        resource.get("subtype", ""),
+        convert.flatten(resource["uid"]),
+    )
 
 
 def print_groups(resources: list[dict[str, Any]]) -> None:
@@ -55,12 +59,16 @@ def print_groups(resources: list[dict[str, Any]]) -> None:
     for group, members in groups:
         log.info("--- {} ---".format(group))
         for member in members:
-            log.info(" -> {}[{}]".format(member['amount'], member.get('cluster', '?')), end='')
+            log.info(
+                " -> {}[{}]".format(member["amount"], member.get("cluster", "?")),
+                end="",
+            )
         log.newline()
 
 
-def postprocess(profile: Profile, strategy: str, **kwargs: Any) \
-        -> tuple[PostprocessStatus, str, dict[str, Any]]:
+def postprocess(
+    profile: Profile, strategy: str, **kwargs: Any
+) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """Takes the given profile and according to the set strategy computes clusters of resources
 
     All of the resources are first sorted according to their uid and amounts. Then they are group
@@ -81,11 +89,17 @@ def postprocess(profile: Profile, strategy: str, **kwargs: Any) \
     # Call the concrete strategy, for each group of resources
     groups = itertools.groupby(resources, resource_group_key)
     for group, members in groups:
-        log.info("clusterizing group {}{}@{}".format(
-            group[0], "({})".format(group[1]) if group[1] else "", group[2]
-        ))
+        log.info(
+            "clusterizing group {}{}@{}".format(
+                group[0], "({})".format(group[1]) if group[1] else "", group[2]
+            )
+        )
         utils.dynamic_module_function_call(
-            'perun.postprocess.clusterizer', strategy, 'clusterize', list(members), **kwargs
+            "perun.postprocess.clusterizer",
+            strategy,
+            "clusterize",
+            list(members),
+            **kwargs,
         )
     profile.update_resources(resources, clear_existing_resources=True)
 
@@ -98,31 +112,72 @@ def postprocess(profile: Profile, strategy: str, **kwargs: Any) \
 
 
 @click.command()
-@click.option('--strategy', '-s', default=clustering.DEFAULT_STRATEGY,
-              type=click.Choice(clustering.SUPPORTED_STRATEGIES),
-              help="Specifies the clustering strategy, that will be applied for the profile")
-@click.option('--window-height', '-wh', default=0.01,
-              type=click.FLOAT, required=False,
-              help="Specifies the height of the window (either fixed or proportional)")
-@click.option('--relative-window-height', '-rwh', 'height_measure',
-              default=True, required=False, flag_value='relative',
-              help="Specifies that the height of the window is relative to the point")
-@click.option('--fixed-window-height', '-fwh', 'height_measure',
-              required=False, flag_value='absolute',
-              help="Specifies that the height of the window is absolute to the point")
-@click.option('--window-width', '-ww', default=0.01,
-              type=click.FLOAT, required=False,
-              help="Specifies the width of the window"
-                   ", i.e. how many values will be taken by window.")
-@click.option('--relative-window-width', '-rww', 'width_measure',
-              default=True, required=False, flag_value='relative',
-              help="Specifies whether the width of the window is weighted or fixed")
-@click.option('--fixed-window-width', '-fww', 'width_measure',
-              required=False, flag_value='absolute',
-              help="Specifies whether the width of the window is weighted or fixed")
-@click.option('--weighted-window-width', '-www', 'width_measure',
-              required=False, flag_value='weighted',
-              help="Specifies whether the width of the window is weighted or fixed")
+@click.option(
+    "--strategy",
+    "-s",
+    default=clustering.DEFAULT_STRATEGY,
+    type=click.Choice(clustering.SUPPORTED_STRATEGIES),
+    help="Specifies the clustering strategy, that will be applied for the profile",
+)
+@click.option(
+    "--window-height",
+    "-wh",
+    default=0.01,
+    type=click.FLOAT,
+    required=False,
+    help="Specifies the height of the window (either fixed or proportional)",
+)
+@click.option(
+    "--relative-window-height",
+    "-rwh",
+    "height_measure",
+    default=True,
+    required=False,
+    flag_value="relative",
+    help="Specifies that the height of the window is relative to the point",
+)
+@click.option(
+    "--fixed-window-height",
+    "-fwh",
+    "height_measure",
+    required=False,
+    flag_value="absolute",
+    help="Specifies that the height of the window is absolute to the point",
+)
+@click.option(
+    "--window-width",
+    "-ww",
+    default=0.01,
+    type=click.FLOAT,
+    required=False,
+    help="Specifies the width of the window"
+    ", i.e. how many values will be taken by window.",
+)
+@click.option(
+    "--relative-window-width",
+    "-rww",
+    "width_measure",
+    default=True,
+    required=False,
+    flag_value="relative",
+    help="Specifies whether the width of the window is weighted or fixed",
+)
+@click.option(
+    "--fixed-window-width",
+    "-fww",
+    "width_measure",
+    required=False,
+    flag_value="absolute",
+    help="Specifies whether the width of the window is weighted or fixed",
+)
+@click.option(
+    "--weighted-window-width",
+    "-www",
+    "width_measure",
+    required=False,
+    flag_value="weighted",
+    help="Specifies whether the width of the window is weighted or fixed",
+)
 @pass_profile
 def clusterizer(profile: Profile, **kwargs: Any) -> None:
     """Clusters each resource to an appropriate cluster in order to be postprocessable
@@ -150,4 +205,4 @@ def clusterizer(profile: Profile, **kwargs: Any) -> None:
 
     For more details about regression analysis refer to :ref:`postprocessors-clusterizer`.
     """
-    runner.run_postprocessor_on_profile(profile, 'clusterizer', kwargs)
+    runner.run_postprocessor_on_profile(profile, "clusterizer", kwargs)

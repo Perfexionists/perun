@@ -14,6 +14,7 @@ import itertools
 import click
 
 from typing import Any, Iterator, Iterable, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from perun.utils.structs import ModelRecord
 
@@ -34,16 +35,28 @@ class Profile(MutableMapping[str, Any]):
         unique identifier of those resources
     :ivar Counter _uid_counter: counter of how many resources type uid has
     """
+
     collectable = {
-        'amount', 'structure-unit-size', 'call-order', 'order', 'address', 'timestamp', 'exclusive'
+        "amount",
+        "structure-unit-size",
+        "call-order",
+        "order",
+        "address",
+        "timestamp",
+        "exclusive",
     }
-    persistent = {'trace', 'type', 'subtype', 'uid', 'location'}
+    persistent = {"trace", "type", "subtype", "uid", "location"}
 
     independent = [
-        'structure-unit-size', 'snapshot', 'order', 'call-order', 'address', 'timestamp',
-        'exclusive'
+        "structure-unit-size",
+        "snapshot",
+        "order",
+        "call-order",
+        "address",
+        "timestamp",
+        "exclusive",
     ]
-    dependent = ['amount']
+    dependent = ["amount"]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes the internal storage
@@ -53,28 +66,30 @@ class Profile(MutableMapping[str, Any]):
         """
         super().__init__()
         initialization_data = dict(*args, **kwargs)
-        global_data = initialization_data.get('global', {'models': []})
+        global_data = initialization_data.get("global", {"models": []})
         self._storage = {
-            'resources': {},
-            'resource_type_map': {},
-            'models': global_data.get('models', []) if isinstance(global_data, dict) else []
+            "resources": {},
+            "resource_type_map": {},
+            "models": global_data.get("models", [])
+            if isinstance(global_data, dict)
+            else [],
         }
         self._tuple_to_resource_type_map: dict[str, str] = {}
         self._resource_type_to_flattened_resources_map: dict[str, dict[str, Any]] = {}
         self._uid_counter: collections.Counter[str] = collections.Counter()
 
         for key, value in initialization_data.items():
-            if key in ('resources', 'snapshots', 'global'):
+            if key in ("resources", "snapshots", "global"):
                 self.update_resources(value, key)
             else:
                 self._storage[key] = value
-        config.runtime().append('context.profiles', self)
+        config.runtime().append("context.profiles", self)
 
     def update_resources(
-            self,
-            resource_list: Any,
-            resource_type: str = 'list',
-            clear_existing_resources: bool = False
+        self,
+        resource_list: Any,
+        resource_type: str = "list",
+        clear_existing_resources: bool = False,
     ) -> None:
         """Given by @p resource_type updates the storage with new flattened resources
 
@@ -90,24 +105,31 @@ class Profile(MutableMapping[str, Any]):
         :return:
         """
         if clear_existing_resources:
-            self._storage['resources'].clear()
-        if resource_type == 'global' and isinstance(resource_list, dict) and resource_list:
+            self._storage["resources"].clear()
+        if (
+            resource_type == "global"
+            and isinstance(resource_list, dict)
+            and resource_list
+        ):
             # Resources are in type of {'time': _, 'resources': []}
             self._translate_resources(
-                resource_list['resources'], {'time': resource_list.get('time', '0.0')}
+                resource_list["resources"], {"time": resource_list.get("time", "0.0")}
             )
-        elif resource_type == 'snapshots':
+        elif resource_type == "snapshots":
             # Resources are in type of [{'time': _, 'resources': []}
             for i, snapshot in enumerate(resource_list):
                 self._translate_resources(
-                    snapshot['resources'], {'snapshot': i, 'time': snapshot.get('time', '0.0')}
+                    snapshot["resources"],
+                    {"snapshot": i, "time": snapshot.get("time", "0.0")},
                 )
         elif isinstance(resource_list, (dict, Profile)):
-            self._storage['resources'].update(resource_list)
+            self._storage["resources"].update(resource_list)
         else:
             self._translate_resources(resource_list, {})
 
-    def _translate_resources(self, resource_list: list[dict[str, Any]], additional_params: dict[str, Any]) -> None:
+    def _translate_resources(
+        self, resource_list: list[dict[str, Any]], additional_params: dict[str, Any]
+    ) -> None:
         """Translate the list of resources to efficient format
 
         Given a list of resources, this is all flattened into a new format: a dictionary that
@@ -117,7 +139,7 @@ class Profile(MutableMapping[str, Any]):
         :param resource_list: list of dictionaries, i.e. actual resources
         :param additional_params: additional information that are added to resources in the list
         """
-        ctx = config.runtime().safe_get('context.workload', {})
+        ctx = config.runtime().safe_get("context.workload", {})
         ctx_persistent_properties = [
             (key, value) for (key, value) in ctx.items() if isinstance(value, str)
         ]
@@ -126,29 +148,39 @@ class Profile(MutableMapping[str, Any]):
         ]
 
         # Update collectable and persistent keys (needed for merge)
-        Profile.persistent.update({key for key, val in ctx.items() if isinstance(val, str)})
-        Profile.collectable.update({key for key, val in ctx.items() if not isinstance(val, str)})
+        Profile.persistent.update(
+            {key for key, val in ctx.items() if isinstance(val, str)}
+        )
+        Profile.collectable.update(
+            {key for key, val in ctx.items() if not isinstance(val, str)}
+        )
 
         for resource in resource_list:
             persistent_properties = [
-                (key, value) for (key, value) in resource.items() if key not in Profile.collectable
+                (key, value)
+                for (key, value) in resource.items()
+                if key not in Profile.collectable
             ] + ctx_persistent_properties
             persistent_properties.extend(list(additional_params.items()))
             persistent_properties.sort(key=operator.itemgetter(0))
             collectable_properties = [
-                (key, value) for (key, value) in resource.items() if key in Profile.collectable
+                (key, value)
+                for (key, value) in resource.items()
+                if key in Profile.collectable
             ] + ctx_collectable_properties
             resource_type = self.register_resource_type(
-                resource['uid'], tuple(persistent_properties)
+                resource["uid"], tuple(persistent_properties)
             )
-            if resource_type not in self._storage['resources'].keys():
-                self._storage['resources'][resource_type] = {
+            if resource_type not in self._storage["resources"].keys():
+                self._storage["resources"][resource_type] = {
                     key: [] for (key, _) in collectable_properties
                 }
-            for (key, value) in collectable_properties:
-                self._storage['resources'][resource_type][key].append(value)
+            for key, value in collectable_properties:
+                self._storage["resources"][resource_type][key].append(value)
 
-    def register_resource_type(self, uid: str, persistent_properties: tuple[Any, ...]) -> str:
+    def register_resource_type(
+        self, uid: str, persistent_properties: tuple[Any, ...]
+    ) -> str:
         """Registers tuple of persistent properties under new key or return existing one
 
         :param str uid: uid of the resource that will be used to describe the resource type
@@ -161,7 +193,7 @@ class Profile(MutableMapping[str, Any]):
             new_type = "{}#{}".format(uid_key, self._uid_counter[uid_key])
             self._tuple_to_resource_type_map[property_key] = new_type
             self._uid_counter[uid_key] += 1
-            self._storage['resource_type_map'][new_type] = {
+            self._storage["resource_type_map"][new_type] = {
                 key: value for (key, value) in persistent_properties
             }
         return self._tuple_to_resource_type_map[property_key]
@@ -218,7 +250,9 @@ class Profile(MutableMapping[str, Any]):
         """
         return self._storage
 
-    def _get_flattened_persistent_values_for(self, resource_type: str) -> dict[str, Any]:
+    def _get_flattened_persistent_values_for(
+        self, resource_type: str
+    ) -> dict[str, Any]:
         """Flattens the nested values of the resources to single level
 
         E.g. the following resource:
@@ -250,12 +284,16 @@ class Profile(MutableMapping[str, Any]):
         :return: flattened resource
         """
         if resource_type not in self._resource_type_to_flattened_resources_map.keys():
-            persistent_properties = self._storage['resource_type_map'][resource_type]
+            persistent_properties = self._storage["resource_type_map"][resource_type]
             flattened_resources = dict(list(query.all_items_of(persistent_properties)))
-            self._resource_type_to_flattened_resources_map[resource_type] = flattened_resources
+            self._resource_type_to_flattened_resources_map[
+                resource_type
+            ] = flattened_resources
         return self._resource_type_to_flattened_resources_map[resource_type]
 
-    def all_resources(self, flatten_values: bool = False) -> Iterable[tuple[int, dict[str, Any]]]:
+    def all_resources(
+        self, flatten_values: bool = False
+    ) -> Iterable[tuple[int, dict[str, Any]]]:
         """Generator for iterating through all the resources contained in the
         performance profile.
 
@@ -270,12 +308,16 @@ class Profile(MutableMapping[str, Any]):
             of snapshot number and the resources w.r.t. the specification of the
             :pkey:`resources`
         """
-        for resource_type, resources in self._storage['resources'].items():
+        for resource_type, resources in self._storage["resources"].items():
             # uid: {...}
             if flatten_values:
-                persistent_properties = self._get_flattened_persistent_values_for(resource_type)
+                persistent_properties = self._get_flattened_persistent_values_for(
+                    resource_type
+                )
             else:
-                persistent_properties = self._storage['resource_type_map'][resource_type]
+                persistent_properties = self._storage["resource_type_map"][
+                    resource_type
+                ]
 
             if resources:
                 resource_keys = resources.keys()
@@ -283,11 +325,11 @@ class Profile(MutableMapping[str, Any]):
                     # collectable values should be flat
                     collectable_properties = dict(zip(resource_keys, resource_values))
                     collectable_properties.update(persistent_properties)
-                    snapshot_number = collectable_properties.get('snapshot', 0)
+                    snapshot_number = collectable_properties.get("snapshot", 0)
                     yield snapshot_number, collectable_properties
             else:
                 # In case we have only persistent properties
-                yield persistent_properties.get('snapshot', 0), persistent_properties
+                yield persistent_properties.get("snapshot", 0), persistent_properties
 
     def all_resource_fields(self) -> set[str]:
         """Generator for iterating through all the fields (both flattened and
@@ -311,10 +353,10 @@ class Profile(MutableMapping[str, Any]):
         :returns: iterable stream of resource field keys represented as `str`
         """
         keys = set()
-        for resource_type, resources in self._storage['resources'].items():
+        for resource_type, resources in self._storage["resources"].items():
             # uid: {...}
             persistent_properties = query.all_items_of(
-                self._storage['resource_type_map'][resource_type]
+                self._storage["resource_type_map"][resource_type]
             )
             if resources:
                 keys.update(resources.keys())
@@ -333,15 +375,15 @@ class Profile(MutableMapping[str, Any]):
         :param str models_strategy: name of detection models strategy to obtains relevant models
         :return ModelRecord: required models
         """
-        group = models_strategy.rsplit('-')[1]
-        if models_strategy in ('all-param', 'all-nonparam'):
+        group = models_strategy.rsplit("-")[1]
+        if models_strategy in ("all-param", "all-nonparam"):
             return get_filtered_best_models_of(self, group=group, model_filter=None)
-        elif models_strategy in ('best-nonparam', 'best-model', 'best-param'):
+        elif models_strategy in ("best-nonparam", "best-model", "best-param"):
             return get_filtered_best_models_of(self, group=group)
         else:
             return {}
 
-    def all_models(self, group: str = 'model') -> Iterable[tuple[int, dict[str, Any]]]:
+    def all_models(self, group: str = "model") -> Iterable[tuple[int, dict[str, Any]]]:
         """Generator of all 'models' records from the performance profile w.r.t.
         :ref:`profile-spec`.
 
@@ -371,10 +413,15 @@ class Profile(MutableMapping[str, Any]):
             record (for more details about models refer to :pkey:`models` or
             :ref:`postprocessors-regression-analysis`)
         """
-        for model_idx, model in enumerate(self._storage['models']):
-            if group == 'model' or\
-               (group == 'param' and model.get('model') in get_supported_models()) or\
-               (group == 'nonparam' and model.get('model') in get_supported_nparam_methods()):
+        for model_idx, model in enumerate(self._storage["models"]):
+            if (
+                group == "model"
+                or (group == "param" and model.get("model") in get_supported_models())
+                or (
+                    group == "nonparam"
+                    and model.get("model") in get_supported_nparam_methods()
+                )
+            ):
                 yield model_idx, model
 
     def get_model_of(self, model_type: str, uid: str) -> dict[str, Any]:
@@ -386,8 +433,8 @@ class Profile(MutableMapping[str, Any]):
         :param str uid: specific unique identification of required model
         :return dict: model with all its relevant items
         """
-        for _, model in enumerate(self._storage['models']):
-            if model_type == model['model'] and model['uid'] == uid:
+        for _, model in enumerate(self._storage["models"]):
+            if model_type == model["model"] and model["uid"] == uid:
                 return model
         log.error(f"missing {model_type} model for uid '{uid}'")
         return {}  # this is only for type checking, in reality it is dead code
@@ -406,16 +453,16 @@ class Profile(MutableMapping[str, Any]):
         for number_of, res in itertools.groupby(all_resources, operator.itemgetter(0)):
             snapshot_map[number_of] = list(map(operator.itemgetter(1), res))
         maximal_snapshot = max(snapshot_map.keys())
-        for i in range(0, maximal_snapshot+1):
+        for i in range(0, maximal_snapshot + 1):
             yield i, snapshot_map[i]
 
     # TODO: discuss the intent of __len__ and possibly merge?
     def resources_size(self) -> int:
-        """ Returns the number of resources stored in the internal storage.
+        """Returns the number of resources stored in the internal storage.
 
         :return int: the number of stored resources
         """
-        return len(self._storage['resources'])
+        return len(self._storage["resources"])
 
 
 # Click helper

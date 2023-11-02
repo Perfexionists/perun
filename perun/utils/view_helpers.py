@@ -55,7 +55,9 @@ def _sort_colours(
 
 
 def get_unique_colours_for_(
-    data_source: pd.DataFrame, key: str, sort_color_style: ColourSort = ColourSort.BY_OCCURRENCE
+    data_source: pd.DataFrame,
+    key: str,
+    sort_color_style: ColourSort = ColourSort.BY_OCCURRENCE,
 ) -> list[str]:
     """Returns list of colours (sorted according to the legend); up to 256 colours.
 
@@ -128,7 +130,9 @@ def build_bokeh_theme() -> bk_theme.Theme:
     )
 
 
-def add_y_units(profile_header: MutableMapping[str, Any], of_key: str, y_axis_label: str) -> str:
+def add_y_units(
+    profile_header: MutableMapping[str, Any], of_key: str, y_axis_label: str
+) -> str:
     """Add units to Y axis label if the Y dimension has one.
 
     :param profile_header: the header part of a profile.
@@ -159,7 +163,7 @@ def add_y_units(profile_header: MutableMapping[str, Any], of_key: str, y_axis_la
 def save_view_graph(
     graph: hv.Chart | hv.Layout | hv.Overlay,
     filename: str,
-    view_in_browser: bool = False
+    view_in_browser: bool = False,
 ) -> None:
     """Save or view the provided holoviews graph.
 

@@ -19,31 +19,28 @@ def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
 
     Expects correct behaviour
     """
-    matrix = config.Config('local', '', {
-        'vcs': {'type': 'git', 'url': '../'},
-        'cmds': ['ls'],
-        'args': ['-al'],
-        'workloads': ['.', '..'],
-        'collectors': [
-            {'name': 'time', 'params': {
-                'warmup': 1,
-                'repeat': 1
-            }}
-        ],
-        'postprocessors': [],
-        'execute': {
-            'pre_run': [
-                'ls | grep "."',
-            ]
+    matrix = config.Config(
+        "local",
+        "",
+        {
+            "vcs": {"type": "git", "url": "../"},
+            "cmds": ["ls"],
+            "args": ["-al"],
+            "workloads": [".", ".."],
+            "collectors": [{"name": "time", "params": {"warmup": 1, "repeat": 1}}],
+            "postprocessors": [],
+            "execute": {
+                "pre_run": [
+                    'ls | grep "."',
+                ]
+            },
+            "degradation": {
+                "collect_before_check": "true",
+                "apply": "first",
+                "strategies": [{"method": "aat"}],
+            },
         },
-        'degradation': {
-            'collect_before_check': 'true',
-            'apply': 'first',
-            'strategies': [{
-                'method': 'aat'
-            }]
-        }
-    })
+    )
     monkeypatch.setattr("perun.logic.config.local", lambda _: matrix)
     git_repo = git.Repo(pcs_with_degradations.get_vcs_path())
     head = str(git_repo.head.commit)
@@ -55,6 +52,7 @@ def test_degradation_precollect(monkeypatch, pcs_with_degradations, capsys):
     def raise_sysexit(*_):
         """Raises System Exit ;)"""
         raise SystemExit()
+
     check.pre_collect_profiles.minor_version_cache.clear()
     monkeypatch.setattr("perun.logic.runner.run_matrix_job", raise_sysexit)
     check.degradation_in_minor(head)
@@ -93,29 +91,45 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
 
     Expects correct behaviour
     """
-    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
+    pool_path = os.path.join(
+        os.path.split(__file__)[0], "profiles", "degradation_profiles"
+    )
     profiles = [
-        store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True, True),
-        store.load_profile_from_file(os.path.join(pool_path, 'linear_base_degradated.perf'), True, True),
-        store.load_profile_from_file(os.path.join(pool_path, 'quad_base.perf'), True, True),
-        store.load_profile_from_file(os.path.join(pool_path, 'zero.perf'), True, True)
+        store.load_profile_from_file(
+            os.path.join(pool_path, "linear_base.perf"), True, True
+        ),
+        store.load_profile_from_file(
+            os.path.join(pool_path, "linear_base_degradated.perf"), True, True
+        ),
+        store.load_profile_from_file(
+            os.path.join(pool_path, "quad_base.perf"), True, True
+        ),
+        store.load_profile_from_file(os.path.join(pool_path, "zero.perf"), True, True),
     ]
     tracer_profiles = [
-        store.load_profile_from_file(os.path.join(pool_path, 'tracer_baseline.perf'), True, True),
-        store.load_profile_from_file(os.path.join(pool_path, 'tracer_target.perf'), True, True)
+        store.load_profile_from_file(
+            os.path.join(pool_path, "tracer_baseline.perf"), True, True
+        ),
+        store.load_profile_from_file(
+            os.path.join(pool_path, "tracer_target.perf"), True, True
+        ),
     ]
 
     # Test degradation detection using ETO
     result = list(eto.exclusive_time_outliers(tracer_profiles[0], tracer_profiles[1]))
-    expected_changes = {check.PerformanceChange.TotalDegradation, check.PerformanceChange.NoChange}
+    expected_changes = {
+        check.PerformanceChange.TotalDegradation,
+        check.PerformanceChange.NoChange,
+    }
     assert expected_changes & set(r.result for r in result)
 
     # Test degradation detection using ETO on the same profile - no Degradation should be found.
     result = list(eto.exclusive_time_outliers(tracer_profiles[0], tracer_profiles[0]))
     # We allow TotalDegradation and TotalOptimization since one them is always reported
     allowed = {
-        check.PerformanceChange.NoChange, check.PerformanceChange.TotalDegradation,
-        check.PerformanceChange.TotalOptimization
+        check.PerformanceChange.NoChange,
+        check.PerformanceChange.TotalDegradation,
+        check.PerformanceChange.TotalOptimization,
     }
     # No other result should be present here
     assert not set(r.result for r in result) - allowed
@@ -149,7 +163,7 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
     deg_list = [(res, "", "") for res in result]
     log.print_list_of_degradations(deg_list)
     out, _ = capsys.readouterr()
-    assert 'with confidence' in out
+    assert "with confidence" in out
 
     # Try that nothing is wrong when the average is 0.0
     result = list(aat.average_amount_threshold(profiles[3], profiles[3]))
@@ -159,13 +173,17 @@ def test_degradation_between_profiles(pcs_with_root, capsys):
     assert check.PerformanceChange.NoChange in [r.result for r in result]
 
     # Test incompatible profiles
-    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'full_profiles')
-    lhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-1-time-2017-03-19-19-17-36.perf'), True, True)
-    rhs = store.load_profile_from_file(os.path.join(pool_path, 'prof-3-memory-2017-05-15-15-43-42.perf'), True, True)
+    pool_path = os.path.join(os.path.split(__file__)[0], "profiles", "full_profiles")
+    lhs = store.load_profile_from_file(
+        os.path.join(pool_path, "prof-1-time-2017-03-19-19-17-36.perf"), True, True
+    )
+    rhs = store.load_profile_from_file(
+        os.path.join(pool_path, "prof-3-memory-2017-05-15-15-43-42.perf"), True, True
+    )
     with pytest.raises(SystemExit):
-        check.degradation_between_files(lhs, rhs, "HEAD", 'all')
+        check.degradation_between_files(lhs, rhs, "HEAD", "all")
     _, err = capsys.readouterr()
-    assert 'incompatible configurations' in err
+    assert "incompatible configurations" in err
 
 
 def test_strategies():
@@ -173,39 +191,43 @@ def test_strategies():
 
     Expects correct behaviour
     """
-    pool_path = os.path.join(os.path.split(__file__)[0], 'profiles', 'degradation_profiles')
-    profile = store.load_profile_from_file(os.path.join(pool_path, 'linear_base.perf'), True, True)
+    pool_path = os.path.join(
+        os.path.split(__file__)[0], "profiles", "degradation_profiles"
+    )
+    profile = store.load_profile_from_file(
+        os.path.join(pool_path, "linear_base.perf"), True, True
+    )
     rule = {
-        'method': 'average_amount_threshold',
-        'collector': 'complexity',
-        'postprocessor': 'regression_analysis'
+        "method": "average_amount_threshold",
+        "collector": "complexity",
+        "postprocessor": "regression_analysis",
     }
     assert check.is_rule_applicable_for(rule, profile)
 
     rule = {
-        'method': 'average_amount_threshold',
-        'postprocessor': 'regression_analysis',
-        'collector': 'complexity'
+        "method": "average_amount_threshold",
+        "postprocessor": "regression_analysis",
+        "collector": "complexity",
     }
     assert check.is_rule_applicable_for(rule, profile)
 
     rule = {
-        'method': 'average_amount_threshold',
-        'postprocessor': 'regression_analysis',
-        'collector': 'memory'
+        "method": "average_amount_threshold",
+        "postprocessor": "regression_analysis",
+        "collector": "memory",
     }
     assert not check.is_rule_applicable_for(rule, profile)
 
     rule = {
-        'method': 'average_amount_threshold',
-        'collector': 'complexity',
-        'postprocessor': 'normalizer'
+        "method": "average_amount_threshold",
+        "collector": "complexity",
+        "postprocessor": "normalizer",
     }
     assert not check.is_rule_applicable_for(rule, profile)
 
     rule = {
-        'method': 'average_amount_threshold',
-        'collector': 'complexity',
-        'cmd': 'bogus'
+        "method": "average_amount_threshold",
+        "collector": "complexity",
+        "cmd": "bogus",
     }
     assert not check.is_rule_applicable_for(rule, profile)

@@ -12,4 +12,4 @@ def clusterize(sorted_resources: list[dict[str, Any]], **_: Any) -> None:
     :param list sorted_resources: list of sorted resources
     """
     for sort_no, resource in enumerate(sorted_resources):
-        resource['cluster'] = sort_no + 1
+        resource["cluster"] = sort_no + 1

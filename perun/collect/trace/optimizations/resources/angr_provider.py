@@ -13,7 +13,7 @@ from perun.utils.exceptions import StatsFileNotFoundException
 
 
 def extract(stats_name, binary, cache, **kwargs):
-    """ Extract the Call Graph and Control Flow Graph representation using the angr framework.
+    """Extract the Call Graph and Control Flow Graph representation using the angr framework.
 
     When caching is enabled and the current project version already has a call graph object
     stored in the 'stats' directory, the cached version is used instead of extracting.
@@ -28,39 +28,43 @@ def extract(stats_name, binary, cache, **kwargs):
     # Attempt to retrieve the call graph for the given configuration if it already exists
     if cache:
         with SuppressedExceptions(StatsFileNotFoundException):
-            return stats.get_stats_of(stats_name, ['perun_cg']).get('perun_cg', {})
+            return stats.get_stats_of(stats_name, ["perun_cg"]).get("perun_cg", {})
 
     # Otherwise extract the call graph using angr
     # Load the binary (and selected libs) into internal representation
-    libs = kwargs.get('libs', [])
-    proj = angr.Project(binary, load_options={'auto_load_libs': False, 'force_load_libs': libs})
+    libs = kwargs.get("libs", [])
+    proj = angr.Project(
+        binary, load_options={"auto_load_libs": False, "force_load_libs": libs}
+    )
 
     # Set parameters for Control Flow Graph analysis
-    cfg_params = {'normalize': True}
+    cfg_params = {"normalize": True}
     # Restricted search means that we want to analyze only functions reachable from main which
     # represents the program starting point
-    if kwargs.get('restricted_search', True):
+    if kwargs.get("restricted_search", True):
         main = proj.loader.main_object.get_symbol("main")
-        cfg_params.update({
-            'function_starts': [main.rebased_addr],
-            'start_at_entry': False,
-            'symbols': False,
-            'function_prologues': False,
-            'force_complete_scan': False
-        })
+        cfg_params.update(
+            {
+                "function_starts": [main.rebased_addr],
+                "start_at_entry": False,
+                "symbols": False,
+                "function_prologues": False,
+                "force_complete_scan": False,
+            }
+        )
 
     # Run the CFG analysis to obtain the graphs
     cfg = proj.analyses.CFGFast(**cfg_params)
     # Separate the CG and CFG from the resulting output data
     binaries = [os.path.basename(target) for target in [binary] + libs]
     return {
-        'call_graph': extract_cg(cfg, binaries),
-        'control_flow': extract_func_cfg(proj, binaries)
+        "call_graph": extract_cg(cfg, binaries),
+        "control_flow": extract_func_cfg(proj, binaries),
     }
 
 
 def extract_cg(cfg, binaries):
-    """ Extracts the call graph nodes and edges from the angr knowledge base, and constructs
+    """Extracts the call graph nodes and edges from the angr knowledge base, and constructs
     dictionary that represents the call graph in a better way for further processing.
 
     Specifically, every dictionary key represents function name and contains sorted list of its
@@ -77,7 +81,7 @@ def extract_cg(cfg, binaries):
         kb_func = cfg.kb.functions.get(cg_func, None)
         if kb_func is not None and kb_func.binary_name in binaries:
             # Identify functions optimized by the compiler and obtain the base function
-            optimized_func = kb_func.name.split('.')
+            optimized_func = kb_func.name.split(".")
             if len(optimized_func) > 1:
                 addr_to_func[cg_func] = optimized_func[0]
             else:
@@ -94,7 +98,7 @@ def extract_cg(cfg, binaries):
 
 
 def extract_func_cfg(project, binaries):
-    """ Extracts the control flow graph nodes and edges from the angr knowledge base, and
+    """Extracts the control flow graph nodes and edges from the angr knowledge base, and
     constructs CFG dictionary that is used for further processing.
 
     The dictionary has the following structure:
@@ -114,14 +118,14 @@ def extract_func_cfg(project, binaries):
     for func in project.kb.functions.values():
         if func.binary_name not in binaries:
             continue
-        cfg = cfgs.setdefault(func.name.split('.')[0], {})
+        cfg = cfgs.setdefault(func.name.split(".")[0], {})
         blocks = []
         for idx, block in enumerate(func.transition_graph.nodes):
             blocks.append(block)
             addr_to_pos[block.addr] = idx
         blocks.sort(key=lambda item: item.addr)
-        cfg['blocks'] = [_build_block_repr(project, block) for block in blocks]
-        cfg['edges'] = [
+        cfg["blocks"] = [_build_block_repr(project, block) for block in blocks]
+        cfg["edges"] = [
             (addr_to_pos[e_from.addr], addr_to_pos[e_to.addr])
             for e_from, e_to in func.transition_graph.edges
         ]
@@ -129,7 +133,7 @@ def extract_func_cfg(project, binaries):
 
 
 def _build_block_repr(project, block):
-    """ Create a CFG block representation based on the basic block type.
+    """Create a CFG block representation based on the basic block type.
 
     We distinguish two block types: Function and Instruction Block, where the former is
     represented as a string and the latter as a list of instructions + operands.
@@ -141,7 +145,7 @@ def _build_block_repr(project, block):
     """
     # Function call blocks are represented by the function name
     if isinstance(block, angr.knowledge_plugins.Function):
-        return block.name.split('.')[0]
+        return block.name.split(".")[0]
 
     # Obtain the ASM instructions and parameters for each block
     instr = angr.Block(block.addr, project=project, size=block.size).capstone.insns

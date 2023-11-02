@@ -21,7 +21,7 @@ _DEFAULT_STEPS = 3
 
 
 def postprocess(
-        profile: Profile, **configuration: Any
+    profile: Profile, **configuration: Any
 ) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """Invoked from perun core, handles the postprocess actions
 
@@ -29,21 +29,26 @@ def postprocess(
     :param configuration: the perun and options context
     """
     # Validate the input configuration
-    tools.validate_dictionary_keys(configuration, ['method', 'regression_models', 'steps'], [])
+    tools.validate_dictionary_keys(
+        configuration, ["method", "regression_models", "steps"], []
+    )
 
     # Perform the regression analysis
-    analysis = methods.compute(data_provider.data_provider_mapper(profile, **configuration),
-                               configuration['method'], configuration['regression_models'],
-                               steps=configuration['steps'])
+    analysis = methods.compute(
+        data_provider.data_provider_mapper(profile, **configuration),
+        configuration["method"],
+        configuration["regression_models"],
+        steps=configuration["steps"],
+    )
     store_model_counts(analysis)
     # Store the results
     new_profile = tools.add_models_to_profile(profile, analysis)
 
-    return PostprocessStatus.OK, "", {'profile': new_profile}
+    return PostprocessStatus.OK, "", {"profile": new_profile}
 
 
 def store_model_counts(analysis: list[dict[str, Any]]) -> None:
-    """ Store the number of best-fit models for each model category as a metric.
+    """Store the number of best-fit models for each model category as a metric.
 
     :param list analysis: the list of inferred models.
     """
@@ -56,47 +61,83 @@ def store_model_counts(analysis: list[dict[str, Any]]) -> None:
     func_summary: dict[str, dict[str, Any]] = {}
     for record in analysis:
         func_record = funcs.setdefault(
-            record['uid'], {'r_square': record['r_square'], 'model': record['model']}
+            record["uid"], {"r_square": record["r_square"], "model": record["model"]}
         )
-        if record['r_square'] > func_record['r_square']:
-            func_record['r_square'] = record['r_square']
-            func_record['model'] = record['model']
+        if record["r_square"] > func_record["r_square"]:
+            func_record["r_square"] = record["r_square"]
+            func_record["model"] = record["model"]
 
-        summary_record = func_summary.setdefault(record['uid'], {})
-        summary_record[record['model']] = record['r_square']
-    metrics.save_separate('details/{}.json'.format(metrics.Metrics.metrics_id), func_summary)
+        summary_record = func_summary.setdefault(record["uid"], {})
+        summary_record[record["model"]] = record["r_square"]
+    metrics.save_separate(
+        "details/{}.json".format(metrics.Metrics.metrics_id), func_summary
+    )
 
     # Count the number of respective models
-    models = {model: 0 for model in reg_models.get_supported_models() if model != 'all'}
-    models['undefined'] = 0
+    models = {model: 0 for model in reg_models.get_supported_models() if model != "all"}
+    models["undefined"] = 0
     for func_record in funcs.values():
-        models['undefined' if (func_record['r_square'] <= 0.5) else func_record['model']] += 1
+        models[
+            "undefined" if (func_record["r_square"] <= 0.5) else func_record["model"]
+        ] += 1
     # Store the counts in the metrics
     for model, count in models.items():
-        metrics.add_metric(f'{model}_model', count)
+        metrics.add_metric(f"{model}_model", count)
 
 
 @click.command()
-@click.option('--method', '-m', type=click.Choice(methods.get_supported_param_methods()),
-              required=True, multiple=False,
-              help='Will use the <method> to find the best fitting models for'
-                   ' the given profile.')
-@click.option('--regression_models', '-r', type=click.Choice(reg_models.get_supported_models()),
-              required=False, multiple=True,
-              help=('Restricts the list of regression models used by the'
-                    ' specified <method> to fit the data. If omitted, all'
-                    ' regression models will be used in the computation.'))
-@click.option('--steps', '-s', type=click.IntRange(1, None, clamp=True),
-              required=False, default=_DEFAULT_STEPS,
-              help=('Restricts the number of number of steps / data parts used'
-                    ' by the iterative, interval and initial guess methods'))
-@click.option('--depending-on', '-dp', 'per_key', default='structure-unit-size',
-              nargs=1, metavar='<depending_on>',
-              callback=cli_helpers.process_resource_key_param,
-              help="Sets the key that will be used as a source of independent variable.")
-@click.option('--of', '-o', 'of_key', nargs=1, metavar="<of_resource_key>",
-              default='amount', callback=cli_helpers.process_resource_key_param,
-              help="Sets key for which we are finding the model.")
+@click.option(
+    "--method",
+    "-m",
+    type=click.Choice(methods.get_supported_param_methods()),
+    required=True,
+    multiple=False,
+    help="Will use the <method> to find the best fitting models for"
+    " the given profile.",
+)
+@click.option(
+    "--regression_models",
+    "-r",
+    type=click.Choice(reg_models.get_supported_models()),
+    required=False,
+    multiple=True,
+    help=(
+        "Restricts the list of regression models used by the"
+        " specified <method> to fit the data. If omitted, all"
+        " regression models will be used in the computation."
+    ),
+)
+@click.option(
+    "--steps",
+    "-s",
+    type=click.IntRange(1, None, clamp=True),
+    required=False,
+    default=_DEFAULT_STEPS,
+    help=(
+        "Restricts the number of number of steps / data parts used"
+        " by the iterative, interval and initial guess methods"
+    ),
+)
+@click.option(
+    "--depending-on",
+    "-dp",
+    "per_key",
+    default="structure-unit-size",
+    nargs=1,
+    metavar="<depending_on>",
+    callback=cli_helpers.process_resource_key_param,
+    help="Sets the key that will be used as a source of independent variable.",
+)
+@click.option(
+    "--of",
+    "-o",
+    "of_key",
+    nargs=1,
+    metavar="<of_resource_key>",
+    default="amount",
+    callback=cli_helpers.process_resource_key_param,
+    help="Sets key for which we are finding the model.",
+)
 @pass_profile
 def regression_analysis(profile: Profile, **kwargs: Any) -> None:
     """Finds fitting regression models to estimate models of profiled resources.
@@ -168,4 +209,4 @@ def regression_analysis(profile: Profile, **kwargs: Any) -> None:
     :ref:`postprocessors-regression-analysis`. For more details how to collect
     suitable resources refer to :ref:`collectors-trace`.
     """
-    runner.run_postprocessor_on_profile(profile, 'regression_analysis', kwargs)
+    runner.run_postprocessor_on_profile(profile, "regression_analysis", kwargs)

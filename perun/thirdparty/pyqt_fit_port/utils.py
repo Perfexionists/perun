@@ -173,7 +173,13 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
         # names separated by whitespace and/or commas
         field_names = field_names.replace(",", " ").split()
     field_names = tuple(map(str, field_names))
-    forbidden_fields = {"__init__", "__slots__", "__new__", "__repr__", "__getnewargs__"}
+    forbidden_fields = {
+        "__init__",
+        "__slots__",
+        "__new__",
+        "__repr__",
+        "__getnewargs__",
+    }
     if rename:
         names = list(field_names)
         seen = set()
@@ -199,12 +205,16 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
         if _iskeyword(name):
             raise ValueError(f"Type names and field names cannot be a keyword: {name}")
         if name[0].isdigit():
-            raise ValueError(f"Type names and field names cannot start with a number: {name}")
+            raise ValueError(
+                f"Type names and field names cannot start with a number: {name}"
+            )
     seen_names = set()
     for name in field_names:
         if name.startswith("__"):
             if name in forbidden_fields:
-                raise ValueError(f"Field names cannot be on of {', '.join(forbidden_fields)}")
+                raise ValueError(
+                    f"Field names cannot be on of {', '.join(forbidden_fields)}"
+                )
         elif name.startswith("_") and not rename:
             raise ValueError(f"Field names cannot start with an underscore: {name}")
         if name in seen_names:
@@ -213,7 +223,9 @@ def namedtuple(typename, field_names, verbose=False, rename=False):
 
     # Create and fill-in the class template
     numfields = len(field_names)
-    argtxt = repr(field_names).replace("'", "")[1:-1]  # tuple repr without parens or quotes
+    argtxt = repr(field_names).replace("'", "")[
+        1:-1
+    ]  # tuple repr without parens or quotes
     reprtxt = ", ".join("%s=%%r" % name for name in field_names)
     template = """class %(typename)s(tuple):
         '%(typename)s(%(argtxt)s)' \n

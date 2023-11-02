@@ -8,6 +8,7 @@ import numpy as np
 import scipy.integrate as integrate
 
 from typing import Any, Iterable, TYPE_CHECKING
+
 if TYPE_CHECKING:
     import numpy.typing as npt
 
@@ -30,14 +31,14 @@ _STATS_FOR_NO_CHANGE = 0.2
 _STATS_FOR_CHANGE = 0.5
 # the acceptable value of relative error computed from individual
 # statistics between compared profiles to detect NO_CHANGE state
-_STATS_DIFF_NO_CHANGE = .10
+_STATS_DIFF_NO_CHANGE = 0.10
 # an upper limit of relative error to detect changes between compared profiles
 # - the difference between these two values represents the state of uncertain changes - MAYBE
-_STATS_DIFF_CHANGE = .25
+_STATS_DIFF_CHANGE = 0.25
 
 
 def compute_window_stats(
-        x_pts: list[float], y_pts: list[float]
+    x_pts: list[float], y_pts: list[float]
 ) -> tuple[dict[str, npt.NDArray[np.float64]], npt.NDArray[np.float64]]:
     """
     The method computes the local statistics from the given points.
@@ -54,6 +55,7 @@ def compute_window_stats(
     :param list y_pts: array with values of y-coordinates
     :return tuple: (dictionary with computed statistics, edges of individual sub-intervals)
     """
+
     def reshape_array(array: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
         The method reshapes the given array into several
@@ -97,26 +99,27 @@ def compute_window_stats(
     # compute the all statistical metrics on the specified intervals
     return {
         # integral
-        'int': np.atleast_1d(integrate.simps(y_array, x_array, axis=axis, even="avg")),
+        "int": np.atleast_1d(integrate.simps(y_array, x_array, axis=axis, even="avg")),
         # average/mean
-        'avg': np.atleast_1d(np.nanmean(y_array, axis=axis)),
+        "avg": np.atleast_1d(np.nanmean(y_array, axis=axis)),
         # median/2.percentile
-        'med': np.atleast_1d(np.nanmedian(y_array, axis=axis)),
+        "med": np.atleast_1d(np.nanmedian(y_array, axis=axis)),
         # maximum
-        'max': np.atleast_1d(np.nanmax(y_array, axis=axis)),
+        "max": np.atleast_1d(np.nanmax(y_array, axis=axis)),
         # minimum
-        'min': np.atleast_1d(np.nanmin(y_array, axis=axis)),
+        "min": np.atleast_1d(np.nanmin(y_array, axis=axis)),
         # summary value
-        'sum': np.atleast_1d(np.nansum(y_array, axis=axis)),
+        "sum": np.atleast_1d(np.nansum(y_array, axis=axis)),
         # 1.percentile
-        'per_q1': np.atleast_1d(np.nanpercentile(y_array, 25, axis=axis)),
+        "per_q1": np.atleast_1d(np.nanpercentile(y_array, 25, axis=axis)),
         # 3.percentile
-        'per_q2': np.atleast_1d(np.nanpercentile(y_array, 75, axis=axis)),
+        "per_q2": np.atleast_1d(np.nanpercentile(y_array, 75, axis=axis)),
     }, x_edges
 
 
 def classify_stats_diff(
-        baseline_stats: dict[str, npt.NDArray[np.float64]], target_stats: dict[str, npt.NDArray[np.float64]]
+    baseline_stats: dict[str, npt.NDArray[np.float64]],
+    target_stats: dict[str, npt.NDArray[np.float64]],
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """
     The method performs the classification of computed statistical metrics.
@@ -146,10 +149,14 @@ def classify_stats_diff(
         # compute difference between the metrics from both models
         diff_values = np.subtract(target_stats[baseline_stat_key], baseline_stat_value)
         # compute the relative error of current processed metric
-        new_rel_error = np.nan_to_num(np.true_divide(
-            diff_values, baseline_stat_value, out=np.zeros_like(diff_values),
-            where=baseline_stat_value != 0
-        ))
+        new_rel_error = np.nan_to_num(
+            np.true_divide(
+                diff_values,
+                baseline_stat_value,
+                out=np.zeros_like(diff_values),
+                where=baseline_stat_value != 0,
+            )
+        )
         # compute the sum of the partial relative errors computed from the individual metrics
         rel_error = np.add(rel_error, new_rel_error)
         # update the change_score according to the value of current computed relative error
@@ -183,7 +190,7 @@ def compare_diff_values(change_score: float, rel_error: float) -> float:
     if abs(rel_error) <= _STATS_DIFF_NO_CHANGE:
         change_score += 0
     elif abs(rel_error) <= _STATS_DIFF_CHANGE:
-        change_score += -.5 if rel_error < 0 else .5
+        change_score += -0.5 if rel_error < 0 else 0.5
     else:
         change_score += -1 if rel_error < 0 else 1
 
@@ -191,11 +198,11 @@ def compare_diff_values(change_score: float, rel_error: float) -> float:
 
 
 def execute_analysis(
-        uid: str,
-        baseline_model: ModelRecord,
-        target_model: ModelRecord,
-        target_profile: Profile,
-        **__: Any
+    uid: str,
+    baseline_model: ModelRecord,
+    target_model: ModelRecord,
+    target_profile: Profile,
+    **__: Any,
 ) -> dict[str, Any]:
     """
     A method performs the primary analysis for pair of models.
@@ -214,35 +221,49 @@ def execute_analysis(
     :param dict kwargs: dictionary with baseline and target profiles
     :return:
     """
-    original_x_pts, baseline_y_pts, target_y_pts = nparam_helpers.preprocess_nonparam_models(
+    (
+        original_x_pts,
+        baseline_y_pts,
+        target_y_pts,
+    ) = nparam_helpers.preprocess_nonparam_models(
         uid, baseline_model, target_profile, target_model
     )
 
     baseline_window_stats, _ = compute_window_stats(original_x_pts, baseline_y_pts)
     target_window_stats, x_pts = compute_window_stats(original_x_pts, target_y_pts)
-    change_info, partial_rel_error = classify_stats_diff(baseline_window_stats, target_window_stats)
+    change_info, partial_rel_error = classify_stats_diff(
+        baseline_window_stats, target_window_stats
+    )
 
     x_pts = np.append(x_pts, [x_pts[0]], axis=1) if x_pts.size == 1 else x_pts
     x_pts_even = x_pts[:, 0::2].reshape(-1, x_pts.size // 2)[0].round(2)
     x_pts_odd = x_pts[:, 1::2].reshape(-1, x_pts.size // 2)[0].round(2)
-    partial_intervals = np.array((change_info, partial_rel_error, x_pts_even, x_pts_odd)).T
+    partial_intervals = np.array(
+        (change_info, partial_rel_error, x_pts_even, x_pts_odd)
+    ).T
 
     change_info_enum = nparam_helpers.classify_change(
         tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size),
-        _STATS_DIFF_NO_CHANGE, _STATS_DIFF_CHANGE
+        _STATS_DIFF_NO_CHANGE,
+        _STATS_DIFF_CHANGE,
     )
 
     return {
-        'change_info': change_info_enum,
-        'rel_error': round(
-            tools.safe_division(float(np.sum(partial_rel_error)), partial_rel_error.size), 2
+        "change_info": change_info_enum,
+        "rel_error": round(
+            tools.safe_division(
+                float(np.sum(partial_rel_error)), partial_rel_error.size
+            ),
+            2,
         ),
-        'partial_intervals': partial_intervals
+        "partial_intervals": partial_intervals,
     }
 
 
 def local_statistics(
-        baseline_profile: Profile, target_profile: Profile, models_strategy: str = 'best-model'
+    baseline_profile: Profile,
+    target_profile: Profile,
+    models_strategy: str = "best-model",
 ) -> Iterable[DegradationInfo]:
     """
     The wrapper of `local_statistics` detection method. Method calls the general method
@@ -255,6 +276,6 @@ def local_statistics(
     :returns: tuple - degradation result
     """
     for degradation_info in factory.run_detection_with_strategy(
-            execute_analysis, baseline_profile, target_profile, models_strategy
+        execute_analysis, baseline_profile, target_profile, models_strategy
     ):
         yield degradation_info

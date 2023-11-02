@@ -12,7 +12,7 @@ import perun.utils.helpers as helpers
 
 
 def get_corpus(workloads: list[str], pattern: str) -> list[Mutation]:
-    """ Iteratively search for files to fill input corpus.
+    """Iteratively search for files to fill input corpus.
 
     :param list workloads: list of paths to sample files or directories of sample files
     :param str pattern: regular expression for filtering the workloads
@@ -29,11 +29,13 @@ def get_corpus(workloads: list[str], pattern: str) -> list[Mutation]:
         if path.isdir(workload) and os.access(workload, os.R_OK):
             for root, _, files in os.walk(workload):
                 if files:
-                    init_seeds.extend([
-                        Mutation(
-                            path.join(path.abspath(root), filename), [], None
-                        ) for filename in files if filter_regexp.match(filename)
-                    ])
+                    init_seeds.extend(
+                        [
+                            Mutation(path.join(path.abspath(root), filename), [], None)
+                            for filename in files
+                            if filter_regexp.match(filename)
+                        ]
+                    )
         else:
             init_seeds.append(Mutation(path.abspath(workload), [], None))
     return init_seeds
@@ -65,20 +67,26 @@ def make_output_dirs(output_dir: str, new_dirs: list[str]) -> dict[str, str]:
     return dirs_dict
 
 
-def del_temp_files(parents: list[Mutation], fuzz_progress: FuzzingProgress, output_dir: str) -> None:
-    """ Deletes temporary files that are not positive results of fuzz testing
+def del_temp_files(
+    parents: list[Mutation], fuzz_progress: FuzzingProgress, output_dir: str
+) -> None:
+    """Deletes temporary files that are not positive results of fuzz testing
 
     :param list parents: list of parent mutations
     :param FuzzingProgress fuzz_progress: progress of the fuzzing
     :param str output_dir: path to directory, where fuzzed files are stored
     """
-    log.info("Removing remaining mutations", end='')
+    log.info("Removing remaining mutations", end="")
     for mutation in parents:
-        if mutation not in fuzz_progress.final_results and mutation not in fuzz_progress.hangs \
-                and mutation not in fuzz_progress.faults and \
-                mutation.path.startswith(output_dir) and path.isfile(mutation.path):
+        if (
+            mutation not in fuzz_progress.final_results
+            and mutation not in fuzz_progress.hangs
+            and mutation not in fuzz_progress.faults
+            and mutation.path.startswith(output_dir)
+            and path.isfile(mutation.path)
+        ):
             with helpers.SuppressedExceptions(FileNotFoundError):
                 os.remove(mutation.path)
-                log.info('.')
-        log.info('-')
+                log.info(".")
+        log.info("-")
     log.done()

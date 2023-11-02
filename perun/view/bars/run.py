@@ -35,41 +35,104 @@ def process_title(ctx: click.Context, _: click.Option, value: str) -> str:
 
 
 @click.command()
-@click.argument('func', required=False, default='sum', metavar="<aggregation_function>",
-                type=click.Choice(helpers.AGGREGATIONS))
-@click.option('--of', '-o', 'of_key', nargs=1, required=True, metavar="<of_resource_key>",
-              is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Sets key that is source of the data for the bars,"
-                   " i.e. what will be displayed on Y axis.")
-@click.option('--per', '-p', 'per_key', default='snapshots', nargs=1, metavar="<per_resource_key>",
-              is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Sets key that is source of values displayed on X axis of the bar graph.")
-@click.option('--by', '-b', 'by_key', default=None, nargs=1, metavar="<by_resource_key>",
-              is_eager=True, callback=cli_helpers.process_resource_key_param,
-              help="Sets the key that will be used either for stacking or"
-              " grouping of values")
-@click.option('--stacked', '-s', 'grouping_type', flag_value='stacked', default=True,
-              is_eager=True,
-              help="Will stack the values by <resource_key> specified by"
-                   " option --by.")
-@click.option('--grouped', '-g', 'grouping_type', flag_value='grouped',
-              is_eager=True,
-              help="Will stack the values by <resource_key> specified by"
-                   " option --by.")
+@click.argument(
+    "func",
+    required=False,
+    default="sum",
+    metavar="<aggregation_function>",
+    type=click.Choice(helpers.AGGREGATIONS),
+)
+@click.option(
+    "--of",
+    "-o",
+    "of_key",
+    nargs=1,
+    required=True,
+    metavar="<of_resource_key>",
+    is_eager=True,
+    callback=cli_helpers.process_resource_key_param,
+    help="Sets key that is source of the data for the bars,"
+    " i.e. what will be displayed on Y axis.",
+)
+@click.option(
+    "--per",
+    "-p",
+    "per_key",
+    default="snapshots",
+    nargs=1,
+    metavar="<per_resource_key>",
+    is_eager=True,
+    callback=cli_helpers.process_resource_key_param,
+    help="Sets key that is source of values displayed on X axis of the bar graph.",
+)
+@click.option(
+    "--by",
+    "-b",
+    "by_key",
+    default=None,
+    nargs=1,
+    metavar="<by_resource_key>",
+    is_eager=True,
+    callback=cli_helpers.process_resource_key_param,
+    help="Sets the key that will be used either for stacking or" " grouping of values",
+)
+@click.option(
+    "--stacked",
+    "-s",
+    "grouping_type",
+    flag_value="stacked",
+    default=True,
+    is_eager=True,
+    help="Will stack the values by <resource_key> specified by" " option --by.",
+)
+@click.option(
+    "--grouped",
+    "-g",
+    "grouping_type",
+    flag_value="grouped",
+    is_eager=True,
+    help="Will stack the values by <resource_key> specified by" " option --by.",
+)
 # Bokeh graph specific
-@click.option('--filename', '-f', default="bars.html", metavar="<html>",
-              help="Sets the outputs for the graph to the file.")
-@click.option('--x-axis-label', '-xl', metavar="<text>", default=None,
-              callback=cli_helpers.process_bokeh_axis_title,
-              help="Sets the custom label on the X axis of the bar graph.")
-@click.option('--y-axis-label', '-yl', metavar="<text>", default=None,
-              callback=cli_helpers.process_bokeh_axis_title,
-              help="Sets the custom label on the Y axis of the bar graph.")
-@click.option('--graph-title', '-gt', metavar="<text>", default=None, callback=process_title,
-              help="Sets the custom title of the bars graph.")
-@click.option('--view-in-browser', '-v', default=False, is_flag=True,
-              help="The generated graph will be immediately opened in the"
-              " browser (firefox will be used).")
+@click.option(
+    "--filename",
+    "-f",
+    default="bars.html",
+    metavar="<html>",
+    help="Sets the outputs for the graph to the file.",
+)
+@click.option(
+    "--x-axis-label",
+    "-xl",
+    metavar="<text>",
+    default=None,
+    callback=cli_helpers.process_bokeh_axis_title,
+    help="Sets the custom label on the X axis of the bar graph.",
+)
+@click.option(
+    "--y-axis-label",
+    "-yl",
+    metavar="<text>",
+    default=None,
+    callback=cli_helpers.process_bokeh_axis_title,
+    help="Sets the custom label on the Y axis of the bar graph.",
+)
+@click.option(
+    "--graph-title",
+    "-gt",
+    metavar="<text>",
+    default=None,
+    callback=process_title,
+    help="Sets the custom title of the bars graph.",
+)
+@click.option(
+    "--view-in-browser",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="The generated graph will be immediately opened in the"
+    " browser (firefox will be used).",
+)
 @pass_profile
 def bars(profile: Profile, filename: str, view_in_browser: bool, **kwargs: Any) -> None:
     """Customizable interpretation of resources using the bar format.

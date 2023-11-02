@@ -38,7 +38,10 @@ class IntegerGenerator(WorkloadGenerator):
     :ivar int max_range: the maximal value that should be generated
     :ivar int step: the step of the integer generation
     """
-    def __init__(self, job: Job, min_range: int, max_range: int, step: int = 1, **kwargs: Any):
+
+    def __init__(
+        self, job: Job, min_range: int, max_range: int, step: int = 1, **kwargs: Any
+    ):
         """Initializes the generator of integer workload
 
         :param Job job: job for which we are generating the workloads
@@ -58,5 +61,5 @@ class IntegerGenerator(WorkloadGenerator):
 
         :return: integer number from the given range and after given step
         """
-        for integer in range(self.min_range, self.max_range+1, self.step):
+        for integer in range(self.min_range, self.max_range + 1, self.step):
             yield integer, {}

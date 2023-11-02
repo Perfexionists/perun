@@ -49,7 +49,9 @@ def create_from_params(
     y_axis_label = view_helpers.add_y_units(profile["header"], of_key, y_axis_label)
     for data_slice, models_slice in _generate_plot_data_slices(profile):
         # Plot the points as a scatter plot
-        scatter = hv.Scatter(data_slice, (per_key, x_axis_label), (of_key, y_axis_label))
+        scatter = hv.Scatter(
+            data_slice, (per_key, x_axis_label), (of_key, y_axis_label)
+        )
         # Add models to the plot, if there are any
         scatter *= _draw_models(profile, models_slice)
 
@@ -76,14 +78,17 @@ def create_from_params(
             hv.opts.Curve(
                 # The max function is here so that when there are no models, the Cycle object
                 # is initialized properly
-                color=hv.Cycle(list(palettes.viridis(max(len(models_slice), 1)))), line_width=3.5
+                color=hv.Cycle(list(palettes.viridis(max(len(models_slice), 1)))),
+                line_width=3.5,
             ),
         )
 
         yield f"{data_slice.uid.values[0]}", scatter
 
 
-def _generate_plot_data_slices(profile: Profile) -> Iterator[tuple[pd.DataFrame, ProfileModels]]:
+def _generate_plot_data_slices(
+    profile: Profile,
+) -> Iterator[tuple[pd.DataFrame, ProfileModels]]:
     """Generates data slices for plotting resources and models.
 
     The resources are split per UID and models are sliced per UID and interval.
@@ -182,10 +187,14 @@ def _create_parametric_model(model: ProfileModel) -> hv.Curve:
     # First transform the model type and coefficients into X and Y points that can be plotted
     model_conv = convert.plot_data_from_coefficients_of(model)
     # Create a Curve plot element that represents the model
-    return hv.Curve((model_conv["plot_x"], model_conv["plot_y"]), label=_build_model_legend(model))
+    return hv.Curve(
+        (model_conv["plot_x"], model_conv["plot_y"]), label=_build_model_legend(model)
+    )
 
 
-def _create_non_param_model(profile: Profile, model: ProfileModel) -> Iterator[hv.Curve]:
+def _create_non_param_model(
+    profile: Profile, model: ProfileModel
+) -> Iterator[hv.Curve]:
     """Build a render object for a moving average model according to its computed properties.
 
     :param model: the moving average model.
@@ -203,7 +212,8 @@ def _create_non_param_model(profile: Profile, model: ProfileModel) -> Iterator[h
         if uid == model["uid"]:
             # Build the model
             yield hv.Curve(
-                (sorted(x_pts), model.get("kernel_stats", model.get("bucket_stats"))), label=legend
+                (sorted(x_pts), model.get("kernel_stats", model.get("bucket_stats"))),
+                label=legend,
             )
 
 
@@ -222,7 +232,9 @@ def _create_regressogram_model(model: ProfileModel) -> hv.Curve:
     return _render_step_function(x_pts, y_pts, legend=_build_model_legend(model))
 
 
-def _render_step_function(x_pts: npt.NDArray[np.float64], y_pts: npt.NDArray[np.float64], legend: str) -> hv.Curve:
+def _render_step_function(
+    x_pts: npt.NDArray[np.float64], y_pts: npt.NDArray[np.float64], legend: str
+) -> hv.Curve:
     """Build regressogram's step lines according to given coordinates.
 
     :param x_pts: the x-coordinates for the line.

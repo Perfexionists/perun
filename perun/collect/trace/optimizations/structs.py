@@ -14,19 +14,19 @@ import perun.utils.metrics as metrics
 
 
 class Optimizations(Enum):
-    """ Enumeration of the implemented methods and their CLI name.
-    """
-    BASELINE_STATIC = 'baseline-static'
-    BASELINE_DYNAMIC = 'baseline-dynamic'
-    CALL_GRAPH_SHAPING = 'cg-shaping'
-    DYNAMIC_SAMPLING = 'dynamic-sampling'
-    DIFF_TRACING = 'diff-tracing'
-    DYNAMIC_PROBING = 'dynamic-probing'
-    TIMED_SAMPLING = 'timed-sampling'
+    """Enumeration of the implemented methods and their CLI name."""
+
+    BASELINE_STATIC = "baseline-static"
+    BASELINE_DYNAMIC = "baseline-dynamic"
+    CALL_GRAPH_SHAPING = "cg-shaping"
+    DYNAMIC_SAMPLING = "dynamic-sampling"
+    DIFF_TRACING = "diff-tracing"
+    DYNAMIC_PROBING = "dynamic-probing"
+    TIMED_SAMPLING = "timed-sampling"
 
     @staticmethod
     def supported():
-        """ List the currently supported optimization methods.
+        """List the currently supported optimization methods.
 
         :return list: CLI names of the supported optimizations
         """
@@ -34,17 +34,18 @@ class Optimizations(Enum):
 
 
 class Pipeline(Enum):
-    """ Enumeration of the implemented pipelines and their CLI name.
+    """Enumeration of the implemented pipelines and their CLI name.
     Custom represents a defualt pipeline that has no pre-configured methods or parameters
     """
-    CUSTOM = 'custom'
-    BASIC = 'basic'
-    ADVANCED = 'advanced'
-    FULL = 'full'
+
+    CUSTOM = "custom"
+    BASIC = "basic"
+    ADVANCED = "advanced"
+    FULL = "full"
 
     @staticmethod
     def supported():
-        """ List the currently supported optimization pipelines.
+        """List the currently supported optimization pipelines.
 
         :return list: CLI names of the supported pipelines
         """
@@ -52,14 +53,14 @@ class Pipeline(Enum):
 
     @staticmethod
     def default():
-        """ Name of the default pipeline.
+        """Name of the default pipeline.
 
         :return str: the CLI name of the default pipeline
         """
         return Pipeline.CUSTOM.value
 
     def map_to_optimizations(self):
-        """ Map the selected optimization pipeline to the set of employed optimization methods.
+        """Map the selected optimization pipeline to the set of employed optimization methods.
 
         :return list: list of the Optimizations enumeration objects
         """
@@ -67,28 +68,33 @@ class Pipeline(Enum):
             return [Optimizations.CALL_GRAPH_SHAPING, Optimizations.BASELINE_DYNAMIC]
         if self == Pipeline.ADVANCED:
             return [
-                Optimizations.DIFF_TRACING, Optimizations.CALL_GRAPH_SHAPING,
-                Optimizations.BASELINE_DYNAMIC, Optimizations.DYNAMIC_SAMPLING
+                Optimizations.DIFF_TRACING,
+                Optimizations.CALL_GRAPH_SHAPING,
+                Optimizations.BASELINE_DYNAMIC,
+                Optimizations.DYNAMIC_SAMPLING,
             ]
         if self == Pipeline.FULL:
             return [
-                Optimizations.DIFF_TRACING, Optimizations.CALL_GRAPH_SHAPING,
-                Optimizations.BASELINE_STATIC, Optimizations.BASELINE_DYNAMIC,
-                Optimizations.DYNAMIC_SAMPLING, Optimizations.DYNAMIC_PROBING,
+                Optimizations.DIFF_TRACING,
+                Optimizations.CALL_GRAPH_SHAPING,
+                Optimizations.BASELINE_STATIC,
+                Optimizations.BASELINE_DYNAMIC,
+                Optimizations.DYNAMIC_SAMPLING,
+                Optimizations.DYNAMIC_PROBING,
             ]
         return []
 
 
 class CallGraphTypes(Enum):
-    """ Enumeration of the implemented call graph types and their CLI names.
-    """
-    STATIC = 'static'
-    DYNAMIC = 'dynamic'
-    MIXED = 'mixed'
+    """Enumeration of the implemented call graph types and their CLI names."""
+
+    STATIC = "static"
+    DYNAMIC = "dynamic"
+    MIXED = "mixed"
 
     @staticmethod
     def supported():
-        """ List the currently supported call graph types.
+        """List the currently supported call graph types.
 
         :return list: CLI names of the supported cg types
         """
@@ -96,7 +102,7 @@ class CallGraphTypes(Enum):
 
     @staticmethod
     def default():
-        """ Name of the default cg type.
+        """Name of the default cg type.
 
         :return str: the CLI name of the default cg type
         """
@@ -104,31 +110,31 @@ class CallGraphTypes(Enum):
 
 
 class Parameters(Enum):
-    """ Enumeration of the currently supported CLI options for optimization methods and pipelines.
-    """
-    DIFF_VERSION = 'diff-version'
-    DIFF_KEEP_LEAF = 'diff-keep-leaf'
-    DIFF_INSPECT_ALL = 'diff-inspect-all'
-    DIFF_CG_MODE = 'diff-cfg-mode'
-    SOURCE_FILES = 'source-files'
-    SOURCE_DIRS = 'source-dirs'
-    STATIC_COMPLEXITY = 'static-complexity'
-    STATIC_KEEP_TOP = 'static-keep-top'
-    CG_SHAPING_MODE = 'cg-mode'
-    CG_PROJ_LEVELS = 'cg-proj-levels'
-    CG_PROJ_KEEP_LEAF = 'cg-proj-keep-leaf'
-    DYNSAMPLE_STEP = 'dyn-sample-step'
-    DYNSAMPLE_THRESHOLD = 'dyn-sample-threshold'
-    PROBING_THRESHOLD = 'probing-threshold'
-    PROBING_REATTACH = 'probing-reattach'
-    TIMEDSAMPLE_FREQ = 'timed-sample-freq'
-    DYNBASE_SOFT_THRESHOLD = 'dyn-base-soft-threshold'
-    DYNBASE_HARD_THRESHOLD = 'dyn-base-hard-threshold'
-    THRESHOLD_MODE = 'threshold-mode'
+    """Enumeration of the currently supported CLI options for optimization methods and pipelines."""
+
+    DIFF_VERSION = "diff-version"
+    DIFF_KEEP_LEAF = "diff-keep-leaf"
+    DIFF_INSPECT_ALL = "diff-inspect-all"
+    DIFF_CG_MODE = "diff-cfg-mode"
+    SOURCE_FILES = "source-files"
+    SOURCE_DIRS = "source-dirs"
+    STATIC_COMPLEXITY = "static-complexity"
+    STATIC_KEEP_TOP = "static-keep-top"
+    CG_SHAPING_MODE = "cg-mode"
+    CG_PROJ_LEVELS = "cg-proj-levels"
+    CG_PROJ_KEEP_LEAF = "cg-proj-keep-leaf"
+    DYNSAMPLE_STEP = "dyn-sample-step"
+    DYNSAMPLE_THRESHOLD = "dyn-sample-threshold"
+    PROBING_THRESHOLD = "probing-threshold"
+    PROBING_REATTACH = "probing-reattach"
+    TIMEDSAMPLE_FREQ = "timed-sample-freq"
+    DYNBASE_SOFT_THRESHOLD = "dyn-base-soft-threshold"
+    DYNBASE_HARD_THRESHOLD = "dyn-base-hard-threshold"
+    THRESHOLD_MODE = "threshold-mode"
 
     @staticmethod
     def supported():
-        """ List the currently supported optimization parameters.
+        """List the currently supported optimization parameters.
 
         :return list: CLI names of the supported parameters
         """
@@ -136,16 +142,16 @@ class Parameters(Enum):
 
 
 class DiffCfgMode(Enum):
-    """ Enumeration of the currently supported CFG comparison mode.
-    """
-    COLORING = 'color'
-    SOFT = 'soft'
-    SEMISTRICT = 'semistrict'
-    STRICT = 'strict'
+    """Enumeration of the currently supported CFG comparison mode."""
+
+    COLORING = "color"
+    SOFT = "soft"
+    SEMISTRICT = "semistrict"
+    STRICT = "strict"
 
     @staticmethod
     def supported():
-        """ List the currently supported CFG comparison modes.
+        """List the currently supported CFG comparison modes.
 
         :return list: CLI names of the supported modes
         """
@@ -153,15 +159,15 @@ class DiffCfgMode(Enum):
 
 
 class CGShapingMode(Enum):
-    """ Enumeration of the currently supported Call Graph Shaping modes.
-    """
-    MATCH = 'match'
-    BOTTOM_UP = 'bottom-up'
-    TOP_DOWN = 'top-down'
+    """Enumeration of the currently supported Call Graph Shaping modes."""
+
+    MATCH = "match"
+    BOTTOM_UP = "bottom-up"
+    TOP_DOWN = "top-down"
 
     @staticmethod
     def supported():
-        """ List the currently supported Call Graph Shaping modes.
+        """List the currently supported Call Graph Shaping modes.
 
         :return list: CLI names of the supported modes
         """
@@ -169,14 +175,14 @@ class CGShapingMode(Enum):
 
 
 class ThresholdMode(Enum):
-    """ Enumeration of the currently supported threshold modes.
-    """
-    SOFT = 'soft'
-    STRICT = 'strict'
+    """Enumeration of the currently supported threshold modes."""
+
+    SOFT = "soft"
+    STRICT = "strict"
 
     @staticmethod
     def supported():
-        """ List the currently supported Threshold modes.
+        """List the currently supported Threshold modes.
 
         :return list: CLI names of the supported modes
         """
@@ -184,23 +190,23 @@ class ThresholdMode(Enum):
 
 
 class Complexity(OrderedEnum):
-    """ Enumeration of the complexity degrees that we distinguish in the Bounds collector output.
-    """
+    """Enumeration of the complexity degrees that we distinguish in the Bounds collector output."""
+
     # Polynomial-to-complexity map
-    _ignore_ = ['map']
+    _ignore_ = ["map"]
 
     # Complexities
-    ZERO = 'zero'
-    CONSTANT = 'constant'
-    LINEAR = 'linear'
-    QUADRATIC = 'quadratic'
-    CUBIC = 'cubic'
-    QUARTIC = 'quartic'
-    GENERIC = 'generic'
+    ZERO = "zero"
+    CONSTANT = "constant"
+    LINEAR = "linear"
+    QUADRATIC = "quadratic"
+    CUBIC = "cubic"
+    QUARTIC = "quartic"
+    GENERIC = "generic"
 
     @staticmethod
     def supported():
-        """ List the currently supported Complexity degrees.
+        """List the currently supported Complexity degrees.
 
         :return list: CLI names of the supported complexities
         """
@@ -208,7 +214,7 @@ class Complexity(OrderedEnum):
 
     @staticmethod
     def max(values):
-        """ Compare a collection of Complexity values and select the one with maximum degree.
+        """Compare a collection of Complexity values and select the one with maximum degree.
 
         :param collection values: the set of Complexity values
 
@@ -218,7 +224,7 @@ class Complexity(OrderedEnum):
 
     @classmethod
     def from_poly(cls, polynomial):
-        """ Create a Complexity object from string representing a polynomial.
+        """Create a Complexity object from string representing a polynomial.
 
         :param str polynomial: a string representation of a supported polynomial
 
@@ -228,16 +234,16 @@ class Complexity(OrderedEnum):
 
 
 Complexity.map = {  # type: ignore # static variable, that cannot be initialized anywhere else
-    'O(1)': Complexity.CONSTANT,
-    'O(n^1)': Complexity.LINEAR,
-    'O(n^2)': Complexity.QUADRATIC,
-    'O(n^3)': Complexity.CUBIC,
-    'O(n^4)': Complexity.QUARTIC
+    "O(1)": Complexity.CONSTANT,
+    "O(n^1)": Complexity.LINEAR,
+    "O(n^2)": Complexity.QUADRATIC,
+    "O(n^3)": Complexity.CUBIC,
+    "O(n^4)": Complexity.QUARTIC,
 }
 
 
 class ParametersManager:
-    """ Class that parses and stores the user-supplied optimization parameters, as well as predicts
+    """Class that parses and stores the user-supplied optimization parameters, as well as predicts
     suitable values for the optimization parameters that were not supplied.
 
     :ivar list cli_params: contains the list of user-supplied parameters before they are applied
@@ -245,9 +251,9 @@ class ParametersManager:
                           to validate the user-supplied values.
 
     """
+
     def __init__(self):
-        """ Initializes all of the optimization parameters to their default values.
-        """
+        """Initializes all of the optimization parameters to their default values."""
         # Keep leaves when the number of profiled functions is low enough
         self._functions_keep_leaves = 20
         # Keep top 10% of call graph levels, however minimum of 1
@@ -273,103 +279,91 @@ class ParametersManager:
         self.cli_params = []
         self.param_map = {
             # TODO: add proper check
-            Parameters.DIFF_VERSION: {
-                'value': None,
-                'validate': lambda x: x
-            },
+            Parameters.DIFF_VERSION: {"value": None, "validate": lambda x: x},
             Parameters.DIFF_KEEP_LEAF: {
-                'value': False,
-                'validate': self._validate_bool
+                "value": False,
+                "validate": self._validate_bool,
             },
             Parameters.DIFF_INSPECT_ALL: {
-                'value': True,
-                'validate': self._validate_bool
+                "value": True,
+                "validate": self._validate_bool,
             },
             Parameters.DIFF_CG_MODE: {
-                'value': DiffCfgMode.SEMISTRICT,
-                'validate': partial(self._validate_enum, DiffCfgMode)
+                "value": DiffCfgMode.SEMISTRICT,
+                "validate": partial(self._validate_enum, DiffCfgMode),
             },
-            Parameters.SOURCE_FILES: {
-                'value': [],
-                'validate': self._validate_path
-            },
-            Parameters.SOURCE_DIRS: {
-                'value': [],
-                'validate': self._validate_path
-            },
+            Parameters.SOURCE_FILES: {"value": [], "validate": self._validate_path},
+            Parameters.SOURCE_DIRS: {"value": [], "validate": self._validate_path},
             Parameters.STATIC_COMPLEXITY: {
-                'value': Complexity.CONSTANT,
-                'validate': partial(self._validate_enum, Complexity)
+                "value": Complexity.CONSTANT,
+                "validate": partial(self._validate_enum, Complexity),
             },
             Parameters.STATIC_KEEP_TOP: {
-                'value': self._default_keep_top,
-                'validate': self._validate_uint
+                "value": self._default_keep_top,
+                "validate": self._validate_uint,
             },
             Parameters.CG_SHAPING_MODE: {
-                'value': CGShapingMode.MATCH,
-                'validate': partial(self._validate_enum, CGShapingMode)
+                "value": CGShapingMode.MATCH,
+                "validate": partial(self._validate_enum, CGShapingMode),
             },
             Parameters.CG_PROJ_LEVELS: {
-                'value': self._default_chain_length,
-                'validate': self._validate_uint
+                "value": self._default_chain_length,
+                "validate": self._validate_uint,
             },
             Parameters.CG_PROJ_KEEP_LEAF: {
-                'value': False,
-                'validate': self._validate_bool
+                "value": False,
+                "validate": self._validate_bool,
             },
             Parameters.DYNSAMPLE_STEP: {
-                'value': self._default_sampling_step,
-                'validate': self._validate_ufloat
+                "value": self._default_sampling_step,
+                "validate": self._validate_ufloat,
             },
             Parameters.DYNSAMPLE_THRESHOLD: {
-                'value': self._threshold_soft_base,
-                'validate': self._validate_uint
+                "value": self._threshold_soft_base,
+                "validate": self._validate_uint,
             },
             Parameters.PROBING_THRESHOLD: {
-                'value': self._probing_threshold,
-                'validate': self._validate_uint
+                "value": self._probing_threshold,
+                "validate": self._validate_uint,
             },
             Parameters.PROBING_REATTACH: {
-                'value': False,
-                'validate': self._validate_bool
+                "value": False,
+                "validate": self._validate_bool,
             },
-            Parameters.TIMEDSAMPLE_FREQ: {
-                'value': 1,
-                'validate': self._validate_uint
-            },
+            Parameters.TIMEDSAMPLE_FREQ: {"value": 1, "validate": self._validate_uint},
             Parameters.DYNBASE_SOFT_THRESHOLD: {
-                'value': self._threshold_soft_base,
-                'validate': self._validate_uint
+                "value": self._threshold_soft_base,
+                "validate": self._validate_uint,
             },
             Parameters.DYNBASE_HARD_THRESHOLD: {
-                'value': self._threshold_soft_base * self._hard_threshold_coefficient,
-                'validate': self._validate_uint
+                "value": self._threshold_soft_base * self._hard_threshold_coefficient,
+                "validate": self._validate_uint,
             },
             Parameters.THRESHOLD_MODE: {
-                'value': ThresholdMode.SOFT,
-                'validate': partial(self._validate_enum, ThresholdMode)
-            }
+                "value": ThresholdMode.SOFT,
+                "validate": partial(self._validate_enum, ThresholdMode),
+            },
         }
 
     def __getitem__(self, item):
-        """ Allows quick access to parameter values in the param_map
+        """Allows quick access to parameter values in the param_map
 
         :param Parameters item: the parameter we want value for
 
         :return object: the corresponding value
         """
-        return self.param_map[item]['value']
+        return self.param_map[item]["value"]
 
     def __setitem__(self, key, value):
-        """ Allows to directly set param_map values
+        """Allows to directly set param_map values
 
         :param Parameters key: the parameter to change
         :param object value: the new value
         """
-        self.param_map[key]['value'] = value
+        self.param_map[key]["value"] = value
 
     def add_cli_parameter(self, name, value):
-        """ Add new CLI parameter to the list of user-supplied arguments.
+        """Add new CLI parameter to the list of user-supplied arguments.
 
         :param str name: the string representation of a Parameter
         :param object value: the Parameter value
@@ -377,14 +371,14 @@ class ParametersManager:
         :return object or None: the parameter value if the validation is successful, else None
         """
         param = Parameters(name)
-        validated = self.param_map[param]['validate'](value)
+        validated = self.param_map[param]["validate"](value)
         if validated is not None:
             self.cli_params.append((param, validated))
             return validated
         return None
 
     def infer_params(self, call_graph, pipeline, binary):
-        """ Attempts to infer sensible default values for the parameters that were not supplied
+        """Attempts to infer sensible default values for the parameters that were not supplied
         by the user. The prediction is done safely in several steps since various modes and
         parameters can affect other parameters as well.
 
@@ -392,14 +386,20 @@ class ParametersManager:
         :param Pipeline pipeline: the currently selected pipeline
         :param str binary: path to the executable binary
         """
-        metrics.start_timer('optimization_parameters')
+        metrics.start_timer("optimization_parameters")
         func_count, level_count = 0, 0
         if call_graph is not None:
-            func_count, level_count = len(call_graph.cg_map.keys()), len(call_graph.levels)
+            func_count, level_count = len(call_graph.cg_map.keys()), len(
+                call_graph.levels
+            )
             # Update the default keep top according to the first call graph branching
             self._default_keep_top = call_graph.coverage_max_cut()[1] + 1
         # Extract the user-supplied modes and parameters
-        modes = [Parameters.DIFF_CG_MODE, Parameters.CG_SHAPING_MODE, Parameters.THRESHOLD_MODE]
+        modes = [
+            Parameters.DIFF_CG_MODE,
+            Parameters.CG_SHAPING_MODE,
+            Parameters.THRESHOLD_MODE,
+        ]
         cli_modes, cli_params = utils.partition_list(
             self.cli_params, lambda param: param[0] in modes
         )
@@ -424,10 +424,10 @@ class ParametersManager:
         self._infer_dynamic_probing(cli_params)
         # Extract source files based on the supplied parameters
         self._extract_sources(binary)
-        metrics.end_timer('optimization_parameters')
+        metrics.end_timer("optimization_parameters")
 
     def _infer_general_parameters(self, func_count, level_count):
-        """ Predicts parameters that are applied across multiple optimization methods.
+        """Predicts parameters that are applied across multiple optimization methods.
 
         :param int func_count: the number of extracted functions
         :param int level_count: the amount of call graph levels
@@ -439,11 +439,13 @@ class ParametersManager:
             self[Parameters.DIFF_KEEP_LEAF] = True
             self[Parameters.CG_PROJ_KEEP_LEAF] = True
         # Keep-top: 10% of levels, minimum is default
-        keep_top = max(math.ceil(level_count * self._keep_top_ratio), self._default_keep_top)
+        keep_top = max(
+            math.ceil(level_count * self._keep_top_ratio), self._default_keep_top
+        )
         self[Parameters.STATIC_KEEP_TOP] = keep_top
 
     def _infer_modes(self, selected_pipeline, user_modes):
-        """ Predicts the mode parameters based on the used pipeline.
+        """Predicts the mode parameters based on the used pipeline.
 
         :param Pipeline selected_pipeline: the currently selected pipeline
         :param list user_modes: list of pairs with user-specified modes
@@ -460,7 +462,7 @@ class ParametersManager:
             self[mode_type] = mode_value
 
     def _infer_cg_shaping_parameters(self, func_count, level_count):
-        """ Predicts the Call Graph Shaping parameters based on the number of functions and levels.
+        """Predicts the Call Graph Shaping parameters based on the number of functions and levels.
 
         :param int func_count: the number of extracted functions
         :param int level_count: the amount of call graph levels
@@ -473,8 +475,7 @@ class ParametersManager:
         self[Parameters.CG_PROJ_LEVELS] = max(trim_levels, self._default_min_levels)
 
     def _infer_thresholds(self):
-        """ Infer the threshold values based on the selected modes.
-        """
+        """Infer the threshold values based on the selected modes."""
         # Determine the thresholds based on the mode
         base = self._threshold_soft_base
         if self[Parameters.THRESHOLD_MODE] == ThresholdMode.STRICT:
@@ -482,21 +483,27 @@ class ParametersManager:
         # Set the threshold
         self[Parameters.DYNSAMPLE_THRESHOLD] = base
         self[Parameters.DYNBASE_SOFT_THRESHOLD] = base
-        self[Parameters.DYNBASE_HARD_THRESHOLD] = base * self._hard_threshold_coefficient
+        self[Parameters.DYNBASE_HARD_THRESHOLD] = (
+            base * self._hard_threshold_coefficient
+        )
 
     def _infer_dynamic_probing(self, cli_params):
-        """ Predict parameters and threshold values for Dynamic Probing .
+        """Predict parameters and threshold values for Dynamic Probing .
 
         :param list cli_params: a collection of user-supplied parameters
         """
         # Update the probing threshold if reattach is enabled and probing threshold is not set
-        probing_threshold_set = Parameters.PROBING_THRESHOLD in [param for param, _ in cli_params]
+        probing_threshold_set = Parameters.PROBING_THRESHOLD in [
+            param for param, _ in cli_params
+        ]
         if self[Parameters.PROBING_REATTACH] and not probing_threshold_set:
-            probing_threshold = self._probing_threshold * self._probing_reattach_coefficient
+            probing_threshold = (
+                self._probing_threshold * self._probing_reattach_coefficient
+            )
             self[Parameters.PROBING_THRESHOLD] = probing_threshold
 
     def _extract_sources(self, binary):
-        """ Search for source files of the project in the binary directory, if none are given.
+        """Search for source files of the project in the binary directory, if none are given.
 
         :param str binary: path to the binary executable
         """
@@ -513,18 +520,18 @@ class ParametersManager:
 
     @staticmethod
     def _validate_bool(value):
-        """ Bool validation function that accepts boolean values as 1 or 0.
+        """Bool validation function that accepts boolean values as 1 or 0.
 
         :param str value: the boolean value to validate
         :return bool or None: the boolean value if the validation is successful
         """
-        if value in ['0', '1']:
+        if value in ["0", "1"]:
             return bool(int(value))
         return None
 
     @staticmethod
     def _validate_uint(value):
-        """ Uint validation function.
+        """Uint validation function.
 
         :param str value: the uint value to validate
         :return int or None: the uint value if the validation is successful
@@ -539,7 +546,7 @@ class ParametersManager:
 
     @staticmethod
     def _validate_ufloat(value):
-        """ unsigned float validation function.
+        """unsigned float validation function.
 
         :param str value: the ufloat value to validate
         :return float or None: the ufloat value if the validation is successful
@@ -554,7 +561,7 @@ class ParametersManager:
 
     @staticmethod
     def _validate_path(path):
-        """ Path validation function that takes string and resolves the path.
+        """Path validation function that takes string and resolves the path.
 
         :param str path: the path to validate
         :return str or None: fully resolved path if the validation is successful
@@ -565,7 +572,7 @@ class ParametersManager:
 
     @staticmethod
     def _validate_enum(enumclass, value):
-        """ Validate if value is supported in the given enum class
+        """Validate if value is supported in the given enum class
 
         :param Enum enumclass: Enum class
         :param str value: value to check
@@ -576,7 +583,7 @@ class ParametersManager:
 
 
 def _get_source_files(dirs, files):
-    """ Get all source files in the supplied dirs and files
+    """Get all source files in the supplied dirs and files
 
     :param list dirs: list of directories
     :param list files: list of files
@@ -591,4 +598,4 @@ def _get_source_files(dirs, files):
         elif os.path.isfile(src):
             candidate_files.append(src)
 
-    return [file for file in candidate_files if os.path.splitext(file)[1] == '.c']
+    return [file for file in candidate_files if os.path.splitext(file)[1] == ".c"]

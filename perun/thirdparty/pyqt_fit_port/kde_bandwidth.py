@@ -100,7 +100,9 @@ class BotevBandwidth:
         if not weights.shape:
             weights = None
         M = len(data)
-        DataHist, bins = np.histogram(data, bins=N, range=(lower, upper), weights=weights)
+        DataHist, bins = np.histogram(
+            data, bins=N, range=(lower, upper), weights=weights
+        )
         DataHist = DataHist / M
         DCTData = fftpack.dct(DataHist, norm=None)
 
@@ -109,7 +111,9 @@ class BotevBandwidth:
         guess = 0.1
 
         try:
-            t_star = optimize.brentq(_botev_fixed_point, 0, guess, args=(M, I, SqDCTData))
+            t_star = optimize.brentq(
+                _botev_fixed_point, 0, guess, args=(M, I, SqDCTData)
+            )
         except ValueError:
             t_star = 0.28 * N ** (-0.4)
 

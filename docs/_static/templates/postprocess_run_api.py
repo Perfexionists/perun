@@ -22,4 +22,4 @@ def after(**kwargs):
 @pass_profile
 def regression_analysis(profile, **kwargs):
     """..."""
-    runner.run_postprocessor_on_profile(profile, 'mypostprocessor', kwargs)
+    runner.run_postprocessor_on_profile(profile, "mypostprocessor", kwargs)

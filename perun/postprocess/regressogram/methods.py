@@ -15,7 +15,7 @@ from typing import Iterator, Any
 import perun.postprocess.regression_analysis.tools as tools
 
 # required arguments at regressogram post-processor
-_REQUIRED_KEYS = ['bucket_method', 'statistic_function']
+_REQUIRED_KEYS = ["bucket_method", "statistic_function"]
 
 
 def get_supported_nparam_methods() -> list[str]:
@@ -37,7 +37,7 @@ def get_supported_selectors() -> list[str]:
 
 
 def compute_regressogram(
-        data_gen: Iterator[tuple[list[float], list[float], str]], config: dict[str, Any]
+    data_gen: Iterator[tuple[list[float], list[float], str]], config: dict[str, Any]
 ) -> list[dict[str, Any]]:
     """
     The regressogram wrapper to execute the analysis on the individual chunks of resources.
@@ -53,21 +53,28 @@ def compute_regressogram(
     analysis = []
     for x_pts, y_pts, uid in data_gen:
         # Check whether the user gives as own number of buckets or select the method to its estimate
-        buckets = config['bucket_number'] if config.get('bucket_number') \
-            else config['bucket_method']
-        result = regressogram(x_pts, y_pts, config['statistic_function'], buckets)
-        result.update({
-            'uid': uid,
-            'model': 'regressogram',
-            'per_key': config['per_key'],
-            'of_key': config['of_key']
-        })
+        buckets = (
+            config["bucket_number"]
+            if config.get("bucket_number")
+            else config["bucket_method"]
+        )
+        result = regressogram(x_pts, y_pts, config["statistic_function"], buckets)
+        result.update(
+            {
+                "uid": uid,
+                "model": "regressogram",
+                "per_key": config["per_key"],
+                "of_key": config["of_key"],
+            }
+        )
         # add partial result to the result list - create output dictionaries
         analysis.append(result)
     return analysis
 
 
-def regressogram(x_pts: list[float], y_pts: list[float], statistic_function: str, buckets: str | int) -> dict[str, Any]:
+def regressogram(
+    x_pts: list[float], y_pts: list[float], statistic_function: str, buckets: str | int
+) -> dict[str, Any]:
     """
     Compute the regressogram (binning approach) of a set of data.
 
@@ -109,16 +116,17 @@ def regressogram(x_pts: list[float], y_pts: list[float], statistic_function: str
     bucket_stats = np.nan_to_num(bucket_stats)
     # Create output dictionaries
     return {
-        'buckets_method': 'user' if isinstance(buckets, int) else buckets,
-        'statistic_function': statistic_function,
-        'bucket_stats': bucket_stats.tolist(),
-        'x_start': np.min(bucket_edges),
-        'x_end': np.max(bucket_edges),
-        'y_start': min(y_pts),
-        'r_square': sklearn.metrics.r2_score(
+        "buckets_method": "user" if isinstance(buckets, int) else buckets,
+        "statistic_function": statistic_function,
+        "bucket_stats": bucket_stats.tolist(),
+        "x_start": np.min(bucket_edges),
+        "x_end": np.max(bucket_edges),
+        "y_start": min(y_pts),
+        "r_square": sklearn.metrics.r2_score(
             y_pts, [bucket_stats[bucket_number - 1] for bucket_number in bucket_numbers]
-        )
+        ),
     }
+
 
 # Code for calculating number of buckets for regressogram can be got from SciPy:
 # https://docs.scipy.org/doc/numpy/reference/generated/numpy.histogram_bin_edges.html#numpy.histogram_bucket_edges
@@ -127,14 +135,14 @@ def regressogram(x_pts: list[float], y_pts: list[float], statistic_function: str
 # Note: Here, we ignore the type, as these are private/protected internal functions, yet we wish to use them ourselves
 # without the need to call their main wrapper (histogram)
 _BUCKET_SELECTORS = {
-    'auto': numpy_bucket_selectors._hist_bin_auto,  # type: ignore
-    'doane': numpy_bucket_selectors._hist_bin_doane,  # type: ignore
-    'fd': numpy_bucket_selectors._hist_bin_fd,  # type: ignore
-    'rice': numpy_bucket_selectors._hist_bin_rice,  # type: ignore
-    'scott': numpy_bucket_selectors._hist_bin_scott,  # type: ignore
-    'sqrt': numpy_bucket_selectors._hist_bin_sqrt,  # type: ignore
-    'sturges': numpy_bucket_selectors._hist_bin_sturges,  # type: ignore
+    "auto": numpy_bucket_selectors._hist_bin_auto,  # type: ignore
+    "doane": numpy_bucket_selectors._hist_bin_doane,  # type: ignore
+    "fd": numpy_bucket_selectors._hist_bin_fd,  # type: ignore
+    "rice": numpy_bucket_selectors._hist_bin_rice,  # type: ignore
+    "scott": numpy_bucket_selectors._hist_bin_scott,  # type: ignore
+    "sqrt": numpy_bucket_selectors._hist_bin_sqrt,  # type: ignore
+    "sturges": numpy_bucket_selectors._hist_bin_sturges,  # type: ignore
 }
 
 # supported non-parametric methods
-_METHODS = ['regressogram', 'moving_average', 'kernel_regression']
+_METHODS = ["regressogram", "moving_average", "kernel_regression"]

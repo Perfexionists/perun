@@ -13,17 +13,17 @@ from perun.utils.exceptions import MissingDependencyException
 
 
 class Strategy(Enum):
-    """ The supported probe extraction strategies.
-    """
-    USERSPACE = 'userspace'
-    ALL = 'all'
-    USERSPACE_SAMPLED = 'u_sampled'
-    ALL_SAMPLED = 'a_sampled'
-    CUSTOM = 'custom'
+    """The supported probe extraction strategies."""
+
+    USERSPACE = "userspace"
+    ALL = "all"
+    USERSPACE_SAMPLED = "u_sampled"
+    ALL_SAMPLED = "a_sampled"
+    CUSTOM = "custom"
 
     @staticmethod
     def supported():
-        """ Convert the strategy options to a list of strings.
+        """Convert the strategy options to a list of strings.
 
         :return list: the strategies represented as strings
         """
@@ -31,7 +31,7 @@ class Strategy(Enum):
 
     @staticmethod
     def default():
-        """ Provide the default extraction strategy as a string value.
+        """Provide the default extraction strategy as a string value.
 
         :return str: the default strategy name
         """
@@ -39,15 +39,16 @@ class Strategy(Enum):
 
 
 class Zipper:
-    """ Wrapper class for the ZipFile object that can ignore the 'write' command if zipping is
+    """Wrapper class for the ZipFile object that can ignore the 'write' command if zipping is
     not enabled by the user. The Zipper can be used as a context manager.
 
     :ivar bool __enabled: determines if the files will be actually packed or ignored
     :ivar ZipFile pack: the ZipFile handler
     :ivar str pack_name: the name of the resulting zip archive
     """
+
     def __init__(self, enabled, pack_name):
-        """ Constructs the Zipper object
+        """Constructs the Zipper object
 
         :param bool enabled: determines if the archive will be created or not
         :param str pack_name: the name of the resulting archive
@@ -57,19 +58,21 @@ class Zipper:
         self.pack_name = pack_name
 
     def __enter__(self):
-        """ The context manager entry guard, creates the ZipFile object if zipping is enabled
+        """The context manager entry guard, creates the ZipFile object if zipping is enabled
 
         :return Zipper: the Zipper object
         """
         if self.__enabled:
-            self.pack = ZipFile(self.pack_name, 'w', compression=ZIP_LZMA).__enter__()
+            self.pack = ZipFile(self.pack_name, "w", compression=ZIP_LZMA).__enter__()
             WATCH_DOG.info(
-                "Packing the temporary files into an archive '{}'.".format(self.pack_name)
+                "Packing the temporary files into an archive '{}'.".format(
+                    self.pack_name
+                )
             )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """ The context manager exit guard, the ZipFile object is properly terminated
+        """The context manager exit guard, the ZipFile object is properly terminated
 
         :param type exc_type: the type of the exception
         :param exception exc_val: the value of the exception
@@ -79,7 +82,7 @@ class Zipper:
             self.pack.__exit__(exc_type, exc_val, exc_tb)
 
     def write(self, file, arcname=None):
-        """ Packs the given file as 'arcname' into the archive - or ignores the operation if the
+        """Packs the given file as 'arcname' into the archive - or ignores the operation if the
         Zipper is not enabled.
 
         :param str file: the file path to archive
@@ -91,16 +94,17 @@ class Zipper:
 
 
 class FileSize(IntEnum):
-    """ File sizes represented as a constants, used mainly to select appropriate algorithms based
+    """File sizes represented as a constants, used mainly to select appropriate algorithms based
     on the size of a file.
     """
+
     SHORT = 0
     LONG = 1
 
 
 class RecordType(IntEnum):
-    """ Reference numbers of the various types of probes used in the collection script.
-    """
+    """Reference numbers of the various types of probes used in the collection script."""
+
     FUNC_BEGIN = 0
     FUNC_END = 1
     USDT_SINGLE = 2
@@ -114,19 +118,20 @@ class RecordType(IntEnum):
 
 
 class OutputHandling(Enum):
-    """ The handling of the output from the profiled command. Possible modes:
-        - default: the output is displayed in the terminal as usual
-        - capture: the output is being captured into a file as well as displayed in the terminal
-          (note that buffering causes a delay in the terminal output
-        - suppress: redirects the output to the DEVNULL so nothing is stored or displayed
+    """The handling of the output from the profiled command. Possible modes:
+    - default: the output is displayed in the terminal as usual
+    - capture: the output is being captured into a file as well as displayed in the terminal
+      (note that buffering causes a delay in the terminal output
+    - suppress: redirects the output to the DEVNULL so nothing is stored or displayed
     """
-    DEFAULT = 'default'
-    CAPTURE = 'capture'
-    SUPPRESS = 'suppress'
+
+    DEFAULT = "default"
+    CAPTURE = "capture"
+    SUPPRESS = "suppress"
 
     @staticmethod
     def to_list():
-        """ Convert the handling options to a list of strings.
+        """Convert the handling options to a list of strings.
 
         :return list: the options represented as strings
         """
@@ -134,38 +139,53 @@ class OutputHandling(Enum):
 
 
 def check(dependencies):
-    """ Checks that all the required dependencies are present on the system.
+    """Checks that all the required dependencies are present on the system.
     Otherwise an exception is raised.
     """
     # Check that all the dependencies are present
-    WATCH_DOG.debug("Checking that all the dependencies '{}' are present".format(dependencies))
+    WATCH_DOG.debug(
+        "Checking that all the dependencies '{}' are present".format(dependencies)
+    )
     for dependency in dependencies:
         if not shutil.which(dependency):
-            WATCH_DOG.debug("Missing dependency command '{}' detected".format(dependency))
+            WATCH_DOG.debug(
+                "Missing dependency command '{}' detected".format(dependency)
+            )
             raise MissingDependencyException(dependency)
     WATCH_DOG.debug("Dependencies check successfully completed, no missing dependency")
 
 
 # The trace record template
 TraceRecord = collections.namedtuple(
-    'TraceRecord', ['type', 'offset', 'name', 'timestamp', 'thread', 'sequence']
+    "TraceRecord", ["type", "offset", "name", "timestamp", "thread", "sequence"]
 )
 
 # The list of required dependencies
-GLOBAL_DEPENDENCIES = ['ps', 'grep', 'awk', 'nm']
+GLOBAL_DEPENDENCIES = ["ps", "grep", "awk", "nm"]
 
 STAP_PHASES = 5  # The number of SystemTap startup phases
 LOCK_SUFFIX_LEN = 7  # Suffix length of the lock files
 MICRO_TO_SECONDS = 1000000.0  # The conversion constant for collected time records
 NANO_TO_SECONDS = 1000000000.0  # The conversion constant for collected time records
-DEFAULT_SAMPLE = 20  # The default global sampling for 'sample' strategies if not set by user
-SUFFIX_DELIMITERS = ('_', '-')  # The set of supported delimiters between probe and its suffix
-PS_FORMAT = 'pid,ppid,pgid,cmd'  # The format specification for an output from the 'ps' utility
+DEFAULT_SAMPLE = (
+    20  # The default global sampling for 'sample' strategies if not set by user
+)
+SUFFIX_DELIMITERS = (
+    "_",
+    "-",
+)  # The set of supported delimiters between probe and its suffix
+PS_FORMAT = (
+    "pid,ppid,pgid,cmd"  # The format specification for an output from the 'ps' utility
+)
 
 # Various sleep / wait related constants
-HARD_TIMEOUT = 20  # Avoid endless loops with hard timeout value that breaks certain loops
+HARD_TIMEOUT = (
+    20  # Avoid endless loops with hard timeout value that breaks certain loops
+)
 LOG_WAIT = 1  # Sleep value used during periodic SystemTap log checking
-HEARTBEAT_INTERVAL = 30  # Periodically inform user about progress each INTERVAL seconds (roughly)
+HEARTBEAT_INTERVAL = (
+    30  # Periodically inform user about progress each INTERVAL seconds (roughly)
+)
 CLEANUP_TIMEOUT = 2  # The timeout for the cleanup operations
 CLEANUP_REFRESH = 0.2  # The refresh interval for cleaning up the resources
 
@@ -180,11 +200,16 @@ STAP_MODULE_REGEX = re.compile(r"(stap_[A-Fa-f0-9]+)_\d+\.ko")
 # Categorize record types into probe, thread and process sets since all those records have
 # different number of values
 PROBE_RECORDS = {
-    int(RecordType.FUNC_BEGIN), int(RecordType.FUNC_END),
-    int(RecordType.USDT_SINGLE), int(RecordType.USDT_BEGIN), int(RecordType.USDT_END)
+    int(RecordType.FUNC_BEGIN),
+    int(RecordType.FUNC_END),
+    int(RecordType.USDT_SINGLE),
+    int(RecordType.USDT_BEGIN),
+    int(RecordType.USDT_END),
 }
 THREAD_RECORDS = {int(RecordType.THREAD_BEGIN), int(RecordType.THREAD_END)}
 PROCESS_RECORDS = {int(RecordType.PROCESS_BEGIN), int(RecordType.PROCESS_END)}
 SEQUENCED_RECORDS = {
-    int(RecordType.FUNC_BEGIN), int(RecordType.USDT_SINGLE), int(RecordType.USDT_BEGIN)
+    int(RecordType.FUNC_BEGIN),
+    int(RecordType.USDT_SINGLE),
+    int(RecordType.USDT_BEGIN),
 }

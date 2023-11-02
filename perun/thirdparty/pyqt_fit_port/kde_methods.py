@@ -695,9 +695,13 @@ class ReflectionMethod(KDE1DMethod):
         terms = kernel.cdf(z)
 
         if L > -np.inf:
-            terms -= kernel.cdf((L - xdata) / bw)  # Remove the truncated part on the left
+            terms -= kernel.cdf(
+                (L - xdata) / bw
+            )  # Remove the truncated part on the left
             terms += kernel.cdf(z1 - (2 * L / bw))  # Add the reflected part
-            terms -= kernel.cdf((xdata - L) / bw)  # Remove the truncated part from the reflection
+            terms -= kernel.cdf(
+                (xdata - L) / bw
+            )  # Remove the truncated part from the reflection
 
         if U < np.inf:
             terms += kernel.cdf(z1 - (2 * U / bw))  # Add the reflected part
@@ -865,7 +869,8 @@ class CyclicMethod(KDE1DMethod):
             return KDE1DMethod.pdf(self, kde, points, out)
         if not kde.closed:
             raise ValueError(
-                "Cyclic boundary conditions can only be used with " "closed or un-bounded domains."
+                "Cyclic boundary conditions can only be used with "
+                "closed or un-bounded domains."
             )
 
         xdata = kde.xdata
@@ -902,7 +907,8 @@ class CyclicMethod(KDE1DMethod):
             return KDE1DMethod.cdf(self, kde, points, out)
         if not kde.closed:
             raise ValueError(
-                "Cyclic boundary conditions can only be used with " "closed or unbounded domains."
+                "Cyclic boundary conditions can only be used with "
+                "closed or unbounded domains."
             )
 
         xdata = kde.xdata
@@ -925,10 +931,14 @@ class CyclicMethod(KDE1DMethod):
         kernel = kde.kernel
 
         terms = kernel.cdf(z)
-        terms -= kernel.cdf((L - xdata) / bw)  # Remove the parts left of the lower bound
+        terms -= kernel.cdf(
+            (L - xdata) / bw
+        )  # Remove the parts left of the lower bound
 
         terms += kernel.cdf(z + span)  # Repeat on the left
-        terms -= kernel.cdf((L - xdata) / bw + span)  # Remove parts left of lower bounds
+        terms -= kernel.cdf(
+            (L - xdata) / bw + span
+        )  # Remove parts left of lower bounds
 
         terms += kernel.cdf(z - span)  # Repeat on the right
 
@@ -948,7 +958,8 @@ class CyclicMethod(KDE1DMethod):
             return KDE1DMethod.grid(self, kde, N, cut)
         if kde.bounded and not kde.closed:
             raise ValueError(
-                "Error, cyclic boundary conditions require " "a closed or un-bounded domain."
+                "Error, cyclic boundary conditions require "
+                "a closed or un-bounded domain."
             )
         bw = kde.bandwidth * kde.lambdas
         data = kde.xdata
@@ -982,7 +993,9 @@ class CyclicMethod(KDE1DMethod):
         if kde.lambdas.shape:
             return KDE1DMethod.cdf_grid(self, kde, N, cut)
         if not kde.closed:
-            raise ValueError("Error, cyclic boundary conditions require " "a closed domain.")
+            raise ValueError(
+                "Error, cyclic boundary conditions require " "a closed domain."
+            )
         N = self.grid_size(N)
 
         if N <= 2**12:

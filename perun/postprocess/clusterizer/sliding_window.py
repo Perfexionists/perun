@@ -11,7 +11,9 @@ from typing import Any
 import perun.utils.log as log
 
 
-def compute_window_width(window_width: float, width_measure: str, resource_number: int) -> float:
+def compute_window_width(
+    window_width: float, width_measure: str, resource_number: int
+) -> float:
     """Computes the sliding window width for the next cluster
 
     The computation of the new width of the cluster is dependent on the used measure,
@@ -27,14 +29,16 @@ def compute_window_width(window_width: float, width_measure: str, resource_numbe
     :param int resource_number: number of resources
     :return: computed width for new sliding window
     """
-    if width_measure == 'absolute':
+    if width_measure == "absolute":
         return window_width
     else:
         # assert width_measure == 'relative':
         return resource_number * window_width
 
 
-def compute_window_height(resource_amount: int, window_height: int, height_measure: str) -> int:
+def compute_window_height(
+    resource_amount: int, window_height: int, height_measure: str
+) -> int:
     """Computes the sliding window height for the next cluster
 
     The computation of the new height of the cluster is dependent on the used measure,
@@ -47,7 +51,7 @@ def compute_window_height(resource_amount: int, window_height: int, height_measu
     :param str height_measure: type of the height measure (absolute or relative)
     :return: computed height for new sliding window
     """
-    if height_measure == 'absolute':
+    if height_measure == "absolute":
         return window_height + resource_amount
     else:
         # assert height_measure == 'relative'
@@ -55,12 +59,12 @@ def compute_window_height(resource_amount: int, window_height: int, height_measu
 
 
 def clusterize(
-        sorted_resources: list[dict[str, Any]],
-        window_width: float,
-        width_measure: str,
-        window_height: int,
-        height_measure: str,
-        **_: Any
+    sorted_resources: list[dict[str, Any]],
+    window_width: float,
+    width_measure: str,
+    window_height: int,
+    height_measure: str,
+    **_: Any,
 ) -> None:
     """Clusterize the list of sorted resources w.r.t sliding window
 
@@ -76,14 +80,10 @@ def clusterize(
     :param str height_measure: type of the height measure (absolute or relative)
     :param _: rest of the keyword arguments, not used in the function
     """
-    if width_measure not in ('absolute', 'relative'):
-        log.error("'{}' is not supported window width measure".format(
-            width_measure
-        ))
-    if height_measure not in ('absolute', 'relative'):
-        log.error("'{}' is not supported window width measure".format(
-            height_measure
-        ))
+    if width_measure not in ("absolute", "relative"):
+        log.error("'{}' is not supported window width measure".format(width_measure))
+    if height_measure not in ("absolute", "relative"):
+        log.error("'{}' is not supported window width measure".format(height_measure))
 
     # Initialize the cluster and width
     resource_number = len(sorted_resources)
@@ -91,25 +91,29 @@ def clusterize(
     resource_width = 0
 
     # Initialize the width and height of the window w.r.t params and first resource
-    current_width = compute_window_width(
-        window_width, width_measure, resource_number)
+    current_width = compute_window_width(window_width, width_measure, resource_number)
     current_height = compute_window_height(
-        sorted_resources[0]['amount'], window_height, height_measure)
+        sorted_resources[0]["amount"], window_height, height_measure
+    )
     log.info("clustering with window of ({}, {})".format(current_width, current_height))
 
     # Iterate through all of the resources
     for resource in sorted_resources:
-        resource_height = resource['amount']
+        resource_height = resource["amount"]
         # If we are out of the window, we recompute the width and height and move to next cluster
         if resource_width >= current_width or resource_height > current_height:
             current_width = compute_window_width(
-                window_width, width_measure, resource_number)
+                window_width, width_measure, resource_number
+            )
             current_height = compute_window_height(
-                resource_height, window_height, height_measure)
+                resource_height, window_height, height_measure
+            )
             current_cluster += 1
             resource_width = 0
-            log.info("creating new cluster of ({}, {})".format(current_width, current_height))
+            log.info(
+                "creating new cluster of ({}, {})".format(current_width, current_height)
+            )
 
         # Update the cluster of the resource
         resource_width += 1
-        resource['cluster'] = current_cluster
+        resource["cluster"] = current_cluster

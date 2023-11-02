@@ -9,6 +9,7 @@ from __future__ import annotations
 import scipy.stats as stats
 
 from typing import Any, Iterable, TYPE_CHECKING
+
 if TYPE_CHECKING:
     import numpy.typing as npt
     import numpy
@@ -22,7 +23,7 @@ from perun.utils.structs import ModelRecord
 
 
 def linear_regression(
-        baseline_profile: Profile, target_profile: Profile, **_: Any
+    baseline_profile: Profile, target_profile: Profile, **_: Any
 ) -> Iterable[DegradationInfo]:
     """Temporary function, which call the general function and subsequently returns the
     information about performance changes to calling function.
@@ -39,14 +40,14 @@ def linear_regression(
 
 
 def exec_linear_regression(
-        uid: str,
-        baseline_x_pts: npt.NDArray[numpy.float64] | list[float],
-        lin_abs_error: npt.NDArray[numpy.float64] | list[float],
-        threshold: int,
-        linear_diff_b1: float,
-        baseline_model: ModelRecord,
-        target_model: ModelRecord,
-        baseline_profile: Profile
+    uid: str,
+    baseline_x_pts: npt.NDArray[numpy.float64] | list[float],
+    lin_abs_error: npt.NDArray[numpy.float64] | list[float],
+    threshold: int,
+    linear_diff_b1: float,
+    baseline_model: ModelRecord,
+    target_model: ModelRecord,
+    baseline_profile: Profile,
 ) -> str:
     """Function executes the classification of performance change between two profiles with using
     function from scipy module, concretely linear regression and regression analysis. If that fails
@@ -71,44 +72,60 @@ def exec_linear_regression(
     gradient, intercept, r_value, _, _ = stats.linregress(baseline_x_pts, lin_abs_error)
 
     # check the first two types of change
-    change_type = ''
-    if baseline_model.type == 'linear' or baseline_model.type == 'constant':
-        if utils.abs_in_absolute_range(gradient, threshold) \
-                and isinstance(diff_b0, float) \
-                and utils.abs_in_relative_range(diff_b0, intercept, 0.05) \
-                and abs(diff_b0 - intercept) < 0.000000000001:
-            change_type = 'constant'
-        elif utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3) \
-                and r_value**2 > 0.95:
-            change_type = 'linear'
+    change_type = ""
+    if baseline_model.type == "linear" or baseline_model.type == "constant":
+        if (
+            utils.abs_in_absolute_range(gradient, threshold)
+            and isinstance(diff_b0, float)
+            and utils.abs_in_relative_range(diff_b0, intercept, 0.05)
+            and abs(diff_b0 - intercept) < 0.000000000001
+        ):
+            change_type = "constant"
+        elif (
+            utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3)
+            and r_value**2 > 0.95
+        ):
+            change_type = "linear"
     else:
-        if utils.abs_in_absolute_range(gradient, threshold) \
-                and isinstance(diff_b0, float) \
-                and utils.abs_in_relative_range(diff_b0, intercept, 0.05):
-            change_type = 'constant'
-        elif utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3) \
-                and r_value**2 > 0.95:
-            change_type = 'linear'
+        if (
+            utils.abs_in_absolute_range(gradient, threshold)
+            and isinstance(diff_b0, float)
+            and utils.abs_in_relative_range(diff_b0, intercept, 0.05)
+        ):
+            change_type = "constant"
+        elif (
+            utils.abs_in_relative_range(linear_diff_b1, gradient, 0.3)
+            and r_value**2 > 0.95
+        ):
+            change_type = "linear"
 
     std_err_profile = fast_check.exec_fast_check(
         uid, baseline_profile, baseline_x_pts, lin_abs_error
     )
     # obtaining the models (linear and quadratic) from the new regressed profile
     quad_err_model = detect.get_filtered_best_models_of(
-        std_err_profile, group='param', model_filter=detect.create_filter_by_model('quadratic')
+        std_err_profile,
+        group="param",
+        model_filter=detect.create_filter_by_model("quadratic"),
     )
     linear_err_model = detect.get_filtered_best_models_of(
-        std_err_profile, group='param', model_filter=detect.create_filter_by_model('linear')
+        std_err_profile,
+        group="param",
+        model_filter=detect.create_filter_by_model("linear"),
     )
 
     # check the last quadratic type of change
-    if quad_err_model[uid].r_square > 0.90 \
-            and abs(quad_err_model[uid].r_square - linear_err_model[uid].r_square) > 0.01:
-        change_type = 'quadratic'
+    if (
+        quad_err_model[uid].r_square > 0.90
+        and abs(quad_err_model[uid].r_square - linear_err_model[uid].r_square) > 0.01
+    ):
+        change_type = "quadratic"
 
     # We did not classify the change
     if not change_type:
-        std_err_model = detect.get_filtered_best_models_of(std_err_profile, group='param')
+        std_err_model = detect.get_filtered_best_models_of(
+            std_err_profile, group="param"
+        )
         change_type = std_err_model[uid].type
 
     return change_type

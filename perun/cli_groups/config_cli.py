@@ -6,21 +6,40 @@ import click
 import perun.logic.commands as commands
 import perun.utils.cli_helpers as cli_helpers
 import perun.utils.log as perun_log
-from perun.utils.exceptions import NotPerunRepositoryException, MissingConfigSectionException, \
-    ExternalEditorErrorException
+from perun.utils.exceptions import (
+    NotPerunRepositoryException,
+    MissingConfigSectionException,
+    ExternalEditorErrorException,
+)
 
 from typing import Any
 
 
 @click.group()
-@click.option('--local', '-l', 'store_type', flag_value='local',
-              help='Sets the local config, i.e. ``.perun/local.yml``, as the source config.')
-@click.option('--shared', '-h', 'store_type', flag_value='shared',
-              help='Sets the shared config, i.e. ``shared.yml.``, as the source config')
-@click.option('--nearest', '-n', 'store_type', flag_value='recursive', default=True,
-              help='Sets the nearest suitable config as the source config. The'
-                   ' lookup strategy can differ for ``set`` and '
-                   '``get``/``edit``.')
+@click.option(
+    "--local",
+    "-l",
+    "store_type",
+    flag_value="local",
+    help="Sets the local config, i.e. ``.perun/local.yml``, as the source config.",
+)
+@click.option(
+    "--shared",
+    "-h",
+    "store_type",
+    flag_value="shared",
+    help="Sets the shared config, i.e. ``shared.yml.``, as the source config",
+)
+@click.option(
+    "--nearest",
+    "-n",
+    "store_type",
+    flag_value="recursive",
+    default=True,
+    help="Sets the nearest suitable config as the source config. The"
+    " lookup strategy can differ for ``set`` and "
+    "``get``/``edit``.",
+)
 @click.pass_context
 def config(ctx: click.Context, **kwargs: Any) -> None:
     """Manages the stored local and shared configuration.
@@ -60,9 +79,14 @@ def config(ctx: click.Context, **kwargs: Any) -> None:
     ctx.obj = kwargs
 
 
-@config.command('get')
-@click.argument('key', required=True, metavar='<key>', type=click.STRING,
-                callback=cli_helpers.config_key_validation_callback)
+@config.command("get")
+@click.argument(
+    "key",
+    required=True,
+    metavar="<key>",
+    type=click.STRING,
+    callback=cli_helpers.config_key_validation_callback,
+)
 @click.pass_context
 def config_get(ctx: click.Context, key: str) -> None:
     """Looks up the given ``<key>`` within the configuration hierarchy and returns
@@ -91,17 +115,20 @@ def config_get(ctx: click.Context, key: str) -> None:
         general.editor: vim
     """
     try:
-        commands.config_get(ctx.obj['store_type'], key)
+        commands.config_get(ctx.obj["store_type"], key)
     except MissingConfigSectionException as mcs_err:
-        perun_log.error("error while getting key '{}': {}".format(
-            key, str(mcs_err)
-        ))
+        perun_log.error("error while getting key '{}': {}".format(key, str(mcs_err)))
 
 
-@config.command('set')
-@click.argument('key', required=True, metavar='<key>', type=click.STRING,
-                callback=cli_helpers.config_key_validation_callback)
-@click.argument('value', required=True, metavar='<value>')
+@config.command("set")
+@click.argument(
+    "key",
+    required=True,
+    metavar="<key>",
+    type=click.STRING,
+    callback=cli_helpers.config_key_validation_callback,
+)
+@click.argument("value", required=True, metavar="<value>")
 @click.pass_context
 def config_set(ctx: click.Context, key: str, value: Any) -> None:
     """Sets the value of the ``<key>`` to the given ``<value>`` in the target
@@ -129,10 +156,10 @@ def config_set(ctx: click.Context, key: str, value: Any) -> None:
         $ perun config set format.shortlog "| %source% | %collector% |"
         format.shortlog: | %source% | %collector% |
     """
-    commands.config_set(ctx.obj['store_type'], key, value)
+    commands.config_set(ctx.obj["store_type"], key, value)
 
 
-@config.command('edit')
+@config.command("edit")
 @click.pass_context
 def config_edit(ctx: click.Context) -> None:
     """Edits the configuration file in the external editor.
@@ -144,14 +171,20 @@ def config_edit(ctx: click.Context) -> None:
     :ref:`config-types` for full list of configuration options.
     """
     try:
-        commands.config_edit(ctx.obj['store_type'])
-    except (ExternalEditorErrorException, MissingConfigSectionException) as editor_exception:
-        perun_log.error("could not invoke external editor: {}".format(str(editor_exception)))
+        commands.config_edit(ctx.obj["store_type"])
+    except (
+        ExternalEditorErrorException,
+        MissingConfigSectionException,
+    ) as editor_exception:
+        perun_log.error(
+            "could not invoke external editor: {}".format(str(editor_exception))
+        )
 
 
-@config.command('reset')
-@click.argument('config_template', required=False, default='master',
-                metavar='<template>')
+@config.command("reset")
+@click.argument(
+    "config_template", required=False, default="master", metavar="<template>"
+)
 @click.pass_context
 def config_reset(ctx: click.Context, config_template: str) -> None:
     """Resets the configuration file to a sane default.
@@ -175,8 +208,10 @@ def config_reset(ctx: click.Context, config_template: str) -> None:
     See :ref:`config-templates` to learn more about predefined configuration options.
     """
     try:
-        commands.config_reset(ctx.obj['store_type'], config_template)
+        commands.config_reset(ctx.obj["store_type"], config_template)
     except NotPerunRepositoryException as npre:
-        perun_log.error("could not reset the {} configuration: {}".format(
-            ctx.obj['store_type'], str(npre)
-        ))
+        perun_log.error(
+            "could not reset the {} configuration: {}".format(
+                ctx.obj["store_type"], str(npre)
+            )
+        )

@@ -25,8 +25,15 @@ import termcolor
 
 from perun.utils.helpers import first_index_of_attr, str_to_plural, identity
 from perun.utils.decorators import static_variables
-from perun.utils.helpers import COLLECT_PHASE_ATTRS, CHANGE_COLOURS, CHANGE_STRINGS, \
-    DEGRADATION_ICON, OPTIMIZATION_ICON, CHANGE_CMD_COLOUR, CHANGE_TYPE_COLOURS
+from perun.utils.helpers import (
+    COLLECT_PHASE_ATTRS,
+    CHANGE_COLOURS,
+    CHANGE_STRINGS,
+    DEGRADATION_ICON,
+    OPTIMIZATION_ICON,
+    CHANGE_CMD_COLOUR,
+    CHANGE_TYPE_COLOURS,
+)
 from perun.utils.structs import PerformanceChange, DegradationInfo, MinorVersion
 
 
@@ -42,7 +49,7 @@ SUPPRESS_WARNINGS = False
 SUPPRESS_PAGING = True
 
 # set the logging for the perun
-logging.basicConfig(filename='perun.log', level=logging.DEBUG)
+logging.basicConfig(filename="perun.log", level=logging.DEBUG)
 
 
 def is_verbose_enough(verbosity_peak: int) -> bool:
@@ -54,7 +61,9 @@ def is_verbose_enough(verbosity_peak: int) -> bool:
     return VERBOSITY >= verbosity_peak
 
 
-def page_function_if(func: Callable[..., Any], paging_switch: bool) -> Callable[..., Any]:
+def page_function_if(
+    func: Callable[..., Any], paging_switch: bool
+) -> Callable[..., Any]:
     """Adds paging of the output to standard stream
 
     This decorator serves as a pager for long outputs to the standard stream. As a pager currently,
@@ -69,6 +78,7 @@ def page_function_if(func: Callable[..., Any], paging_switch: bool) -> Callable[
     :param bool paging_switch: external paging condition, if set to tru the function will not be
         paged
     """
+
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         """Wrapper for the original function whose output will be paged
 
@@ -91,6 +101,7 @@ def page_function_if(func: Callable[..., Any], paging_switch: bool) -> Callable[
         pydoc.pipepager(stdout_str, "less -R")
 
         return result
+
     return wrapper
 
 
@@ -105,7 +116,9 @@ def paged_function(paging_switch: bool) -> Callable[..., Any]:
     return functools.partial(page_function_if, paging_switch=paging_switch)
 
 
-def _log_msg(stream: Callable[[int, str], None], msg: str, msg_verbosity: int, log_level: int) -> None:
+def _log_msg(
+    stream: Callable[[int, str], None], msg: str, msg_verbosity: int, log_level: int
+) -> None:
     """
     If the @p msg_verbosity is smaller than the set verbosity of the logging
     module, the @p msg is printed to the log with the given @p log_level
@@ -119,12 +132,16 @@ def _log_msg(stream: Callable[[int, str], None], msg: str, msg_verbosity: int, l
         stream(log_level, msg)
 
 
-def msg_to_stdout(message: str, msg_verbosity: int, log_level: int = logging.INFO) -> None:
+def msg_to_stdout(
+    message: str, msg_verbosity: int, log_level: int = logging.INFO
+) -> None:
     """
     Helper function for the log_msg, prints the @p msg to the stdout,
     if the @p msg_verbosity is smaller or equal to actual verbosity.
     """
-    _log_msg(lambda lvl, msg: print("{}".format(msg)), message, msg_verbosity, log_level)
+    _log_msg(
+        lambda lvl, msg: print("{}".format(msg)), message, msg_verbosity, log_level
+    )
 
 
 def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO) -> None:
@@ -135,7 +152,7 @@ def msg_to_file(msg: str, msg_verbosity: int, log_level: int = logging.INFO) -> 
     _log_msg(logging.log, msg, msg_verbosity, log_level)
 
 
-def info(msg: str, end: str = '\n') -> None:
+def info(msg: str, end: str = "\n") -> None:
     """
     :param str msg: info message that will be printed only when there is at least lvl1 verbosity
     :param str end:
@@ -158,10 +175,16 @@ def extract_stack_frame_info(frame: traceback.FrameSummary) -> tuple[str, str]:
     :param object frame: some fecking frame object
     :return: tuple of filename and function name
     """
-    return (frame[0], frame[1]) if isinstance(frame, tuple) else (frame.filename, frame.name)
+    return (
+        (frame[0], frame[1])
+        if isinstance(frame, tuple)
+        else (frame.filename, frame.name)
+    )
 
 
-def print_current_stack(colour: str = 'red', raised_exception: Optional[BaseException] = None) -> None:
+def print_current_stack(
+    colour: str = "red", raised_exception: Optional[BaseException] = None
+) -> None:
     """Prints the information about stack track leading to an event
 
     Be default this is used in error traces, so the colour of the printed trace is red.
@@ -172,32 +195,40 @@ def print_current_stack(colour: str = 'red', raised_exception: Optional[BaseExce
     :param Exception raised_exception: exception that was raised before the error
     """
     reduced_trace = []
-    trace = traceback.extract_tb(raised_exception.__traceback__) if raised_exception \
+    trace = (
+        traceback.extract_tb(raised_exception.__traceback__)
+        if raised_exception
         else traceback.extract_stack()
+    )
     for frame in trace:
         frame_file, frame_name = extract_stack_frame_info(frame)
         filtering_conditions = [
             # We filter frames that are outside of perun's scope
-            'perun' not in frame_file,
+            "perun" not in frame_file,
             # We filter the first load entry of the module
-            frame_name == '<module>',
+            frame_name == "<module>",
             # We filter these error and stack handlers ;)
-            frame_file.endswith('log.py') and frame_name in ('error', 'print_current_stack')
+            frame_file.endswith("log.py")
+            and frame_name in ("error", "print_current_stack"),
         ]
         if not any(filtering_conditions):
             reduced_trace.append(frame)
-    print(in_color(
-        ''.join(traceback.format_list(reduced_trace)), colour
-    ), file=sys.stderr)
+    print(
+        in_color("".join(traceback.format_list(reduced_trace)), colour), file=sys.stderr
+    )
 
 
-def error(msg: str, recoverable: bool = False, raised_exception: Optional[BaseException] = None) -> None:
+def error(
+    msg: str,
+    recoverable: bool = False,
+    raised_exception: Optional[BaseException] = None,
+) -> None:
     """
     :param str msg: error message printed to standard output
     :param bool recoverable: whether we can recover from the error
     :param Exception raised_exception: exception that was raised before the error
     """
-    print(in_color(f"fatal: {msg}", 'red'), file=sys.stderr)
+    print(in_color(f"fatal: {msg}", "red"), file=sys.stderr)
     if is_verbose_enough(VERBOSE_DEBUG):
         print_current_stack(raised_exception=raised_exception)
 
@@ -222,9 +253,11 @@ def print_current_phase(phase_msg: str, phase_unit: str, phase_colour: str) -> N
     :param str phase_unit: additional parameter that is passed to the phase_msg
     :param str phase_colour: phase colour defined in helpers.py
     """
-    print(in_color(
-        phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS
-    ))
+    print(
+        in_color(
+            phase_msg.format(in_color(phase_unit)), phase_colour, COLLECT_PHASE_ATTRS
+        )
+    )
 
 
 @static_variables(current_job=1)
@@ -234,11 +267,11 @@ def print_job_progress(overall_jobs: int) -> None:
     :param int overall_jobs: overall number of jobs to be done
     """
     percentage_done = round((print_job_progress.current_job / overall_jobs) * 100)
-    print(f"[{str(percentage_done).rjust(3, ' ')}%] ", end='')
+    print(f"[{str(percentage_done).rjust(3, ' ')}%] ", end="")
     print_job_progress.current_job += 1
 
 
-def cprint(string: str, colour: str, attrs: str = 'none', flush: bool = True) -> None:
+def cprint(string: str, colour: str, attrs: str = "none", flush: bool = True) -> None:
     """Wrapper over coloured print without adding new line
 
     :param str string: string that is printed with colours
@@ -246,10 +279,10 @@ def cprint(string: str, colour: str, attrs: str = 'none', flush: bool = True) ->
     :param str attrs: name of additional attributes for the colouring
     :param bool flush: set True to immediately perform print operation
     """
-    print(in_color(string, colour, attrs), end='', flush=flush)
+    print(in_color(string, colour, attrs), end="", flush=flush)
 
 
-def cprintln(string: str, colour: str, attrs: str = 'none') -> None:
+def cprintln(string: str, colour: str, attrs: str = "none") -> None:
     """Wrapper over coloured print with added new line or other ending
 
     :param str string: string that is printed with colours and newline
@@ -259,41 +292,41 @@ def cprintln(string: str, colour: str, attrs: str = 'none') -> None:
     print(in_color(string, colour, attrs))
 
 
-def done(ending: str = '\n') -> None:
+def done(ending: str = "\n") -> None:
     """Helper function that will print green done to the terminal
 
     :param str ending: end of the string, by default new line
     """
-    print('[', end='')
-    cprint("DONE", 'green', attrs='bold')
-    print(']', end=ending)
+    print("[", end="")
+    cprint("DONE", "green", attrs="bold")
+    print("]", end=ending)
 
 
-def failed(ending: str = '\n') -> None:
+def failed(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
     """
-    print('[', end='')
-    cprint("FAILED", 'red', attrs='bold')
-    print(']', end=ending)
+    print("[", end="")
+    cprint("FAILED", "red", attrs="bold")
+    print("]", end=ending)
 
 
-def yes(ending: str = '\n') -> None:
+def yes(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
     """
-    print('[', end='')
-    cprint('\u2714', 'green', attrs='bold')
-    print(']', end=ending)
+    print("[", end="")
+    cprint("\u2714", "green", attrs="bold")
+    print("]", end=ending)
 
 
-def no(ending: str = '\n') -> None:
+def no(ending: str = "\n") -> None:
     """
     :param str ending: end of the string, by default new line
     """
-    print('[', end='')
-    cprint('\u2717', 'red', attrs='bold')
-    print(']', end=ending)
+    print("[", end="")
+    cprint("\u2717", "red", attrs="bold")
+    print("]", end=ending)
 
 
 def newline() -> None:
@@ -303,7 +336,7 @@ def newline() -> None:
     print("")
 
 
-def in_color(output: str, color: str = 'white', attribute_style: str = "none") -> str:
+def in_color(output: str, color: str = "white", attribute_style: str = "none") -> str:
     """Transforms the output to colored version.
 
     :param str output: the output text that should be colored
@@ -315,7 +348,7 @@ def in_color(output: str, color: str = 'white', attribute_style: str = "none") -
     attrs: list[str] = {
         "none": cast(list[str], []),
         "bold": ["bold"],
-        "underline": ["underline"]
+        "underline": ["underline"],
     }.get(attribute_style, [])
 
     if COLOR_OUTPUT:
@@ -324,21 +357,27 @@ def in_color(output: str, color: str = 'white', attribute_style: str = "none") -
         return output
 
 
-def count_degradations_per_group(degradation_list: list[tuple[DegradationInfo, str, str]]) -> dict[str, int]:
+def count_degradations_per_group(
+    degradation_list: list[tuple[DegradationInfo, str, str]]
+) -> dict[str, int]:
     """Counts the number of optimizations and degradations
 
     :param list degradation_list: list of tuples of (degradation info, cmdstr, minor version)
     :return: dictionary mapping change strings to its counts
     """
     # Get only degradation results
-    changes = map(operator.attrgetter('result'), map(operator.itemgetter(0), degradation_list))
+    changes = map(
+        operator.attrgetter("result"), map(operator.itemgetter(0), degradation_list)
+    )
     # Transform the enum into a string
-    change_names = list(map(operator.attrgetter('name'), changes))
+    change_names = list(map(operator.attrgetter("name"), changes))
     counts = dict(collections.Counter(change_names))
     return counts
 
 
-def get_degradation_change_colours(degradation_result: PerformanceChange) -> tuple[str, str]:
+def get_degradation_change_colours(
+    degradation_result: PerformanceChange,
+) -> tuple[str, str]:
     """Returns the tuple of two colours w.r.t degradation results.
 
     If the change was optimization (or possible optimization) then we print the first model as
@@ -350,21 +389,27 @@ def get_degradation_change_colours(degradation_result: PerformanceChange) -> tup
     :param PerformanceChange degradation_result: change of the performance
     :returns: tuple of (from model string colour, to model string colour)
     """
-    colour = 'yellow', 'yellow'
+    colour = "yellow", "yellow"
     if degradation_result in (
-            PerformanceChange.TotalOptimization, PerformanceChange.SevereOptimization,
-            PerformanceChange.Optimization, PerformanceChange.MaybeOptimization
+        PerformanceChange.TotalOptimization,
+        PerformanceChange.SevereOptimization,
+        PerformanceChange.Optimization,
+        PerformanceChange.MaybeOptimization,
     ):
-        colour = 'red', 'green'
+        colour = "red", "green"
     elif degradation_result in (
-            PerformanceChange.TotalDegradation, PerformanceChange.SevereDegradation,
-            PerformanceChange.Degradation, PerformanceChange.MaybeDegradation
+        PerformanceChange.TotalDegradation,
+        PerformanceChange.SevereDegradation,
+        PerformanceChange.Degradation,
+        PerformanceChange.MaybeDegradation,
     ):
-        colour = 'green', 'red'
+        colour = "green", "red"
     return colour
 
 
-def print_short_summary_of_degradations(degradation_list: list[tuple[DegradationInfo, str, str]]) -> None:
+def print_short_summary_of_degradations(
+    degradation_list: list[tuple[DegradationInfo, str, str]]
+) -> None:
     """Prints a short string representing the summary of the found changes.
 
     This prints a short statistic of found degradations and short summary string.
@@ -376,12 +421,15 @@ def print_short_summary_of_degradations(degradation_list: list[tuple[Degradation
 
     print_short_change_string(counts)
     optimization_count = str_to_plural(
-        counts.get('Optimization', 0) + counts.get('SevereOptimization', 0), 'optimization'
+        counts.get("Optimization", 0) + counts.get("SevereOptimization", 0),
+        "optimization",
     )
     degradation_count = str_to_plural(
-        counts.get('Degradation', 0) + counts.get('SevereDegradation', 0), 'degradation'
+        counts.get("Degradation", 0) + counts.get("SevereDegradation", 0), "degradation"
     )
-    print(f"{optimization_count}({OPTIMIZATION_ICON}), {degradation_count}({DEGRADATION_ICON})")
+    print(
+        f"{optimization_count}({OPTIMIZATION_ICON}), {degradation_count}({DEGRADATION_ICON})"
+    )
 
 
 def change_counts_to_string(counts: dict[str, int], width: int = 0) -> str:
@@ -391,18 +439,18 @@ def change_counts_to_string(counts: dict[str, int], width: int = 0) -> str:
     :param int width: width of the string justified to left
     :return: string representing the counts of found changes
     """
-    width = max(width - counts.get('Optimization', 0) - counts.get('Degradation', 0), 0)
+    width = max(width - counts.get("Optimization", 0) - counts.get("Degradation", 0), 0)
     change_str = in_color(
-        str(OPTIMIZATION_ICON*counts.get('Optimization', 0)),
+        str(OPTIMIZATION_ICON * counts.get("Optimization", 0)),
         CHANGE_COLOURS[PerformanceChange.Optimization],
-        'bold'
+        "bold",
     )
     change_str += in_color(
-        str(DEGRADATION_ICON*counts.get('Degradation', 0)),
+        str(DEGRADATION_ICON * counts.get("Degradation", 0)),
         CHANGE_COLOURS[PerformanceChange.Degradation],
-        'bold'
+        "bold",
     )
-    return change_str + width*' '
+    return change_str + width * " "
 
 
 def print_short_change_string(counts: dict[str, int]) -> None:
@@ -417,10 +465,10 @@ def print_short_change_string(counts: dict[str, int]) -> None:
     :param dict counts: dictionary mapping found string changes into their counts
     """
     overall_changes = sum(counts.values())
-    print(str_to_plural(overall_changes, "change"), end='')
+    print(str_to_plural(overall_changes, "change"), end="")
     if overall_changes > 0:
         change_string = change_counts_to_string(counts)
-        print(f" | {change_string}", end='')
+        print(f" | {change_string}", end="")
     newline()
 
 
@@ -439,8 +487,13 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
     :param DegradationInfo deg_info: structures of found degradations with required information
     :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
+
     def print_models_kinds(
-            baseline_str: str, baseline_colour: str, target_str: str, target_colour: str, attrs: str
+        baseline_str: str,
+        baseline_colour: str,
+        target_str: str,
+        target_colour: str,
+        attrs: str,
     ) -> None:
         """
         The function format the given parameters to required format at output.
@@ -451,28 +504,32 @@ def _print_models_info(deg_info: DegradationInfo, model_strategy: str) -> None:
         :param str target_colour: target colour to print target string
         :param str attrs: name of type attributes for the colouring
         """
-        print(baseline_str, end='')
-        cprint(f'{deg_info.from_baseline}', colour=baseline_colour, attrs=attrs)
-        print(target_str, end='')
-        cprint(f'{deg_info.to_target}', colour=target_colour, attrs=attrs)
+        print(baseline_str, end="")
+        cprint(f"{deg_info.from_baseline}", colour=baseline_colour, attrs=attrs)
+        print(target_str, end="")
+        cprint(f"{deg_info.to_target}", colour=target_colour, attrs=attrs)
 
     from_colour, to_colour = get_degradation_change_colours(deg_info.result)
 
-    if model_strategy == 'best-param':
-        print_models_kinds(' from: ', from_colour, ' -> to: ', to_colour, 'bold')
-    elif model_strategy in ('best-nonparam', 'best-model', 'best-both'):
-        print_models_kinds(' base: ', 'blue', ' targ: ', 'blue', 'bold')
-    elif model_strategy in ('all-nonparam', 'all-param', 'all-models'):
-        print(' model: ', end='')
-        cprint(f'{deg_info.from_baseline}', colour='blue', attrs='bold')
+    if model_strategy == "best-param":
+        print_models_kinds(" from: ", from_colour, " -> to: ", to_colour, "bold")
+    elif model_strategy in ("best-nonparam", "best-model", "best-both"):
+        print_models_kinds(" base: ", "blue", " targ: ", "blue", "bold")
+    elif model_strategy in ("all-nonparam", "all-param", "all-models"):
+        print(" model: ", end="")
+        cprint(f"{deg_info.from_baseline}", colour="blue", attrs="bold")
 
-    if deg_info.confidence_type != 'no':
-        print(' (with confidence ', end='')
-        cprint(f'{deg_info.confidence_type} = {deg_info.confidence_rate}', 'white', 'bold')
-        print(')', end='')
+    if deg_info.confidence_type != "no":
+        print(" (with confidence ", end="")
+        cprint(
+            f"{deg_info.confidence_type} = {deg_info.confidence_rate}", "white", "bold"
+        )
+        print(")", end="")
 
 
-def _print_partial_intervals(partial_intervals: list[tuple[PerformanceChange, float, float, float]]) -> None:
+def _print_partial_intervals(
+    partial_intervals: list[tuple[PerformanceChange, float, float, float]]
+) -> None:
     """
     The function prints information about detected changes on the partial intervals.
 
@@ -484,18 +541,21 @@ def _print_partial_intervals(partial_intervals: list[tuple[PerformanceChange, fl
     :param np.ndarray partial_intervals: array with partial intervals and all required items
     :return None: function has no return value
     """
-    print('  \u2514 ', end='')
-    for change_info, rel_error, x_start, x_end in aggregate_intervals(partial_intervals):
+    print("  \u2514 ", end="")
+    for change_info, rel_error, x_start, x_end in aggregate_intervals(
+        partial_intervals
+    ):
         if change_info != PerformanceChange.NoChange:
             cprint(
                 f"<{x_start}, {x_end}> {rel_error}x; ",
-                CHANGE_COLOURS.get(change_info, 'white')
+                CHANGE_COLOURS.get(change_info, "white"),
             )
     newline()
 
 
 def print_list_of_degradations(
-        degradation_list: list[tuple[DegradationInfo, str, str]], model_strategy: str = "best-model"
+    degradation_list: list[tuple[DegradationInfo, str, str]],
+    model_strategy: str = "best-model",
 ) -> None:
     """Prints list of found degradations grouped by location
 
@@ -507,6 +567,7 @@ def print_list_of_degradations(
     :param list degradation_list: list of found degradations
     :param str model_strategy: detection model strategy for obtains the relevant kind of models
     """
+
     def keygetter(item: tuple[DegradationInfo, str, str]) -> str:
         """Returns the location of the degradation from the tuple
 
@@ -519,30 +580,41 @@ def print_list_of_degradations(
     degradation_list.sort(key=keygetter)
     for location, changes in itertools.groupby(degradation_list, keygetter):
         # Print the location
-        print("at", end='')
-        cprint(f' {location}', 'white', attrs='bold')
+        print("at", end="")
+        cprint(f" {location}", "white", attrs="bold")
         print(":")
         # Iterate and print all of the infos
         for deg_info, cmd, __ in changes:
-            print('\u2514 ', end='')
-            if deg_info.rate_degradation_relative > 0.0 or deg_info.rate_degradation_relative < 0.0:
-                cprint('{}ms ({}%)'.format(
-                    round(deg_info.rate_degradation, 2),
-                    round(deg_info.rate_degradation_relative, 2)
-                ), 'white', 'bold')
+            print("\u2514 ", end="")
+            if (
+                deg_info.rate_degradation_relative > 0.0
+                or deg_info.rate_degradation_relative < 0.0
+            ):
+                cprint(
+                    "{}ms ({}%)".format(
+                        round(deg_info.rate_degradation, 2),
+                        round(deg_info.rate_degradation_relative, 2),
+                    ),
+                    "white",
+                    "bold",
+                )
             else:
-                cprint(f'{round(deg_info.rate_degradation, 2)}x', 'white', 'bold')
-            print(': ', end='')
-            cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, 'white'))
-            print(' ', end='')
-            cprint(f'{CHANGE_STRINGS[deg_info.result]}', CHANGE_COLOURS[deg_info.result], 'bold')
+                cprint(f"{round(deg_info.rate_degradation, 2)}x", "white", "bold")
+            print(": ", end="")
+            cprint(deg_info.type, CHANGE_TYPE_COLOURS.get(deg_info.type, "white"))
+            print(" ", end="")
+            cprint(
+                f"{CHANGE_STRINGS[deg_info.result]}",
+                CHANGE_COLOURS[deg_info.result],
+                "bold",
+            )
             if deg_info.result != PerformanceChange.NoChange:
                 _print_models_info(deg_info, model_strategy)
 
             # Print information about command that was executed
-            print(" (", end='')
-            cprint(f"$ {cmd}", CHANGE_CMD_COLOUR, 'bold')
-            print(')')
+            print(" (", end="")
+            cprint(f"$ {cmd}", CHANGE_CMD_COLOUR, "bold")
+            print(")")
 
             # Print information about the change on the partial intervals (only at Local-Statistics)
             if len(deg_info.partial_intervals) > 0:
@@ -551,7 +623,7 @@ def print_list_of_degradations(
 
 
 def aggregate_intervals(
-        input_intervals: list[Any] | npt.NDArray[Any]
+    input_intervals: list[Any] | npt.NDArray[Any],
 ) -> list[tuple[Any, Any, Any, Any]]:
     """
     Function aggregates the partial intervals according to the types of change.
@@ -578,6 +650,7 @@ def aggregate_intervals(
         intervals = np.array(input_intervals)
     else:
         intervals = input_intervals
+
     def get_indices_of_intervals() -> Iterable[tuple[int, int]]:
         """
         Function computes the indices of the aggregated intervals.
@@ -605,11 +678,17 @@ def aggregate_intervals(
     intervals = intervals[intervals[:, 0] != PerformanceChange.NoChange]
     agg_intervals = []
     for start_index, end_index in get_indices_of_intervals():
-        rel_error = np.sum(intervals[start_index:end_index+1, 1]) / (end_index - start_index + 1)
-        agg_intervals.append((
-            intervals[start_index][0], np.round(rel_error, 2),
-            intervals[start_index][2], intervals[end_index][3]
-        ))
+        rel_error = np.sum(intervals[start_index : end_index + 1, 1]) / (
+            end_index - start_index + 1
+        )
+        agg_intervals.append(
+            (
+                intervals[start_index][0],
+                np.round(rel_error, 2),
+                intervals[start_index][2],
+                intervals[end_index][3],
+            )
+        )
 
     return agg_intervals
 
@@ -623,6 +702,7 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
     :param function func: wrapped function
     :return: function for which we will print the elapsed time
     """
+
     def inner_wrapper(*args: Any, **kwargs: Any) -> Any:
         """Inner wrapper of the decorated function
 
@@ -633,20 +713,25 @@ def print_elapsed_time(func: Callable[..., Any]) -> Callable[..., Any]:
         before = time.time()
         results = func(*args, **kwargs)
         elapsed = time.time() - before
-        print("[!] {} [{}] in {} [!]".format(
-            (func.phase_name if hasattr(func, 'phase_name') else func.__name__).title(),
-            in_color("DONE", 'green', 'bold'),
-            in_color("{:0.2f}s".format(elapsed), 'white', 'bold')
-        ))
+        print(
+            "[!] {} [{}] in {} [!]".format(
+                (
+                    func.phase_name if hasattr(func, "phase_name") else func.__name__
+                ).title(),
+                in_color("DONE", "green", "bold"),
+                in_color("{:0.2f}s".format(elapsed), "white", "bold"),
+            )
+        )
         return results
+
     return inner_wrapper
 
 
 def scan_formatting_string(
-        fmt: str,
-        default_fmt_callback: Callable[[str], str],
-        callback: Callable[[str], str] = identity,
-        sep: str = "%"
+    fmt: str,
+    default_fmt_callback: Callable[[str], str],
+    callback: Callable[[str], str] = identity,
+    sep: str = "%",
 ) -> list[tuple[str, str]]:
     """Scans the string, parses delimited formatting tokens and transforms them w.r.t callbacks
 
@@ -693,6 +778,7 @@ class History:
     :ivar function _saved_print: original print function which is replaced with flushed function
         and is restored when leaving the history
     """
+
     class Edge:
         """Represents one edge of the history
 
@@ -700,7 +786,10 @@ class History:
         :ivar str colour: colour of the edge (red for deg, yellow for deg+opt, green for opt)
         :ivar str prev: the child of the edge, i.e. the not yet processed sha
         """
-        def __init__(self, n: str, colour: str = 'white', prev: Optional[str] = None) -> None:
+
+        def __init__(
+            self, n: str, colour: str = "white", prev: Optional[str] = None
+        ) -> None:
             """Initiates one edge of the history
 
             :param str n: the next sha that will be processed
@@ -717,7 +806,9 @@ class History:
             :param str char: string that represents the edge
             :return: string representing the edge in ascii
             """
-            return char if self.colour == 'white' else in_color(char, self.colour, 'bold')
+            return (
+                char if self.colour == "white" else in_color(char, self.colour, "bold")
+            )
 
     def __init__(self, head: str) -> None:
         """Creates a with wrapper, which keeps and prints the context of the current vcs
@@ -730,7 +821,7 @@ class History:
         self._original_stdout: TextIO = sys.stdout
         self._saved_print: Callable[..., Any] = builtins.print
 
-    def __enter__(self) -> 'History':
+    def __enter__(self) -> "History":
         """When entering, we create a new string io object to catch standard output
 
         :return: the history object
@@ -740,7 +831,9 @@ class History:
         sys.stdout = io.StringIO()
         self._saved_print = builtins.print
 
-        def flushed_print(print_function: Callable[..., Any], history: 'History') -> Callable[..., Any]:
+        def flushed_print(
+            print_function: Callable[..., Any], history: "History"
+        ) -> Callable[..., Any]:
             """Decorates the print_function with automatic flushing of the output.
 
             Whenever a newline is included in the output, the stream will be automatically flushed
@@ -749,6 +842,7 @@ class History:
             :param History history: history object that takes care of flushing
             :return: decorated flushed print
             """
+
             def wrapper(*args: Any, **kwargs: Any) -> None:
                 """Decorator function for flushed print
 
@@ -756,10 +850,12 @@ class History:
                 :param dict kwargs: list of keyword arguments for print
                 """
                 print_function(*args, **kwargs)
-                end_specified = 'end' in kwargs.keys()
-                if not end_specified or kwargs['end'] == '\n':
+                end_specified = "end" in kwargs.keys()
+                if not end_specified or kwargs["end"] == "\n":
                     history.flush(history.auto_flush_with_border)
+
             return wrapper
+
         builtins.print = flushed_print(builtins.print, self)
         return self
 
@@ -827,13 +923,9 @@ class History:
             "*" if p.next == minor_version_info.checksum else p.to_ascii("|")
             for p in self.unresolved_edges
         )
-        print(minor_str, end='')
-        cprint(" {}".format(
-            minor_version_info.checksum[:6]
-        ), 'yellow')
-        print(": {} | ".format(
-            minor_version_info.desc.split("\n")[0].strip()
-        ), end='')
+        print(minor_str, end="")
+        cprint(" {}".format(minor_version_info.checksum[:6]), "yellow")
+        print(": {} | ".format(minor_version_info.desc.split("\n")[0].strip()), end="")
 
     def progress_to_next_minor_version(self, minor_version_info: MinorVersion) -> None:
         r"""Progresses the history of the VCS to next minor version
@@ -859,7 +951,9 @@ class History:
         self._print_minor_version(minor_version_info)
 
     def finish_minor_version(
-            self, minor_version_info: MinorVersion, degradation_list: list[tuple[DegradationInfo, str, str]]
+        self,
+        minor_version_info: MinorVersion,
+        degradation_list: list[tuple[DegradationInfo, str, str]],
     ) -> None:
         """Notifies that we have processed the minor version.
 
@@ -871,9 +965,9 @@ class History:
         """
         # Update the unresolved parents
         minor_sha = minor_version_info.checksum
-        version_index = first_index_of_attr(self.unresolved_edges, 'next', minor_sha)
-        self.unresolved_edges[version_index:version_index+1] = [
-            History.Edge(p, 'white', minor_sha) for p in minor_version_info.parents
+        version_index = first_index_of_attr(self.unresolved_edges, "next", minor_sha)
+        self.unresolved_edges[version_index : version_index + 1] = [
+            History.Edge(p, "white", minor_sha) for p in minor_version_info.parents
         ]
         self._taint_parents(minor_sha, degradation_list)
         self._process_merge_point(version_index, minor_version_info.parents)
@@ -902,7 +996,9 @@ class History:
             # create new stringio
             sys.stdout = io.StringIO()
 
-    def _taint_parents(self, target: str, degradation_list: list[tuple[DegradationInfo, str, str]]) -> None:
+    def _taint_parents(
+        self, target: str, degradation_list: list[tuple[DegradationInfo, str, str]]
+    ) -> None:
         """According to the given list of degradation, sets the parents either as tainted
         or fixed.
 
@@ -926,11 +1022,11 @@ class History:
             if edge.prev == target:
                 tainted = edge.next in taints
                 fixed = edge.next in fixes
-                edge.colour = 'white'
+                edge.colour = "white"
                 if tainted:
-                    edge.colour = 'yellow' if fixed else 'red'
+                    edge.colour = "yellow" if fixed else "red"
                 elif fixed:
-                    edge.colour = 'green'
+                    edge.colour = "green"
 
     def _process_merge_point(self, merged_at: int, merged_parents: list[str]) -> None:
         r"""Updates the printed tree after we merged list of parents in the given merge_at index.
@@ -965,13 +1061,21 @@ class History:
                 left_str = " ".join(
                     e.to_ascii("|") for e in self.unresolved_edges[:merged_at]
                 )
-                right_str = " ".join(
-                    e.to_ascii("\\") for e in self.unresolved_edges[-rightmost_branches_num:]
-                ) if rightmost_branches_num else ""
+                right_str = (
+                    " ".join(
+                        e.to_ascii("\\")
+                        for e in self.unresolved_edges[-rightmost_branches_num:]
+                    )
+                    if rightmost_branches_num
+                    else ""
+                )
                 print(left_str + right_str)
-                print(left_str + " ".join(
-                    [self.unresolved_edges[merged_at].to_ascii('\\'), right_str]
-                ))
+                print(
+                    left_str
+                    + " ".join(
+                        [self.unresolved_edges[merged_at].to_ascii("\\"), right_str]
+                    )
+                )
 
     def _process_fork_point(self, fork_point: str) -> None:
         """Updates the printed tree after we forked from the given sha.
@@ -985,7 +1089,7 @@ class History:
         :param str fork_point: sha of the point, where we are forking
         """
         ulen = len(self.unresolved_edges)
-        forked_index = first_index_of_attr(self.unresolved_edges, 'next', fork_point)
+        forked_index = first_index_of_attr(self.unresolved_edges, "next", fork_point)
         src_index_map = list(range(0, ulen))
         tgt_index_map = [
             forked_index if self.unresolved_edges[i].next == fork_point else i
@@ -993,15 +1097,15 @@ class History:
         ]
 
         while src_index_map != tgt_index_map:
-            line = list(" "*(max(src_index_map)+1)*2)
+            line = list(" " * (max(src_index_map) + 1) * 2)
             triple_zip = zip(src_index_map, self.unresolved_edges, tgt_index_map)
             for i, (lhs, origin, rhs) in enumerate(triple_zip):
                 # for this index we are moving to the left
                 diff = -1 if rhs - lhs else 0
                 if diff == 0:
-                    line[2*lhs] = origin.to_ascii('|')
+                    line[2 * lhs] = origin.to_ascii("|")
                 else:
-                    line[2*lhs-1] = origin.to_ascii('/')
+                    line[2 * lhs - 1] = origin.to_ascii("/")
                 src_index_map[i] += diff
             print("".join(line))
 
@@ -1077,7 +1181,10 @@ class Logger(TextIO):
         assert NotImplementedError("Function not supported in wrapper Logger")
 
     def __exit__(  # type: ignore
-            self, __t: Type[BaseException] | None, __value: BaseException | None, __traceback: TracebackType | None
+        self,
+        __t: Type[BaseException] | None,
+        __value: BaseException | None,
+        __traceback: TracebackType | None,
     ) -> None:
         assert NotImplementedError("Function not supported in wrapper Logger")
 

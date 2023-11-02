@@ -251,15 +251,15 @@ def get_predefined_configuration(name: str, kwargs: dict[str, Any]) -> str:
         env = jinja2.Environment(
             lstrip_blocks=True,
             trim_blocks=True,
-            line_statement_prefix='//',
-            autoescape=True
+            line_statement_prefix="//",
+            autoescape=True,
         )
         CONFIG_FILE_TEMPLATE = env.from_string(CONFIG_FILE_STRING)
 
     options = {
-        'MasterConfiguration': MasterConfiguration,
-        'DeveloperConfiguration': DeveloperConfiguration,
-        'UserConfiguration': UserConfiguration
+        "MasterConfiguration": MasterConfiguration,
+        "DeveloperConfiguration": DeveloperConfiguration,
+        "UserConfiguration": UserConfiguration,
     }.get(f"{name.title()}Configuration", MasterConfiguration)()
     return CONFIG_FILE_TEMPLATE.render(dict(vars(options), **kwargs))
 
@@ -269,6 +269,7 @@ class MasterConfiguration:
 
     Moreover, Master is sane default for most of the functions, except for CLI calling.
     """
+
     def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
 
@@ -291,16 +292,15 @@ class DeveloperConfiguration(MasterConfiguration):
     | :ckey:`execute.pre_run`                   | make                          |
     +-------------------------------------------+-------------------------------+
     """
+
     def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
         super().__init__()
-        self.execute = {
-            'pre_run': ['make']
-        }
+        self.execute = {"pre_run": ["make"]}
         self.degradation = {
-            'strategy': [{'method': 'average_amount_threshold'}],
-            'collect_before_check': 'true',
-            'log_collect': 'true',
+            "strategy": [{"method": "average_amount_threshold"}],
+            "collect_before_check": "true",
+            "log_collect": "true",
         }
 
 
@@ -328,9 +328,20 @@ class UserConfiguration(DeveloperConfiguration):
     | :ckey:`format.output_profile_template`    | %collector%-of-%cmd%-%workload%-%date% |
     +-------------------------------------------+----------------------------------------+
     """
-    WORKLOAD_FOLDERS = {'workload', 'workloads', '_workload', '_workloads', 'examples',
-                        'payload', 'payloads', '_payloads', '_payload', '_examples'}
-    EXECUTABLE_FOLDERS = {'build', '_build', 'dist'}
+
+    WORKLOAD_FOLDERS = {
+        "workload",
+        "workloads",
+        "_workload",
+        "_workloads",
+        "examples",
+        "payload",
+        "payloads",
+        "_payloads",
+        "_payload",
+        "_examples",
+    }
+    EXECUTABLE_FOLDERS = {"build", "_build", "dist"}
 
     @staticmethod
     def _all_candidate_files(include_list: set[str]) -> Iterable[str]:
@@ -342,7 +353,7 @@ class UserConfiguration(DeveloperConfiguration):
         for root, dirs, files in os.walk(os.getcwd(), topdown=True):
             # Skip all the directories starting with .
             # i.e. this will skip .git or .perun, etc.
-            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            dirs[:] = [d for d in dirs if not d.startswith(".")]
             if os.path.split(root)[1] in include_list:
                 for file in files:
                     yield os.path.relpath(os.path.join(root, file), os.getcwd())
@@ -358,7 +369,9 @@ class UserConfiguration(DeveloperConfiguration):
         """
         log.info("Looking up candidate workloads")
         workload_candidates = []
-        for file in UserConfiguration._all_candidate_files(UserConfiguration.WORKLOAD_FOLDERS):
+        for file in UserConfiguration._all_candidate_files(
+            UserConfiguration.WORKLOAD_FOLDERS
+        ):
             workload_candidates.append(file)
         return workload_candidates
 
@@ -375,11 +388,13 @@ class UserConfiguration(DeveloperConfiguration):
         log.info("Looking up candidate executables")
         log.info("Try to compile binaries for the project by running make")
         try:
-            utils.run_safely_list_of_commands(['make'])
+            utils.run_safely_list_of_commands(["make"])
         except subprocess.CalledProcessError:
             log.info("Nothing to make...")
         executable_candidates = []
-        for file in UserConfiguration._all_candidate_files(UserConfiguration.EXECUTABLE_FOLDERS):
+        for file in UserConfiguration._all_candidate_files(
+            UserConfiguration.EXECUTABLE_FOLDERS
+        ):
             if os.path.isfile(file) and os.access(file, os.X_OK):
                 executable_candidates.append(file)
         return executable_candidates
@@ -387,19 +402,11 @@ class UserConfiguration(DeveloperConfiguration):
     def __init__(self) -> None:
         """Initialization of keys used for jinja2 template"""
         super().__init__()
-        self.collectors = [
-            {'name': 'time',
-             'params': {
-                 'warmup': 3,
-                 'repeat': 10
-             }}
-        ]
+        self.collectors = [{"name": "time", "params": {"warmup": 3, "repeat": 10}}]
         self.format = {
-            'output_profile_template': '%collector%-of-%cmd%-%workload%-%date%'
+            "output_profile_template": "%collector%-of-%cmd%-%workload%-%date%"
         }
-        self.profiles = {
-            'register_after_run': 'true'
-        }
+        self.profiles = {"register_after_run": "true"}
 
         # Lookup executables and workloads
         executable_candidates = UserConfiguration._locate_executable_candidates()

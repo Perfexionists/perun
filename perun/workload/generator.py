@@ -18,6 +18,7 @@ import perun.profile.helpers as profile
 import perun.profile.factory as factory
 
 from perun.utils.structs import CollectStatus, Job, Unit
+
 if TYPE_CHECKING:
     from perun.profile.factory import Profile
 
@@ -28,7 +29,10 @@ class WorkloadGenerator:
     :ivar bool profile_for_each_workload: if set to true, then we will generate one profile
         for each workload, otherwise the workload will be merged into one single profile
     """
-    def __init__(self, job: Job, profile_for_each_workload: bool = False, **_: Any) -> None:
+
+    def __init__(
+        self, job: Job, profile_for_each_workload: bool = False, **_: Any
+    ) -> None:
         """Initializes the job of the generator
 
         :param Job job: job for which we will initialize the generator
@@ -41,7 +45,7 @@ class WorkloadGenerator:
         self.for_each = dutils.strtobool(str(profile_for_each_workload))
 
     def generate(
-            self, collect_function: Callable[[Unit, Job], tuple[CollectStatus, Profile]]
+        self, collect_function: Callable[[Unit, Job], tuple[CollectStatus, Profile]]
     ) -> Iterable[tuple[CollectStatus, Profile]]:
         """Collects the data for the generated workload
 
@@ -50,20 +54,27 @@ class WorkloadGenerator:
         collective_profile, collective_status = factory.Profile(), CollectStatus.OK
 
         for workload, workload_ctx in self._generate_next_workload():
-            config.runtime().set('context.workload', workload_ctx)
-            self.job.collector.params['workload'] = str(workload)
+            config.runtime().set("context.workload", workload_ctx)
+            self.job.collector.params["workload"] = str(workload)
             # Update the workload: the executed one (workload) and config one (origin_workload)
             self.job.executable.workload = str(workload)
-            self.job.executable.origin_workload = "{}_{}".format(
-                self.generator_name, str(workload)
-            ) if self.for_each else self.generator_name
+            self.job.executable.origin_workload = (
+                "{}_{}".format(self.generator_name, str(workload))
+                if self.for_each
+                else self.generator_name
+            )
             c_status, prof = collect_function(self.job.collector, self.job)
             if self.for_each:
                 yield c_status, prof
             else:
-                collective_status = \
-                    CollectStatus.ERROR if collective_status == CollectStatus.ERROR else c_status
-                collective_profile = profile.merge_resources_of(collective_profile, prof)
+                collective_status = (
+                    CollectStatus.ERROR
+                    if collective_status == CollectStatus.ERROR
+                    else c_status
+                )
+                collective_profile = profile.merge_resources_of(
+                    collective_profile, prof
+                )
 
         if not self.for_each:
             yield collective_status, collective_profile
@@ -75,4 +86,6 @@ class WorkloadGenerator:
             resources that will be added to profile)
         """
         yield from ()
-        log.error("using invalid generator: does not implement _generate_next_workload function!")
+        log.error(
+            "using invalid generator: does not implement _generate_next_workload function!"
+        )

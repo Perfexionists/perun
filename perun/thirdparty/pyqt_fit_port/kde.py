@@ -177,7 +177,9 @@ class KDE1D:
     def xdata(self, xs):
         self.need_fit()
         self._xdata = np.atleast_1d(xs)
-        assert len(self._xdata.shape) == 1, "The attribute xdata must be a one-dimension array"
+        assert (
+            len(self._xdata.shape) == 1
+        ), "The attribute xdata must be a one-dimension array"
 
     @property
     def kernel(self):

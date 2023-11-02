@@ -21,7 +21,7 @@ def get_resource_type(resource: dict[str, Any]) -> str:
     :param dict resource: dictionary representing the resource
     :returns str: type of the resource ('' if there is none type)
     """
-    return resource.get('type', '')
+    return resource.get("type", "")
 
 
 def normalize_resources(resources: list[dict[str, Any]]) -> None:
@@ -37,19 +37,23 @@ def normalize_resources(resources: list[dict[str, Any]]) -> None:
     for resource in resources:
         resource_type = get_resource_type(resource)
         type_maximum = maximum_per_type.get(resource_type, None)
-        if not type_maximum or type_maximum < resource['amount']:
-            maximum_per_type[resource_type] = resource['amount']
+        if not type_maximum or type_maximum < resource["amount"]:
+            maximum_per_type[resource_type] = resource["amount"]
 
     # Now normalize the values inside the profile
     for resource in resources:
         resource_type = get_resource_type(resource)
         maximum_for_resource_type = maximum_per_type[resource_type]
-        resource['amount'] = \
-            resource['amount'] / maximum_for_resource_type if maximum_for_resource_type != 0.0 \
+        resource["amount"] = (
+            resource["amount"] / maximum_for_resource_type
+            if maximum_for_resource_type != 0.0
             else 1.0
+        )
 
 
-def postprocess(profile: Profile, **_: Any) -> tuple[PostprocessStatus, str, dict[str, Any]]:
+def postprocess(
+    profile: Profile, **_: Any
+) -> tuple[PostprocessStatus, str, dict[str, Any]]:
     """
     :param Profile profile: json-like profile that will be preprocessed by normalizer
     """
@@ -57,7 +61,7 @@ def postprocess(profile: Profile, **_: Any) -> tuple[PostprocessStatus, str, dic
     normalize_resources(resources)
     profile.update_resources(resources, clear_existing_resources=True)
 
-    return PostprocessStatus.OK, "", {'profile': profile}
+    return PostprocessStatus.OK, "", {"profile": profile}
 
 
 @click.command()
@@ -113,4 +117,4 @@ def normalizer(profile: Profile) -> None:
     Refer to :ref:`postprocessors-normalizer` for more thorough description and
     examples of `normalizer` postprocessor.
     """
-    runner.run_postprocessor_on_profile(profile, 'normalizer', {})
+    runner.run_postprocessor_on_profile(profile, "normalizer", {})

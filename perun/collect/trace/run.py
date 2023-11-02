@@ -14,7 +14,12 @@ from perun.collect.trace.strategy import extract_configuration
 from perun.collect.trace.watchdog import WATCH_DOG
 from perun.collect.trace.collect_engine import CollectEngine
 from perun.collect.trace.configuration import Configuration
-from perun.collect.trace.values import OutputHandling, check, GLOBAL_DEPENDENCIES, Strategy
+from perun.collect.trace.values import (
+    OutputHandling,
+    check,
+    GLOBAL_DEPENDENCIES,
+    Strategy,
+)
 
 import perun.logic.runner as runner
 import perun.utils.log as stdout
@@ -25,7 +30,7 @@ from perun.utils.structs import CollectStatus
 
 
 def before(executable, **kwargs):
-    """ Validates, initializes and normalizes the collection configuration.
+    """Validates, initializes and normalizes the collection configuration.
 
     :param Executable executable: full collection command with arguments and workload
     :param kwargs: dictionary containing the supplied configuration settings for the collector
@@ -33,19 +38,19 @@ def before(executable, **kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WATCH_DOG.header('Pre-processing phase...')
+    WATCH_DOG.header("Pre-processing phase...")
     # Check if we run in a workload generator batch and update metrics accordingly
     if executable.workload != executable.origin_workload:
         metrics.Metrics.add_sub_id(executable.workload)
 
-    metrics.start_timer('total_time')
-    kwargs['total_time'] = time.time()
+    metrics.start_timer("total_time")
+    kwargs["total_time"] = time.time()
     # Validate and normalize collection parameters
     config = Configuration(executable, **kwargs)
     # This makes the resources available even if 'before' fails and kwargs is not updated
-    kwargs['opened_resources'].append(config)
-    kwargs['config'] = config  # Alias for easier access to the Configuration object
-    kwargs['probes'] = config.probes
+    kwargs["opened_resources"].append(config)
+    kwargs["config"] = config  # Alias for easier access to the Configuration object
+    kwargs["probes"] = config.probes
     # Init the engine object that contains collection resource
     config.engine_factory()
 
@@ -57,26 +62,28 @@ def before(executable, **kwargs):
     config.engine.check_dependencies()
 
     # Extract and / or post-process the collect configuration
-    extract_configuration(config.engine, kwargs['probes'])
-    if not kwargs['probes'].func and not kwargs['probes'].usdt:
-        msg = ('No profiling probes created (due to invalid specification, failed extraction or '
-               'filtering)')
+    extract_configuration(config.engine, kwargs["probes"])
+    if not kwargs["probes"].func and not kwargs["probes"].usdt:
+        msg = (
+            "No profiling probes created (due to invalid specification, failed extraction or "
+            "filtering)"
+        )
         return CollectStatus.ERROR, msg, dict(kwargs)
 
     # Set the variables for optimization methods
-    kwargs['binary'] = config.binary
+    kwargs["binary"] = config.binary
 
     # Cleanup the kwargs and log all the dictionaries
-    WATCH_DOG.log_variable('before::kwargs', kwargs)
-    WATCH_DOG.log_variable('before::kwargs::config', config.__dict__)
-    WATCH_DOG.log_variable('before::kwargs::probes', kwargs['probes'].__dict__)
+    WATCH_DOG.log_variable("before::kwargs", kwargs)
+    WATCH_DOG.log_variable("before::kwargs::config", config.__dict__)
+    WATCH_DOG.log_variable("before::kwargs::probes", kwargs["probes"].__dict__)
 
-    stdout.done('\n\n')
+    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 
 def collect(**kwargs):
-    """ Assembles the engine collect program according to input parameters and collection strategy.
+    """Assembles the engine collect program according to input parameters and collection strategy.
     Runs the created collection program and the profiled command.
 
     :param kwargs: dictionary containing the configuration and probe settings for the collector
@@ -84,55 +91,57 @@ def collect(**kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WATCH_DOG.header('Collect phase...')
-    config = kwargs['config']
+    WATCH_DOG.header("Collect phase...")
+    config = kwargs["config"]
 
     # Assemble the collection program according to the parameters
-    metrics.add_metric('func_count', len(config.probes.func.keys()))
+    metrics.add_metric("func_count", len(config.probes.func.keys()))
     config.engine.assemble_collect_program(**kwargs)
 
     # Run the collection program and profiled command
-    metrics.start_timer('collect_time')
+    metrics.start_timer("collect_time")
     config.engine.collect(**kwargs)
-    metrics.end_timer('collect_time')
+    metrics.end_timer("collect_time")
 
-    stdout.done('\n\n')
+    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 
 def after(**kwargs):
-    """ Parses the trace collector output and transforms it into profile resources
+    """Parses the trace collector output and transforms it into profile resources
 
     :param kwargs: the configuration settings for the collector
     :returns: tuple (CollectStatus enum code,
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WATCH_DOG.header('Post-processing phase... ')
+    WATCH_DOG.header("Post-processing phase... ")
 
     # Inform the user
-    WATCH_DOG.info('Processing raw performance data. '
-                   'Note that this may take a while for large raw data files.')
-    data_size = os.stat(kwargs['config'].engine.data).st_size
-    metrics.add_metric('data_size', data_size)
-    WATCH_DOG.info('Raw data file size: {}'.format(utils.format_file_size(data_size)))
+    WATCH_DOG.info(
+        "Processing raw performance data. "
+        "Note that this may take a while for large raw data files."
+    )
+    data_size = os.stat(kwargs["config"].engine.data).st_size
+    metrics.add_metric("data_size", data_size)
+    WATCH_DOG.info("Raw data file size: {}".format(utils.format_file_size(data_size)))
 
     # Dirty temporary hack
-    if kwargs['config'].engine.name == 'ebpf':
-        kwargs['profile'] = Profile()
-        kwargs['profile'].update_resources(
-            {'resources': list(kwargs['config'].engine.transform(**kwargs))}, 'global'
+    if kwargs["config"].engine.name == "ebpf":
+        kwargs["profile"] = Profile()
+        kwargs["profile"].update_resources(
+            {"resources": list(kwargs["config"].engine.transform(**kwargs))}, "global"
         )
     else:
-        kwargs['profile'] = kwargs['config'].engine.transform(**kwargs)
+        kwargs["profile"] = kwargs["config"].engine.transform(**kwargs)
 
-    WATCH_DOG.info('Data processing finished.')
-    stdout.done('\n\n')
+    WATCH_DOG.info("Data processing finished.")
+    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 
 def teardown(**kwargs):
-    """ Perform a cleanup of all the collection resources that need it, i.e. files, locks,
+    """Perform a cleanup of all the collection resources that need it, i.e. files, locks,
     processes, kernel modules etc.
 
     :param kwargs: the configuration settings for the collector
@@ -140,93 +149,204 @@ def teardown(**kwargs):
                     string as a status message, mainly for error states,
                     dict of kwargs (possibly with some new values))
     """
-    WATCH_DOG.header('Teardown phase...')
+    WATCH_DOG.header("Teardown phase...")
 
     # The Configuration object can be directly in kwargs or the resources list
     config = None
-    if 'config' in kwargs:
-        config = kwargs['config']
-    elif kwargs['opened_resources']:
-        config = kwargs['opened_resources'][0]
-        kwargs['config'] = config
+    if "config" in kwargs:
+        config = kwargs["config"]
+    elif kwargs["opened_resources"]:
+        config = kwargs["opened_resources"][0]
+        kwargs["config"] = config
 
     # Cleanup all the engine related resources
     # Check that the engine was actually constructed
     if config is not None and not isinstance(config.engine, str):
         config.engine.cleanup(**kwargs)
 
-    metrics.end_timer('total_time')
+    metrics.end_timer("total_time")
     # metrics.save()
-    stdout.done('\n\n')
+    stdout.done("\n\n")
     return CollectStatus.OK, "", dict(kwargs)
 
 
 @click.command()
-@click.option('--engine', '-e', type=click.Choice(CollectEngine.available()),
-              default=CollectEngine.default(),
-              help='Sets the data collection engine to be used:\n'
-                   ' - stap: the SystemTap framework\n'
-                   ' - ebpf: the eBPF framework')
-@click.option('--strategy', '-s', type=click.Choice(Strategy.supported()),
-              default=Strategy.default(), required=True,
-              help='Select strategy for probing the binary. See documentation for'
-                   ' detailed explanation for each strategy.')
-@click.option('--func', '-f', type=str, multiple=True,
-              help='Set the probe point for the given function as <lib>#<func>#<sampling>.')
-@click.option('--usdt', '-u', type=str, multiple=True,
-              help='Set the probe point for the given USDT location as <lib>#<usdt>#<sampling>.')
-@click.option('--dynamic', '-d', type=str, multiple=True,
-              help='Set the probe point for the given dynamic location as <lib>#<cl>#<sampling>.')
-@click.option('--global-sampling', '-g', type=int, default=1,
-              help='Set the global sample for all probes, sampling parameter for specific'
-                   ' rules have higher priority.')
-@click.option('--with-usdt/--no-usdt', default=True,
-              help='The selected strategy will also extract and profile USDT probes.')
-@click.option('--binary', '-b', type=click.Path(exists=True),
-              help='The profiled executable. If not set, then the command is considered '
-                   'to be the profiled executable and is used as a binary parameter.')
-@click.option('--libs', '-l', nargs=1, required=False, multiple=True, type=click.Path(exists=True),
-              help='Additional libraries that should also be profiled.')
-@click.option('--timeout', '-t', type=float, default=0,
-              help='Set time limit (in seconds) for the profiled command, i.e. the command will be '
-                   'terminated after reaching the time limit. Useful for, e.g., endless commands.')
-@click.option('--zip-temps', '-z', is_flag=True, default=False,
-              help='Zip and compress the temporary files (SystemTap log, raw performance data, '
-                   'watchdog log, etc.) into the Perun log directory before deleting them.')
-@click.option('--keep-temps', '-k', is_flag=True, default=False,
-              help='Do not delete the temporary files in the file system.')
-@click.option('--verbose-trace', '-vt', is_flag=True, default=False,
-              help='Set the trace file output to be more verbose, useful for debugging.')
-@click.option('--quiet', '-q', is_flag=True, default=False,
-              help='Reduces the verbosity of the collector info messages.')
-@click.option('--watchdog', '-w', is_flag=True, default=False,
-              help='Enable detailed logging of the whole collection process.')
-@click.option('--output-handling', '-o', type=click.Choice(OutputHandling.to_list()),
-              default=OutputHandling.DEFAULT.value,
-              help='Sets the output handling of the profiled command:\n'
-                   ' - default: the output is displayed in the terminal\n'
-                   ' - capture: the output is being captured into a file as well as displayed'
-                   ' in the terminal (note that buffering causes a delay in the terminal output)\n'
-                   ' - suppress: redirects the output to the DEVNULL')
-@click.option('--diagnostics', '-i', is_flag=True, default=False,
-              help='Enable detailed surveillance mode of the collector. The collector turns on '
-                   'detailed logging (watchdog), verbose trace, capturing output etc. and stores '
-                   'the logs and files in an archive (zip-temps) in order to provide as much '
-                   'diagnostic data as possible for further inspection.'
-              )
-@click.option('--stap-cache-off', '-sc', is_flag=True, default=False,
-              help='Disables the SystemTap caching of compiled scripts.')
-@click.option('--no-profile', '-np', is_flag=True, default=False,
-              help='Tracer will not transform and save processed data into a perun profile.')
+@click.option(
+    "--engine",
+    "-e",
+    type=click.Choice(CollectEngine.available()),
+    default=CollectEngine.default(),
+    help="Sets the data collection engine to be used:\n"
+    " - stap: the SystemTap framework\n"
+    " - ebpf: the eBPF framework",
+)
+@click.option(
+    "--strategy",
+    "-s",
+    type=click.Choice(Strategy.supported()),
+    default=Strategy.default(),
+    required=True,
+    help="Select strategy for probing the binary. See documentation for"
+    " detailed explanation for each strategy.",
+)
+@click.option(
+    "--func",
+    "-f",
+    type=str,
+    multiple=True,
+    help="Set the probe point for the given function as <lib>#<func>#<sampling>.",
+)
+@click.option(
+    "--usdt",
+    "-u",
+    type=str,
+    multiple=True,
+    help="Set the probe point for the given USDT location as <lib>#<usdt>#<sampling>.",
+)
+@click.option(
+    "--dynamic",
+    "-d",
+    type=str,
+    multiple=True,
+    help="Set the probe point for the given dynamic location as <lib>#<cl>#<sampling>.",
+)
+@click.option(
+    "--global-sampling",
+    "-g",
+    type=int,
+    default=1,
+    help="Set the global sample for all probes, sampling parameter for specific"
+    " rules have higher priority.",
+)
+@click.option(
+    "--with-usdt/--no-usdt",
+    default=True,
+    help="The selected strategy will also extract and profile USDT probes.",
+)
+@click.option(
+    "--binary",
+    "-b",
+    type=click.Path(exists=True),
+    help="The profiled executable. If not set, then the command is considered "
+    "to be the profiled executable and is used as a binary parameter.",
+)
+@click.option(
+    "--libs",
+    "-l",
+    nargs=1,
+    required=False,
+    multiple=True,
+    type=click.Path(exists=True),
+    help="Additional libraries that should also be profiled.",
+)
+@click.option(
+    "--timeout",
+    "-t",
+    type=float,
+    default=0,
+    help="Set time limit (in seconds) for the profiled command, i.e. the command will be "
+    "terminated after reaching the time limit. Useful for, e.g., endless commands.",
+)
+@click.option(
+    "--zip-temps",
+    "-z",
+    is_flag=True,
+    default=False,
+    help="Zip and compress the temporary files (SystemTap log, raw performance data, "
+    "watchdog log, etc.) into the Perun log directory before deleting them.",
+)
+@click.option(
+    "--keep-temps",
+    "-k",
+    is_flag=True,
+    default=False,
+    help="Do not delete the temporary files in the file system.",
+)
+@click.option(
+    "--verbose-trace",
+    "-vt",
+    is_flag=True,
+    default=False,
+    help="Set the trace file output to be more verbose, useful for debugging.",
+)
+@click.option(
+    "--quiet",
+    "-q",
+    is_flag=True,
+    default=False,
+    help="Reduces the verbosity of the collector info messages.",
+)
+@click.option(
+    "--watchdog",
+    "-w",
+    is_flag=True,
+    default=False,
+    help="Enable detailed logging of the whole collection process.",
+)
+@click.option(
+    "--output-handling",
+    "-o",
+    type=click.Choice(OutputHandling.to_list()),
+    default=OutputHandling.DEFAULT.value,
+    help="Sets the output handling of the profiled command:\n"
+    " - default: the output is displayed in the terminal\n"
+    " - capture: the output is being captured into a file as well as displayed"
+    " in the terminal (note that buffering causes a delay in the terminal output)\n"
+    " - suppress: redirects the output to the DEVNULL",
+)
+@click.option(
+    "--diagnostics",
+    "-i",
+    is_flag=True,
+    default=False,
+    help="Enable detailed surveillance mode of the collector. The collector turns on "
+    "detailed logging (watchdog), verbose trace, capturing output etc. and stores "
+    "the logs and files in an archive (zip-temps) in order to provide as much "
+    "diagnostic data as possible for further inspection.",
+)
+@click.option(
+    "--stap-cache-off",
+    "-sc",
+    is_flag=True,
+    default=False,
+    help="Disables the SystemTap caching of compiled scripts.",
+)
+@click.option(
+    "--no-profile",
+    "-np",
+    is_flag=True,
+    default=False,
+    help="Tracer will not transform and save processed data into a perun profile.",
+)
 # TODO: temporary
-@click.option('--extract-mixed-cg', '-mcg', is_flag=True, default=False,
-              help='DEBUG: Extract mixed CG.')
-@click.option('--only-extract-cg', '-cg', is_flag=True, default=False,
-              help='Tracer will only extract the CG of the current project version and terminate.')
-@click.option('--max-simultaneous-threads', '-mt', type=int, default=5,
-              help='DEBUG: Maximum number of expected simultaneous threads when sampling is on.')
-@click.option('--no-ds-update', '-nds', is_flag=True, default=False,
-              help='DEBUG: Disables Dynamic Stats updates')
+@click.option(
+    "--extract-mixed-cg",
+    "-mcg",
+    is_flag=True,
+    default=False,
+    help="DEBUG: Extract mixed CG.",
+)
+@click.option(
+    "--only-extract-cg",
+    "-cg",
+    is_flag=True,
+    default=False,
+    help="Tracer will only extract the CG of the current project version and terminate.",
+)
+@click.option(
+    "--max-simultaneous-threads",
+    "-mt",
+    type=int,
+    default=5,
+    help="DEBUG: Maximum number of expected simultaneous threads when sampling is on.",
+)
+@click.option(
+    "--no-ds-update",
+    "-nds",
+    is_flag=True,
+    default=False,
+    help="DEBUG: Disables Dynamic Stats updates",
+)
 @click.pass_context
 def trace(ctx, **kwargs):
     """Generates `trace` performance profile, capturing running times of
@@ -302,4 +422,4 @@ def trace(ctx, **kwargs):
     Refer to :ref:`collectors-trace` for more thorough description and
     examples of `trace` collector.
     """
-    runner.run_collector_from_cli_context(ctx, 'trace', kwargs)
+    runner.run_collector_from_cli_context(ctx, "trace", kwargs)
