@@ -207,3 +207,6 @@ exclude_also = [
     # Not implemented asserst are omitted
     "assert NotImplementedError(.*)",
 ]
+
+# This line has to be there, because otherwise the setuptools_scm will not infer the version
+[tool.setuptools_scm]
