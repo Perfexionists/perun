@@ -58,9 +58,13 @@ jobs:
           pip3 install -q build
           make pypi-release
 
-      - name: Install from dist
+      - name: Install from dist (wheel)
         run: |
-          pip3 install dist/*
+          pip3 install dist/*.whl
+
+      - name: Install from dist (tar.gz)
+        run: |
+          pip3 install dist/*.tar.gz
 
   # Tests that documentation is buildable. We limit the test to version 3.11 in order to have less clutter in Actions
   build-docs:

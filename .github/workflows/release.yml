@@ -44,13 +44,13 @@ jobs:
 
       - name: Compile the documentation
         run: |
-          make -C doc html
+          make -C docs html
 
       - name: Deploy to GH pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           # TODO: CHECK THIS IS CORRECT PATH
-          folder: doc/_build/html
+          folder: docs/_build/html
     
   build-and-deploy-to-pypi:
     needs: release
