@@ -49,7 +49,6 @@ jobs:
       - name: Deploy to GH pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          # TODO: CHECK THIS IS CORRECT PATH
           folder: docs/_build/html
     
   build-and-deploy-to-pypi:

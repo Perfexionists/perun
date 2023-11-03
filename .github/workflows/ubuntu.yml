@@ -122,7 +122,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Check type correctness for Python ${{ matrix.python-version }} using Tox
+      - name: Check lint correctness for Python ${{ matrix.python-version }} using Tox
         run: |
           tox -e lint || true
 
