@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  pull_requests:
+    types:
+      - closed
+    branches:
+      - devel
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest version
+        uses: actions/checkout@v3
+        with:
+          ref: devel
+
+      - name: Tag the new version
+        uses: phish108/autotag-action@1.1.51
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-branch: devel
+          bump: minor
+
+  build-and-deploy-doc:
+    needs: release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    step:
+      - name: Checkout latest version
+        uses: actions/checkout@v3
+        with:
+          ref: devel
+
+      - name: Setup Python, Ubuntu and Python environment
+        uses: ./.github/workflows/actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Compile the documentation
+        run: |
+          make -C doc html
+
+      - name: Deploy to GH pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          # TODO: CHECK THIS IS CORRECT PATH
+          folder: doc/_build/html
+    
+  build-and-deploy-to-pypi:
+    needs: release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout latest version
+        uses: actions/checkout@v3
+        with:
+          ref: devel
+
+      - name: Setup Python, Ubuntu and Python environment
+        uses: ./.github/workflows/actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Ensure that dependencies are installed
+        run: |
+          # Install and upgrade pip
+          python3 -m pip install --upgrade pip
+          # Install dependencies for build and deplo
+          python3 -m pip install setuptools wheel twine
+
+      - name: Build python release distrubution package
+        run: |
+          pip3 install -q build
+          make pypi-release
+
+      - name: Upload to TestPypi
+        run: |
+          python3 -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TESTPYPI_SECRET_TOKEN }}
+          TWINE_REPOSITORY: testpypi
+
+      - name: Upload to Pypi
+        run: |
+          python3 -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TESTPYPI_SECRET_TOKEN }}
