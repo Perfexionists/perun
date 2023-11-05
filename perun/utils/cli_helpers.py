@@ -734,7 +734,10 @@ def generate_cli_dump(
 
     ctx = {
         "\n".join(
-            [" " * 4 + l for l in json.dumps(p.serialize(), indent=2, sort_keys=True).split("\n")]
+            [
+                " " * 4 + line
+                for line in json.dumps(p.serialize(), indent=2, sort_keys=True).split("\n")
+            ]
         )
         for p in config.runtime().safe_get("context.profiles", [])
         if "origin" in p.keys()
@@ -761,8 +764,12 @@ def generate_cli_dump(
                 },
             },
             "command": " ".join(["perun"] + sys.argv[1:]),
-            "output": helpers.escape_ansi("".join([" " * 4 + l for l in stdout.log.readlines()])),
-            "error": helpers.escape_ansi("".join([" " * 4 + l for l in stderr.log.readlines()])),
+            "output": helpers.escape_ansi(
+                "".join([" " * 4 + line for line in stdout.log.readlines()])
+            ),
+            "error": helpers.escape_ansi(
+                "".join([" " * 4 + line for line in stderr.log.readlines()])
+            ),
             "exception": reported_error,
             "trace": "\n".join(
                 [

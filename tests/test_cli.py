@@ -1755,7 +1755,7 @@ def test_reset_outside_pcs(monkeypatch):
     asserts.predicate_from_cli(result, result.exit_code == 1)
     asserts.predicate_from_cli(result, "could not reset" in result.output)
 
-    monkeypatch.setattr("perun.logic.config.lookup_shared_config_dir", lambda: os.getcwd())
+    monkeypatch.setattr("perun.logic.config.lookup_shared_config_dir", os.getcwd)
     result = runner.invoke(config_cli.config, ["--shared", "reset"])
     asserts.predicate_from_cli(result, result.exit_code == 0)
 
