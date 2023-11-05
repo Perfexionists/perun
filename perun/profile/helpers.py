@@ -116,8 +116,8 @@ def generate_profile_name(profile: profiles.Profile) -> str:
     """
     global PROFILE_COUNTER
     # TODO: This might be broken in new versions?
-    fmt_parser = re.Scanner(
-        [  # type: ignore
+    fmt_parser = re.Scanner(  # type: ignore
+        [
             (
                 r"%collector%",
                 lambda scanner, token: lookup_value(profile["collector_info"], "name", "_"),
